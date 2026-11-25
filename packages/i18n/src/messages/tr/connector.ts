@@ -74,8 +74,6 @@ export const messages = {
   "connector.statusUnknown": "Bilinmiyor",
   "connector.readFailed": "OpenBot bu bağlantının durumunu okuyamadı.",
 
-  "connector.slack.connect": "Slack'e bağlan",
-  "connector.discord.connect": "Discord'a bağlan",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
     "Bir WhatsApp numarasını bu bilgisayara bağlayın. WhatsApp Düzenleyicisi doğru ajana sorar ve yanıtlar.",

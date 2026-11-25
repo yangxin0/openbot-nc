@@ -26,8 +26,6 @@ const secretPattern =
 export interface PluginCatalogPaths {
   sourceRoot: string;
   rendererPath: string;
-  workerPath: string;
-  mobilePath: string;
   snapshotDir: string;
 }
 
@@ -35,8 +33,6 @@ export function defaultPluginCatalogPaths(root: string = projectRoot): PluginCat
   return {
     sourceRoot: join(root, "marketplace", "plugin-catalog"),
     rendererPath: join(root, "src", "renderer", "src", "features", "settings", "marketplace-plugin-catalog.ts"),
-    workerPath: join(root, "apps", "auth-api", "src", "lib", "plugin-catalog.generated.ts"),
-    mobilePath: join(root, "apps", "mobile", "src", "features", "marketplace", "model", "plugin-catalog.generated.ts"),
     snapshotDir: join(root, "resources", "plugin-catalog"),
   };
 }
@@ -146,17 +142,12 @@ export async function buildPluginCatalog(options?: {
   const paths = options?.paths ?? defaultPluginCatalogPaths();
   const { spec, plugins } = await loadPluginCatalog(paths.sourceRoot);
   const renderer = renderRendererModule(plugins);
-  const worker = renderWorkerModule(spec, plugins);
-  const mobile = renderMobileModule(plugins);
   const snapshot = renderSnapshot(spec, plugins);
   if (options?.check) {
-    await checkGenerated(paths, renderer, worker, mobile, snapshot);
+    await checkGenerated(paths, renderer, snapshot);
     return { plugins: plugins.length, catalogVersion: spec.catalogVersion };
   }
   await writeFile(paths.rendererPath, renderer);
-  await writeFile(paths.workerPath, worker);
-  await mkdir(dirname(paths.mobilePath), { recursive: true });
-  await writeFile(paths.mobilePath, mobile);
   await writeSnapshot(paths.snapshotDir, snapshot);
   return { plugins: plugins.length, catalogVersion: spec.catalogVersion };
 }
@@ -665,181 +656,6 @@ export const MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
 `;
 }
 
-function renderMobileModule(plugins: PluginDetail[]): string {
-  const listings = plugins.map((plugin) => {
-    const { iconUrl: _iconUrl, updatedAt: _updatedAt, apps, ...detail } = plugin;
-    return {
-      ...detail,
-      apps: apps.map(({ iconUrl: _appIconUrl, macAutomation, ...app }) =>
-        macAutomation?.length ? { ...app, needsMac: true } : app,
-      ),
-    };
-  });
-  return `/**
- * The plugins the mobile Marketplace offers.
- *
- * Generated from marketplace/plugin-catalog/ by scripts/build-plugin-catalog.ts.
- * Do not edit by hand: run bun run marketplace:build:plugins, or
- * bun run marketplace:build:plugins -- --check to verify.
- */
-
-import type { SkillCategory } from "@openbot/contracts/ipc";
-
-/** One credential the user types. It goes into a \`header\` (http) or an \`env\` value (stdio). */
-export interface MobilePluginAuthField {
-  id: string;
-  label: string;
-  /** The value replaces the listing's address. It must stay on the listing's host or a subdomain. */
-  url?: boolean;
-  header?: string;
-  env?: string;
-  /** Written in front of the typed value, such as \`"Bearer "\`. */
-  prefix?: string;
-  placeholder?: string;
-  hint?: string;
-  optional?: boolean;
-}
-
-export type MobilePluginAuthFlow =
-  | { id: string; kind: "link"; label: string }
-  | {
-      id: string;
-      kind: "key";
-      label: string;
-      fields: MobilePluginAuthField[];
-      docsUrl?: string | null;
-      docsLabel?: string;
-    }
-  | {
-      id: string;
-      kind: "local";
-      label: string;
-      steps: string[];
-      note?: string;
-      docsUrl?: string | null;
-      docsLabel?: string;
-    };
-
-type MobilePluginServer =
-  | { name: string; transport: "http"; url: string; earlierUrls?: string[]; auth?: MobilePluginAuthFlow[] }
-  | {
-      name: string;
-      transport: "stdio";
-      command: string;
-      args: string[];
-      env?: Record<string, string>;
-      auth?: MobilePluginAuthFlow[];
-    };
-
-export interface MobilePluginApp {
-  id: string;
-  name: string;
-  description: string;
-  server: MobilePluginServer;
-  /** The app drives Apple apps, so it runs only on a host that is a Mac. */
-  needsMac?: true;
-}
-
-export interface MobilePlugin {
-  slug: string;
-  name: string;
-  tagline: string;
-  description: string;
-  category: SkillCategory;
-  creatorName: string;
-  version: string;
-  prompts: Array<{ id: string; text: string }>;
-  apps: MobilePluginApp[];
-  websiteUrl: string | null;
-  privacyPolicyUrl: string | null;
-  termsUrl: string | null;
-  featured: boolean;
-}
-
-export const MOBILE_PLUGINS: readonly MobilePlugin[] = ${tsLiteral(listings)};
-`;
-}
-
-function renderWorkerModule(spec: PluginCatalogSpec, plugins: PluginDetail[]): string {
-  const details: Record<string, Omit<PluginDetail, "featured" | "updatedAt"> & { skills: never[] }> = {};
-  for (const plugin of plugins) {
-    const { featured: _featured, updatedAt: _updatedAt, ...detail } = plugin;
-    details[plugin.slug] = { ...detail, skills: [] };
-  }
-  const index = {
-    schemaVersion: spec.schemaVersion,
-    catalogVersion: spec.catalogVersion,
-    updatedAt: spec.updatedAt,
-    plugins: plugins.map((plugin) => ({
-      slug: plugin.slug,
-      version: plugin.version,
-      featured: spec.featured.includes(plugin.slug),
-      detailSha256: sha256(jsonLiteral(details[plugin.slug])),
-    })),
-  };
-  return `/**
- * Plugin catalog served by the Account Worker.
- *
- * Generated from marketplace/plugin-catalog/ by scripts/build-plugin-catalog.ts.
- * Do not edit by hand.
- */
-
-export interface PluginCatalogIndex {
-  schemaVersion: number;
-  catalogVersion: string;
-  /** When the catalog last changed. The public site dates its listing pages by it. */
-  updatedAt: string;
-  plugins: Array<{ slug: string; version: string; featured: boolean; detailSha256: string }>;
-}
-
-export const PLUGIN_CATALOG_INDEX: PluginCatalogIndex = ${tsLiteral(index)};
-
-export interface PluginCatalogPrompt {
-  id: string;
-  text: string;
-}
-
-export interface PluginCatalogApp {
-  id: string;
-  name: string;
-  description: string;
-  iconUrl: string | null;
-  server: PluginCatalogServer;
-  macAutomation?: string[];
-}
-
-export type PluginCatalogServer =
-  | { name: string; transport: "http"; url: string; earlierUrls?: string[]; auth?: unknown }
-  | {
-      name: string;
-      transport: "stdio";
-      command: string;
-      args: string[];
-      env?: Record<string, string>;
-      auth?: unknown;
-    };
-
-export interface PluginCatalogDetail {
-  slug: string;
-  name: string;
-  tagline: string;
-  description: string;
-  category: string;
-  creatorName: string;
-  iconUrl: string | null;
-  version: string;
-  prompts: PluginCatalogPrompt[];
-  apps: PluginCatalogApp[];
-  skills: unknown[];
-  websiteUrl: string | null;
-  privacyPolicyUrl: string | null;
-  termsUrl: string | null;
-}
-
-export const PLUGIN_CATALOG_DETAILS: Record<string, PluginCatalogDetail> = ${tsLiteral(details)};
-`;
-}
-
 function renderSnapshot(spec: PluginCatalogSpec, plugins: PluginDetail[]): Array<{ path: string; content: string }> {
   const files: Array<{ path: string; content: string }> = [];
   const details: Record<string, Omit<PluginDetail, "featured" | "updatedAt"> & { skills: never[] }> = {};
@@ -876,19 +692,13 @@ async function writeSnapshot(dir: string, files: Array<{ path: string; content: 
 async function checkGenerated(
   paths: PluginCatalogPaths,
   renderer: string,
-  worker: string,
-  mobile: string,
   snapshot: Array<{ path: string; content: string }>,
 ): Promise<void> {
   const expected = new Map<string, string>();
   expected.set(resolve(paths.rendererPath), renderer);
-  expected.set(resolve(paths.workerPath), worker);
-  expected.set(resolve(paths.mobilePath), mobile);
   for (const file of snapshot) expected.set(resolve(join(paths.snapshotDir, file.path)), file.content);
   const actual = new Map<string, string>();
   actual.set(resolve(paths.rendererPath), await readFile(paths.rendererPath, "utf8"));
-  actual.set(resolve(paths.workerPath), await readFile(paths.workerPath, "utf8"));
-  actual.set(resolve(paths.mobilePath), await readFile(paths.mobilePath, "utf8").catch(() => ""));
   for (const file of snapshot) {
     actual.set(resolve(join(paths.snapshotDir, file.path)), await readFile(join(paths.snapshotDir, file.path), "utf8"));
   }

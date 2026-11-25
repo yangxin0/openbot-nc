@@ -2,13 +2,8 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/billing";
 
 export const messages = {
-  "billing.plan.starter": "Starter",
-  "billing.plan.standard": "Standard",
-  "billing.plan.pro": "Pro",
-  "billing.license.description": "לעבודה בחברה. אינו כולל שרת.",
   "billing.license.trial.until": "חינם עד {date}",
   "billing.license.starter.inUse": "{used} אנשים משתמשים בשרתים שלך. Starter מיועד למשתמש אחד.",
-  "billing.license.contact.action": "יצירת קשר",
   "billing.license.change.more": { one: "יותר מ-{count}", two: "יותר מ-{count}", other: "יותר מ-{count}" },
   "billing.license.change.custom": "התאמה אישית",
   "billing.license.change.customDescription": {
@@ -69,7 +64,4 @@ export const messages = {
   "billing.order.unit.monthExclVat": "לחודש, לא כולל מע״מ",
   "billing.order.unit.monthBilledYearlyExclVat": "לחודש, בחיוב שנתי, לא כולל מע״מ",
   "billing.order.unit.free": "לתמיד",
-  "billing.order.cta.server": "יצירת שרת",
-  "billing.order.cta.license": "רכישת רישיון",
-  "billing.order.cta.download": "הורדה",
 } as const satisfies PartialTranslation<typeof source>;

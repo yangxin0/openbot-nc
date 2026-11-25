@@ -22,8 +22,6 @@ export const messages = {
 
   "marketplace.plugins.missing": "هذه الإضافة ليست في كتالوج OpenBot.",
 
-  "marketplace.agents.skills": "المهارات",
-  "marketplace.agents.routines": "المهام الدورية",
   "marketplace.agents.all": "كل الوكلاء",
   "marketplace.skill.loading": "جارٍ تحميل المهارة",
   "marketplace.try.readFailed": "تعذّر على OpenBot قراءة مهارات هذا الوكيل. أعد المحاولة.",

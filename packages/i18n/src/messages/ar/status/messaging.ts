@@ -26,8 +26,6 @@ export const messages = {
   "status.messaging.hostOnly": "لا يستطيع الإجابة على هذا الطلب إلا مضيف OpenBot.",
   "status.messaging.filesSkipped": "لم تُرسَل بعض الملفات: {names}.",
   "status.messaging.integrationsSection": "التكاملات",
-  "status.messaging.telegramNotLinked":
-    "OpenBot غير متصل بهذه الدردشة. لربطه، افتح تطبيق OpenBot وانتقل إلى المتجر ← التطبيقات ← Telegram، ثم اختر «إضافة إلى مجموعة» أو «فتح دردشة مباشرة».",
   "status.messaging.whatsappNoAgent": "لا يوجد وكيل يستطيع الإجابة هنا بعد. أضف WhatsApp Orchestrator في OpenBot.",
   "status.messaging.whatsappApprovalMenu": "أرسل 1 للموافقة أو 2 للرفض.",
   "status.messaging.whatsappStopMenu": "أرسل stop للإيقاف.",

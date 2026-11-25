@@ -3,8 +3,8 @@
 The agents of this computer can answer in an external chat platform. Slack, Discord, Telegram and
 WhatsApp are supported today. The design notes are in
 [architecture/channels-and-messaging.md](architecture/channels-and-messaging.md#messaging-connections),
-the Slack launch steps in [apps/slack-app/LAUNCH.md](../apps/slack-app/LAUNCH.md), and the Discord app
-settings in [apps/discord-app/README.md](../apps/discord-app/README.md).
+the Slack launch steps in apps/slack-app/LAUNCH.md, and the Discord app
+settings in apps/discord-app/README.md.
 
 ## Connect Slack
 
@@ -324,7 +324,7 @@ routine prompt, for example "post the summary to #bot-inflow on Discord".
 
 ## Limits
 
-These limits are for Slack. Discord's are in [apps/discord-app/README.md](../apps/discord-app/README.md#limits-of-discord),
+These limits are for Slack. Discord's are in apps/discord-app/README.md,
 and these also apply to Discord: the host must run, the queue limits, who can give work, and that a
 hosted server that sleeps starts for a message. Discord sends an event once: an event that arrives
 while this computer has no Signal connection is lost, except for a hosted server that starts.

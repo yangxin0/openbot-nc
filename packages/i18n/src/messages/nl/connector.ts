@@ -68,8 +68,6 @@ export const messages = {
   "connector.statusUnknown": "Onbekend",
   "connector.readFailed": "OpenBot kan de status van deze verbinding niet lezen.",
 
-  "connector.slack.connect": "Verbind Slack",
-  "connector.discord.connect": "Verbind Discord",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
     "Koppel een WhatsApp-nummer aan deze computer. De WhatsApp Orchestrator vraagt de juiste agent en antwoordt.",

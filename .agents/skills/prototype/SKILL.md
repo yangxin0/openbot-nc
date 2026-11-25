@@ -37,20 +37,12 @@ continue without the user.
    | Surface | Story location | Stylesheet |
    | --- | --- | --- |
    | Desktop renderer, shared UI | `src/renderer/stories/` | Global; `.storybook/preview.tsx` loads it |
-   | Public web (`apps/auth-api`) | Beside the page, in `apps/auth-api/src/components/<area>/`. For a new page, use `landing/` | Import `apps/auth-api/src/styles.css` in the story, as `DiscordConnectPage.stories.tsx` does |
-
-   A pricing page, landing page, or article is public web. A dialog, panel,
-   sidebar, or settings screen is desktop.
-
-   A public web page with the site header needs a router stand-in. Copy the
-   `WithRouter` pattern from `AgentTemplatePage.stories.tsx`.
-4. Read `packages/ui/AGENTS.md` and `src/renderer/AGENTS.md`. For public web,
-   also read `apps/auth-api/AGENTS.md`.
+4. Read `packages/ui/AGENTS.md` and `src/renderer/AGENTS.md`.
 5. Take a reference screenshot of the place where the feature lives in the
    current app. For desktop, use the `App` story (`app--expanded-sidebar` and
    the other `app--*` ids), the real container story (for example
    `settings-serversettingsmodal--*`), or the dev app with
-   `bun run dev:automation screenshot`. For public web, use the page story.
+   `bun run dev:automation screenshot`.
    Save it as `reference.png` beside the variant screenshots (Step 5).
 6. Write down your assumptions in one short list. You show it to the user in
    Step 6.
@@ -61,10 +53,6 @@ Before you write UI, list the parts that already exist:
 
 - Primitives from `@openbot/ui` (`packages/ui/src/`).
 - Feature components from `@openbot/ui/features/<domain>/...`.
-- For public web: existing site components and classes in
-  `apps/auth-api/src/components/` and `apps/auth-api/src/styles.css`. Import
-  only explicit `@openbot/ui/...` subpaths there. The `@openbot/ui` barrel
-  fails the Worker typecheck.
 - Data that already exists, such as plans, prices, and limits in
   `packages/contracts`. Use the real values, not invented ones.
 - Fixtures and mocks: `src/renderer/stories/*fixtures*`,
@@ -184,11 +172,9 @@ Rules:
 - When a state is important to the decision (empty, error, loading), add it
   as an extra story with the same letter, for example `A2. Plan cards, empty`.
 - Draft new copy as literals. `no-hardcoded-ui-text.grit` does not check
-  stories, prototype files beside them, or `apps/auth-api`. On desktop, use
+  stories or prototype files beside them. Use
   existing i18n keys when they fit; the chosen variant moves its other text
   to catalog keys in Step 7.
-- On public web, when you reuse a site class, check its media queries at phone
-  width. Some site classes, such as `compare-table`, change layout below 640 px.
 - Keep `a11y: { test: "error" }`. Fix each accessibility violation. Use real
   roles, labels, and focus order.
 - Do not add `play` functions or `data-testid`. `check:ui` rejects them.
@@ -200,9 +186,7 @@ Rules:
 Run these checks one at a time:
 
 1. `bunx biome check --write --max-diagnostics=none <new files>`
-2. The one typecheck project for the surface:
-   `bun run typecheck:renderer` for `src/renderer/stories/`, or
-   `bun run typecheck:api` for public web.
+2. `bun run typecheck:renderer` for `src/renderer/stories/`.
 3. Run `bun run dev:status`. When it lists a Storybook for this worktree,
    reuse it. Otherwise start Storybook with the Bash background option:
    `env -u ELECTRON_RUN_AS_NODE bun run storybook --no-open`. Use the port
@@ -217,8 +201,7 @@ Run these checks one at a time:
 5. Take a screenshot of each variant with the Playwright or Chrome DevTools
    tools. Save them in `.openbot-build/prototypes/<feature>/`
    (git ignores this directory), for example `a-plan-cards.png`. Use a
-   desktop width (1440 px). For public web only, also use a phone width (390 px).
-   Desktop and web client UI get no phone-width screenshot.
+   desktop width (1440 px). Desktop and web client UI get no phone-width screenshot.
    The desktop stylesheet sets `overflow: hidden` on `html` and `body`, so a
    full-page screenshot shows only the viewport. Before each screenshot,
    resize the viewport height to the `scrollHeight` of `#storybook-root`.

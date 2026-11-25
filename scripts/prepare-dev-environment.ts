@@ -18,16 +18,12 @@ export type DevelopmentCommandRunner = (
 export const supportedBunVersion = "1.4.2";
 
 const INSTALL_STAMP = join("node_modules", ".openbot-install-stamp");
-const LOCAL_D1_STATE = join("apps", "auth-api", ".wrangler", "state", "v3", "d1");
-const MIGRATION_STAMP = join(LOCAL_D1_STATE, ".openbot-migrate-local-stamp");
-const MIGRATIONS_DIRECTORY = join("apps", "auth-api", "migrations");
 
 export interface DevelopmentPreparationInput {
   projectRoot?: string;
   mainCheckoutRoot?: string;
   executable?: string;
   bunVersion?: string;
-  migrateAccountDatabase?: boolean;
   run?: DevelopmentCommandRunner;
 }
 
@@ -47,12 +43,6 @@ export function prepareDevelopmentEnvironment(input: DevelopmentPreparationInput
     () => installFingerprint(projectRoot),
     () => run(executable, ["install", "--frozen-lockfile"], options),
   );
-  if (input.migrateAccountDatabase !== false)
-    runUnlessStamped(
-      join(projectRoot, MIGRATION_STAMP),
-      () => (existsSync(join(projectRoot, LOCAL_D1_STATE)) ? migrationFingerprint(projectRoot) : null),
-      () => run(executable, ["run", "api:migrate:local"], options),
-    );
   return stateOutcome;
 }
 
@@ -90,16 +80,6 @@ export function installFingerprint(projectRoot: string): string {
     }
   }
   return fingerprintFiles(projectRoot, files, [`bun ${process.versions.bun ?? "unknown"}`]);
-}
-
-export function migrationFingerprint(projectRoot: string): string {
-  const directory = join(projectRoot, MIGRATIONS_DIRECTORY);
-  const names = existsSync(directory) ? readdirSync(directory) : [];
-  return fingerprintFiles(
-    projectRoot,
-    names.map((name) => join(MIGRATIONS_DIRECTORY, name)),
-    [],
-  );
 }
 
 function workspaceManifests(projectRoot: string): string[] {
@@ -150,7 +130,6 @@ export function prepareDevelopmentWorktree(input: DevelopmentPreparationInput = 
     ...options,
     env: { ...process.env, OPENBOT_DEV_INSTANCE_ID: instanceId },
   });
-  run(executable, ["run", "marketplace:seed:local"], options);
   return stateOutcome;
 }
 
@@ -194,7 +173,7 @@ export function assertSupportedBunVersion(version: string): void {
   if (version === supportedBunVersion) return;
 
   throw new Error(
-    `Unsupported Bun ${version}. OpenBot development requires stable Bun ${supportedBunVersion}. Install the exact version with the command in https://github.com/nightly-labs/openbot#development, then retry.`,
+    `Unsupported Bun ${version}. OpenBot development requires stable Bun ${supportedBunVersion}. Install the exact version as README.md says in Development, then retry.`,
   );
 }
 

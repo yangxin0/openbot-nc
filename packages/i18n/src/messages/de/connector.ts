@@ -78,8 +78,6 @@ export const messages = {
   "connector.dangerZone": "Gefahrenbereich",
   "connector.statusUnknown": "Unbekannt",
   "connector.readFailed": "OpenBot konnte den Status dieser Verbindung nicht lesen.",
-  "connector.slack.connect": "Slack verbinden",
-  "connector.discord.connect": "Discord verbinden",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
     "Verknüpfe eine WhatsApp-Nummer mit diesem Computer. Der WhatsApp-Orchestrator fragt den passenden Agenten und antwortet.",

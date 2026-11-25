@@ -33,7 +33,7 @@ const DESKTOP: ReleaseTarget = {
   fragmentDir: FRAGMENT_DIR,
   versionFiles: ["package.json"],
   inReview: false,
-  next: "write the Discord highlights in .github/release-announcement.json (docs/RELEASING.md#discord-announcement), commit package.json, CHANGELOG.md, changelog.d and the announcement, push, run preflight, then tag it",
+  next: "commit package.json, CHANGELOG.md and changelog.d, push, run preflight, then tag it",
 };
 
 const MOBILE: ReleaseTarget = {
@@ -43,7 +43,7 @@ const MOBILE: ReleaseTarget = {
   versionFiles: MOBILE_VERSION_FILES,
   lockWorkspace: "apps/mobile",
   inReview: true,
-  next: "commit the files, merge them to main, then build with bun run mobile:release (step 2). When a store makes the build available, mark it with step 3, and again for the other store. Before the first store, write the Discord highlights in apps/mobile/release-announcement.json (apps/mobile/README.md#discord-announcement)",
+  next: "commit the files, merge them to main, then build the phone app",
 };
 
 const VERSION_FIELD = /("version"\s*:\s*")([^"]*)(")/;
@@ -70,7 +70,7 @@ if (changelog.includes(`## [${nextVersion}]`)) {
 const waiting = changelog.split("\n").find((line) => line.startsWith("## [") && line.endsWith(`] - ${IN_REVIEW}`));
 if (target.inReview && waiting !== undefined) {
   throw new Error(
-    `"${waiting}" in ${target.changelog} is still in review on both stores. Run bun run mobile:release:published ios (or android) when a store makes it available, then prepare the next release.`,
+    `"${waiting}" in ${target.changelog} is still in review. Give it a release date, then prepare the next release.`,
   );
 }
 

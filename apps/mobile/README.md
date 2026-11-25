@@ -595,7 +595,7 @@ One-time setup:
 7. Commit `apps/mobile/google-services.json`, the Firebase file of the Android app
    `run.openbot.mobile`. `app.config.js` adds it when it exists. Without it the build has no Firebase,
    and Android gets no notifications. The file has public identifiers only. The account service has
-   the key that sends (`FCM_SERVICE_ACCOUNT` in [the account service](../auth-api/README.md)).
+   the key that sends (`FCM_SERVICE_ACCOUNT` in the account service).
 
 After this workflow is merged into `main`, run from the repository root:
 
@@ -760,7 +760,7 @@ One-time setup:
 
 An over-the-air (OTA) update sends a new JavaScript bundle to the phones that have a store binary.
 It needs no store review. The phones get it from OpenBot's own update server,
-[`apps/mobile-updates`](../mobile-updates/README.md) at `https://updates.openbot.run`, not from EAS
+`apps/mobile-updates` at `https://updates.openbot.run`, not from EAS
 Update. `expo-updates` is the client in the app.
 
 Version 1.4.8 and earlier binaries ask Expo's server and get no update. A binary cannot change its
@@ -899,7 +899,7 @@ other files stay for the next store version. See
 
 ### One-time setup of over-the-air updates
 
-1. The update server: see [its README](../mobile-updates/README.md#deployment).
+1. The update server: see its README.
 2. In GitHub repository settings, the `release-mobile-ota` environment has the deployment branches
    `main` and `mobile-hotfix/*`. Add required reviewers there if a second person must approve each
    publish.

@@ -26,8 +26,6 @@ export const messages = {
   "status.messaging.hostOnly": "רק מארח OpenBot יכול לענות על הבקשה הזו.",
   "status.messaging.filesSkipped": "חלק מהקבצים לא נשלחו: {names}.",
   "status.messaging.integrationsSection": "שילובים",
-  "status.messaging.telegramNotLinked":
-    "OpenBot לא מחובר לצ'אט הזה. כדי לחבר אותו, יש לפתוח את אפליקציית OpenBot, לעבור אל חנות ← אפליקציות ← Telegram ולבחור „הוספה לקבוצה” או „פתיחת צ'אט ישיר”.",
   "status.messaging.whatsappNoAgent": "עדיין אין סוכן שיכול לענות כאן. יש להוסיף את WhatsApp Orchestrator ב-OpenBot.",
   "status.messaging.whatsappApprovalMenu": "יש להשיב 1 לאישור או 2 לדחייה.",
   "status.messaging.whatsappStopMenu": "יש להשיב stop כדי לעצור.",

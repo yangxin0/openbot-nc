@@ -50,7 +50,6 @@ export default defineConfig({
     ],
     exclude: [
       ...configDefaults.exclude,
-      "apps/auth-api/**",
       "tests/visual/**",
       ".openbot-build/**",
       "**/.worktrees/**",

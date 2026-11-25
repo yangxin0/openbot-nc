@@ -38,10 +38,6 @@ body:
     attributes:
       label: Installation source
       options:
-        - App Store
-        - TestFlight
-        - Google Play
-        - APK from openbot.run
         - Built from source
         - Other
     validations:

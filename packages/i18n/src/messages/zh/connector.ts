@@ -65,8 +65,6 @@ export const messages = {
 
   "connector.statusUnknown": "未知",
   "connector.readFailed": "OpenBot 无法读取该连接的状态。",
-  "connector.slack.connect": "连接 Slack",
-  "connector.discord.connect": "连接 Discord",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description": "把一个 WhatsApp 号码关联到这台电脑。WhatsApp 调度助手会找到合适的助手来回答。",
   "connector.whatsapp.descriptionHost":

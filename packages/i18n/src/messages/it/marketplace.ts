@@ -22,8 +22,6 @@ export const messages = {
 
   "marketplace.plugins.missing": "Questo plugin non è nel catalogo di OpenBot.",
 
-  "marketplace.agents.skills": "Skill",
-  "marketplace.agents.routines": "Routine",
   "marketplace.agents.all": "Tutti gli agenti",
   "marketplace.skill.loading": "Caricamento skill",
   "marketplace.try.readFailed": "OpenBot non è riuscito a leggere le skill di questo agente. Riprova.",

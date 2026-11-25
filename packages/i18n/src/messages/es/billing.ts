@@ -2,13 +2,8 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/billing";
 
 export const messages = {
-  "billing.plan.starter": "Starter",
-  "billing.plan.standard": "Standard",
-  "billing.plan.pro": "Pro",
-  "billing.license.description": "Para trabajar en una empresa. No incluye un servidor.",
   "billing.license.trial.until": "Gratis hasta el {date}",
   "billing.license.starter.inUse": "{used} personas usan tus servidores. Starter es para 1 usuario.",
-  "billing.license.contact.action": "Contáctanos",
   "billing.license.change.more": { other: "Más de {count}" },
   "billing.license.change.custom": "A medida",
   "billing.license.change.customDescription": {
@@ -62,7 +57,4 @@ export const messages = {
   "billing.order.unit.monthExclVat": "al mes, sin IVA",
   "billing.order.unit.monthBilledYearlyExclVat": "al mes, facturado anualmente, sin IVA",
   "billing.order.unit.free": "para siempre",
-  "billing.order.cta.server": "Crear un servidor",
-  "billing.order.cta.license": "Comprar licencia",
-  "billing.order.cta.download": "Descargar",
 } as const satisfies PartialTranslation<typeof source>;

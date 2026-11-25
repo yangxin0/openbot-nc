@@ -58,7 +58,7 @@ Choose the smallest stack that covers the plan:
 | --- | --- |
 | Desktop renderer or main process | `bun run dev` |
 | Two clients: teams, invitations, sharing, Team API | `bun run dev:test-client` |
-| Browser client at `/app` or public web | `bun run dev:api` (add `bun run dev` when a desktop host is also necessary) |
+| Browser client at `/app` | `bun run test:relay-web-client`, or `bun run web-client:build` and a central server with `RELAY_WEB_CLIENT_DIR` (`docs/central-server.md`) |
 | iOS app | `bun run dev:mobile` |
 
 Rules:
@@ -117,11 +117,10 @@ respond.
 A provider turn uses the signed-in subscription. Send model turns only
 when the feature needs them, and keep the prompts short.
 
-For a harness test with an API key, use the Inception Labs key
-`INCEPTION_API_KEY` in `apps/auth-api/.env.dev` (OpenAI-compatible,
-`https://api.inceptionlabs.ai/v1`, models such as `mercury-3`). Load it with
-`bunx @dotenvx/dotenvx@2.38.2 run -f apps/auth-api/.env.dev -fk <main checkout>/.env.keys -- <command>`.
-Never print it. The token budget is small: ask the user before a benchmark
+For a harness test with an API key, ask the developer for an
+OpenAI-compatible key, such as `INCEPTION_API_KEY`
+(`https://api.inceptionlabs.ai/v1`, models such as `mercury-3`), and set it
+in the shell of the command. Never print it. The token budget is small: ask the user before a benchmark
 or a run of many turns.
 
 ## Step 4 — Clean up

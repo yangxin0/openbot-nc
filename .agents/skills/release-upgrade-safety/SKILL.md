@@ -7,11 +7,10 @@ description: Audit a pending OpenBot release for upgrade and data-loss hazards b
 
 Every hazard here is one an installed user pays for and you cannot take back. `openbot.db` is
 migrated in place with no backup, two dozen files under `userData` are rewritten by whichever build
-opens them last, a released Team API adapter is spoken by peers you will never update, and the
-account Worker's D1 migrations are applied before the Worker that needs them. A build that ships
+opens them last, and a released Team API adapter is spoken by peers you will never update. A build that ships
 past one of these does not fail on your machine; it fails on someone else's, once, permanently.
 
-Audit the diff since the last released tag against the eight gates below, then report a verdict.
+Audit the diff since the last released tag against the six gates below, then report a verdict.
 This runs *before* `docs/RELEASING.md`, which stays authoritative for the publish itself.
 
 ## What this skill does and does not do
@@ -38,9 +37,9 @@ the `Agent` call. In a harness that has no model choice, use a lower reasoning e
 
 | Tier | Claude Code | Tasks |
 | --- | --- | --- |
-| Strong | the session model | Step 1 residue, gates A, B, C and E, gate F when `electron-updater` moved, the Step 3 verdict |
+| Strong | the session model | Step 1 residue, gates A, B and C, gate F when `electron-updater` moved, the Step 3 verdict |
 | Medium | `sonnet` | gates D and G, gate F otherwise, Step 2b, the Step 2c failure reading, the translation wording review, the Discord announcement draft |
-| Small | `haiku` | gate H, the Step 2c start and wait, the `whats-new/<locale>.json` translations, mechanical `git grep` and file inventories |
+| Small | `haiku` | the Step 2c start and wait, the `whats-new/<locale>.json` translations, mechanical `git grep` and file inventories |
 
 - **Translations:** give each small-tier subagent a few locales, the English entry, and the
   [i18n.md terms](../../../docs/i18n.md#terms). Then run `bun scripts/whats-new-translations.ts <version>`
@@ -115,9 +114,9 @@ audit delegates a check to can be dismissed by the bucket its file lives in.**
 The rest of `docs/**`, `tools/**` and `src/renderer/stories/**` are not in the shipped app at all,
 which is a reason that covers every file in them. "Nothing looked interesting" is not.
 
-## Step 2 — the eight gates
+## Step 2 — the six gates
 
-Work through all eight. A gate no path triggered is reported as **not triggered** — never dropped
+Work through all six. A gate no path triggered is reported as **not triggered** — never dropped
 silently, because "I did not look" and "I looked and it was clean" are different verdicts and only
 one of them is a release gate.
 
@@ -141,10 +140,6 @@ a gate can be selected without opening anything:
   `packages/contracts/src/ipc-endpoints.ts` **or any of its mirrors** — `src/main/index.ts`,
   `src/main/ipc/`, `src/preload/index.ts`, `src/renderer/src/preview/mock-openbot.ts`. Deleting a
   handler or an `invoke` breaks a live channel without touching the list at all.
-- **E. Account Worker** → [gate-e-account-worker.md](references/gate-e-account-worker.md)
-  any change under `apps/auth-api/migrations/`, any non-UI file under `apps/auth-api/src/`, and the
-  four files that decide deploy order: `.github/workflows/ci.yml`, `scripts/deploy-auth-api.ts`,
-  `apps/auth-api/package.json`, `apps/auth-api/wrangler.jsonc`.
 - **F. The updater itself** → [gate-f-updater.md](references/gate-f-updater.md)
   `electron-builder.yml`, `src/main/update-service.ts`, `package.json` (including its dependencies),
   and the two files that enforce the gate at release time: `scripts/verify-update-artifacts.ts` and
@@ -152,16 +147,6 @@ a gate can be selected without opening anything:
   two, so omitting them makes the weakening read as "not triggered".
 - **G. Reverse states and the changelog** → [gate-g-reverse-states.md](references/gate-g-reverse-states.md)
   always triggered; no path exempts a release.
-- **H. Signal** — no reference file.
-  always triggered: an earlier release can have left Signal behind, so a range with no `remote/`
-  change does not prove that Signal is current. Signal is not deployed by CI or by the release
-  workflow. Read `commit` from `curl -fsS https://signal1.openbot.run/health/live` and
-  `curl -fsS https://signal2.openbot.run/health/live` (not `signal.openbot.run`, which reaches only the
-  entry machine); if a commit is missing, `unknown`, or not a commit in this repository, the verdict is
-  **needs a human**. Pass when `git diff --quiet <running commit> HEAD -- remote packages/contracts/src/signal-protocol`
-  succeeds for both commits. Otherwise the verdict is **deploy Signal from the new tag** before the tag is pushed
-  (`docs/RELEASING.md` preflight item 16); this is not a stop for the version bump. #1661 is the
-  failure this catches: v0.33.0 clients sent webhook routes to a Signal older than #1520.
 
 `references/surfaces.md` holds the exhaustive path inventory. Load it when a gate fires and you
 need the exact file, not before.

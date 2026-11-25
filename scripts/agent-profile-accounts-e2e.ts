@@ -657,7 +657,7 @@ try {
   await runCauseEffect(accounts.setPool("codex", null));
 
   const photoSource = join(root, "photo.png");
-  await copyFile(resolve(import.meta.dirname, "../apps/auth-api/public/apple-touch-icon.png"), photoSource);
+  await copyFile(resolve(import.meta.dirname, "../apps/browser-extension/public/icons/icon-128.png"), photoSource);
   const photo = await callTool("set photo", coordinator.id, "update_profile", {
     agentId: coordinator.id,
     avatarPath: photoSource,

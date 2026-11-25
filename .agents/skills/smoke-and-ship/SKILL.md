@@ -74,7 +74,7 @@ Run the `ship` skill. Use the smoke result again:
   from Step 1 when they show before and after. Take only the missing ones.
 - Put the smoke table in the PR `## Verification` section. For each
   `pass (flaky)` item, add the evidence of the first failure.
-- When a Gate 1 fix, a NorbiAI fix, or a CI fix changes user-visible
+- When a Gate 1 fix or a CI fix changes user-visible
   behavior, smoke the affected items again before the push. When an item
   fails, use Step 2a.
 

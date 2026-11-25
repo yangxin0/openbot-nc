@@ -25,8 +25,6 @@ export const messages = defineMessages("status.messaging", {
   "status.messaging.hostOnly": "Only the OpenBot host can answer this request.",
   "status.messaging.filesSkipped": "Some files were not sent: {names}.",
   "status.messaging.integrationsSection": "Integrations",
-  "status.messaging.telegramNotLinked":
-    "OpenBot is not connected to this chat. To connect it, open the OpenBot app, go to Marketplace → Apps → Telegram, and select Add to a group or Open a direct chat.",
   "status.messaging.whatsappNoAgent": "No agent can answer here yet. Add the WhatsApp Orchestrator in OpenBot.",
   "status.messaging.whatsappApprovalMenu": "Reply 1 to approve or 2 to deny.",
   "status.messaging.whatsappStopMenu": "Reply stop to stop.",

@@ -9,9 +9,7 @@ const TYPE_INPUT = /\.(ts|tsx|mts|cts|js|mjs|cjs)$|(^|\/)(tsconfig[^/]*\.json|pa
 const SELECTS_ALL = /^(tsconfig[^/]*\.json|package\.json|bun\.lock)$/;
 
 const RELATIVE_IMPORTS: Record<string, string[]> = {
-  "typecheck:node": ["apps/mobile/src", "apps/auth-api/src", "apps/mobile-updates/src"],
-  "typecheck:updates": ["scripts/mobile-ota-lib.ts"],
-  "typecheck:api": ["apps/site-router/src"],
+  "typecheck:node": ["apps/mobile/src"],
   "typecheck:renderer": ["src/preload/clipboard-files.ts"],
   "typecheck:storybook": ["src/renderer/src"],
 };

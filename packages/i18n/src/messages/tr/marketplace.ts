@@ -22,8 +22,6 @@ export const messages = {
 
   "marketplace.plugins.missing": "Bu eklenti OpenBot kataloğunda yok.",
 
-  "marketplace.agents.skills": "Beceriler",
-  "marketplace.agents.routines": "Rutinler",
   "marketplace.agents.all": "Tüm ajanlar",
   "marketplace.skill.loading": "Beceri yükleniyor",
   "marketplace.try.readFailed": "OpenBot bu ajanın becerilerini okuyamadı. Tekrar deneyin.",

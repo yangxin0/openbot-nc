@@ -66,8 +66,6 @@ export const messages = defineMessages("connector", {
   "connector.statusUnknown": "Unknown",
   "connector.readFailed": "OpenBot could not read the state of this connection.",
 
-  "connector.slack.connect": "Connect Slack",
-  "connector.discord.connect": "Connect Discord",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
     "Link a WhatsApp number to this computer. The WhatsApp Orchestrator asks the right agent and answers.",

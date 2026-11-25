@@ -20,37 +20,47 @@ interface Hit {
 }
 
 const ROOT = resolve(import.meta.dirname, "..");
-const SCOPES = [
-  "src",
-  "packages",
-  "resources",
-  "electron-builder.yml",
-  "scripts/hosting",
-  "remote",
-  "apps/browser-extension",
-  "apps/mobile",
+const EXCLUDED = [
+  ":(glob,exclude)**/*.md",
+  ":(glob,exclude)changelog.d/**",
+  ":(glob,exclude)apps/mobile/changelog.d/**",
+  ":(exclude)LICENSE",
+  ":(exclude)NOTICE",
+  ":(glob,exclude)**/bun.lock",
+  ":(glob,exclude)**/package-lock.json",
+  ":(glob,exclude)**/yarn.lock",
+  ":(glob,exclude)packages/contracts/src/team-protocol/fixtures/**",
+  ":(glob,exclude)src/renderer/src/vendor/**",
+  ":(glob,exclude)packages/whatsapp/vendor/**",
+  ":(glob,exclude)marketplace/production-catalog/bundles/**",
 ];
-const EXCLUDED = [":(glob,exclude)apps/mobile/**/*.md"];
 const VENDOR = /openbot\.run|nightly-labs|openpanel/giu;
 
 const IGNORED_SPELLINGS: readonly IgnoredSpelling[] = [
   { text: "openPanel", reason: "camelCase identifiers for the verb phrase open panel, such as openPanelThread" },
 ];
 
-const ACCOUNT_SERVICE =
-  "apps/auth-api still imports it; no desktop or phone code calls its vendor URL builders. Deleted with that app.";
-const SIGNAL_SERVICE =
-  "deployment of the vendor Signal service for WebRTC peers; deleted with WebRTC and the vendor infrastructure.";
-const HOSTED_SERVER_OPERATIONS =
-  "vendor hosted-server pool operations for apps/auth-api; deleted with the vendor infrastructure.";
+const VENDOR_URL_BUILDERS =
+  "vendor link and contact builders that desktop, team client or phone code still imports; Stage 3 and Stage 4 remove those callers.";
+const RELEASE_SOURCE =
+  "names the vendor GitHub repository or container image as the release source; the fork's own repository and image are a developer decision (update feeds).";
+const WEBRTC = "live smoke test of the vendor Signal service for WebRTC peers; deleted with the WebRTC code (step E2).";
 
 const ALLOWED_PATHS: readonly AllowedPath[] = [
-  { path: "packages/contracts/src/invite-links.ts", reason: ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/plugin-links.ts", reason: ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/marketplace-links.ts", reason: ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/agent-template-links.ts", reason: ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/feedback.ts", reason: ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/hosted-servers.ts", reason: ACCOUNT_SERVICE },
+  { path: "scripts/check-vendor-endpoints.ts", reason: "the vendor pattern of this check." },
+  {
+    path: "scripts/relay-extension-e2e.ts",
+    reason: "the pattern that fails the test when the built extension names a vendor host.",
+  },
+  {
+    path: "scripts/mcp-sign-in-client-metadata-document-e2e.ts",
+    reason: "fixture: an MCP OAuth record that an older release stored with the vendor client metadata address.",
+  },
+  { path: "packages/contracts/src/invite-links.ts", reason: VENDOR_URL_BUILDERS },
+  { path: "packages/contracts/src/plugin-links.ts", reason: VENDOR_URL_BUILDERS },
+  { path: "packages/contracts/src/agent-template-links.ts", reason: VENDOR_URL_BUILDERS },
+  { path: "packages/contracts/src/feedback.ts", reason: VENDOR_URL_BUILDERS },
+  { path: "packages/contracts/src/hosted-servers.ts", reason: VENDOR_URL_BUILDERS },
   {
     path: "packages/contracts/src/ipc-agent-import.ts",
     reason: "HERMES_SKILL_COMMAND is shown only by the apps/mobile import guide; the desktop guide does not show it.",
@@ -60,10 +70,6 @@ const ALLOWED_PATHS: readonly AllowedPath[] = [
     reason: "apps/mobile catalog; the desktop does not render these keys.",
   },
   {
-    path: "packages/ui/src/features/social-follow/social-networks.ts",
-    reason: "used only by the apps/auth-api landing footer.",
-  },
-  {
     path: "src/renderer/src/features/updates/whats-new-releases.json",
     reason: "released What's new notes; history text that only the release process changes, not an address.",
   },
@@ -71,17 +77,17 @@ const ALLOWED_PATHS: readonly AllowedPath[] = [
     path: "src/renderer/src/features/updates/whats-new/*.json",
     reason: "translations of released What's new notes; history text, not an address.",
   },
-  { path: "remote/.env.example", reason: SIGNAL_SERVICE },
-  { path: "remote/.env.production", reason: SIGNAL_SERVICE },
-  { path: "remote/README.md", reason: SIGNAL_SERVICE },
-  { path: "remote/compose.yaml", reason: SIGNAL_SERVICE },
-  { path: "remote/api/src/capacity-report.ts", reason: SIGNAL_SERVICE },
-  { path: "remote/nginx/**", reason: SIGNAL_SERVICE },
-  { path: "scripts/hosting/leaseweb-pool.ts", reason: HOSTED_SERVER_OPERATIONS },
-  { path: "scripts/hosting/leaseweb-bootstrap-e2e.ts", reason: HOSTED_SERVER_OPERATIONS },
-  { path: "scripts/hosting/pool-archive-e2e.ts", reason: HOSTED_SERVER_OPERATIONS },
-  { path: "scripts/hosting/release-boat-template.sh", reason: HOSTED_SERVER_OPERATIONS },
-  { path: "scripts/hosting/setup-account-server.ts", reason: HOSTED_SERVER_OPERATIONS },
+  { path: "scripts/team-webrtc-live-smoke.mjs", reason: WEBRTC },
+  { path: "package.json", reason: RELEASE_SOURCE },
+  { path: "nix/package.nix", reason: RELEASE_SOURCE },
+  { path: "docker/Dockerfile", reason: RELEASE_SOURCE },
+  { path: "docker/compose.yaml", reason: RELEASE_SOURCE },
+  { path: "docker/instances/compose.yaml", reason: RELEASE_SOURCE },
+  { path: "docker/umbrel/openbot/*", reason: RELEASE_SOURCE },
+  { path: "scripts/umbrel-app.ts", reason: RELEASE_SOURCE },
+  { path: "scripts/host-manager-macos.ts", reason: RELEASE_SOURCE },
+  { path: "scripts/hermes-server-e2e.ts", reason: RELEASE_SOURCE },
+  { path: "scripts/instance-backup-e2e.ts", reason: RELEASE_SOURCE },
 ];
 
 const logger = createOpenBotLogger("check-vendor-endpoints");
@@ -104,7 +110,7 @@ const allowed = ALLOWED_PATHS.map((entry) => ({ ...entry, expression: globExpres
 function scopedFiles(): string[] {
   const output = execFileSync(
     "git",
-    ["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", ...SCOPES, ...EXCLUDED],
+    ["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", ".", ...EXCLUDED],
     { cwd: ROOT, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 },
   );
   return [...new Set(output.split("\0").filter(Boolean))].sort();

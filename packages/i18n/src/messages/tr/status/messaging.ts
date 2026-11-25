@@ -26,8 +26,6 @@ export const messages = {
   "status.messaging.hostOnly": "Bu isteği yalnızca OpenBot ana makinesi yanıtlayabilir.",
   "status.messaging.filesSkipped": "Bazı dosyalar gönderilmedi: {names}.",
   "status.messaging.integrationsSection": "Entegrasyonlar",
-  "status.messaging.telegramNotLinked":
-    'OpenBot bu sohbete bağlı değil. Bağlamak için OpenBot uygulamasını açın, Pazaryeri → Uygulamalar → Telegram\'a gidin ve "Bir gruba ekle" veya "Doğrudan sohbet aç" seçeneğini seçin.',
   "status.messaging.whatsappNoAgent":
     "Henüz burada yanıt verebilecek bir ajan yok. OpenBot'ta WhatsApp Düzenleyicisini ekleyin.",
   "status.messaging.whatsappApprovalMenu": "Onaylamak için 1, reddetmek için 2 yazın.",

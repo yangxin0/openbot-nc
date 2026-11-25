@@ -20,8 +20,6 @@ export const messages = {
   "marketplace.description.apps": "에이전트가 사용하는 도구와 서비스를 연결하세요.",
   "marketplace.description.skills": "에이전트에게 작업이나 도구 사용법을 알려 주는 지침입니다.",
   "marketplace.plugins.missing": "이 플러그인은 OpenBot 카탈로그에 없어요.",
-  "marketplace.agents.skills": "스킬",
-  "marketplace.agents.routines": "루틴",
   "marketplace.agents.all": "모든 에이전트",
   "marketplace.skill.loading": "스킬 불러오는 중",
   "marketplace.try.readFailed": "OpenBot이 이 에이전트의 스킬을 읽지 못했어요. 다시 시도해 주세요.",

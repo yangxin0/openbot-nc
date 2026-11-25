@@ -78,8 +78,6 @@ export const messages = {
   "connector.dangerZone": "Zona de peligro",
   "connector.statusUnknown": "Desconocido",
   "connector.readFailed": "OpenBot no pudo leer el estado de esta conexión.",
-  "connector.slack.connect": "Conectar Slack",
-  "connector.discord.connect": "Conectar Discord",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
     "Vincula un número de WhatsApp a este equipo. El Orquestador de WhatsApp consulta al agente adecuado y responde.",

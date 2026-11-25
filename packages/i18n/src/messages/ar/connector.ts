@@ -88,8 +88,6 @@ export const messages = {
   "connector.statusUnknown": "غير معروف",
   "connector.readFailed": "تعذّر على OpenBot قراءة حالة هذا الاتصال.",
 
-  "connector.slack.connect": "ربط Slack",
-  "connector.discord.connect": "ربط Discord",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description": "اربط رقم WhatsApp بهذا الحاسوب. يسأل WhatsApp Orchestrator الوكيل المناسب ويجيب.",
   "connector.whatsapp.descriptionHost":

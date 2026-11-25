@@ -24,7 +24,7 @@ self-hosted account service with its own keys. See
 
 - A Cloudflare account with Workers, D1 and R2, and a domain on Cloudflare.
 - A Linux server with Docker Engine, Docker Compose and a static public IPv4 address. See the
-  [Signal production requirements](../remote/README.md#production-requirements) for ports and DNS.
+  Signal production requirements for ports and DNS.
 - An SMTP account that accepts TLS on port 465. Sign-in sends a one-time code by email.
 - A clone of the OpenBot release that you run, and [Bun](https://bun.sh).
 
@@ -113,7 +113,7 @@ Keep the private JWK secret. With it, a person can open each host that uses your
      `TELEGRAM_*` values empty.
 
    If a reverse proxy already uses port 443, also set the values in
-   [the reverse proxy notes](../remote/README.md#production-requirements).
+   the reverse proxy notes.
 
 2. Start the services and check Signal:
 

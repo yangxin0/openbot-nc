@@ -26,8 +26,6 @@ export const messages = {
   "status.messaging.hostOnly": "Nur der OpenBot-Host kann diese Anfrage beantworten.",
   "status.messaging.filesSkipped": "Einige Dateien wurden nicht gesendet: {names}.",
   "status.messaging.integrationsSection": "Integrationen",
-  "status.messaging.telegramNotLinked":
-    "OpenBot ist nicht mit diesem Chat verbunden. Öffne zum Verbinden die OpenBot-App, gehe zu Marketplace → Apps → Telegram und wähle „Zu Gruppe hinzufügen“ oder „Direkten Chat öffnen“.",
   "status.messaging.whatsappNoAgent":
     "Hier kann noch kein Agent antworten. Füge den WhatsApp-Orchestrator in OpenBot hinzu.",
   "status.messaging.whatsappApprovalMenu": "Antworte 1 zum Genehmigen oder 2 zum Ablehnen.",

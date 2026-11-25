@@ -11,7 +11,13 @@ type NixSources = typeof NixSources.Type;
 const decodePackageJson = Schema.decodeUnknownSync(Schema.fromJsonString(Schema.Struct({ version: Schema.String })));
 const decodeSources = Schema.decodeUnknownSync(Schema.fromJsonString(NixSources));
 
-const repository = process.env.GITHUB_REPOSITORY ?? "nightly-labs/openbot";
+function releaseRepository(): string {
+  const repository = process.env.GITHUB_REPOSITORY;
+  if (!repository) throw new Error("Set GITHUB_REPOSITORY to the owner/name of the repository that has the releases.");
+  return repository;
+}
+
+const repository = releaseRepository();
 const root = resolve(import.meta.dir, "..");
 const sourcesPath = resolve(root, "nix/sources.json");
 

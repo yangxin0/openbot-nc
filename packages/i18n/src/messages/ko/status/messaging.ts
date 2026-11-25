@@ -27,8 +27,6 @@ export const messages = {
   "status.messaging.hostOnly": "OpenBot 호스트에서만 이 요청에 답변할 수 있어요.",
   "status.messaging.filesSkipped": "일부 파일을 보내지 못했어요: {names}.",
   "status.messaging.integrationsSection": "연동",
-  "status.messaging.telegramNotLinked":
-    "OpenBot이 이 채팅에 연결되어 있지 않아요. 연결하려면 OpenBot 앱을 열고 마켓플레이스 → 앱 → Telegram에서 '그룹에 추가' 또는 '1:1 채팅 열기'를 선택하세요.",
   "status.messaging.whatsappNoAgent":
     "아직 여기서 답변할 수 있는 에이전트가 없어요. OpenBot에서 WhatsApp Orchestrator를 추가하세요.",
   "status.messaging.whatsappApprovalMenu": "승인하려면 1, 거부하려면 2로 답장하세요.",

@@ -13,12 +13,9 @@ STATE=/run/openbot-nc-update.state
 UNIT_DIRECTORY=/etc/systemd/system
 REQUEST_UNITS=(openbot-nc-update-request.path openbot-nc-update-request.service)
 UNITS=(openbot-nc.service openbot-nc-update.service openbot-nc-update.timer openbot-nc-update-apply.service "${REQUEST_UNITS[@]}")
-BOAT_USER=user
-BOAT_PRE_STOP=/home/$BOAT_USER/.boat/pre-stop
-BOAT_IGNORE=/home/$BOAT_USER/.boatignore
 START_LOOP_STATUS=78
 SAFE_MODE_MARKER=$REQUESTS/server-safe-mode
-RELEASE_FILES=(packages.txt optional-packages.txt openbot-hosted.apparmor openbot-boat-pre-stop "${HOSTED_FILES[@]}" "${UNITS[@]/#openbot-nc/openbot}")
+RELEASE_FILES=(packages.txt optional-packages.txt openbot-hosted.apparmor "${HOSTED_FILES[@]}" "${UNITS[@]/#openbot-nc/openbot}")
 
 fail() {
   echo "$*" >&2
@@ -263,41 +260,11 @@ install_hosting() {
   if self_hosted; then
     ln -sfn "$INSTALL/hosted/openbot" /usr/local/bin/openbot-nc
   fi
-  install_pre_stop "$source" || echo "The boat pre-stop hook is not installed." >&2
-  install_boat_ignore || echo "The boat ignore file is not installed." >&2
   remove_lazy_harnesses || echo "The install-on-first-run agent commands of boat are not removed." >&2
 }
 
 self_hosted() {
   [ -r "$INSTALL/hosted/mode" ] && [ "$(<"$INSTALL/hosted/mode")" = self ]
-}
-
-install_pre_stop() {
-  local source=$1/openbot-boat-pre-stop
-  if self_hosted || [ ! -f "$source" ] || ! id "$BOAT_USER" >/dev/null 2>&1; then return 0; fi
-  if [ -L "$BOAT_PRE_STOP" ] || { [ -e "$BOAT_PRE_STOP" ] && [ ! -f "$BOAT_PRE_STOP" ]; } ||
-    { [ -f "$BOAT_PRE_STOP" ] && ! runuser -u "$BOAT_USER" -- grep -q '^# openbot-boat-pre-stop:' "$BOAT_PRE_STOP"; }; then
-    echo "$BOAT_PRE_STOP is not from OpenBot. It stays, and OpenBot is not stopped before a disk save." >&2
-    return 0
-  fi
-  runuser -u "$BOAT_USER" -- cmp -s "$source" "$BOAT_PRE_STOP" 2>/dev/null && return 0
-  runuser -u "$BOAT_USER" -- install -D -m 0755 "$source" "${BOAT_PRE_STOP%/*}/.pre-stop.new"
-  runuser -u "$BOAT_USER" -- mv -f "${BOAT_PRE_STOP%/*}/.pre-stop.new" "$BOAT_PRE_STOP"
-}
-
-install_boat_ignore() {
-  local marker='# openbot-boatignore: installed by openbot-hosted-update. Changes to this file are replaced.'
-  local content
-  if self_hosted || ! id "$BOAT_USER" >/dev/null 2>&1; then return 0; fi
-  content=$(printf '%s\n' "$marker" '/.npm/_cacache/')
-  if [ -L "$BOAT_IGNORE" ] || { [ -e "$BOAT_IGNORE" ] && [ ! -f "$BOAT_IGNORE" ]; } ||
-    { [ -f "$BOAT_IGNORE" ] && ! runuser -u "$BOAT_USER" -- grep -qxF "$marker" "$BOAT_IGNORE"; }; then
-    echo "$BOAT_IGNORE is not from OpenBot. It stays." >&2
-    return 0
-  fi
-  [ -f "$BOAT_IGNORE" ] && [ "$(runuser -u "$BOAT_USER" -- cat "$BOAT_IGNORE")" = "$content" ] && return 0
-  printf '%s\n' "$content" | runuser -u "$BOAT_USER" -- tee "${BOAT_IGNORE%/*}/.boatignore.new" >/dev/null
-  runuser -u "$BOAT_USER" -- mv -f "${BOAT_IGNORE%/*}/.boatignore.new" "$BOAT_IGNORE"
 }
 
 remove_lazy_harnesses() {
@@ -408,8 +375,6 @@ trigger() {
     systemctl daemon-reload
     systemctl enable --quiet openbot-nc-update-request.path
   fi
-  install_pre_stop "$source" || echo "The boat pre-stop hook is not installed." >&2
-  install_boat_ignore || echo "The boat ignore file is not installed." >&2
   remove_lazy_harnesses || echo "The install-on-first-run agent commands of boat are not removed." >&2
   if command -v apparmor_parser >/dev/null && [ -d /sys/kernel/security/apparmor ]; then
     allow_sandbox_capabilities || echo "The AppArmor rule for the Claude sandbox is not installed." >&2

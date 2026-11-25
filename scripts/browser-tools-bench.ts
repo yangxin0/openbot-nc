@@ -11,7 +11,6 @@ import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 import { type Browser, chromium, type Page } from "playwright-core";
 import { developmentInstanceIdForWorktree, developmentUserDataName } from "../src/main/development-profile";
 import { LessonCalendar, TARGET_LESSON } from "./browser-lesson-calendar-fixture";
-import { ensureBenchAuthApi, signInBenchAccount } from "./dev-automation/bench-auth";
 import { type BenchApp, launchBenchApp } from "./dev-automation/bench-launch";
 import { verifyBrowserOwnership } from "./dev-automation/cdp-client";
 import { resolveDevelopmentAppDataRoot } from "./development-state-paths";
@@ -877,7 +876,6 @@ async function connect(app: BenchApp): Promise<{ browser: Browser; page: Page }>
   await waitFor("the agent list", READY_TIMEOUT_MS, () =>
     page.evaluate<number>("window.openbot.agent.listAgents().then((agents) => agents.length)"),
   );
-  await signInBenchAccount(page, logger);
   return { browser, page };
 }
 
@@ -1286,12 +1284,10 @@ async function main(): Promise<void> {
   }
 
   await resetProfile();
-  const authApi = await ensureBenchAuthApi(PROJECT_ROOT, OUTPUT_ROOT, logger);
   const app = await launchBenchApp({
     projectRoot: PROJECT_ROOT,
     instanceId: INSTANCE_ID,
     logger,
-    environment: { OPENBOT_AUTH_API_URL: authApi.url },
     logPath: join(OUTPUT_ROOT, "app.log"),
   });
   const rows: RunRow[] = [];
@@ -1332,7 +1328,6 @@ async function main(): Promise<void> {
     await browser?.close().catch(() => undefined);
     if (variants.some((variant) => variant.id === "D")) await stopHarnessDaemon();
     await app.stop();
-    await authApi.stop();
     if (lessonCalendarServer.listening) {
       lessonCalendarServer.closeAllConnections();
       await new Promise<void>((resolveClose) => lessonCalendarServer.close(() => resolveClose()));

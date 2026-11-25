@@ -70,8 +70,6 @@ export const messages = {
   "connector.statusUnknown": "不明",
   "connector.readFailed": "OpenBot はこの接続の状態を読み取れませんでした。",
 
-  "connector.slack.connect": "Slack を接続",
-  "connector.discord.connect": "Discord を接続",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
     "WhatsApp の番号をこのコンピューターにリンクします。WhatsApp Orchestrator が適切なエージェントに依頼して回答します。",

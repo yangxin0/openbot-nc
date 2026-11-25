@@ -27,8 +27,6 @@ export const messages = {
   "status.messaging.hostOnly": "このリクエストに回答できるのは OpenBot のホストだけです。",
   "status.messaging.filesSkipped": "一部のファイルは送信されませんでした: {names}。",
   "status.messaging.integrationsSection": "連携",
-  "status.messaging.telegramNotLinked":
-    "OpenBot はこのチャットに接続されていません。接続するには、OpenBot アプリを開き、マーケットプレイス → アプリ → Telegram で「グループに追加」または「ダイレクトチャットを開く」を選択してください。",
   "status.messaging.whatsappNoAgent":
     "ここで回答できるエージェントはまだいません。OpenBot で WhatsApp Orchestrator を追加してください。",
   "status.messaging.whatsappApprovalMenu": "承認する場合は 1、拒否する場合は 2 と返信してください。",

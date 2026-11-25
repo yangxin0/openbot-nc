@@ -22,8 +22,6 @@ export const messages = {
 
   "marketplace.plugins.missing": "התוסף הזה אינו בקטלוג של OpenBot.",
 
-  "marketplace.agents.skills": "מיומנויות",
-  "marketplace.agents.routines": "שגרות",
   "marketplace.agents.all": "כל הסוכנים",
   "marketplace.skill.loading": "טוען מיומנות",
   "marketplace.try.readFailed": "OpenBot לא הצליח לקרוא את המיומנויות של הסוכן הזה. יש לנסות שוב.",

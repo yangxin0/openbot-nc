@@ -19,7 +19,6 @@ const HOSTED_SCRIPTS = [
   "openbot-hosted-env",
   "openbot-hosted-update",
   "openbot",
-  "openbot-boat-pre-stop",
   "openbot-server-setup",
 ];
 const HOSTED_UNITS = [

@@ -64,8 +64,6 @@ export const messages = {
   "connector.statusUnknown": "알 수 없음",
   "connector.readFailed": "OpenBot이 이 연결의 상태를 읽지 못했어요.",
 
-  "connector.slack.connect": "Slack 연결",
-  "connector.discord.connect": "Discord 연결",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
     "WhatsApp 번호를 이 컴퓨터에 연결하세요. WhatsApp 오케스트레이터가 알맞은 에이전트에게 물어보고 답해요.",

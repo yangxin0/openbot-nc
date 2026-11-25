@@ -8,8 +8,6 @@ services:
       args:
         OPENBOT_SOURCE_COMMIT: ${OPENBOT_SOURCE_COMMIT:-unknown}
     restart: unless-stopped
-    entrypoint: ["bun", "src/relay/main.ts"]
-    command: ["serve"]
     environment:
       RELAY_HOST: 0.0.0.0
       RELAY_PORT: 8443
@@ -23,11 +21,13 @@ services:
       RELAY_METRICS_TOKEN: ${RELAY_METRICS_TOKEN:-}
       RELAY_TRUST_PROXY: ${RELAY_TRUST_PROXY:-false}
       RELAY_MAX_SOCKETS_PER_IP: ${RELAY_MAX_SOCKETS_PER_IP:-128}
+      RELAY_WEB_CLIENT_DIR: ${RELAY_WEB_CLIENT_DIR:+/web-client}
     ports:
       - "${RELAY_BIND_ADDRESS:-0.0.0.0}:${RELAY_PUBLIC_PORT:-443}:8443/tcp"
       - "127.0.0.1:9643:8080/tcp"
     volumes:
       - relay-data:/data
+      - ${RELAY_WEB_CLIENT_DIR:-relay-web-client}:/web-client:ro
     read_only: true
     tmpfs:
       - /tmp:size=16m,mode=1777
@@ -36,3 +36,4 @@ services:
 
 volumes:
   relay-data:
+  relay-web-client:

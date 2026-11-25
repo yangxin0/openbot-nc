@@ -81,8 +81,6 @@ export const messages = {
   "connector.statusUnknown": "Nieznany",
   "connector.readFailed": "Nie udało się odczytać stanu tego połączenia.",
 
-  "connector.slack.connect": "Połącz Slack",
-  "connector.discord.connect": "Połącz Discord",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
     "Połącz numer WhatsApp z tym komputerem. WhatsApp Orchestrator pyta odpowiedniego agenta i odpowiada.",

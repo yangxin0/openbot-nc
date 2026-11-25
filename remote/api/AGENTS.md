@@ -1,51 +1,23 @@
 # `remote/api`
 
-The Remote API is the Signal service. It verifies remote tickets, issues resume tokens and TURN
-credentials, and relays WebRTC signalling between peers. It does not carry team chats, files, or
-commands. The exceptions are Slack, Discord, Telegram and GitHub. `POST /v1/slack/events` checks the OpenBot Slack
-app's signature, reads only the app ID (`api_app_id`), the workspace ID (`team_id`), the
-`url_verification` challenge, and the event's `type`, `channel_type`, `thread_ts`, `bot_id` and
-`subtype` (to know whether it addresses OpenBot, never the text), and passes the body to the `ingress`
-socket of the workspace's host in transit. `POST /v1/telegram/updates/<bot ID>` checks the bot's secret header, reads only the chat ID,
-the callback query ID, a `/start <code>` link code, and the chat type, the entity types and whether the
-message replies, is in a thread, or renames or leaves the chat (to know whether it can address
-OpenBot, never the text), and passes the body to the `ingress` socket of
-the chat's host in the same way. When the account service answers that no host has the chat, a
-direct message, a mention or a command gets one notice from Signal that the chat is not linked, at
-most once a day for each chat (`status.messaging.telegramNotLinked`). `POST /v1/github/events` checks the OpenBot GitHub App's signature,
-reads only the installation ID and the repository ID, and passes the body to the `ingress` socket of
-every host whose GitHub route names the repository. Do not log these bodies, and do not read more of them. The one store
-is `src/ingress-queue.ts`: for a hosted server that sleeps, and for the `/start` update of a Telegram
-chat that was just linked to a host, it keeps an event in memory only, sealed to the host's queue key
-before it is queued, for at most 10 minutes. Never keep a body that is not
-sealed, and never write the queue to disk. Hosts
-trust a delivery because Signal checked the signature or the secret; never remove those checks.
+This is the central relay server (`src/relay/`). It ends TLS, verifies each member certificate and a
+signed proof of its private key, proves its own identity with a certificate of the team root, and
+passes opaque bytes between two members of one team. It does not store or log the bytes of a
+connection. See [docs/central-server.md](../../docs/central-server.md).
 
-Signal holds the Telegram bot tokens: a host that had one could read and post in every chat. Never
-put a bot token in a frame, a log, an error message or a result. A host calls the Bot API only
-through `telegram-call`, and `src/protocol.ts` accepts only the methods and the parameters of
-`TelegramCallParams`, with strict objects. Do not add a method or a key there without the same
-change in the contract. `src/signal-service.ts` allows a call only into a chat routed to that socket,
-and an answer only to a callback query delivered to it. A result has only the reduced fields of
-`TelegramCallResult`. Files go through short signed tokens (`TelegramFileTokens`); an upload token
-works once.
-
-Signal also holds the OpenBot Discord bot. `src/discord-gateway.ts` holds the bot token and the
-Gateway connection; `src/discord-events.ts` turns a Gateway event into a delivery for the `ingress`
-socket of the guild's host; `src/discord-api.ts` makes the typed Discord calls of `POST
-/v1/discord/api` for a host, only in the guilds routed to its socket. Never log the bot token, a
-`discord-session` token, an interaction token, a message's content or Discord's error text. Never
-let a host call Discord in a guild or channel that is not routed to its socket.
-
-- The message shapes come from `@openbot/contracts/signal-protocol`. `src/protocol.ts` only
-  re-exports them for the server. Change them there, and keep released messages compatible.
-- `src/tokens.ts` holds the secrets. Compare secrets in constant time (`timingSafeEqual`), and keep
-  the TTL limits. Never log a ticket, a token, a Slack, Discord, Telegram or GitHub route ticket, a request
-  or update body, a bot token, a file or upload token, a TURN credential, or a secret from
-  `src/config.ts`. Log only the error
-  message, as `src/app.ts` does.
-- This project uses Bun types. Keep them inside `remote/api`; root `scripts/**` and Electron main
-  use Node types. See [check design notes](../../docs/development-checks.md#check-coverage).
-- `remote/scripts/update.ts` recreates the live coturn container. Do not run it as a check.
-- `bun run test:signal` starts this service with throwaway secrets and checks the secret and
-  authentication rules above over real HTTP and WebSocket. CI runs it when `remote/` changes.
+- TLS: the server certificate is `<data>/tls/server.crt` and `server.key`, or `RELAY_TLS_CERT_PATH`
+  and `RELAY_TLS_KEY_PATH`. `RELAY_TLS_CLIENT_CERTIFICATES=required` also makes TLS refuse a socket
+  with no certificate of the root. The proof in the first message stays necessary in all modes.
+- CA files: `<data>/ca/` holds the root and the team authority keys, encrypted with
+  `RELAY_CA_PASSPHRASE` when it is set. Only the `ca` commands that sign read them; `serve` does not.
+  Keep the file permissions that `certificate-authority.ts` sets.
+- Server identity: `serve` refuses to start when the identity certificate is missing, expired, not
+  issued by the root, or does not name the host of `RELAY_PUBLIC_URL`. Do not weaken these checks or
+  the checks of a member certificate (issuer, team, validity, revocation, proof).
+- Never log, print or put in an error message a private key, a passphrase, an identity file, a
+  proof, a metrics token or the bytes of a connection. Compare secrets in constant time.
+- The wire messages come from `@openbot/contracts/relay-protocol`. Keep released messages compatible.
+- This project uses Bun types. Keep them inside `remote/api`; root `scripts/**` and Electron main use
+  Node types. See [check design notes](../../docs/development-checks.md#check-coverage).
+- `bun run test:relay` starts the real server process with a new root and checks these rules over
+  real TLS and WebSocket.

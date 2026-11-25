@@ -645,7 +645,7 @@ such as the SHA-512 or the size of a file.
 
 1. Push the tag. The release goes to 10% of the installs.
 2. Wait about one day. Then examine the release:
-   - Run the [release regression report](../.agents/skills/openpanel/SKILL.md#release-regression-report):
+   - Run the release regression report:
      `gh workflow run release-regression.yml`. It posts to the private Discord channel. It compares
      the two newest releases that each have 30 computers in the last 14 days. For some hours, a
      10% stage can have fewer. When the report says that there is nothing to compare, or it does not

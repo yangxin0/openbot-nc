@@ -155,24 +155,6 @@ untouched — they already spell the agent `agent` on both sides.
 `src/main/ipc-channel-coverage.test.ts` links main and preload statically. The mock is covered by
 `tsc` in both directions because it is annotated `: OpenBotDesktopApi`.
 
-## Account Worker
-
-| Path | Note |
-| --- | --- |
-| `apps/auth-api/migrations/` | `0001` to `0018`; applied **before** the new Worker deploys |
-| `apps/auth-api/src/routes/v1/`, `v2/` | the response shapes installed desktop builds keep reading forever |
-| `apps/auth-api/src/server/` | the handlers behind those routes |
-| `apps/auth-api/test/*-migration.test.ts` | `email-challenge-delivery-migration`, `marketplace-migration`, `mobile-auth-migration` |
-| `.github/workflows/ci.yml` | the CI deploy path: "Apply production D1 migrations" before the Worker deploy, one job |
-| `scripts/deploy-auth-api.ts` | the manual deploy path: remote D1 migrations, build, then `wrangler deploy` |
-| `apps/auth-api/package.json` | `deploy` and `deploy:test` — the entrypoints into that script |
-| `apps/auth-api/wrangler.jsonc` | the D1 binding and environments both paths deploy against |
-
-Two deploy paths, both ordered migrations-then-deploy. Neither one covers the other, and the
-deploy-race reasoning in gate E only holds while *both* keep that order.
-
-`auth:*` channels in `packages/contracts/src/ipc-endpoints.ts` are the desktop side of this contract.
-
 ## Updater and packaging
 
 | Path | Fields that matter |

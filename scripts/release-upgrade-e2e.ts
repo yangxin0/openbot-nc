@@ -34,7 +34,14 @@ declare global {
 }
 
 const logger = createOpenBotLogger("release-upgrade-e2e");
-const REPOSITORY = "nightly-labs/openbot";
+
+function releaseRepository(): string {
+  const repository = process.env.GITHUB_REPOSITORY;
+  if (!repository) throw new Error("Set GITHUB_REPOSITORY to the owner/name of the repository that has the releases.");
+  return repository;
+}
+
+const REPOSITORY = releaseRepository();
 const OUT = resolve(import.meta.dirname, "../.openbot-build/release-upgrade-e2e");
 const LAUNCH_LIMIT_MS = 5 * 60_000;
 const TURN_LIMIT_MS = 2 * 60_000;

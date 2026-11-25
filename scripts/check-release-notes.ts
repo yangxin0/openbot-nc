@@ -58,7 +58,7 @@ if (process.argv.includes("--ota")) {
         `The OTA release notes in ${MOBILE_CHANGELOG} are not ready:`,
         ...problems.map((problem) => `- ${problem}`),
         "",
-        "Write them with bun run mobile:release:ota. See apps/mobile/changelog.d/README.md#ota-updates.",
+        "See apps/mobile/changelog.d/README.md#ota-updates.",
         "",
       ].join("\n"),
     );

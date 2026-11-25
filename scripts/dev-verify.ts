@@ -4,7 +4,7 @@ import { extname, resolve } from "node:path";
 import { supportedBunVersion } from "./prepare-dev-environment";
 import { readScriptArguments } from "./script-arguments";
 
-export type VerificationSurface = "desktop" | "renderer" | "mobile" | "api" | "remote" | "contracts" | "docs";
+export type VerificationSurface = "desktop" | "renderer" | "mobile" | "remote" | "contracts" | "docs";
 
 export interface DevVerificationReport {
   ready: boolean;
@@ -48,7 +48,6 @@ export function surfacesForFiles(files: string[]): VerificationSurface[] {
       surfaces.add("desktop");
     }
     if (file.startsWith("apps/mobile/")) surfaces.add("mobile");
-    if (file.startsWith("apps/auth-api/") || file.startsWith("apps/site-router/")) surfaces.add("api");
     if (file.startsWith("remote/")) surfaces.add("remote");
     if (file.startsWith("packages/contracts/")) surfaces.add("contracts");
     if (file.startsWith("docs/") || file === "README.md") surfaces.add("docs");
@@ -73,16 +72,8 @@ function isDesktopTest(file: string): boolean {
   ].some((prefix) => file.startsWith(prefix));
 }
 
-function isDelegatedTest(file: string): boolean {
-  return file.startsWith("apps/auth-api/test/") && isTestFile(file);
-}
-
-function isSupportedTest(file: string): boolean {
-  return isDesktopTest(file) || isDelegatedTest(file);
-}
-
 export function suggestedTestsForFiles(files: string[], projectRoot = process.cwd()): string[] {
-  const tests = new Set(files.filter((file) => isSupportedTest(file) && existsSync(resolve(projectRoot, file))));
+  const tests = new Set(files.filter((file) => isDesktopTest(file) && existsSync(resolve(projectRoot, file))));
   for (const file of files) {
     if (isTestFile(file)) continue;
     const extension = extname(file);
@@ -90,7 +81,7 @@ export function suggestedTestsForFiles(files: string[], projectRoot = process.cw
     const stem = file.slice(0, -extension.length);
     for (const suffix of [`.test${extension}`, `.dom.test${extension}`]) {
       const candidate = `${stem}${suffix}`;
-      if (isSupportedTest(candidate) && existsSync(resolve(projectRoot, candidate))) tests.add(candidate);
+      if (isDesktopTest(candidate) && existsSync(resolve(projectRoot, candidate))) tests.add(candidate);
     }
   }
   return [...tests].sort();
@@ -110,31 +101,7 @@ function formatBunCommand(args: string[]): string {
 
 function testCommandArgs(tests: string[]): string[][] {
   const desktop = tests.filter(isDesktopTest);
-  const auth = tests.filter((file) => file.startsWith("apps/auth-api/test/"));
-  const commands: string[][] = [];
-  if (desktop.length > 0) commands.push(["run", "test:desktop", "--", ...desktop]);
-  if (auth.length > 0) {
-    commands.push([
-      "run",
-      "--cwd",
-      "apps/auth-api",
-      "test",
-      "--",
-      ...auth.map((file) => file.slice("apps/auth-api/".length)),
-    ]);
-  }
-  return commands;
-}
-
-function workspaceTestCommandArgs(files: string[], suggestedTests: string[]): string[][] {
-  const commands: string[][] = [];
-  if (
-    files.some((file) => file.startsWith("apps/auth-api/")) &&
-    !suggestedTests.some((file) => file.startsWith("apps/auth-api/"))
-  ) {
-    commands.push(["run", "test:api"]);
-  }
-  return commands;
+  return desktop.length > 0 ? [["run", "test:desktop", "--", ...desktop]] : [];
 }
 
 export function verificationCommands(
@@ -171,13 +138,15 @@ function createVerificationCommandPlan(
     runnableCommandArgs.push(args);
   }
 
-  for (const args of [["run", "lint"], ["run", "typecheck"], ...workspaceTestCommandArgs(files, suggestedTests)]) {
+  for (const args of [
+    ["run", "lint"],
+    ["run", "typecheck"],
+  ]) {
     const command = formatBunCommand(args);
     if (!commands.includes(command)) commands.push(command);
     if (!runnableCommandArgs.some((candidate) => formatBunCommand(candidate) === command))
       runnableCommandArgs.push(args);
   }
-  if (surfaces.includes("api")) commands.push("bun run check:api");
   if (surfaces.includes("renderer")) {
     commands.push("bun run check:ui");
     runnableCommandArgs.push(["run", "check:ui"]);

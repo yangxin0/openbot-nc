@@ -9,7 +9,6 @@ import { developmentInstanceIdForWorktree, developmentUserDataName } from "../..
 import { resolveDevelopmentAppDataRoot } from "../development-state-paths";
 import { readScriptArguments } from "../script-arguments";
 import { cleanupSeedOwnedTransfers, seedDevelopmentState } from "../seed-dev-state";
-import { ensureBenchAuthApi, signInBenchAccount } from "./bench-auth";
 import { checkBudget, parseBudget } from "./bench-budget";
 import { type BenchApp, launchBenchApp } from "./bench-launch";
 import { assertBenchBuild, PROBES_ENVIRONMENT, startProbes } from "./bench-probes";
@@ -133,7 +132,6 @@ async function connect(app: BenchApp): Promise<{ browser: Browser; page: Page }>
   const agentCount = await waitFor("the agent list", READY_TIMEOUT_MS, () =>
     page.evaluate<number>("window.openbot.agent.listAgents().then((agents) => agents.length)"),
   );
-  await signInBenchAccount(page, logger);
   if (agentCount > 0) {
     await page.locator(".sidebar-agent-item").first().waitFor({ state: "attached", timeout: READY_TIMEOUT_MS });
   }
@@ -208,7 +206,6 @@ async function writeActTrace(browser: Browser, page: Page, base: string, actDone
 
 interface RunOptions {
   label: string;
-  authApiUrl: string;
   cpuProfile: boolean;
   frames: boolean;
   callCounts: boolean;
@@ -246,7 +243,7 @@ async function writeFailureScreenshot(page: Page, path: string): Promise<void> {
 async function runOnce(
   scenario: Scenario,
   index: number,
-  { label, authApiUrl, cpuProfile, frames, callCounts, probes, solidCauses, mainProfile, traceAct }: RunOptions,
+  { label, cpuProfile, frames, callCounts, probes, solidCauses, mainProfile, traceAct }: RunOptions,
 ): Promise<RunResult> {
   await prepareProfile(scenario.seed);
   const scenarioEnvironment = scenario.prepare
@@ -260,7 +257,6 @@ async function runOnce(
     environment: {
       ...scenarioEnvironment,
       ...(probes ? PROBES_ENVIRONMENT : {}),
-      OPENBOT_AUTH_API_URL: authApiUrl,
     },
     logPath: join(BENCH_ROOT, "logs", `${label}-${scenario.id}-${index + 1}.log`),
   });
@@ -454,43 +450,37 @@ async function main(): Promise<void> {
   });
   await mkdir(BENCH_ROOT, { recursive: true });
   const jsonPath = join(BENCH_ROOT, `${label}.json`);
-  const authApi = await ensureBenchAuthApi(PROJECT_ROOT, BENCH_ROOT, logger);
   const failed: string[] = [];
-  try {
-    for (const scenario of selectScenarios(selector)) {
-      const results: RunResult[] = [];
-      try {
-        for (let index = 0; index < runs; index += 1) {
-          logger.info(`${scenario.id}: run ${index + 1} of ${runs}`);
-          results.push(
-            await runOnce(scenario, index, {
-              label,
-              authApiUrl: authApi.url,
-              cpuProfile,
-              frames,
-              callCounts,
-              probes,
-              solidCauses,
-              mainProfile,
-              traceAct,
-            }),
-          );
-        }
-      } catch (error) {
-        logger.error(`${scenario.id} failed: ${error instanceof Error ? error.message : String(error)}`);
-        failed.push(scenario.id);
-        continue;
+  for (const scenario of selectScenarios(selector)) {
+    const results: RunResult[] = [];
+    try {
+      for (let index = 0; index < runs; index += 1) {
+        logger.info(`${scenario.id}: run ${index + 1} of ${runs}`);
+        results.push(
+          await runOnce(scenario, index, {
+            label,
+            cpuProfile,
+            frames,
+            callCounts,
+            probes,
+            solidCauses,
+            mainProfile,
+            traceAct,
+          }),
+        );
       }
-      scenarios.push({
-        scenario: scenario.id,
-        description: scenario.description,
-        runs: results,
-        metrics: summarizeRuns(results),
-      });
-      await writeFile(jsonPath, `${JSON.stringify(report(), null, 2)}\n`);
+    } catch (error) {
+      logger.error(`${scenario.id} failed: ${error instanceof Error ? error.message : String(error)}`);
+      failed.push(scenario.id);
+      continue;
     }
-  } finally {
-    await authApi.stop();
+    scenarios.push({
+      scenario: scenario.id,
+      description: scenario.description,
+      runs: results,
+      metrics: summarizeRuns(results),
+    });
+    await writeFile(jsonPath, `${JSON.stringify(report(), null, 2)}\n`);
   }
   const markdown = renderReport(report());
   await writeFile(join(BENCH_ROOT, `${label}.md`), `${markdown}\n`);

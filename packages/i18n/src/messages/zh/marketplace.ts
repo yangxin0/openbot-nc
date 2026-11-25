@@ -22,8 +22,6 @@ export const messages = {
 
   "marketplace.plugins.missing": "OpenBot 目录中没有该插件。",
 
-  "marketplace.agents.skills": "技能",
-  "marketplace.agents.routines": "自动化任务",
   "marketplace.agents.all": "全部助手",
   "marketplace.skill.loading": "正在加载技能",
   "marketplace.try.readFailed": "OpenBot 无法读取该助手的技能，请重试。",

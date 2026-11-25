@@ -22,8 +22,6 @@ export const messages = {
 
   "marketplace.plugins.missing": "Этого плагина нет в каталоге OpenBot.",
 
-  "marketplace.agents.skills": "Навыки",
-  "marketplace.agents.routines": "Регулярные задачи",
   "marketplace.agents.all": "Все агенты",
   "marketplace.skill.loading": "Загрузка навыка",
   "marketplace.try.readFailed": "OpenBot не удалось прочитать навыки этого агента. Повторите попытку.",

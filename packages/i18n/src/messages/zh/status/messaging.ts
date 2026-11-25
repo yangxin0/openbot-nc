@@ -26,8 +26,6 @@ export const messages = {
   "status.messaging.hostOnly": "只有 OpenBot 主机可以回答该请求。",
   "status.messaging.filesSkipped": "部分文件未发送：{names}。",
   "status.messaging.integrationsSection": "集成",
-  "status.messaging.telegramNotLinked":
-    "OpenBot 未连接到该聊天。要连接，请打开 OpenBot 应用，前往 市场 → 应用 → Telegram，然后选择“加入群组”或“开启私聊”。",
   "status.messaging.whatsappNoAgent": "这里还没有助手能回答。请在 OpenBot 中添加 WhatsApp 调度助手。",
   "status.messaging.whatsappApprovalMenu": "回复 1 批准，回复 2 拒绝。",
   "status.messaging.whatsappStopMenu": "回复“stop”即可停止。",

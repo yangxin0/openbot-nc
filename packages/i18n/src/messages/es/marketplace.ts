@@ -20,8 +20,6 @@ export const messages = {
   "marketplace.description.apps": "Conecta las herramientas y los servicios con los que trabajan tus agentes.",
   "marketplace.description.skills": "Instrucciones que enseñan a un agente una tarea o una herramienta.",
   "marketplace.plugins.missing": "Este plugin no está en el catálogo de OpenBot.",
-  "marketplace.agents.skills": "Habilidades",
-  "marketplace.agents.routines": "Rutinas",
   "marketplace.agents.all": "Todos los agentes",
   "marketplace.skill.loading": "Cargando habilidad",
   "marketplace.try.readFailed": "OpenBot no pudo leer las habilidades de este agente. Inténtalo de nuevo.",

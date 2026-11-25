@@ -1,13 +1,8 @@
 import { defineMessages } from "../../message";
 
 export const messages = defineMessages("billing", {
-  "billing.plan.starter": "Starter",
-  "billing.plan.standard": "Standard",
-  "billing.plan.pro": "Pro",
-  "billing.license.description": "For work at a company. It does not include a server.",
   "billing.license.trial.until": "Free until {date}",
   "billing.license.starter.inUse": "{used} people use your servers. Starter is for 1 user.",
-  "billing.license.contact.action": "Contact us",
   "billing.license.change.more": { other: "More than {count}" },
   "billing.license.change.custom": "Custom",
   "billing.license.change.customDescription": {
@@ -61,8 +56,5 @@ export const messages = defineMessages("billing", {
   "billing.order.unit.monthExclVat": "a month, excl. VAT",
   "billing.order.unit.monthBilledYearlyExclVat": "a month, billed yearly, excl. VAT",
   "billing.order.unit.free": "forever",
-  "billing.order.cta.server": "Create a server",
-  "billing.order.cta.license": "Buy a license",
-  "billing.order.cta.download": "Download",
   "billing.credits.notEnough": "Not enough credits",
 });

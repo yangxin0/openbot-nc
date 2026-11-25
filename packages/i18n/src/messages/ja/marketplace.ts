@@ -22,8 +22,6 @@ export const messages = {
 
   "marketplace.plugins.missing": "このプラグインは OpenBot のカタログにありません。",
 
-  "marketplace.agents.skills": "スキル",
-  "marketplace.agents.routines": "ルーティン",
   "marketplace.agents.all": "すべてのエージェント",
   "marketplace.skill.loading": "スキルを読み込んでいます",
   "marketplace.try.readFailed": "OpenBot はこのエージェントのスキルを読み取れませんでした。もう一度お試しください。",

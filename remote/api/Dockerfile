@@ -2,7 +2,6 @@ FROM oven/bun:1.4.2-alpine AS dependencies
 WORKDIR /app
 COPY package.json bun.lock ./
 COPY patches ./patches
-COPY apps/auth-api/package.json ./apps/auth-api/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/brand/package.json ./packages/brand/package.json
 COPY packages/contracts/package.json ./packages/contracts/package.json
@@ -21,13 +20,13 @@ ENV NODE_ENV=production
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=dependencies /app/remote/api/node_modules ./remote/api/node_modules
 COPY packages/contracts ./packages/contracts
-COPY packages/i18n ./packages/i18n
 COPY remote/api ./remote/api
-RUN mkdir -p /data && chown bun:bun /data
+RUN mkdir -p /data /web-client && chown bun:bun /data
 USER bun
 WORKDIR /app/remote/api
 EXPOSE 8443
 HEALTHCHECK --interval=15s --timeout=3s --retries=3 CMD bun -e 'const r=await fetch("http://127.0.0.1:8080/health/ready");process.exit(r.ok?0:1)'
 ARG OPENBOT_SOURCE_COMMIT=unknown
 ENV OPENBOT_SOURCE_COMMIT=$OPENBOT_SOURCE_COMMIT
-ENTRYPOINT ["bun", "src/index.ts"]
+ENTRYPOINT ["bun", "src/relay/main.ts"]
+CMD ["serve"]

@@ -29,7 +29,6 @@ concurrency:
 jobs:
   providers:
     name: Real provider turns
-    if: github.repository == 'nightly-labs/openbot'
     runs-on: [self-hosted, macOS]
     timeout-minutes: 30
     permissions:

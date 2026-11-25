@@ -160,9 +160,6 @@ Write, in one line each:
   form (label `invalid`) is not a decision. When an earlier decision
   exists, quote it. When a maintainer already asked for this change, say
   so in the recommendation; the user decides how much it counts.
-- **Usage** (optional): when the need depends on a feature that exists,
-  the `openpanel` skill can show how many users use that feature. When
-  you do not check usage, mark **Reach** as not confirmed.
 - **Cost**: the surfaces to change, new settings or screens, new
   dependencies, migrations, Team API or IPC contract changes, and new
   provider-specific code. When the reporter offers a PR, read its diff
@@ -202,8 +199,8 @@ of evidence.
   count helper text, a tooltip, or a new toggle as a UX gain: score the
   control or the flow itself.
 - **Cost** counts these surfaces: backend, main and preload, IPC
-  contracts, renderer with `packages/ui` (desktop and web), mobile,
-  `apps/auth-api`, and Signal. New i18n keys and their translations do
+  contracts, renderer with `packages/ui` (desktop and web), mobile, and
+  the central relay server (`remote/api`). New i18n keys and their translations do
   not add cost.
 
 **Value score** = Impact + Reach + Fit + UX + Cost, from 0 to 15. It answers

@@ -227,61 +227,6 @@ State which surfaces a change touches. Check all affected consumers and reverse 
 
 ## Development data and processes
 
-### Account service environment settings
-
-- Maintain only `apps/auth-api/.env.dev` and `apps/auth-api/.env.production` for shared account
-  service settings. Add new settings to these files; do not add another environment file.
-- Keep both files encrypted. Development uses `DOTENV_PRIVATE_KEY_DEV`; production uses
-  `DOTENV_PRIVATE_KEY_PRODUCTION`. Never use production credentials as local development defaults.
-- Use the development loader. It reads the development key from the shell; without the key,
-  local development must work with generated defaults. Commands that need external secrets must
-  stop before remote changes when those secrets are missing. An invalid key must fail safely.
-- Keep generated identity and saved local overrides in ignored `.openbot/dev-state.json`.
-  New manual overrides use shell variables. Do not add `.env.local` or `.env.generated`.
-- `.env.keys` stores decryption keys, not service settings. Keep it ignored. Preserve existing
-  production key handling and CI/GitHub secrets unless the developer requests a change.
-- The root `.env.keys` holds the only two keys: `DOTENV_PRIVATE_KEY_PRODUCTION` and
-  `DOTENV_PRIVATE_KEY_DEV`. Every encrypted env file, `remote/.env.production` included, uses one of
-  them. Never make a new key pair. Pass `-fk` with the root `.env.keys` so Dotenvx does not make one.
-- For direct Cloudflare changes, `apps/auth-api/.env.production` holds `CLOUDFLARE_API_TOKEN`
-  (write access to all resources in the OpenBot account) and `CLOUDFLARE_ACCOUNT_ID`. Load them
-  with `bunx dotenvx run -f apps/auth-api/.env.production -fk <root>/.env.keys -- <command>`. A worktree
-  has no `.env.keys`; use the one in the main checkout. Never print the token: do not use
-  `dotenvx get` or `echo`. Ask before a change that deletes data or affects production users.
-  Deploy scripts remove the token, so Wrangler deploys keep the developer's `wrangler login`.
-- For provider harness tests and smoke checks, `apps/auth-api/.env.dev` holds `INCEPTION_API_KEY`
-  (Inception Labs, OpenAI-compatible, `https://api.inceptionlabs.ai/v1`, models such as `mercury-3`).
-  Load it with `bunx @dotenvx/dotenvx@2.38.2 run -f apps/auth-api/.env.dev -fk <root>/.env.keys --
-  <command>`; `bun run dev` does not pass it on. Never print it. Ask before a benchmark or a run of many
-  turns: the token budget is small.
-- For development and manual tests, the team has one test Google account. `apps/auth-api/.env.dev`
-  holds `DEV_TEST_GMAIL_ADDRESS` and `DEV_TEST_GMAIL_PASSWORD`. Use it to sign in to Gmail and to
-  third-party services ("Sign in with Google") for development and smoke checks, never for a
-  personal or production account. Load it the same way as `INCEPTION_API_KEY`, and never print it.
-  Its X account uses the same email and password. A Google sign-in from a new browser gets a phone
-  check that only the developer can do. To skip it, load the saved session into a new browser
-  context (Playwright `storageState`) from `~/.config/openbot/test-google-account.storage.json` on
-  the developer's Mac. For the OpenBot browser, open a tab over CDP and set the same cookies with
-  `Network.setCookies` on that tab: agents share that session. If that session has expired, ask the
-  developer to do the phone check, then save the session again.
-
-See [account service setup](apps/auth-api/README.md) for loading and deployment details.
-
-### Leaseweb servers
-
-Take only a Leaseweb VPS that has no reference, and set its reference before any other work on it.
-Never take a VPS that has a reference, also `pool`. The reference scheme is in
-[Leaseweb references](docs/hosted-servers.md#leaseweb-references). To set up a VPS as the server of one
-customer, use the [custom-server](.agents/skills/custom-server/SKILL.md) skill. The customer is the
-owner, through a server claim; never sign the server in to an operator account.
-
-The VPS with the reference `internal-store-review` is the server of the app store reviewers (Chrome
-Web Store, Google Play and App Store). The review account owns it. That account signs in with the
-email `STORE_REVIEW_EMAIL` and the fixed code `STORE_REVIEW_CODE`: Worker secrets, also encrypted in
-`apps/auth-api/.env.production`. Do not take, reinstall, erase or move this VPS, and do not sign it
-in to another account. When you change the review email or code, also change the test instructions
-in each store. Tests use the `pool-test-<NN>` machines.
-
 ### Local processes
 
 - `bun run dev:seed --dry-run` is read-only.
@@ -322,12 +267,11 @@ Read the instruction file for each directory you change. Use the
 | [src/main/ipc/AGENTS.md](src/main/ipc/AGENTS.md) | Handler binding and endpoint registration |
 | [src/backend/AGENTS.md](src/backend/AGENTS.md) | SQLite migrations and database creation |
 | [packages/contracts/AGENTS.md](packages/contracts/AGENTS.md) | Frozen Team API protocols and IPC mirrors |
-| [apps/auth-api/AGENTS.md](apps/auth-api/AGENTS.md) | Account Worker and D1 deployment races |
 | [src/preload/AGENTS.md](src/preload/AGENTS.md) | Preload bridge and payload decoding |
 | [packages/ui/AGENTS.md](packages/ui/AGENTS.md) | Shared SolidJS controls and feature components |
 | [packages/team-client/AGENTS.md](packages/team-client/AGENTS.md) | Team WebRTC client and framing |
 | [apps/mobile/AGENTS.md](apps/mobile/AGENTS.md) | Expo and build/simulator permissions |
-| [remote/api/AGENTS.md](remote/api/AGENTS.md) | Signal and TURN credentials |
+| [remote/api/AGENTS.md](remote/api/AGENTS.md) | Central relay server: TLS, CA files, server identity |
 
 Write release notes in a new `changelog.d/<branch>.md` file, not in `CHANGELOG.md`, as
 [docs/RELEASING.md](docs/RELEASING.md#release-notes) says. Notes for the iPhone app go in

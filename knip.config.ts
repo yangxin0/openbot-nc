@@ -13,7 +13,6 @@ const config: KnipConfig = {
     "packages/contracts/src/team-protocol/*-v*.ts": ["exports", "types"],
     "packages/contracts/src/team-protocol/provider-aware-codec.ts": ["exports", "types"],
     "src/backend/migrations/[0-9]*.ts": ["exports"],
-    "apps/auth-api/src/lib/plugin-catalog.generated.ts": ["exports", "types"],
   },
   ignoreBinaries: [
     "xterm",
@@ -81,18 +80,6 @@ const config: KnipConfig = {
       ],
       ignoreUnresolved: ["scripts/.+\\.ts"],
     },
-    "apps/auth-api": {
-      entry: ["*.ts", "src/email-relay-entry.ts", "scripts/*.ts"],
-      project: ["src/**/*.{ts,tsx,css}", "test/**/*.ts", "scripts/**/*.ts", "*.ts"],
-      ignoreDependencies: ["cloudflare"],
-    },
-    "apps/site-router": {
-      project: ["src/**/*.ts"],
-    },
-    "apps/mobile-updates": {
-      entry: ["scripts/*.ts"],
-      project: ["src/**/*.ts", "scripts/**/*.ts"],
-    },
     "apps/mobile": {
       entry: ["src/app/**/*.{ts,tsx}", "plugins/**/*.{js,ts}", "src/shims/*.{ts,js}", "global.css"],
       project: ["src/**/*.{ts,tsx}", "plugins/**/*.{js,ts}"],
@@ -105,7 +92,7 @@ const config: KnipConfig = {
       ],
     },
     "remote/api": {
-      entry: ["src/capacity-report.ts", "src/relay/main.ts"],
+      entry: ["src/relay/main.ts"],
       project: ["src/**/*.ts"],
     },
     "packages/i18n": {

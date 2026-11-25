@@ -161,12 +161,6 @@ export const messages = {
   "error.remote.remoteNotConfigured": "Externe verbindingen zijn niet ingesteld op deze OpenBot-service.",
   "error.remote.hostRefused": "De host heeft het verzoek geweigerd ({status}).",
   "error.remote.formUnavailable": "Dit formulier is niet meer beschikbaar.",
-  "error.remote.hostedServerRemoval": "Gebruik Facturering om een gehoste server te verwijderen.",
-  "error.remote.hostRemoved": "De eigenaar heeft deze server uit het account verwijderd.",
-  "error.remote.ownerTransferSelf": "Deze server is al van jou. Voer het e-mailadres van de nieuwe eigenaar in.",
-  "error.remote.ownerTransferHosted": "Een server die OpenBot host, kan niet van eigenaar wisselen.",
-  "error.remote.ownerTransferInvalid":
-    "Deze eigendomsoverdracht is niet meer beschikbaar. Vraag de eigenaar om hem opnieuw te sturen.",
   "error.remote.channelsUnsupported": "Werk deze desktopserver bij om kanalen te gebruiken.",
   "error.remote.channelDeleteUnsupported": "Werk deze desktopserver bij om kanalen te verwijderen.",
   "error.remote.historyRefreshFailed": "Het bericht is verstuurd, maar de chatgeschiedenis kon niet worden vernieuwd.",

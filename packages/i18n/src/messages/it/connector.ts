@@ -67,8 +67,6 @@ export const messages = {
   "connector.statusUnknown": "Sconosciuto",
   "connector.readFailed": "OpenBot non è riuscito a leggere lo stato di questa connessione.",
 
-  "connector.slack.connect": "Connetti Slack",
-  "connector.discord.connect": "Connetti Discord",
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
     "Collega un numero WhatsApp a questo computer. Il WhatsApp Orchestrator interpella l'agente giusto e risponde.",

@@ -2,7 +2,7 @@
 
 > **Executor instructions**: Each item below is one PR. Read the whole plan, run the drift check, and
 > respect the `STOP` conditions. Read `apps/auth-api/AGENTS.md` before an item that changes the Worker
-> or D1, and the [Leaseweb servers](../AGENTS.md#leaseweb-servers) rules before an item that touches a
+> or D1, and the Leaseweb servers rules before an item that touches a
 > machine.
 >
 > **Drift check (run first)**: `git diff --stat 5fd3a12b9a..HEAD -- apps/auth-api/src/server/hosted-server-service.ts

@@ -1,8 +1,6 @@
 import { type ChildProcess, execFileSync, spawn } from "node:child_process";
-import { randomBytes } from "node:crypto";
 import { existsSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
-import { type NetworkInterfaceInfo, networkInterfaces } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
@@ -28,14 +26,7 @@ import {
   removeDevStackRecord,
   writeDevStackRecord,
 } from "./dev-automation/stack-registry";
-import { attachSlackTunnels } from "./dev-slack-tunnels";
-import {
-  developmentChildEnvironment,
-  developmentSettingsForService,
-  loadDevelopmentEnvironment,
-  loadSharedDevelopmentEnvironment,
-  requireDevelopmentValues,
-} from "./development-environment";
+import { developmentChildEnvironment } from "./development-environment";
 import { resolveDevelopmentAppDataRoot } from "./development-state-paths";
 import { withoutElectronRuntimeFlags } from "./electron-spawn-env";
 import { resolvePackageBin } from "./package-bin";
@@ -43,9 +34,8 @@ import { prepareDevelopmentEnvironment } from "./prepare-dev-environment";
 
 const logger = createOpenBotLogger("dev-services");
 
-export type DevelopmentService = "api" | "remote" | "app" | "test-client";
-type DevelopmentTarget = Exclude<DevelopmentService, "remote"> | "all";
-type DevelopmentNetworkInterfaces = NodeJS.Dict<Array<Pick<NetworkInterfaceInfo, "address" | "family" | "internal">>>;
+export type DevelopmentService = "app" | "test-client";
+type DevelopmentTarget = DevelopmentService;
 
 export interface DevelopmentServiceSpec {
   name: DevelopmentService;
@@ -83,9 +73,6 @@ export function developmentEnvironmentForTarget(
 const scriptsRoot = dirname(fileURLToPath(import.meta.url));
 export const projectRoot = dirname(scriptsRoot);
 
-const DEFAULT_API_PORT = 3_100;
-const DEFAULT_REMOTE_SIGNAL_PORT = 3_101;
-const DEFAULT_REMOTE_HEALTH_PORT = 3_102;
 const DEFAULT_RENDERER_PORTS = {
   app: 5_173,
   "test-client": 5_174,
@@ -96,9 +83,7 @@ const DEFAULT_REMOTE_DEBUGGING_PORTS = {
 } as const;
 
 export function servicesForTarget(target: DevelopmentTarget): DevelopmentService[] {
-  if (target === "all") return ["api", "remote", "app"];
   if (target === "test-client") return ["app", "test-client"];
-  if (target === "api") return ["api"];
   return ["app"];
 }
 
@@ -106,27 +91,7 @@ export function createDevelopmentServiceSpec(
   name: DevelopmentService,
   environment: NodeJS.ProcessEnv = process.env,
 ): DevelopmentServiceSpec {
-  const childEnvironment = withoutElectronRuntimeFlags(developmentChildEnvironment(environment, name));
-  if (name === "api") {
-    return {
-      name,
-      executable: process.execPath,
-      args: ["run", "--cwd", join(projectRoot, "apps", "auth-api"), "dev"],
-      cwd: projectRoot,
-      env: { ...childEnvironment },
-    };
-  }
-
-  if (name === "remote") {
-    return {
-      name,
-      executable: process.execPath,
-      args: [join(projectRoot, "scripts/run-development.ts"), "remote"],
-      cwd: projectRoot,
-      env: { ...childEnvironment },
-    };
-  }
-
+  const childEnvironment = withoutElectronRuntimeFlags(developmentChildEnvironment(environment));
   const isTestClient = name === "test-client";
   const outputDirectory = isTestClient ? "out-dev-test-client" : "out-dev-app";
   const electronVite = resolvePackageBin(projectRoot, "electron-vite");
@@ -225,31 +190,20 @@ function seedDevelopmentProfile(profile: string, environment: NodeJS.ProcessEnv)
   });
 }
 
-const DEVELOPMENT_OPTIONS = [
-  "--dry-run",
-  "--force",
-  "--shared",
-  "--isolated",
-  "--hosting=test",
-  "--slack",
-  "--foreground",
-] as const;
-const TEST_ACCOUNT_API_URL = "https://openbot-auth-api-test.internal9671.workers.dev";
+const DEVELOPMENT_OPTIONS = ["--dry-run", "--force", "--shared", "--isolated", "--foreground"] as const;
 
 export interface DevelopmentInvocation {
   target: DevelopmentTarget;
   dryRun: boolean;
   force: boolean;
   shared: boolean;
-  hostingTest: boolean;
-  slack: boolean;
   foreground: boolean;
 }
 
 export function parseDevelopmentTarget(args: string[]): DevelopmentInvocation {
-  const target = args.find((argument) => !argument.startsWith("--")) ?? "all";
-  if (target !== "api" && target !== "app" && target !== "test-client" && target !== "all") {
-    throw new Error(`Unknown development target: ${target}. Use api, app, test-client, or all.`);
+  const target = args.find((argument) => !argument.startsWith("--")) ?? "app";
+  if (target !== "app" && target !== "test-client") {
+    throw new Error(`Unknown development target: ${target}. Use app or test-client.`);
   }
   const unsupportedOption = args.find(
     (argument) => argument.startsWith("--") && !DEVELOPMENT_OPTIONS.some((option) => option === argument),
@@ -263,17 +217,8 @@ export function parseDevelopmentTarget(args: string[]): DevelopmentInvocation {
     dryRun: args.includes("--dry-run"),
     force: args.includes("--force"),
     shared: args.includes("--shared"),
-    hostingTest: args.includes("--hosting=test"),
-    slack: args.includes("--slack"),
     foreground: args.includes("--foreground"),
   };
-}
-
-async function readHostingDeveloperKey(): Promise<string> {
-  const shared = await loadSharedDevelopmentEnvironment(projectRoot);
-  const environment = { ...shared, ...process.env };
-  requireDevelopmentValues(environment, ["HOSTED_SERVERS_DEVELOPER_KEY"]);
-  return environment.HOSTED_SERVERS_DEVELOPER_KEY ?? "";
 }
 
 function prepareVoiceRuntime(): void {
@@ -292,25 +237,13 @@ function prepareVoiceRuntime(): void {
 }
 
 async function main(): Promise<void> {
-  const { target, dryRun, force, shared, hostingTest, slack, foreground } = parseDevelopmentTarget(
-    process.argv.slice(2),
-  );
+  const { target, dryRun, force, shared, foreground } = parseDevelopmentTarget(process.argv.slice(2));
   const services = servicesForTarget(target);
-  const startsAccountServices = services.includes("api") || services.includes("remote");
-  if (!dryRun && prepareDevelopmentEnvironment({ migrateAccountDatabase: startsAccountServices }) === "created") {
+  if (!dryRun && prepareDevelopmentEnvironment() === "created") {
     logger.info("Prepared local development state.");
   }
-  if (!dryRun && services.includes("app")) prepareVoiceRuntime();
-  const developmentEnvironment = dryRun || !startsAccountServices ? {} : await loadDevelopmentEnvironment(projectRoot);
+  if (!dryRun) prepareVoiceRuntime();
   const sharedEnvironment = developmentEnvironmentForTarget(target);
-  if (hostingTest) {
-    sharedEnvironment.OPENBOT_AUTH_API_URL = TEST_ACCOUNT_API_URL;
-    sharedEnvironment.OPENBOT_MOBILE_AUTH_API_URL = TEST_ACCOUNT_API_URL;
-    sharedEnvironment.OPENBOT_DEV_INSTANCE_ID ??= developmentInstanceIdForWorktree("openbot:hosting-test");
-    sharedEnvironment.OPENBOT_HOSTING_DEVELOPER_KEY = await readHostingDeveloperKey();
-    sharedEnvironment.OPENBOT_DEV_REMOTE_ROLE = "none";
-    logger.info(`The app signs in to the test account Worker: ${TEST_ACCOUNT_API_URL}.`);
-  }
   sharedEnvironment.OPENBOT_DEV_STACK_ID = String(process.pid);
   if (foreground) sharedEnvironment.OPENBOT_DEV_WINDOW_FOCUS = "foreground";
   else sharedEnvironment.OPENBOT_DEV_WINDOW_FOCUS ??= "background";
@@ -337,12 +270,7 @@ async function main(): Promise<void> {
       sharedEnvironment.OPENBOT_DEV_INSTANCE_ID = instanceId;
       logger.info("This worktree opens its own dev profile. Pass --shared to open the shared OpenBot-NC Dev profile.");
     }
-    const allocated = await allocateDevelopmentPorts(
-      services,
-      sharedEnvironment,
-      heldDevStackPorts(records),
-      developmentEnvironment,
-    );
+    const allocated = await allocateDevelopmentPorts(services, sharedEnvironment, heldDevStackPorts(records));
     validateServiceSpecs(allocated);
     if (dryRun) return { specs: allocated, stack: null };
     const record = createDevStackRecord(allocated, process.pid, Date.now());
@@ -357,17 +285,10 @@ async function main(): Promise<void> {
     return;
   }
 
-  const closeSlackTunnels = slack ? await attachSlackTunnels(specs, projectRoot) : null;
+  const seed = developmentProfileToSeed(specs);
+  if (seed) seedDevelopmentProfile(seed.profile, seed.env);
 
-  try {
-    const seed = developmentProfileToSeed(specs);
-    if (seed) seedDevelopmentProfile(seed.profile, seed.env);
-
-    await runDevelopmentServices(specs, stack);
-  } catch (error) {
-    closeSlackTunnels?.();
-    throw error;
-  }
+  await runDevelopmentServices(specs, stack);
 }
 
 export function developmentInstanceIdForStart(input: {
@@ -391,15 +312,8 @@ export function createDevStackRecord(
     if (port !== undefined) ports.push({ name, port });
   };
   for (const spec of specs) {
-    if (spec.name === "api") addPort("api", spec.env.OPENBOT_API_PORT);
-    if (spec.name === "remote") {
-      addPort("signal", spec.env.REMOTE_SIGNAL_PORT);
-      addPort("signal-health", spec.env.REMOTE_HEALTH_PORT);
-    }
-    if (spec.name === "app" || spec.name === "test-client") {
-      addPort(`${spec.name}-renderer`, spec.env.OPENBOT_DEV_RENDERER_PORT);
-      addPort(`${spec.name}-debug`, spec.env.OPENBOT_DEV_REMOTE_DEBUGGING_PORT);
-    }
+    addPort(`${spec.name}-renderer`, spec.env.OPENBOT_DEV_RENDERER_PORT);
+    addPort(`${spec.name}-debug`, spec.env.OPENBOT_DEV_REMOTE_DEBUGGING_PORT);
   }
   return {
     services: specs.map((spec) => spec.name),
@@ -415,86 +329,36 @@ async function allocateDevelopmentPorts(
   services: DevelopmentService[],
   sharedEnvironment: NodeJS.ProcessEnv,
   heldPorts: Set<number>,
-  developmentEnvironment: NodeJS.ProcessEnv,
 ): Promise<DevelopmentServiceSpec[]> {
   const reservedPorts = new Set<number>();
-
-  if (services.includes("api")) {
-    const apiPort = await findAvailablePort(
-      readPort(sharedEnvironment.OPENBOT_API_PORT) ?? DEFAULT_API_PORT,
+  const specs: DevelopmentServiceSpec[] = [];
+  for (const service of services) {
+    const environment = { ...sharedEnvironment };
+    const defaultPort = DEFAULT_RENDERER_PORTS[service];
+    const rendererPort = await findAvailablePort(
+      readPort(environment.OPENBOT_DEV_RENDERER_PORT) ?? defaultPort,
       reservedPorts,
       heldPorts,
     );
-    reservedPorts.add(apiPort);
-    sharedEnvironment.OPENBOT_API_PORT = String(apiPort);
-    if (!sharedEnvironment.OPENBOT_AUTH_API_URL) {
-      sharedEnvironment.OPENBOT_AUTH_API_URL = `http://127.0.0.1:${apiPort}`;
+    reservedPorts.add(rendererPort);
+    environment.OPENBOT_DEV_RENDERER_PORT = String(rendererPort);
+    if (rendererPort !== defaultPort) {
+      environment.OPENBOT_DEV_INSTANCE_ID ??= String(rendererPort);
+      logger.info(`Renderer port ${defaultPort} is busy. Using ${rendererPort} for ${service}.`);
     }
-    configureSiteHostingDevelopmentEnvironment(sharedEnvironment, apiPort);
-    if (services.includes("remote")) {
-      const signalPort = await findAvailablePort(
-        readPort(sharedEnvironment.REMOTE_SIGNAL_PORT) ?? DEFAULT_REMOTE_SIGNAL_PORT,
-        reservedPorts,
-        heldPorts,
-      );
-      reservedPorts.add(signalPort);
-      sharedEnvironment.REMOTE_SIGNAL_PORT = String(signalPort);
 
-      const healthPort = await findAvailablePort(
-        readPort(sharedEnvironment.REMOTE_HEALTH_PORT) ?? DEFAULT_REMOTE_HEALTH_PORT,
-        reservedPorts,
-        heldPorts,
+    const defaultRemoteDebuggingPort = DEFAULT_REMOTE_DEBUGGING_PORTS[service];
+    const remoteDebuggingPort = await findAvailablePort(
+      readPort(environment.OPENBOT_DEV_REMOTE_DEBUGGING_PORT) ?? defaultRemoteDebuggingPort,
+      reservedPorts,
+      heldPorts,
+    );
+    reservedPorts.add(remoteDebuggingPort);
+    environment.OPENBOT_DEV_REMOTE_DEBUGGING_PORT = String(remoteDebuggingPort);
+    if (remoteDebuggingPort !== defaultRemoteDebuggingPort) {
+      logger.info(
+        `Electron debug port ${defaultRemoteDebuggingPort} is busy. Using ${remoteDebuggingPort} for ${service}.`,
       );
-      reservedPorts.add(healthPort);
-      sharedEnvironment.REMOTE_HEALTH_PORT = String(healthPort);
-      sharedEnvironment.REMOTE_SESSION_SECRET ??= randomBytes(32).toString("hex");
-      sharedEnvironment.TURN_SHARED_SECRET ??= randomBytes(32).toString("hex");
-      if (signalPort !== DEFAULT_REMOTE_SIGNAL_PORT) {
-        logger.info(`Signal port ${DEFAULT_REMOTE_SIGNAL_PORT} is busy. Using ${signalPort}.`);
-      }
-      if (healthPort !== DEFAULT_REMOTE_HEALTH_PORT) {
-        logger.info(`Signal health port ${DEFAULT_REMOTE_HEALTH_PORT} is busy. Using ${healthPort}.`);
-      }
-    }
-    configureMobileConnectDevelopmentNetwork(services, sharedEnvironment, networkInterfaces());
-    if (sharedEnvironment.OPENBOT_MOBILE_AUTH_API_URL) {
-      logger.info(`Mobile Connect API: ${sharedEnvironment.OPENBOT_MOBILE_AUTH_API_URL}`);
-    }
-    if (apiPort !== DEFAULT_API_PORT) {
-      logger.info(`API port ${DEFAULT_API_PORT} is busy. Using ${apiPort}.`);
-    }
-  }
-
-  const specs: DevelopmentServiceSpec[] = [];
-  for (const service of services) {
-    const environment = { ...developmentSettingsForService(developmentEnvironment, service), ...sharedEnvironment };
-    if (service === "app" || service === "test-client") {
-      const defaultPort = DEFAULT_RENDERER_PORTS[service];
-      const rendererPort = await findAvailablePort(
-        readPort(environment.OPENBOT_DEV_RENDERER_PORT) ?? defaultPort,
-        reservedPorts,
-        heldPorts,
-      );
-      reservedPorts.add(rendererPort);
-      environment.OPENBOT_DEV_RENDERER_PORT = String(rendererPort);
-      if (rendererPort !== defaultPort) {
-        environment.OPENBOT_DEV_INSTANCE_ID ??= String(rendererPort);
-        logger.info(`Renderer port ${defaultPort} is busy. Using ${rendererPort} for ${service}.`);
-      }
-
-      const defaultRemoteDebuggingPort = DEFAULT_REMOTE_DEBUGGING_PORTS[service];
-      const remoteDebuggingPort = await findAvailablePort(
-        readPort(environment.OPENBOT_DEV_REMOTE_DEBUGGING_PORT) ?? defaultRemoteDebuggingPort,
-        reservedPorts,
-        heldPorts,
-      );
-      reservedPorts.add(remoteDebuggingPort);
-      environment.OPENBOT_DEV_REMOTE_DEBUGGING_PORT = String(remoteDebuggingPort);
-      if (remoteDebuggingPort !== defaultRemoteDebuggingPort) {
-        logger.info(
-          `Electron debug port ${defaultRemoteDebuggingPort} is busy. Using ${remoteDebuggingPort} for ${service}.`,
-        );
-      }
     }
     specs.push(createDevelopmentServiceSpec(service, environment));
   }
@@ -567,8 +431,6 @@ async function runDevelopmentServices(specs: DevelopmentServiceSpec[], stack: De
         process.exitCode = code ?? 1;
       });
     });
-    if (spec.name === "api") await waitForDevelopmentApi(spec.env.OPENBOT_API_PORT, child);
-    if (spec.name === "remote") await waitForDevelopmentRemote(spec.env.REMOTE_HEALTH_PORT, child);
   };
 
   const testClient = specs.find((spec) => spec.name === "test-client");
@@ -606,111 +468,6 @@ async function runDevelopmentServices(specs: DevelopmentServiceSpec[], stack: De
     await stopAll("SIGTERM");
     throw error;
   }
-}
-
-export function configureSiteHostingDevelopmentEnvironment(environment: NodeJS.ProcessEnv, apiPort: number): void {
-  environment.SITE_PUBLISH_ENABLED ??= "true";
-  environment.SITE_COOKIE_ISOLATION_READY ??= "true";
-  environment.SITE_LOCAL_ORIGIN ??= `http://openbot.localhost:${apiPort}`;
-}
-
-export function configureMobileConnectDevelopmentNetwork(
-  services: DevelopmentService[],
-  environment: NodeJS.ProcessEnv,
-  interfaces: DevelopmentNetworkInterfaces,
-): void {
-  const hasMobileClient = services.some((service) => service === "app" || service === "test-client");
-  const apiPort = readPort(environment.OPENBOT_API_PORT);
-  if (!apiPort) return;
-  const exposeToLan = hasMobileClient && environment.OPENBOT_API_HOST !== "127.0.0.1";
-  const address = exposeToLan ? selectMobileConnectLanAddress(interfaces) : null;
-
-  if (services.includes("remote")) {
-    const signalPort = readPort(environment.REMOTE_SIGNAL_PORT) ?? DEFAULT_REMOTE_SIGNAL_PORT;
-    environment.REMOTE_SIGNAL_PORT ??= String(signalPort);
-    environment.REMOTE_SIGNAL_HOST ??= "0.0.0.0";
-    environment.REMOTE_TLS_DISABLED ??= "true";
-    environment.REMOTE_CONTROL_PLANE_URL ??= `http://127.0.0.1:${apiPort}`;
-    environment.REMOTE_AUTH_WEBHOOK_URL ??= `http://127.0.0.1:${signalPort}/internal/auth-events`;
-    environment.REMOTE_SIGNAL_URL ??= `ws://${address ?? "127.0.0.1"}:${signalPort}/v1/signal`;
-    environment.REMOTE_SIGNAL_HOMES ??= "";
-    environment.REMOTE_AUTH_WEBHOOK_URLS ??= "";
-    environment.TURN_HOST ??= address ?? "127.0.0.1";
-  }
-
-  if (!address) return;
-  environment.OPENBOT_API_HOST ??= "0.0.0.0";
-  environment.OPENBOT_MOBILE_AUTH_API_URL ??= `http://${address}:${apiPort}`;
-}
-
-export function selectMobileConnectLanAddress(interfaces: DevelopmentNetworkInterfaces): string | null {
-  const candidates = Object.entries(interfaces).flatMap(([name, addresses]) =>
-    (addresses ?? []).flatMap((address) =>
-      address.family === "IPv4" && !address.internal && isPrivateIpv4(address.address)
-        ? [{ name, address: address.address }]
-        : [],
-    ),
-  );
-  candidates.sort(
-    (left, right) =>
-      interfacePriority(left.name) - interfacePriority(right.name) ||
-      left.name.localeCompare(right.name) ||
-      left.address.localeCompare(right.address),
-  );
-  return candidates[0]?.address ?? null;
-}
-
-function interfacePriority(name: string): 0 | 1 | 2 {
-  if (name === "en0" || name === "eth0") return 0;
-  if (/^(?:en|eth|wl)/u.test(name)) return 1;
-  return 2;
-}
-
-function isPrivateIpv4(address: string): boolean {
-  const values = address.split(".").map(Number);
-  if (values.length !== 4 || values.some((value) => !Number.isInteger(value) || value < 0 || value > 255)) {
-    return false;
-  }
-  const [first, second] = values;
-  return (
-    first === 10 ||
-    (first === 172 && second !== undefined && second >= 16 && second <= 31) ||
-    (first === 192 && second === 168)
-  );
-}
-
-async function waitForDevelopmentApi(portValue: string | undefined, child: ChildProcess): Promise<void> {
-  const port = readPort(portValue);
-  if (!port) throw new Error("The development API port is missing.");
-  const deadline = Date.now() + 30_000;
-  while (Date.now() < deadline) {
-    if (child.exitCode !== null) throw new Error("The development Auth API stopped before it became ready.");
-    try {
-      const response = await fetch(`http://127.0.0.1:${port}/health/live`, {
-        signal: AbortSignal.timeout(1_000),
-      });
-      if (response.ok) return;
-    } catch {}
-    await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
-  }
-  throw new Error(`The development Auth API did not become ready on port ${port}.`);
-}
-
-async function waitForDevelopmentRemote(portValue: string | undefined, child: ChildProcess): Promise<void> {
-  const port = readPort(portValue);
-  if (!port) throw new Error("The development Signal health port is missing.");
-  const deadline = Date.now() + 30_000;
-  while (Date.now() < deadline) {
-    if (child.exitCode !== null) throw new Error("The development Signal service stopped before it became ready.");
-    try {
-      const response = await fetch(`http://127.0.0.1:${port}/health/ready`, {
-        signal: AbortSignal.timeout(1_000),
-      });
-      if (response.ok) return;
-    } catch {}
-    await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
-  }
-  throw new Error(`The development Signal service did not become ready on port ${port}.`);
 }
 
 export async function findAvailablePort(
@@ -767,15 +524,8 @@ function readPort(value: string | undefined): number | undefined {
 
 function validateServiceSpecs(specs: DevelopmentServiceSpec[]): void {
   for (const spec of specs) {
-    if (spec.name === "api" && !existsSync(join(projectRoot, "apps", "auth-api", "package.json"))) {
-      throw new Error("The auth API package is missing at apps/auth-api/package.json.");
-    }
-    if (spec.name === "remote" && !existsSync(join(projectRoot, "remote", "api", "package.json"))) {
-      throw new Error("The Remote API package is missing at remote/api/package.json.");
-    }
-    if (spec.name !== "api" && !existsSync(spec.executable)) {
-      const executableName = spec.name === "remote" ? "bun" : "electron-vite";
-      throw new Error(`${executableName} is missing at ${spec.executable}. Run bun install.`);
+    if (!existsSync(spec.executable)) {
+      throw new Error(`electron-vite is missing at ${spec.executable}. Run bun install.`);
     }
   }
 }

@@ -166,7 +166,7 @@ coturn and Nginx in the Compose project `openbot-remote`, next to an IOTA valida
 `sui-alexandria` is home `a` (`signal1.openbot.run`) and this machine is home `b`. The entry name
 `signal.openbot.run` can point to either machine, and the Worker moves it when the entry machine
 fails. To reach one machine, use `signal1.openbot.run` or `signal2.openbot.run`. Its coturn is the
-second TURN relay (see [TURN relays](../remote/README.md#turn-relays)).
+second TURN relay (see TURN relays).
 
 - `signal2.openbot.run` and `turn2.openbot.run` point to this machine (DNS only). Check it with
   `curl --fail https://signal2.openbot.run/health/ready`.
@@ -187,7 +187,7 @@ second TURN relay (see [TURN relays](../remote/README.md#turn-relays)).
 - The firewall (ufw) allows 443/tcp, 3478/tcp, 3478/udp, 5349/tcp and the coturn relay range UDP
   16384-65535, as on production (see [coturn configuration update](#coturn-configuration-update)).
 - Nginx has `worker_rlimit_nofile 65535`, `worker_connections 8192` and `reuseport`, as on production
-  ([production requirements](../remote/README.md#production-requirements)). With the Nginx default of
+  (production requirements). With the Nginx default of
   768 connections, this machine holds only about 12,000 Signal sockets, less than both machines have
   together.
 - Tags before `ACME_EXTRA_DOMAINS` lack it in `remote/acme/renew.sh` and `remote/compose.yaml`. For

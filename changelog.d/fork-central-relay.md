@@ -29,6 +29,8 @@
   chats. Account settings > Team identity shows the identity and removes it. Set
   `RELAY_WEB_CLIENT_DIR` on the server to the folder that `bun run web-client:build` writes. The
   hosts need this version.
+- `remote/compose.relay.yaml` serves the web client too: set `RELAY_WEB_CLIENT_DIR` to the build
+  folder (an absolute path or a path that starts with `./`), and Compose mounts it read-only.
 
 ### Changed
 
@@ -149,3 +151,12 @@
 - X posting from the Chrome extension, with its outbox and notifications. The X agent came from the
   agent marketplace, and the page rules came from the account service.
 - The Sign out item of the extension server menu. Remove the identity in the extension settings.
+- The vendor Signal server and its TURN relay (coturn). The central server is the only server.
+- The vendor account service, status page, site router, mobile update server, and the Slack,
+  Discord and Telegram chat apps, with their deploy and development commands (`dev:api`, `dev:all`
+  and `dev:slack`; `bun run dev` starts the app only).
+- The vendor release workflows: phone store builds and over-the-air updates, the Chrome Web Store
+  build, the status page, release health reports, announcements and the account service deploy. The
+  desktop release workflow builds for the GitHub releases of your own repository, and a new release
+  goes to all installs unless `RELEASE_STAGING_PERCENTAGE` is set.
+- The macOS app no longer claims `openbot.run` links (Universal Links).
