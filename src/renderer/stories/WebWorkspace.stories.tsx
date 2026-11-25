@@ -1,4 +1,4 @@
-import type { AgentProviderStatus, AgentStatus, OpenBotDesktopApi } from "@openbot/contracts/ipc";
+import type { AgentProviderStatus, AgentStatus } from "@openbot/contracts/ipc";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import { AGENT_TASKS_CAPABILITY, AGENT_TASKS_ROUTES } from "@openbot/contracts/team-protocol/agent-tasks-v1";
 import { AGENT_THREADS_CAPABILITY, AGENT_THREADS_ROUTES } from "@openbot/contracts/team-protocol/agent-threads-v1";
@@ -15,20 +15,9 @@ import { WebHostOtherTabError } from "../src/features/web-client/web-host-lock";
 import { WebHostIncompatibleError } from "../src/features/web-client/web-runtime";
 import { createBenchWebRuntime } from "../src/preview/bench-web-runtime";
 import { createMockOpenBot } from "../src/preview/mock-openbot";
-import { createMockWebRuntime, mockWebRuntimeFor } from "../src/preview/mock-web-runtime";
+import { createMockWebRuntime, mockWebRuntimeFor, previewWebRelay } from "../src/preview/mock-web-runtime";
 import { AGENT_ID, TABS_KEY, THREAD_OPTIONS } from "./agent-threads-fixtures";
 import "../src/features/web-client/web-client.css";
-
-function storyTeam(host: OpenBotDesktopApi["host"]) {
-  return {
-    ...host,
-    listInvites: async () => [],
-    createInvite: () => Promise.reject(new Error("This story has no invitations.")),
-    revokeInvite: async () => undefined,
-  };
-}
-
-const accountFetch: typeof fetch = (input, init) => fetch(input, init);
 
 const meta = {
   title: "Web/Workspace",
@@ -36,11 +25,9 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: {
     accountId: "preview-account",
-    accountEmail: "you@example.com",
     accountName: "Preview User",
-    accountFetch,
-    onSessionCheck: async () => {},
-    onLogout: async () => {},
+    relay: previewWebRelay,
+    onRemoveIdentity: async () => {},
     createRuntime: createMockWebRuntime,
     language: "system",
     onChangeLanguage: () => {},
@@ -56,10 +43,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Connected: Story = {};
-
-export const MarketplaceApp: Story = {
-  args: { pluginSlug: "linear" },
-};
 
 export const LongConversation: Story = {
   args: { createRuntime: createBenchWebRuntime },
@@ -141,8 +124,8 @@ export const Incompatible: Story = {
 
 const NEW_SERVER_ID = "cloud-server";
 
-const newServerRuntime: WebRuntimeFactory = (accountId, events, accountFetch) => {
-  const base = createMockWebRuntime(accountId, events, accountFetch);
+const newServerRuntime: WebRuntimeFactory = (accountId, events, relay) => {
+  const base = createMockWebRuntime(accountId, events, relay);
   const team = createMockOpenBot();
   let status: AgentStatus = {
     phase: "blocked",
@@ -218,7 +201,7 @@ const newServerRuntime: WebRuntimeFactory = (accountId, events, accountFetch) =>
     },
     listAgents: async () => (onNewServer() ? [] : base.listAgents()),
     status: async () => (onNewServer() ? status : base.status()),
-    admin: { request, download: request, team: storyTeam(team.api.host) },
+    admin: { request, download: request, team: team.api.host },
     dispose: async () => {
       team.dispose();
       await base.dispose();
@@ -269,7 +252,7 @@ const threadsRuntime: WebRuntimeFactory = (_accountId, events) => {
   return {
     ...base,
     connect: async (host) => [...(await base.connect(host)), AGENT_TASKS_CAPABILITY, AGENT_THREADS_CAPABILITY],
-    admin: { request, download: request, team: storyTeam(mock.api.host) },
+    admin: { request, download: request, team: mock.api.host },
   };
 };
 

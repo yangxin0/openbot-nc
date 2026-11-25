@@ -35,7 +35,6 @@ import type {
   DuplicateAgentResult,
   EditQueuedMessageInput,
   HiddenAgentsSnapshot,
-  InvitePreview,
   LocalBrowserSecretResponse,
   PinnedMessagesSnapshot,
   ProviderModelSourceEntry,
@@ -56,7 +55,6 @@ import type {
   SidebarPin,
   SidebarPinsSnapshot,
   SteerQueuedMessageInput,
-  TeamInviteSummary,
   TeamMemberSummary,
   TeamRealtimeEvent,
   UpdateAgentInput,
@@ -83,6 +81,7 @@ import {
   isQueuedMessageReceipt,
   isQueueSnapshot,
   isSidebarLayoutSnapshot,
+  isTeamMemberSummary,
   isTeamPresenceSnapshot,
   withFastServiceTiers,
   withKeptModels,
@@ -93,7 +92,6 @@ import {
   withWorkspaceOnlyLimit,
 } from "@openbot/contracts/ipc";
 import { guardedListDecoder, optionalHistoryExtent, requiredString } from "@openbot/contracts/ipc-decoding";
-import type { AcceptedOwnerTransfer, OwnerTransfer } from "@openbot/contracts/owner-transfer";
 import { isDynamicRecord, isNumber, isString } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES, WORKSPACE_FILE_EXACT_PATH_QUERY } from "@openbot/contracts/team-api-routes";
 import {
@@ -224,21 +222,12 @@ import { WORKSPACE_ONLY_PROCESS_LIMIT_CAPABILITY } from "@openbot/contracts/team
 import { runTeamEffect } from "@openbot/team-client";
 import { bytesToBase64 } from "@openbot/team-client/base64";
 import { createRemoteBrowserView, type RemoteBrowserView } from "@openbot/team-client/browser-view";
-import { verifyEd25519Base64Url } from "@openbot/team-client/ed25519";
-import {
-  RemoteDirectoryError,
-  RemoteTeamDirectoryClient,
-  type RemoteTeamHost,
-  type RemoteTeamInvite,
-  type RemoteTeamMember,
-} from "@openbot/team-client/remote-directory";
-import {
-  createRemoteTeamPeer,
-  type RemoteFileUpload,
-  type RemoteLargeDownload,
-  type RemoteTeamCommandResult,
-  type RemoteTeamConnectionUpdate,
-  type RemoteTeamPeerActions,
+import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
+import type {
+  RemoteFileUpload,
+  RemoteLargeDownload,
+  RemoteTeamCommandResult,
+  RemoteTeamConnectionUpdate,
 } from "@openbot/team-client/remote-peer";
 import { remoteWorkspaceReadTimeout } from "@openbot/team-client/remote-recovery";
 import { retryOperationIds } from "@openbot/team-client/retry-operation-id";
@@ -277,7 +266,8 @@ import { currentText } from "@openbot/ui/text";
 import { toast } from "@openbot/ui/toast";
 import { referenceFrom } from "@openbot/user-errors";
 import { Effect } from "effect";
-import type { ServerAdminPort } from "../servers/servers-port";
+import type { ServerMemberPort } from "../servers/servers-port";
+import { readCachedWebHosts } from "./web-host-cache";
 import { readWebHostCompatibility } from "./web-host-compatibility";
 import {
   createWebHostConnections,
@@ -295,11 +285,12 @@ import {
   type WebHostTabMessage,
 } from "./web-host-lock";
 import { closeWebChatNotifications } from "./web-notifications";
+import { relayHostId, relayHostRecord, type WebPeerActions, type WebRelayConnection } from "./web-relay";
 
 export interface WebAdminRuntime {
   request: TeamApiRequest;
   download: TeamApiRequest;
-  team: ServerAdminPort;
+  team: ServerMemberPort;
 }
 
 export interface WebFile {
@@ -324,15 +315,6 @@ type WebMessageDelete =
 
 type WebHistoryDelete = { kind: "agent"; agentId: string } | { kind: "channel"; channelId: string };
 
-interface WebOwnerTransfers {
-  pending(hostId: string): Promise<OwnerTransfer | null>;
-  start(hostId: string, email: string): Promise<OwnerTransfer>;
-  cancel(hostId: string): Promise<void>;
-  incoming(): Promise<OwnerTransfer[]>;
-  accept(transferId: string): Promise<AcceptedOwnerTransfer>;
-  decline(transferId: string): Promise<void>;
-}
-
 export interface WebWorkspaceRuntime {
   admin?: WebAdminRuntime;
   hosts?: WebHostConnections;
@@ -355,15 +337,9 @@ export interface WebWorkspaceRuntime {
     setChannelImage(input: SetChannelImageInput): Promise<Channel>;
     onPictures?(listener: () => void): () => void;
   };
-  currentMemberId?: () => Promise<string>;
+  currentMember?: () => Promise<{ id: string; role: RemoteTeamHost["role"] }>;
   respondToTakeover(input: RespondToBrowserTakeoverInput): Promise<void>;
   listHosts(): Promise<RemoteTeamHost[]>;
-  leaveHost(hostId: string, membershipId: string): Promise<void>;
-  removeOwnedHost?: (hostId: string) => Promise<void>;
-  setHostHidden?: (hostId: string, hidden: boolean) => Promise<void>;
-  ownerTransfers?: WebOwnerTransfers;
-  previewInvite(url: string): Promise<InvitePreview>;
-  acceptInvite(url: string): Promise<RemoteTeamHost>;
   connect(host: RemoteTeamHost, options?: WebConnectOptions): Promise<string[]>;
   disconnect(): Promise<void>;
   listAgents(): Promise<ClientAgentSummary[]>;
@@ -448,17 +424,15 @@ export interface WebWorkspaceRuntime {
     includeSideThreads?: boolean,
   ): Promise<ConversationSearchPage>;
   searchFiles?: (query: string, cursor?: string) => Promise<ConversationFileSearchPage>;
-  dispose(options?: { sessionsEnded?: boolean }): Promise<void>;
+  dispose(): Promise<void>;
 }
 
 export interface WebRuntimeEvents {
   connection(update: RemoteTeamConnectionUpdate): void;
   accessDenied?(hostId: string, error: WebHostConnectionError): void;
   event(hostId: string, event: AgentEvent | TeamRealtimeEvent): void;
-  accountChanged(): Promise<void>;
   serversChanged?(): Promise<void>;
   hostState?(hostId: string, state: WebHostState): void;
-  hostSessionRevoked?(): void;
   hostTaken?(hostId: string): void;
   hostNotice?(hostId: string, event: WebHostNotice, agents: ClientAgentSummary[]): void;
 }
@@ -502,7 +476,6 @@ function serverSafeModeText({ reason, appVersion }: ServerSafeModeReason): strin
 }
 
 interface WebConnectionDependencies {
-  createPeer: typeof createRemoteTeamPeer;
   acquireHostLock: typeof acquireWebHostLock;
   openHostChannel?: (accountId: string) => BroadcastChannel | null;
 }
@@ -544,58 +517,61 @@ function savedHostProtocol(accountId: string, hostId: string): number | undefine
   return Number.isSafeInteger(protocol) && protocol > 0 ? protocol : undefined;
 }
 
-function pinWebHostKey(accountId: string, host: RemoteTeamHost): void {
-  const key = `openbot.web.host-key:${accountId}:${host.hostId}`;
-  const pinned = localStorage.getItem(key);
-  if (pinned && pinned !== host.devicePublicKey) throw new WebHostConnectionError("identity_changed");
-  localStorage.setItem(key, host.devicePublicKey);
-}
-
 export function createWebWorkspaceRuntime(
   accountId: string,
   events: WebRuntimeEvents,
-  accountFetch: typeof fetch,
+  relay: WebRelayConnection,
   dependencies: WebConnectionDependencies = {
-    createPeer: createRemoteTeamPeer,
     acquireHostLock: acquireWebHostLock,
     openHostChannel: openWebHostChannel,
   },
 ): WebWorkspaceRuntime {
-  const directory = new RemoteTeamDirectoryClient({
-    apiUrl: window.location.origin,
-    authentication: { kind: "browser" },
-    fetch: accountFetch,
-    inviteLinks: { allowLocalDevelopmentApiUrl: import.meta.env.DEV },
-    verifyHostKeySignature: verifyEd25519Base64Url,
-    hostKeys: {
-      get: async (id) => localStorage.getItem(`openbot.web.host-key:${accountId}:${id}`),
-      set: async (id, key) => localStorage.setItem(`openbot.web.host-key:${accountId}:${id}`, key),
-    },
+  const knownHosts = new Map(
+    readCachedWebHosts(accountId)
+      .filter((host) => host.relayHost !== undefined)
+      .map((host) => [host.hostId, host]),
+  );
+  const hostRoles = new Map<string, RemoteTeamHost["role"]>(
+    [...knownHosts.values()].map((host) => [host.hostId, host.role]),
+  );
+  function rosterHostIds(): Set<string> {
+    const snapshot = relay.source.snapshot();
+    const selfKeyId = snapshot.self?.keyId ?? relay.identity.keyId;
+    return new Set(snapshot.roster.filter((member) => member.hosting && member.keyId !== selfKeyId).map(relayHostId));
+  }
+  function rosterHosts(): RemoteTeamHost[] {
+    const snapshot = relay.source.snapshot();
+    const selfKeyId = snapshot.self?.keyId ?? relay.identity.keyId;
+    const listed = new Map<string, RemoteTeamHost>();
+    for (const member of snapshot.roster) {
+      if (!member.hosting || member.keyId === selfKeyId) continue;
+      const host = relayHostRecord(member, hostRoles.get(relayHostId(member)) ?? "member");
+      if (!listed.has(host.hostId)) listed.set(host.hostId, host);
+    }
+    for (const host of listed.values()) knownHosts.set(host.hostId, host);
+    return [...knownHosts.values()].map((host) => listed.get(host.hostId) ?? host);
+  }
+  function rosterReady(): Promise<void> {
+    return new Promise((resolve) => {
+      const stop = relay.source.subscribe((snapshot) => {
+        if (snapshot.state.status === "connecting") return;
+        queueMicrotask(() => stop());
+        resolve();
+      });
+    });
+  }
+  let rosterSignature = "";
+  const stopRoster = relay.source.subscribe((snapshot) => {
+    const signature = JSON.stringify(
+      snapshot.roster.filter((member) => member.hosting).map((member) => [member.keyId, member.label]),
+    );
+    if (signature === rosterSignature) return;
+    const first = rosterSignature === "";
+    rosterSignature = signature;
+    if (!first) void events.serversChanged?.();
   });
-  let sessionsEnded = false;
-  const sessionActions = {
-    getBootstrap: async (id: string, key: string, sessionId: string | null) => {
-      try {
-        return await runTeamEffect(directory.createBootstrap(id, key, sessionId));
-      } catch (error) {
-        if (error instanceof RemoteDirectoryError && (error.status === 401 || error.status === 403))
-          events.connection({
-            hostId: id,
-            state: "offline",
-            message: null,
-            code: "session_revoked",
-            ...(error.reference ? { reference: error.reference } : {}),
-          });
-        throw error;
-      }
-    },
-    endSession: async (id: string) => {
-      if (!sessionsEnded) await runTeamEffect(directory.endSession(id));
-    },
-  };
   let waitingHostId: string | null = null;
-  const openedActions: RemoteTeamPeerActions = {
-    ...sessionActions,
+  const openedActions: WebPeerActions["current"] = {
     onConnectionUpdate: async (update) => {
       if (update.hostOffline) waitingHostId = update.hostId;
       else if (update.state !== "connecting") waitingHostId = null;
@@ -606,12 +582,12 @@ export function createWebWorkspaceRuntime(
           if (liveViewGeneration === releaseGeneration) browserView.disconnect();
         });
       }
-      events.connection(update);
+      events.connection(
+        update.state !== "online" && !rosterHostIds().has(update.hostId) ? { ...update, hostOffline: true } : update,
+      );
     },
     onHostStreamData: (data) => browserView.receive(data),
     onTeamEvent: async (id, event) => events.event(id, event),
-    onAccountProfileChanged: events.accountChanged,
-    onAccountServersChanged: async () => events.serversChanged?.(),
   };
   const hostProtocols = {
     get: (id: string) => savedHostProtocol(accountId, id),
@@ -620,11 +596,7 @@ export function createWebWorkspaceRuntime(
   function createOpenedPeer() {
     const actions = { current: openedActions };
     return {
-      peer: dependencies.createPeer(actions, {
-        waitForHost: true,
-        hostProtocols,
-        clientProtocol: TEAM_WEB_CLIENT_PROTOCOL,
-      }),
+      peer: relay.createPeer(actions, { hostProtocols, clientProtocol: TEAM_WEB_CLIENT_PROTOCOL }),
       actions,
     };
   }
@@ -632,7 +604,6 @@ export function createWebWorkspaceRuntime(
   const retiring = new Set<Promise<void>>();
   function retire(previous: typeof peer, actions: typeof peerActions, releaseLock: (() => void) | null): void {
     actions.current = {
-      ...sessionActions,
       onConnectionUpdate: async () => undefined,
       onTeamEvent: async () => undefined,
     };
@@ -646,17 +617,14 @@ export function createWebWorkspaceRuntime(
   let releaseHostLock: (() => void) | null = null;
   let lockedHostId: string | null = null;
   const hostChannel = dependencies.openHostChannel?.(accountId) ?? null;
-  const hosts = hostChannel
+  const statusHosts = hostChannel
     ? createWebHostConnections({
         accountId,
         channel: hostChannel,
-        actions: sessionActions,
-        createPeer: dependencies.createPeer,
+        createPeer: relay.createPeer,
         peerOptions: { hostProtocols, clientProtocol: TEAM_WEB_CLIENT_PROTOCOL },
         acquireHostLock: dependencies.acquireHostLock,
-        pinHostKey: (host) => pinWebHostKey(accountId, host),
         onState: (hostId, state) => events.hostState?.(hostId, state),
-        onSessionRevoked: () => events.hostSessionRevoked?.(),
         ...(events.hostNotice
           ? {
               onNotice: (hostId: string, event: WebHostNotice, agents: ClientAgentSummary[]) =>
@@ -665,6 +633,14 @@ export function createWebWorkspaceRuntime(
           : {}),
       })
     : undefined;
+  const hosts: WebHostConnections | undefined = statusHosts && {
+    ...statusHosts,
+    setHosts(next) {
+      const online = rosterHostIds();
+      statusHosts.setHosts(next.filter((host) => online.has(host.hostId)));
+      for (const host of next) if (!online.has(host.hostId)) events.hostState?.(host.hostId, "offline");
+    },
+  };
   hostChannel?.addEventListener("message", (event) => {
     const message = decodeWebHostTabMessage(event.data);
     if (!message || disposed || !("requestId" in message) || message.hostId !== lockedHostId) return;
@@ -821,10 +797,6 @@ export function createWebWorkspaceRuntime(
   ): Promise<T> {
     return decode(await request(method, path, body, upload, WEB_FILE_DOWNLOAD));
   }
-  function requireHost(): RemoteTeamHost {
-    if (!connectedHost) throw new Error(currentText().t("webClient.error.hostNotConnected"));
-    return connectedHost;
-  }
   async function withCreatedAgentAccount(
     agent: ClientAgentSummary,
     accountId: string | undefined,
@@ -848,14 +820,13 @@ export function createWebWorkspaceRuntime(
   }
   async function listMembers(): Promise<TeamMemberSummary[]> {
     const [members, colors] = await Promise.all([
-      runTeamEffect(directory.listMembers(requireHost().hostId)),
+      request("GET", TEAM_API_ROUTES.team.members).then(decodeTeamMembers),
       listChatColors().catch(() => undefined),
     ]);
     const chatColors = new Map(colors?.members.map((entry) => [entry.memberId, entry.color]));
     return members.map((member) => {
-      const summary = toTeamMember(member);
-      const chatColor = chatColors.get(summary.id);
-      return chatColor ? { ...summary, chatColor } : summary;
+      const chatColor = chatColors.get(member.id);
+      return chatColor ? { ...member, chatColor } : member;
     });
   }
   const admin: WebAdminRuntime = {
@@ -868,42 +839,17 @@ export function createWebWorkspaceRuntime(
         return value;
       },
       listMembers,
-      async listInvites() {
-        return (await runTeamEffect(directory.listInvites(requireHost().hostId)))
-          .filter((invite) => invite.revokedAt === null)
-          .map(toTeamInvite);
-      },
-      async createInvite(input) {
-        const host = requireHost();
-        const invite = input.email
-          ? await runTeamEffect(directory.sendInviteEmail(host, { role: input.role, email: input.email }))
-          : await runTeamEffect(directory.createInvite(host, input));
-        return {
-          id: invite.inviteId,
-          role: input.role,
-          expiresAt: new Date(invite.expiresAt).toISOString(),
-          usedAt: null,
-          email: input.email ?? null,
-          permanent: input.permanent ?? false,
-          useCount: 0,
-          inviteUrl: invite.inviteUrl,
-        };
-      },
       async updateMember(input) {
-        const hostId = requireHost().hostId;
-        const current = (await listMembers()).find((member) => member.id === input.memberId);
-        if (!current || current.role === "owner") throw new Error(currentText().t("webClient.error.memberNotFound"));
-        if (input.disabled) await runTeamEffect(directory.leaveHost(hostId, input.memberId));
-        else
-          await runTeamEffect(
-            directory.updateMember(hostId, input.memberId, input.role ?? current.role, input.disabled === false),
-          );
-        const updated = (await listMembers()).find((member) => member.id === input.memberId);
-        if (!updated) throw new Error(currentText().t("webClient.error.memberNotFound"));
-        return updated;
+        const value = await request("PATCH", TEAM_API_ROUTES.team.member(input.memberId), {
+          ...(input.role === undefined ? {} : { role: input.role }),
+          ...(input.disabled === undefined ? {} : { disabled: input.disabled }),
+        });
+        if (!isTeamMemberSummary(value)) throw new Error(currentText().t("error.remote.invalidData"));
+        return value;
       },
-      removeMember: (memberId) => runTeamEffect(directory.leaveHost(requireHost().hostId, memberId)),
-      revokeInvite: (inviteId) => runTeamEffect(directory.revokeInvite(inviteId)),
+      async removeMember(memberId) {
+        await request("DELETE", TEAM_API_ROUTES.team.member(memberId));
+      },
     },
   };
   const routinesOnce = () => capabilities.includes(ROUTINES_ONCE_CAPABILITY);
@@ -1063,7 +1009,6 @@ export function createWebWorkspaceRuntime(
       }
       const current = ++generation;
       connectedHost = host;
-      pinWebHostKey(accountId, host);
       const result = await peer.execute({
         id: crypto.randomUUID(),
         type: "connect",
@@ -1277,48 +1222,26 @@ export function createWebWorkspaceRuntime(
         return withChannelPicture(value);
       },
     },
-    async currentMemberId() {
+    async currentMember() {
+      const hostId = lockedHostId;
       const value = await request("GET", TEAM_API_ROUTES.me);
-      if (!isDynamicRecord(value)) throw new Error(currentText().t("error.remote.invalidData"));
-      return requiredString(value, "id");
+      if (!isTeamMemberSummary(value)) throw new Error(currentText().t("error.remote.invalidData"));
+      if (hostId) {
+        hostRoles.set(hostId, value.role);
+        const known = knownHosts.get(hostId);
+        if (known) knownHosts.set(hostId, { ...known, role: value.role });
+        if (connectedHost?.hostId === hostId) connectedHost = { ...connectedHost, role: value.role };
+      }
+      return { id: value.id, role: value.role };
     },
     respondToBrowserSecret: (input) =>
       Effect.runPromise(respondToBrowserSecret(teamApi, input).pipe(Effect.mapError((error) => error.cause))),
     respondToTakeover: (input) =>
       Effect.runPromise(respondToBrowserTakeover(teamApi, input).pipe(Effect.mapError((error) => error.cause))),
-    listHosts: () => runTeamEffect(directory.listHosts()),
-    leaveHost: (hostId, membershipId) => runTeamEffect(directory.leaveHost(hostId, membershipId)),
-    setHostHidden: (hostId, hidden) => runTeamEffect(directory.setHostHidden(hostId, hidden)),
-    ownerTransfers: {
-      pending: (hostId) => runTeamEffect(directory.pendingOwnerTransfer(hostId)),
-      start: (hostId, email) => runTeamEffect(directory.startOwnerTransfer(hostId, email)),
-      cancel: (hostId) => runTeamEffect(directory.cancelOwnerTransfer(hostId)),
-      incoming: () => runTeamEffect(directory.incomingOwnerTransfers()),
-      accept: (transferId) => runTeamEffect(directory.acceptOwnerTransfer(transferId)),
-      decline: (transferId) => runTeamEffect(directory.declineOwnerTransfer(transferId)),
+    async listHosts() {
+      await rosterReady();
+      return rosterHosts();
     },
-    async removeOwnedHost(hostId) {
-      const response = await accountFetch(`/api/browser/v2/remote/hosts/${encodeURIComponent(hostId)}`, {
-        method: "DELETE",
-        credentials: "same-origin",
-        headers: { "X-OpenBot-Browser": "1", "Content-Type": "application/json" },
-        signal: AbortSignal.timeout(15_000),
-      });
-      if (!response.ok) throw new Error(currentText().t("server.settings.actionFailed"));
-    },
-    async previewInvite(url) {
-      const value = await runTeamEffect(directory.previewInvite(url));
-      return {
-        serverId: value.hostId,
-        serverName: value.hostName,
-        apiHostname: new URL(url).hostname,
-        role: value.role,
-        expiresAt: new Date(value.expiresAt).toISOString(),
-        emailBound: value.emailBound,
-        permanent: value.expiresAt === 0,
-      };
-    },
-    acceptInvite: (url) => runTeamEffect(directory.acceptInvite(url)),
     async connect(host, options) {
       if (connecting && waitingHostId !== null && waitingHostId !== host.hostId) {
         const previous = connecting;
@@ -1855,8 +1778,8 @@ export function createWebWorkspaceRuntime(
         limit: CONVERSATION_FILE_SEARCH_PAGE_LIMIT,
       });
     },
-    async dispose(options) {
-      if (options?.sessionsEnded) sessionsEnded = true;
+    async dispose() {
+      stopRoster();
       await discardCompletedDrafts();
       await releaseLiveView();
       browserView.disconnect();
@@ -1918,29 +1841,11 @@ function hostRefusal(result: RemoteTeamCommandResult): string | null {
   return text.length > 300 ? `${text.slice(0, 299)}…` : text;
 }
 
-function toTeamMember(member: RemoteTeamMember): TeamMemberSummary {
-  return {
-    id: member.membershipId,
-    username: member.email,
-    email: member.email,
-    name: member.name,
-    avatarUrl: member.avatarUrl ?? null,
-    role: member.role,
-    createdAt: new Date(member.createdAt ?? 0).toISOString(),
-    disabled: member.status !== "active",
-  };
-}
-
-function toTeamInvite(invite: RemoteTeamInvite): TeamInviteSummary {
-  return {
-    id: invite.inviteId,
-    role: invite.role,
-    expiresAt: new Date(invite.expiresAt).toISOString(),
-    usedAt: invite.usedAt === null ? null : new Date(invite.usedAt).toISOString(),
-    email: invite.email,
-    permanent: invite.permanent,
-    useCount: invite.useCount,
-  };
+function decodeTeamMembers(value: unknown): TeamMemberSummary[] {
+  if (!Array.isArray(value)) throw new Error(currentText().t("error.remote.invalidData"));
+  const members = value.filter(isTeamMemberSummary);
+  if (members.length !== value.length) throw new Error(currentText().t("error.remote.invalidData"));
+  return members;
 }
 
 function queueSnapshot(agentId: string, value: unknown): QueueSnapshot {

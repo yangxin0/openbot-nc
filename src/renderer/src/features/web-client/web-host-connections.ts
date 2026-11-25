@@ -14,7 +14,6 @@ import { SERVER_SAFE_MODE_CAPABILITY } from "@openbot/contracts/team-protocol/se
 import { runTeamEffect } from "@openbot/team-client";
 import { agentEventCanNotify } from "@openbot/team-client/agent-notifications";
 import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
-import type { createRemoteTeamPeer, RemoteTeamPeerActions } from "@openbot/team-client/remote-peer";
 import { createRemoteConnectionRecovery } from "@openbot/team-client/remote-recovery";
 import {
   listAgentNotificationLevels,
@@ -32,11 +31,12 @@ import {
   type WebHostState,
   type WebHostTabMessage,
 } from "./web-host-lock";
+import type { WebPeer, WebPeerActions, WebPeerFactory } from "./web-relay";
 
 const RELEASED_HOST_REST_MS = 30_000;
 
-type Peer = ReturnType<typeof createRemoteTeamPeer>;
-type PeerActions = Parameters<typeof createRemoteTeamPeer>[0];
+type Peer = WebPeer;
+type PeerActions = WebPeerActions;
 
 interface WebHostHandover {
   peer: Peer;
@@ -61,7 +61,6 @@ interface HostEntry {
   actions: PeerActions | null;
   recovery: ReturnType<typeof createRemoteConnectionRecovery> | null;
   connecting: Promise<unknown> | null;
-  endingSessions: Set<Promise<void>>;
   incompatible: boolean;
   capabilities: readonly string[] | null;
   agents: ClientAgentSummary[];
@@ -120,13 +119,10 @@ export interface WebHostNotificationSettings {
 export function createWebHostConnections(options: {
   accountId: string;
   channel: BroadcastChannel;
-  actions: Pick<RemoteTeamPeerActions, "getBootstrap" | "endSession">;
-  createPeer: typeof createRemoteTeamPeer;
-  peerOptions?: Pick<NonNullable<Parameters<typeof createRemoteTeamPeer>[1]>, "hostProtocols" | "clientProtocol">;
+  createPeer: WebPeerFactory;
+  peerOptions?: Parameters<WebPeerFactory>[1];
   acquireHostLock: typeof acquireWebHostLock;
-  pinHostKey(host: RemoteTeamHost): void;
   onState(hostId: string, state: WebHostState): void;
-  onSessionRevoked(): void;
   onNotice?(hostId: string, event: WebHostNotice, agents: ClientAgentSummary[]): void;
 }): WebHostConnections {
   const { channel } = options;
@@ -162,7 +158,6 @@ export function createWebHostConnections(options: {
       actions: null,
       recovery: null,
       connecting: null,
-      endingSessions: new Set(),
       incompatible: false,
       capabilities: null,
       agents: [],
@@ -188,23 +183,12 @@ export function createWebHostConnections(options: {
       new WebHostRequestError(message ?? currentText().t("webClient.error.connectionUnavailable"), reference ?? null);
     const actions: PeerActions = {
       current: {
-        getBootstrap: options.actions.getBootstrap,
-        endSession(sessionId) {
-          const ending = options.actions.endSession(sessionId);
-          entry.endingSessions.add(ending);
-          void ending.then(
-            () => entry.endingSessions.delete(ending),
-            () => entry.endingSessions.delete(ending),
-          );
-          return ending;
-        },
         async onConnectionUpdate(update) {
           if (entries.get(host.hostId) !== entry) return;
           if (update.state === "online" && update.resync && !entry.incompatible && options.onNotice)
             void readAgents(entry);
           if (update.hostOffline) setState(host.hostId, "offline");
           if (update.state !== "offline") return;
-          if (update.code === "session_revoked") options.onSessionRevoked();
           if (update.code === "protocol_error") entry.recovery?.suspend(failed(update.message, update.reference));
           else entry.recovery?.offline(failed(update.message, update.reference));
         },
@@ -217,19 +201,13 @@ export function createWebHostConnections(options: {
         },
       },
     };
-    const peer = options.createPeer(actions, { ...options.peerOptions, waitForHost: true });
+    const peer = options.createPeer(actions, { ...options.peerOptions });
     entry.actions = actions;
     entry.peer = peer;
     const recovery = createRemoteConnectionRecovery(
       async () => {
         entry.incompatible = false;
         entry.capabilities = null;
-        try {
-          options.pinHostKey(host);
-        } catch (error) {
-          recovery.suspend(error);
-          return;
-        }
         const connecting = peer.execute({
           id: crypto.randomUUID(),
           type: "connect",
@@ -327,7 +305,6 @@ export function createWebHostConnections(options: {
     try {
       await entry.peer?.dispose();
       await entry.connecting?.catch(() => undefined);
-      await Promise.allSettled([...entry.endingSessions]);
     } finally {
       entry.releaseLock?.();
     }

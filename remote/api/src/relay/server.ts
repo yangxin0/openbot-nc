@@ -3,6 +3,7 @@ import { RELAY_PATH, RELAY_TUNNEL_MESSAGE_BYTES_LIMIT } from "@openbot/contracts
 import type { ServerWebSocket } from "bun";
 import type { RelayConfig } from "./config";
 import type { RelayService, RelaySocket } from "./service";
+import { createWebClientHandler, isWebClientPath } from "./web-client";
 
 interface SocketData {
   socket: RelaySocket | null;
@@ -20,6 +21,7 @@ interface RelayServer {
 
 export function startRelayServer(config: RelayConfig, service: RelayService, clientAuthorities: string[]): RelayServer {
   const tls = config.tls;
+  const webClient = config.webClientDirectory === null ? null : createWebClientHandler(config.webClientDirectory);
   const server = Bun.serve<SocketData>({
     hostname: config.host,
     port: config.port,
@@ -35,7 +37,9 @@ export function startRelayServer(config: RelayConfig, service: RelayService, cli
         }
       : {}),
     fetch(request, bunServer) {
-      if (new URL(request.url).pathname !== RELAY_PATH) return new Response("Not found", { status: 404 });
+      const { pathname } = new URL(request.url);
+      if (webClient && isWebClientPath(pathname)) return webClient(request);
+      if (pathname !== RELAY_PATH) return new Response("Not found", { status: 404 });
       const ip = clientIp(
         bunServer.requestIP(request)?.address,
         request.headers.get("x-forwarded-for"),

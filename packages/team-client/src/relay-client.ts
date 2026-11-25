@@ -1,4 +1,5 @@
 import type { RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
+import type { TeamProtocolSupportV1 } from "@openbot/contracts/team-protocol";
 import { RelayBrowserControl, type RelayControlOptions } from "./relay-control";
 import {
   createIndexedDbRelayIdentityKeyStore,
@@ -29,6 +30,7 @@ export type RelayTeamPeerActions = Omit<RemoteTeamPeerActions, "getBootstrap" | 
 
 export interface RelayTeamPeerOptions {
   hostProtocols?: RemoteHostProtocols;
+  clientProtocol?: TeamProtocolSupportV1["protocol"];
   readyDeadlineMs?: number;
 }
 
@@ -77,6 +79,7 @@ export function createRelayTeamPeer(
   };
   return createRemoteTeamPeer(peerActions, {
     ...(options.hostProtocols ? { hostProtocols: options.hostProtocols } : {}),
+    ...(options.clientProtocol ? { clientProtocol: options.clientProtocol } : {}),
     tunnels: relayTeamTunnelTransport(
       identity,
       options.readyDeadlineMs === undefined ? {} : { readyDeadlineMs: options.readyDeadlineMs },

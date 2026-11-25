@@ -1,10 +1,20 @@
 import { strict as assert } from "node:assert";
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import { createHash, createPrivateKey, randomBytes, sign, verify, X509Certificate } from "node:crypto";
-import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { connect as connectTls } from "node:tls";
 import { decodeRelayServerMessage } from "@openbot/contracts/relay-protocol/decode";
 import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/contracts/relay-protocol/identity-bundle";
 import {
@@ -813,6 +823,171 @@ try {
     assert.equal(welcome.self.user, "alice");
     peer.close();
   });
+
+  const webClientDirectory = join(work, "web-client");
+  const webClientSecret = "relay-e2e-secret-outside-the-web-client";
+  mkdirSync(join(webClientDirectory, "assets"), { recursive: true });
+  mkdirSync(join(work, "outside"), { recursive: true });
+  writeFileSync(join(work, "outside", "secret.txt"), webClientSecret);
+  writeFileSync(join(work, "secret.txt"), webClientSecret);
+  writeFileSync(
+    join(webClientDirectory, "index.html"),
+    '<!doctype html><html><head><script type="module" src="/app/assets/index-AbCdEf12.js"></script></head><body>relay-e2e-index</body></html>',
+  );
+  writeFileSync(join(webClientDirectory, "assets", "index-AbCdEf12.js"), "export const relayE2e = 1;\n");
+  writeFileSync(join(webClientDirectory, "assets", "index-AbCdEf12.css"), "body{margin:0}\n");
+  writeFileSync(join(webClientDirectory, "assets", "inter-AbCdEf12.woff2"), new Uint8Array([119, 79, 70, 50]));
+  symlinkSync(join(work, "outside", "secret.txt"), join(webClientDirectory, "assets", "leak-AbCdEf12.txt"));
+  symlinkSync(join(work, "outside"), join(webClientDirectory, "linked"));
+  const web = await startServer(environment, { RELAY_WEB_CLIENT_DIR: webClientDirectory });
+  servers.push(web.child);
+  const webOrigin = web.url.replace("wss:", "https:").replace(RELAY_PATH, "");
+  const webGet = (path: string, init: RequestInit = {}) =>
+    fetch(`${webOrigin}${path}`, { ...init, tls: { ca: rootPem } });
+  const rawGet = (path: string) =>
+    new Promise<{ status: number; head: string; body: string }>((resolveRaw, reject) => {
+      const socket = connectTls({
+        host: "127.0.0.1",
+        port: Number(new URL(web.url).port),
+        servername: "localhost",
+        ca: rootPem,
+      });
+      const chunks: Buffer[] = [];
+      socket.once("secureConnect", () =>
+        socket.write(`GET ${path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n`),
+      );
+      socket.on("data", (chunk: Buffer) => chunks.push(chunk));
+      socket.once("error", reject);
+      socket.once("end", () => {
+        const text = Buffer.concat(chunks).toString("utf8");
+        const split = text.indexOf("\r\n\r\n");
+        const head = split < 0 ? text : text.slice(0, split);
+        resolveRaw({ status: Number(head.split(" ", 2)[1]), head, body: split < 0 ? "" : text.slice(split + 4) });
+      });
+    });
+
+  await check(
+    "With RELAY_WEB_CLIENT_DIR, /app serves index.html and the files of the folder with types and cache rules",
+    async () => {
+      for (const path of ["/app", "/app/"]) {
+        const index = await webGet(path);
+        assert.equal(index.status, 200, path);
+        assert.equal(index.headers.get("content-type"), "text/html; charset=utf-8");
+        assert.equal(index.headers.get("cache-control"), "no-cache");
+        assert.match(await index.text(), /relay-e2e-index/u);
+      }
+      const expected: Array<[string, string]> = [
+        ["/app/assets/index-AbCdEf12.js", "text/javascript; charset=utf-8"],
+        ["/app/assets/index-AbCdEf12.css", "text/css; charset=utf-8"],
+        ["/app/assets/inter-AbCdEf12.woff2", "font/woff2"],
+      ];
+      for (const [path, type] of expected) {
+        const asset = await webGet(path);
+        assert.equal(asset.status, 200, path);
+        assert.equal(asset.headers.get("content-type"), type, path);
+        assert.equal(asset.headers.get("cache-control"), "public, max-age=31536000, immutable", path);
+        await asset.arrayBuffer();
+      }
+      const head = await webGet("/app/assets/index-AbCdEf12.js", { method: "HEAD" });
+      assert.equal(head.status, 200);
+      const post = await webGet("/app", { method: "POST" });
+      assert.equal(post.status, 405);
+    },
+  );
+
+  await check("An unknown path under /app gets index.html, and a missing file gets 404", async () => {
+    const route = await webGet("/app/agents/some-agent");
+    assert.equal(route.status, 200);
+    assert.equal(route.headers.get("cache-control"), "no-cache");
+    assert.match(await route.text(), /relay-e2e-index/u);
+    for (const path of ["/app/assets/missing-AbCdEf12.js", "/app/missing.png", "/app/assets"]) {
+      const missing = await webGet(path);
+      assert.equal(missing.status, 404, path);
+      assert.doesNotMatch(await missing.text(), /relay-e2e-index/u, path);
+    }
+  });
+
+  await check(
+    "A path out of the web client folder is refused: dot segments, encoded slashes and symlinks",
+    async () => {
+      for (const path of [
+        "/app/../secret.txt",
+        "/app/assets/../../secret.txt",
+        "/app/%2e%2e/secret.txt",
+        "/app/%2e%2e%2fsecret.txt",
+        "/app/..%2f..%2fsecret.txt",
+        "/app/assets/%2e%2e%5c%2e%2e%5csecret.txt",
+        "/app/assets/leak-AbCdEf12.txt",
+        "/app/linked/secret.txt",
+        "/app/%00",
+      ]) {
+        const answer = await rawGet(path);
+        assert.ok(answer.status === 404 || answer.status === 400, `${path}: ${answer.status}`);
+        assert.doesNotMatch(answer.body, new RegExp(webClientSecret, "u"), path);
+      }
+      const linked = await rawGet("/app/linked");
+      assert.doesNotMatch(linked.body, new RegExp(webClientSecret, "u"));
+    },
+  );
+
+  await check("Web client responses have the strict security headers, also on a refusal", async () => {
+    for (const path of ["/app/", "/app/assets/index-AbCdEf12.js", "/app/missing.png"]) {
+      const answer = await webGet(path);
+      await answer.arrayBuffer();
+      const policy = answer.headers.get("content-security-policy") ?? "";
+      for (const directive of [
+        "default-src 'none'",
+        "script-src 'self'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob:",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "frame-ancestors 'none'",
+        "base-uri 'none'",
+        "form-action 'none'",
+      ]) {
+        assert.ok(policy.split("; ").includes(directive), `${path}: ${directive} in ${policy}`);
+      }
+      assert.doesNotMatch(policy, /unsafe-eval/u);
+      assert.equal(answer.headers.get("x-content-type-options"), "nosniff", path);
+      assert.equal(answer.headers.get("referrer-policy"), "no-referrer", path);
+    }
+  });
+
+  await check("With the web client on, the relay path and the health endpoint answer as before", async () => {
+    const plain = await webGet(RELAY_PATH);
+    assert.equal(plain.status, 426);
+    const other = await webGet("/application");
+    assert.equal(other.status, 404);
+    const live = await fetch(`http://127.0.0.1:${web.healthPort}/health/live`);
+    assert.equal(live.status, 200);
+    const member = await hello(web.url, rootPem, alice, { role: "member", hosting: false });
+    await member.message("welcome");
+    member.close();
+  });
+
+  await check("serve refuses to start when RELAY_WEB_CLIENT_DIR has no index.html", async () => {
+    const emptyDirectory = join(work, "empty-web-client");
+    mkdirSync(emptyDirectory, { recursive: true });
+    const [port, healthPort] = await Promise.all([freePort(), freePort()]);
+    const result = spawnSync("bun", [MAIN, "serve"], {
+      cwd: ROOT,
+      env: {
+        ...process.env,
+        ...environment,
+        RELAY_HOST: "127.0.0.1",
+        RELAY_PORT: String(port),
+        RELAY_HEALTH_PORT: String(healthPort),
+        RELAY_PUBLIC_URL: `wss://localhost:${port}${RELAY_PATH}`,
+        RELAY_WEB_CLIENT_DIR: emptyDirectory,
+      },
+      encoding: "utf8",
+      timeout: WAIT_MS,
+    });
+    assert.equal(result.status, 1, `${result.stdout}${result.stderr}`);
+    assert.match(`${result.stdout}${result.stderr}`, /RELAY_WEB_CLIENT_DIR has no index\.html/u);
+  });
+  web.child.kill("SIGTERM");
 
   await check("A stop signal ends the server while a member is connected", async () => {
     const stopping = await startServer(environment);

@@ -31,7 +31,6 @@
 @import "@openbot/ui/features/agent-dock/agent-dock.css";
 @import "./features/agent-dock/agent-dock.css";
 @import "./features/account/account-update-island.css";
-@import "@openbot/ui/features/servers/join-server-dialog.css";
 @import "@openbot/ui/features/servers/create-local-server-dialog.css";
 @import "@openbot/ui/features/servers/restart-server-dialog.css";
 @import "@openbot/ui/features/servers/server-roles.css";

@@ -23,6 +23,12 @@
   team root that it is the team's own server, also when its TLS certificate comes from a public
   authority. When the proof is wrong, OpenBot stops and says "The central server did not prove that
   it belongs to your team." The server needs `ca server --dns <public host>` and this version.
+- The web client on your central server, at `https://<your server>/app`. Paste your identity file or
+  choose the file to connect; the browser keeps the private key and cannot read it back. It shows the
+  servers that your team shares, with the user and device that share each one, and their agents and
+  chats. Account settings > Team identity shows the identity and removes it. Set
+  `RELAY_WEB_CLIENT_DIR` on the server to the folder that `bun run web-client:build` writes. The
+  hosts need this version.
 
 ### Changed
 
@@ -126,3 +132,7 @@
   answers these addresses with 401.
 - Servers on this computer are no longer registered with the account service, and they no longer
   read members from it.
+- Web sign-in: the web client has no email or company sign-in, no account profile, picture or
+  session list, no invitations or owner transfer, and no browser extension sign-in page.
+- The vendor web app links: the phone screen of the web client no longer links to the App Store and
+  Google Play, and the web client opens directly.

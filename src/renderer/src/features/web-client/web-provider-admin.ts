@@ -514,7 +514,6 @@ export function createWebProviderSettings(options: WebProviderSettingsOptions) {
     },
     place: () => ({ kind: "web-server", server: options.server() }),
     openVerificationUrl: (url) => void window.open(url, "_blank", "noopener"),
-    openAppDownload: () => void window.open("/download", "_blank", "noopener"),
   });
   function accountSignIn(id: string) {
     return {

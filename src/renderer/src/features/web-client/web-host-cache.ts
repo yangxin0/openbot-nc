@@ -38,6 +38,13 @@ function decodeHost(value: unknown): RemoteTeamHost | null {
   if (isBoolean(value.restartAvailable)) host.restartAvailable = value.restartAvailable;
   if (isNumber(value.storageGb)) host.storageGb = value.storageGb;
   if (isNumber(value.keyChangedAt)) host.keyChangedAt = value.keyChangedAt;
+  const relayHost = value.relayHost;
+  if (
+    isDynamicRecord(relayHost) &&
+    isString(relayHost.user) &&
+    (relayHost.device === null || isString(relayHost.device))
+  )
+    host.relayHost = { user: relayHost.user, device: relayHost.device };
   return host;
 }
 

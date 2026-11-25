@@ -24,18 +24,7 @@ import {
 import type { MarketplaceCalls } from "./features/settings/marketplace-calls";
 import type { MarketplaceAgentRow } from "./features/settings/marketplace-controller";
 import { MARKETPLACE_PLUGINS } from "./features/settings/marketplace-plugin-catalog";
-import { GlobalSearch, JoinServerDialog, MarketplaceModal, ServerSettingsModal } from "./lazy-views";
-
-export function JoinServerOverlay(props: { open: boolean } & ComponentProps<typeof JoinServerDialog>) {
-  const dialog = omit(props, "open");
-  return (
-    <Show when={props.open}>
-      <Loading>
-        <JoinServerDialog {...dialog} />
-      </Loading>
-    </Show>
-  );
-}
+import { GlobalSearch, MarketplaceModal, ServerSettingsModal } from "./lazy-views";
 
 export function MarketplaceOverlay(props: {
   open: boolean;

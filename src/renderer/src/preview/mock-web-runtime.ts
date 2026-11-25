@@ -1,12 +1,53 @@
 import { CHANNEL_CHATS_CAPABILITY } from "@openbot/contracts/ipc";
 import { MESSAGE_DELETE_CAPABILITY } from "@openbot/contracts/team-protocol/message-delete-v1";
 import { MESSAGE_PINS_CAPABILITY } from "@openbot/contracts/team-protocol/message-pins-v1";
+import type { RelayControlSnapshot } from "@openbot/team-client/relay-client";
 import type { WebRuntimeFactory } from "../features/web-client/web-client-context";
+import type { WebRelayConnection } from "../features/web-client/web-relay";
 import type { WebRuntimeEvents, WebWorkspaceRuntime } from "../features/web-client/web-runtime";
 import { createMockOpenBot, type MockOpenBotControls } from "./mock-openbot";
 
 export const createMockWebRuntime: WebRuntimeFactory = (_accountId, events) =>
   mockWebRuntimeFor(createMockOpenBot(), events);
+
+const PREVIEW_RELAY_SNAPSHOT: RelayControlSnapshot = {
+  state: { status: "online" },
+  roster: [
+    {
+      keyId: "preview-key",
+      user: "preview-host",
+      device: "studio",
+      label: "Preview computer",
+      hosting: true,
+      connectedAt: 0,
+    },
+    { keyId: "preview-self", user: "preview-user", device: "browser", label: null, hosting: false, connectedAt: 0 },
+  ],
+  self: { keyId: "preview-self", user: "preview-user", device: "browser" },
+  team: null,
+};
+
+export const previewWebRelay: WebRelayConnection = {
+  identity: {
+    keyId: "preview-self",
+    team: "Preview team",
+    user: "preview-user",
+    device: "browser",
+    relayUrl: "wss://relay.example.com/v1/relay",
+    startsAt: 0,
+    expiresAt: Date.UTC(2030, 0, 1),
+  },
+  source: {
+    snapshot: () => PREVIEW_RELAY_SNAPSHOT,
+    subscribe(listener) {
+      listener(PREVIEW_RELAY_SNAPSHOT);
+      return () => undefined;
+    },
+  },
+  createPeer: () => {
+    throw new Error("The preview has no relay connection.");
+  },
+};
 
 export function mockWebRuntimeFor(mock: MockOpenBotControls, events: WebRuntimeEvents): WebWorkspaceRuntime {
   const agent = mock.api.agent;
@@ -18,7 +59,6 @@ export function mockWebRuntimeFor(mock: MockOpenBotControls, events: WebRuntimeE
     membershipId: "preview-member",
     role: "owner" as const,
   };
-  let removed = false;
   const unsubscribe = agent.onEvent((event) => events.event(host.hostId, event));
   return {
     browser: mock.api.browser,
@@ -35,21 +75,9 @@ export function mockWebRuntimeFor(mock: MockOpenBotControls, events: WebRuntimeE
     getSidebarLayout: () => agent.getSidebarLayout(),
     mutateSidebarLayout: (action) => agent.mutateSidebarLayout(action),
     channels: agent,
-    currentMemberId: async () => "preview",
+    currentMember: async () => ({ id: "preview", role: "owner" }),
     respondToTakeover: (input) => agent.respondToBrowserTakeover(input),
-    listHosts: async () => (removed ? [] : [host]),
-    removeOwnedHost: async () => {
-      removed = true;
-    },
-    leaveHost: async () => {
-      throw new Error("Leaving a host needs a connected account.");
-    },
-    previewInvite: async () => {
-      throw new Error("No invitation in this fixture.");
-    },
-    acceptInvite: async () => {
-      throw new Error("Invitation acceptance needs a connected account.");
-    },
+    listHosts: async () => [host],
     connect: async () => {
       events.connection({ hostId: host.hostId, state: "online", message: null });
       return [

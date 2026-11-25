@@ -52,7 +52,13 @@ const config: KnipConfig = {
   ],
   workspaces: {
     ".": {
-      entry: ["scripts/**/*.ts", "tools/**/*.ts", "src/renderer/stories/prototype-support.tsx"],
+      entry: [
+        "scripts/**/*.ts",
+        "tools/**/*.ts",
+        "src/renderer/stories/prototype-support.tsx",
+        "web-client.vite.config.ts",
+        "src/renderer/src/features/web-client/web-client-entry.tsx",
+      ],
       project: ["src/**/*.{ts,tsx,css}", "scripts/**/*.ts", "tools/**/*.ts"],
       ignoreDependencies: [
         "@speed-highlight/core",

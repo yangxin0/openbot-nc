@@ -22,6 +22,7 @@ export interface RelayConfig {
   tls: RelayTlsConfig | null;
   trustProxy: boolean;
   metricsToken: string | null;
+  webClientDirectory: string | null;
   limits: RelayLimits;
   sourceCommit: string;
 }
@@ -64,6 +65,7 @@ export function readRelayConfig(environment: Environment = process.env): RelayCo
         },
     trustProxy: environment.RELAY_TRUST_PROXY === "true",
     metricsToken: optional(environment.RELAY_METRICS_TOKEN),
+    webClientDirectory: optional(environment.RELAY_WEB_CLIENT_DIR),
     limits: {
       socketsPerIp: positiveInteger(environment.RELAY_MAX_SOCKETS_PER_IP, 128, "RELAY_MAX_SOCKETS_PER_IP"),
       tunnelsPerMember: positiveInteger(environment.RELAY_MAX_TUNNELS_PER_MEMBER, 64, "RELAY_MAX_TUNNELS_PER_MEMBER"),

@@ -52,13 +52,30 @@ export interface SettingsTeamTabProps {
   busy: TeamAction | null;
   unhidingServerId: string | null;
   error: TeamActionError | null;
-  onImport: () => void;
-  onReplace: () => void;
+  browser?: boolean;
+  onImport?: () => void;
+  onReplace?: () => void;
   onRemove: () => Promise<unknown>;
-  onSetHosting: (enabled: boolean) => void;
+  onSetHosting?: (enabled: boolean) => void;
   onUnhide: (serverId: string) => void;
   onRetryLoad: () => void;
 }
+
+const COMPUTER_COPY = {
+  identityDescription: "settings.team.identity.description",
+  membersEmpty: "settings.team.members.empty",
+  memberSelf: "settings.team.member.self",
+  removeDescription: "settings.team.remove.description",
+  removeConfirmDescription: "settings.team.remove.confirmDescription",
+} as const satisfies Record<string, AppTextKey>;
+
+const BROWSER_COPY = {
+  identityDescription: "webClient.team.identityDescription",
+  membersEmpty: "webClient.team.membersEmpty",
+  memberSelf: "webClient.team.memberSelf",
+  removeDescription: "webClient.team.removeDescription",
+  removeConfirmDescription: "webClient.team.removeConfirmDescription",
+} as const satisfies Record<keyof typeof COMPUTER_COPY, AppTextKey>;
 
 const DAY_MS = 86_400_000;
 const EXPIRY_WARNING_DAYS = 30;
@@ -98,6 +115,7 @@ export function SettingsTeamTab(props: SettingsTeamTabProps) {
   const { t } = useText();
   const [confirm, setConfirm] = createSignal<"replace" | "remove" | null>(null);
   const identity = () => props.state?.identity ?? null;
+  const copy = () => (props.browser ? BROWSER_COPY : COMPUTER_COPY);
   const errorFor = (...actions: TeamAction[]) => {
     const error = props.error;
     return error && actions.includes(error.action) ? error.message : null;
@@ -126,13 +144,13 @@ export function SettingsTeamTab(props: SettingsTeamTabProps) {
           <>
             <SettingsSection
               title={t("settings.team.identity.title")}
-              description={t("settings.team.identity.description")}
+              description={t(copy().identityDescription)}
               data-settings-row="settings.team.identity.title"
             >
               <Show when={state().identityIssue}>{(issue) => <IdentityIssue message={issue()} />}</Show>
               <Show
                 when={identity()}
-                fallback={<NoIdentity busy={props.busy === "import"} onImport={() => props.onImport()} />}
+                fallback={<NoIdentity busy={props.busy === "import"} onImport={props.onImport} />}
               >
                 {(current) => (
                   <IdentityFacts identity={current()} control={state().control} receivedAt={props.receivedAt} />
@@ -147,47 +165,55 @@ export function SettingsTeamTab(props: SettingsTeamTabProps) {
                 unhidingServerId={props.unhidingServerId}
                 onUnhide={(serverId) => props.onUnhide(serverId)}
                 error={errorFor("unhide")}
+                emptyKey={copy().membersEmpty}
+                selfKey={copy().memberSelf}
               />
             </Show>
-            <SettingsSection title={t("settings.team.hosting.title")}>
-              <ItemGroup class="settings-modal-card">
-                <SwitchField
-                  data-settings-row="settings.team.hosting.switch"
-                  checked={state().hosting}
-                  disabled={props.busy === "hosting"}
-                  onChange={(checked) => props.onSetHosting(checked)}
-                  label={t("settings.team.hosting.switch")}
-                  description={t("settings.team.hosting.description")}
-                />
-                <HostingStatus state={state().hostingState} />
-              </ItemGroup>
-              <ActionError message={errorFor("hosting")} />
-            </SettingsSection>
+            <Show when={props.onSetHosting}>
+              {(setHosting) => (
+                <SettingsSection title={t("settings.team.hosting.title")}>
+                  <ItemGroup class="settings-modal-card">
+                    <SwitchField
+                      data-settings-row="settings.team.hosting.switch"
+                      checked={state().hosting}
+                      disabled={props.busy === "hosting"}
+                      onChange={(checked) => setHosting()(checked)}
+                      label={t("settings.team.hosting.switch")}
+                      description={t("settings.team.hosting.description")}
+                    />
+                    <HostingStatus state={state().hostingState} />
+                  </ItemGroup>
+                  <ActionError message={errorFor("hosting")} />
+                </SettingsSection>
+              )}
+            </Show>
             <Show when={identity()}>
               <SettingsSection title={t("settings.team.file.title")}>
                 <ItemGroup class="settings-modal-card">
-                  <Item data-settings-row="settings.team.replace.title" class="settings-modal-row">
-                    <ItemContent>
-                      <ItemTitle>{t("settings.team.replace.title")}</ItemTitle>
-                      <ItemDescription>{t("settings.team.replace.description")}</ItemDescription>
-                    </ItemContent>
-                    <ItemActions>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        loading={props.busy === "replace"}
-                        disabled={props.busy !== null && props.busy !== "replace"}
-                        onClick={() => setConfirm("replace")}
-                      >
-                        {t("settings.team.replace.action")}
-                      </Button>
-                    </ItemActions>
-                  </Item>
+                  <Show when={props.onReplace}>
+                    <Item data-settings-row="settings.team.replace.title" class="settings-modal-row">
+                      <ItemContent>
+                        <ItemTitle>{t("settings.team.replace.title")}</ItemTitle>
+                        <ItemDescription>{t("settings.team.replace.description")}</ItemDescription>
+                      </ItemContent>
+                      <ItemActions>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          loading={props.busy === "replace"}
+                          disabled={props.busy !== null && props.busy !== "replace"}
+                          onClick={() => setConfirm("replace")}
+                        >
+                          {t("settings.team.replace.action")}
+                        </Button>
+                      </ItemActions>
+                    </Item>
+                  </Show>
                   <Item data-settings-row="settings.team.remove.title" class="settings-modal-row">
                     <ItemContent>
                       <ItemTitle>{t("settings.team.remove.title")}</ItemTitle>
-                      <ItemDescription>{t("settings.team.remove.description")}</ItemDescription>
+                      <ItemDescription>{t(copy().removeDescription)}</ItemDescription>
                     </ItemContent>
                     <ItemActions>
                       <Button
@@ -218,13 +244,13 @@ export function SettingsTeamTab(props: SettingsTeamTabProps) {
         onCancel={() => setConfirm(null)}
         onConfirm={() => {
           setConfirm(null);
-          props.onReplace();
+          props.onReplace?.();
         }}
       />
       <ConfirmDialog
         open={confirm() === "remove"}
         title={t("settings.team.remove.confirmTitle")}
-        description={t("settings.team.remove.confirmDescription")}
+        description={t(copy().removeConfirmDescription)}
         confirmLabel={t("settings.team.remove.confirm")}
         onCancel={() => setConfirm(null)}
         onConfirm={async () => {
@@ -250,7 +276,7 @@ function TeamLoading(props: { shown: boolean }) {
   );
 }
 
-function NoIdentity(props: { busy: boolean; onImport: () => void }) {
+function NoIdentity(props: { busy: boolean; onImport: (() => void) | undefined }) {
   const { t } = useText();
   return (
     <div class="settings-team-empty">
@@ -263,16 +289,20 @@ function NoIdentity(props: { busy: boolean; onImport: () => void }) {
       <Text variant="caption" tone="muted">
         {t("settings.team.empty.description")}
       </Text>
-      <Button
-        type="button"
-        size="sm"
-        loading={props.busy}
-        loadingLabel={t("settings.team.importing")}
-        onClick={() => props.onImport()}
-      >
-        <Upload aria-hidden="true" />
-        {t("settings.team.import")}
-      </Button>
+      <Show when={props.onImport}>
+        {(importIdentity) => (
+          <Button
+            type="button"
+            size="sm"
+            loading={props.busy}
+            loadingLabel={t("settings.team.importing")}
+            onClick={() => importIdentity()()}
+          >
+            <Upload aria-hidden="true" />
+            {t("settings.team.import")}
+          </Button>
+        )}
+      </Show>
     </div>
   );
 }
@@ -390,6 +420,8 @@ function TeamMembers(props: {
   unhidingServerId: string | null;
   onUnhide: (serverId: string) => void;
   error: string | null;
+  emptyKey: AppTextKey;
+  selfKey: AppTextKey;
 }) {
   const { t } = useText();
   const members = () => [...props.members].sort(memberOrder);
@@ -403,7 +435,7 @@ function TeamMembers(props: {
         when={props.online && members().length > 0}
         fallback={
           <Text class="settings-team-members-empty" variant="caption" tone="muted">
-            {t("settings.team.members.empty")}
+            {t(props.emptyKey)}
           </Text>
         }
       >
@@ -419,7 +451,7 @@ function TeamMembers(props: {
                 </ItemContent>
                 <ItemActions class="settings-team-member-actions">
                   <Show when={member().self}>
-                    <Badge variant="outline">{t("settings.team.member.self")}</Badge>
+                    <Badge variant="outline">{t(props.selfKey)}</Badge>
                   </Show>
                   <Show when={member().hosting}>
                     <Badge variant="info-light">{t("settings.team.member.hosting")}</Badge>

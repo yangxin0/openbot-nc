@@ -13,10 +13,8 @@ import type { OwnerTransfer } from "@openbot/contracts/owner-transfer";
 import { sourceText } from "@openbot/i18n/source";
 import { Toaster } from "@openbot/ui";
 import { createStore } from "solid-js";
-import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import type { ServerBrowserProfilesOptions } from "../src/features/browser/ServerBrowserProfilesPanel";
-import { OwnerTransferPrompt } from "../src/features/servers/OwnerTransferPrompt";
 import type { ServerAuditOptions } from "../src/features/servers/ServerAuditSection";
 import type { OwnerTransferCalls } from "../src/features/servers/ServerOwnerTransferSection";
 import type { ServerAgentAccessOptions } from "../src/features/servers/ServerRolesSection";
@@ -601,21 +599,4 @@ export const OwnerTransferPendingForAdministrator: Story = {
     initialSection: "members",
     ownerTransfer: storyOwnerTransfer(STORY_OWNER_TRANSFER),
   },
-};
-
-export const OwnerTransferIncoming: Story = {
-  render: () => (
-    <>
-      <OwnerTransferPrompt
-        calls={{
-          list: async () => [STORY_OWNER_TRANSFER],
-          accept: async () => ({ hostId: STORY_OWNER_TRANSFER.hostId, hostName: STORY_OWNER_TRANSFER.hostName }),
-          decline: async () => undefined,
-        }}
-        reloadKey={0}
-        onAccepted={fn()}
-      />
-      <Toaster />
-    </>
-  ),
 };

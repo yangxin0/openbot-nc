@@ -3,9 +3,6 @@ import type { messages as source } from "../../en/error/auth";
 
 export const messages = {
   "error.auth.serviceUnavailable": "OpenBot לא הצליח להגיע לשירות החשבון. יש לוודא שה-API פועל ולנסות שוב.",
-  "error.auth.sessionTimeout": "OpenBot לא ענה בזמן. בדקו את החיבור לאינטרנט, ואז נסו שוב.",
-  "error.auth.deliveryTimeout":
-    "OpenBot לא הצליח לאשר את המשלוח בזמן. ייתכן שהקוד עדיין יגיע. יש לבדוק את המשלוח לפני שליחה חוזרת.",
   "error.auth.companySignInFailed": "ההתחברות דרך החברה לא הסתיימה. יש לנסות שוב.",
   "error.auth.companySignInCancelled": "ההתחברות דרך החברה בוטלה.",
   "error.auth.companySignInTimeout": "ההתחברות דרך החברה לקחה זמן רב מדי. יש לפתוח שוב את דף ההתחברות.",

@@ -3,9 +3,6 @@ import { defineMessages } from "../../../message";
 export const messages = defineMessages("error.auth", {
   "error.auth.serviceUnavailable":
     "OpenBot could not reach the account service. Check that the API is running, then try again.",
-  "error.auth.sessionTimeout": "OpenBot did not answer in time. Check your internet connection, then try again.",
-  "error.auth.deliveryTimeout":
-    "OpenBot could not confirm delivery in time. The code may still arrive; check delivery before sending again.",
   "error.auth.companySignInFailed": "The company sign-in did not finish. Try again.",
   "error.auth.companySignInCancelled": "The company sign-in was cancelled.",
   "error.auth.companySignInTimeout": "The company sign-in took too long. Open the sign-in page again.",

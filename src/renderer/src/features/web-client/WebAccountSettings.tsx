@@ -1,7 +1,8 @@
 import { type AppAppearance, isAppAppearance } from "@openbot/contracts/app-appearance";
 import type { AppLanguage } from "@openbot/contracts/app-language";
-import type { AvatarColor, CentralAuthUser } from "@openbot/contracts/ipc";
+import type { RelayState } from "@openbot/contracts/ipc";
 import type { AppTextKey } from "@openbot/i18n";
+import { sourceText } from "@openbot/i18n/source";
 import {
   Item,
   ItemActions,
@@ -10,27 +11,24 @@ import {
   ItemGroup,
   ItemTitle,
   Keyboard,
+  KeyRound,
   SettingsSection,
   SlidersHorizontal,
   SwitchField,
   Tabs,
-  toast,
-  UserRound,
 } from "@openbot/ui";
 import { documentColorScheme } from "@openbot/ui/document-color-scheme";
 import { AppearanceSelect } from "@openbot/ui/features/settings/AppearanceSelect";
 import { ACTION_SOUND_CHOICES, TASK_SOUND_CHOICES } from "@openbot/ui/features/settings/app-settings";
 import { ChatBackgroundSetting } from "@openbot/ui/features/settings/ChatBackgroundSetting";
 import { ChatBubbleStyleSelect } from "@openbot/ui/features/settings/ChatBubbleStyleSelect";
-import { OwnChatColorTrigger } from "@openbot/ui/features/settings/ChatColorSetting";
 import { LanguageSelect } from "@openbot/ui/features/settings/LanguageSelect";
 import { NotificationMatrix, NotificationScopeTitle } from "@openbot/ui/features/settings/NotificationMatrix";
 import { SendShortcutSelect } from "@openbot/ui/features/settings/SendShortcutSelect";
 import { SettingsDialogShell, type SettingsPagePlacement } from "@openbot/ui/features/settings/SettingsDialogShell";
-import { SettingsProfileTab } from "@openbot/ui/features/settings/SettingsProfileTab";
+import { SettingsTeamTab, type TeamActionError } from "@openbot/ui/features/settings/SettingsTeamTab";
 import { SidebarChatOrderSelect } from "@openbot/ui/features/settings/SidebarChatOrderSelect";
 import { SoundChoiceSelect } from "@openbot/ui/features/settings/SoundChoiceSelect";
-import { createSettingsProfileStore } from "@openbot/ui/features/settings/stores/profile-store";
 import { useText } from "@openbot/ui/text";
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import { readActionSoundChoice, setActionSoundChoice } from "../../action-sounds";
@@ -43,18 +41,19 @@ import { currentDevicePlatform, setSendShortcutMode, useSendShortcutMode } from 
 import { ChatBackdropSetting } from "../settings/ChatBackdropSetting";
 import { MotionSwitches } from "../settings/MotionSwitches";
 import { SettingsKeyboardTab } from "../settings/SettingsKeyboardTab";
-import type { WebAccountCalls } from "./web-account";
+import { relaySnapshotSignal } from "./WebRelayNotice";
 import { setWebChatBackground, useWebChatBackground } from "./web-chat-background";
 import type { WebNotificationSettings } from "./web-notification-settings";
+import { relayHostId, relayStateKey, type WebRelayConnection } from "./web-relay";
 
-const TABS = ["profile", "preferences", "keyboard"] as const;
+const TABS = ["team", "preferences", "keyboard"] as const;
 type WebAccountSettingsTab = (typeof TABS)[number];
 
 const TAB_ITEMS = {
-  profile: {
-    titleKey: "settings.tab.profile.title",
-    descriptionKey: "settings.tab.profile.description",
-    icon: UserRound,
+  team: {
+    titleKey: "settings.team.identity.title",
+    descriptionKey: "webClient.team.identityDescription",
+    icon: KeyRound,
   },
   preferences: {
     titleKey: "webClient.settings.preferences.title",
@@ -68,20 +67,19 @@ const TAB_ITEMS = {
   },
 } as const satisfies Record<
   WebAccountSettingsTab,
-  { titleKey: AppTextKey; descriptionKey: AppTextKey; icon: typeof UserRound }
+  { titleKey: AppTextKey; descriptionKey: AppTextKey; icon: typeof KeyRound }
 >;
 
 export interface WebAccountSettingsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   page: SettingsPagePlacement | undefined;
-  account: CentralAuthUser;
-  calls: WebAccountCalls;
+  relay: WebRelayConnection;
   language: AppLanguage;
   onChangeLanguage: (language: AppLanguage) => void;
   appearance: AppAppearance;
   onChangeAppearance: (appearance: AppAppearance) => void;
-  onSignOut: () => Promise<void>;
+  onRemoveIdentity: () => Promise<void>;
   notifications: WebNotificationSettings;
   notificationFocusRequest?: { serverId: string; nonce: number } | null | undefined;
   keyboardFocusRequest?: number | null | undefined;
@@ -89,11 +87,7 @@ export interface WebAccountSettingsProps {
 
 export default function WebAccountSettings(props: WebAccountSettingsProps) {
   const { t, errorMessage } = useText();
-  const saveChatColor = (color: AvatarColor | null) =>
-    void props.calls
-      .setChatColor(color)
-      .catch((error: unknown) => toast.error(errorMessage(error, t("settings.preferences.saveFailed")), { error }));
-  const [activeTab, setActiveTab] = createSignal<WebAccountSettingsTab>("profile");
+  const [activeTab, setActiveTab] = createSignal<WebAccountSettingsTab>("team");
   const [taskSound, setTaskSoundChoice] = createSignal(readTaskSound());
   const sendShortcutMode = useSendShortcutMode();
   const layout = useLayout();
@@ -110,21 +104,65 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
   onCleanup(() => window.removeEventListener("storage", readSoundSettings));
   let modalElement: HTMLElement | undefined;
 
-  const profile = createSettingsProfileStore(
-    {
-      get open() {
-        return props.open;
+  const relaySnapshot = relaySnapshotSignal(props.relay.source);
+  const [receivedAt, setReceivedAt] = createSignal(Date.now());
+  createEffect(relaySnapshot, () => {
+    setReceivedAt(Date.now());
+  });
+  const [removing, setRemoving] = createSignal(false);
+  const [removeError, setRemoveError] = createSignal<TeamActionError | null>(null);
+  const relayState = (): RelayState => {
+    const snapshot = relaySnapshot();
+    const { identity } = props.relay;
+    const selfKeyId = snapshot.self?.keyId ?? identity.keyId;
+    const { state } = snapshot;
+    return {
+      identity: {
+        team: identity.team,
+        user: identity.user,
+        device: identity.device,
+        keyId: identity.keyId,
+        relayUrl: identity.relayUrl,
+        expiresAt: identity.expiresAt,
       },
-      get account() {
-        return props.account;
-      },
-      onUpdateAccountName: (name) => props.calls.updateName(name),
-      onUpdateAccountAvatar: (image) => props.calls.updateAvatar(image),
-      onListAccountSessions: () => props.calls.listSessions(),
-      onRevokeAccountSession: (sessionId) => props.calls.revokeSession(sessionId),
-    },
-    () => activeTab() === "profile",
-  );
+      identityIssue: null,
+      control:
+        state.status === "offline"
+          ? {
+              status: "offline",
+              code: state.code,
+              message: state.code === "stopped" ? null : sourceText(relayStateKey(state.code)),
+              retryInMs: state.retryInMs,
+            }
+          : state,
+      members: snapshot.roster.map((member) => {
+        const self = member.keyId === selfKeyId;
+        return {
+          keyId: member.keyId,
+          user: member.user,
+          device: member.device,
+          label: member.label,
+          hosting: member.hosting,
+          self,
+          serverId: member.hosting && !self ? relayHostId(member) : null,
+          hidden: false,
+        };
+      }),
+      hosting: false,
+      hostingState: { status: "off", message: null },
+    };
+  };
+  async function removeIdentity(): Promise<void> {
+    setRemoving(true);
+    setRemoveError(null);
+    try {
+      await props.onRemoveIdentity();
+    } catch (error) {
+      setRemoveError({ action: "remove", message: errorMessage(error, t("settings.team.error.remove")) });
+    } finally {
+      setRemoving(false);
+    }
+  }
   const navItem = () => TAB_ITEMS[activeTab()];
   createEffect(
     () => (props.open ? props.notificationFocusRequest : null),
@@ -177,13 +215,18 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
           </Tabs.List>
         }
       >
-        <Tabs.Content value="profile" class="settings-modal-tab-panel profile-panel" data-tab="profile">
-          <SettingsProfileTab
-            store={profile}
-            account={props.account}
-            canListSessions
-            canRevokeSession
-            onSignOut={props.onSignOut}
+        <Tabs.Content value="team" class="settings-modal-tab-panel" data-tab="team">
+          <SettingsTeamTab
+            browser
+            state={relayState()}
+            receivedAt={receivedAt()}
+            loadError={null}
+            busy={removing() ? "remove" : null}
+            unhidingServerId={null}
+            error={removeError()}
+            onRemove={removeIdentity}
+            onUnhide={() => undefined}
+            onRetryLoad={() => undefined}
           />
         </Tabs.Content>
 
@@ -259,15 +302,6 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
                     }}
                     {...(modalElement ? { mount: modalElement } : {})}
                   />
-                </ItemActions>
-              </Item>
-              <Item class="settings-modal-row">
-                <ItemContent>
-                  <ItemTitle>{t("settings.chatColor.title")}</ItemTitle>
-                  <ItemDescription>{t("settings.chatColor.description")}</ItemDescription>
-                </ItemContent>
-                <ItemActions>
-                  <OwnChatColorTrigger value={props.account.chatColor ?? null} onChange={saveChatColor} />
                 </ItemActions>
               </Item>
               <Item class="settings-modal-row">

@@ -26,9 +26,6 @@ export const CreateLocalServerDialog = lazy(() =>
     default: module.CreateLocalServerDialog,
   })),
 );
-export const JoinServerDialog = lazy(() =>
-  import("@openbot/ui/features/servers/JoinServerDialog").then((module) => ({ default: module.JoinServerDialog })),
-);
 export const FirstRunFlow = lazy(() =>
   import("./features/onboarding/FirstRunFlow").then((module) => ({ default: module.FirstRunFlow })),
 );

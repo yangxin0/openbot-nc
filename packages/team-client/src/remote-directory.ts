@@ -10,6 +10,7 @@ import {
   parseInviteUrl,
   selfHostedApiOrigin,
 } from "@openbot/contracts/invite-links";
+import type { ServerRelayHost } from "@openbot/contracts/ipc";
 import type { MobileConnectHostBinding } from "@openbot/contracts/mobile-connect";
 import {
   type AcceptedOwnerTransfer,
@@ -53,6 +54,7 @@ export interface RemoteTeamHost {
   keyChangedAt?: number;
   paymentRequired?: true;
   customPlan?: CustomServerPlan;
+  relayHost?: ServerRelayHost;
 }
 
 export interface RemoteTeamMember {

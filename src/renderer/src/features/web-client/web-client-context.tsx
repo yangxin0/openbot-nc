@@ -97,6 +97,7 @@ import {
 import { readCachedWebHosts, writeCachedWebHosts } from "./web-host-cache";
 import type { WebHostNotice } from "./web-host-connections";
 import { WebHostOtherTabError, type WebHostState } from "./web-host-lock";
+import type { WebRelayConnection } from "./web-relay";
 import {
   createWebWorkspaceRuntime,
   WebHostConnectionError,
@@ -206,7 +207,7 @@ interface WebWorkspaceState {
 export type WebRuntimeFactory = (
   accountId: string,
   events: WebRuntimeEvents,
-  accountFetch: typeof fetch,
+  relay: WebRelayConnection,
 ) => WebWorkspaceRuntime;
 
 export type WebWorkspace = ReturnType<typeof createWebWorkspace>;
@@ -214,9 +215,7 @@ export type WebWorkspace = ReturnType<typeof createWebWorkspace>;
 export function createWebWorkspace(
   props: {
     accountId: string;
-    accountFetch: typeof fetch;
-    onSessionCheck: () => Promise<void>;
-    accountSessionEnded?: () => boolean;
+    relay: WebRelayConnection;
     createRuntime?: WebRuntimeFactory | undefined;
   },
   hooks: {
@@ -287,8 +286,6 @@ export function createWebWorkspace(
   let pendingReload = false;
   let reloadPromise: Promise<void> | null = null;
   let hostsRefreshPromise: Promise<void> | null = null;
-  const leftHostIds = new Set<string>();
-  let acceptedInvite: { inviteUrl: string; host: RemoteTeamHost } | null = null;
   let revokedReconnect = false;
   let syncedAt = 0;
   const queueLoads = new Map<string, { generation: number; again: boolean }>();
@@ -437,7 +434,6 @@ export function createWebWorkspace(
   const runtime = (props.createRuntime ?? createWebWorkspaceRuntime)(
     props.accountId,
     {
-      accountChanged: props.onSessionCheck,
       serversChanged: retryHosts,
       accessDenied(id, error) {
         if (!disposed && id === hostId) blockAccess(error);
@@ -452,7 +448,6 @@ export function createWebWorkspace(
             draft.hostStates[id] = hostState;
           });
       },
-      hostSessionRevoked: () => void retryHosts(),
       hostTaken(id) {
         if (disposed || id !== hostId) return;
         generation += 1;
@@ -521,9 +516,7 @@ export function createWebWorkspace(
           const revokedHostId = hostId;
           const revokedGeneration = generation;
           const revokedConnection = connectionPromise?.promise;
-          void props
-            .onSessionCheck()
-            .then(() => refreshHosts())
+          void refreshHosts()
             .then(async () => {
               await revokedConnection?.catch(() => undefined);
               const host = state.hosts.find((listed) => listed.hostId === revokedHostId);
@@ -711,7 +704,7 @@ export function createWebWorkspace(
         if (changed !== undefined && changed === selectedId) void refresh();
       },
     },
-    props.accountFetch,
+    props.relay,
   );
   const pinScope = () => (state.host ? `${props.accountId}:${state.host.hostId}` : "");
   const pinScopes = new Set<string>();
@@ -1058,7 +1051,7 @@ export function createWebWorkspace(
             draft.capabilities = [];
             draft.status = "offline";
             draft.error =
-              leftHostIds.has(refreshHostId) || refreshHostId === earlyHostId
+              refreshHostId === earlyHostId
                 ? null
                 : { message: currentText().t("webClient.error.accessEnded"), reference: null };
           });
@@ -1084,7 +1077,6 @@ export function createWebWorkspace(
           draft.hostsLoaded = true;
           draft.hostsError = null;
         });
-        for (const left of leftHostIds) if (!hosts.some((host) => host.hostId === left)) leftHostIds.delete(left);
         if (listedEarlyHost && cachedHost && listedEarlyHost.devicePublicKey !== cachedHost.devicePublicKey) {
           await connectionPromise?.promise.catch(() => undefined);
           if (!disposed && hostId === listedEarlyHost.hostId) await connect(listedEarlyHost);
@@ -1124,36 +1116,6 @@ export function createWebWorkspace(
       },
     );
     return promise;
-  }
-  async function leaveHost(host: RemoteTeamHost): Promise<void> {
-    await departHost(host, () => runtime.leaveHost(host.hostId, host.membershipId));
-  }
-  async function removeOwnedHost(host: RemoteTeamHost): Promise<void> {
-    const remove = runtime.removeOwnedHost;
-    if (!remove) throw new Error(currentText().t("server.settings.actionFailed"));
-    await departHost(host, () => remove(host.hostId));
-  }
-  async function setHostHidden(host: RemoteTeamHost, hidden: boolean): Promise<void> {
-    const change = runtime.setHostHidden;
-    if (!change) throw new Error(currentText().t("server.settings.actionFailed"));
-    await change(host.hostId, hidden);
-    setState((draft) => {
-      const listed = draft.hosts.find((candidate) => candidate.hostId === host.hostId);
-      if (!listed) return;
-      if (hidden) listed.hidden = true;
-      else delete listed.hidden;
-    });
-    void (hostsRefreshPromise ?? Promise.resolve()).catch(() => undefined).then(retryHosts);
-  }
-  async function departHost(host: RemoteTeamHost, operation: () => Promise<void>): Promise<void> {
-    leftHostIds.add(host.hostId);
-    try {
-      await operation();
-    } catch (error) {
-      leftHostIds.delete(host.hostId);
-      throw error;
-    }
-    void (hostsRefreshPromise ?? Promise.resolve()).catch(() => undefined).then(retryHosts);
   }
   function retryHosts(): Promise<void> {
     return refreshHosts().catch(() => undefined);
@@ -1217,22 +1179,8 @@ export function createWebWorkspace(
   async function reconnect(): Promise<void> {
     const host = state.hosts.find((listed) => listed.hostId === hostId) ?? state.host;
     if (!host || connectionPromise) return;
-    await props.onSessionCheck();
     recoveryBlocked = false;
     await connect(host);
-  }
-  async function joinInvite(inviteUrl: string): Promise<void> {
-    const normalizedInviteUrl = inviteUrl.trim();
-    if (!normalizedInviteUrl) throw new Error(currentText().t("webClient.error.enterInvitation"));
-    const cached = acceptedInvite?.inviteUrl === normalizedInviteUrl ? acceptedInvite : null;
-    const host = cached?.host ?? (await runtime.acceptInvite(normalizedInviteUrl));
-    acceptedInvite = { inviteUrl: normalizedInviteUrl, host };
-    const hadHostSelection = hostId !== null;
-    await refreshHosts();
-    if (state.host?.hostId !== host.hostId || (state.status !== "online" && hadHostSelection)) await connect(host);
-    if (state.status !== "online" || state.host?.hostId !== host.hostId)
-      throw new Error(currentText().t("webClient.error.invitationOffline"));
-    acceptedInvite = null;
   }
   async function connect(host: RemoteTeamHost, takeOver = false) {
     recoveryBlocked = false;
@@ -1419,11 +1367,14 @@ export function createWebWorkspace(
         markRemoteSync("panels-ready");
       });
       void runtime
-        .currentMemberId?.()
-        .then((memberId) => {
+        .currentMember?.()
+        .then((member) => {
           if (!disposed && current === generation)
             setState((draft) => {
-              draft.memberId = memberId;
+              draft.memberId = member.id;
+              if (draft.host?.hostId === host.hostId) draft.host.role = member.role;
+              const listed = draft.hosts.find((candidate) => candidate.hostId === host.hostId);
+              if (listed) listed.role = member.role;
             });
         })
         .catch(() => undefined);
@@ -2047,9 +1998,7 @@ export function createWebWorkspace(
     const focus = () => {
       pageFocus();
       runtime.hosts?.refresh();
-      void props
-        .onSessionCheck()
-        .then(() => refreshHosts())
+      void refreshHosts()
         .then(() => {
           if (state.status === "online") return Date.now() - syncedAt < FOCUS_RESYNC_MS ? undefined : resync();
           if (state.recovery?.phase !== "suspended") recoverNow();
@@ -2081,10 +2030,9 @@ export function createWebWorkspace(
       focusUse.dispose();
       document.removeEventListener("visibilitychange", visibility);
       window.removeEventListener("online", network);
-      acceptedInvite = null;
       window.removeEventListener("focus", focus);
       window.removeEventListener("blur", pageFocus);
-      void runtime.dispose({ sessionsEnded: props.accountSessionEnded?.() ?? false }).catch(() => undefined);
+      void runtime.dispose().catch(() => undefined);
     };
   });
   return {
@@ -2119,15 +2067,10 @@ export function createWebWorkspace(
     run,
     refreshHosts,
     setHostAppearance,
-    leaveHost,
-    removeOwnedHost,
-    setHostHidden,
-    canHideHosts: runtime.setHostHidden !== undefined,
     retryHosts,
     reconnect,
     restartRequested,
     useHere,
-    joinInvite,
     connect,
     select,
     refresh,

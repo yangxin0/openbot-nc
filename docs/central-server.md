@@ -201,6 +201,7 @@ Names can have letters, digits, spaces and `. _ @ -`, from 1 to 64 characters.
 | `RELAY_MAX_SOCKETS_PER_IP` | `128` | Sockets from one address. |
 | `RELAY_MAX_TUNNELS_PER_MEMBER` | `64` | Connections that one certificate can open. |
 | `RELAY_MAX_PENDING_PER_MEMBER` | `32` | Connections that wait for one member to accept. |
+| `RELAY_WEB_CLIENT_DIR` | none | A folder with the web client build (`bun run web-client:build`). When it is set, the server serves the web client at `/app`. `serve` refuses to start when the folder has no `index.html`. |
 
 `serve` needs only the certificates and the registry. To keep the root private key off the server,
 move `<data>/ca/root.key` to a safe place after you make the teams and the server certificate. Put
@@ -241,6 +242,50 @@ The desktop accepts a TLS certificate of the system roots (the default roots of 
 `NODE_EXTRA_CA_CERTS`) or of the root in its identity file, with the normal host name check. It
 refuses `ws:` except on its own computer.
 
+## Web client
+
+The server can serve the web client at `https://<host>/app`, on the same origin as
+`wss://<host>/v1/relay`. Each person pastes the identity file or chooses the file in the browser.
+The browser keeps the private key in IndexedDB as a key that cannot be exported. The page loads only
+files of the same origin, and it connects only to the relay socket of the same origin. So an
+identity file must name the same server (`RELAY_PUBLIC_URL`) as the address of the page.
+
+1. Build the files on a computer with the repository: `bun run web-client:build`. The build writes
+   `.openbot-build/web-client/` (`index.html`, and the JavaScript, CSS, fonts and pictures in
+   `assets/`).
+2. Copy the folder to the server, for example to `/opt/openbot-relay/web-client/`, readable by the
+   user of the service.
+3. Add `RELAY_WEB_CLIENT_DIR=/opt/openbot-relay/web-client` to the settings of the service (for
+   example `/etc/openbot-relay.env`) and start the service again.
+
+To update the web client, build it again, replace the folder and start the service again.
+
+With `RELAY_TLS_CLIENT_CERTIFICATES=required`, a browser cannot open the page: it has no TLS client
+certificate. Keep that setting `off` to use the web client.
+
+The rules of `/app`:
+
+- `GET` and `HEAD` only. `/app` and `/app/` give `index.html`. A path that is not a file gives
+  `index.html`, so the routes of the client work, except for a path in `assets/` or a path with a
+  file extension: these give 404.
+- A path cannot leave the folder: the server refuses `.` and `..` segments, encoded slashes and
+  back slashes, and a symbolic link to a file out of the folder. It never lists a folder.
+- `Cache-Control`: `public, max-age=31536000, immutable` for the hashed files in `assets/`,
+  `no-cache` for `index.html` and the other files.
+- Each answer has these headers: `Content-Security-Policy: default-src 'none'; script-src 'self';
+  style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self';
+  media-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'`,
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY`,
+  `Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Resource-Policy: same-origin` and a
+  `Permissions-Policy`.
+- Styles need `'unsafe-inline'`: the shared SolidJS components and the toast library set static
+  `style` attributes, the toast library adds a `<style>` element, and a Mermaid diagram has a
+  `<style>` element in its SVG. Scripts stay strict: only files of the same origin, no `eval`. An
+  inline style cannot load a file from a different origin, because `img-src`, `font-src` and
+  `connect-src` permit only the same origin.
+
+`/v1/relay` and the health endpoints do not change.
+
 ## Test
 
 ```sh
@@ -248,4 +293,14 @@ bun run test:relay
 ```
 
 The test starts the real server process with a new root, connects real WebSocket clients, and
-writes `.openbot-build/relay-e2e/report.json`.
+writes `.openbot-build/relay-e2e/report.json`. It also checks the `/app` files, the fallback to
+`index.html`, the refusal of paths out of the folder, and the headers.
+
+```sh
+bun run test:relay-web-client
+```
+
+This test builds the web client, starts the real server with `RELAY_WEB_CLIENT_DIR` and a host with
+relay hosting, and drives Chromium at `https://localhost:<port>/app`: it imports an identity by
+paste and by file, opens the agent list, sends a message, removes the identity, and fails on a CSP
+violation. It writes screenshots and `report.json` to `.openbot-build/relay-web-client-e2e/`.

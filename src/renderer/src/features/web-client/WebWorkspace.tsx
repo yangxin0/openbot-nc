@@ -7,7 +7,6 @@ import {
   type AgentStatus,
   type AgentWaitsSnapshot,
   type AppInfo,
-  type AvatarColor,
   agentFastModeSettings,
   CHANNEL_CHATS_CAPABILITY,
   CHANNEL_TASK_CANCEL_CAPABILITY,
@@ -22,7 +21,6 @@ import {
   decodeAgentNewChatSettings,
   decodeAgentPlanCardSettings,
   decodeAgentSpeedSettings,
-  decodeHostSignalHomeSettings,
   decodeHostTurnLimits,
   decodeHostVoiceModel,
   LEGACY_RESPONSE_STYLE,
@@ -68,7 +66,6 @@ import { CRM_CAPABILITY } from "@openbot/contracts/team-protocol/crm-v1";
 import { AGENT_HIDDEN_CAPABILITY, AGENT_HIDDEN_WORK_CAPABILITY } from "@openbot/contracts/team-protocol/current";
 import { EVENTS_CAPABILITY } from "@openbot/contracts/team-protocol/events-v1";
 import { HOST_PERSONALITY_CAPABILITY } from "@openbot/contracts/team-protocol/host-personality-v1";
-import { HOST_SIGNAL_HOME_ROUTES } from "@openbot/contracts/team-protocol/host-signal-home-v1";
 import { HOST_TURN_LIMITS_ROUTES } from "@openbot/contracts/team-protocol/host-turn-limits-v1";
 import { HOST_VOICE_MODEL_ROUTES } from "@openbot/contracts/team-protocol/host-voice-model-v1";
 import { INSTANCE_TRANSFER_CHUNKS_CAPABILITY } from "@openbot/contracts/team-protocol/instance-transfer-chunks-v1";
@@ -77,7 +74,6 @@ import { INSTANCE_TRANSFER_CAPABILITY } from "@openbot/contracts/team-protocol/i
 import { MCP_SIGN_IN_CAPABILITY } from "@openbot/contracts/team-protocol/mcp-sign-in-v1";
 import { MESSAGE_DELETE_CAPABILITY } from "@openbot/contracts/team-protocol/message-delete-v1";
 import { MESSAGE_PINS_CAPABILITY } from "@openbot/contracts/team-protocol/message-pins-v1";
-import { OWNER_TRANSFER_CAPABILITY } from "@openbot/contracts/team-protocol/owner-transfer-v1";
 import { PROVIDER_ACCOUNTS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-accounts-v1";
 import { ROUTINE_RECOVERY_CAPABILITY } from "@openbot/contracts/team-protocol/routine-recovery-v1";
 import { ROUTINE_RUN_PLACE_CAPABILITY } from "@openbot/contracts/team-protocol/routine-run-place-v1";
@@ -146,7 +142,6 @@ import { computeAgentAvatarMoods } from "@openbot/ui/features/agents/agent-avata
 import { createFirstAgentDraft, type FirstAgentDraft } from "@openbot/ui/features/agents/FirstAgentSetup";
 import { unloadedHistory } from "@openbot/ui/features/conversation/ChatScrollRail";
 import { MAIN_THREAD_ID } from "@openbot/ui/features/conversation/threads/thread-types";
-import { LeaveServerDialog } from "@openbot/ui/features/servers/LeaveServerDialog";
 import { RestartServerDialog } from "@openbot/ui/features/servers/RestartServerDialog";
 import type { ServerActionCallbacks } from "@openbot/ui/features/servers/ServerActionItems";
 import {
@@ -156,7 +151,7 @@ import {
   serverWorkspacePhase,
 } from "@openbot/ui/features/servers/ServerConnectionNotice";
 import { ServerMenu } from "@openbot/ui/features/servers/ServerMenu";
-import { type HiddenServer, ServerRail } from "@openbot/ui/features/servers/ServerRail";
+import { ServerRail } from "@openbot/ui/features/servers/ServerRail";
 import type { SettingsPagePlacement } from "@openbot/ui/features/settings/SettingsDialogShell";
 import { Sidebar } from "@openbot/ui/features/sidebar/Sidebar";
 import { sidebarAgentOrder } from "@openbot/ui/features/sidebar/sidebar-agent-order";
@@ -209,7 +204,6 @@ import { WorkspaceFrame } from "../../WorkspaceFrame";
 import {
   ChannelCreateOverlay,
   GlobalSearchOverlay,
-  JoinServerOverlay,
   MarketplaceOverlay,
   ServerSettingsOverlay,
 } from "../../WorkspaceOverlayViews";
@@ -259,17 +253,14 @@ import { createRoutineTimezonePrompt } from "../schedule/routine-timezone-prompt
 import type { ScheduleRoutine } from "../schedule/SchedulePanel";
 import { scheduleRoutinePorts } from "../schedule/schedule-routine-create";
 import { mcpSignInRecord } from "../servers/mcp-servers";
-import { OwnerTransferPrompt } from "../servers/OwnerTransferPrompt";
 import { saveRemoteFrameChannels } from "../servers/remote-workspace-frame";
 import type { HostAgentDefaultsCalls } from "../servers/ServerAgentsSection";
 import type { HostServerAuditCalls } from "../servers/ServerAuditSection";
 import type { HostBrowsingMemoryCalls } from "../servers/ServerBrowsingMemorySetting";
 import type { HostMemoryLimitCalls } from "../servers/ServerMemoryLimitSetting";
 import type { HostMemoryReviewCalls } from "../servers/ServerMemoryReviewSetting";
-import type { OwnerTransferCalls } from "../servers/ServerOwnerTransferSection";
 import type { HostAgentAccessCalls } from "../servers/ServerRolesSection";
 import type { ServerSettingsSection } from "../servers/ServerSettingsModal";
-import type { HostSignalHomeCalls } from "../servers/ServerSignalHomeSetting";
 import type { HostSkillLearningCalls } from "../servers/ServerSkillLearningSetting";
 import type { HostTimezoneCalls } from "../servers/ServerTimezoneSetting";
 import type { HostTurnLimitsCalls } from "../servers/ServerTurnLimitsSetting";
@@ -315,10 +306,9 @@ import { useWorkspaceShortcuts } from "../window/workspace-shortcuts";
 import { workflowAgentProgress } from "../workflows/workflow-agent-progress";
 import { createWorkflowMediaCredits } from "../workflows/workflow-media-credits";
 import { WebAgentSettings } from "./WebAgentSettings";
-import { WebConnectComputer } from "./WebConnectComputer";
 import { WebMobileNavigation, type WebMobilePane } from "./WebMobileNavigation";
+import { WebRelayNotice } from "./WebRelayNotice";
 import { WebServerOtherTab } from "./WebServerOtherTab";
-import { createWebAccountCalls } from "./web-account";
 import { createWebAccountUsage } from "./web-account-usage";
 import { createWebAgentImportCalls } from "./web-agent-import";
 import { createWebAgentThreads } from "./web-agent-threads";
@@ -342,6 +332,7 @@ import { requestWebNotificationPermission } from "./web-notifications";
 import { webOnePasswordConnectorPort } from "./web-onepassword-connector";
 import { webPasswordManagersPort } from "./web-password-managers";
 import { createWebProviderSettings } from "./web-provider-admin";
+import type { WebRelayConnection } from "./web-relay";
 import type { WebAdminRuntime } from "./web-runtime";
 import { webScheduleSource } from "./web-schedule";
 import { createWebServerSettings } from "./web-server-settings";
@@ -386,19 +377,10 @@ type HostPageView = "usage" | "schedule" | "tasks" | "workflows" | "library" | "
 
 type WebWorkspaceProps = {
   accountId: string;
-  accountEmail?: string;
-  accountName?: string | null;
-  accountAvatarUrl?: string | null;
-  accountChatColor?: AvatarColor | null;
-  accountFetch: typeof fetch;
-  onSessionCheck: () => Promise<void>;
-  accountSessionEnded?: () => boolean;
-  onLogout: () => Promise<void>;
+  accountName: string;
+  relay: WebRelayConnection;
+  onRemoveIdentity: () => Promise<void>;
   createRuntime?: WebRuntimeFactory | undefined;
-  inviteUrl?: string | null;
-  onInviteClose?: () => void;
-  pluginSlug?: string | null;
-  onPluginSlugConsumed?: () => void;
   language: AppLanguage;
   onChangeLanguage: (language: AppLanguage) => void;
   appearance: AppAppearance;
@@ -452,7 +434,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
     workspace.runtime.setTyping(typing ? agentId : null, typing);
   }
   const controller = createConversationController({ onTypingChange: setTyping });
-  async function signOut() {
+  async function removeIdentity() {
     const agentId = controller.editingAgentId();
     const deliveryId = controller.editingDeliveryId();
     const editId = controller.editingEditId();
@@ -469,7 +451,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
         clearStoredQueueEdit();
       } catch {}
     }
-    await props.onLogout();
+    await props.onRemoveIdentity();
   }
   const noHost = () => !workspace.state.host && (workspace.state.hostsLoaded || Boolean(workspace.state.hostsError));
   const hostOffline = () => !noHost() && !workspace.state.workspaceLoaded;
@@ -524,19 +506,17 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
       controller.setEditingDeliveryId(null);
     },
   );
-  const [joinOpen, setJoinOpen] = createSignal(false);
   const [creating, setCreating] = createSignal(false);
   const [agentAvatar, setAgentAvatar] = createSignal(newAgentAvatar());
   const [mobilePane, setMobilePane] = createSignal<WebMobilePane>("conversation");
   const [settingsRequest, setSettingsRequest] = createSignal<AgentSettingsRequest | null>(null);
   const account = createMemo(() => ({
     id: props.accountId,
-    email: props.accountEmail ?? "",
-    name: props.accountName ?? null,
-    avatarUrl: props.accountAvatarUrl ?? null,
-    chatColor: props.accountChatColor ?? null,
+    email: "",
+    name: props.accountName,
+    avatarUrl: null,
+    chatColor: null,
   }));
-  const accountCalls = createWebAccountCalls(props.accountFetch, props.onSessionCheck);
   const [accountSettingsOpen, setAccountSettingsOpen] = createSignal(false);
   const [accountSettingsLoaded, setAccountSettingsLoaded] = createSignal(false);
   const [serverSettingsLoaded, setServerSettingsLoaded] = createSignal(false);
@@ -565,15 +545,14 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
         kind: "remote",
         role: host.role,
         apiUrl: null,
-        logoUrl: host.logoKey
-          ? `/api/browser/v2/remote/hosts/${encodeURIComponent(host.hostId)}/logo?v=${encodeURIComponent(host.logoKey)}`
-          : null,
+        logoUrl: null,
         active,
         state: incompatibility ? "incompatible" : hostState(host.hostId),
         notificationsMuted: notice.muted,
         notificationsMutedUntil: notice.mutedUntil,
         notificationLevel: notice.level,
-        hidden: host.hidden === true,
+        hidden: false,
+        ...(host.relayHost ? { relayHost: host.relayHost } : {}),
         ...(appearance === undefined ? {} : { appearance }),
         ...(host.memberLimit === undefined ? {} : { memberLimit: host.memberLimit }),
         ...(host.restartAvailable === undefined ? {} : { restartAvailable: host.restartAvailable }),
@@ -595,53 +574,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
     }),
   );
   const server = createMemo(() => servers().find((item) => item.active));
-  const shownServers = createMemo(() => servers().filter((item) => item.active || item.hidden !== true));
-  const hiddenServers = createMemo<HiddenServer[]>(() =>
-    servers()
-      .filter((item) => item.hidden === true)
-      .map((item) => ({
-        id: item.id,
-        name: item.name,
-        logoUrl: item.logoUrl,
-        ...(item.appearance === undefined ? {} : { appearance: item.appearance }),
-        show: () => void changeServerHidden(item.id, false),
-      })),
-  );
-  function reorderShownServers(shownIds: string[]): void {
-    const shown = new Set(shownIds);
-    let index = 0;
-    workspace.reorderHosts(servers().map((item) => (shown.has(item.id) ? (shownIds[index++] ?? item.id) : item.id)));
-  }
-  function canHideServer(serverId: string): boolean {
-    if (!workspace.canHideHosts) return false;
-    const target = servers().find((item) => item.id === serverId);
-    if (!target || target.hidden === true) return false;
-    return servers().some((item) => item.id !== serverId && item.hidden !== true);
-  }
-  async function changeServerHidden(serverId: string, hidden: boolean): Promise<void> {
-    const host = workspace.state.hosts.find((item) => item.hostId === serverId);
-    if (!host) return;
-    try {
-      await workspace.setHostHidden(host, hidden);
-    } catch (error) {
-      actionToast.error(t(hidden ? "server.rail.hideFailed" : "server.rail.showFailed", { name: host.name }), {
-        error,
-        report: { operation: "team", source: "action", cause_code: classifyFailure(error) },
-      });
-    }
-  }
-  async function hideServer(serverId: string): Promise<void> {
-    if (!canHideServer(serverId)) return;
-    if (workspace.state.host?.hostId === serverId) {
-      const others = shownServers().filter((item) => item.id !== serverId);
-      const other = others.find((item) => item.state === "online") ?? others[0];
-      if (!other) return;
-      chatHistory.userOpensServer(other.id);
-      await connectServer(other.id);
-      if (workspace.state.host?.hostId === serverId) return;
-    }
-    await changeServerHidden(serverId, true);
-  }
+  const shownServers = servers;
   const blockedServer = createMemo(() => {
     const current = server();
     return current?.state === "incompatible" ? current : null;
@@ -1315,48 +1248,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
   createEffect(marketplaceOpen, (open) => {
     if (open) connectors.reload();
   });
-  createEffect(
-    () => props.inviteUrl,
-    (inviteUrl) => {
-      if (inviteUrl) setJoinOpen(true);
-    },
-  );
-  createEffect(
-    () => props.pluginSlug,
-    (slug) => {
-      if (slug) openMarketplace();
-    },
-  );
-  const [leaveRequest, setLeaveRequest] = createSignal<{
-    hostId: string;
-    trigger: HTMLElement | null;
-    removeOwned?: boolean;
-  } | null>(null);
-  const leaveServer = createMemo(() => servers().find((item) => item.id === leaveRequest()?.hostId) ?? null);
-  createEffect(
-    () => leaveRequest() !== null && leaveServer() === null,
-    (gone) => {
-      if (gone) setLeaveRequest(null);
-    },
-  );
-  async function leaveHost(): Promise<void> {
-    const request = leaveRequest();
-    if (request) await departHost(request.hostId, request.removeOwned === true);
-  }
-  async function departHost(hostId: string, removeOwned: boolean): Promise<void> {
-    const host = workspace.state.hosts.find((item) => item.hostId === hostId);
-    if (!host) return;
-    if (removeOwned) await workspace.removeOwnedHost(host);
-    else await workspace.leaveHost(host);
-  }
-  async function leaveFromSettings(hostId: string, removeOwned: boolean): Promise<void> {
-    await departHost(hostId, removeOwned);
-    serverSettings.setOpen(false);
-  }
-  function removeFromSettings(hostId: string): (() => Promise<void>) | undefined {
-    if (!workspace.runtime.removeOwnedHost) return undefined;
-    return () => leaveFromSettings(hostId, true);
-  }
   const [restartRequest, setRestartRequest] = createSignal<{ hostId: string; trigger: HTMLElement | null } | null>(
     null,
   );
@@ -1422,16 +1313,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
       if (!open && wasOpen) alertCards.refresh();
     },
   );
-  const ownerTransferCalls = (): OwnerTransferCalls | undefined => {
-    const transfers = workspace.runtime.ownerTransfers;
-    const target = server();
-    if (!transfers || !target || !workspace.state.capabilities.includes(OWNER_TRANSFER_CAPABILITY)) return undefined;
-    return {
-      getOwnerTransfer: (serverId) => transfers.pending(serverId),
-      startOwnerTransfer: (email, serverId) => transfers.start(serverId, email),
-      cancelOwnerTransfer: (serverId) => transfers.cancel(serverId),
-    };
-  };
   const agentImportCalls = createWebAgentImportCalls({
     request: hostRequest,
     sendsParts: () => workspace.state.capabilities.includes(AGENT_IMPORT_V2_CAPABILITY),
@@ -1494,12 +1375,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
       hostRequest(serverId)("POST", HOST_VOICE_MODEL_ROUTES.settings, decodeHostVoiceModel, {}),
     changeVoiceModel: async ({ action, modelId }, serverId) =>
       hostRequest(serverId)("POST", HOST_VOICE_MODEL_ROUTES.change, decodeHostVoiceModel, { action, modelId }),
-  };
-  const hostSignalHomeCalls: HostSignalHomeCalls = {
-    getSignalHome: async (serverId) =>
-      hostRequest(serverId)("POST", HOST_SIGNAL_HOME_ROUTES.settings, decodeHostSignalHomeSettings, {}),
-    setSignalHome: async (home, serverId) =>
-      hostRequest(serverId)("POST", HOST_SIGNAL_HOME_ROUTES.update, decodeHostSignalHomeSettings, { home }),
   };
   const hostTurnLimitsCalls: HostTurnLimitsCalls = {
     getTurnLimits: async (serverId) =>
@@ -1709,13 +1584,8 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
     onOpenSettings: (serverId, trigger) => void openServerSettings(serverId, trigger),
     onSetMuted: setMuted,
     onOpenNotificationSettings: (serverId) => openNotificationSettings(serverId),
-    onLeave: (hostId, trigger) => setLeaveRequest({ hostId, trigger }),
-    onRemove: (hostId, trigger) => setLeaveRequest({ hostId, trigger, removeOwned: true }),
-    canRemove: () => Boolean(workspace.runtime.removeOwnedHost),
     onRestart: (hostId, trigger) => setRestartRequest({ hostId, trigger }),
     canRestart: restartsItself,
-    onHide: (serverId) => void hideServer(serverId),
-    canHide: canHideServer,
   } satisfies ServerActionCallbacks;
   let entry: { id: string; offered: boolean } | null = null;
   createEffect(
@@ -2650,7 +2520,11 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
           fallback={
             <div class="web-other-tab-window">
               <Show when={shownServers().length > 1}>
-                <ServerRail servers={shownServers()} onSelect={selectServer} onReorder={reorderShownServers} />
+                <ServerRail
+                  servers={shownServers()}
+                  onSelect={selectServer}
+                  onReorder={(shownIds) => workspace.reorderHosts(shownIds)}
+                />
               </Show>
               <WebServerOtherTab
                 name={workspace.state.host?.name ?? ""}
@@ -2707,11 +2581,9 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                   rail
                   serverName={workspace.state.host?.name ?? "OpenBot"}
                   servers={shownServers()}
-                  hiddenServers={hiddenServers()}
                   view={layout.serverView()}
                   onViewChange={layout.setServerView}
                   onSelect={selectServer}
-                  onAdd={() => setJoinOpen(true)}
                   {...serverActionCallbacks}
                 />
               }
@@ -2791,12 +2663,9 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                               channels.close();
                             }
                           }}
-                          pluginSlug={suggestedApp()?.appId ?? props.pluginSlug}
+                          pluginSlug={suggestedApp()?.appId ?? null}
                           pluginConnect={suggestedApp()?.connect ?? false}
-                          onPluginSlugConsumed={() => {
-                            if (suggestedApp()) setSuggestedApp(null);
-                            else props.onPluginSlugConsumed?.();
-                          }}
+                          onPluginSlugConsumed={() => setSuggestedApp(null)}
                           mcpSignInRequest={mcpSignInRequest()}
                           onMcpSignInRequestHandled={() => setMcpSignInRequest(null)}
                           onMcpSignIns={(serverId, states) => setMcpSignIns({ serverId, states })}
@@ -2958,10 +2827,8 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                   <Show when={layout.serverRailVisible()}>
                     <ServerRail
                       servers={shownServers()}
-                      hiddenServers={hiddenServers()}
                       onSelect={selectServer}
-                      onReorder={reorderShownServers}
-                      onAdd={() => setJoinOpen(true)}
+                      onReorder={(shownIds) => workspace.reorderHosts(shownIds)}
                       {...serverActionCallbacks}
                     />
                   </Show>
@@ -3006,11 +2873,9 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                     })()}
                     serverMenu={{
                       servers: shownServers(),
-                      hiddenServers: hiddenServers(),
                       view: layout.serverView(),
                       onViewChange: layout.setServerView,
                       onSelect: selectServer,
-                      onAdd: () => setJoinOpen(true),
                       ...serverActionCallbacks,
                     }}
                     agents={workspace.profiles()}
@@ -3109,43 +2974,18 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
               after={
                 <>
                   <ServerUpdateDialogHost hosts={workspace.hostViews()} />
-                  <Show when={workspace.runtime.ownerTransfers}>
-                    {(transfers) => (
-                      <OwnerTransferPrompt
-                        calls={{
-                          list: () => transfers().incoming(),
-                          accept: (transferId) => transfers().accept(transferId),
-                          decline: (transferId) => transfers().decline(transferId),
-                        }}
-                        reloadKey={workspace.state.hosts}
-                        onAccepted={() => void workspace.refreshHosts().catch(() => undefined)}
-                      />
-                    )}
-                  </Show>
-                  <JoinServerOverlay
-                    open={joinOpen()}
-                    inviteUrl={props.inviteUrl ?? ""}
-                    accountEmail={props.accountEmail ?? ""}
-                    onClose={() => {
-                      setJoinOpen(false);
-                      props.onInviteClose?.();
-                    }}
-                    onPreview={({ inviteUrl }) => workspace.runtime.previewInvite(inviteUrl)}
-                    onJoin={({ inviteUrl }) => workspace.joinInvite(inviteUrl)}
-                  />
                   <Show when={accountSettingsLoaded()}>
                     <Loading>
                       <WebAccountSettings
                         open={accountSettingsOpen() && settingsPlacement("personal") !== undefined}
                         page={settingsPlacement("personal")}
                         onOpenChange={setAccountSettingsOpen}
-                        account={account()}
-                        calls={accountCalls}
+                        relay={props.relay}
                         language={props.language}
                         onChangeLanguage={props.onChangeLanguage}
                         appearance={props.appearance}
                         onChangeAppearance={props.onChangeAppearance}
-                        onSignOut={signOut}
+                        onRemoveIdentity={removeIdentity}
                         notifications={notificationSettings}
                         notificationFocusRequest={notificationFocusRequest()}
                         keyboardFocusRequest={keyboardFocusRequest()}
@@ -3172,7 +3012,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                         server={target()}
                         hostStatus={null}
                         members={serverSettings.state.members}
-                        invites={serverSettings.state.invites}
                         loading={serverSettings.state.loading}
                         loadError={serverSettings.state.error}
                         onRetry={serverSettings.refresh}
@@ -3180,13 +3019,8 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                         onSaveAppearance={serverSettings.saveAppearance}
                         onSetPublished={unavailable}
                         onRotateHostKey={rotateHostKeyAction()}
-                        onCreateInvite={serverSettings.createInvite}
-                        ownerTransfer={ownerTransferCalls()}
                         onUpdateMember={serverSettings.updateMember}
                         onRemoveMember={serverSettings.removeMember}
-                        onRevokeInvite={serverSettings.revokeInvite}
-                        onLeaveServer={() => leaveFromSettings(target().id, false)}
-                        onRemoveServer={removeFromSettings(target().id)}
                         onOpenScreenRecordingSettings={unavailable}
                         storage={{
                           hostName: target().name,
@@ -3205,7 +3039,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                         hostUpdate={{ calls: hostUpdateCalls }}
                         hostTimezone={{ calls: hostTimezoneCalls }}
                         hostVoiceModel={{ calls: hostVoiceModelCalls }}
-                        hostSignalHome={{ calls: hostSignalHomeCalls }}
                         hostTurnLimits={{
                           calls: hostTurnLimitsCalls,
                           onChanged: (listener) =>
@@ -3255,13 +3088,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                       />
                     )}
                   </Show>
-                  <LeaveServerDialog
-                    server={leaveServer()}
-                    removeOwned={leaveRequest()?.removeOwned ?? false}
-                    onClose={() => setLeaveRequest(null)}
-                    onLeave={leaveHost}
-                    restoreFocusTarget={leaveRequest()?.trigger}
-                  />
                   <RestartServerDialog
                     server={restartServer()}
                     servers={servers()}
@@ -3435,7 +3261,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                         activeTurnId={channelView.activeTurnId()}
                         skillsMarketplaceOpen={marketplaceOpen()}
                         mcpSettingsOpen={marketplaceOpen()}
-                        globalOverlayOpen={joinOpen() || serverSettings.state.open || searchOpen() || marketplaceOpen()}
+                        globalOverlayOpen={serverSettings.state.open || searchOpen() || marketplaceOpen()}
                         settingsRequest={channelView.settingsRequest()}
                         messageFocusRequest={messageFocusRequest()}
                         queue={undefined}
@@ -3449,7 +3275,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                         presence={
                           workspace.state.presence ?? { serverId: server()?.id ?? null, members: [], updatedAt: "" }
                         }
-                        currentUserEmail={props.accountEmail ?? ""}
+                        currentUserEmail=""
                         isOwnSender={isOwnSender}
                         browserEnabled={browserEnabled()}
                         prompt={channelView.prompt()}
@@ -3500,13 +3326,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                 </Show>
               </Show>
               <Show when={!agentFormOpen() && !channelOpen() && noHost()}>
-                <WebConnectComputer
-                  loading={workspace.state.hostsLoading}
-                  failed={Boolean(workspace.state.hostsError)}
-                  reference={workspace.state.hostsError?.reference ?? null}
-                  onJoin={() => setJoinOpen(true)}
-                  onRefresh={() => void workspace.run(workspace.refreshHosts)}
-                />
+                <WebRelayNotice source={props.relay.source} variant={WEB_APP_INFO.variant} />
               </Show>
               <Show when={agentChatOpen()}>
                 <Conversation
@@ -3583,7 +3403,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                   turnStepLines={workspace.stepLines()}
                   skillsMarketplaceOpen={marketplaceOpen()}
                   mcpSettingsOpen={marketplaceOpen()}
-                  globalOverlayOpen={joinOpen() || serverSettings.state.open || searchOpen() || marketplaceOpen()}
+                  globalOverlayOpen={serverSettings.state.open || searchOpen() || marketplaceOpen()}
                   settingsRequest={settingsRequest()}
                   messageFocusRequest={messageFocusRequest()}
                   queue={workspace.state.selectedId ? workspace.state.queues[workspace.state.selectedId] : undefined}
@@ -3596,7 +3416,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                   server={server()}
                   responseStyle={responseStyle()}
                   presence={workspace.state.presence ?? { serverId: server()?.id ?? null, members: [], updatedAt: "" }}
-                  currentUserEmail={props.accountEmail ?? ""}
+                  currentUserEmail=""
                   isOwnSender={isOwnAgentChatSender}
                   browserEnabled={browserEnabled()}
                   prompt={view.prompt()}

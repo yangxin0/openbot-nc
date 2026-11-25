@@ -1,9 +1,7 @@
 import type {
   AvatarImageInput,
-  InviteSummary,
   ServerAppearance,
   ServerSummary,
-  TeamInviteSummary,
   TeamPresenceMember,
   TeamPresenceSnapshot,
   UpdateTeamMemberInput,
@@ -23,7 +21,6 @@ import type { WebAdminRuntime } from "./web-runtime";
 interface WebServerSettingsState {
   open: boolean;
   members: TeamPresenceMember[];
-  invites: TeamInviteSummary[];
   loading: boolean;
   error: string | null;
 }
@@ -38,7 +35,6 @@ export function createWebServerSettings(options: {
   const [state, setState] = createStore<WebServerSettingsState>({
     open: false,
     members: [],
-    invites: [],
     loading: false,
     error: null,
   });
@@ -86,10 +82,9 @@ export function createWebServerSettings(options: {
     try {
       const { server, admin } = requireAdmin();
       const canManage = serverRoleCanAdminister(server);
-      const [presence, members, invites] = await Promise.all([
+      const [presence, members] = await Promise.all([
         admin.team.getPresence(),
         canManage ? admin.team.listMembers() : Promise.resolve(null),
-        canManage ? admin.team.listInvites() : Promise.resolve([]),
       ]);
       if (current !== request) return;
       const presenceById = new Map(presence.members.map((member) => [member.id, member]));
@@ -99,7 +94,6 @@ export function createWebServerSettings(options: {
           online: presenceById.get(member.id)?.online ?? false,
           typingAgentId: presenceById.get(member.id)?.typingAgentId ?? null,
         }));
-        draft.invites = invites;
       });
     } catch (error) {
       if (current === request)
@@ -121,7 +115,6 @@ export function createWebServerSettings(options: {
     setState((draft) => {
       draft.open = true;
       draft.members = [];
-      draft.invites = [];
       draft.error = null;
     });
     void refresh();
@@ -178,12 +171,9 @@ export function createWebServerSettings(options: {
     saveIdentity,
     saveAppearance,
     rotateHostKey,
-    createInvite: (input: { role: "admin" | "member"; email?: string; permanent?: boolean }): Promise<InviteSummary> =>
-      mutateTeam((admin) => admin.team.createInvite(input)),
     updateMember: async (input: UpdateTeamMemberInput): Promise<void> => {
       await mutateTeam((admin) => admin.team.updateMember(input));
     },
     removeMember: (memberId: string): Promise<void> => mutateTeam((admin) => admin.team.removeMember(memberId)),
-    revokeInvite: (inviteId: string): Promise<void> => mutateTeam((admin) => admin.team.revokeInvite(inviteId)),
   };
 }

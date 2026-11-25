@@ -4,9 +4,6 @@ import type { messages as source } from "../../en/error/auth";
 export const messages = {
   "error.auth.serviceUnavailable":
     "تعذّر على OpenBot الوصول إلى خدمة الحساب. تحقّق من أن الواجهة البرمجية API تعمل، ثم أعد المحاولة.",
-  "error.auth.sessionTimeout": "لم يستجب OpenBot في الوقت المحدد. تحقق من اتصالك بالإنترنت، ثم حاول مرة أخرى.",
-  "error.auth.deliveryTimeout":
-    "تعذّر على OpenBot تأكيد التسليم في الوقت المحدد. قد يصل الرمز رغم ذلك؛ تحقّق من التسليم قبل الإرسال مرة أخرى.",
   "error.auth.companySignInFailed": "لم يكتمل تسجيل الدخول بحساب الشركة. حاول مرة أخرى.",
   "error.auth.companySignInCancelled": "أُلغي تسجيل الدخول بحساب الشركة.",
   "error.auth.companySignInTimeout": "استغرق تسجيل الدخول بحساب الشركة وقتًا طويلًا. افتح صفحة تسجيل الدخول مرة أخرى.",

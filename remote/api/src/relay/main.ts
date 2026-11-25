@@ -200,6 +200,7 @@ async function serve(config: RelayConfig): Promise<void> {
   console.log(`OpenBot relay is ready at ${protocol}://${config.host}:${server.port}/v1/relay`);
   console.log(`Root certificate SHA-256 fingerprint: ${rootFingerprint(rootPem)}`);
   if (config.tls?.clientCertificatesRequired) console.log("TLS refuses a connection that has no team certificate.");
+  if (config.webClientDirectory !== null) console.log(`The web client is at /app, from ${config.webClientDirectory}`);
 
   let stopping: Promise<void> | null = null;
   const shutdown = () => {

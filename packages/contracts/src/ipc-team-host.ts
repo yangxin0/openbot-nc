@@ -324,7 +324,7 @@ export function isTeamPresenceSnapshot(value: unknown): value is TeamPresenceSna
   );
 }
 
-function isTeamPresenceMember(value: unknown): value is TeamPresenceMember {
+export function isTeamMemberSummary(value: unknown): value is TeamMemberSummary {
   if (!isDynamicRecord(value)) return false;
   return (
     isIdentifier(value.id) &&
@@ -335,7 +335,14 @@ function isTeamPresenceMember(value: unknown): value is TeamPresenceMember {
     (value.chatColor === undefined || isAvatarColor(value.chatColor)) &&
     (value.role === "owner" || value.role === "admin" || value.role === "member") &&
     isTimestamp(value.createdAt) &&
-    isBoolean(value.disabled) &&
+    isBoolean(value.disabled)
+  );
+}
+
+function isTeamPresenceMember(value: unknown): value is TeamPresenceMember {
+  return (
+    isDynamicRecord(value) &&
+    isTeamMemberSummary(value) &&
     isBoolean(value.online) &&
     (value.typingAgentId === null || isIdentifier(value.typingAgentId))
   );
