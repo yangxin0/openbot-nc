@@ -286,6 +286,28 @@ The rules of `/app`:
 
 `/v1/relay` and the health endpoints do not change.
 
+## Browser extension
+
+The Chrome extension OpenBot-NC opens your team's agents in the side panel. It connects only to
+the central server that its identity file names. It sends no analytics and uses no other server.
+
+1. Build it on a computer with the repository: `bun run extension:build`. The build writes the
+   unpacked extension to `.openbot-build/browser-extension/`.
+2. In Chrome, open `chrome://extensions`, turn on **Developer mode**, select **Load unpacked** and
+   select that folder.
+3. Issue an identity for the extension only, for example
+   `bun remote/api/src/relay/main.ts ca issue --team Acme --user alice --device extension --out alice-extension.json`.
+   Two connections with the same certificate disconnect each other, so do not use the identity of
+   the person's desktop or web client.
+4. Open the side panel, then paste the text of the identity file or choose the file. The extension
+   keeps the private key in its IndexedDB as a key that cannot be exported.
+
+The side panel connects to the central server and to the shared servers of the team while it is
+open. Browser sharing for agents keeps a connection to the selected server from an offscreen
+document of the extension while the side panel is closed. Settings in the server menu show the
+identity and remove it. The extension has no X posting: the X agent came from the agent
+marketplace.
+
 ## Test
 
 ```sh
@@ -304,3 +326,14 @@ This test builds the web client, starts the real server with `RELAY_WEB_CLIENT_D
 relay hosting, and drives Chromium at `https://localhost:<port>/app`: it imports an identity by
 paste and by file, opens the agent list, sends a message, removes the identity, and fails on a CSP
 violation. It writes screenshots and `report.json` to `.openbot-build/relay-web-client-e2e/`.
+
+```sh
+bun run test:relay-extension
+```
+
+This test builds the extension, starts the real server and a host with relay hosting, and loads the
+unpacked extension in Chromium. It checks the manifest, imports an identity by paste, sends a
+message, runs one browser sharing command on a shared tab through the relay, reopens the side panel,
+removes the identity, imports one by file, and fails on a console error, a CSP violation or a
+request to another server. It writes screenshots and `report.json` to
+`.openbot-build/relay-extension-e2e/`.

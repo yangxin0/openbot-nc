@@ -305,7 +305,6 @@ export const messages = {
   "settings.agentDock.agents.title": "الوكلاء على الشريط",
   "settings.agentDock.agents.description": "وكلاء {server}. لكل خادم شريطه الخاص.",
   "settings.agentDock.agents.empty": "لا يوجد وكلاء على هذا الخادم بعد.",
-  "settings.analytics.title": "ربط التحليلات بحسابي",
   "settings.tab.general.title": "عام",
   "settings.tab.general.description": "اختر كيف تعمل المحادثات وما يشاركه OpenBot.",
   "settings.tab.agents.title": "الوكلاء",

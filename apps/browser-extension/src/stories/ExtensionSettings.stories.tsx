@@ -19,22 +19,33 @@ const SITES = {
   "https://www.a-very-long-subdomain-name.example-shop.co.uk": "always",
 };
 
-function Settings(props: { linked: boolean; canShare?: boolean; sites?: boolean }) {
-  installStoryChrome({
-    "openbot.analytics.v1": { enabled: props.linked, at: 0 },
-    ...(props.sites === false ? {} : { [SITES_KEY]: SITES }),
-  });
+const IDENTITY = {
+  team: "Acme",
+  user: "alice",
+  device: "extension",
+  relayUrl: "wss://relay.example.com/v1/relay",
+  expiresAt: Date.UTC(2027, 10, 26),
+};
+
+function Settings(props: { canShare?: boolean; sites?: boolean; connection?: "online" | "connecting" }) {
+  installStoryChrome(props.sites === false ? {} : { [SITES_KEY]: SITES });
   return (
     <PanelFrame>
-      <SettingsScreen canShare={props.canShare ?? true} onBack={() => undefined} onAnalyticsChanged={() => undefined} />
+      <SettingsScreen
+        canShare={props.canShare ?? true}
+        identity={IDENTITY}
+        connection={{ status: props.connection ?? "online" }}
+        onBack={() => undefined}
+        onRemoveIdentity={() => Promise.resolve()}
+      />
     </PanelFrame>
   );
 }
 
-export const AnalyticsLinked: Story = { render: () => <Settings linked /> };
+export const Identity: Story = { render: () => <Settings /> };
 
-export const AnalyticsNotLinked: Story = { render: () => <Settings linked={false} /> };
+export const Connecting: Story = { render: () => <Settings connection="connecting" /> };
 
-export const NoAllowedSites: Story = { render: () => <Settings linked sites={false} /> };
+export const NoAllowedSites: Story = { render: () => <Settings sites={false} /> };
 
-export const ServerWithoutSharedTabs: Story = { render: () => <Settings linked canShare={false} /> };
+export const ServerWithoutSharedTabs: Story = { render: () => <Settings canShare={false} /> };

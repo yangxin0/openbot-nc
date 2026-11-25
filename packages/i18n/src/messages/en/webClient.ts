@@ -14,8 +14,6 @@ export const messages = defineMessages("webClient", {
   "webClient.pane.navigation": "Workspace navigation",
   "webClient.pane.chat": "Chat",
   "webClient.pane.workspace": "Workspace",
-  "webClient.extension.title": "Allow the OpenBot extension?",
-  "webClient.extension.allow": "Allow",
   "webClient.notice.connecting": "Connecting to your server",
   "webClient.notice.findingHosts": "Finding your servers",
   "webClient.otherTab.title": "{name} is open in another tab",

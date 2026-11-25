@@ -1,182 +1,92 @@
-import type { CentralAuthState } from "@openbot/contracts/ipc";
+import type { RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
 import {
   CLIENT_BROWSER_CAPABILITY,
   type ClientBrowserPresence,
 } from "@openbot/contracts/team-protocol/client-browser-v1";
-import { sourceText } from "@openbot/i18n";
+import type { AppTextKey } from "@openbot/i18n";
+import {
+  type RelayBrowserIdentity,
+  type RelayControlSnapshot,
+  relayTeamHost,
+  startRelayControl,
+} from "@openbot/team-client/relay-client";
 import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
 import { useText } from "@openbot/ui/text";
 import { createSignal, createStore, Match, onSettled, Show, Switch } from "solid-js";
 import { AgentSettingsScreen } from "./AgentSettingsScreen";
-import {
-  endSession,
-  readAccount,
-  SignInIssue,
-  saveAnalyticsAnswer,
-  signInOutcome,
-  startEmailSignIn,
-  verifyEmailCode,
-} from "./account";
-import { identify, type SignInMethod, track } from "./analytics";
 import { BrowserAsks } from "./BrowserSharing";
 import { ChannelScreen } from "./ChannelScreen";
 import { ChatScreen } from "./ChatScreen";
 import { type ClientBrowserLink, createClientBrowserLink } from "./client-browser-link";
 import {
-  clearSession,
-  type ExtensionSession,
-  readServerId,
-  readSession,
-  saveServerId,
-  saveSession,
-  takeChatToOpen,
-} from "./extension-storage";
+  type IdentitySource,
+  identityErrorKey,
+  importIdentity,
+  loadIdentity,
+  openIdentityStore,
+  relayFinalCode,
+  relayStateKey,
+  removeIdentity,
+} from "./extension-identity";
+import { PANEL_PORT } from "./extension-messages";
+import { clearIdentityData, readSavedHost, saveHost } from "./extension-storage";
 import { HomeScreen } from "./HomeScreen";
 import { createHostConnection, type HostConnection } from "./host-connection";
+import { IdentityScreen } from "./IdentityScreen";
 import { NewAgentScreen } from "./NewAgentScreen";
 import { NewChannelScreen, NewFolderScreen } from "./NewChatItemScreens";
 import { SettingsScreen } from "./SettingsScreen";
-import { SignInScreen } from "./SignInScreen";
 import { createWorkspace, type Workspace } from "./workspace";
-import { type XTarget, xSend, xStatus } from "./x-agent";
-import {
-  decodeXRequest,
-  OPEN_X_CHAT_MESSAGE,
-  OUTBOX_FLUSH_MESSAGE,
-  PANEL_PORT,
-  X_PANEL_MESSAGE,
-  type XSendResult,
-  type XStatusAnswer,
-} from "./x-messages";
 
-const EMAIL_START_KEY_LIFE_MS = 10 * 60_000;
+const RECONNECT_BASE_MS = 2_000;
+const RECONNECT_MAX_MS = 30_000;
 
 export function App() {
-  const [session, setSession] = createSignal<ExtensionSession | null>(null);
-  const [login, setLogin] = createSignal<CentralAuthState>({ status: "loading" });
-  let emailStart: { email: string; key: string; at: number } | null = null;
-  let openTracked = false;
+  const store = openIdentityStore();
+  const [identity, setIdentity] = createSignal<RelayBrowserIdentity | null>(null);
+  const [loaded, setLoaded] = createSignal(false);
+  const [loadError, setLoadError] = createSignal<AppTextKey | null>(null);
 
-  function trackOpened(signedIn: boolean) {
-    if (openTracked) return;
-    openTracked = true;
-    void track("extension_opened", { signed_in: signedIn });
-  }
-
-  async function signedIn(next: ExtensionSession, method: SignInMethod) {
-    await saveSession(next);
-    setSession(next);
-    void track("account_sign_in_completed", { method, result: "succeeded" });
-    void identify(next);
-  }
-
-  async function checkSession() {
-    setLogin({ status: "loading" });
-    const saved = await readSession();
-    if (!saved) {
-      setLogin({ status: "signed_out" });
-      trackOpened(false);
-      return;
-    }
-    try {
-      const user = await readAccount(saved.token);
-      if (!user) {
-        await clearSession();
-        setLogin({ status: "signed_out" });
-        trackOpened(false);
-        return;
-      }
-      const current = { token: saved.token, user };
-      await saveSession(current);
-      setSession(current);
-      trackOpened(true);
-      void identify(current);
-    } catch {
-      setLogin({
-        status: "error",
-        issue: { code: "auth_api_unavailable", message: sourceText("error.auth.serviceUnavailable") },
-      });
-    }
-  }
   onSettled(() => {
-    void checkSession();
+    void loadIdentity(store).then(
+      (saved) => {
+        setIdentity(saved);
+        setLoaded(true);
+      },
+      (error: unknown) => {
+        setLoadError(identityErrorKey(error));
+        setLoaded(true);
+      },
+    );
   });
 
-  function showIssue(error: unknown): void {
-    if (!(error instanceof SignInIssue)) throw error;
-    const issue = error.issue;
-    const current = login();
-    setLogin(current.status === "code_sent" ? { ...current, issue } : { status: "error", issue });
+  async function imported(source: IdentitySource): Promise<void> {
+    const next = await importIdentity(store, source);
+    await clearIdentityData();
+    setLoadError(null);
+    setIdentity(next);
   }
 
-  async function requestCode(email: string) {
-    const attempt =
-      emailStart?.email === email && Date.now() - emailStart.at < EMAIL_START_KEY_LIFE_MS
-        ? emailStart
-        : { email, key: crypto.randomUUID(), at: Date.now() };
-    emailStart = attempt;
-    try {
-      const challenge = await startEmailSignIn(email, attempt.key);
-      emailStart = null;
-      setLogin({
-        status: "code_sent",
-        challengeId: challenge.challengeId,
-        email,
-        expiresAt: challenge.expiresAt,
-        resendAvailableAt: challenge.resendAt,
-        ...(challenge.developmentCode ? { developmentCode: challenge.developmentCode } : {}),
-      });
-    } catch (error) {
-      showIssue(error);
-    }
-  }
-
-  async function verify(challengeId: string, code: string, referralCode?: string) {
-    try {
-      await signedIn(await verifyEmailCode(challengeId, code, referralCode), "email");
-    } catch (error) {
-      void track("account_sign_in_completed", { method: "email", ...signInOutcome(error) });
-      showIssue(error);
-    }
-  }
-
-  async function signOut(reason: "user" | "session_ended") {
-    const current = session();
-    await track("account_sign_out", { reason });
-    setSession(null);
-    setLogin({ status: "signed_out" });
-    await clearSession();
-    if (current) await endSession(current.token);
+  async function removed(): Promise<void> {
+    await removeIdentity(store);
+    await clearIdentityData();
+    setIdentity(null);
   }
 
   return (
     <main class="ext-app">
-      <Show
-        when={session()}
-        keyed
-        fallback={
-          <div class="ext-login">
-            <SignInScreen
-              login={login()}
-              onRetry={checkSession}
-              onRequestEmailCode={requestCode}
-              onVerifyEmailCode={verify}
-              onReset={async () => {
-                emailStart = null;
-                setLogin({ status: "signed_out" });
-              }}
-              onSignedIn={(next) => signedIn(next, "web")}
-            />
-          </div>
-        }
-      >
-        {(current) => (
-          <ServerView
-            session={current}
-            onSignOut={() => void signOut("user")}
-            onSessionEnded={() => void signOut("session_ended")}
-          />
-        )}
+      <Show when={loaded()}>
+        <Show
+          when={identity()}
+          keyed
+          fallback={
+            <div class="ext-login">
+              <IdentityScreen error={loadError()} onImport={imported} />
+            </div>
+          }
+        >
+          {(current) => <ServerView identity={current} onRemoveIdentity={removed} />}
+        </Show>
       </Show>
     </main>
   );
@@ -189,36 +99,126 @@ type PushedScreen =
 interface ServerState {
   hosts: RemoteTeamHost[];
   hostId: string | null;
-  status: "listing" | "connecting" | "ready" | "failed" | "empty";
+  status: "waiting" | "connecting" | "ready" | "failed" | "empty";
   message: string | null;
   offline: boolean;
 }
 
-function ServerView(props: { session: ExtensionSession; onSignOut: () => void; onSessionEnded: () => void }) {
+const INITIAL_RELAY: RelayControlSnapshot = { state: { status: "connecting" }, roster: [], self: null, team: null };
+
+function rosterHosts(members: readonly RelayTeamMember[], selfKeyId: string): RemoteTeamHost[] {
+  return members
+    .filter((member) => member.hosting && member.keyId !== selfKeyId)
+    .map((member) => relayTeamHost(member, "member"));
+}
+
+function ServerView(props: { identity: RelayBrowserIdentity; onRemoveIdentity: () => Promise<void> }) {
   const { t } = useText();
   const [view, setView] = createStore<ServerState>({
     hosts: [],
     hostId: null,
-    status: "listing",
+    status: "waiting",
     message: null,
     offline: false,
   });
+  const [relay, setRelay] = createSignal<RelayControlSnapshot>(INITIAL_RELAY);
   const [workspace, setWorkspace] = createSignal<Workspace | null>(null);
   const [pushed, setPushed] = createSignal(false);
   const [screen, setScreen] = createSignal<PushedScreen>({ kind: "chat" });
   let connection: HostConnection | null = null;
-  let capabilities: readonly string[] = [];
+  let stopControl: (() => void) | null = null;
+  let savedHostId: string | null = null;
+  let hosts: RemoteTeamHost[] = [];
+  let selectedHostId: string | null = null;
   let attempt = 0;
   let browserLink: ClientBrowserLink | null = null;
+  let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+  let reconnectAttempt = 0;
+  let closed = false;
   const [presence, setPresence] = createSignal<ClientBrowserPresence>({ sharing: false, tabs: [] });
   const [canShare, setCanShare] = createSignal(false);
+  const [settingsAlone, setSettingsAlone] = createSignal(false);
 
   const host = () => view.hosts.find((entry) => entry.hostId === view.hostId) ?? null;
+  const selectedHost = () => hosts.find((entry) => entry.hostId === selectedHostId) ?? null;
+  const finalCode = () => relayFinalCode(relay());
+
+  function showRoster(snapshot: RelayControlSnapshot): void {
+    setRelay(snapshot);
+    if (snapshot.state.status !== "online") return;
+    const listed = rosterHosts(snapshot.roster, snapshot.self?.keyId ?? props.identity.keyId);
+    const selected = selectedHost();
+    const kept = selected && !listed.some((entry) => entry.hostId === selected.hostId) ? [selected] : [];
+    hosts = [...listed, ...kept];
+    setView((draft) => {
+      draft.hosts = [...hosts];
+    });
+    if (selectedHostId === null) {
+      if (!listed.length) {
+        setView((draft) => {
+          draft.status = "empty";
+        });
+        return;
+      }
+      const first = listed.find((entry) => entry.hostId === savedHostId) ?? listed[0];
+      if (first) void open(first.hostId);
+      return;
+    }
+    const back = listed.find((entry) => entry.hostId === selectedHostId);
+    if (!back) return;
+    if (selected && back.devicePublicKey !== selected.devicePublicKey) void open(back.hostId);
+    else if (view.offline && view.status === "ready") reconnectNow();
+  }
+
+  function startControl(): void {
+    stopControl?.();
+    const next = startRelayControl(props.identity);
+    const unsubscribe = next.subscribe(showRoster);
+    stopControl = () => {
+      unsubscribe();
+      next.stop();
+    };
+  }
+
+  function cancelReconnect(): void {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = undefined;
+  }
+
+  function scheduleReconnect(): void {
+    if (closed || reconnectTimer !== undefined || view.status !== "ready") return;
+    const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** reconnectAttempt);
+    reconnectAttempt += 1;
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = undefined;
+      void reconnect();
+    }, delay);
+  }
+
+  function reconnectNow(): void {
+    cancelReconnect();
+    void reconnect();
+  }
+
+  async function reconnect(): Promise<void> {
+    const target = selectedHost();
+    if (!target || !connection || view.status !== "ready") return;
+    const current = attempt;
+    try {
+      await connection.connect(target);
+      if (current === attempt) reconnectAttempt = 0;
+    } catch {
+      if (current === attempt) scheduleReconnect();
+    }
+  }
 
   async function open(hostId: string) {
     const current = ++attempt;
-    const target = view.hosts.find((entry) => entry.hostId === hostId);
+    const target = hosts.find((entry) => entry.hostId === hostId);
     if (!target || !connection) return;
+    selectedHostId = hostId;
+    cancelReconnect();
+    reconnectAttempt = 0;
     workspace()?.dispose();
     setWorkspace(null);
     browserLink?.dispose();
@@ -230,11 +230,16 @@ function ServerView(props: { session: ExtensionSession; onSignOut: () => void; o
       draft.message = null;
       draft.offline = false;
     });
-    void saveServerId(hostId);
+    savedHostId = hostId;
+    void saveHost({
+      identityKeyId: props.identity.keyId,
+      hostId,
+      name: target.name,
+      devicePublicKey: target.devicePublicKey,
+    });
     try {
       const granted = await connection.connect(target);
       if (current !== attempt) return;
-      capabilities = granted;
       setCanShare(granted.includes(CLIENT_BROWSER_CAPABILITY));
       browserLink = createClientBrowserLink({
         request: connection.request,
@@ -247,9 +252,6 @@ function ServerView(props: { session: ExtensionSession; onSignOut: () => void; o
         draft.status = "ready";
       });
       await next.load();
-      if (current !== attempt) return;
-      void chrome.runtime.sendMessage({ kind: OUTBOX_FLUSH_MESSAGE }).catch(() => undefined);
-      await openChatFromX();
     } catch (error) {
       if (current !== attempt) return;
       setView((draft) => {
@@ -261,98 +263,68 @@ function ServerView(props: { session: ExtensionSession; onSignOut: () => void; o
   }
 
   async function start() {
-    try {
-      connection = await createHostConnection(props.session, {
-        event: (event) => {
-          browserLink?.handleEvent(event);
-          workspace()?.handleEvent(event);
-        },
-        state: (update) => {
-          if (update.hostId !== view.hostId) return;
-          setView((draft) => {
-            draft.offline = update.state === "offline";
-          });
-          if (update.state !== "online") return;
-          void workspace()?.reloadChat();
-          browserLink?.refresh();
-        },
-        sessionEnded: props.onSessionEnded,
-      });
-      const hosts = await connection.listHosts();
-      setView((draft) => {
-        draft.hosts = hosts;
-        draft.status = hosts.length ? "connecting" : "empty";
-      });
-      if (!hosts.length) return;
-      const saved = await readServerId();
-      await open(hosts.some((entry) => entry.hostId === saved) && saved ? saved : (hosts[0]?.hostId ?? ""));
-    } catch (error) {
+    const saved = await readSavedHost().catch(() => null);
+    savedHostId = saved?.identityKeyId === props.identity.keyId ? saved.hostId : null;
+    if (closed) return;
+    connection = await createHostConnection(props.identity, {
+      event: (event) => {
+        browserLink?.handleEvent(event);
+        workspace()?.handleEvent(event);
+      },
+      state: (update) => {
+        if (update.hostId !== selectedHostId) return;
+        setView((draft) => {
+          draft.offline = update.state === "offline";
+        });
+        if (update.state === "offline") scheduleReconnect();
+        if (update.state !== "online") return;
+        reconnectAttempt = 0;
+        void workspace()?.reloadChat();
+        browserLink?.refresh();
+      },
+    });
+    if (closed) {
+      void connection.dispose();
+      return;
+    }
+    startControl();
+  }
+
+  function retry(): void {
+    if (finalCode()) {
+      startControl();
+      return;
+    }
+    if (selectedHostId) void open(selectedHostId);
+  }
+
+  onSettled(() => {
+    void start().catch((error: unknown) => {
       setView((draft) => {
         draft.status = "failed";
         draft.message = error instanceof Error ? error.message : t("extension.connection.requestFailed");
       });
-    }
-  }
-
-  async function openChatFromX() {
-    const chat = await takeChatToOpen();
-    if (!chat) return;
-    if (chat.hostId === view.hostId && workspace()) openAgent(chat.agentId, chat.taskId);
-  }
-
-  function xTarget(): XTarget | null {
-    if (view.status !== "ready" || !connection || !view.hostId) return null;
-    return { hostId: view.hostId, request: connection.request, capabilities };
-  }
-
-  onSettled(() => {
-    void start();
-    let closed = false;
+    });
     let port: chrome.runtime.Port | null = null;
     const holdPort = () => {
       if (closed) return;
       port = chrome.runtime.connect({ name: PANEL_PORT });
-      port.onMessage.addListener((message: unknown) => {
-        if (message === OPEN_X_CHAT_MESSAGE && view.status === "ready") void openChatFromX();
-      });
       port.onDisconnect.addListener(() => window.setTimeout(holdPort, 1_000));
     };
     holdPort();
-    const fromX = (
-      message: unknown,
-      sender: chrome.runtime.MessageSender,
-      sendResponse: (response: XStatusAnswer | XSendResult) => void,
-    ) => {
-      const request = decodeXRequest(message, X_PANEL_MESSAGE);
-      if (!request || sender.tab || request.action === "rules") return undefined;
-      const target = xTarget();
-      const work: Promise<XStatusAnswer | XSendResult> =
-        request.action === "status"
-          ? target
-            ? xStatus(target)
-            : Promise.resolve({ ready: false, reason: "panel-connecting" })
-          : target
-            ? xSend(target, request.payload, request.clientMessageId ?? crypto.randomUUID())
-            : Promise.resolve({
-                ok: false,
-                error: t("extension.connection.connecting", { server: host()?.name ?? "" }),
-                reached: false,
-              });
-      void work.then(sendResponse, () =>
-        sendResponse({ ok: false, error: t("extension.chat.sendFailed"), reached: true }),
-      );
-      return true;
+    const leave = () => {
+      stopControl?.();
+      void connection?.dispose();
     };
-    chrome.runtime.onMessage.addListener(fromX);
-    const leave = () => void connection?.dispose();
     window.addEventListener("pagehide", leave);
     return () => {
-      chrome.runtime.onMessage.removeListener(fromX);
       closed = true;
+      cancelReconnect();
       port?.disconnect();
       window.removeEventListener("pagehide", leave);
       browserLink?.dispose();
       workspace()?.dispose();
+      stopControl?.();
       void connection?.dispose();
     };
   });
@@ -381,21 +353,50 @@ function ServerView(props: { session: ExtensionSession; onSignOut: () => void; o
     setPushed(false);
   }
 
+  const settings = (onBack: () => void) => (
+    <SettingsScreen
+      canShare={canShare()}
+      identity={props.identity}
+      connection={relay().state}
+      onBack={onBack}
+      onRemoveIdentity={props.onRemoveIdentity}
+    />
+  );
+  const stateActions = () => (
+    <>
+      <button type="button" class="ext-text-button" onClick={retry}>
+        {t("common.retry")}
+      </button>
+      <button type="button" class="ext-text-button" onClick={() => setSettingsAlone(true)}>
+        {t("extension.home.settings")}
+      </button>
+    </>
+  );
+  const waitingText = () => {
+    const current = host();
+    if (current) return t("extension.connection.connecting", { server: current.name });
+    const state = relay().state;
+    return state.status === "offline" && state.code !== "stopped"
+      ? t(relayStateKey(state.code))
+      : t("webClient.relay.connecting");
+  };
+
   return (
     <>
       <Switch>
-        <Match when={view.status === "empty"}>
-          <p class="ext-state">{t("extension.connection.noServers")}</p>
+        <Match when={settingsAlone()}>{settings(() => setSettingsAlone(false))}</Match>
+        <Match when={finalCode()}>
+          {(code) => (
+            <div class="ext-state">
+              <p role="alert">{t(relayStateKey(code()))}</p>
+              {stateActions()}
+            </div>
+          )}
         </Match>
         <Match when={view.status === "failed"}>
           <div class="ext-state">
-            <p>{view.message}</p>
-            <button type="button" class="ext-text-button" onClick={() => (view.hostId ? open(view.hostId) : start())}>
-              {t("common.retry")}
-            </button>
-            <button type="button" class="ext-text-button" onClick={() => props.onSignOut()}>
-              {t("extension.home.signOut")}
-            </button>
+            <p role="alert">{view.message}</p>
+            {stateActions()}
           </div>
         </Match>
         <Match when={workspace()}>
@@ -415,7 +416,6 @@ function ServerView(props: { session: ExtensionSession; onSignOut: () => void; o
                   }
                   onStartThread={startThread}
                   onSelectHost={(hostId) => void open(hostId)}
-                  onSignOut={() => props.onSignOut()}
                   onOpenSettings={() => push("settings")}
                   sharing={presence().sharing}
                   canShare={canShare()}
@@ -435,13 +435,7 @@ function ServerView(props: { session: ExtensionSession; onSignOut: () => void; o
                       <Match when={shown.kind === "new-channel"}>
                         <NewChannelScreen workspace={current()} onClose={back} onCreated={openChannel} />
                       </Match>
-                      <Match when={shown.kind === "settings"}>
-                        <SettingsScreen
-                          canShare={canShare()}
-                          onBack={back}
-                          onAnalyticsChanged={(enabled) => void saveAnalyticsAnswer(props.session.token, enabled)}
-                        />
-                      </Match>
+                      <Match when={shown.kind === "settings"}>{settings(back)}</Match>
                       <Match when={shown.kind === "new-folder"}>
                         <NewFolderScreen workspace={current()} onClose={back} onCreated={back} />
                       </Match>
@@ -477,9 +471,20 @@ function ServerView(props: { session: ExtensionSession; onSignOut: () => void; o
             </div>
           )}
         </Match>
+        <Match when={view.status === "empty"}>
+          <div class="ext-state">
+            <p>
+              <strong>{t("webClient.relay.noServers")}</strong>
+            </p>
+            <p>{t("webClient.relay.noServersDescription")}</p>
+            <button type="button" class="ext-text-button" onClick={() => setSettingsAlone(true)}>
+              {t("extension.home.settings")}
+            </button>
+          </div>
+        </Match>
         <Match when={true}>
           <p class="ext-state" aria-live="polite">
-            {host() ? t("extension.connection.connecting", { server: host()?.name ?? "" }) : null}
+            {waitingText()}
           </p>
         </Match>
       </Switch>

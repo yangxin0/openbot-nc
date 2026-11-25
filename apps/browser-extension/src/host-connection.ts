@@ -6,33 +6,29 @@ import {
   decodeVoiceTranscription,
   VOICE_TRANSCRIPTION_ROUTES,
 } from "@openbot/contracts/team-protocol/voice-transcription-v1";
-import { runTeamEffect } from "@openbot/team-client";
 import { bytesToBase64 } from "@openbot/team-client/base64";
-import { verifyEd25519Base64Url } from "@openbot/team-client/ed25519";
 import {
-  RemoteDirectoryError,
-  RemoteTeamDirectoryClient,
-  type RemoteTeamHost,
-} from "@openbot/team-client/remote-directory";
-import {
-  createRemoteTeamPeer,
-  type RemoteFileUpload,
-  type RemoteLargeDownload,
-  type RemoteTeamCommandResult,
-  type RemoteTeamConnectionUpdate,
-  type RemoteTeamEvent,
-  type RemoteTeamPeerActions,
+  createRelayTeamPeer,
+  type RelayBrowserIdentity,
+  type RelayTeamPeerActions,
+} from "@openbot/team-client/relay-client";
+import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
+import type {
+  RemoteFileUpload,
+  RemoteLargeDownload,
+  RemoteTeamCommandResult,
+  RemoteTeamConnectionUpdate,
+  RemoteTeamEvent,
 } from "@openbot/team-client/remote-peer";
 import type { TeamApiRequest } from "@openbot/team-client/team-api-requests";
 import { currentText } from "@openbot/ui/text";
-import { ACCOUNT_API_URL } from "./account";
 import type { HostFile } from "./attachment-media";
-import { type ExtensionSession, hostKeys, readHostProtocols, saveHostProtocol } from "./extension-storage";
+import { readHostProtocols, saveHostProtocol } from "./extension-storage";
 
 const FILE_DOWNLOAD: RemoteLargeDownload = { maxBytes: TEAM_PROTOCOL_V2_MAX_FILE_BYTES };
 const TRANSCRIPTION_TIMEOUT_MS = 125_000;
 
-type HostProblem = "identity_changed" | "update_required" | "unavailable";
+type HostProblem = "update_required" | "unavailable";
 
 class HostConnectionError extends Error {
   constructor(
@@ -46,12 +42,12 @@ class HostConnectionError extends Error {
 export interface HostConnectionEvents {
   event: (event: RemoteTeamEvent) => void;
   state: (update: RemoteTeamConnectionUpdate) => void;
-  sessionEnded: () => void;
 }
 
+export type HostTarget = Pick<RemoteTeamHost, "hostId" | "name" | "devicePublicKey">;
+
 export interface HostConnection {
-  listHosts: () => Promise<RemoteTeamHost[]>;
-  connect: (host: RemoteTeamHost) => Promise<string[]>;
+  connect: (host: HostTarget) => Promise<string[]>;
   request: TeamApiRequest;
   download: (attachmentId: string) => Promise<HostFile>;
   transcribe: (wav: Uint8Array) => Promise<string>;
@@ -59,44 +55,22 @@ export interface HostConnection {
 }
 
 export async function createHostConnection(
-  session: ExtensionSession,
+  identity: RelayBrowserIdentity,
   events: HostConnectionEvents,
 ): Promise<HostConnection> {
-  const accountId = session.user.id;
-  const keys = hostKeys(accountId);
-  const protocols = await readHostProtocols(accountId);
-  const directory = new RemoteTeamDirectoryClient({
-    apiUrl: ACCOUNT_API_URL,
-    token: session.token,
-    fetch: (input, init) => fetch(input, init),
-    hostKeys: keys,
-    verifyHostKeySignature: verifyEd25519Base64Url,
-  });
-  const actions: { current: RemoteTeamPeerActions } = {
+  const protocols = await readHostProtocols(identity.keyId);
+  const actions: { current: RelayTeamPeerActions } = {
     current: {
-      getBootstrap: async (hostId, clientPublicKey, sessionId) => {
-        try {
-          return await runTeamEffect(directory.createBootstrap(hostId, clientPublicKey, sessionId));
-        } catch (error) {
-          if (isRefusedSession(error)) events.sessionEnded();
-          throw error;
-        }
-      },
-      endSession: (sessionId) => runTeamEffect(directory.endSession(sessionId)),
-      onConnectionUpdate: async (update) => {
-        if (update.code === "session_revoked") events.sessionEnded();
-        events.state(update);
-      },
+      onConnectionUpdate: async (update) => events.state(update),
       onTeamEvent: async (_hostId, event) => events.event(event),
     },
   };
-  const peer = createRemoteTeamPeer(actions, {
-    waitForHost: true,
+  const peer = createRelayTeamPeer(identity, actions, {
     hostProtocols: {
       get: (hostId) => protocols.get(hostId),
       set: (hostId, protocol) => {
         protocols.set(hostId, protocol);
-        void saveHostProtocol(accountId, hostId, protocol);
+        void saveHostProtocol(identity.keyId, hostId, protocol);
       },
     },
     clientProtocol: TEAM_WEB_CLIENT_PROTOCOL,
@@ -119,19 +93,11 @@ export async function createHostConnection(
   }
 
   return {
-    listHosts: () => runTeamEffect(directory.listHosts()),
     async connect(host) {
       generation += 1;
       if (connectedHostId !== null && connectedHostId !== host.hostId)
         await peer.execute({ id: crypto.randomUUID(), type: "disconnect" });
       connectedHostId = host.hostId;
-      const pinned = await keys.get(host.hostId);
-      if (pinned && pinned !== host.devicePublicKey)
-        throw new HostConnectionError(
-          "identity_changed",
-          currentText().t("extension.connection.identityChanged", { server: host.name }),
-        );
-      if (!pinned) await keys.set(host.hostId, host.devicePublicKey);
       const result = await peer.execute({
         id: crypto.randomUUID(),
         type: "connect",
@@ -185,10 +151,6 @@ export async function createHostConnection(
       await peer.dispose().catch(() => undefined);
     },
   };
-}
-
-function isRefusedSession(error: unknown): boolean {
-  return error instanceof RemoteDirectoryError && (error.status === 401 || error.status === 403);
 }
 
 function hostRefusal(result: RemoteTeamCommandResult): string | null {

@@ -312,7 +312,6 @@ export const messages = {
   "settings.agentDock.agents.title": "Agenten im Dock",
   "settings.agentDock.agents.description": "Die Agenten von {server}. Jeder Server hat sein eigenes Dock.",
   "settings.agentDock.agents.empty": "Dieser Server hat noch keine Agenten.",
-  "settings.analytics.title": "Analysedaten mit meinem Konto verknüpfen",
   "settings.tab.general.title": "Allgemein",
   "settings.tab.general.description": "Lege fest, wie Chats funktionieren und was OpenBot teilt.",
   "settings.tab.agents.title": "Agenten",

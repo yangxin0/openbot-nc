@@ -102,8 +102,7 @@
   font-size: var(--openbot-text-md);
 }
 
-.account-login-spinner,
-.account-login-button-spinner {
+.account-login-spinner {
   width: 14px;
   height: 14px;
   flex: 0 0 auto;
@@ -111,11 +110,6 @@
   border-top-color: currentColor;
   border-radius: var(--openbot-radius-pill);
   animation: account-login-spin 900ms linear infinite;
-}
-
-.account-login-button-spinner {
-  width: 13px;
-  height: 13px;
 }
 
 .account-login-primary {
@@ -154,32 +148,6 @@
   margin-top: 24px;
 }
 
-.account-login-local-data {
-  margin: 4px 0 0;
-  color: var(--openbot-text-muted);
-  font-size: var(--openbot-text-sm);
-  line-height: 17px;
-  text-align: center;
-  text-wrap: balance;
-}
-
-.account-login-local-data svg {
-  display: inline-block;
-  margin-inline-end: 6px;
-  vertical-align: -2px;
-}
-
-.account-login-email-field {
-  display: grid;
-  grid-template-rows: auto 0px;
-  transition: grid-template-rows var(--openbot-duration-fast) ease-out var(--revert-dur, 280ms);
-}
-
-.account-login-email-field.is-error {
-  grid-template-rows: auto 24px;
-  transition: grid-template-rows var(--openbot-duration-fast) ease-out;
-}
-
 .account-login-form input:not(.otp-input-native) {
   width: 100%;
   height: 44px;
@@ -209,23 +177,6 @@
   color: var(--openbot-text-placeholder);
 }
 
-.account-login-field-error {
-  align-self: start;
-  height: 16px;
-  overflow: hidden;
-  margin: 8px 0 0;
-  color: var(--openbot-danger);
-  font-size: var(--openbot-text-sm);
-  line-height: 16px;
-  text-align: start;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.account-login-form input:not(.otp-input-native).t-input.is-error {
-  border-color: var(--openbot-danger);
-}
-
 .account-login-primary:disabled,
 .account-login-primary[aria-disabled="true"],
 .account-login-code-action:disabled,
@@ -245,67 +196,6 @@
 
 .account-login-code-action {
   width: auto;
-}
-
-.account-login-code-action-change {
-  justify-content: flex-start;
-}
-
-.account-login-code-action-resend {
-  justify-content: flex-end;
-}
-
-.account-login-language {
-  position: absolute;
-  top: var(--openbot-space-4);
-  inset-inline-end: var(--openbot-space-6);
-  width: auto;
-  color: var(--openbot-text-muted);
-  -webkit-app-region: no-drag;
-}
-
-.account-login-page-footer {
-  width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: var(--openbot-space-4);
-  align-items: center;
-  margin-top: var(--openbot-space-6);
-  -webkit-app-region: no-drag;
-}
-
-.account-login-page-footer:not([data-shown]) {
-  visibility: hidden;
-}
-
-.account-login-page-footer-start {
-  display: flex;
-  min-width: 0;
-}
-
-.account-login-legal {
-  display: grid;
-  gap: 2px;
-  justify-items: center;
-}
-
-.account-login-legal .account-login-local-data {
-  margin: 0;
-}
-
-@keyframes account-login-invite-pop {
-  40% {
-    transform: scale(1.12);
-  }
-}
-
-.account-login-development-code {
-  margin: 0;
-  color: var(--openbot-warning);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: var(--openbot-text-sm);
-  line-height: 16px;
-  text-align: start;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1101,12 +991,7 @@ body,
   color: var(--openbot-success);
 }
 
-.account-login-development-code,
 .provider-picker-status-sign-in-required i,
 .provider-picker-status-outdated i {
   color: var(--openbot-warning);
-}
-
-.account-login-code-action-change > svg[class~="lucide-arrow-left"]:dir(rtl) {
-  transform: scaleX(-1);
 }

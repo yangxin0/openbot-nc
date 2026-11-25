@@ -9,6 +9,7 @@ import {
   readRelayIdentityText,
 } from "./relay-identity";
 import { relayTeamTunnelTransport } from "./relay-v2-tunnels";
+import type { RemoteTeamHost } from "./remote-directory";
 import { createRemoteTeamPeer, type RemoteHostProtocols, type RemoteTeamPeerActions } from "./remote-peer";
 
 export type { RelayControlSnapshot, RelayControlState } from "./relay-control";
@@ -25,6 +26,8 @@ export { RelaySocketError } from "./relay-socket";
 export type { RelayV2TunnelErrorCode } from "./relay-v2-tunnels";
 export { openRelayV2Tunnels, RelayV2TunnelError } from "./relay-v2-tunnels";
 export { createIndexedDbRelayIdentityKeyStore };
+
+const RELAY_HOST_ID_PREFIX = "relay:";
 
 export type RelayTeamPeerActions = Omit<RemoteTeamPeerActions, "getBootstrap" | "endSession">;
 
@@ -65,6 +68,22 @@ export function startRelayControl(
 
 export function relayRosterHosts(control: RelayBrowserControl): RelayTeamMember[] {
   return control.hosts();
+}
+
+export function relayTeamHostId(member: Pick<RelayTeamMember, "user" | "device">): string {
+  return `${RELAY_HOST_ID_PREFIX}${encodeURIComponent(member.user)}:${encodeURIComponent(member.device ?? "")}`;
+}
+
+export function relayTeamHost(member: RelayTeamMember, role: RemoteTeamHost["role"]): RemoteTeamHost {
+  return {
+    hostId: relayTeamHostId(member),
+    name: member.label ?? member.user,
+    logoKey: null,
+    devicePublicKey: member.keyId,
+    membershipId: member.keyId,
+    role,
+    relayHost: { user: member.user, device: member.device },
+  };
 }
 
 export function createRelayTeamPeer(

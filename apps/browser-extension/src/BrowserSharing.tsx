@@ -1,7 +1,6 @@
 import { Button, CreditCard, Download, Globe2, KeyRound, LogIn } from "@openbot/ui";
 import { useText } from "@openbot/ui/text";
 import { createSignal, For, Match, onSettled, Show, Switch } from "solid-js";
-import { track } from "./analytics";
 import {
   ASKS_KEY,
   type AskChoice,
@@ -40,7 +39,6 @@ export async function removeAllowedSite(site: string): Promise<void> {
   const stored = (await chrome.storage.local.get(SITES_KEY))[SITES_KEY];
   const kept = Object.fromEntries(decodeSites(stored).flatMap((entry) => (entry === site ? [] : [[entry, "always"]])));
   await chrome.storage.local.set({ [SITES_KEY]: kept });
-  void track("browser_sharing_action", { action: "site_removed" });
 }
 
 function actionWords(ask: BrowserAsk, t: ReturnType<typeof useText>["t"]): string {

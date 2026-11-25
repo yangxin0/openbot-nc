@@ -40,7 +40,7 @@ account, open a terminal of the app in Umbrel (Settings â€º Advanced settings â€
 `OPENBOT_SETUP_PAGE_PORT` starts the page in the container. The page is part of OpenBot:
 `src/main/server-setup-page.ts` serves the `server-setup` entry of the renderer build
 (`out/renderer/server-setup.html` and its `assets/`). The entry,
-`src/renderer/src/features/server-setup/`, shows the shared `AccountLogin` screen of the app. It starts only in the OpenBot image, where `/opt/OpenBot-NC/hosted/mode`
+`src/renderer/src/features/server-setup/`, shows a sign-in screen with the `account-login` styles of the app. It starts only in the OpenBot image, where `/opt/OpenBot-NC/hosted/mode`
 is `container`. A self-hosted server that systemd runs writes a warning and does not start it.
 
 Umbrel asks for the Umbrel password before it sends a request to the page. The `app_proxy` service

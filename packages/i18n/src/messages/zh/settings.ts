@@ -288,7 +288,6 @@ export const messages = {
   "settings.agentDock.agents.title": "停靠栏中的智能体",
   "settings.agentDock.agents.description": "{server} 的智能体。每台服务器都有自己的停靠栏。",
   "settings.agentDock.agents.empty": "这台服务器还没有智能体。",
-  "settings.analytics.title": "将分析数据关联到我的账号",
   "settings.tab.general.title": "通用",
   "settings.tab.general.description": "选择聊天的工作方式以及 OpenBot 共享的内容。",
   "settings.tab.agents.title": "助手",

@@ -305,7 +305,6 @@ export const messages = {
   "settings.agentDock.agents.title": "ドックのエージェント",
   "settings.agentDock.agents.description": "{server} のエージェントです。サーバーごとに専用のドックがあります。",
   "settings.agentDock.agents.empty": "このサーバーにはまだエージェントがいません。",
-  "settings.analytics.title": "分析データをアカウントに関連付ける",
   "settings.tab.general.title": "一般",
   "settings.tab.general.description": "チャットの動作と OpenBot が共有する内容を設定します。",
   "settings.tab.agents.title": "エージェント",

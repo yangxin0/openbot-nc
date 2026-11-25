@@ -222,6 +222,7 @@ import { WORKSPACE_ONLY_PROCESS_LIMIT_CAPABILITY } from "@openbot/contracts/team
 import { runTeamEffect } from "@openbot/team-client";
 import { bytesToBase64 } from "@openbot/team-client/base64";
 import { createRemoteBrowserView, type RemoteBrowserView } from "@openbot/team-client/browser-view";
+import { relayTeamHost, relayTeamHostId } from "@openbot/team-client/relay-client";
 import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
 import type {
   RemoteFileUpload,
@@ -285,7 +286,7 @@ import {
   type WebHostTabMessage,
 } from "./web-host-lock";
 import { closeWebChatNotifications } from "./web-notifications";
-import { relayHostId, relayHostRecord, type WebPeerActions, type WebRelayConnection } from "./web-relay";
+import type { WebPeerActions, WebRelayConnection } from "./web-relay";
 
 export interface WebAdminRuntime {
   request: TeamApiRequest;
@@ -537,7 +538,9 @@ export function createWebWorkspaceRuntime(
   function rosterHostIds(): Set<string> {
     const snapshot = relay.source.snapshot();
     const selfKeyId = snapshot.self?.keyId ?? relay.identity.keyId;
-    return new Set(snapshot.roster.filter((member) => member.hosting && member.keyId !== selfKeyId).map(relayHostId));
+    return new Set(
+      snapshot.roster.filter((member) => member.hosting && member.keyId !== selfKeyId).map(relayTeamHostId),
+    );
   }
   function rosterHosts(): RemoteTeamHost[] {
     const snapshot = relay.source.snapshot();
@@ -545,7 +548,7 @@ export function createWebWorkspaceRuntime(
     const listed = new Map<string, RemoteTeamHost>();
     for (const member of snapshot.roster) {
       if (!member.hosting || member.keyId === selfKeyId) continue;
-      const host = relayHostRecord(member, hostRoles.get(relayHostId(member)) ?? "member");
+      const host = relayTeamHost(member, hostRoles.get(relayTeamHostId(member)) ?? "member");
       if (!listed.has(host.hostId)) listed.set(host.hostId, host);
     }
     for (const host of listed.values()) knownHosts.set(host.hostId, host);

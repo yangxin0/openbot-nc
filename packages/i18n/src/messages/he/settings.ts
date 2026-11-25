@@ -295,7 +295,6 @@ export const messages = {
   "settings.agentDock.agents.title": "סוכנים במעגן",
   "settings.agentDock.agents.description": "הסוכנים של {server}. לכל שרת יש מעגן משלו.",
   "settings.agentDock.agents.empty": "עדיין אין סוכנים בשרת הזה.",
-  "settings.analytics.title": "קישור הניתוח לחשבון שלי",
   "settings.tab.general.title": "כללי",
   "settings.tab.general.description": "בחירה איך צ'אטים פועלים ומה OpenBot משתף.",
   "settings.tab.agents.title": "סוכנים",

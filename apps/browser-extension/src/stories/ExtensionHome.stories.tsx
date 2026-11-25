@@ -2,9 +2,8 @@ import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { HomeScreen } from "../HomeScreen";
 import type { Workspace } from "../workspace";
-import { OUTBOX_KEY } from "../x-outbox";
 import { WithWorkspace } from "./story-frame";
-import { installStoryChrome, STORY_CHANNEL, type StoryServerOptions } from "./story-server";
+import { STORY_CHANNEL, type StoryServerOptions } from "./story-server";
 
 const meta = {
   title: "Extension/Home",
@@ -42,7 +41,6 @@ function Home(props: { options?: StoryServerOptions; offline?: boolean; setup?: 
           onCreate={() => undefined}
           onStartThread={() => undefined}
           onSelectHost={() => undefined}
-          onSignOut={() => undefined}
           onOpenSettings={() => undefined}
           sharing={false}
           canShare
@@ -82,59 +80,3 @@ export const ChannelWorking: Story = {
 export const NoAgents: Story = { render: () => <Home options={{ agents: [] }} /> };
 
 export const Offline: Story = { render: () => <Home offline /> };
-
-function waitingPost(id: string, handle: string, text: string, minutesAgo: number, message = "") {
-  return {
-    id,
-    payload: {
-      message,
-      pageUrl: `https://x.com/${handle.slice(1)}/status/${id}`,
-      replyTo: 0,
-      posts: [
-        {
-          authorName: handle.slice(1),
-          handle,
-          time: "2026-11-19T10:05:00.000Z",
-          url: `https://x.com/${handle.slice(1)}/status/${id}`,
-          text,
-          article: "",
-          media: [],
-        },
-      ],
-    },
-    createdAt: Date.now() - minutesAgo * 60_000,
-    attempts: 3,
-    nextAt: Date.now() + 42_000,
-    error: "The server is offline.",
-    reachedAt: null,
-  };
-}
-
-export const PostsFromXWait: Story = {
-  render: () => {
-    installStoryChrome({
-      [OUTBOX_KEY]: [
-        waitingPost("2", "@bob", "Studies show two eggs a day cut heart risk by 40%.", 6, "Is this true?"),
-        waitingPost("4", "@alice", "Eggs are a superfood. Thoughts?", 2),
-      ],
-    });
-    return <Home />;
-  },
-};
-
-export const ManyPostsFromXWait: Story = {
-  render: () => {
-    const handles = ["@bob", "@alice", "@carol", "@dmitri", "@erin", "@farah", "@gus", "@hana", "@ivo", "@jun"];
-    installStoryChrome({
-      [OUTBOX_KEY]: handles.map((handle, index) =>
-        waitingPost(
-          String(index + 10),
-          handle,
-          `Post ${index + 1}: a claim about the launch numbers that the X agent should check before I answer.`,
-          (index + 1) * 95,
-        ),
-      ),
-    });
-    return <Home />;
-  },
-};

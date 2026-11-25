@@ -1,4 +1,4 @@
-import { RELAY_PATH, type RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
+import { RELAY_PATH } from "@openbot/contracts/relay-protocol/messages";
 import { isBoolean, isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import type { AppTextKey } from "@openbot/i18n";
 import type { SourceMessages } from "@openbot/i18n/source";
@@ -19,7 +19,6 @@ import {
   saveRelayIdentity,
   startRelayControl,
 } from "@openbot/team-client/relay-client";
-import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
 
 export type WebPeerActions = { current: RelayTeamPeerActions };
 export type WebPeer = ReturnType<typeof createRelayTeamPeer>;
@@ -58,7 +57,6 @@ export class WebIdentityImportError extends Error {
 
 const CONTROL_LOCK = "openbot.web.relay-control";
 const CONTROL_CHANNEL = "openbot.web.relay";
-const RELAY_HOST_ID_PREFIX = "relay:";
 
 const FINAL_CODES: ReadonlySet<RelaySocketErrorCode | "stopped"> = new Set([
   "replaced",
@@ -183,22 +181,6 @@ export function relayStateKey(code: RelaySocketErrorCode): (typeof RELAY_STATE_K
 export function relayFinalCode(snapshot: RelayControlSnapshot): RelaySocketErrorCode | null {
   const { state } = snapshot;
   return state.status === "offline" && state.code !== "stopped" && FINAL_CODES.has(state.code) ? state.code : null;
-}
-
-export function relayHostId(member: Pick<RelayTeamMember, "user" | "device">): string {
-  return `${RELAY_HOST_ID_PREFIX}${encodeURIComponent(member.user)}:${encodeURIComponent(member.device ?? "")}`;
-}
-
-export function relayHostRecord(member: RelayTeamMember, role: RemoteTeamHost["role"]): RemoteTeamHost {
-  return {
-    hostId: relayHostId(member),
-    name: member.label ?? member.user,
-    logoKey: null,
-    devicePublicKey: member.keyId,
-    membershipId: member.keyId,
-    role,
-    relayHost: { user: member.user, device: member.device },
-  };
 }
 
 export function startWebRelay(identity: RelayBrowserIdentity): WebRelayRun {

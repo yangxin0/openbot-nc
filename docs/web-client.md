@@ -37,8 +37,8 @@ No deployment or pull request is made by these source changes.
 
 ## Shared application UI
 
-The browser uses the existing `AccountLogin`, `PageRail`, `ServerRail`, `Sidebar`,
-`Conversation`, `AgentSettingsPanel`, and `FirstAgentSetup` components. After sign-in it
+The browser uses the existing `PageRail`, `ServerRail`, `Sidebar`, `Conversation`,
+`AgentSettingsPanel`, and `FirstAgentSetup` components. After the identity import it
 connects to the first available host and selects a teammate. There is no web dashboard,
 welcome screen, separate conversation toolbar, or always-visible invitation form.
 Invitations use the existing Add remote server dialog.

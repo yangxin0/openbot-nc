@@ -20,7 +20,15 @@ interface Hit {
 }
 
 const ROOT = resolve(import.meta.dirname, "..");
-const SCOPES = ["src", "packages", "resources", "electron-builder.yml", "scripts/hosting", "remote"];
+const SCOPES = [
+  "src",
+  "packages",
+  "resources",
+  "electron-builder.yml",
+  "scripts/hosting",
+  "remote",
+  "apps/browser-extension",
+];
 const VENDOR = /openbot\.run|nightly-labs|openpanel/giu;
 
 const IGNORED_SPELLINGS: readonly IgnoredSpelling[] = [
@@ -50,12 +58,8 @@ const ALLOWED_PATHS: readonly AllowedPath[] = [
     reason: "apps/mobile catalog; the desktop does not render these keys.",
   },
   {
-    path: "packages/i18n/src/messages/*/extension.ts",
-    reason: "apps/browser-extension catalog; the desktop does not render these keys.",
-  },
-  {
     path: "packages/telemetry/src/**",
-    reason: "analytics transport of apps/mobile and apps/browser-extension; the desktop sends no analytics.",
+    reason: "analytics transport of apps/mobile only; the desktop and the browser extension send no analytics.",
   },
   {
     path: "packages/logging/src/identifiers.ts",

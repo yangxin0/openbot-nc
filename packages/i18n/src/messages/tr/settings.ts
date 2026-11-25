@@ -305,7 +305,6 @@ export const messages = {
   "settings.agentDock.agents.title": "Yuvadaki ajanlar",
   "settings.agentDock.agents.description": "{server} sunucusunun ajanları. Her sunucunun kendi yuvası vardır.",
   "settings.agentDock.agents.empty": "Bu sunucuda henüz ajan yok.",
-  "settings.analytics.title": "Analizleri hesabıma bağla",
   "settings.tab.general.title": "Genel",
   "settings.tab.general.description": "Sohbetlerin nasıl çalışacağını ve OpenBot'un neyi paylaşacağını seçin.",
   "settings.tab.agents.title": "Ajanlar",

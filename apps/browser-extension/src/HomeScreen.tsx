@@ -1,6 +1,6 @@
 import type { ChannelSummary, ClientAgentSummary } from "@openbot/contracts/ipc";
 import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
-import { Bot, Check, ChevronDown, ChevronRight, FolderPlus, Hash, LogOut, Plus, Search, Settings } from "@openbot/ui";
+import { Bot, Check, ChevronDown, ChevronRight, FolderPlus, Hash, Plus, Search, Settings } from "@openbot/ui";
 import { AgentAvatar } from "@openbot/ui/features/agents/AgentAvatar";
 import { ChannelAvatar } from "@openbot/ui/features/channels/ChannelAvatar";
 import { ServerPlushLogo } from "@openbot/ui/server-plush-logo";
@@ -9,7 +9,6 @@ import { createMemo, createSignal, For, onSettled, Show } from "solid-js";
 import { avatarAgent, byRecent, composerAgents, rowTime } from "./agent-look";
 import { createMenuPresence } from "./menu-presence";
 import type { Workspace } from "./workspace";
-import { XOutboxCard } from "./XOutboxCard";
 
 interface HomeScreenProps {
   workspace: Workspace;
@@ -22,7 +21,6 @@ interface HomeScreenProps {
   onCreate: (kind: "agent" | "channel" | "folder") => void;
   onStartThread: (agentId: string, text: string) => void;
   onSelectHost: (hostId: string) => void;
-  onSignOut: () => void;
   onOpenSettings: () => void;
   sharing: boolean;
   canShare: boolean;
@@ -178,18 +176,6 @@ export function HomeScreen(props: HomeScreenProps) {
               <span>{t("extension.home.settings")}</span>
               <Settings size={16} aria-hidden="true" />
             </button>
-            <button
-              type="button"
-              role="menuitem"
-              class="ext-menu-item"
-              onClick={() => {
-                setMenuOpen(false);
-                props.onSignOut();
-              }}
-            >
-              <span>{t("extension.home.signOut")}</span>
-              <LogOut size={16} aria-hidden="true" />
-            </button>
           </div>
         </Show>
         <button
@@ -230,7 +216,6 @@ export function HomeScreen(props: HomeScreenProps) {
         <Show when={props.sharing && !props.canShare}>
           <p class="ph-offline">{t("extension.browser.unsupported", { server: props.serverName })}</p>
         </Show>
-        <XOutboxCard />
         <Show
           when={!query().trim()}
           fallback={

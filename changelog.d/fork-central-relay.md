@@ -60,6 +60,12 @@
   command is `openbot-nc`. The desktop opens `openbot-nc://` links and makes its own links with
   `openbot-nc://`. OpenBot-NC does not read or change the data of an OpenBot app on the same
   computer, and a new installation starts empty.
+- The Chrome extension connects through your central server. Paste the identity file of the
+  extension or choose the file; the extension keeps the private key and cannot read it back. Issue a
+  separate identity for the extension, for example with `--device extension`. Settings in the server
+  menu show the team, user, device, central server, expiry date and connection, and remove the
+  identity after a confirm step. The extension is now named OpenBot-NC. Build it with
+  `bun run extension:build` and load `.openbot-build/browser-extension/` with Load unpacked.
 
 ### Removed
 
@@ -136,3 +142,10 @@
   session list, no invitations or owner transfer, and no browser extension sign-in page.
 - The vendor web app links: the phone screen of the web client no longer links to the App Store and
   Google Play, and the web client opens directly.
+- Extension sign-in: the email code, the sign-in through `openbot.run`, the account session and the
+  analytics choice of the Chrome extension. The extension asks for no `identity` permission and no
+  access to `api.openbot.run`, and websites cannot message it.
+- Extension analytics. The Chrome extension sends no events.
+- X posting from the Chrome extension, with its outbox and notifications. The X agent came from the
+  agent marketplace, and the page rules came from the account service.
+- The Sign out item of the extension server menu. Remove the identity in the extension settings.

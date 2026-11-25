@@ -302,7 +302,6 @@ export const messages = {
   "settings.agentDock.agents.title": "독의 에이전트",
   "settings.agentDock.agents.description": "{server}의 에이전트입니다. 서버마다 독이 따로 있습니다.",
   "settings.agentDock.agents.empty": "이 서버에는 아직 에이전트가 없습니다.",
-  "settings.analytics.title": "분석 데이터를 내 계정에 연결",
   "settings.tab.general.title": "일반",
   "settings.tab.general.description": "채팅 동작과 OpenBot이 공유하는 내용을 설정해요.",
   "settings.tab.agents.title": "에이전트",

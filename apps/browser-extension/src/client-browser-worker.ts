@@ -7,7 +7,6 @@ import {
   type ClientBrowserPresence,
   type ClientTab,
 } from "@openbot/contracts/team-protocol/client-browser-v1";
-import { track } from "./analytics";
 import { BrowserCommandError, clientTab, installExecutor, isWebUrl, runCommand } from "./client-browser-executor";
 import {
   ASKS_KEY,
@@ -224,7 +223,6 @@ export function startClientBrowser(options: Options): ClientBrowserWorker {
       labels,
       Math.min(ASK_WAIT_MS, deadline - Date.now()),
     );
-    void track("browser_sharing_ask", { kind, choice });
     if ((choice === "once" || choice === "always") && Date.now() >= deadline)
       throw new BrowserCommandError("timeout", LATE);
     if (choice === "timeout")

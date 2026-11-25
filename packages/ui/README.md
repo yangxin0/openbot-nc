@@ -7,7 +7,6 @@ The source files are moved from the desktop renderer; there is one implementatio
 import { Button, Input } from "@openbot/ui";
 import { cx } from "@openbot/ui/utils";
 import { Sidebar } from "@openbot/ui/features/sidebar/Sidebar";
-import { AccountLogin } from "@openbot/ui/features/account/AccountLogin";
 import { ComposerEditor } from "@openbot/ui/features/conversation/ComposerEditor";
 ```
 

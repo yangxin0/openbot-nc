@@ -728,54 +728,9 @@ Use `bun run dev:automation` for snapshots and screenshots. Do not drive another
 
 ## The browser extension on X
 
-The extension (`apps/browser-extension`) sends a post from X to the user's X agent
-(`X_AGENT_LISTING_ID` in `packages/contracts/src/browser-extension-x.ts`, a Marketplace Agent in
-`marketplace/production-catalog`). On desktop and web, the user adds this agent with the X app of
-the Marketplace (`MarketplaceXAppPage` in `packages/ui/src/features/marketplace`), not from the Agents
-tab. Its setup has two steps, as a chat app has: get the extension (`X_EXTENSION_URL`), then add the
-agent through the usual Marketplace install. The X app shows only when `X_EXTENSION_URL` is set; it is
-`null` until the store page exists. It then shows on this computer, and on a joined server only for an
-admin that can install agents (`agent-install-v1`), as Discord and the other chat apps do.
-There are three parts:
-
-- **Content script** (`src/x-content.ts`, built as one IIFE file, `x-content.js`). It finds the parts of
-  an X page with CSS selectors only. When a reply mentions @OpenBot_ and the server answers `ready`, it
-  sets `data-openbot-x` on the reply button, and CSS gives the button the OpenBot look and motion. A
-  click (or Cmd/Ctrl+Enter) is stopped in the capture phase. The script reads the post, the posts above
-  it and the author's next posts (no replies by other people), gives them to the worker, and clicks the
-  button again with `data-openbot-x-pass`, so X posts the reply at once.
-  Each part has selectors for the earlier X web app (`data-testid`) and for the X web app of November
-  2026, which has no test ids: its text box is a `textarea`, so the script reads its value. That app
-  shows no `<time datetime>`, so the time comes from the status ID in the post link (an X ID holds its
-  creation time). In the reply dialog the post has no link; the script then takes the ID from
-  `in_reply_to` in the page address when the address has one.
-- **Worker** (`src/background.ts`). It answers the selectors, and keeps each post in a queue
-  (`src/x-outbox.ts`, `chrome.storage.local`) until the server has it. Each post keeps one
-  `clientMessageId`, and the host answers a repeated id with the first receipt for a day, so a retry
-  makes no second thread. A failed send waits 30 s, then longer, up to 30 minutes (`chrome.alarms`
-  wakes the worker). A browser start (`onStartup`, or `onInstalled` for an extension that Chrome loads
-  again) and a side panel that has connected send every waiting post at once. Each failure says whether it may have
-  reached the server (`XSendResult.reached`): a post that no attempt can have sent waits up to 7 days,
-  and one that an attempt may have sent is tried only for 23 hours after that attempt. Nothing of
-  OpenBot shows on X for a post that waits; a post that arrives after a failed attempt, or that is
-  dropped, gets a browser notification. The worker cannot load a language, so it keeps the texts that the last
-  `status` answer brought. The side panel shows the posts that wait, with "Send now". The selectors come from the account service (`X_PAGE_RULES_ROUTE`, at most once an
-  hour, by hash) and stay in `chrome.storage.local`. A copy whose hash does not match is dropped. The
-  content script tries the served selectors first, then the built-in ones (`X_PAGE_RULES_DEFAULT`).
-- **One connection at a time.** The account service gives a sign-in one logical session per server
-  (`startSession` in `apps/auth-api/src/server/remote-control-plane.ts`), and the server keeps one
-  connection per session, so a second connection of the same sign-in takes the session of the first.
-  Each open side panel holds a port (`PANEL_PORT`) to the worker. While a panel is open, the worker
-  passes `status` and `send` to it (`src/x-agent.ts` with the panel's connection), closes the offscreen
-  page, and does not open a second panel. With no panel, the offscreen page (`offscreen.html`,
-  `src/offscreen.tsx`) makes the connection. Chrome gives an offscreen page `chrome.runtime` only, so it
-  reads and writes storage through the worker, which takes these requests only from that page. It
-  closes after 10 minutes with no work. Two panels in two windows still take the session from each
-  other.
-
-The E2E (`scripts/browser-extension-e2e.ts`, step 7) uses a local copy of an X post page whose reply
-button has a test id that only the served selectors know, then a local page in the markup of the new X
-web app that only the new selectors find.
+Removed in OpenBot-NC. The extension sent a post from X to the user's X agent, which came from the
+agent marketplace, and it read its X page rules from the account service. Both are gone, so the
+extension has no X content script, outbox or X notifications.
 
 ## Agents on the member's Chrome (host side)
 
@@ -811,7 +766,7 @@ The extension is a remote client, so no new data channel is necessary:
 
 ### The extension side
 
-The extension (`apps/browser-extension`) shares the user's open web tabs while the user is signed in.
+The extension (`apps/browser-extension`) shares the user's open web tabs while it has an identity.
 There is no switch to stop it. A tab that an agent works in joins the Chrome tab group "OpenBot" of its
 window.
 
@@ -856,8 +811,8 @@ a screenshot. Styles go through the CSSOM and motion through the Web Animations 
 CSP and Trusted Types allow. It is removed when the debugger detaches, and fades out by itself 36 s
 after the last command, also when Chrome's Cancel bar detached the debugger first.
 
-The extension E2E (`scripts/browser-extension-e2e.ts`, step 6b) shares a local page and lets the agent
-click its button through the card.
+The extension E2E (`scripts/relay-extension-e2e.ts`) shares a local page and runs one snapshot command
+on it through the central server.
 
 Chrome Web Store permission notes (for the store listing):
 

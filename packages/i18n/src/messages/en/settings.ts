@@ -300,7 +300,6 @@ export const messages = defineMessages("settings", {
   "settings.agentDock.agents.title": "Agents on the dock",
   "settings.agentDock.agents.description": "The agents of {server}. Each server has its own dock.",
   "settings.agentDock.agents.empty": "This server has no agents yet.",
-  "settings.analytics.title": "Link analytics to my account",
   "settings.tab.general.title": "General",
   "settings.tab.general.description": "Choose how chats work and what OpenBot shares.",
   "settings.tab.agents.title": "Agents",

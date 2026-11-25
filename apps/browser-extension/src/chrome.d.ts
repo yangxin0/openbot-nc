@@ -39,10 +39,6 @@ declare namespace chrome {
       addListener(listener: MessageListener): void;
       removeListener(listener: MessageListener): void;
     };
-    const onMessageExternal: {
-      addListener(listener: MessageListener): void;
-      removeListener(listener: MessageListener): void;
-    };
     interface Port {
       name: string;
       sender?: MessageSender;
@@ -53,18 +49,6 @@ declare namespace chrome {
     }
     function connect(info: { name: string }): Port;
     const onConnect: { addListener(listener: (port: Port) => void): void };
-    const onStartup: { addListener(listener: () => void): void };
-    const onInstalled: {
-      addListener(listener: (details: { reason: string; previousVersion?: string }) => void): void;
-    };
-  }
-  export namespace alarms {
-    interface Alarm {
-      name: string;
-    }
-    function create(name: string, info: { when: number }): Promise<void>;
-    function clear(name: string): Promise<boolean>;
-    const onAlarm: { addListener(listener: (alarm: Alarm) => void): void };
   }
   export namespace notifications {
     function create(
@@ -173,13 +157,5 @@ declare namespace chrome {
     const onDeterminingFilename: {
       addListener(listener: (item: DownloadItem, suggest: () => void) => boolean | undefined): void;
     };
-  }
-  export namespace identity {
-    function launchWebAuthFlow(details: {
-      url: string;
-      interactive: boolean;
-      abortOnLoadForNonInteractive?: boolean;
-      timeoutMsForNonInteractive?: number;
-    }): Promise<string | undefined>;
   }
 }

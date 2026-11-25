@@ -3,6 +3,7 @@ import type { AppLanguage } from "@openbot/contracts/app-language";
 import type { RelayState } from "@openbot/contracts/ipc";
 import type { AppTextKey } from "@openbot/i18n";
 import { sourceText } from "@openbot/i18n/source";
+import { relayTeamHostId } from "@openbot/team-client/relay-client";
 import {
   Item,
   ItemActions,
@@ -44,7 +45,7 @@ import { SettingsKeyboardTab } from "../settings/SettingsKeyboardTab";
 import { relaySnapshotSignal } from "./WebRelayNotice";
 import { setWebChatBackground, useWebChatBackground } from "./web-chat-background";
 import type { WebNotificationSettings } from "./web-notification-settings";
-import { relayHostId, relayStateKey, type WebRelayConnection } from "./web-relay";
+import { relayStateKey, type WebRelayConnection } from "./web-relay";
 
 const TABS = ["team", "preferences", "keyboard"] as const;
 type WebAccountSettingsTab = (typeof TABS)[number];
@@ -144,7 +145,7 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
           label: member.label,
           hosting: member.hosting,
           self,
-          serverId: member.hosting && !self ? relayHostId(member) : null,
+          serverId: member.hosting && !self ? relayTeamHostId(member) : null,
           hidden: false,
         };
       }),

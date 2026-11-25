@@ -2,7 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/auth";
 
 export const messages = {
-  "error.auth.serviceUnavailable": "OpenBot לא הצליח להגיע לשירות החשבון. יש לוודא שה-API פועל ולנסות שוב.",
   "error.auth.companySignInFailed": "ההתחברות דרך החברה לא הסתיימה. יש לנסות שוב.",
   "error.auth.companySignInCancelled": "ההתחברות דרך החברה בוטלה.",
   "error.auth.companySignInTimeout": "ההתחברות דרך החברה לקחה זמן רב מדי. יש לפתוח שוב את דף ההתחברות.",

@@ -1,29 +1,28 @@
-import { ArrowLeft, ChevronDown, Globe2, SwitchField, Trash2 } from "@openbot/ui";
+import type { RelayBrowserIdentity, RelayControlState } from "@openbot/team-client/relay-client";
+import { ArrowLeft, Button, ChevronDown, Globe2, Trash2 } from "@openbot/ui";
 import { useText } from "@openbot/ui/text";
-import { createSignal, createUniqueId, For, onSettled, Show } from "solid-js";
-import { analyticsLinked, setAnalyticsLinked } from "./analytics";
+import type { JSX } from "@solidjs/web";
+import { createSignal, createUniqueId, For, Show } from "solid-js";
 import { removeAllowedSite, siteName, useAllowedSites } from "./BrowserSharing";
-import { readSession } from "./extension-storage";
+
+export type IdentityFacts = Pick<RelayBrowserIdentity, "team" | "user" | "device" | "relayUrl" | "expiresAt">;
 
 interface SettingsScreenProps {
   canShare: boolean;
+  identity: IdentityFacts;
+  connection: RelayControlState;
   onBack: () => void;
-  onAnalyticsChanged: (enabled: boolean) => void;
+  onRemoveIdentity: () => Promise<void>;
 }
+
+const CONNECTION_LABELS = {
+  connecting: "settings.team.connection.connecting",
+  online: "settings.team.connection.online",
+  offline: "settings.team.connection.offline",
+} as const;
 
 export function SettingsScreen(props: SettingsScreenProps) {
   const { t } = useText();
-  const [linked, setLinked] = createSignal<boolean | null>(null);
-  onSettled(() => {
-    void readSession()
-      .then(analyticsLinked)
-      .then(setLinked, () => setLinked(null));
-  });
-  async function changeAnalytics(enabled: boolean) {
-    setLinked(enabled);
-    await setAnalyticsLinked(enabled);
-    props.onAnalyticsChanged(enabled);
-  }
   return (
     <div class="ext-form-screen">
       <header class="ch-topbar">
@@ -33,21 +32,100 @@ export function SettingsScreen(props: SettingsScreenProps) {
         <h1 class="ext-form-title">{t("extension.home.settings")}</h1>
       </header>
       <div class="ext-form-body">
-        <div class="ext-settings-rows">
-          <Show when={linked() !== null}>
-            <div class="ext-settings-row">
-              <SwitchField
-                checked={linked() === true}
-                onChange={(enabled) => void changeAnalytics(enabled).catch(() => undefined)}
-                label={t("settings.analytics.title")}
-              />
-            </div>
-          </Show>
-          <Show when={props.canShare}>
+        <IdentitySection identity={props.identity} connection={props.connection} onRemove={props.onRemoveIdentity} />
+        <Show when={props.canShare}>
+          <div class="ext-settings-rows">
             <SharedTabsRow />
-          </Show>
-        </div>
+          </div>
+        </Show>
       </div>
+    </div>
+  );
+}
+
+function IdentitySection(props: {
+  identity: IdentityFacts;
+  connection: RelayControlState;
+  onRemove: () => Promise<void>;
+}) {
+  const { t, format } = useText();
+  const [removal, setRemoval] = createSignal<"closed" | "confirming" | "removing" | "failed">("closed");
+  const titleId = `ext-settings-identity-${createUniqueId()}`;
+  async function remove(): Promise<void> {
+    setRemoval("removing");
+    try {
+      await props.onRemove();
+    } catch {
+      setRemoval("failed");
+    }
+  }
+  return (
+    <section class="ext-settings-identity" aria-labelledby={titleId}>
+      <h2 id={titleId} class="ext-settings-heading">
+        {t("settings.team.identity.title")}
+      </h2>
+      <p class="ext-settings-note">{t("extension.identity.settingsDescription")}</p>
+      <dl class="ext-settings-facts">
+        <Fact label={t("settings.team.fact.team")}>{props.identity.team}</Fact>
+        <Fact label={t("settings.team.fact.user")}>{props.identity.user}</Fact>
+        <Fact label={t("settings.team.fact.device")}>{props.identity.device ?? t("settings.team.fact.none")}</Fact>
+        <Fact label={t("settings.team.fact.server")}>
+          <span dir="ltr">{props.identity.relayUrl ?? t("settings.team.fact.none")}</span>
+        </Fact>
+        <Fact label={t("settings.team.fact.expires")}>
+          {format.date(props.identity.expiresAt, { dateStyle: "medium" })}
+        </Fact>
+        <Fact label={t("settings.team.fact.connection")}>{t(CONNECTION_LABELS[props.connection.status])}</Fact>
+      </dl>
+      <Show
+        when={removal() !== "closed"}
+        fallback={
+          <Button type="button" variant="outline" onClick={() => setRemoval("confirming")}>
+            <Trash2 size={14} aria-hidden="true" />
+            {t("settings.team.remove.title")}
+          </Button>
+        }
+      >
+        <section class="ext-settings-confirm" aria-labelledby={`${titleId}-confirm`}>
+          <p id={`${titleId}-confirm`} class="ext-settings-confirm-title">
+            {t("settings.team.remove.confirmTitle")}
+          </p>
+          <p class="ext-settings-note">{t("extension.identity.removeConfirmDescription")}</p>
+          <Show when={removal() === "failed"}>
+            <p class="ext-settings-error" role="alert">
+              {t("settings.team.error.remove")}
+            </p>
+          </Show>
+          <div class="ext-settings-confirm-actions">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={removal() === "removing"}
+              onClick={() => setRemoval("closed")}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              loading={removal() === "removing"}
+              loadingLabel={t("settings.team.remove.confirm")}
+              onClick={() => void remove()}
+            >
+              {t("settings.team.remove.confirm")}
+            </Button>
+          </div>
+        </section>
+      </Show>
+    </section>
+  );
+}
+
+function Fact(props: { label: string; children: JSX.Element }) {
+  return (
+    <div class="ext-settings-fact">
+      <dt>{props.label}</dt>
+      <dd>{props.children}</dd>
     </div>
   );
 }

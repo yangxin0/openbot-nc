@@ -1,21 +1,13 @@
-import type { XReplyPayload } from "@openbot/contracts/browser-extension-x";
 import { isDynamicRecord } from "@openbot/contracts/runtime-values";
 import { formatLocale, loadLocale, resolveLocale } from "@openbot/i18n";
 import { currentText, TextProvider } from "@openbot/ui/text";
 import { render } from "@solidjs/web";
 import { type ClientBrowserLink, createClientBrowserLink } from "./client-browser-link";
 import { BROWSER_HOLD_MESSAGE } from "./client-browser-messages";
-import { readServerId, readSession, useStorageArea } from "./extension-storage";
+import { loadIdentity, openIdentityStore } from "./extension-identity";
+import { isStoredItems, STORAGE_MESSAGE } from "./extension-messages";
+import { readSavedHost, useStorageArea } from "./extension-storage";
 import { createHostConnection, type HostConnection } from "./host-connection";
-import { xSend, xStatus } from "./x-agent";
-import {
-  decodeXRequest,
-  isStoredItems,
-  STORAGE_MESSAGE,
-  X_OFFSCREEN_MESSAGE,
-  type XSendResult,
-  type XStatusAnswer,
-} from "./x-messages";
 
 useStorageArea({
   get: async (keys) => {
@@ -41,109 +33,59 @@ const started = loadLocale(locale)
       render(() => <TextProvider locale={locale} formatLocale={formatLocale("system", navigator.language)} />, root);
   });
 
+const identities = openIdentityStore();
+
 interface Target {
-  token: string;
+  identityKeyId: string;
   hostId: string;
   connection: HostConnection;
-  capabilities: string[];
   link: ClientBrowserLink;
 }
 
 let target: Target | null = null;
 let queue: Promise<unknown> = Promise.resolve();
 
-function drop() {
+function drop(): void {
   target?.link.dispose();
   void target?.connection.dispose();
   target = null;
 }
 
-async function currentTarget(): Promise<Target | null> {
-  const session = await readSession();
-  if (!session) {
+async function connectSavedHost(): Promise<void> {
+  const identity = await loadIdentity(identities);
+  const saved = await readSavedHost();
+  if (!identity || !saved || saved.identityKeyId !== identity.keyId) {
     drop();
-    return null;
+    return;
   }
-  const saved = await readServerId();
-  if (target && target.token === session.token && (!saved || saved === target.hostId)) return target;
+  if (target && target.identityKeyId === identity.keyId && target.hostId === saved.hostId) return;
   drop();
-  let link: ClientBrowserLink | null = null;
-  const connection = await createHostConnection(session, {
-    event: (event) => link?.handleEvent(event),
+  const links: { current: ClientBrowserLink | null } = { current: null };
+  const connection = await createHostConnection(identity, {
+    event: (event) => links.current?.handleEvent(event),
     state: (update) => {
-      if (update.state === "online") link?.refresh();
+      if (update.state === "online") links.current?.refresh();
+      else if (update.state === "offline" && target?.connection === connection) drop();
     },
-    sessionEnded: drop,
   });
   try {
-    const hosts = await connection.listHosts();
-    const host = hosts.find((entry) => entry.hostId === saved) ?? hosts[0];
-    if (!host) throw new Error(currentText().t("extension.connection.noServers"));
-    const capabilities = await connection.connect(host);
-    link = createClientBrowserLink({ request: connection.request, capabilities });
-    target = { token: session.token, hostId: host.hostId, connection, capabilities, link };
-    return target;
+    const capabilities = await connection.connect(saved);
+    const link = createClientBrowserLink({ request: connection.request, capabilities });
+    links.current = link;
+    target = { identityKeyId: identity.keyId, hostId: saved.hostId, connection, link };
   } catch (error) {
     await connection.dispose();
     throw error;
   }
 }
 
-async function status(): Promise<XStatusAnswer> {
-  try {
-    const current = await currentTarget();
-    if (!current) return { ready: false, reason: "signed-out" };
-    return await xStatus({
-      hostId: current.hostId,
-      request: current.connection.request,
-      capabilities: current.capabilities,
-    });
-  } catch (error) {
-    const detail = error instanceof Error ? error.message.slice(0, 160) : "";
-    return { ready: false, reason: detail ? `server-failed (${detail})` : "server-failed" };
-  }
-}
-
-async function send(payload: XReplyPayload, clientMessageId: string): Promise<XSendResult> {
-  const { t } = currentText();
-  try {
-    const current = await currentTarget();
-    if (!current) return { ok: false, error: t("extension.x.signedOut"), reached: false };
-    return await xSend(
-      { hostId: current.hostId, request: current.connection.request, capabilities: current.capabilities },
-      payload,
-      clientMessageId,
-    );
-  } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error && error.message ? error.message : t("extension.chat.sendFailed"),
-      reached: false,
-    };
-  }
-}
-
-function holdShared() {
-  const work = queue
-    .then(() => started)
-    .then(async () => {
-      if (!target) await currentTarget();
-    });
+function holdShared(): void {
+  const work = queue.then(() => started).then(connectSavedHost);
   queue = work.catch(() => undefined);
 }
 window.setInterval(holdShared, 30_000);
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (isDynamicRecord(message) && message.kind === BROWSER_HOLD_MESSAGE && !sender.tab) {
-    holdShared();
-    return undefined;
-  }
-  const request = decodeXRequest(message, X_OFFSCREEN_MESSAGE);
-  if (!request || sender.tab || request.action === "rules") return undefined;
-  const next = (): Promise<XStatusAnswer | XSendResult> =>
-    request.action === "status" ? status() : send(request.payload, request.clientMessageId ?? crypto.randomUUID());
-  const work = queue.then(() => started).then(next);
-  queue = work.catch(() => undefined);
-  void work.then(sendResponse, () => sendResponse({}));
-  return true;
+chrome.runtime.onMessage.addListener((message, sender) => {
+  if (isDynamicRecord(message) && message.kind === BROWSER_HOLD_MESSAGE && !sender.tab) holdShared();
+  return undefined;
 });
