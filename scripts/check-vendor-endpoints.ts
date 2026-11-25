@@ -32,7 +32,6 @@ const EXCLUDED = [
   ":(glob,exclude)packages/contracts/src/team-protocol/fixtures/**",
   ":(glob,exclude)src/renderer/src/vendor/**",
   ":(glob,exclude)packages/whatsapp/vendor/**",
-  ":(glob,exclude)marketplace/production-catalog/bundles/**",
 ];
 const VENDOR = /openbot\.run|nightly-labs|openpanel/giu;
 

@@ -126,8 +126,8 @@ Write, in one line each:
   solution. Assess the need, not the named solution.
 - **Today**: what the user can do now, and since which release
   (`git tag --contains`). Search the `@openbot/i18n` catalog
-  (`packages/i18n/src/messages/en`), settings, workflows, webhooks, agent
-  tools, and `marketplace/production-catalog`. Text that starts with `/`
+  (`packages/i18n/src/messages/en`), settings, workflows and agent
+  tools. Text that starts with `/`
   goes to the provider; OpenBot has no local slash commands. Give
   `path:line` for each match.
 - **Casual path**: how a casual user gets to **Today**: the clicks, from

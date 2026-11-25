@@ -58,10 +58,9 @@ function anchors(path: string): Set<string> {
   return found;
 }
 
-const VENDORED = "marketplace/production-catalog/bundles/";
 const files = execFileSync("git", ["ls-files", "*.md"], { cwd: ROOT, encoding: "utf8" })
   .split("\n")
-  .filter((file) => file !== "" && !file.startsWith(VENDORED) && existsSync(join(ROOT, file)));
+  .filter((file) => file !== "" && existsSync(join(ROOT, file)));
 const failures: string[] = [];
 
 for (const file of files) {
