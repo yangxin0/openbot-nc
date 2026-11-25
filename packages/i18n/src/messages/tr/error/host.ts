@@ -2,21 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.keyRotationUnavailable": "Bu sunucu, hesap hizmeti olmadan anahtarını değiştiremez.",
-  "error.host.keyRotationRefused":
-    "Hesap hizmeti yeni sunucu anahtarını kabul etmedi. Mevcut anahtar kullanılmaya devam ediyor.",
   "error.host.webRtcNotConfigured": "WebRTC ana makine hizmeti yapılandırılmamış.",
-  "error.host.accountChangedDuringUpdate": "Bu sunucu güncellenirken oturum açmış hesap değişti.",
   "error.host.nameBeforePublish": "Yayımlamadan önce bu OpenBot'a bir ad verin.",
-  "error.host.memberNotFound": "Uzak üye mevcut değil.",
   "error.host.publishBeforeInvite": "Davet oluşturmadan önce bu OpenBot'u herkese açık hale getirin.",
   "error.host.teamAccessUnavailable": "Ekip erişiminiz kullanılamıyor.",
   "error.host.ownerIdentityUnavailable": "Ana makine sahibi kimliği kullanılamıyor.",
-  "error.host.reserveAddressFailed": "Genel adres rezerve edilemedi.",
   "error.host.publishFailed": "Bu OpenBot yayımlanamadı.",
-  "error.host.mobileConnectPublishFailed": "Bu OpenBot Mobile Connect için yayımlanamadı.",
-  "error.host.mobileConnectHostChanged": "Mobile Connect ana makinesi değişti. Tekrar deneyin.",
-  "error.host.mobileConnectHostMismatch": "Hesabınızda bu sunucu için farklı bir anahtar var. Tekrar deneyin.",
   "error.host.noServer": "Bu bilgisayarda değiştirilecek bir sunucu yok.",
   "error.host.identityLocalOnly": "Sunucu adı ve logosu yalnızca onu çalıştıran bilgisayarda değiştirilebilir.",
   "error.host.timezoneInvalid": "Bu saat dilimi bilinmiyor.",

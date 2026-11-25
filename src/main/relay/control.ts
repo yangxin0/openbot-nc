@@ -31,6 +31,7 @@ const FINAL_CODES: ReadonlySet<RelaySocketErrorCode> = new Set([
   "identity_unavailable",
   "relay_url_missing",
   "insecure_relay_url",
+  "server_refused",
 ]);
 
 export type RelayControlState =

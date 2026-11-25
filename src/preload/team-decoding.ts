@@ -5,8 +5,6 @@ import {
   type DirectMessage,
   type DirectThreadSummary,
   type HostStatus,
-  type InvitePreview,
-  type InviteSummary,
   isAvatarColor,
   type ScopedDirectMessageEvent,
   type ScopedDirectTypingEvent,
@@ -16,7 +14,6 @@ import {
   type ServerConnectionIssue,
   type ServerRelayHost,
   type ServerSummary,
-  type TeamInviteSummary,
   type TeamMemberSummary,
   type TeamPresenceMember,
   type TeamPresenceSnapshot,
@@ -38,7 +35,6 @@ import { type ServerAppearance, serverAppearanceOrNull } from "@openbot/contract
 
 const HOST_PHASES = ["unconfigured", "idle", "starting", "online", "stopping", "error"] as const;
 const TEAM_ROLES = ["owner", "admin", "member"] as const;
-const INVITE_ROLES = ["admin", "member"] as const;
 const SERVER_KINDS = ["local", "remote"] as const;
 const SERVER_STATES = ["online", "connecting", "offline", "error", "incompatible"] as const;
 const SERVER_ISSUE_CODES = [
@@ -56,29 +52,6 @@ export function decodeServer(value: unknown): ServerSummary {
 
 export function decodeServers(value: unknown): ServerSummary[] {
   return decodeList(value, "server list", server);
-}
-
-export function decodeInvitePreview(value: unknown): InvitePreview {
-  const preview = decodeRecord(value, "invite preview");
-  if (!isOneOf(INVITE_ROLES, preview.role)) throw new Error("Invalid role.");
-  return {
-    serverId: requiredString(preview, "serverId"),
-    serverName: requiredString(preview, "serverName"),
-    apiHostname: requiredString(preview, "apiHostname"),
-    role: preview.role,
-    expiresAt: requiredString(preview, "expiresAt"),
-    emailBound: requiredBoolean(preview, "emailBound"),
-    permanent: requiredBoolean(preview, "permanent"),
-  };
-}
-
-export function decodeInviteUrl(value: unknown): string {
-  if (!isString(value)) throw new Error("Invalid invite link.");
-  return value;
-}
-
-export function decodePendingInvite(value: unknown): string | null {
-  return value === null ? null : decodeInviteUrl(value);
 }
 
 export function decodeHostStatus(value: unknown): HostStatus {
@@ -128,15 +101,6 @@ export function decodeTeamSessions(value: unknown): TeamSessionSummary[] {
     createdAt: requiredString(session, "createdAt"),
     expiresAt: requiredString(session, "expiresAt"),
   }));
-}
-
-export function decodeTeamInvites(value: unknown): TeamInviteSummary[] {
-  return decodeList(value, "team invite list", teamInvite);
-}
-
-export function decodeInviteSummary(value: unknown): InviteSummary {
-  const invite = decodeRecord(value, "invite");
-  return { ...teamInvite(invite), inviteUrl: requiredString(invite, "inviteUrl") };
 }
 
 export function decodeDirectThreads(value: unknown): DirectThreadSummary[] {
@@ -377,19 +341,6 @@ function presenceMember(member: DynamicRecord): TeamPresenceMember {
     ...teamMember(member),
     online: requiredBoolean(member, "online"),
     typingAgentId: nullableString(member, "typingAgentId"),
-  };
-}
-
-function teamInvite(invite: DynamicRecord): TeamInviteSummary {
-  if (!isOneOf(INVITE_ROLES, invite.role)) throw new Error("Invalid role.");
-  return {
-    id: requiredString(invite, "id"),
-    role: invite.role,
-    expiresAt: requiredString(invite, "expiresAt"),
-    usedAt: nullableString(invite, "usedAt"),
-    email: nullableString(invite, "email"),
-    permanent: requiredBoolean(invite, "permanent"),
-    useCount: requiredNumber(invite, "useCount"),
   };
 }
 

@@ -96,7 +96,6 @@ export const messages = {
   "account.login.changeEmail": "Changer d’e-mail",
   "account.login.resend": "Renvoyer le code",
   "account.login.resendIn": "Renvoyer dans {time}",
-  "account.login.loadFailed": "OpenBot n’a pas pu charger le service de compte.",
   "account.otp.incorrect": "Ce code est incorrect. Réessayez.",
   "account.otp.verifying": "Vérification…",
   "account.otp.entry": "Saisie du code à usage unique",

@@ -20,15 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "원격 이벤트를 사용할 수 없어요.",
   "error.remote.signInAgain": "다시 로그인해 주세요.",
   "error.remote.emailDeliveryUnavailable": "이메일을 보낼 수 없어요.",
-  "error.remote.inviteHostMismatch": "초대 호스트가 토큰과 일치하지 않아요.",
-  "error.remote.inviteIdentityMismatch": "초대 호스트 ID가 토큰과 일치하지 않아요.",
-  "error.remote.inviteAcceptedOtherHost": "계정 서비스가 다른 호스트를 수락했어요.",
-  "error.remote.inviteIdentityChanged": "초대를 수락하는 동안 초대 호스트 ID가 변경되었어요.",
   "error.remote.localServerRemove": "로컬 서버는 삭제할 수 없어요.",
   "error.remote.viewerProxyUnavailable": "로컬 원격 뷰어 프록시를 사용할 수 없어요.",
   "error.remote.viewerProxyNoPort": "로컬 원격 뷰어 프록시가 포트를 받지 못했어요.",
-  "error.remote.inviteNeedsConnection": "초대를 만들려면 호스트가 먼저 한 번 연결되어야 해요.",
-  "error.remote.permanentInviteUnsupported": "이 서버 연결은 영구 초대 링크를 지원하지 않아요.",
   "error.remote.bridgeStartFailed": "Team WebRTC 브리지를 시작하지 못했어요.",
   "error.remote.bridgeStopped": "Team WebRTC 브리지가 중지되었어요.",
   "error.remote.bridgeDidNotStart": "Team WebRTC 브리지가 시작되지 않았어요.",
@@ -177,6 +171,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "OpenBot이 서버를 불러오지 못했어요. 다시 시도하세요.",
   "error.remote.localServerNotStarted":
     "이 컴퓨터의 서버가 시작되지 않았어요. 다시 시도하세요. 시작되지 않으면 이 컴퓨터에서 OpenBot을 다시 시작하세요.",
-  "error.remote.localServerAccountRemovalFailed":
-    "서버는 해당 컴퓨터에서 삭제되었지만 계정에는 아직 표시됩니다. 계정에서 제거하려면 다시 삭제하세요.",
 } as const satisfies PartialTranslation<typeof source>;

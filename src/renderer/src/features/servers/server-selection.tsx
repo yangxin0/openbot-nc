@@ -14,13 +14,13 @@ import { useSetup } from "../onboarding/onboarding-context";
 import { useWindowPage } from "../window/window-page-context";
 import { useServerSwitch } from "./server-switch";
 import { useServers } from "./servers-context";
-import { activeServerId, serversPort } from "./servers-port";
+import { serversPort } from "./servers-port";
 
 const ServerSelection = createSimpleContext({
   name: "Server selection",
   init: () => {
     const { servers, setServers, beginServerSelection } = useServers();
-    const { setPendingInviteUrl, saveSetup } = useSetup();
+    const { saveSetup } = useSetup();
     const {
       setBrowserVisibilitySuspended,
       setPendingAgentSelection,
@@ -110,20 +110,9 @@ const ServerSelection = createSimpleContext({
       }),
     );
 
-    async function joinServer(input: { inviteUrl: string }): Promise<void> {
-      await serversPort().servers.join(input);
-      setPendingInviteUrl("");
-      await selectServer(await activeServerId());
-    }
-
     async function createLocalServer(name: string): Promise<void> {
       const server = await serversPort().localServers.create(name);
       await selectServer(server.id);
-    }
-
-    async function joinRemoteDuringSetup(input: { inviteUrl: string }, provider: AgentProviderId): Promise<void> {
-      await joinServer(input);
-      await saveSetup(provider);
     }
 
     async function openServerDuringSetup(serverId: string, provider: AgentProviderId): Promise<boolean> {
@@ -140,9 +129,7 @@ const ServerSelection = createSimpleContext({
 
     return {
       selectServer,
-      joinServer,
       createLocalServer,
-      joinRemoteDuringSetup,
       openServerDuringSetup,
     };
   },

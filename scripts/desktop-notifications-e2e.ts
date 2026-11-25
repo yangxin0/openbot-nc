@@ -179,13 +179,12 @@ const cipher = {
   encrypt: (value: string) => Buffer.from(value, "utf8"),
   decrypt: (value: Buffer) => value.toString("utf8"),
 };
-const centralAccount = { createTeamAuthTicket: unused, getEmail: () => "e2e@example.invalid" };
 
 const database = new OpenBotDatabase(userData);
 const agentStore = new AgentStore(userData, join(root, "home"), database);
 const mailbox = new MailboxStore(userData, agentStore.sharedRoot, agentStore.database);
 const sidebar = new SidebarLayoutStore(join(userData, "sidebar-layout.json"));
-const manager = new RemoteServerManager(join(userData, "remote-servers.json"), cipher, centralAccount, {
+const manager = new RemoteServerManager(join(userData, "remote-servers.json"), cipher, {
   appVersion: APP_VERSION,
 });
 let agents: AgentService | undefined;

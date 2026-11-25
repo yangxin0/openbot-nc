@@ -10,7 +10,7 @@ interface ProfileStoreProps {
   open: boolean;
   account: CentralAuthUser;
   onUpdateAccountName: (name: string) => Promise<void>;
-  onUpdateAccountAvatar: (image: AvatarImageInput | null) => Promise<void>;
+  onUpdateAccountAvatar?: ((image: AvatarImageInput | null) => Promise<void>) | undefined;
   onListAccountSessions?: () => Promise<AccountSession[]>;
   onRevokeAccountSession?: (sessionId: string) => Promise<void>;
   processAvatarFile?: (file: File) => Promise<AvatarImageInput>;
@@ -155,13 +155,14 @@ export function createSettingsProfileStore(props: ProfileStoreProps, isActive: (
   const nameDirty = () => normalizedName() !== panels.profile.savedName;
 
   async function updateAvatar(image: AvatarImageInput | null): Promise<void> {
-    if (panels.avatar.busy) return;
+    const update = props.onUpdateAccountAvatar;
+    if (!update || panels.avatar.busy) return;
     setPanels((state) => {
       state.avatar.busy = true;
       state.avatar.error = null;
     });
     try {
-      await props.onUpdateAccountAvatar(image);
+      await update(image);
     } catch (error) {
       setPanels((state) => {
         const text = currentText();
@@ -247,6 +248,7 @@ export function createSettingsProfileStore(props: ProfileStoreProps, isActive: (
   }
 
   return {
+    canUpdateAvatar: () => props.onUpdateAccountAvatar !== undefined,
     clearAvatarError,
     markTouchedIfDirty,
     nameDirty,

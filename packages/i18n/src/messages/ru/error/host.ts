@@ -2,22 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.keyRotationUnavailable": "Этот сервер не может сменить ключ без службы учётных записей.",
-  "error.host.keyRotationRefused":
-    "Служба учётных записей не приняла новый ключ сервера. Текущий ключ остаётся в работе.",
   "error.host.webRtcNotConfigured": "Служба хоста WebRTC не настроена.",
-  "error.host.accountChangedDuringUpdate":
-    "Аккаунт, в который выполнен вход, изменился во время обновления этого сервера.",
   "error.host.nameBeforePublish": "Дайте этому OpenBot имя, прежде чем публиковать его.",
-  "error.host.memberNotFound": "Удалённого участника не существует.",
   "error.host.publishBeforeInvite": "Сделайте этот OpenBot публичным, прежде чем создавать приглашение.",
   "error.host.teamAccessUnavailable": "Доступ вашей команды недоступен.",
   "error.host.ownerIdentityUnavailable": "Идентификатор владельца хоста недоступен.",
-  "error.host.reserveAddressFailed": "Не удалось зарезервировать публичный адрес.",
   "error.host.publishFailed": "Не удалось опубликовать этот OpenBot.",
-  "error.host.mobileConnectPublishFailed": "Не удалось опубликовать этот OpenBot для Mobile Connect.",
-  "error.host.mobileConnectHostChanged": "Хост Mobile Connect изменился. Повторите попытку.",
-  "error.host.mobileConnectHostMismatch": "В вашем аккаунте другой ключ для этого сервера. Повторите попытку.",
   "error.host.noServer": "На этом компьютере нет сервера, который можно изменить.",
   "error.host.identityLocalOnly": "Название и логотип сервера можно изменить только на компьютере, где он работает.",
   "error.host.timezoneInvalid": "Этот часовой пояс неизвестен.",

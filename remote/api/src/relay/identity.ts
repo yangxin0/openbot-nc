@@ -36,6 +36,7 @@ export interface RelayTrust {
 
 interface RelayProof {
   nonce: string;
+  clientNonce: string;
   audience: string;
   role: RelayRole;
   target?: string | undefined;
@@ -206,6 +207,7 @@ function proofIsValid(proof: RelayProof, leaf: X509Certificate, keyType: string)
   const transcript = Buffer.from(
     relayHelloTranscript({
       nonce: proof.nonce,
+      clientNonce: proof.clientNonce,
       audience: proof.audience,
       role: proof.role,
       target: proof.target,

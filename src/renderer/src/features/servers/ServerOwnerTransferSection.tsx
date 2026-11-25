@@ -1,5 +1,4 @@
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
-import type { OpenBotDesktopApi } from "@openbot/contracts/ipc";
 import type { OwnerTransfer } from "@openbot/contracts/owner-transfer";
 import { normalizeEmailAddress } from "@openbot/contracts/validation";
 import {
@@ -22,10 +21,11 @@ import { createEffect, createStore, Show } from "solid-js";
 import { serverRoleCanAdminister } from "./server-capabilities";
 import type { ServerSettingsSectionHost } from "./server-settings-section";
 
-export type OwnerTransferCalls = Pick<
-  OpenBotDesktopApi["servers"],
-  "getOwnerTransfer" | "startOwnerTransfer" | "cancelOwnerTransfer"
->;
+export interface OwnerTransferCalls {
+  getOwnerTransfer: (serverId: string) => Promise<OwnerTransfer | null>;
+  startOwnerTransfer: (email: string, serverId: string) => Promise<OwnerTransfer>;
+  cancelOwnerTransfer: (serverId: string) => Promise<void>;
+}
 
 const EMAIL_PLACEHOLDER = "person@company.com";
 

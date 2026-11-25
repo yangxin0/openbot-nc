@@ -1,4 +1,4 @@
-import type { AgentProviderStatus, AgentStatus } from "@openbot/contracts/ipc";
+import type { AgentProviderStatus, AgentStatus, OpenBotDesktopApi } from "@openbot/contracts/ipc";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import { AGENT_TASKS_CAPABILITY, AGENT_TASKS_ROUTES } from "@openbot/contracts/team-protocol/agent-tasks-v1";
 import { AGENT_THREADS_CAPABILITY, AGENT_THREADS_ROUTES } from "@openbot/contracts/team-protocol/agent-threads-v1";
@@ -18,6 +18,15 @@ import { createMockOpenBot } from "../src/preview/mock-openbot";
 import { createMockWebRuntime, mockWebRuntimeFor } from "../src/preview/mock-web-runtime";
 import { AGENT_ID, TABS_KEY, THREAD_OPTIONS } from "./agent-threads-fixtures";
 import "../src/features/web-client/web-client.css";
+
+function storyTeam(host: OpenBotDesktopApi["host"]) {
+  return {
+    ...host,
+    listInvites: async () => [],
+    createInvite: () => Promise.reject(new Error("This story has no invitations.")),
+    revokeInvite: async () => undefined,
+  };
+}
 
 const accountFetch: typeof fetch = (input, init) => fetch(input, init);
 
@@ -209,7 +218,7 @@ const newServerRuntime: WebRuntimeFactory = (accountId, events, accountFetch) =>
     },
     listAgents: async () => (onNewServer() ? [] : base.listAgents()),
     status: async () => (onNewServer() ? status : base.status()),
-    admin: { request, download: request, team: team.api.host },
+    admin: { request, download: request, team: storyTeam(team.api.host) },
     dispose: async () => {
       team.dispose();
       await base.dispose();
@@ -260,7 +269,7 @@ const threadsRuntime: WebRuntimeFactory = (_accountId, events) => {
   return {
     ...base,
     connect: async (host) => [...(await base.connect(host)), AGENT_TASKS_CAPABILITY, AGENT_THREADS_CAPABILITY],
-    admin: { request, download: request, team: mock.api.host },
+    admin: { request, download: request, team: storyTeam(mock.api.host) },
   };
 };
 

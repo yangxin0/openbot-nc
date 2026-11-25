@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+import { getCACertificates } from "node:tls";
 import { decodeRelayServerMessage } from "@openbot/contracts/relay-protocol/decode";
 import {
   RELAY_ACCEPT_DEADLINE_MS,
@@ -14,6 +16,7 @@ import { Effect, Exit, Schema } from "effect";
 import WebSocket from "ws";
 import { rawDataBytes, rawDataSize, rawDataText } from "../ws-raw-data";
 import type { RelayCredentialSource } from "./identity-store";
+import { relayServerProofRefusal } from "./server-proof";
 
 const RELAY_CONNECT_DEADLINE_MS = 15_000;
 
@@ -25,6 +28,7 @@ const RELAY_SOCKET_ERROR_CODES = [
   "connect_failed",
   "deadline_exceeded",
   "peer_refused",
+  "server_refused",
   "closed",
 ] as const;
 export type RelaySocketErrorCode = (typeof RELAY_SOCKET_ERROR_CODES)[number];
@@ -61,6 +65,7 @@ type RelayHello = { role: "member"; hosting: boolean; label: string | null } | R
 interface HelloCredentials {
   version: RelayProtocolVersion;
   audience: string;
+  clientNonce: string;
   certificate: string;
   chain: string[];
   signature: string;
@@ -263,7 +268,7 @@ const connect = Effect.fn("RelaySocket.connect")(function* (
     try: () =>
       new RelaySocket(
         new WebSocket(url, {
-          ...(secure ? tls : {}),
+          ...(secure ? { ...tls, ca: [...getCACertificates("default"), tls.ca] } : {}),
           perMessageDeflate: false,
           maxPayload: RELAY_TUNNEL_MESSAGE_BYTES_LIMIT,
         }),
@@ -279,18 +284,17 @@ const authenticate = Effect.fn("RelaySocket.authenticate")(function* (
 ): Effect.fn.Return<void, RelaySocketError> {
   const challenge = yield* expectMessage(socket, isMessage("challenge"));
   const current = identity.current();
-  const proof = identity.signHello({
-    nonce: challenge.nonce,
-    role: hello.role,
-    target: hello.role === "client" ? hello.target : undefined,
-    connectionId: hello.role === "accept" ? hello.connectionId : undefined,
-  });
-  if (!current || !proof) {
+  const clientNonce = randomBytes(32).toString("base64url");
+  const target = hello.role === "client" ? hello.target : undefined;
+  const connectionId = hello.role === "accept" ? hello.connectionId : undefined;
+  const proof = identity.signHello({ nonce: challenge.nonce, clientNonce, role: hello.role, target, connectionId });
+  if (!current || current.relayUrl === null || !proof) {
     return yield* new RelaySocketError({ code: "identity_unavailable", message: "The relay identity cannot sign." });
   }
   const credentials: HelloCredentials = {
     version: RELAY_PROTOCOL_VERSION,
     audience: proof.audience,
+    clientNonce,
     certificate: current.certificate,
     chain: [...current.chain],
     signature: proof.signature,
@@ -313,6 +317,30 @@ const authenticate = Effect.fn("RelaySocket.authenticate")(function* (
     });
   } else {
     socket.sendMessage({ type: "hello", ...credentials, role: "accept", connectionId: hello.connectionId });
+  }
+  const answer = yield* expectMessage(socket, isMessage("server-proof", "welcome", "waiting", "open"));
+  const refusal =
+    answer.type !== "server-proof"
+      ? "missing"
+      : relayServerProofRefusal({
+          proof: answer,
+          root: current.root,
+          relayUrl: current.relayUrl,
+          transcript: {
+            serverNonce: challenge.nonce,
+            clientNonce,
+            audience: proof.audience,
+            role: hello.role,
+            clientKeyId: current.keyId,
+            target,
+            connectionId,
+          },
+          now: Date.now(),
+        });
+  if (refusal !== null) {
+    const message = `The relay server did not prove that it belongs to the team (${refusal}).`;
+    socket.fail("server_refused", message);
+    return yield* new RelaySocketError({ code: "server_refused", message });
   }
 });
 

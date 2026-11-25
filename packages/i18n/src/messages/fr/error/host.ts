@@ -2,21 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.keyRotationUnavailable": "Ce serveur ne peut pas changer sa clé sans le service de comptes.",
-  "error.host.keyRotationRefused":
-    "Le service de comptes n’a pas accepté la nouvelle clé du serveur. La clé actuelle reste utilisée.",
   "error.host.webRtcNotConfigured": "Le service d’hôte WebRTC n’est pas configuré.",
-  "error.host.accountChangedDuringUpdate": "Le compte connecté a changé pendant la mise à jour de ce serveur.",
   "error.host.nameBeforePublish": "Donnez un nom à cet OpenBot avant de le publier.",
-  "error.host.memberNotFound": "Le membre distant n’existe pas.",
   "error.host.publishBeforeInvite": "Rendez cet OpenBot public avant de créer une invitation.",
   "error.host.teamAccessUnavailable": "Votre accès à l’équipe n’est pas disponible.",
   "error.host.ownerIdentityUnavailable": "L’identité du propriétaire de l’hôte n’est pas disponible.",
-  "error.host.reserveAddressFailed": "Impossible de réserver l’adresse publique.",
   "error.host.publishFailed": "Impossible de publier cet OpenBot.",
-  "error.host.mobileConnectPublishFailed": "Impossible de publier cet OpenBot pour Mobile Connect.",
-  "error.host.mobileConnectHostChanged": "L’hôte Mobile Connect a changé. Réessayez.",
-  "error.host.mobileConnectHostMismatch": "Votre compte a une autre clé pour ce serveur. Réessayez.",
   "error.host.noServer": "Cet ordinateur n’a aucun serveur à modifier.",
   "error.host.identityLocalOnly":
     "Le nom et le logo du serveur ne peuvent être modifiés que sur l’ordinateur qui l’exécute.",

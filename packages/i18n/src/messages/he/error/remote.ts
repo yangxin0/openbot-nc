@@ -20,15 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "אירועים מרוחקים אינם זמינים.",
   "error.remote.signInAgain": "יש להתחבר שוב.",
   "error.remote.emailDeliveryUnavailable": "שליחת אימייל אינה זמינה.",
-  "error.remote.inviteHostMismatch": "מארח ההזמנה אינו תואם לאסימון שלה.",
-  "error.remote.inviteIdentityMismatch": "זהות מארח ההזמנה אינה תואמת לאסימון שלה.",
-  "error.remote.inviteAcceptedOtherHost": "שירות החשבונות אישר מארח אחר.",
-  "error.remote.inviteIdentityChanged": "זהות מארח ההזמנה השתנתה בזמן אישור ההזמנה.",
   "error.remote.localServerRemove": "אי אפשר להסיר את השרת המקומי.",
   "error.remote.viewerProxyUnavailable": "שרת הביניים המקומי של מציג שולחן העבודה המרוחק אינו זמין.",
   "error.remote.viewerProxyNoPort": "שרת הביניים המקומי של המציג המרוחק לא קיבל פורט.",
-  "error.remote.inviteNeedsConnection": "המארח צריך להתחבר פעם אחת לפני שיוכל ליצור הזמנות.",
-  "error.remote.permanentInviteUnsupported": "החיבור לשרת הזה לא תומך בקישורי הזמנה קבועים.",
   "error.remote.bridgeStartFailed": "גשר ה-WebRTC של הצוות לא הופעל.",
   "error.remote.bridgeStopped": "גשר ה-WebRTC של הצוות נעצר.",
   "error.remote.bridgeDidNotStart": "גשר ה-WebRTC של הצוות לא הופעל.",
@@ -171,8 +165,6 @@ export const messages = {
   "error.remote.localServerNotStarted":
     "השרת במחשב הזה לא הופעל. יש לנסות שוב. אם הוא לא מופעל, יש להפעיל מחדש את OpenBot במחשב הזה.",
   "error.remote.localServerNotFound": "השרת הזה אינו במחשב הזה.",
-  "error.remote.localServerAccountRemovalFailed":
-    "השרת נמחק במחשב שלו, אבל החשבון עדיין מציג אותו. יש למחוק אותו שוב כדי להסיר אותו מהחשבון.",
   "error.remote.localServerLimit": "אפשר לקיים עד {limit} שרתים במחשב הזה. יש למחוק אחד כדי ליצור שרת נוסף.",
   "error.remote.localServersReadOnly":
     "הגרסה הזו של OpenBot לא יכולה לקרוא את רשימת השרתים במחשב הזה. יש לעדכן את OpenBot.",

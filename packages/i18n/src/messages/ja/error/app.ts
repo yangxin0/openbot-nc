@@ -8,5 +8,4 @@ export const messages = {
   "error.app.notReady": "OpenBot の準備ができていません。",
   "error.app.macSecureStorageUnavailable": "macOS のセキュアストレージを利用できません。",
   "error.app.secretStorageUnavailable": "システムのシークレットストレージを利用できません。",
-  "error.app.remoteIdentityUnavailable": "リモートホストの ID を利用できません。",
 } as const satisfies PartialTranslation<typeof source>;

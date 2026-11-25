@@ -126,7 +126,6 @@ import {
 import { sourceText } from "@openbot/i18n/source";
 import { Context, Deferred, Effect, Exit, Fiber, Layer, ManagedRuntime } from "effect";
 import type * as Ws from "ws";
-import type { VerifiedRemoteSessionTicket } from "./central-auth-manager";
 import { contentDispositionFileName } from "./content-disposition";
 import {
   decodeRemoteDesktopSignalBinary,
@@ -137,6 +136,7 @@ import {
 import { RemoteWorkflowError, remoteCall, remoteDecode } from "./remote-service-effects";
 import type { TeamStore } from "./team-store";
 import type { TeamWebRtcBridge } from "./team-webrtc-bridge";
+import type { VerifiedRemoteSessionTicket } from "./team-webrtc-directory-records";
 import { type ReceivedWebRtcFile, TeamFileTooLargeError, TeamWebRtcFileTransfer } from "./team-webrtc-file-transfer";
 import { rawDataBytes, sendableCloseCode } from "./ws-raw-data";
 

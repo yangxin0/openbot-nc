@@ -2,22 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.keyRotationUnavailable": "このサーバーはアカウントサービスなしではキーを変更できません。",
-  "error.host.keyRotationRefused":
-    "アカウントサービスが新しいサーバーキーを受け入れませんでした。現在のキーを引き続き使用します。",
   "error.host.webRtcNotConfigured": "WebRTC ホストサービスが設定されていません。",
-  "error.host.accountChangedDuringUpdate": "このサーバーの更新中に、サインイン中のアカウントが変わりました。",
   "error.host.nameBeforePublish": "公開する前に、この OpenBot に名前を付けてください。",
-  "error.host.memberNotFound": "リモートメンバーが存在しません。",
   "error.host.publishBeforeInvite": "招待を作成する前に、この OpenBot を公開してください。",
   "error.host.teamAccessUnavailable": "チームへのアクセスを利用できません。",
   "error.host.ownerIdentityUnavailable": "ホストのオーナーの ID を利用できません。",
-  "error.host.reserveAddressFailed": "公開アドレスを予約できませんでした。",
   "error.host.publishFailed": "この OpenBot を公開できませんでした。",
-  "error.host.mobileConnectPublishFailed": "この OpenBot を Mobile Connect 用に公開できませんでした。",
-  "error.host.mobileConnectHostChanged": "Mobile Connect のホストが変わりました。再試行してください。",
-  "error.host.mobileConnectHostMismatch":
-    "アカウントにはこのサーバーの別のキーが登録されています。再試行してください。",
   "error.host.noServer": "このコンピューターには変更できるサーバーがありません。",
   "error.host.identityLocalOnly": "サーバーの名前とロゴは、サーバーを実行しているコンピューターでのみ変更できます。",
   "error.host.timezoneInvalid": "このタイムゾーンは不明です。",

@@ -19,15 +19,9 @@ export const messages = defineMessages("error.remote", {
   "error.remote.eventsUnavailable": "Remote events are unavailable.",
   "error.remote.signInAgain": "Sign in again.",
   "error.remote.emailDeliveryUnavailable": "Email delivery is unavailable.",
-  "error.remote.inviteHostMismatch": "The invitation host does not match its token.",
-  "error.remote.inviteIdentityMismatch": "The invitation host identity does not match its token.",
-  "error.remote.inviteAcceptedOtherHost": "The account service accepted a different host.",
-  "error.remote.inviteIdentityChanged": "The invitation host identity changed while it was accepted.",
   "error.remote.localServerRemove": "The local server cannot be removed.",
   "error.remote.viewerProxyUnavailable": "The local remote viewer proxy is unavailable.",
   "error.remote.viewerProxyNoPort": "The local remote viewer proxy did not get a port.",
-  "error.remote.inviteNeedsConnection": "The host must connect once before it can create invitations.",
-  "error.remote.permanentInviteUnsupported": "This server connection does not support permanent invitation links.",
   "error.remote.bridgeStartFailed": "The Team WebRTC bridge failed to start.",
   "error.remote.bridgeStopped": "The Team WebRTC bridge stopped.",
   "error.remote.bridgeDidNotStart": "The Team WebRTC bridge did not start.",
@@ -175,8 +169,6 @@ export const messages = defineMessages("error.remote", {
   "error.remote.localServerNotStarted":
     "The server on this computer did not start. Try again. If it does not start, restart OpenBot on this computer.",
   "error.remote.localServerNotFound": "This server is not on this computer.",
-  "error.remote.localServerAccountRemovalFailed":
-    "The server is deleted on its computer, but the account still lists it. Delete it again to remove it from the account.",
   "error.remote.localServerLimit":
     "You can have at most {limit} servers on this computer. Delete one to create another.",
   "error.remote.localServersReadOnly":
@@ -190,6 +182,8 @@ export const messages = defineMessages("error.remote", {
     "This OpenBot has no identity file that can connect to the relay server. Import an identity file.",
   "error.remote.relayOtherTeam": "This server is in a different team from your certificate.",
   "error.remote.relayHostCertificateRefused": "The certificate of this server is not valid for your team.",
+  "error.remote.relayServerRefused":
+    "The central server did not prove that it belongs to your team. Ask the person who runs it.",
   "error.remote.relayIdentityInvalid":
     'This identity file is not valid. Use a file that the "ca issue" command of the relay server made.',
   "error.remote.relayIdentityKeyUnsupported": "The identity file has a type of private key that OpenBot cannot use.",

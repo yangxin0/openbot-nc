@@ -82,45 +82,50 @@ function ProfileEditForm(props: { store: SettingsProfileStore; account: CentralA
         </IconButton>
       </header>
       <div class="profile-edit-photo">
-        <div class="settings-identity-image-picker ui-removable-image">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-lg"
-            class="settings-identity-image-trigger settings-modal-profile-photo-trigger profile-edit-photo-trigger"
-            aria-label={preview().avatarUrl ? t("settings.profile.photo.edit") : t("settings.profile.photo.add")}
-            disabled={busy()}
-            onClick={() => photoInput?.click()}
-          >
-            <UserAvatar user={preview()} class="settings-modal-avatar profile-edit-avatar" decorative />
-            <span class="profile-edit-photo-badge" aria-hidden="true">
-              <Pencil />
-            </span>
-          </Button>
-          <Show when={preview().avatarUrl && !busy()}>
-            <ImageRemoveButton
-              label={t("settings.profile.photo.remove")}
-              onClick={() => setPhoto({ image: null, url: null })}
-            />
+        <Show
+          when={props.store.canUpdateAvatar()}
+          fallback={<UserAvatar user={preview()} class="settings-modal-avatar profile-edit-avatar" decorative />}
+        >
+          <div class="settings-identity-image-picker ui-removable-image">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-lg"
+              class="settings-identity-image-trigger settings-modal-profile-photo-trigger profile-edit-photo-trigger"
+              aria-label={preview().avatarUrl ? t("settings.profile.photo.edit") : t("settings.profile.photo.add")}
+              disabled={busy()}
+              onClick={() => photoInput?.click()}
+            >
+              <UserAvatar user={preview()} class="settings-modal-avatar profile-edit-avatar" decorative />
+              <span class="profile-edit-photo-badge" aria-hidden="true">
+                <Pencil />
+              </span>
+            </Button>
+            <Show when={preview().avatarUrl && !busy()}>
+              <ImageRemoveButton
+                label={t("settings.profile.photo.remove")}
+                onClick={() => setPhoto({ image: null, url: null })}
+              />
+            </Show>
+          </div>
+          <Show when={photoError() ?? props.store.state.avatar.error}>
+            {(message) => (
+              <Text role="alert" class="settings-modal-error">
+                {message()}
+              </Text>
+            )}
           </Show>
-        </div>
-        <Show when={photoError() ?? props.store.state.avatar.error}>
-          {(message) => (
-            <Text role="alert" class="settings-modal-error">
-              {message()}
-            </Text>
-          )}
+          <Input
+            ref={(element) => {
+              photoInput = element;
+            }}
+            class="sr-only"
+            type="file"
+            aria-label={t("settings.profile.photo.upload")}
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            onChange={(event) => void pickPhoto(event.currentTarget.files?.[0])}
+          />
         </Show>
-        <Input
-          ref={(element) => {
-            photoInput = element;
-          }}
-          class="sr-only"
-          type="file"
-          aria-label={t("settings.profile.photo.upload")}
-          accept="image/png,image/jpeg,image/gif,image/webp"
-          onChange={(event) => void pickPhoto(event.currentTarget.files?.[0])}
-        />
       </div>
       <Field
         label={t("settings.profile.name.title")}

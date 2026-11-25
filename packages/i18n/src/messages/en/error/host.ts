@@ -1,24 +1,15 @@
 import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("error.host", {
-  "error.host.keyRotationUnavailable": "This server cannot change its key without the account service.",
-  "error.host.keyRotationRefused":
-    "The account service did not accept the new server key. The current key stays in use.",
   "error.host.webRtcNotConfigured": "The WebRTC host service is not configured.",
   "error.host.relayIdentityMissing": "Import a certificate before you share this OpenBot through a relay server.",
   "error.host.relayRefused":
     "This OpenBot cannot connect to the relay server. Check its certificate and relay address.",
-  "error.host.accountChangedDuringUpdate": "The signed-in account changed while this server was being updated.",
   "error.host.nameBeforePublish": "Name this OpenBot before publishing it.",
-  "error.host.memberNotFound": "The remote member does not exist.",
   "error.host.publishBeforeInvite": "Make this OpenBot public before creating an invite.",
   "error.host.teamAccessUnavailable": "Your team access is unavailable.",
   "error.host.ownerIdentityUnavailable": "The host owner identity is unavailable.",
-  "error.host.reserveAddressFailed": "Could not reserve the public address.",
   "error.host.publishFailed": "This OpenBot could not be published.",
-  "error.host.mobileConnectPublishFailed": "This OpenBot could not be published for Mobile Connect.",
-  "error.host.mobileConnectHostChanged": "The Mobile Connect host changed. Try again.",
-  "error.host.mobileConnectHostMismatch": "Your account has a different key for this server. Try again.",
   "error.host.noServer": "This computer has no server to change.",
   "error.host.identityLocalOnly": "The server name and logo can only be changed on the computer that runs it.",
   "error.host.timezoneInvalid": "This timezone is not known.",

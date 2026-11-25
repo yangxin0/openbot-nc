@@ -20,6 +20,7 @@ const REMOTE_RELAY_REFUSALS = [
   "identity_unusable",
   "other_team",
   "host_certificate_refused",
+  "relay_server_refused",
   "identity_changed",
 ] as const;
 export type RemoteRelayRefusalCode = (typeof REMOTE_RELAY_REFUSALS)[number];

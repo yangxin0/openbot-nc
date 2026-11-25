@@ -2,7 +2,6 @@ import { join } from "node:path";
 import {
   type AgentSummary,
   type AppVariant,
-  type CentralAuthState,
   type ChatWindowTarget,
   type ComputerUseHighlightPlacement,
   type HostStatus,
@@ -11,6 +10,7 @@ import {
   type MacPermissionId,
   type QuitGuard,
   type RelayState,
+  type UserProfile,
 } from "@openbot/contracts/ipc";
 import type { AppTextKey, AppTranslate, LayoutDirection } from "@openbot/i18n";
 import { Effect } from "effect";
@@ -80,7 +80,7 @@ const RELOADABLE_RENDERER_EXITS: ReadonlySet<RenderProcessGoneDetails["reason"]>
 
 interface MainWindowApplicationServices {
   browser: BrowserHost;
-  centralAuth: { getState(): CentralAuthState };
+  localProfile: { get(): UserProfile };
   host: { getStatus(): HostStatus };
   remoteServers: RemoteServerManager;
   interfaceSize: InterfaceSizeService;
@@ -390,7 +390,7 @@ export function createMainWindowController({
     window.webContents.on("did-stop-loading", () => {
       const services = getServices();
       if (!services) return;
-      sendToRenderer(window, IPC_ENDPOINTS.auth.event, services.centralAuth.getState());
+      sendToRenderer(window, IPC_ENDPOINTS.profile.changed, services.localProfile.get());
       sendToRenderer(
         window,
         IPC_ENDPOINTS.servers.event,

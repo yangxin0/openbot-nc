@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
-import { createHash, createPrivateKey, randomBytes, sign, X509Certificate } from "node:crypto";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash, createPrivateKey, randomBytes, sign, verify, X509Certificate } from "node:crypto";
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -13,8 +13,10 @@ import {
   RELAY_PROTOCOL_VERSION,
   type RelayRole,
   type RelayServerMessage,
+  type RelayServerProofTranscriptInput,
   relayAudience,
   relayHelloTranscript,
+  relayServerProofTranscript,
 } from "@openbot/contracts/relay-protocol/messages";
 import { generateSigningKey, issueCertificate } from "../api/src/relay/x509";
 
@@ -102,7 +104,9 @@ function hasType<Type extends RelayServerMessage["type"]>(
 
 class Peer {
   readonly messages: RelayServerMessage[] = [];
+  readonly order: RelayServerMessage["type"][] = [];
   readonly binary: Uint8Array[] = [];
+  serverProof: Extract<RelayServerMessage, { type: "server-proof" }> | null = null;
   readonly closed: Promise<Closed>;
   readonly #waiters = new Set<() => void>();
   readonly #socket: WebSocket;
@@ -120,8 +124,11 @@ class Peer {
     this.#socket.addEventListener("message", (event) => {
       if (typeof event.data === "string") {
         const message = decodeRelayServerMessage(JSON.parse(event.data));
-        if (message) this.messages.push(message);
-        else this.undecoded += 1;
+        if (message) {
+          this.messages.push(message);
+          this.order.push(message.type);
+          if (message.type === "server-proof") this.serverProof ??= message;
+        } else this.undecoded += 1;
       } else if (event.data instanceof ArrayBuffer) this.binary.push(new Uint8Array(event.data));
       this.#wake();
     });
@@ -211,6 +218,34 @@ interface HelloChanges {
   audience?: string;
 }
 
+interface ProvedSocket {
+  peer: Peer;
+  url: string;
+  transcript: RelayServerProofTranscriptInput;
+}
+
+const provedSockets: ProvedSocket[] = [];
+
+function serverProofProblem(socket: ProvedSocket, rootPem: string): string | null {
+  const accepted = socket.peer.order.findIndex((type) => type === "welcome" || type === "waiting" || type === "open");
+  if (accepted === -1) return null;
+  const proofIndex = socket.peer.order.indexOf("server-proof");
+  const proof = socket.peer.serverProof;
+  if (proofIndex === -1 || proofIndex > accepted || !proof)
+    return `no server-proof before ${socket.peer.order[accepted]}`;
+  const certificate = new X509Certificate(proof.certificate);
+  const root = new X509Certificate(rootPem);
+  if (certificate.issuer !== root.subject || !certificate.verify(root.publicKey)) return "not issued by the root";
+  if (certificate.checkHost(new URL(socket.url).hostname) === undefined) return "does not name the host";
+  const signed = verify(
+    "sha256",
+    Buffer.from(relayServerProofTranscript(socket.transcript)),
+    { key: certificate.publicKey, dsaEncoding: "ieee-p1363" },
+    Buffer.from(proof.signature, "base64url"),
+  );
+  return signed ? null : "the signature does not verify";
+}
+
 function proofSignature(privateKey: string, transcript: string): string {
   return sign("sha256", Buffer.from(transcript), {
     key: createPrivateKey(privateKey),
@@ -224,12 +259,28 @@ async function hello(
   bundle: RelayIdentityBundle,
   fields: HelloFields,
   changes: HelloChanges = {},
+  tlsRoot: string = rootPem,
 ): Promise<Peer> {
-  const peer = new Peer(url, { ca: rootPem });
+  const peer = new Peer(url, { ca: tlsRoot });
   const challenge = await peer.message("challenge");
   const audience = changes.audience ?? relayAudience(url);
+  const clientNonce = randomBytes(32).toString("base64url");
+  provedSockets.push({
+    peer,
+    url,
+    transcript: {
+      serverNonce: challenge.nonce,
+      clientNonce,
+      audience,
+      role: fields.role,
+      clientKeyId: keyId(bundle),
+      target: fields.target,
+      connectionId: fields.connectionId,
+    },
+  });
   const transcript = relayHelloTranscript({
     nonce: changes.nonce ?? challenge.nonce,
+    clientNonce,
     audience,
     role: fields.role,
     target: fields.target,
@@ -239,6 +290,7 @@ async function hello(
     type: "hello",
     version: RELAY_PROTOCOL_VERSION,
     audience,
+    clientNonce,
     certificate: bundle.certificate,
     chain: bundle.chain,
     signature: proofSignature(changes.signingKey ?? bundle.privateKey, transcript),
@@ -631,6 +683,95 @@ try {
     await refusedWith(silent, "authentication_failed");
   });
 
+  await check("A hello with no client nonce is refused and gets no server proof", async () => {
+    const peer = new Peer(url, { ca: rootPem });
+    const challenge = await peer.message("challenge");
+    const audience = relayAudience(url);
+    peer.sendJson({
+      type: "hello",
+      version: RELAY_PROTOCOL_VERSION,
+      audience,
+      role: "member",
+      hosting: false,
+      certificate: alice.certificate,
+      chain: alice.chain,
+      signature: proofSignature(
+        alice.privateKey,
+        relayHelloTranscript({ nonce: challenge.nonce, clientNonce: "", audience, role: "member" }),
+      ),
+    });
+    await refusedWith(peer, "invalid_message");
+    assert.equal(peer.serverProof, null);
+  });
+
+  await check("A server with a TLS certificate of a different root proves with its root-signed identity", async () => {
+    const otherRoot = { RELAY_DATA_DIR: otherRootDirectory };
+    assert.equal(command(otherRoot, "ca", "server", "--dns", "localhost", "--ip", "127.0.0.1").status, 0);
+    const otherRootPem = readFileSync(join(otherRootDirectory, "ca/root.crt"), "utf8");
+    const tlsCertificate = join(otherRootDirectory, "tls/server.crt");
+    const separate = await startServer(environment, {
+      RELAY_TLS_CERT_PATH: tlsCertificate,
+      RELAY_TLS_KEY_PATH: join(otherRootDirectory, "tls/server.key"),
+    });
+    servers.push(separate.child);
+    const member = await hello(separate.url, rootPem, alice, { role: "member", hosting: false }, {}, otherRootPem);
+    await member.message("welcome");
+    const socket = provedSockets.find((entry) => entry.peer === member);
+    assert.ok(socket && member.serverProof);
+    assert.equal(serverProofProblem(socket, rootPem), null);
+    assert.equal(serverProofProblem(socket, otherRootPem), "not issued by the root");
+    assert.notEqual(
+      new X509Certificate(member.serverProof.certificate).fingerprint256,
+      new X509Certificate(readFileSync(tlsCertificate, "utf8")).fingerprint256,
+    );
+    member.close();
+    separate.child.kill("SIGTERM");
+  });
+
+  const serveOnce = async (directory: string) => {
+    const [port, healthPort] = await Promise.all([freePort(), freePort()]);
+    const result = spawnSync("bun", [MAIN, "serve"], {
+      cwd: ROOT,
+      env: {
+        ...process.env,
+        RELAY_DATA_DIR: directory,
+        RELAY_HOST: "127.0.0.1",
+        RELAY_PORT: String(port),
+        RELAY_HEALTH_PORT: String(healthPort),
+        RELAY_TLS_DISABLED: "true",
+        RELAY_PUBLIC_URL: "wss://localhost/v1/relay",
+      },
+      encoding: "utf8",
+      timeout: WAIT_MS,
+    });
+    return { status: result.status, output: `${result.stdout}${result.stderr}` };
+  };
+
+  await check(
+    "serve refuses to start with no server identity, one of a different root, and one for a different host",
+    async () => {
+      const lonelyDirectory = join(work, "no-identity");
+      assert.equal(command({ RELAY_DATA_DIR: lonelyDirectory }, "ca", "init").status, 0);
+      const missing = await serveOnce(lonelyDirectory);
+      assert.equal(missing.status, 1, missing.output);
+      assert.match(missing.output, /No server identity certificate is at/u);
+      mkdirSync(join(lonelyDirectory, "tls"), { recursive: true });
+      for (const file of ["server.crt", "server.key"]) {
+        copyFileSync(join(otherRootDirectory, "tls", file), join(lonelyDirectory, "tls", file));
+      }
+      const foreign = await serveOnce(lonelyDirectory);
+      assert.equal(foreign.status, 1, foreign.output);
+      assert.match(foreign.output, /did not issue the server identity certificate/u);
+      assert.equal(
+        command({ RELAY_DATA_DIR: lonelyDirectory }, "ca", "server", "--dns", "other.example.com").status,
+        0,
+      );
+      const otherHost = await serveOnce(lonelyDirectory);
+      assert.equal(otherHost.status, 1, otherHost.output);
+      assert.match(otherHost.output, /does not name the host of RELAY_PUBLIC_URL/u);
+    },
+  );
+
   const gated = await startServer(environment, { RELAY_TLS_CLIENT_CERTIFICATES: "required" });
   servers.push(gated.child);
 
@@ -648,17 +789,24 @@ try {
     });
     const challenge = await peer.message("challenge");
     const audience = relayAudience(gated.url);
+    const clientNonce = randomBytes(32).toString("base64url");
+    provedSockets.push({
+      peer,
+      url: gated.url,
+      transcript: { serverNonce: challenge.nonce, clientNonce, audience, role: "member", clientKeyId: keyId(alice) },
+    });
     peer.sendJson({
       type: "hello",
       version: RELAY_PROTOCOL_VERSION,
       audience,
+      clientNonce,
       role: "member",
       hosting: false,
       certificate: alice.certificate,
       chain: alice.chain,
       signature: proofSignature(
         alice.privateKey,
-        relayHelloTranscript({ nonce: challenge.nonce, audience, role: "member" }),
+        relayHelloTranscript({ nonce: challenge.nonce, clientNonce, audience, role: "member" }),
       ),
     });
     const welcome = await peer.message("welcome");
@@ -682,6 +830,16 @@ try {
     assert.ok(result, "The server did not exit after the stop signal.");
     assert.equal(result.code, 0);
     await member.closed;
+  });
+
+  await check("Each authenticated socket got a server proof first, and each proof verifies with the root", () => {
+    const accepted = provedSockets.filter((socket) =>
+      socket.peer.order.some((type) => type === "welcome" || type === "waiting" || type === "open"),
+    );
+    assert.ok(accepted.length >= 10, `Only ${accepted.length} sockets were accepted.`);
+    for (const socket of accepted) {
+      assert.equal(serverProofProblem(socket, rootPem), null, `${socket.transcript.role} socket`);
+    }
   });
 } finally {
   for (const child of servers) child.kill("SIGTERM");

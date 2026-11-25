@@ -2,27 +2,7 @@ import type { OpenBotDesktopApi } from "@openbot/contracts/ipc";
 
 export interface AccountPort {
   agent: Pick<OpenBotDesktopApi["agent"], "getUsage">;
-  auth: Pick<
-    OpenBotDesktopApi["auth"],
-    | "cancelMobileConnect"
-    | "createMobileConnect"
-    | "createMobileConnectLink"
-    | "getMobileConnectLink"
-    | "getState"
-    | "listAccountSessions"
-    | "listMobileConnectedDevices"
-    | "logout"
-    | "onEvent"
-    | "requestEmailCode"
-    | "retry"
-    | "revokeAccountSession"
-    | "revokeMobileConnectedDevice"
-    | "revokeMobileConnectLink"
-    | "updateAvatar"
-    | "updateChatColor"
-    | "updateName"
-    | "verifyEmailCode"
-  >;
+  profile: Pick<OpenBotDesktopApi["profile"], "get" | "onChanged" | "updateChatColor" | "updateName">;
 }
 
 export function accountPort(): AccountPort {

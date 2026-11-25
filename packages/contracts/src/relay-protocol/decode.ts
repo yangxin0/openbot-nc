@@ -7,6 +7,7 @@ import {
   RELAY_LABEL_LIMIT,
   RELAY_NONCE_PATTERN,
   RELAY_PROTOCOL_VERSION,
+  RELAY_SIGNATURE_PATTERN,
   RELAY_SUBJECT_NAME_PATTERN,
   RELAY_TEAM_ID_PATTERN,
   RELAY_TEAM_MEMBERS_LIMIT,
@@ -24,6 +25,12 @@ export function decodeRelayServerMessage(value: unknown): RelayServerMessage | n
     case "challenge":
       return isString(value.nonce) && RELAY_NONCE_PATTERN.test(value.nonce)
         ? { type: "challenge", version, nonce: value.nonce }
+        : null;
+    case "server-proof":
+      return isCertificate(value.certificate) &&
+        isString(value.signature) &&
+        RELAY_SIGNATURE_PATTERN.test(value.signature)
+        ? { type: "server-proof", version, certificate: value.certificate, signature: value.signature }
         : null;
     case "welcome": {
       const self = decodePeer(value.self);
@@ -60,6 +67,10 @@ export function decodeRelayServerMessage(value: unknown): RelayServerMessage | n
   }
 }
 
+function isCertificate(value: unknown): value is string {
+  return isString(value) && value.length > 0 && value.length <= RELAY_CERTIFICATE_PEM_LIMIT;
+}
+
 function isConnectionId(value: unknown): value is string {
   return isString(value) && RELAY_CONNECTION_ID_PATTERN.test(value);
 }
@@ -86,7 +97,7 @@ function decodePeer(value: unknown): RelayPeer | null {
 function decodePeerCertificate(value: unknown): RelayPeerCertificate | null {
   const peer = decodePeer(value);
   if (!peer || !isDynamicRecord(value)) return null;
-  if (!isString(value.certificate) || value.certificate.length > RELAY_CERTIFICATE_PEM_LIMIT) return null;
+  if (!isCertificate(value.certificate)) return null;
   return { ...peer, certificate: value.certificate };
 }
 

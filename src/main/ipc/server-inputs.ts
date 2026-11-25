@@ -1,10 +1,7 @@
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type {
   ConfigureHostInput,
-  CreateTeamInviteInput,
   DirectTypingInput,
-  JoinServerInput,
-  LoginServerInput,
   MarkDirectReadInput,
   ReadDirectConversationPageInput,
   ReorderServersInput,
@@ -86,20 +83,6 @@ function parseServerAppearance(value: unknown): ServerAppearance | null {
   return appearance;
 }
 
-export function parseJoinServer(value: unknown): JoinServerInput {
-  if (!isObject(value)) throw new Error("Invitation details are required.");
-  return {
-    inviteUrl: requireString(value.inviteUrl, "inviteUrl", INPUT_LIMITS.inviteUrl),
-  };
-}
-
-export function parseLoginServer(value: unknown): LoginServerInput {
-  if (!isObject(value)) throw new Error("Login details are required.");
-  return {
-    serverId: requireString(value.serverId, "serverId"),
-  };
-}
-
 export function parseReorderServers(value: unknown): ReorderServersInput {
   if (!isObject(value) || !Array.isArray(value.serverIds)) {
     throw new Error("Invalid server order.");
@@ -109,27 +92,6 @@ export function parseReorderServers(value: unknown): ReorderServersInput {
     throw new Error("Duplicate server ids.");
   }
   return { serverIds };
-}
-
-export function parseCreateTeamInvite(value: unknown): CreateTeamInviteInput {
-  if (!isObject(value)) throw new Error("Invitation details are required.");
-  if (value.role !== "admin" && value.role !== "member") {
-    throw new Error("Unknown team role.");
-  }
-  if (value.email !== undefined && !isString(value.email)) {
-    throw new Error("Invalid invitation email.");
-  }
-  if (isString(value.email) && value.email.length > INPUT_LIMITS.email) {
-    throw new Error("Invitation email is too long.");
-  }
-  if (value.permanent !== undefined && !isBoolean(value.permanent)) {
-    throw new Error("Invalid permanent invitation flag.");
-  }
-  return {
-    role: value.role,
-    ...(value.email?.trim() ? { email: value.email.trim() } : {}),
-    ...(value.permanent === true ? { permanent: true as const } : {}),
-  };
 }
 
 export function parseUpdateTeamMember(value: unknown): UpdateTeamMemberInput {

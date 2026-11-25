@@ -2,20 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.keyRotationUnavailable": "이 서버는 계정 서비스 없이는 키를 변경할 수 없어요.",
-  "error.host.keyRotationRefused": "계정 서비스가 새 서버 키를 수락하지 않았어요. 현재 키를 계속 사용해요.",
   "error.host.webRtcNotConfigured": "WebRTC 호스트 서비스가 설정되어 있지 않아요.",
-  "error.host.accountChangedDuringUpdate": "이 서버를 업데이트하는 동안 로그인한 계정이 변경되었어요.",
   "error.host.nameBeforePublish": "이 OpenBot을 게시하기 전에 이름을 지정해 주세요.",
-  "error.host.memberNotFound": "원격 멤버가 없어요.",
   "error.host.publishBeforeInvite": "초대를 만들기 전에 이 OpenBot을 공개해 주세요.",
   "error.host.teamAccessUnavailable": "팀 접근 권한을 사용할 수 없어요.",
   "error.host.ownerIdentityUnavailable": "호스트 소유자 ID를 사용할 수 없어요.",
-  "error.host.reserveAddressFailed": "공개 주소를 예약할 수 없어요.",
   "error.host.publishFailed": "이 OpenBot을 게시할 수 없어요.",
-  "error.host.mobileConnectPublishFailed": "모바일 연결용으로 이 OpenBot을 게시할 수 없어요.",
-  "error.host.mobileConnectHostChanged": "모바일 연결 호스트가 변경되었어요. 다시 시도해 주세요.",
-  "error.host.mobileConnectHostMismatch": "계정에 이 서버의 다른 키가 등록되어 있어요. 다시 시도해 주세요.",
   "error.host.noServer": "이 컴퓨터에는 변경할 서버가 없어요.",
   "error.host.identityLocalOnly": "서버 이름과 로고는 서버를 실행하는 컴퓨터에서만 변경할 수 있어요.",
   "error.host.timezoneInvalid": "알 수 없는 시간대예요.",

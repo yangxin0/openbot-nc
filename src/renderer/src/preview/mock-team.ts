@@ -2,33 +2,26 @@ import type {
   AgentEvent,
   ClientAgentSummary,
   ConfigureHostInput,
-  CreateTeamInviteInput,
   DirectConversationSnapshot,
   DirectMessage,
   DirectMessageRealtimeEvent,
   DirectThreadSummary,
   DirectTypingRealtimeEvent,
   HostStatus,
-  InviteSummary,
-  JoinServerInput,
   OpenBotDesktopApi,
   SendDirectMessageInput,
   ServerAppearance,
   ServerSummary,
   SetTeamTypingInput,
-  TeamInviteSummary,
   TeamMemberSummary,
   TeamPresenceSnapshot,
   TeamSessionSummary,
   UpdateTeamMemberInput,
 } from "@openbot/contracts/ipc";
-import type { OwnerTransfer } from "@openbot/contracts/owner-transfer";
-import { sourceText } from "@openbot/i18n/source";
 import {
   STORY_DIRECT_SNAPSHOTS,
   STORY_DIRECT_THREADS,
   STORY_HOST_STATUS,
-  STORY_INVITES,
   STORY_PRESENCE,
   STORY_SERVERS,
   STORY_SESSIONS,
@@ -43,12 +36,8 @@ export interface MockTeamOptions {
   directSnapshots?: Record<string, DirectConversationSnapshot>;
   hostStatus?: HostStatus;
   teamMembers?: TeamMemberSummary[];
-  invites?: TeamInviteSummary[];
   sessions?: TeamSessionSummary[];
-  ownerTransfers?: Record<string, OwnerTransfer>;
 }
-
-const OWNER_TRANSFER_LIFETIME_MS = 7 * 24 * 60 * 60_000;
 
 export function createMockTeam(
   options: MockTeamOptions,
@@ -62,15 +51,12 @@ export function createMockTeam(
   const directSnapshots = clone(options.directSnapshots ?? STORY_DIRECT_SNAPSHOTS);
   let hostStatus = clone(options.hostStatus ?? STORY_HOST_STATUS);
   let teamMembers = clone(options.teamMembers ?? STORY_TEAM_MEMBERS);
-  let invites = clone(options.invites ?? STORY_INVITES);
   let sessions = clone(options.sessions ?? STORY_SESSIONS);
-  const ownerTransfers = new Map(Object.entries(clone(options.ownerTransfers ?? {})));
   let directMessageCounter = 10;
   const serverListeners = new Set<Listener<ServerSummary[]>>();
   const presenceListeners = new Set<Listener<TeamPresenceSnapshot>>();
   const directMessageListeners = new Set<Listener<DirectMessageRealtimeEvent>>();
   const directTypingListeners = new Set<Listener<DirectTypingRealtimeEvent>>();
-  const inviteListeners = new Set<Listener<string>>();
   const hostListeners = new Set<Listener<HostStatus>>();
   const latestDirectConversationListeners = new Set<Listener<string>>();
   function emitPresence(snapshot: TeamPresenceSnapshot): void {
@@ -110,10 +96,6 @@ export function createMockTeam(
     snapshot.revision += 1;
     directSnapshots[memberId] = snapshot;
     return readDirectConversationSnapshot(memberId);
-  }
-
-  function emitInvite(inviteUrl: string): void {
-    emit(inviteListeners, inviteUrl);
   }
 
   function emitHostStatus(status: HostStatus): void {
@@ -163,38 +145,6 @@ export function createMockTeam(
       ];
       return clone(servers);
     },
-    join: async (input: JoinServerInput) => {
-      const server: ServerSummary = {
-        id: `server-${servers.length + 1}`,
-        name: "Joined workspace",
-        logoUrl: null,
-        notificationsMuted: false,
-        notificationsMutedUntil: null,
-        notificationLevel: "all",
-        kind: "remote",
-        state: "online",
-        apiUrl: input.inviteUrl,
-        role: "member",
-        active: false,
-      };
-      servers = [...servers, server];
-      return clone(server);
-    },
-    previewInvite: async () => ({
-      serverId: "00000000-0000-4000-8000-000000000000",
-      serverName: "Joined workspace",
-      apiHostname: "story-host.example.com",
-      role: "member",
-      expiresAt: "2026-09-19T10:00:00.000Z",
-      emailBound: false,
-      permanent: false,
-    }),
-    takePendingInvite: async () => null,
-    login: async (input) => {
-      const server = servers.find((candidate) => candidate.id === input.serverId);
-      if (!server) throw new Error("Server not found");
-      return clone(server);
-    },
     retryConnection: async (serverId) => {
       const server = servers.find((candidate) => candidate.id === serverId);
       if (!server) throw new Error("Server not found");
@@ -231,41 +181,6 @@ export function createMockTeam(
     },
     removeMember: async (memberId) => {
       teamMembers = teamMembers.filter((member) => member.id !== memberId);
-    },
-    listInvites: async () => clone(invites),
-    revokeInvite: async (inviteId) => {
-      invites = invites.filter((invite) => invite.id !== inviteId);
-    },
-    createInvite: async (input: CreateTeamInviteInput): Promise<InviteSummary> => ({
-      id: `invite-${invites.length + 1}`,
-      inviteUrl: "https://team.example.com/invite/story-invite",
-      expiresAt: "2026-09-19T10:00:00.000Z",
-      role: input.role,
-      usedAt: null,
-      email: input.email ?? null,
-      permanent: input.permanent ?? false,
-      useCount: 0,
-    }),
-    getOwnerTransfer: async (serverId) => clone(ownerTransfers.get(serverId) ?? null),
-    startOwnerTransfer: async (email, serverId) => {
-      const server = servers.find((candidate) => candidate.id === serverId);
-      if (!server) throw new Error("Server not found");
-      const createdAt = Date.now();
-      const transfer: OwnerTransfer = {
-        transferId: `transfer-${crypto.randomUUID()}`,
-        hostId: serverId,
-        hostName: server.name,
-        fromEmail: "person@example.com",
-        fromName: "Norbert",
-        toEmail: email.trim().toLowerCase(),
-        createdAt,
-        expiresAt: createdAt + OWNER_TRANSFER_LIFETIME_MS,
-      };
-      ownerTransfers.set(serverId, transfer);
-      return clone(transfer);
-    },
-    cancelOwnerTransfer: async (serverId) => {
-      ownerTransfers.delete(serverId);
     },
     setTyping: async (_input: SetTeamTypingInput) => undefined,
     onPresence: (listener, serverId) => {
@@ -359,10 +274,6 @@ export function createMockTeam(
       serverListeners.add(listener);
       return () => serverListeners.delete(listener);
     },
-    onInvite: (listener) => {
-      inviteListeners.add(listener);
-      return () => inviteListeners.delete(listener);
-    },
   };
 
   const host: OpenBotDesktopApi["host"] = {
@@ -387,11 +298,6 @@ export function createMockTeam(
         const local = servers.find((server) => server.kind === "local");
         if (local) setServerAppearance(local.id, input.appearance);
       }
-      emitHostStatus(hostStatus);
-      return clone(hostStatus);
-    },
-    rotateIdentityKey: async () => {
-      hostStatus = { ...hostStatus, message: sourceText("status.host.keyRotated") };
       emitHostStatus(hostStatus);
       return clone(hostStatus);
     },
@@ -421,20 +327,6 @@ export function createMockTeam(
     revokeSession: async (sessionId) => {
       sessions = sessions.filter((session) => session.id !== sessionId);
     },
-    listInvites: async () => clone(invites),
-    revokeInvite: async (inviteId) => {
-      invites = invites.filter((invite) => invite.id !== inviteId);
-    },
-    createInvite: async (input: CreateTeamInviteInput): Promise<InviteSummary> => ({
-      id: `invite-${invites.length + 1}`,
-      role: input.role,
-      expiresAt: "2026-09-19T10:00:00.000Z",
-      usedAt: null,
-      inviteUrl: "openbot-nc://join?invite=mock-invite",
-      email: input.email ?? null,
-      permanent: input.permanent ?? false,
-      useCount: 0,
-    }),
     onEvent: (listener) => {
       hostListeners.add(listener);
       return () => hostListeners.delete(listener);
@@ -478,7 +370,6 @@ export function createMockTeam(
     emitPresence,
     emitDirectMessage,
     emitDirectTyping,
-    emitInvite,
     emitHostStatus,
     setServerAppearance,
     readDirectConversationSnapshot,
@@ -491,7 +382,6 @@ export function createMockTeam(
       presenceListeners.clear();
       directMessageListeners.clear();
       directTypingListeners.clear();
-      inviteListeners.clear();
       hostListeners.clear();
       latestDirectConversationListeners.clear();
     },

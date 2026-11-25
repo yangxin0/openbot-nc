@@ -56,6 +56,7 @@ interface RelayTlsCredentials {
 
 interface RelayHelloInput {
   nonce: string;
+  clientNonce: string;
   role: RelayRole;
   target?: string | undefined;
   connectionId?: string | undefined;

@@ -106,7 +106,6 @@ import {
   decodeEventStatus,
   decodeSaveEventRoutineResult,
 } from "@openbot/contracts/ipc-events";
-import { decodeAcceptedOwnerTransfer, decodeOwnerTransfer } from "@openbot/contracts/owner-transfer";
 import { contextBridge, ipcRenderer, webUtils } from "electron";
 import {
   decodeAccountUsageFromMain,
@@ -155,7 +154,6 @@ import {
 } from "./agent-dock-decoding";
 import { decodeScopedAgentEvent } from "./agent-event-decoding";
 import {
-  decodeAccountSessions,
   decodeAgentDefaults,
   decodeAgentImportSkill,
   decodeAgentMemoryLimitPreference,
@@ -169,7 +167,6 @@ import {
   decodeAppSetupState,
   decodeBitwardenConnectorStatus,
   decodeBusyMessageModePreference,
-  decodeCentralAuthState,
   decodeChatWindowTargets,
   decodeCustomAgentCheckResult,
   decodeCustomAgentResult,
@@ -187,14 +184,9 @@ import {
   decodeExternalLinkPreference,
   decodeInstalledFonts,
   decodeLinkAccountStatus,
-  decodeMobileConnectedDevices,
-  decodeMobileConnectLink,
-  decodeMobileConnectTicket,
   decodeNotificationOpenedEvent,
   decodeNotificationPreference,
   decodeOnePasswordConnectorStatus,
-  decodeOwnerTransferList,
-  decodeOwnerTransferOrNull,
   decodePendingListing,
   decodeProviderDetectionSettings,
   decodeRemoteNetworkRouteState,
@@ -205,6 +197,7 @@ import {
   decodeSpeechSettings,
   decodeUpdatePreference,
   decodeUpdateStatus,
+  decodeUserProfile,
   decodeVoiceModelStatus,
   decodeVoiceModelStatuses,
   decodeVoiceServerProbe,
@@ -319,16 +312,11 @@ import {
   decodeDirectReadState,
   decodeDirectThreads,
   decodeHostStatus,
-  decodeInvitePreview,
-  decodeInviteSummary,
-  decodeInviteUrl,
-  decodePendingInvite,
   decodeScopedDirectMessage,
   decodeScopedDirectTyping,
   decodeScopedTeamPresence,
   decodeServer,
   decodeServers,
-  decodeTeamInvites,
   decodeTeamMember,
   decodeTeamMembers,
   decodeTeamPresenceSnapshot,
@@ -673,10 +661,6 @@ const serversGroup = bridgeGroup(IPC_ENDPOINTS.servers, {
   setMuted: decodeServers,
   setHidden: decodeServers,
   setNotificationLevel: decodeServers,
-  join: decodeServer,
-  previewInvite: decodeInvitePreview,
-  takePendingInvite: decodePendingInvite,
-  login: decodeServer,
   retryConnection: decodeServer,
   remove: decodeVoid,
   getPresence: decodeTeamPresenceSnapshot,
@@ -685,12 +669,6 @@ const serversGroup = bridgeGroup(IPC_ENDPOINTS.servers, {
   listMembers: decodeTeamMembers,
   updateMember: decodeTeamMember,
   removeMember: decodeVoid,
-  listInvites: decodeTeamInvites,
-  revokeInvite: decodeVoid,
-  createInvite: decodeInviteSummary,
-  getOwnerTransfer: decodeOwnerTransferOrNull,
-  startOwnerTransfer: decodeOwnerTransfer,
-  cancelOwnerTransfer: decodeVoid,
   setTyping: decodeVoid,
   scopedPresence: decodeScopedTeamPresence,
   listDirectThreads: decodeDirectThreads,
@@ -702,13 +680,7 @@ const serversGroup = bridgeGroup(IPC_ENDPOINTS.servers, {
   scopedDirectMessage: decodeScopedDirectMessage,
   scopedDirectTyping: decodeScopedDirectTyping,
   event: decodeServers,
-  invite: decodeInviteUrl,
 });
-
-function selectJoinedServer(server: ServerSummary): ServerSummary {
-  selectedServerId = server.id;
-  return server;
-}
 
 const openbotApi: OpenBotDesktopApi = {
   ...bridgeGroup(IPC_ENDPOINTS.app, {
@@ -929,29 +901,11 @@ const openbotApi: OpenBotDesktopApi = {
     setServer: decodeVoiceServerSettings,
     serverSettings: decodeVoiceServerSettings,
   }),
-  auth: bridgeGroup(IPC_ENDPOINTS.auth, {
-    getState: decodeCentralAuthState,
-    retry: decodeCentralAuthState,
-    requestEmailCode: decodeCentralAuthState,
-    verifyEmailCode: decodeCentralAuthState,
-    updateName: decodeCentralAuthState,
-    updateAvatar: decodeCentralAuthState,
-    updateChatColor: decodeCentralAuthState,
-    createMobileConnect: decodeMobileConnectTicket,
-    cancelMobileConnect: decodeVoid,
-    getMobileConnectLink: (value) => (value === null ? null : decodeMobileConnectLink(value)),
-    createMobileConnectLink: decodeMobileConnectLink,
-    revokeMobileConnectLink: decodeVoid,
-    listMobileConnectedDevices: decodeMobileConnectedDevices,
-    listAccountSessions: decodeAccountSessions,
-    revokeAccountSession: decodeVoid,
-    revokeMobileConnectedDevice: decodeVoid,
-    logout: decodeCentralAuthState,
-    listOwnerTransfers: decodeOwnerTransferList,
-    acceptOwnerTransfer: decodeAcceptedOwnerTransfer,
-    declineOwnerTransfer: decodeVoid,
-    event: decodeCentralAuthState,
-    ownerTransfersChanged: decodeVoid,
+  profile: bridgeGroup(IPC_ENDPOINTS.profile, {
+    get: decodeUserProfile,
+    updateName: decodeUserProfile,
+    updateChatColor: decodeUserProfile,
+    changed: decodeUserProfile,
   }),
   skills: bridgeGroup(IPC_ENDPOINTS.skills, {
     localList: decodeSkillDetails,
@@ -1145,7 +1099,6 @@ const openbotApi: OpenBotDesktopApi = {
   }),
   hostAdmin: bridgeGroup(IPC_ENDPOINTS.hostAdmin, {
     updateIdentity: decodeServer,
-    rotateHostKey: decodeVoid,
     restartHost: decodeVoid,
     getUpdateStatus: decodeHostUpdateStatus,
     checkForUpdate: decodeHostUpdateStatus,
@@ -1439,8 +1392,6 @@ const openbotApi: OpenBotDesktopApi = {
     setMuted: async (input) => rememberActiveServer(await serversGroup.setMuted(input)),
     setHidden: async (input) => rememberActiveServer(await serversGroup.setHidden(input)),
     setNotificationLevel: async (input) => rememberActiveServer(await serversGroup.setNotificationLevel(input)),
-    join: async (input) => selectJoinedServer(await serversGroup.join(input)),
-    login: async (input) => selectJoinedServer(await serversGroup.login(input)),
     onPresence: (listener, serverId) =>
       serversGroup.onScopedPresence((scoped) => {
         if (scoped.serverId === (serverId ?? selectedServerId)) listener(scoped.snapshot);
@@ -1463,7 +1414,6 @@ const openbotApi: OpenBotDesktopApi = {
     getStatus: decodeHostStatus,
     configure: decodeHostStatus,
     updateIdentity: decodeHostStatus,
-    rotateIdentityKey: decodeHostStatus,
     getPresence: decodeTeamPresenceSnapshot,
     start: decodeHostStatus,
     stop: decodeHostStatus,
@@ -1472,9 +1422,6 @@ const openbotApi: OpenBotDesktopApi = {
     removeMember: decodeVoid,
     listSessions: decodeTeamSessions,
     revokeSession: decodeVoid,
-    listInvites: decodeTeamInvites,
-    revokeInvite: decodeVoid,
-    createInvite: decodeInviteSummary,
     event: decodeHostStatus,
   }),
   relay: bridgeGroup(IPC_ENDPOINTS.relay, {

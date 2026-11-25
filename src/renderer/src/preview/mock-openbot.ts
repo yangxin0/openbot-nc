@@ -64,7 +64,6 @@ import {
   type BusyMessageModePreference,
   browserProxyAddressText,
   type CacheExpiryCompactionSetting,
-  type CentralAuthState,
   CHANNEL_FOLDER_LIMIT,
   type ChannelFolderChange,
   type ChannelFolderList,
@@ -222,7 +221,6 @@ import {
   withStoryForeignProvider,
 } from "./fixtures";
 import { mockAgentAnalytics, mockHostAnalytics } from "./mock-agent-analytics";
-import { createMockAuth, type MockAuthOptions } from "./mock-auth";
 import { createMockBitwardenConnector } from "./mock-bitwarden-connector";
 import { createMockBrowser, type MockBrowserOptions } from "./mock-browser";
 import { createMockChannels, type MockChannelSeed } from "./mock-channels";
@@ -238,6 +236,7 @@ import { createMockLinkAccount } from "./mock-link-account";
 import { createMockMessaging } from "./mock-messaging";
 import { createMockOnePasswordConnector } from "./mock-onepassword-connector";
 import { createMockPasswordManagers } from "./mock-password-managers";
+import { createMockProfile, type MockProfileOptions } from "./mock-profile";
 import { createMockProviderRuntimes, type MockProviderRuntimeOptions } from "./mock-provider-runtimes";
 import { createMockRelay, type MockRelayOptions } from "./mock-relay";
 import { mockRoutineCalendar } from "./mock-routine-calendar";
@@ -255,7 +254,7 @@ import { type MockWorkflowSeed, mockWorkflows } from "./mock-workflows";
 export interface MockOpenBotOptions
   extends MockProviderRuntimeOptions,
     MockVoiceOptions,
-    MockAuthOptions,
+    MockProfileOptions,
     MockBrowserOptions,
     MockTeamOptions,
     MockRelayOptions,
@@ -373,11 +372,9 @@ export interface MockOpenBotControls {
   setRuntimeSnapshot: (snapshot: AgentRuntimeSnapshot) => void;
   onMessageSent: (listener: (message: MockSentMessage) => boolean) => () => void;
   onPromptResponse: (listener: (input: RespondToPromptInput) => void) => () => void;
-  emitAuthState: (state: CentralAuthState) => void;
   emitPresence: (snapshot: TeamPresenceSnapshot) => void;
   emitDirectMessage: (event: DirectMessageRealtimeEvent) => void;
   emitDirectTyping: (event: DirectTypingRealtimeEvent) => void;
-  emitInvite: (inviteUrl: string) => void;
   emitHostStatus: (status: HostStatus) => void;
   dispose: () => void;
 }
@@ -1255,7 +1252,7 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
   );
   const mockProviderRuntimes = createMockProviderRuntimes(options, runtime);
   const mockVoice = createMockVoice(options, runtime);
-  const mockAuth = createMockAuth(options, runtime);
+  const mockProfile = createMockProfile(options, runtime);
   const mockSkills = createMockSkills(options, (agentId) => emitAgentEvent({ type: "skills-changed", agentId }));
   const { readInstalledSkills } = mockSkills;
   const mockBrowser = createMockBrowser(options, runtime, emitAgentEvent);
@@ -1660,7 +1657,7 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
     routineResults: mockRoutineResults(routines, options, (agentId) =>
       emitAgentEvent({ type: "routines-changed", agentId }),
     ),
-    auth: mockAuth.auth,
+    profile: mockProfile.profile,
     skills: mockSkills.skills,
     linkAccount: createMockLinkAccount(),
     onePasswordConnector: createMockOnePasswordConnector(),
@@ -3370,9 +3367,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
         if (!server) throw new Error("Server not found");
         return server;
       },
-      rotateHostKey: async () => {
-        await mockTeam.host.rotateIdentityKey();
-      },
       restartHost: async () => {},
       ...createMockHostUpdate(options),
       ...createMockHostTimezone(),
@@ -3634,17 +3628,15 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       promptResponseListeners.add(listener);
       return () => promptResponseListeners.delete(listener);
     },
-    emitAuthState: mockAuth.emitAuthState,
     emitPresence: mockTeam.emitPresence,
     emitDirectMessage: mockTeam.emitDirectMessage,
     emitDirectTyping: mockTeam.emitDirectTyping,
-    emitInvite: mockTeam.emitInvite,
     emitHostStatus: mockTeam.emitHostStatus,
     dispose: () => {
       for (const timer of timers) clearTimeout(timer);
       timers.clear();
       mockProviderRuntimes.dispose();
-      mockAuth.dispose();
+      mockProfile.dispose();
       mockBrowser.dispose();
       mockTeam.dispose();
       agentListeners.clear();

@@ -96,7 +96,6 @@ export const messages = {
   "account.login.changeEmail": "E-postayı değiştir",
   "account.login.resend": "Kodu tekrar gönder",
   "account.login.resendIn": "{time} sonra tekrar gönder",
-  "account.login.loadFailed": "OpenBot hesap hizmetini yükleyemedi.",
   "account.otp.incorrect": "Bu kod yanlış. Tekrar deneyin.",
   "account.otp.verifying": "Doğrulanıyor…",
   "account.otp.entry": "Tek kullanımlık kod girişi",

@@ -95,7 +95,6 @@ export const messages = {
   "account.login.changeEmail": "שינוי אימייל",
   "account.login.resend": "שליחת הקוד שוב",
   "account.login.resendIn": "שליחה חוזרת בעוד {time}",
-  "account.login.loadFailed": "OpenBot לא הצליח לטעון את שירות החשבון.",
   "account.login.companyTitle": "המשך בדפדפן",
   "account.login.companyDescription": "{email} מתחבר באמצעות חשבון חברה. יש להשלים את ההתחברות בדף שנפתח בדפדפן.",
   "account.login.companyWaiting": "ממתין לדפדפן…",

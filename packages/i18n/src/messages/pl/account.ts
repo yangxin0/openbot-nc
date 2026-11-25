@@ -101,7 +101,6 @@ export const messages = {
   "account.login.changeEmail": "Zmień e-mail",
   "account.login.resend": "Wyślij ponownie",
   "account.login.resendIn": "Wyślij ponownie za {time}",
-  "account.login.loadFailed": "Nie udało się wczytać usługi kont.",
   "account.otp.incorrect": "Ten kod jest nieprawidłowy. Spróbuj ponownie.",
   "account.otp.verifying": "Weryfikowanie…",
   "account.otp.entry": "Wpisywanie kodu jednorazowego",

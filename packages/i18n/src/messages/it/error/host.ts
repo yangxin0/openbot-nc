@@ -2,22 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.keyRotationUnavailable": "Questo server non può cambiare la chiave senza il servizio account.",
-  "error.host.keyRotationRefused":
-    "Il servizio account non ha accettato la nuova chiave del server. La chiave attuale resta in uso.",
   "error.host.webRtcNotConfigured": "Il servizio host WebRTC non è configurato.",
-  "error.host.accountChangedDuringUpdate":
-    "L'account con cui hai effettuato l'accesso è cambiato durante l'aggiornamento di questo server.",
   "error.host.nameBeforePublish": "Dai un nome a questo OpenBot prima di pubblicarlo.",
-  "error.host.memberNotFound": "Il membro remoto non esiste.",
   "error.host.publishBeforeInvite": "Rendi pubblico questo OpenBot prima di creare un invito.",
   "error.host.teamAccessUnavailable": "L'accesso al tuo team non è disponibile.",
   "error.host.ownerIdentityUnavailable": "L'identità del proprietario dell'host non è disponibile.",
-  "error.host.reserveAddressFailed": "Impossibile riservare l'indirizzo pubblico.",
   "error.host.publishFailed": "Non è stato possibile pubblicare questo OpenBot.",
-  "error.host.mobileConnectPublishFailed": "Non è stato possibile pubblicare questo OpenBot per Mobile Connect.",
-  "error.host.mobileConnectHostChanged": "L'host di Mobile Connect è cambiato. Riprova.",
-  "error.host.mobileConnectHostMismatch": "Il tuo account ha un'altra chiave per questo server. Riprova.",
   "error.host.noServer": "Questo computer non ha nessun server da modificare.",
   "error.host.identityLocalOnly": "Il nome e il logo del server si possono cambiare solo sul computer che lo esegue.",
   "error.host.timezoneInvalid": "Questo fuso orario non è noto.",

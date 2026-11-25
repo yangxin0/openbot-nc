@@ -11,7 +11,6 @@ import {
   PanelTop,
   Power,
   Settings,
-  Smartphone,
   UserRound,
   UsersRound,
 } from "@openbot/ui";
@@ -29,7 +28,6 @@ export type SettingsTab =
   | "computer-use"
   | "team"
   | "profile"
-  | "mobile-connect"
   | "updates";
 
 type SettingsRow = {
@@ -153,29 +151,7 @@ export const navItems: ReadonlyArray<SettingsNavItem> = [
     descriptionKey: "settings.tab.profile.description",
     icon: UserRound,
     group: "settings.sections.group.account",
-    rows: [
-      { titleKey: "settings.profile.email.title", descriptionKey: "settings.profile.email.description" },
-      { titleKey: "settings.profile.sessions.title", descriptionKey: "settings.profile.sessions.description" },
-    ],
-  },
-  {
-    value: "mobile-connect",
-    titleKey: "settings.tab.mobileConnect.title",
-    descriptionKey: "settings.tab.mobileConnect.description",
-    icon: Smartphone,
-    group: "settings.sections.group.account",
-    rows: [
-      {
-        titleKey: "settings.mobileConnect.phones.title",
-        descriptionKey: "settings.mobileConnect.phones.description",
-      },
-      { titleKey: "settings.mobileConnect.phones.add", descriptionKey: "settings.mobileConnect.add.question" },
-      { titleKey: "settings.mobileConnect.link.title", descriptionKey: "settings.mobileConnect.link.cardHint" },
-      {
-        titleKey: "settings.mobileConnect.route.title",
-        descriptionKey: "settings.mobileConnect.route.description",
-      },
-    ],
+    rows: [],
   },
   {
     value: "app-behavior",

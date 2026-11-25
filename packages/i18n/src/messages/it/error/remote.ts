@@ -21,15 +21,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "Gli eventi remoti non sono disponibili.",
   "error.remote.signInAgain": "Accedi di nuovo.",
   "error.remote.emailDeliveryUnavailable": "L'invio delle email non è disponibile.",
-  "error.remote.inviteHostMismatch": "L'host dell'invito non corrisponde al suo token.",
-  "error.remote.inviteIdentityMismatch": "L'identità dell'host dell'invito non corrisponde al suo token.",
-  "error.remote.inviteAcceptedOtherHost": "Il servizio account ha accettato un host diverso.",
-  "error.remote.inviteIdentityChanged": "L'identità dell'host dell'invito è cambiata mentre veniva accettato.",
   "error.remote.localServerRemove": "Il server locale non può essere rimosso.",
   "error.remote.viewerProxyUnavailable": "Il proxy locale del visualizzatore remoto non è disponibile.",
   "error.remote.viewerProxyNoPort": "Il proxy locale del visualizzatore remoto non ha ottenuto una porta.",
-  "error.remote.inviteNeedsConnection": "L'host deve collegarsi una volta prima di poter creare inviti.",
-  "error.remote.permanentInviteUnsupported": "Questa connessione al server non supporta i link di invito permanenti.",
   "error.remote.bridgeStartFailed": "Il bridge WebRTC del team non è riuscito ad avviarsi.",
   "error.remote.bridgeStopped": "Il bridge WebRTC del team si è fermato.",
   "error.remote.bridgeDidNotStart": "Il bridge WebRTC del team non si è avviato.",
@@ -182,6 +176,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "OpenBot non è riuscito a caricare il server. Riprova.",
   "error.remote.localServerNotStarted":
     "Il server su questo computer non si è avviato. Riprova. Se non si avvia, riavvia OpenBot su questo computer.",
-  "error.remote.localServerAccountRemovalFailed":
-    "Il server è eliminato sul suo computer, ma l’account lo elenca ancora. Eliminalo di nuovo per rimuoverlo dall’account.",
 } as const satisfies PartialTranslation<typeof source>;

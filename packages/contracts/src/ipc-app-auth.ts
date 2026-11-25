@@ -176,6 +176,12 @@ export interface CentralAuthUser {
   chatColor?: AvatarColor | null;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string | null;
+  chatColor: AvatarColor | null;
+}
+
 export interface CentralAuthIssue {
   code: string;
   message: string;

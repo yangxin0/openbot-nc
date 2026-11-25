@@ -1,6 +1,5 @@
 import { type CentralAuthUser, LOCAL_SERVER_LIMIT, type ServerSummary } from "@openbot/contracts/ipc";
 import { BROWSER_PROFILES_CAPABILITY } from "@openbot/contracts/team-protocol/browser-profiles-v1";
-import { OWNER_TRANSFER_CAPABILITY } from "@openbot/contracts/team-protocol/owner-transfer-v1";
 import { PROVIDER_DETECTION_CAPABILITY } from "@openbot/contracts/team-protocol/provider-detection-v1";
 import { VAULT_IMPORT_CAPABILITY } from "@openbot/contracts/team-protocol/vault-import-v1";
 import { VAULT_CAPABILITY } from "@openbot/contracts/team-protocol/vault-v1";
@@ -15,7 +14,7 @@ import { LeaveServerDialog } from "@openbot/ui/features/servers/LeaveServerDialo
 import { RestartServerDialog } from "@openbot/ui/features/servers/RestartServerDialog";
 import { sidebarAgentOrder } from "@openbot/ui/features/sidebar/sidebar-agent-order";
 import { currentText } from "@openbot/ui/text";
-import { createEffect, createMemo, createSignal, Loading, onCleanup, Show, untrack } from "solid-js";
+import { createEffect, createMemo, Loading, Show, untrack } from "solid-js";
 import { actionToast } from "./action-toast";
 import { appPort } from "./app-port";
 import { useAuth } from "./features/account/account-context";
@@ -32,20 +31,14 @@ import { createProviderDetectionStore } from "./features/custom-providers/stores
 import type { ServerStorageOptions } from "./features/files/ServerStoragePanel";
 import { useSetup } from "./features/onboarding/onboarding-context";
 import { mcpToolRuntimeNote } from "./features/servers/mcp-servers";
-import { OwnerTransferPrompt } from "./features/servers/OwnerTransferPrompt";
 import type { ServerCopyOptions } from "./features/servers/ServerTransferPanel";
-import {
-  serverCanAdminister,
-  serverRotatesHostKey,
-  serverSupportsCapability,
-} from "./features/servers/server-capabilities";
+import { serverCanAdminister, serverSupportsCapability } from "./features/servers/server-capabilities";
 import { useServerSelection } from "./features/servers/server-selection";
 import { useServerSettings } from "./features/servers/server-settings";
 import { useServerSwitch } from "./features/servers/server-switch";
 import { useServers } from "./features/servers/servers-context";
 import type { HostProviderSettings } from "./features/settings/ProviderSettingsSection";
 import { useSettings } from "./features/settings/settings-context";
-import { settingsPort } from "./features/settings/settings-port";
 import { useSidebar } from "./features/sidebar/sidebar-context";
 import { useUpdates } from "./features/updates/updates-context";
 import { useWhatsNew } from "./features/updates/whats-new-context";
@@ -62,7 +55,6 @@ import { useProviders } from "./providers";
 import {
   ChannelCreateOverlay,
   GlobalSearchOverlay,
-  JoinServerOverlay,
   MarketplaceOverlay,
   ServerSettingsOverlay,
 } from "./WorkspaceOverlayViews";
@@ -80,7 +72,6 @@ export function WorkspaceOverlays(props: AccountProps) {
   });
   return (
     <>
-      <JoinServer account={props.account} />
       <CreateLocalServer />
       <LeaveServer />
       <RestartServer />
@@ -88,43 +79,7 @@ export function WorkspaceOverlays(props: AccountProps) {
       <AppSettings account={props.account} />
       <GlobalMessageSearch />
       <ChannelCreateOverlay />
-      <OwnerTransfers />
     </>
-  );
-}
-
-const OWNER_TRANSFER_FOCUS_RELOAD_MS = 60_000;
-
-function OwnerTransfers() {
-  const platform = usePlatform();
-  const { refreshServers } = useServers();
-  const [reloadRequest, setReloadRequest] = createSignal(0);
-  let reloadedAt = Date.now();
-  const reload = () => {
-    reloadedAt = Date.now();
-    setReloadRequest((request) => request + 1);
-  };
-  const unsubscribe = appPort().auth.onOwnerTransfersChanged(reload);
-  const focus = () => {
-    if (Date.now() - reloadedAt >= OWNER_TRANSFER_FOCUS_RELOAD_MS) reload();
-  };
-  window.addEventListener("focus", focus);
-  onCleanup(() => {
-    unsubscribe();
-    window.removeEventListener("focus", focus);
-  });
-  return (
-    <Show when={platform.chatWindow === null}>
-      <OwnerTransferPrompt
-        calls={{
-          list: () => appPort().auth.listOwnerTransfers(),
-          accept: (transferId) => appPort().auth.acceptOwnerTransfer(transferId),
-          decline: (transferId) => appPort().auth.declineOwnerTransfer(transferId),
-        }}
-        reloadKey={reloadRequest()}
-        onAccepted={() => void refreshServers()}
-      />
-    </Show>
   );
 }
 
@@ -178,26 +133,6 @@ export function SkillsMarketplace() {
       mcpSignInRequest={pendingMcpSignIn()}
       onMcpSignInRequestHandled={() => setPendingMcpSignIn(null)}
       onMcpSignIns={(serverId, states) => setMcpSignIns({ serverId, states })}
-    />
-  );
-}
-
-function JoinServer(props: AccountProps) {
-  const setup = useSetup();
-  const { joinServerOpen, setJoinServerOpen } = useServers();
-  const { joinServer } = useServerSelection();
-
-  return (
-    <JoinServerOverlay
-      open={joinServerOpen()}
-      inviteUrl={setup.pendingInviteUrl()}
-      accountEmail={props.account().email}
-      onClose={() => {
-        setJoinServerOpen(false);
-        setup.setPendingInviteUrl("");
-      }}
-      onPreview={setup.previewInvite}
-      onJoin={joinServer}
     />
   );
 }
@@ -354,19 +289,15 @@ function ServerSettings() {
     setServerSettingsOpen,
     serverSettingsRestoreTarget,
     serverSettingsMembers,
-    serverSettingsInvites,
     serverSettingsLoading,
     serverSettingsError,
     refreshServerSettings,
     saveServerIdentity,
     saveServerAppearance,
-    rotateHostKey,
     setServerPublished,
-    createServerInvite,
     updateServerMember,
     removeServerMember,
     leaveServer,
-    revokeServerInvite,
   } = useServerSettings();
   const browserProfileServerId = createMemo(() => serverSettingsTarget()?.id);
   const browserProfiles = createMemo(() => {
@@ -619,23 +550,14 @@ function ServerSettings() {
           server={server()}
           hostStatus={server().kind === "local" ? hostStatus() : null}
           members={serverSettingsMembers()}
-          invites={serverSettingsInvites()}
           loading={serverSettingsLoading()}
           loadError={serverSettingsError()}
           onRetry={() => refreshServerSettings(server().id)}
           onSaveIdentity={saveServerIdentity}
           onSaveAppearance={saveServerAppearance}
           onSetPublished={setServerPublished}
-          onRotateHostKey={serverRotatesHostKey(server()) ? rotateHostKey : undefined}
-          onCreateInvite={createServerInvite}
-          ownerTransfer={
-            server().kind === "remote" && serverSupportsCapability(server(), OWNER_TRANSFER_CAPABILITY)
-              ? appPort().servers
-              : undefined
-          }
           onUpdateMember={updateServerMember}
           onRemoveMember={removeServerMember}
-          onRevokeInvite={revokeServerInvite}
           onLeaveServer={leaveServer}
           onRemoveServer={leaveServer}
           onOpenScreenRecordingSettings={() => appPort().openExternal("mac-screen-recording")}
@@ -739,8 +661,6 @@ function AppSettings(props: AccountProps) {
     notificationFocusRequest,
     setAppSettingsOpen,
     appSettingsTab,
-    mobileInstallRequest,
-    clearMobileInstallRequest,
     generalSettings,
     builtInDisplayGeometry,
     updateGeneralSettings,
@@ -779,21 +699,8 @@ function AppSettings(props: AccountProps) {
         onCancelIdleRestart={updates.cancelIdleRestart}
         onRestartNow={updates.restartNow}
         account={props.account()}
-        onUpdateAccountName={auth.updateAccountName}
-        onUpdateAccountAvatar={auth.updateAccountAvatar}
+        onUpdateAccountName={auth.updateProfileName}
         onSetChatColor={auth.setChatColor}
-        onCreateMobileConnect={auth.createMobileConnect}
-        onCancelMobileConnect={auth.cancelMobileConnect}
-        onGetMobileConnectLink={auth.getMobileConnectLink}
-        onCreateMobileConnectLink={auth.createMobileConnectLink}
-        onRevokeMobileConnectLink={auth.revokeMobileConnectLink}
-        onListMobileConnectedDevices={auth.listMobileConnectedDevices}
-        onRevokeMobileConnectedDevice={auth.revokeMobileConnectedDevice}
-        onGetRemoteNetworkRoute={() => settingsPort().getRemoteNetworkRoute()}
-        onSetRemoteNetworkRoute={(route) => settingsPort().setRemoteNetworkRoute({ route })}
-        onListAccountSessions={auth.listAccountSessions}
-        onRevokeAccountSession={auth.revokeAccountSession}
-        onSignOut={platform.landingPreview ? undefined : auth.logoutCentralAccount}
         onTestNotification={sendTestNotification}
         onOpenNotificationSettings={openNotificationSettings}
         onSetServerNotificationLevel={setServerNotificationLevel}
@@ -801,8 +708,6 @@ function AppSettings(props: AccountProps) {
         notificationFocusRequest={notificationFocusRequest()}
         restoreFocusTarget={appSettingsRestoreTarget()}
         openTab={appSettingsTab()}
-        mobileInstallRequest={mobileInstallRequest()}
-        onMobileInstallRequestHandled={clearMobileInstallRequest}
       />
     </Loading>
   );

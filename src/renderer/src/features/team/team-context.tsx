@@ -9,22 +9,13 @@ import { teamPort } from "./team-port";
 const Presence = createSimpleContext({
   name: "Presence",
   init: () => {
-    const { centralAuth } = useAuth();
+    const { profile } = useAuth();
     const [teamPresence, setTeamPresence] = createSignal<TeamPresenceSnapshot>(EMPTY_TEAM_PRESENCE);
 
     const { activeServer } = useServers();
     const currentTeamMember = createMemo(() => {
-      const state = centralAuth();
-      if (state.status !== "signed_in") return undefined;
-      const email = state.user.email.trim().toLowerCase();
-      if (!email) {
-        return activeServer()?.kind === "local"
-          ? teamPresence().members.find((member) => member.role === "owner")
-          : undefined;
-      }
-      return teamPresence().members.find(
-        (member) => member.email?.trim().toLowerCase() === email || member.username.trim().toLowerCase() === email,
-      );
+      if (!profile() || activeServer()?.kind !== "local") return undefined;
+      return teamPresence().members.find((member) => member.role === "owner");
     });
 
     const directPeople = createMemo(() => {

@@ -7,7 +7,7 @@ import { createServer as createNetServer, Socket } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { inspect } from "node:util";
-import { AGENT_PROVIDERS, type AgentEvent, type CentralAuthUser, type ServerSummary } from "@openbot/contracts/ipc";
+import { AGENT_PROVIDERS, type AgentEvent, type ServerSummary } from "@openbot/contracts/ipc";
 import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/contracts/relay-protocol/identity-bundle";
 import { RELAY_PATH, type RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
@@ -18,6 +18,7 @@ import type { AgentService as AgentServiceInstance } from "../src/backend/agent-
 import { runCauseEffect } from "../src/backend/effect-boundary";
 import type { OpenBotDatabase as OpenBotDatabaseInstance } from "../src/backend/openbot-database";
 import type { HostService as HostServiceInstance } from "../src/main/host-service";
+import type { LocalProfile } from "../src/main/local-profile-store";
 import { RelayClientCoordinator } from "../src/main/relay/client-coordinator";
 import { HostRelay } from "../src/main/relay/host-relay";
 import { type RelayCipher, RelayIdentityStore } from "../src/main/relay/identity-store";
@@ -374,7 +375,7 @@ const teamBrowser: TeamApiBrowser = {
   copyViewSelection: unused,
   importSignIn: unused,
 };
-const localOwner: CentralAuthUser = { id: "local-profile-e2e", email: "", name: "Host Person", avatarUrl: null };
+const localOwner: LocalProfile = { id: "local-profile-e2e", name: "Host Person", chatColor: null };
 
 let relay: Relay | null = null;
 const relayLogs: string[][] = [];
@@ -451,9 +452,7 @@ try {
     sidebarLayout: sidebar,
     mailbox,
     browser: teamBrowser,
-    getSignedInUser: () => localOwner,
-    redeemCentralTicket: () => Effect.succeed(null),
-    sendTeamInviteEmail: unused,
+    getLocalProfile: () => localOwner,
   });
   host = hostService;
   await ok(hostService.startRelayHosting(hostStore, { reconnect }));
@@ -478,22 +477,10 @@ try {
       return socket;
     },
   };
-  const clientManager = new RemoteServerManager(
-    serversPath,
-    testCipher,
-    {
-      createTeamAuthTicket: () => {
-        network.accountServiceCalls += 1;
-        return Effect.die(new Error("The account service is not part of the relay path."));
-      },
-      getEmail: () => "",
-      sendTeamInviteEmail: () => {
-        network.accountServiceCalls += 1;
-        return Effect.die(new Error("The account service is not part of the relay path."));
-      },
-    },
-    { appVersion: APP_VERSION, relayTransport: transport },
-  );
+  const clientManager = new RemoteServerManager(serversPath, testCipher, {
+    appVersion: APP_VERSION,
+    relayTransport: transport,
+  });
   manager = clientManager;
 
   const untilServer = (description: string, accepts: (server: ServerSummary) => boolean) =>

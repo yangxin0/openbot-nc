@@ -1,5 +1,4 @@
 import {
-  type AccountSession,
   AGENT_DEFAULT_KEYS,
   type AgentDefaults,
   type AgentMemoryLimitPreference,
@@ -15,9 +14,6 @@ import {
   type AppThemePalette,
   type BitwardenConnectorStatus,
   type BusyMessageModePreference,
-  type CentralAuthIssue,
-  type CentralAuthState,
-  type CentralAuthUser,
   type ChatBackgroundColor,
   type ChatWindowTarget,
   CUSTOM_AGENT_LIMITS,
@@ -78,9 +74,6 @@ import {
   isVoiceTurnPause,
   isXaiSpeechVoice,
   type LinkAccountStatus,
-  type MobileConnectedDevice,
-  type MobileConnectLink,
-  type MobileConnectTicket,
   type NotificationOpenedEvent,
   type NotificationPreference,
   type OnePasswordConnectorStatus,
@@ -97,6 +90,7 @@ import {
   UPDATE_PHASES,
   type UpdatePreference,
   type UpdateStatus,
+  type UserProfile,
   type VoiceModelStatus,
   type VoiceServerProbe,
   type VoiceServerSettings,
@@ -118,7 +112,6 @@ import {
   requiredNumber,
   requiredString,
 } from "@openbot/contracts/ipc-decoding";
-import { decodeOwnerTransfer, type OwnerTransfer } from "@openbot/contracts/owner-transfer";
 import { isPluginSlug } from "@openbot/contracts/plugin-links";
 import { type DynamicRecord, isBoolean, isNumber, isOneOf, isString } from "@openbot/contracts/runtime-values";
 
@@ -256,134 +249,11 @@ export function decodeChatWindowTargets(value: unknown): ChatWindowTarget[] {
   });
 }
 
-export function decodeCentralAuthState(value: unknown): CentralAuthState {
-  const state = decodeRecord(value, "account state");
-  switch (state.status) {
-    case "loading":
-    case "signing_in":
-      return { status: state.status };
-    case "signed_out":
-      if (state.reason === undefined) return { status: "signed_out" };
-      if (state.reason !== "keyring_changed") throw new Error("Invalid signed-out reason.");
-      return { status: "signed_out", reason: state.reason };
-    case "code_sent": {
-      const { developmentCode, issue } = state;
-      if (developmentCode !== undefined && !isString(developmentCode)) throw new Error("Invalid developmentCode.");
-      return {
-        status: "code_sent",
-        challengeId: requiredString(state, "challengeId"),
-        email: requiredString(state, "email"),
-        expiresAt: requiredNumber(state, "expiresAt"),
-        resendAvailableAt: requiredNumber(state, "resendAvailableAt"),
-        ...(developmentCode === undefined ? {} : { developmentCode }),
-        ...(issue === undefined ? {} : { issue: decodeCentralAuthIssue(issue) }),
-      };
-    }
-    case "company_sign_in": {
-      const { issue } = state;
-      return {
-        status: "company_sign_in",
-        email: requiredString(state, "email"),
-        ...(issue === undefined ? {} : { issue: decodeCentralAuthIssue(issue) }),
-      };
-    }
-    case "signed_in":
-      return { status: "signed_in", user: decodeCentralAuthUser(state.user) };
-    case "error":
-      return { status: "error", issue: decodeCentralAuthIssue(state.issue) };
-    default:
-      throw new Error("Invalid account status.");
-  }
-}
-
-function decodeCentralAuthUser(value: unknown): CentralAuthUser {
-  const user = decodeRecord(value, "account user");
-  return {
-    id: requiredString(user, "id"),
-    email: requiredString(user, "email"),
-    name: nullableString(user, "name"),
-    avatarUrl: nullableString(user, "avatarUrl"),
-    ...optionalAnalyticsEnabled(user),
-    ...optionalChatColor(user),
-  };
-}
-
-function optionalChatColor(user: DynamicRecord): Pick<CentralAuthUser, "chatColor"> {
-  const { chatColor } = user;
-  if (chatColor === undefined) return {};
+export function decodeUserProfile(value: unknown): UserProfile {
+  const profile = decodeRecord(value, "profile");
+  const { chatColor } = profile;
   if (chatColor !== null && !isAvatarColor(chatColor)) throw new Error("Invalid chatColor.");
-  return { chatColor };
-}
-
-function optionalAnalyticsEnabled(user: DynamicRecord): Pick<CentralAuthUser, "analyticsEnabled"> {
-  const { analyticsEnabled } = user;
-  if (analyticsEnabled === undefined) return {};
-  if (analyticsEnabled !== null && !isBoolean(analyticsEnabled)) throw new Error("Invalid analyticsEnabled.");
-  return { analyticsEnabled };
-}
-
-function decodeCentralAuthIssue(value: unknown): CentralAuthIssue {
-  const issue = decodeRecord(value, "account issue");
-  const { retryAfterSeconds, reference } = issue;
-  if (retryAfterSeconds !== undefined && !isNumber(retryAfterSeconds)) throw new Error("Invalid retryAfterSeconds.");
-  if (reference !== undefined && !isString(reference)) throw new Error("Invalid reference.");
-  return {
-    code: requiredString(issue, "code"),
-    message: requiredString(issue, "message"),
-    ...(retryAfterSeconds === undefined ? {} : { retryAfterSeconds }),
-    ...(reference === undefined ? {} : { reference }),
-  };
-}
-
-export function decodeMobileConnectTicket(value: unknown): MobileConnectTicket {
-  const ticket = decodeRecord(value, "Mobile Connect ticket");
-  return { qrData: requiredString(ticket, "qrData"), expiresAt: requiredNumber(ticket, "expiresAt") };
-}
-
-export function decodeMobileConnectLink(value: unknown): MobileConnectLink {
-  const link = decodeRecord(value, "Mobile Connect link");
-  return { url: requiredString(link, "url"), createdAt: requiredNumber(link, "createdAt") };
-}
-
-export function decodeOwnerTransferOrNull(value: unknown): OwnerTransfer | null {
-  return value === null ? null : decodeOwnerTransfer(value);
-}
-
-export function decodeOwnerTransferList(value: unknown): OwnerTransfer[] {
-  if (!Array.isArray(value)) throw new Error("Invalid ownership transfers.");
-  return value.map(decodeOwnerTransfer);
-}
-
-export function decodeMobileConnectedDevices(value: unknown): MobileConnectedDevice[] {
-  return decodeList(value, "connected device list", (device) => {
-    const { platform } = device;
-    if (!isOneOf(["ios", "android", "unknown"] as const, platform)) throw new Error("Invalid platform.");
-    return {
-      sessionId: requiredString(device, "sessionId"),
-      name: requiredString(device, "name"),
-      platform,
-      connectedAt: requiredNumber(device, "connectedAt"),
-      lastActiveAt: requiredNumber(device, "lastActiveAt"),
-      via: device.via === "link" ? "link" : "code",
-    };
-  });
-}
-
-export function decodeAccountSessions(value: unknown): AccountSession[] {
-  return decodeList(value, "account session list", (session) => {
-    const { kind, hostedServer } = session;
-    if (!isOneOf(["desktop", "mobile"] as const, kind)) throw new Error("Invalid kind.");
-    if (hostedServer !== undefined && !isBoolean(hostedServer)) throw new Error("Invalid hostedServer.");
-    return {
-      sessionId: requiredString(session, "sessionId"),
-      name: requiredString(session, "name"),
-      kind,
-      current: requiredBoolean(session, "current"),
-      connectedAt: requiredNumber(session, "connectedAt"),
-      lastActiveAt: requiredNumber(session, "lastActiveAt"),
-      ...(hostedServer === undefined ? {} : { hostedServer }),
-    };
-  });
+  return { id: requiredString(profile, "id"), name: nullableString(profile, "name"), chatColor };
 }
 
 export function decodeUpdateStatus(value: unknown): UpdateStatus {

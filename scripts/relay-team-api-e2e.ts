@@ -6,7 +6,7 @@ import { createServer as createNetServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { inspect } from "node:util";
-import type { CentralAuthUser, HostStatus, TeamPresenceSnapshot } from "@openbot/contracts/ipc";
+import type { HostStatus, TeamPresenceSnapshot } from "@openbot/contracts/ipc";
 import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/contracts/relay-protocol/identity-bundle";
 import { RELAY_PATH, type RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
@@ -29,6 +29,7 @@ import { MailboxStore } from "../src/backend/mailbox-store";
 import { OpenBotDatabase } from "../src/backend/openbot-database";
 import { SidebarLayoutStore } from "../src/backend/sidebar-layout-store";
 import { HostService } from "../src/main/host-service";
+import type { LocalProfile } from "../src/main/local-profile-store";
 import { RelayControl, type RelayControlState } from "../src/main/relay/control";
 import { RelayDialer } from "../src/main/relay/dialer";
 import { createRelayFetch, RelayAgent } from "../src/main/relay/fetch";
@@ -397,7 +398,7 @@ const teamBrowser: TeamApiBrowser = {
   copyViewSelection: unused,
   importSignIn: unused,
 };
-const localOwner: CentralAuthUser = { id: "local-profile-e2e", email: "", name: "Host Person", avatarUrl: null };
+const localOwner: LocalProfile = { id: "local-profile-e2e", name: "Host Person", chatColor: null };
 
 let relay: Relay | null = null;
 const relayLogs: string[][] = [];
@@ -466,9 +467,7 @@ try {
     sidebarLayout: sidebar,
     mailbox,
     browser: teamBrowser,
-    getSignedInUser: () => localOwner,
-    redeemCentralTicket: () => Effect.succeed(null),
-    sendTeamInviteEmail: unused,
+    getLocalProfile: () => localOwner,
   });
   host = hostService;
 

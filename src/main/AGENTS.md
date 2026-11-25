@@ -47,7 +47,6 @@ Keep these implementations separate:
   Add each decoder to both sides. `ipc-channel-coverage.test.ts` checks matching names; review must
   also check that the two names do not share one decoder.
 - HTTPS V1/V3 and WebRTC V2 encodings: these are released wire protocols.
-- `RemoteTeamDirectory` control-plane methods: these contact a different server from the host.
 
 ## Tests
 
@@ -104,7 +103,7 @@ error paths by importing each other.
 | Team API requests | `remote-server-client.ts`, `remote-server-http.ts`, `remote-server-errors.ts`, `remote-attachment-cache.ts`, `remote-picture-cache.ts` |
 | User-visible connection failures | `remote-server-connection-status.ts`, `remote-server-connections.ts` |
 | Events and reconnects | `remote-server-event-stream.ts`, `remote-server-event-refresh.ts` |
-| Team directory, presence, host reconciliation | `remote-team-directory.ts`, `remote-server-presence.ts`, `remote-server-host-directory.ts` |
+| Team members, presence | `remote-team-directory.ts`, `remote-server-presence.ts` |
 | Host payload decoding | `remote-host-decoding.ts` and its five wire-area siblings |
 
 ## Team API routes

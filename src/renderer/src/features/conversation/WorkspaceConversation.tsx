@@ -75,7 +75,7 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
   const serverScope = useServerScope();
   const platform = usePlatform();
   const connectors = useConnectors();
-  const { servers, serversLoaded, activeServer, activeServerSupportsCapability, joinServerOpen } = useServers();
+  const { servers, serversLoaded, activeServer, activeServerSupportsCapability } = useServers();
   const { select: selectServer } = useServerActions();
   const { serverSettingsOpen, openServerSettings } = useServerSettings();
   const {
@@ -361,10 +361,9 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
     failedModels().some((failed) => sameAgentModelChoice(failed, choice));
 
   const isOwnSender = (senderId: string) => {
-    const state = auth.centralAuth();
     return isReaderAuthor(senderId, {
       memberId: readerMemberId(),
-      accountUserId: state.status === "signed_in" ? state.user.id : null,
+      accountUserId: auth.profile()?.id ?? null,
       onOwnComputer: activeServer()?.kind === "local",
     });
   };
@@ -581,7 +580,6 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
         mcpSettingsOpen={skillsMarketplaceOpen()}
         globalOverlayOpen={
           globalSearchOpen() ||
-          joinServerOpen() ||
           serverSettingsOpen() ||
           appSettingsOpen() ||
           skillsMarketplaceOpen() ||

@@ -100,7 +100,7 @@ export interface ServerSettingsModalProps {
   server: ServerSummary;
   hostStatus?: HostStatus | null;
   members: TeamPresenceMember[];
-  invites: TeamInviteSummary[];
+  invites?: TeamInviteSummary[] | undefined;
   loading?: boolean;
   loadError?: string | null;
   restoreFocusTarget?: HTMLElement | null;
@@ -109,12 +109,14 @@ export interface ServerSettingsModalProps {
   onSaveAppearance?: ((appearance: ServerAppearance | null) => Promise<void>) | undefined;
   onSetPublished: (published: boolean) => Promise<void>;
   onRotateHostKey?: (() => Promise<void>) | undefined;
-  onCreateInvite: (input: { role: "admin" | "member"; email?: string; permanent?: boolean }) => Promise<InviteSummary>;
+  onCreateInvite?:
+    | ((input: { role: "admin" | "member"; email?: string; permanent?: boolean }) => Promise<InviteSummary>)
+    | undefined;
   ownerTransfer?: OwnerTransferCalls | undefined;
   onContactUs?: () => void;
   onUpdateMember: (input: UpdateTeamMemberInput) => Promise<void>;
   onRemoveMember: (memberId: string) => Promise<void>;
-  onRevokeInvite: (inviteId: string) => Promise<void>;
+  onRevokeInvite?: ((inviteId: string) => Promise<void>) | undefined;
   onLeaveServer?: () => Promise<void>;
   onRemoveServer?: (() => Promise<void>) | undefined;
   onOpenScreenRecordingSettings: () => Promise<void>;

@@ -34,14 +34,6 @@ import { sourceText } from "@openbot/i18n/source";
 import { remoteWorkspaceReadTimeout, startRemoteRequestDeadline } from "@openbot/team-client/remote-recovery";
 import { type RemoteRequestProfile, startRemoteRequest } from "@openbot/team-client/sync-profile";
 import { Context, Deferred, Effect, Exit, Fiber, Layer, Result, Schema } from "effect";
-import type { CentralAuthOperationError } from "./central-auth-effects";
-import type { RemoteConnectionBootstrap } from "./central-auth-manager";
-import type {
-  RemoteHostSummary,
-  RemoteInvitePreview,
-  RemoteInviteRecord,
-  RemoteMemberRecord,
-} from "./central-auth-records";
 import type { RemoteConnectTrace } from "./remote-connect-trace";
 import { LOCAL_TEAM_PROTOCOL, transportFailure } from "./remote-server-connection-status";
 import {
@@ -52,6 +44,13 @@ import {
 } from "./remote-service-effects";
 import type { RemoteSessionCache } from "./remote-session-cache";
 import type { TeamWebRtcBridge } from "./team-webrtc-bridge";
+import type {
+  RemoteConnectionBootstrap,
+  RemoteHostSummary,
+  RemoteInvitePreview,
+  RemoteInviteRecord,
+  RemoteMemberRecord,
+} from "./team-webrtc-directory-records";
 import { TeamWebRtcFileTransfer } from "./team-webrtc-file-transfer";
 
 export const TEAM_WEBRTC_REMOTE_REQUEST_TIMEOUT_MILLISECONDS = 10 * 60_000 + 30_000;
@@ -78,38 +77,38 @@ interface TeamWebRtcClientTransportEvents {
 
 interface TeamWebRtcClientTransportOptions {
   bridge: TeamWebRtcBridge;
-  listHosts: () => Effect.Effect<RemoteHostSummary[], CentralAuthOperationError>;
+  listHosts: () => Effect.Effect<RemoteHostSummary[], RemoteWorkflowError>;
   startSession: (
     hostId: string,
-  ) => Effect.Effect<{ sessionId: string; hostId: string; expiresAt: number }, CentralAuthOperationError>;
+  ) => Effect.Effect<{ sessionId: string; hostId: string; expiresAt: number }, RemoteWorkflowError>;
   issueTicket: (
     sessionId: string,
     clientPublicKey: string,
-  ) => Effect.Effect<RemoteConnectionBootstrap, CentralAuthOperationError>;
-  endSession: (sessionId: string) => Effect.Effect<void, CentralAuthOperationError>;
+  ) => Effect.Effect<RemoteConnectionBootstrap, RemoteWorkflowError>;
+  endSession: (sessionId: string) => Effect.Effect<void, RemoteWorkflowError>;
   createInvite: (
     hostId: string,
     input: { role: "admin" | "member"; email?: string; permanent?: boolean },
   ) => Effect.Effect<
     { inviteId: string; token: string; expiresAt: number; permanent: boolean; useCount: number },
-    CentralAuthOperationError
+    RemoteWorkflowError
   >;
-  listInvites: (hostId: string) => Effect.Effect<RemoteInviteRecord[], CentralAuthOperationError>;
-  previewInvite: (token: string) => Effect.Effect<RemoteInvitePreview, CentralAuthOperationError>;
+  listInvites: (hostId: string) => Effect.Effect<RemoteInviteRecord[], RemoteWorkflowError>;
+  previewInvite: (token: string) => Effect.Effect<RemoteInvitePreview, RemoteWorkflowError>;
   acceptInvite: (
     token: string,
-  ) => Effect.Effect<{ hostId: string; membershipId: string; role: "admin" | "member" }, CentralAuthOperationError>;
-  revokeInvite: (inviteId: string) => Effect.Effect<void, CentralAuthOperationError>;
-  listMembers: (hostId: string) => Effect.Effect<RemoteMemberRecord[], CentralAuthOperationError>;
+  ) => Effect.Effect<{ hostId: string; membershipId: string; role: "admin" | "member" }, RemoteWorkflowError>;
+  revokeInvite: (inviteId: string) => Effect.Effect<void, RemoteWorkflowError>;
+  listMembers: (hostId: string) => Effect.Effect<RemoteMemberRecord[], RemoteWorkflowError>;
   updateMember: (
     hostId: string,
     membershipId: string,
     role: "admin" | "member",
     reactivate?: boolean,
-  ) => Effect.Effect<void, CentralAuthOperationError>;
-  removeMember: (hostId: string, membershipId: string) => Effect.Effect<void, CentralAuthOperationError>;
-  removeOwnedHost: (hostId: string) => Effect.Effect<void, CentralAuthOperationError>;
-  setHostHidden: (hostId: string, hidden: boolean) => Effect.Effect<void, CentralAuthOperationError>;
+  ) => Effect.Effect<void, RemoteWorkflowError>;
+  removeMember: (hostId: string, membershipId: string) => Effect.Effect<void, RemoteWorkflowError>;
+  removeOwnedHost: (hostId: string) => Effect.Effect<void, RemoteWorkflowError>;
+  setHostHidden: (hostId: string, hidden: boolean) => Effect.Effect<void, RemoteWorkflowError>;
   getPrincipalId: () => string;
   controlPlaneUrl: string;
   transferDirectory: string;

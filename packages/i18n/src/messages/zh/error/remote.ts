@@ -20,15 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "远程事件不可用。",
   "error.remote.signInAgain": "请重新登录。",
   "error.remote.emailDeliveryUnavailable": "邮件发送不可用。",
-  "error.remote.inviteHostMismatch": "邀请中的主机与其令牌不匹配。",
-  "error.remote.inviteIdentityMismatch": "邀请中的主机身份与其令牌不匹配。",
-  "error.remote.inviteAcceptedOtherHost": "账号服务接受了另一个主机。",
-  "error.remote.inviteIdentityChanged": "接受邀请期间，邀请中的主机身份发生了变更。",
   "error.remote.localServerRemove": "本地服务器无法移除。",
   "error.remote.viewerProxyUnavailable": "本地远程查看器代理不可用。",
   "error.remote.viewerProxyNoPort": "本地远程查看器代理未获得端口。",
-  "error.remote.inviteNeedsConnection": "主机必须先连接一次才能创建邀请。",
-  "error.remote.permanentInviteUnsupported": "该服务器连接不支持永久邀请链接。",
   "error.remote.bridgeStartFailed": "Team WebRTC 桥接启动失败。",
   "error.remote.bridgeStopped": "Team WebRTC 桥接已停止。",
   "error.remote.bridgeDidNotStart": "Team WebRTC 桥接未能启动。",
@@ -167,6 +161,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "OpenBot 无法加载该服务器。请重试。",
   "error.remote.localServerNotStarted":
     "这台电脑上的服务器没有启动。请重试。如果仍未启动，请在这台电脑上重启 OpenBot。",
-  "error.remote.localServerAccountRemovalFailed":
-    "服务器已在其电脑上删除，但账户中仍列出它。请再次删除以将其从账户中移除。",
 } as const satisfies PartialTranslation<typeof source>;

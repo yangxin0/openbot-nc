@@ -9,7 +9,6 @@ import {
   externalLinkAppName,
   GROK_BOT_EXPORT_URL,
 } from "@openbot/contracts/ipc";
-import { Effect } from "effect";
 import { app, type BrowserWindow, dialog, type OpenDialogOptions, type WebContents } from "electron";
 import { version as developmentVersion } from "../../../package.json";
 import type { AgentService } from "../../backend/agent-service";
@@ -31,7 +30,6 @@ import { MAC_PERMISSION_URLS } from "../mac-permission-urls";
 import { exportDiagnostics, exportOpenBotData } from "../maintenance-service";
 import { isTailscaleConnected } from "../private-network-detection";
 import type { RemoteNetworkRoutePreferenceStore } from "../remote-network-route-preference-store";
-import type { RemoteSessionCache } from "../remote-session-cache";
 import type { RemoteSessionReusePreferenceStore } from "../remote-session-reuse-preference-store";
 import { readSetupState, writeSetupState } from "../setup-store";
 import { systemHourCycle } from "../system-hour-cycle";
@@ -81,7 +79,6 @@ export interface AppIpcDependencies {
   remoteSessionReuse: RemoteSessionReusePreferenceStore;
   remoteNetworkRoute: RemoteNetworkRoutePreferenceStore;
   applyRemoteNetworkRoute: () => Promise<void>;
-  remoteSessionCache: RemoteSessionCache;
   externalLinkPreference: ExternalLinkPreferenceStore;
   externalLinks: ExternalLinkOpener;
   openLink: (url: string) => Promise<void>;
@@ -115,7 +112,6 @@ export function appIpcHandlers({
   remoteSessionReuse,
   remoteNetworkRoute,
   applyRemoteNetworkRoute,
-  remoteSessionCache,
   externalLinkPreference,
   externalLinks,
   openLink,
@@ -167,11 +163,9 @@ export function appIpcHandlers({
       getAgentDefaults: handler(() => agentDefaults.get()),
       getAgentMemoryLimitPreference: handler(() => agentMemoryLimit.get()),
       getRemoteSessionReusePreference: handler(() => remoteSessionReuse.get()),
-      setRemoteSessionReusePreference: payloadHandler(parseRemoteSessionReusePreference, async (parsed) => {
-        const saved = await runCauseEffect(remoteSessionReuse.set(parsed));
-        await Effect.runPromise(remoteSessionCache.setEnabled(saved.keepBetweenRuns));
-        return saved;
-      }),
+      setRemoteSessionReusePreference: payloadHandler(parseRemoteSessionReusePreference, (parsed) =>
+        runCauseEffect(remoteSessionReuse.set(parsed)),
+      ),
       getRemoteNetworkRoute: handler(() => ({
         ...remoteNetworkRoute.get(),
         tailscaleConnected: isTailscaleConnected(),

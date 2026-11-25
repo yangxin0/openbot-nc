@@ -2,20 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.keyRotationUnavailable": "لا يمكن لهذا الخادم تغيير مفتاحه بدون خدمة الحساب.",
-  "error.host.keyRotationRefused": "لم تقبل خدمة الحساب مفتاح الخادم الجديد. يبقى المفتاح الحالي قيد الاستخدام.",
   "error.host.webRtcNotConfigured": "خدمة مضيف WebRTC غير مهيّأة.",
-  "error.host.accountChangedDuringUpdate": "تغيّر الحساب المسجّل الدخول أثناء تحديث هذا الخادم.",
   "error.host.nameBeforePublish": "سمِّ OpenBot هذا قبل نشره.",
-  "error.host.memberNotFound": "العضو البعيد غير موجود.",
   "error.host.publishBeforeInvite": "اجعل OpenBot هذا عامًا قبل إنشاء دعوة.",
   "error.host.teamAccessUnavailable": "وصولك إلى الفريق غير متاح.",
   "error.host.ownerIdentityUnavailable": "هوية مالك المضيف غير متاحة.",
-  "error.host.reserveAddressFailed": "تعذّر حجز العنوان العام.",
   "error.host.publishFailed": "تعذّر نشر OpenBot هذا.",
-  "error.host.mobileConnectPublishFailed": "تعذّر نشر OpenBot هذا لـ Mobile Connect.",
-  "error.host.mobileConnectHostChanged": "تغيّر مضيف Mobile Connect. حاول مرة أخرى.",
-  "error.host.mobileConnectHostMismatch": "لدى حسابك مفتاح مختلف لهذا الخادم. حاول مرة أخرى.",
   "error.host.noServer": "لا يوجد على هذا الحاسوب خادم لتغييره.",
   "error.host.identityLocalOnly": "لا يمكن تغيير اسم الخادم وشعاره إلا على الحاسوب الذي يشغّله.",
   "error.host.timezoneInvalid": "هذه المنطقة الزمنية غير معروفة.",

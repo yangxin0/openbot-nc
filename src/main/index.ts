@@ -1,20 +1,19 @@
 import { uptime } from "node:os";
 import { join, resolve } from "node:path";
 import { APP_ID, APP_LINK_SCHEME, APP_NAME } from "@openbot/contracts/app-identity";
-import { parseInviteUrl } from "@openbot/contracts/invite-links";
 import {
   type AgentSummary,
   type AppLogoColor,
-  type CentralAuthState,
   DEFAULT_QUIT_GUARD,
   type HostStatus,
   IPC_ENDPOINTS,
   type QuitGuard,
+  type UserProfile,
 } from "@openbot/contracts/ipc";
 import { createFormat, localeDirection, resolveLocale, translateFor, withHourCycle } from "@openbot/i18n";
 import { localizeSourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
-import { Effect, Semaphore } from "effect";
+import { Effect } from "effect";
 import {
   app,
   BrowserWindow,
@@ -63,7 +62,6 @@ import { tintDevelopmentIcon } from "./development-worktree-icon";
 import { stopStuckExitAfterLimit } from "./exit-watchdog";
 import { filePreviewPages } from "./file-preview-pages";
 import { hostAllowsTenantLaunch } from "./host-update-coordinator";
-import { accountIpcHandlers } from "./ipc/account-handlers";
 import { acpRegistryIpcHandlers } from "./ipc/acp-registry-handlers";
 import { agentAdminIpcHandlers } from "./ipc/agent-admin-handlers";
 import { agentDockIpcHandlers } from "./ipc/agent-dock-handlers";
@@ -99,6 +97,7 @@ import { notificationIpcHandlers } from "./ipc/notification-handlers";
 import { onePasswordConnectorIpcHandlers } from "./ipc/onepassword-connector-handlers";
 import { passwordManagersIpcHandlers } from "./ipc/password-managers-handlers";
 import { pluginIpcHandlers } from "./ipc/plugin-handlers";
+import { profileIpcHandlers } from "./ipc/profile-handlers";
 import { providerAdminIpcHandlers } from "./ipc/provider-admin-handlers";
 import { providerDetectionIpcHandlers } from "./ipc/provider-detection-handlers";
 import { providerIpcHandlers } from "./ipc/provider-handlers";
@@ -279,9 +278,6 @@ if (serverMode || localServerChild) hideExceptionErrorBox();
 if (serverMode || localServerChild) keepWindowsHidden();
 if (developmentProfile && process.env.OPENBOT_DEV_WINDOW_FOCUS === "background") openWindowsInBackground();
 if (localServerChild && process.platform === "darwin") app.dock?.hide();
-const inviteLinkOptions = {
-  allowLocalDevelopmentApiUrl: developmentRemoteRole !== null,
-};
 const developmentRemoteDebuggingPort = !app.isPackaged
   ? readDevelopmentRemoteDebuggingPort(process.env.OPENBOT_DEV_REMOTE_DEBUGGING_PORT)
   : null;
@@ -317,11 +313,7 @@ if (
   app.isPackaged &&
   !(serverMode || localServerChildEnvironment) &&
   (await Effect.runPromise(
-    restartOutsideWindowsPackage(
-      process.env,
-      process.argv,
-      (value) => parseDeepLink(value, inviteLinkOptions) !== null,
-    ),
+    restartOutsideWindowsPackage(process.env, process.argv, (value) => parseDeepLink(value) !== null),
   ))
 )
   process.exit(0);
@@ -460,9 +452,6 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 let services: ApplicationServices | null = null;
-let activeRemotePrincipalId: string | null = null;
-let centralAuthGeneration = 0;
-const remoteAccountGate = Semaphore.makeUnsafe(1);
 const macHapticFeedback = new MacHapticFeedback();
 let isQuitting = false;
 let shutdownStarted = false;
@@ -473,7 +462,7 @@ let relaunchRequested = false;
 let quitStarted = false;
 type RendererDeepLink = Exclude<DeepLink, { kind: "mcp-auth" }>;
 
-let pendingDeepLink: RendererDeepLink | null = takeRendererDeepLink(findDeepLink(process.argv, inviteLinkOptions));
+let pendingDeepLink: RendererDeepLink | null = takeRendererDeepLink(findDeepLink(process.argv));
 let deepLinkReceiverReady = false;
 
 const MAIN_WINDOW_STATE_FILE = "openbot-main-window-state-v1.json";
@@ -528,7 +517,6 @@ const {
   forwardAttachmentDownload,
   forwardAttachmentImportProgress,
   forwardInstanceTransferUploadProgress,
-  forwardOwnerTransfersChanged,
 } = createRendererForwarders({
   getMainWindow: () => windowHolder.current,
   getChatWindows: () => windows.getChatWindows(),
@@ -742,7 +730,6 @@ function registerIpcHandlers({
   externalLinks,
   openLink,
   remoteNetworkRoute,
-  remoteSessionCache,
   appBehavior,
   agentInitialization,
   sidebarLayout,
@@ -750,7 +737,7 @@ function registerIpcHandlers({
   host,
   remoteServers,
   relay,
-  centralAuth,
+  localProfile,
   skills,
   linkAccount,
   onePasswordConnector,
@@ -808,7 +795,6 @@ function registerIpcHandlers({
       openLink,
       remoteNetworkRoute,
       applyRemoteNetworkRoute: () => runCauseEffect(host.applyNetworkRoute()),
-      remoteSessionCache,
       appBehavior,
       language,
       logoColor,
@@ -862,12 +848,7 @@ function registerIpcHandlers({
       server: voiceServer,
       service,
     }),
-    ...accountIpcHandlers({
-      centralAuth,
-      host,
-      relayHosting: relay,
-      refreshServers: () => remoteServers.requestDirectoryRefresh(),
-    }),
+    ...profileIpcHandlers({ profile: localProfile }),
     ...skillIpcHandlers({ skills }),
     ...agentFolderIpcHandlers({
       folders: agentFolders,
@@ -931,10 +912,8 @@ function registerIpcHandlers({
     ...teamIpcHandlers({
       host,
       localServers,
-      ownerTransfers: centralAuth,
       relayHosting: relay,
       remoteServers,
-      takePendingInvite: () => takePendingDeepLink("invite")?.url ?? null,
     }),
     ...relayIpcHandlers({ relay, getMainWindow: getDialogParent, translate: language.translate }),
     ...pluginIpcHandlers({
@@ -1160,65 +1139,13 @@ async function presentApplication(): Promise<void> {
   }
 }
 
-function centralAuthPrincipalId(state: CentralAuthState): string | null {
-  return state.status === "signed_in" ? state.user.id : null;
-}
-
-function forwardCentralAuth(state: CentralAuthState): void {
-  if (localServerChild) return;
-  services?.host.unbindChangedAccount(state.status === "signed_in" ? state.user : null);
-  const generation = ++centralAuthGeneration;
-  void runCauseEffect(
-    remoteAccountGate.withPermit(
-      Effect.gen(function* () {
-        if (generation !== centralAuthGeneration) return;
-        const nextPrincipalId = state.status === "signed_in" ? state.user.id : null;
-        if (activeRemotePrincipalId && activeRemotePrincipalId !== nextPrincipalId && services) {
-          yield* services.remoteServers
-            .disconnectRemoteSessions()
-            .pipe(
-              Effect.catch((error) =>
-                Effect.sync(() =>
-                  logger.error("Unable to disconnect the previous account's remote sessions:", toLogValue(error.cause)),
-                ),
-              ),
-            );
-        }
-        if (generation !== centralAuthGeneration) return;
-        activeRemotePrincipalId = nextPrincipalId;
-        if (state.status !== "signed_in") {
-          if (state.status === "signed_out" && services) {
-            yield* services.host
-              .stop(false)
-              .pipe(
-                Effect.catch((error) =>
-                  Effect.sync(() =>
-                    logger.error("Unable to stop the host while signing out:", toLogValue(error.cause)),
-                  ),
-                ),
-              );
-            yield* services.host.applySignedInAccount(null);
-            yield* services.remoteServers.forgetSavedPictures();
-          }
-          return;
-        }
-        const host = services?.host ?? null;
-        if (host) {
-          yield* host.applySignedInAccount(state.user);
-          if (generation !== centralAuthGeneration) {
-            host.unbindChangedAccount(null);
-            return;
-          }
-        }
-      }),
-    ),
-  ).catch((error) => {
-    logger.error("Unable to synchronize the signed-in account:", toLogValue(error));
-  });
-  for (const chatWindow of windows.getChatWindows()) sendToRenderer(chatWindow, IPC_ENDPOINTS.auth.event, state);
-  const window = windowHolder.current;
-  if (!window || window.isDestroyed()) return;
-  sendToRenderer(window, IPC_ENDPOINTS.auth.event, state);
+function forwardLocalProfile(profile: UserProfile): void {
+  const host = services?.host;
+  if (host)
+    void runCauseEffect(host.applyLocalProfile(profile)).catch((error) => {
+      logger.error("Unable to apply the local profile to this computer's server:", toLogValue(error));
+    });
+  for (const window of BrowserWindow.getAllWindows()) sendToRenderer(window, IPC_ENDPOINTS.profile.changed, profile);
 }
 
 function acceptDeepLink(link: DeepLink): void {
@@ -1235,8 +1162,6 @@ function acceptDeepLink(link: DeepLink): void {
 
 function sendDeepLink(window: BrowserWindow, link: RendererDeepLink): boolean {
   switch (link.kind) {
-    case "invite":
-      return sendToRenderer(window, IPC_ENDPOINTS.servers.invite, link.url);
     case "plugin":
       return sendToRenderer(window, IPC_ENDPOINTS.plugins.openListing, link.slug);
   }
@@ -1275,21 +1200,10 @@ function receiveMcpAuthorizationCode(state: string, code: string): void {
 }
 
 app.on("open-url", (event, url) => {
-  const link = parseDeepLink(url, inviteLinkOptions);
+  const link = parseDeepLink(url);
   if (!link) return;
   event.preventDefault();
   acceptDeepLink(link);
-});
-
-app.on("continue-activity", (event, type, _userInfo, details) => {
-  if (type !== "NSUserActivityTypeBrowsingWeb" || !details.webpageURL) return;
-  try {
-    parseInviteUrl(details.webpageURL, inviteLinkOptions);
-  } catch {
-    return;
-  }
-  event.preventDefault();
-  acceptDeepLink({ kind: "invite", url: details.webpageURL });
 });
 
 if (!hasSingleInstanceLock) {
@@ -1297,7 +1211,7 @@ if (!hasSingleInstanceLock) {
   process.exit(0);
 } else {
   app.on("second-instance", (_event, argv) => {
-    const deepLink = findDeepLink(argv, inviteLinkOptions);
+    const deepLink = findDeepLink(argv);
     if (deepLink) acceptDeepLink(deepLink);
     const window = windowHolder.current;
     const hasMainWindow = Boolean(window && !window.isDestroyed());
@@ -1311,7 +1225,7 @@ if (!hasSingleInstanceLock) {
     else if (response === "reopen") reopenMainWindow();
     else if (response === "relaunch" && !relaunchRequested) {
       relaunchRequested = true;
-      const isLink = (value: string) => parseDeepLink(value, inviteLinkOptions) !== null;
+      const isLink = (value: string) => parseDeepLink(value) !== null;
       const link = argv.find(isLink);
       const args = process.argv.slice(1).filter((value) => !isLink(value));
       relaunchApp(app, link ? [...args, link] : args);
@@ -1369,12 +1283,10 @@ if (!hasSingleInstanceLock) {
         developmentTestClientEnabled,
         serverMode,
         localServerChild,
-        localServerControl,
         relayLaunch: localServerChild ? NO_RELAY_LAUNCH_OPTIONS : relayLaunchSwitches.options,
         systemTimezone,
         macHapticFeedback,
         teardown,
-        forwardCentralAuth,
         forwardBrowserDisplayState,
         forwardProviderRuntimeStatus,
         forwardVoiceModelStatus,
@@ -1390,17 +1302,6 @@ if (!hasSingleInstanceLock) {
       placeWindowButtons(BrowserWindow.getAllWindows());
       if (app.isPackaged && !serverMode && !localServerChild) {
         teardown.push(0, "app archive watch", watchAppArchive(process.resourcesPath, built.language.translate));
-      }
-      const appliedAccount = built.appliedAccount;
-      activeRemotePrincipalId = centralAuthPrincipalId(appliedAccount);
-      const currentAccount = built.centralAuth.getState();
-      if (currentAccount.status === "signed_out" && !localServerChild)
-        void runCauseEffect(built.remoteServers.forgetSavedPictures());
-      if (
-        currentAccount.status !== appliedAccount.status ||
-        centralAuthPrincipalId(currentAccount) !== centralAuthPrincipalId(appliedAccount)
-      ) {
-        forwardCentralAuth(currentAccount);
       }
       const {
         service,
@@ -1452,7 +1353,6 @@ if (!hasSingleInstanceLock) {
       built.passwordManagers.onChanged(forwardPasswordManagerStatus);
       built.vault.onChanged(forwardVaultState);
       remoteServers.on("changed", forwardServers);
-      remoteServers.on("directoryInvalidated", forwardOwnerTransfersChanged);
       remoteServers.on("agent", (serverId, event, bufferedLive) => {
         forwardAgentEvent(serverId, event, bufferedLive);
       });
@@ -1465,16 +1365,7 @@ if (!hasSingleInstanceLock) {
       built.relay.on("changed", (state) => {
         for (const window of BrowserWindow.getAllWindows()) sendToRenderer(window, IPC_ENDPOINTS.relay.state, state);
       });
-      void Effect.runPromise(
-        built.centralAuthInitialization.pipe(
-          Effect.flatMap(() =>
-            Effect.sync(() => {
-              if (built.centralAuth.getState().status === "signed_in") remoteServers.connectActiveServer();
-            }),
-          ),
-          Effect.catch(() => Effect.void),
-        ),
-      ).catch((error) => logger.warn("Unable to start the selected server's connection:", toLogValue(error)));
+      if (!localServerChild) built.localProfile.on("changed", forwardLocalProfile);
       updater.on("status", forwardUpdateStatus);
       updater.on("status", (status) => {
         if (!shutdownStarted || status.errorCode !== "install_failed") return;

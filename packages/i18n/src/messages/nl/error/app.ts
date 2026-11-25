@@ -8,5 +8,4 @@ export const messages = {
   "error.app.notReady": "OpenBot is niet klaar.",
   "error.app.macSecureStorageUnavailable": "De beveiligde opslag van macOS is niet beschikbaar.",
   "error.app.secretStorageUnavailable": "De opslag voor geheimen van het systeem is niet beschikbaar.",
-  "error.app.remoteIdentityUnavailable": "De identiteit van de externe host is niet beschikbaar.",
 } as const satisfies PartialTranslation<typeof source>;

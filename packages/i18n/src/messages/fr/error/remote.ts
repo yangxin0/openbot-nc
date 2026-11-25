@@ -20,16 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "Les événements distants ne sont pas disponibles.",
   "error.remote.signInAgain": "Reconnectez-vous.",
   "error.remote.emailDeliveryUnavailable": "L’envoi d’e-mails n’est pas disponible.",
-  "error.remote.inviteHostMismatch": "L’hôte de l’invitation ne correspond pas à son jeton.",
-  "error.remote.inviteIdentityMismatch": "L’identité de l’hôte de l’invitation ne correspond pas à son jeton.",
-  "error.remote.inviteAcceptedOtherHost": "Le service de compte a accepté un autre hôte.",
-  "error.remote.inviteIdentityChanged": "L’identité de l’hôte de l’invitation a changé pendant son acceptation.",
   "error.remote.localServerRemove": "Le serveur local ne peut pas être supprimé.",
   "error.remote.viewerProxyUnavailable": "Le proxy local de la visionneuse distante n’est pas disponible.",
   "error.remote.viewerProxyNoPort": "Le proxy local de la visionneuse distante n’a pas obtenu de port.",
-  "error.remote.inviteNeedsConnection": "L’hôte doit se connecter une fois avant de pouvoir créer des invitations.",
-  "error.remote.permanentInviteUnsupported":
-    "Cette connexion au serveur ne prend pas en charge les liens d’invitation permanents.",
   "error.remote.bridgeStartFailed": "Le pont Team WebRTC n’a pas pu démarrer.",
   "error.remote.bridgeStopped": "Le pont Team WebRTC s’est arrêté.",
   "error.remote.bridgeDidNotStart": "Le pont Team WebRTC n’a pas démarré.",
@@ -181,6 +174,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "OpenBot n'a pas pu charger le serveur. Réessayez.",
   "error.remote.localServerNotStarted":
     "Le serveur sur cet ordinateur n'a pas démarré. Réessayez. S'il ne démarre toujours pas, redémarrez OpenBot sur cet ordinateur.",
-  "error.remote.localServerAccountRemovalFailed":
-    "Le serveur est supprimé sur son ordinateur, mais le compte l’affiche encore. Supprimez-le à nouveau pour le retirer du compte.",
 } as const satisfies PartialTranslation<typeof source>;

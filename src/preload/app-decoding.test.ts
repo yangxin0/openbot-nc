@@ -1,26 +1,21 @@
 import type {
-  AccountSession,
   AppAppearancePreference,
   AppInfo,
   ApprovalAutomationPreference,
   AppSetupState,
   AppThemePalette,
-  CentralAuthState,
-  MobileConnectedDevice,
   NotificationOpenedEvent,
   UpdateStatus,
   WorkflowNotificationOpenedEvent,
 } from "@openbot/contracts/ipc";
 import { describe, expect, it } from "vitest";
 import {
-  decodeAccountSessions,
   decodeAppAppearancePreference,
   decodeAppBehaviorPreference,
   decodeAppInfo,
   decodeAppLanguagePreference,
   decodeApprovalAutomationPreference,
   decodeAppSetupState,
-  decodeCentralAuthState,
   decodeChatWindowTargets,
   decodeCustomAgentResult,
   decodeCustomAgents,
@@ -28,14 +23,13 @@ import {
   decodeDetectedModelServers,
   decodeDiscoverModelsResult,
   decodeInstalledFonts,
-  decodeMobileConnectedDevices,
-  decodeMobileConnectTicket,
   decodeNotificationOpenedEvent,
   decodeNotificationPreference,
   decodeProviderDetectionSettings,
   decodeSentMessageStats,
   decodeUpdatePreference,
   decodeUpdateStatus,
+  decodeUserProfile,
   decodeVoiceServerProbe,
   decodeVoiceServerSettings,
   decodeWorkflowNotificationOpenedEvent,
@@ -87,14 +81,6 @@ const customAgent = {
   usagePrompt: null,
   resolvedCommand: "/opt/homebrew/bin/goose",
 };
-
-const codeSent = {
-  status: "code_sent",
-  challengeId: "challenge-1",
-  email: "user@example.com",
-  expiresAt: 2,
-  resendAvailableAt: 1,
-} satisfies CentralAuthState;
 
 const voiceServer = {
   address: "http://studio.local:8000/v1",
@@ -248,74 +234,8 @@ const valid: [string, (value: unknown) => unknown, unknown][] = [
     } satisfies AppAppearancePreference,
   ],
   ["installed fonts", decodeInstalledFonts, ["Al Bayan", "DejaVu Sans", "Noto Kufi Arabic"]],
-  ["signed out", decodeCentralAuthState, { status: "signed_out" } satisfies CentralAuthState],
-  [
-    "signed out after a keyring change",
-    decodeCentralAuthState,
-    { status: "signed_out", reason: "keyring_changed" } satisfies CentralAuthState,
-  ],
-  ["code sent", decodeCentralAuthState, codeSent],
-  [
-    "code sent with every option",
-    decodeCentralAuthState,
-    {
-      ...codeSent,
-      developmentCode: "123456",
-      issue: { code: "rate_limited", message: "Wait.", retryAfterSeconds: 30 },
-    } satisfies CentralAuthState,
-  ],
-  [
-    "signed in",
-    decodeCentralAuthState,
-    {
-      status: "signed_in",
-      user: { id: "user-1", email: "user@example.com", name: null, avatarUrl: null },
-    } satisfies CentralAuthState,
-  ],
-  [
-    "signed in with an analytics answer",
-    decodeCentralAuthState,
-    {
-      status: "signed_in",
-      user: { id: "user-1", email: "user@example.com", name: null, avatarUrl: null, analyticsEnabled: true },
-    } satisfies CentralAuthState,
-  ],
-  [
-    "signed in with a chat color",
-    decodeCentralAuthState,
-    {
-      status: "signed_in",
-      user: { id: "user-1", email: "user@example.com", name: null, avatarUrl: null, chatColor: "#3b82f6" },
-    } satisfies CentralAuthState,
-  ],
-  [
-    "signed in with no chat color",
-    decodeCentralAuthState,
-    {
-      status: "signed_in",
-      user: { id: "user-1", email: "user@example.com", name: null, avatarUrl: null, chatColor: null },
-    } satisfies CentralAuthState,
-  ],
-  [
-    "account error",
-    decodeCentralAuthState,
-    { status: "error", issue: { code: "offline", message: "No network." } } satisfies CentralAuthState,
-  ],
-  ["Mobile Connect ticket", decodeMobileConnectTicket, { qrData: "openbot://mobile-connect", expiresAt: 1 }],
-  [
-    "connected devices",
-    decodeMobileConnectedDevices,
-    [
-      { sessionId: "session-1", name: "Phone", platform: "ios", connectedAt: 1, lastActiveAt: 2, via: "link" },
-    ] satisfies MobileConnectedDevice[],
-  ],
-  [
-    "account sessions",
-    decodeAccountSessions,
-    [
-      { sessionId: "session-1", name: "Mac", kind: "desktop", current: true, connectedAt: 1, lastActiveAt: 2 },
-    ] satisfies AccountSession[],
-  ],
+  ["a profile with a chat color", decodeUserProfile, { id: "user-1", name: null, chatColor: "#3b82f6" }],
+  ["a profile with no chat color", decodeUserProfile, { id: "user-1", name: "Ada", chatColor: null }],
   ["update status", decodeUpdateStatus, updateStatus],
   ["host-managed update status", decodeUpdateStatus, { ...updateStatus, managedByHost: true } satisfies UpdateStatus],
   [
@@ -521,13 +441,6 @@ const malformed: [string, (value: unknown) => unknown, unknown][] = [
       chatBackgroundDark: null,
     },
   ],
-  ["an unknown account status", decodeCentralAuthState, { status: "banned" }],
-  ["signed out with an unknown reason", decodeCentralAuthState, { status: "signed_out", reason: "expired" }],
-  ["signed in without a user", decodeCentralAuthState, { status: "signed_in" }],
-  ["code sent with a text expiry", decodeCentralAuthState, { ...codeSent, expiresAt: "soon" }],
-  ["Mobile Connect ticket without data", decodeMobileConnectTicket, { expiresAt: 1 }],
-  ["a device on an unknown platform", decodeMobileConnectedDevices, [{ sessionId: "s", name: "n", platform: "tv" }]],
-  ["account sessions that are not a list", decodeAccountSessions, { sessionId: "s" }],
   ["update status in an unknown phase", decodeUpdateStatus, { ...updateStatus, phase: "done" }],
   ["update status with an unknown failure", decodeUpdateStatus, { ...updateStatus, errorCode: "boom" }],
   ["update status with a staged release that is not text", decodeUpdateStatus, { ...updateStatus, stagedVersion: 68 }],
@@ -556,28 +469,14 @@ const malformed: [string, (value: unknown) => unknown, unknown][] = [
   ["custom agent usage of an invalid id", decodeCustomAgentUsage, [{ id: "Not An Id", text: "42%" }]],
   ["custom agent usage with no text", decodeCustomAgentUsage, [{ id: "devin", text: null }]],
   [
-    "an account analytics answer that is not a yes or a no",
-    decodeCentralAuthState,
-    {
-      status: "signed_in",
-      user: { id: "user-1", email: "user@example.com", name: null, avatarUrl: null, analyticsEnabled: "yes" },
-    },
+    "a profile chat color that is not a lower-case hex color",
+    decodeUserProfile,
+    { id: "user-1", name: null, chatColor: "#3B82F6" },
   ],
   [
-    "an account chat color that is not a lower-case hex color",
-    decodeCentralAuthState,
-    {
-      status: "signed_in",
-      user: { id: "user-1", email: "user@example.com", name: null, avatarUrl: null, chatColor: "#3B82F6" },
-    },
-  ],
-  [
-    "an account chat color that is a CSS expression",
-    decodeCentralAuthState,
-    {
-      status: "signed_in",
-      user: { id: "user-1", email: "user@example.com", name: null, avatarUrl: null, chatColor: "red;x:url(a)" },
-    },
+    "a profile chat color that is a CSS expression",
+    decodeUserProfile,
+    { id: "user-1", name: null, chatColor: "red;x:url(a)" },
   ],
   ["a model list with an empty id", decodeDiscoverModelsResult, { models: [{ id: "" }] }],
   [

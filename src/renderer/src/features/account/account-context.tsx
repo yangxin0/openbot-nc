@@ -2,23 +2,23 @@ import {
   type AccountUsage,
   type AccountUsageLimit,
   type AvatarColor,
-  type AvatarImageInput,
-  type CentralAuthState,
+  type CentralAuthUser,
   keepUsageCredits,
+  type UserProfile,
   withReadCredits,
 } from "@openbot/contracts/ipc";
-import { currentText } from "@openbot/ui/text";
-import { createMemo, createSignal, createStore, flush, onCleanup, onSettled } from "solid-js";
+import { createSignal, createStore, flush, onSettled } from "solid-js";
 import { createSimpleContext } from "../../simple-context";
 import { accountPort } from "./account-port";
 
-const AUTH_SUCCESS_HOLD_MS = 600;
+export function profileAccount(profile: UserProfile): CentralAuthUser {
+  return { id: profile.id, email: "", name: profile.name, avatarUrl: null, chatColor: profile.chatColor };
+}
 
 const Auth = createSimpleContext({
   name: "Auth",
   init: () => {
-    const [centralAuth, setCentralAuth] = createSignal<CentralAuthState>({ status: "loading" });
-    const [authSuccessVisible, setAuthSuccessVisible] = createSignal(false);
+    const [profile, setProfile] = createSignal<UserProfile | null>(null);
     const [accountUsageState, setAccountUsageState] = createStore<{
       targetKey: string | null;
       data: AccountUsage | null;
@@ -26,82 +26,21 @@ const Auth = createSimpleContext({
     }>({ targetKey: null, data: null, refreshRevision: 0 });
     let accountUsageRequestGeneration = 0;
     let accountUsageEventIds = new Set<string>();
-    let authSuccessTimer: ReturnType<typeof setTimeout> | undefined;
-
-    onCleanup(() => {
-      if (authSuccessTimer !== undefined) clearTimeout(authSuccessTimer);
-    });
-
-    function applyCentralAuthState(state: CentralAuthState): void {
-      const completedCodeChallenge = centralAuth().status === "code_sent" && state.status === "signed_in";
-      if (state.status !== "signed_in") {
-        if (authSuccessTimer !== undefined) clearTimeout(authSuccessTimer);
-        authSuccessTimer = undefined;
-        setAuthSuccessVisible(false);
-      } else if (completedCodeChallenge) {
-        if (authSuccessTimer !== undefined) clearTimeout(authSuccessTimer);
-        setAuthSuccessVisible(true);
-        authSuccessTimer = setTimeout(() => {
-          authSuccessTimer = undefined;
-          setAuthSuccessVisible(false);
-        }, AUTH_SUCCESS_HOLD_MS);
-      }
-      setCentralAuth(state);
-    }
 
     onSettled(() => {
-      const unsubscribe = accountPort().auth.onEvent((state) => {
-        flush(() => applyCentralAuthState(state));
+      const unsubscribe = accountPort().profile.onChanged((next) => {
+        flush(() => setProfile(next));
       });
-      void accountPort()
-        .auth.getState()
-        .then(setCentralAuth)
-        .catch(() =>
-          setCentralAuth({
-            status: "error",
-            issue: {
-              code: "auth_unavailable",
-              message: currentText().t("account.login.loadFailed"),
-            },
-          }),
-        );
+      void accountPort().profile.get().then(setProfile);
       return unsubscribe;
     });
 
-    async function requestEmailCode(email: string): Promise<void> {
-      const state = await accountPort().auth.requestEmailCode(email);
-      applyCentralAuthState(state);
-    }
-
-    async function retryCentralAccount(): Promise<void> {
-      applyCentralAuthState({ status: "loading" });
-      applyCentralAuthState(await accountPort().auth.retry());
-    }
-
-    async function verifyEmailCode(challengeId: string, code: string, referralCode?: string): Promise<void> {
-      const state = await accountPort().auth.verifyEmailCode({
-        challengeId,
-        code,
-        ...(referralCode ? { referralCode } : {}),
-      });
-      applyCentralAuthState(state);
-    }
-
-    async function logoutCentralAccount(): Promise<void> {
-      const state = await accountPort().auth.logout();
-      applyCentralAuthState(state);
-    }
-
-    async function updateAccountAvatar(image: AvatarImageInput | null): Promise<void> {
-      applyCentralAuthState(await accountPort().auth.updateAvatar(image));
-    }
-
-    async function updateAccountName(name: string): Promise<void> {
-      applyCentralAuthState(await accountPort().auth.updateName(name));
+    async function updateProfileName(name: string): Promise<void> {
+      setProfile(await accountPort().profile.updateName(name));
     }
 
     async function setChatColor(color: AvatarColor | null): Promise<void> {
-      applyCentralAuthState(await accountPort().auth.updateChatColor(color));
+      setProfile(await accountPort().profile.updateChatColor(color));
     }
 
     const accountUsage = () => accountUsageState.data;
@@ -161,28 +100,8 @@ const Auth = createSimpleContext({
       return usage;
     }
 
-    function createMobileConnect() {
-      return accountPort().auth.createMobileConnect();
-    }
-
-    function listMobileConnectedDevices() {
-      return accountPort().auth.listMobileConnectedDevices();
-    }
-
-    function revokeMobileConnectedDevice(sessionId: string) {
-      return accountPort().auth.revokeMobileConnectedDevice(sessionId);
-    }
-
-    const signedInAccount = createMemo(() => {
-      const state = centralAuth();
-      return state.status === "signed_in" ? state.user : null;
-    });
-    const visibleSignedInAccount = createMemo(() => (authSuccessVisible() ? null : signedInAccount()));
-
     return {
-      centralAuth,
-      signedInAccount,
-      visibleSignedInAccount,
+      profile,
       accountUsage,
       accountUsageRefreshRevision,
       accountUsageTargetKey,
@@ -190,22 +109,8 @@ const Auth = createSimpleContext({
       invalidateAccountUsage,
       applyAccountUsage,
       refreshAccountUsage,
-      requestEmailCode,
-      retryCentralAccount,
-      verifyEmailCode,
-      logoutCentralAccount,
-      updateAccountName,
-      updateAccountAvatar,
+      updateProfileName,
       setChatColor,
-      createMobileConnect,
-      cancelMobileConnect: () => accountPort().auth.cancelMobileConnect(),
-      getMobileConnectLink: () => accountPort().auth.getMobileConnectLink(),
-      createMobileConnectLink: () => accountPort().auth.createMobileConnectLink(),
-      revokeMobileConnectLink: () => accountPort().auth.revokeMobileConnectLink(),
-      listMobileConnectedDevices,
-      revokeMobileConnectedDevice,
-      listAccountSessions: () => accountPort().auth.listAccountSessions(),
-      revokeAccountSession: (sessionId: string) => accountPort().auth.revokeAccountSession(sessionId),
     };
   },
 });

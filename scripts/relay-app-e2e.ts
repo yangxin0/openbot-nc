@@ -398,16 +398,10 @@ try {
     },
     openEventSocket: (url, protocols) => clientCoordinator.openEventSocket(url, protocols),
   };
-  const clientManager = new RemoteServerManager(
-    join(clientData, "openbot-remote-servers.json"),
-    testCipher,
-    {
-      createTeamAuthTicket: () => Effect.die(new Error("The account service is not part of the relay path.")),
-      getEmail: () => "",
-      sendTeamInviteEmail: () => Effect.die(new Error("The account service is not part of the relay path.")),
-    },
-    { appVersion: "0.0.0-e2e", relayTransport: transport },
-  );
+  const clientManager = new RemoteServerManager(join(clientData, "openbot-remote-servers.json"), testCipher, {
+    appVersion: "0.0.0-e2e",
+    relayTransport: transport,
+  });
   manager = clientManager;
   await Effect.runPromise(clientManager.initialize());
   await Effect.runPromise(clientManager.startEventConnections());

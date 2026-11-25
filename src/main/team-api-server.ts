@@ -441,7 +441,6 @@ import { routeGithubSkills } from "./team-api/route-github-skills";
 import { routeHermesImport } from "./team-api/route-hermes-import";
 import { routeHostAdmin } from "./team-api/route-host-admin";
 import { routeHostAppearance } from "./team-api/route-host-appearance";
-import { routeHostKeyRotation } from "./team-api/route-host-key-rotation";
 import { routeHostPersonality } from "./team-api/route-host-personality";
 import { routeHostRestart } from "./team-api/route-host-restart";
 import { routeHostSignalHome } from "./team-api/route-host-signal-home";
@@ -1102,29 +1101,6 @@ export class TeamApiServer {
         );
         return this.#json(response, 201, result);
       }
-      if (method === "POST" && url.pathname === TEAM_API_ROUTES.join.account) {
-        const body = await readJson(request);
-        const identity = this.#options.store.getIdentity();
-        const user = identity
-          ? await (this.#options.redeemCentralTicket
-              ? runCauseEffect(
-                  this.#options.redeemCentralTicket(
-                    stringField(body, "accountTicket", false, INPUT_LIMITS.identifier),
-                    identity.serverId,
-                  ),
-                )
-              : undefined)
-          : null;
-        if (!user) return this.#json(response, 401, { error: sourceText("error.team.signInRequired") });
-        this.#checkRate(request, user.email);
-        const result = await runCauseEffect(
-          this.#options.store.acceptInviteWithAccount(
-            stringField(body, "inviteToken", false, INPUT_LIMITS.identifier),
-            user,
-          ),
-        );
-        return this.#json(response, 201, result);
-      }
       if (method === "POST" && url.pathname === TEAM_API_ROUTES.auth.login) {
         const body = await readJson(request);
         this.#checkRate(request, stringField(body, "username", false, 64));
@@ -1140,23 +1116,6 @@ export class TeamApiServer {
         if (!relayPeer) return this.#json(response, 401, { error: sourceText("error.team.authenticationRequired") });
         this.#checkRate(request, relayPeer.user);
         return this.#json(response, 200, await runCauseEffect(this.#options.store.loginWithRelayPeer(relayPeer)));
-      }
-      if (method === "POST" && url.pathname === TEAM_API_ROUTES.auth.account) {
-        const body = await readJson(request);
-        const identity = this.#options.store.getIdentity();
-        const user = identity
-          ? await (this.#options.redeemCentralTicket
-              ? runCauseEffect(
-                  this.#options.redeemCentralTicket(
-                    stringField(body, "accountTicket", false, INPUT_LIMITS.identifier),
-                    identity.serverId,
-                  ),
-                )
-              : undefined)
-          : null;
-        if (!user) return this.#json(response, 401, { error: sourceText("error.team.signInRequired") });
-        this.#checkRate(request, user.email);
-        return this.#json(response, 200, await runCauseEffect(this.#options.store.loginWithAccount(user)));
       }
 
       const token = bearerToken(request.headers.authorization);
@@ -1349,7 +1308,6 @@ export class TeamApiServer {
       if ((await routeHostTurnLimits(context, this.#options.admin)) === "handled") return;
       if ((await routeHostRestart(context, this.#options.admin)) === "handled") return;
       if ((await routeHostPersonality(context, this.#options.admin)) === "handled") return;
-      if ((await routeHostKeyRotation(context, this.#options.admin)) === "handled") return;
       if ((await routeLocalServers(context, this.#options.admin)) === "handled") return;
       if ((await routeAgentMemoryLimit(context, this.#options.admin)) === "handled") return;
       if ((await routeMemoryReview(context, this.#options.admin)) === "handled") return;
@@ -2820,9 +2778,9 @@ export class TeamApiServer {
         if (capability === HOST_TURN_LIMITS_CAPABILITY || capability === HOST_TURN_LIMITS_EVENTS_CAPABILITY)
           return this.#options.admin?.turnLimits !== undefined;
         if (capability === HOST_RESTART_CAPABILITY) return this.#options.admin?.restart !== undefined;
-        if (capability === OWNER_TRANSFER_CAPABILITY) return this.#options.admin?.ownerTransfer === true;
+        if (capability === OWNER_TRANSFER_CAPABILITY) return false;
         if (capability === HOST_PERSONALITY_CAPABILITY) return this.#options.admin?.personality !== undefined;
-        if (capability === HOST_KEY_ROTATION_CAPABILITY) return this.#options.admin?.hostKey !== undefined;
+        if (capability === HOST_KEY_ROTATION_CAPABILITY) return false;
         if (capability === LOCAL_SERVERS_CAPABILITY) return this.#options.admin?.localServers !== undefined;
         if (capability === AGENT_MEMORY_LIMIT_CAPABILITY) return this.#options.admin?.memoryLimit !== undefined;
         if (capability === MEMORY_REVIEW_CAPABILITY) return this.#options.admin?.memoryReview !== undefined;

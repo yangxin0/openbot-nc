@@ -2,32 +2,25 @@ import { parseHostedServerName } from "@openbot/contracts/hosted-servers";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type {
   AvatarImageInput,
-  CentralAuthUser,
-  InviteSummary,
   ServerAppearance,
   ServerSummary,
-  TeamInviteSummary,
   TeamPresenceMember,
   UpdateTeamMemberInput,
+  UserProfile,
 } from "@openbot/contracts/ipc";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, flush, onCleanup } from "solid-js";
 import { createSimpleContext } from "../../simple-context";
 import { useAuth } from "../account/account-context";
 import type { ServerSettingsSection } from "./ServerSettingsModal";
-import {
-  serverCanAdminister,
-  serverRoleCanAdminister,
-  serverRotatesHostKey,
-  serverSupportsCapability,
-} from "./server-capabilities";
+import { serverCanAdminister, serverRoleCanAdminister, serverSupportsCapability } from "./server-capabilities";
 import { useServers } from "./servers-context";
-import { serverAdminPort, serversPort } from "./servers-port";
+import { serverMemberPort, serversPort } from "./servers-port";
 
 const FALLBACK_SERVER_NAME = "OpenBot";
 
-function generatedServerName(user: CentralAuthUser | null): string {
-  const person = (user?.name?.trim() || user?.email.split("@")[0] || "").split(/\s+/u)[0] ?? "";
+function generatedServerName(user: UserProfile | null): string {
+  const person = (user?.name?.trim() || "").split(/\s+/u)[0] ?? "";
   if (!person) return FALLBACK_SERVER_NAME;
   const { t } = currentText();
   const characters = Array.from(person);
@@ -41,7 +34,7 @@ const ServerSettings = createSimpleContext({
   name: "Server settings",
   init: () => {
     const { servers, setServers, hostStatus, setHostStatus, setHostUpdateOpener } = useServers();
-    const { signedInAccount } = useAuth();
+    const { profile } = useAuth();
     const [serverSettingsTargetId, setServerSettingsTargetId] = createSignal<string | null>(null);
     const [serverSettingsSection, setServerSettingsSection] = createSignal<ServerSettingsSection | null>(null);
     const [serverSettingsShownSection, setServerSettingsShownSection] = createSignal<ServerSettingsSection | null>(
@@ -50,7 +43,6 @@ const ServerSettings = createSimpleContext({
     const [serverSettingsOpen, setServerSettingsOpen] = createSignal(false);
     const [serverSettingsOpenRequest, setServerSettingsOpenRequest] = createSignal(0);
     const [serverSettingsMembers, setServerSettingsMembers] = createSignal<TeamPresenceMember[]>([]);
-    const [serverSettingsInvites, setServerSettingsInvites] = createSignal<TeamInviteSummary[]>([]);
     const [serverSettingsLoading, setServerSettingsLoading] = createSignal(false);
     const [serverSettingsError, setServerSettingsError] = createSignal<string | null>(null);
     let serverSettingsRequest = 0;
@@ -120,11 +112,10 @@ const ServerSettings = createSimpleContext({
         }
         const canManage = server.kind === "local" ? hostStatus().configured : serverRoleCanAdminister(server);
         const canUseNetwork = server.kind === "local" || server.state === "online";
-        const admin = serverAdminPort(server);
-        const [presence, members, invites] = await Promise.all([
+        const admin = serverMemberPort(server);
+        const [presence, members] = await Promise.all([
           admin.getPresence(),
           canManage && canUseNetwork ? admin.listMembers() : Promise.resolve(null),
-          canManage && canUseNetwork ? admin.listInvites() : Promise.resolve([]),
         ]);
         if (request !== serverSettingsRequest || serverSettingsTargetId() !== serverId) return;
         const presenceById = new Map(presence.members.map((member) => [member.id, member]));
@@ -135,7 +126,6 @@ const ServerSettings = createSimpleContext({
             typingAgentId: presenceById.get(member.id)?.typingAgentId ?? null,
           })),
         );
-        setServerSettingsInvites(invites);
         if (identityError) setServerSettingsError(identityError);
       } catch (error) {
         if (request === serverSettingsRequest && serverSettingsTargetId() === serverId) {
@@ -159,7 +149,6 @@ const ServerSettings = createSimpleContext({
       setServerSettingsOpen(true);
       setServerSettingsOpenRequest((count) => count + 1);
       setServerSettingsMembers([]);
-      setServerSettingsInvites([]);
       setServerSettingsError(null);
       void refreshServerSettings(serverId);
     }
@@ -209,17 +198,6 @@ const ServerSettings = createSimpleContext({
       setServers(await serversPort().servers.list());
     }
 
-    async function rotateHostKey(): Promise<void> {
-      const server = serverSettingsTarget();
-      if (server?.kind === "local") {
-        setHostStatus(await serversPort().host.rotateIdentityKey());
-        return;
-      }
-      if (!serverRotatesHostKey(server)) throw new Error(currentText().t("server.settings.hostKeyOwnerOnly"));
-      await serversPort().hostAdmin.rotateHostKey(server.id);
-      setServers(await serversPort().servers.list());
-    }
-
     async function setServerPublished(published: boolean): Promise<void> {
       if (serverSettingsTarget()?.kind !== "local")
         throw new Error(currentText().t("server.settings.publicationLocalOnly"));
@@ -230,7 +208,7 @@ const ServerSettings = createSimpleContext({
       const server = servers().find((candidate) => candidate.kind === "local");
       if (!server) throw new Error(currentText().t("server.settings.publicationLocalOnly"));
       if (published && !hostStatus().configured)
-        setHostStatus(await serversPort().host.configure({ serverName: generatedServerName(signedInAccount()) }));
+        setHostStatus(await serversPort().host.configure({ serverName: generatedServerName(profile()) }));
       const status = published ? await serversPort().host.start() : await serversPort().host.stop();
       if (published && status.phase !== "online") throw new Error("publish_failed");
       setHostStatus(status);
@@ -238,36 +216,17 @@ const ServerSettings = createSimpleContext({
       if (serverSettingsTargetId() === server.id) await refreshServerSettings(server.id);
     }
 
-    async function createServerInvite(input: {
-      role: "admin" | "member";
-      email?: string;
-      permanent?: boolean;
-    }): Promise<InviteSummary> {
-      const server = serverSettingsTarget();
-      if (!server) throw new Error(currentText().t("server.settings.unavailable"));
-      const invite = await serverAdminPort(server).createInvite(input);
-      await refreshServerSettings(server.id);
-      return invite;
-    }
-
     async function updateServerMember(input: UpdateTeamMemberInput): Promise<void> {
       const server = serverSettingsTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
-      await serverAdminPort(server).updateMember(input);
+      await serverMemberPort(server).updateMember(input);
       await refreshServerSettings(server.id);
     }
 
     async function removeServerMember(memberId: string): Promise<void> {
       const server = serverSettingsTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
-      await serverAdminPort(server).removeMember(memberId);
-      await refreshServerSettings(server.id);
-    }
-
-    async function revokeServerInvite(inviteId: string): Promise<void> {
-      const server = serverSettingsTarget();
-      if (!server) throw new Error(currentText().t("server.settings.unavailable"));
-      await serverAdminPort(server).revokeInvite(inviteId);
+      await serverMemberPort(server).removeMember(memberId);
       await refreshServerSettings(server.id);
     }
 
@@ -311,20 +270,16 @@ const ServerSettings = createSimpleContext({
       serverSettingsOpenRequest,
       serverSettingsRestoreTarget: () => serverSettingsRestoreTarget,
       serverSettingsMembers,
-      serverSettingsInvites,
       serverSettingsLoading,
       serverSettingsError,
       openServerSettings,
       refreshServerSettings,
       saveServerIdentity,
       saveServerAppearance,
-      rotateHostKey,
       setServerPublished,
       publishLocalServer: () => setLocalServerPublished(true),
-      createServerInvite,
       updateServerMember,
       removeServerMember,
-      revokeServerInvite,
       leaveServer,
       leaveConfirmServer,
       leaveRestoreTarget: () => leaveRequest()?.trigger ?? null,

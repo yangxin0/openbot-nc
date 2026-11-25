@@ -3,7 +3,6 @@ import { EventEmitter } from "node:events";
 import { open } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import { isValidAvatarImage } from "@openbot/contracts/avatar-images";
-import { type InviteLinkOptions, type InviteLinkPayload, parseInviteUrl } from "@openbot/contracts/invite-links";
 import type {
   AgentEvent,
   AgentImportPreview,
@@ -30,9 +29,6 @@ import type {
   DuplicateAgentResult,
   ExportInstanceInput,
   InstanceTransferPreview,
-  InvitePreview,
-  InviteSummary,
-  JoinServerInput,
   LoginServerInput,
   MarkConversationReadInput,
   MarkDirectReadInput,
@@ -43,7 +39,6 @@ import type {
   SetAgentColorInput,
   SetAgentNotificationLevelInput,
   SetTeamTypingInput,
-  TeamInviteSummary,
   TeamMemberSummary,
   TeamPresenceSnapshot,
   TeamRealtimeEvent,
@@ -112,10 +107,8 @@ import {
 import { decodeTeamProtocolV1CurrentHttpResponse } from "@openbot/contracts/team-protocol/v1-adapter";
 import { sourceText } from "@openbot/i18n/source";
 import { createFocusUsePing } from "@openbot/team-client/focus-use";
-import { followHostKeyHandovers } from "@openbot/team-client/host-key-handover";
 import { retryOperationIds } from "@openbot/team-client/retry-operation-id";
 import { Deferred, Effect, Exit, Layer, Result, Scope, Semaphore } from "effect";
-import type { CentralAuthOperationError } from "./central-auth-effects";
 import { ComputerActivityReport } from "./computer-activity-report";
 import { contentDispositionFileName } from "./content-disposition";
 import type { PreferenceFileFailure } from "./preference-file";
@@ -161,30 +154,22 @@ import {
 } from "./remote-server-errors";
 import { RemoteEventRefresh } from "./remote-server-event-refresh";
 import { openDirectEventSocket, type RemoteEventSocket, RemoteEventStream } from "./remote-server-event-stream";
-import {
-  followedHostKeyHandovers,
-  hostKeyChangeTimes,
-  reconcileWebRtcHosts,
-  verifyHostKeySignature,
-} from "./remote-server-host-directory";
 import { type RemoteFetch, requestJson, throwRemoteResponseError } from "./remote-server-http";
 import { RemotePresenceCache } from "./remote-server-presence";
 import { RemoteServerStore, type StoredRemoteServerView, type TokenCipher } from "./remote-server-store";
 import type { StoredRemoteServer } from "./remote-server-stored-shape";
 import { remoteServerSummaries } from "./remote-server-summaries";
-import { addRemotePreviewUrls, isLocalDevelopmentApi, pageQuery } from "./remote-server-urls";
+import { addRemotePreviewUrls, pageQuery } from "./remote-server-urls";
 import {
   type RemoteFileProgress,
   RemoteRequest,
   RemoteWorkflowError,
   remoteCall,
   remoteDecode,
-  toRemoteWorkflowError,
 } from "./remote-service-effects";
-import { decodeInvitePreview, decodeJoinResult, decodeTeamPresenceSnapshot } from "./remote-team-decoding";
+import { decodeJoinResult, decodeTeamPresenceSnapshot } from "./remote-team-decoding";
 import { RemoteTeamDirectory } from "./remote-team-directory";
 import { RemoteViewerProxy } from "./remote-viewer-proxy";
-import { fingerprint } from "./team-store";
 import {
   TEAM_WEBRTC_REMOTE_REQUEST_TIMEOUT_MILLISECONDS,
   type TeamWebRtcClientTransport,
@@ -202,7 +187,6 @@ export interface LocalServerAttachInput {
 }
 
 interface RemoteServerEvents {
-  directoryInvalidated: [];
   changed: [servers: ServerSummary[]];
   agent: [serverId: string, event: AgentEvent, bufferedLive?: boolean];
   receivedRuntimeSnapshot: [serverId: string, snapshot: AgentRuntimeSnapshot];
@@ -216,31 +200,17 @@ interface RemoteServerEvents {
 
 const ATTACHMENT_PROGRESS_INTERVAL_MS = 100;
 
-interface CentralAccountSession {
-  createTeamAuthTicket: (serverId: string) => Effect.Effect<string, CentralAuthOperationError>;
-  getEmail: () => string;
-  sendTeamInviteEmail?: (input: {
-    email: string;
-    serverName: string;
-    inviteUrl: string;
-    role: "admin" | "member";
-  }) => Effect.Effect<void, CentralAuthOperationError>;
-}
-
 export interface RemoteRelayTransport {
   fetchFor(url: URL): RemoteFetch | null;
   openEventSocket(url: URL, protocols: string[]): RemoteEventSocket | null;
 }
 
 interface RemoteServerManagerOptions {
-  allowLocalDevelopmentInvites?: boolean;
-  selfHostedApiOrigin?: string | undefined;
   appVersion?: string;
   webrtcTransport?: TeamWebRtcClientTransport;
   relayTransport?: RemoteRelayTransport;
   getLocalHostId?: () => string | null;
   connectTrace?: RemoteConnectTrace;
-  accountReady?: Effect.Effect<unknown, RemoteWorkflowError>;
   localNotificationLevels?: LocalNotificationLevels;
   computerActivity?: ComputerActivityOptions;
   headlessHost?: boolean;
@@ -298,9 +268,6 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
   readonly #localLevels: LocalNotificationLevels | null;
   readonly #syncedLevels = new Map<string, AgentNotificationLevelsSnapshot>();
   readonly #team: RemoteTeamDirectory;
-  readonly #centralAccount: CentralAccountSession;
-  readonly #allowLocalDevelopmentInvites: boolean;
-  readonly #inviteLinks: InviteLinkOptions;
   readonly #appVersion: string | null;
   #duplicateIds = retryOperationIds(randomUUID);
   readonly #hostRestartAway = new Map<string, number>();
@@ -314,8 +281,6 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
   #keyChangedAt = new Map<string, number>();
   #accountHidden: ReadonlyMap<string, boolean> = new Map();
   #thisComputerServers: ReadonlySet<string> = new Set();
-  #registeredThisComputerServers: ReadonlySet<string> = new Set();
-  #thisComputerMembersChanged: (serverId: string) => void = () => undefined;
   #appFocused = true;
   readonly #focusUse = createFocusUsePing((serverId) =>
     this.#background(this.request(serverId, FOCUS_USE_ROUTES.ping, acceptEmpty, { method: "POST", body: {} })),
@@ -324,18 +289,11 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
   readonly #headlessHost: boolean;
   readonly #remoteViewerProxy: RemoteViewerProxy | null;
   #selections = Semaphore.makeUnsafe(1);
-  readonly #directorySync = Semaphore.makeUnsafe(1);
   readonly #initialDirectory = Deferred.makeUnsafe<void>();
   readonly #connectTrace: RemoteConnectTrace | null;
-  readonly #accountReady: Effect.Effect<unknown, RemoteWorkflowError>;
   #muteExpiryTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(
-    path: string,
-    cipher: TokenCipher,
-    centralAccount: CentralAccountSession,
-    options: RemoteServerManagerOptions = {},
-  ) {
+  constructor(path: string, cipher: TokenCipher, options: RemoteServerManagerOptions = {}) {
     super();
     this.#store = new RemoteServerStore({ path, cipher });
     this.#pictures = new RemotePictureCache(join(dirname(path), REMOTE_PICTURES_DIRECTORY));
@@ -345,17 +303,10 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
       onChanged: () => this.#emitChanged(),
       onReconnectSuspended: (serverId) => this.#suspendServer(serverId),
     });
-    this.#centralAccount = centralAccount;
-    this.#allowLocalDevelopmentInvites = options.allowLocalDevelopmentInvites ?? false;
-    this.#inviteLinks = {
-      allowLocalDevelopmentApiUrl: this.#allowLocalDevelopmentInvites,
-      selfHostedApiOrigin: options.selfHostedApiOrigin,
-    };
     this.#webrtcTransport = options.webrtcTransport ?? null;
     this.#relayTransport = options.relayTransport ?? null;
     this.#getLocalHostId = options.getLocalHostId ?? (() => null);
     this.#connectTrace = options.connectTrace ?? null;
-    this.#accountReady = options.accountReady ?? Effect.void;
     this.#localLevels = options.localNotificationLevels ?? null;
     this.#headlessHost = options.headlessHost ?? false;
     const activity = options.computerActivity;
@@ -448,16 +399,7 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
         this.emit("presence", serverId, this.#withMemberChatColors(serverId, snapshot)),
     });
     this.#team = new RemoteTeamDirectory({
-      servers: this.#store,
       request: (serverId, path, decoder, init) => this.#client.request(serverId, path, decoder, init),
-      transport: this.#webrtcTransport,
-      isRegisteredThisComputer: (serverId) => this.#registeredThisComputerServers.has(serverId),
-      allowLocalDevelopmentApiUrl: this.#allowLocalDevelopmentInvites,
-      sendInviteEmail: (input) => {
-        if (!this.#centralAccount.sendTeamInviteEmail)
-          throw new Error(sourceText("error.remote.emailDeliveryUnavailable"));
-        return this.#centralAccount.sendTeamInviteEmail(input);
-      },
     });
     this.#events = new RemoteEventStream({
       appVersion: this.#appVersion,
@@ -517,9 +459,8 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
       if (!this.#events.isReconnectSuspended(serverId)) this.#connections.setState(serverId, "offline");
       this.#presence.markOffline(serverId);
       this.#emitChanged();
-      const firstDrop = this.#events.transportDisconnected(serverId);
+      this.#events.transportDisconnected(serverId);
       this.#events.scheduleReconnect(serverId);
-      if (wasOnline && firstDrop) this.emit("directoryInvalidated");
     });
     this.#webrtcTransport?.on("connectFailed", (serverId, failure) => {
       if (!this.#store.has(serverId) || this.#connections.hasIssue(serverId)) return;
@@ -533,17 +474,7 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
         this.#awaitsHostRestart(serverId);
       if (code === "host_unavailable" && !hostRestarting) this.#events.markHostOffline(serverId);
       if (!this.#connections.reportTransportError(serverId, code, message)) this.#events.scheduleReconnect(serverId);
-      if (code === "session_revoked") this.emit("directoryInvalidated");
     });
-  }
-
-  #parseInvite(inviteUrl: string): InviteLinkPayload {
-    const invite = parseInviteUrl(inviteUrl, this.#inviteLinks);
-    const service = this.#inviteLinks.selfHostedApiOrigin;
-    if (service && new URL(invite.apiUrl).origin !== service) {
-      throw new Error(sourceText("error.remote.inviteOtherService"));
-    }
-    return invite;
   }
 
   #suspendServer(serverId: string): void {
@@ -607,9 +538,7 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
       const startedAt = performance.now();
       this.#background(
         this.#owned(
-          this.#accountReady.pipe(
-            Effect.andThen(this.#syncWebRtcHosts()),
-            Effect.tap(() => Effect.sync(() => this.#initializeConnectionStates())),
+          Effect.sync(() => this.#initializeConnectionStates()).pipe(
             Effect.tap(() => (this.#events.enabled ? this.startEventConnections() : Effect.void)),
             Effect.tap(() => Effect.sync(() => this.#emitChanged())),
             Effect.onExit((exit) =>
@@ -781,15 +710,6 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
     if (before !== snapshot.server) this.#emitChanged();
   }
 
-  readonly invalidateDirectory = Effect.fn("RemoteManager.invalidateDirectory")(function* (this: RemoteServerManager) {
-    yield* this.#events.retryOfflineHosts();
-    this.emit("directoryInvalidated");
-  }).bind(this);
-
-  requestDirectoryRefresh(): void {
-    this.emit("directoryInvalidated");
-  }
-
   readonly setAppFocused = Effect.fn("RemoteManager.setAppFocused")(function* (
     this: RemoteServerManager,
     focused: boolean,
@@ -807,16 +727,6 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
     this.#attachments.forget(serverId);
     this.#attachmentPreviews.forget(serverId);
   }
-
-  readonly syncRemoteHosts = Effect.fn("RemoteManager.syncRemoteHosts")(
-    function* (this: RemoteServerManager): Effect.fn.Return<ServerSummary[], RemoteWorkflowError, RemoteRequest> {
-      yield* this.#syncWebRtcHosts();
-      if (this.#events.enabled) yield* this.startEventConnections();
-      this.#emitChanged();
-      return this.list();
-    },
-    (operation) => this.#owned(operation),
-  ).bind(this);
 
   get activeServerId(): string {
     return this.#store.activeServerId;
@@ -934,7 +844,6 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
       yield* transport.setHostHidden(hostId, hidden);
       this.#accountHidden = new Map(this.#accountHidden).set(serverId, hidden);
       this.#emitChanged();
-      this.requestDirectoryRefresh();
       return this.list();
     },
     (operation) => this.#owned(operation),
@@ -991,115 +900,6 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
     (operation) => this.#owned(operation),
   ).bind(this);
 
-  readonly join = Effect.fn("RemoteManager.join")(
-    function* (
-      this: RemoteServerManager,
-      input: JoinServerInput,
-    ): Effect.fn.Return<ServerSummary, RemoteWorkflowError, RemoteRequest> {
-      const transport = this.#webrtcTransport;
-
-      const invite = yield* remoteDecode(() => this.#parseInvite(input.inviteUrl));
-      if (transport && !isLocalDevelopmentApi(invite.apiUrl)) {
-        const preview = yield* transport.previewInvite(invite.token);
-        if (preview.hostId !== invite.serverId)
-          return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.inviteHostMismatch")) });
-        const publicKey = preview.devicePublicKey;
-        const hostFingerprint = publicKey ? yield* remoteDecode(() => fingerprint(publicKey)) : "";
-        if (
-          !publicKey ||
-          (hostFingerprint !== invite.fingerprint &&
-            !(yield* followHostKeyHandovers({
-              hostId: invite.serverId,
-              trustedFingerprint: invite.fingerprint,
-              advertisedPublicKey: publicKey,
-              handovers: preview.keyHandovers,
-              verify: verifyHostKeySignature,
-            })))
-        ) {
-          return yield* new RemoteWorkflowError({
-            cause: new Error(sourceText("error.remote.inviteIdentityMismatch")),
-          });
-        }
-        const accepted = yield* transport
-          .acceptInvite(invite.token)
-          .pipe(Effect.catchIf(isOwnServerInvitation, () => Effect.succeed({ hostId: invite.serverId })));
-        const serverOnThisComputer =
-          accepted.hostId === this.#getLocalHostId()
-            ? LOCAL_SERVER_ID
-            : this.#thisComputerServers.has(accepted.hostId)
-              ? accepted.hostId
-              : null;
-        if (serverOnThisComputer) {
-          this.#store.setActiveServerId(serverOnThisComputer);
-          yield* this.#store.persist();
-          this.#emitChanged();
-          return yield* remoteDecode(() => requiredServerSummary(this.list(), serverOnThisComputer));
-        }
-        if (accepted.hostId !== invite.serverId)
-          return yield* new RemoteWorkflowError({
-            cause: new Error(sourceText("error.remote.inviteAcceptedOtherHost")),
-          });
-        yield* this.#store.unhideHost(accepted.hostId);
-        yield* this.#syncWebRtcHosts();
-        const synchronized = this.#store.find(accepted.hostId);
-        if (!synchronized || synchronized.fingerprint !== hostFingerprint) {
-          return yield* new RemoteWorkflowError({
-            cause: new Error(sourceText("error.remote.inviteIdentityChanged")),
-          });
-        }
-        yield* this.#store.retireUnreadable(accepted.hostId);
-        this.#store.setActiveServerId(accepted.hostId);
-        this.#connections.setState(accepted.hostId, "connecting");
-        yield* this.#store.persist();
-        yield* transport.connect(accepted.hostId);
-        this.#emitChanged();
-        return yield* remoteDecode(() => requiredServerSummary(this.list(), accepted.hostId));
-      }
-      const verifiedIdentity = yield* this.#client.verifyIdentity(invite.apiUrl, invite.serverId, invite.fingerprint);
-      const accountTicket = yield* this.#centralAccount
-        .createTeamAuthTicket(invite.serverId)
-        .pipe(toRemoteWorkflowError);
-      const result = yield* requestJson(invite.apiUrl, TEAM_API_ROUTES.join.account, decodeJoinResult, {
-        method: "POST",
-        body: {
-          inviteToken: invite.token,
-          accountTicket,
-        },
-        ...this.#client.requestProtocol(verifiedIdentity.compatibility),
-      }).pipe(
-        Effect.mapError(
-          (failure) =>
-            new RemoteWorkflowError({
-              cause:
-                failure instanceof RemoteRequestError || failure instanceof RemoteProtocolError
-                  ? failure
-                  : failure.cause,
-            }),
-        ),
-      );
-      const stored: StoredRemoteServer = {
-        id: invite.serverId,
-        name: verifiedIdentity.serverName,
-        apiUrl: invite.apiUrl,
-        fingerprint: invite.fingerprint,
-        publicKey: verifiedIdentity.publicKey,
-        username: this.#centralAccount.getEmail().trim().toLowerCase(),
-        encryptedToken: yield* remoteDecode(() => this.#store.sealToken(result.sessionToken)),
-        logoVersion: verifiedIdentity.logoVersion,
-        role: result.member.role,
-      };
-      this.#connections.setCompatibility(stored.id, verifiedIdentity.compatibility);
-      this.#connections.clearIssue(stored.id);
-      this.#connections.setState(stored.id, "online");
-      yield* this.#store.adopt(stored);
-      this.#events.syncScopes();
-      this.#emitChanged();
-      yield* this.#events.restart(stored.id, true);
-      return yield* remoteDecode(() => requiredServerSummary(this.list(), stored.id));
-    },
-    (operation) => this.#owned(operation),
-  ).bind(this);
-
   readonly connectDevelopmentServer = Effect.fn("RemoteManager.connectDevelopmentServer")(
     function* (
       this: RemoteServerManager,
@@ -1138,20 +938,6 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
   setThisComputerServers(serverIds: Iterable<string>): void {
     this.#thisComputerServers = new Set(serverIds);
     this.#emitChanged();
-  }
-
-  setRegisteredThisComputerServers(serverIds: Iterable<string>): void {
-    this.#registeredThisComputerServers = new Set(serverIds);
-  }
-
-  setThisComputerMembersListener(listener: (serverId: string) => void): void {
-    this.#thisComputerMembersChanged = listener;
-  }
-
-  #membersChanged(serverId: string): Effect.Effect<void> {
-    return Effect.sync(() => {
-      if (this.#thisComputerServers.has(serverId)) this.#thisComputerMembersChanged(serverId);
-    });
   }
 
   readonly attachLocalServer = Effect.fn("RemoteManager.attachLocalServer")(
@@ -1223,110 +1009,19 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
     (operation) => this.#owned(operation),
   ).bind(this);
 
-  readonly previewInvite = Effect.fn("RemoteManager.previewInvite")(
-    function* (
-      this: RemoteServerManager,
-      input: JoinServerInput,
-    ): Effect.fn.Return<InvitePreview, RemoteWorkflowError, RemoteRequest> {
-      const transport = this.#webrtcTransport;
-
-      const invite = yield* remoteDecode(() => this.#parseInvite(input.inviteUrl));
-      if (transport && !isLocalDevelopmentApi(invite.apiUrl)) {
-        const preview = yield* transport.previewInvite(invite.token);
-        if (preview.hostId !== invite.serverId)
-          return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.inviteHostMismatch")) });
-        const publicKey = preview.devicePublicKey;
-        if (!publicKey || (yield* remoteDecode(() => fingerprint(publicKey))) !== invite.fingerprint) {
-          return yield* new RemoteWorkflowError({
-            cause: new Error(sourceText("error.remote.inviteIdentityMismatch")),
-          });
-        }
-        return {
-          serverId: preview.hostId,
-          serverName: preview.hostName,
-          apiHostname: new URL(invite.apiUrl).hostname,
-          role: preview.role,
-          expiresAt: new Date(preview.expiresAt).toISOString(),
-          emailBound: preview.emailBound,
-          permanent: preview.permanent,
-        };
-      }
-      const identity = yield* this.#client.verifyIdentity(invite.apiUrl, invite.serverId, invite.fingerprint);
-      const preview = yield* requestJson(invite.apiUrl, TEAM_API_ROUTES.join.invitationPreview, decodeInvitePreview, {
-        method: "POST",
-        body: { inviteToken: invite.token },
-        ...this.#client.requestProtocol(identity.compatibility),
-      }).pipe(
-        Effect.mapError(
-          (failure) =>
-            new RemoteWorkflowError({
-              cause:
-                failure instanceof RemoteRequestError || failure instanceof RemoteProtocolError
-                  ? failure
-                  : failure.cause,
-            }),
-        ),
-      );
-      return {
-        serverId: invite.serverId,
-        serverName: identity.serverName,
-        apiHostname: new URL(invite.apiUrl).hostname,
-        ...preview,
-      };
-    },
-    (operation) => this.#owned(operation),
-  ).bind(this);
-
   readonly login = Effect.fn("RemoteManager.login")(
     function* (
       this: RemoteServerManager,
       input: LoginServerInput,
     ): Effect.fn.Return<ServerSummary, RemoteWorkflowError, RemoteRequest> {
       const server = yield* remoteDecode(() => this.#store.require(input.serverId));
+      if (server.transport !== "relay")
+        return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.serverNotFound")) });
       this.#connections.setState(server.id, "connecting");
       this.#emitChanged();
-      if (server.transport === "relay") {
-        this.#relayRefused.delete(server.id);
-        this.#relayAutoSignInAt.delete(server.id);
-        yield* this.#relaySignIn(server.id);
-        return yield* remoteDecode(() => requiredServerSummary(this.list(), server.id));
-      }
-      const attempt0 = yield* Effect.gen({ self: this }, function* () {
-        const identity = yield* this.#client.verifyIdentity(server.apiUrl, server.id, server.fingerprint);
-        const accountTicket = yield* this.#centralAccount.createTeamAuthTicket(server.id).pipe(toRemoteWorkflowError);
-        const result = yield* requestJson(server.apiUrl, TEAM_API_ROUTES.auth.account, decodeJoinResult, {
-          method: "POST",
-          body: { accountTicket },
-          ...this.#client.requestProtocol(identity.compatibility),
-        }).pipe(
-          Effect.mapError(
-            (failure) =>
-              new RemoteWorkflowError({
-                cause:
-                  failure instanceof RemoteRequestError || failure instanceof RemoteProtocolError
-                    ? failure
-                    : failure.cause,
-              }),
-          ),
-        );
-        this.#connections.setCompatibility(server.id, identity.compatibility);
-        this.#connections.clearIssue(server.id);
-        yield* this.#store.update(server.id, {
-          username: this.#centralAccount.getEmail().trim().toLowerCase(),
-          role: result.member.role,
-          encryptedToken: yield* remoteDecode(() => this.#store.sealToken(result.sessionToken)),
-          name: identity.serverName,
-          logoVersion: identity.logoVersion,
-        });
-        this.#connections.setState(server.id, "online");
-        yield* this.#events.restart(server.id, true);
-      }).pipe(Effect.result);
-      if (Result.isFailure(attempt0)) {
-        const error = attempt0.failure.cause;
-        this.#connections.reportError(server.id, error, "error");
-        return yield* new RemoteWorkflowError({ cause: error });
-      }
-      this.#emitChanged();
+      this.#relayRefused.delete(server.id);
+      this.#relayAutoSignInAt.delete(server.id);
+      yield* this.#relaySignIn(server.id);
       return yield* remoteDecode(() => requiredServerSummary(this.list(), server.id));
     },
     (operation) => this.#owned(operation),
@@ -1568,7 +1263,6 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
 
       const server = yield* remoteDecode(() => this.#store.require(serverId));
       if (server.transport === "webrtc-v2" && transport) {
-        yield* this.#syncWebRtcHosts();
         yield* this.#client.ensureCompatibility(server, true);
         this.#connections.clearIssue(serverId);
         this.#emitChanged();
@@ -1604,30 +1298,13 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
   }
 
   updateMember(serverId: string, input: UpdateTeamMemberInput): Effect.Effect<TeamMemberSummary, RemoteWorkflowError> {
-    return this.#owned(
-      this.#team.updateMember(serverId, input).pipe(Effect.ensuring(this.#membersChanged(serverId))),
-    ).pipe(Effect.map((member) => this.#refresh.withMemberChatColors(serverId, [member])[0] ?? member));
-  }
-
-  removeMember(serverId: string, memberId: string): Effect.Effect<void, RemoteWorkflowError> {
-    return this.#owned(
-      this.#team.removeMember(serverId, memberId).pipe(Effect.ensuring(this.#membersChanged(serverId))),
+    return this.#owned(this.#team.updateMember(serverId, input)).pipe(
+      Effect.map((member) => this.#refresh.withMemberChatColors(serverId, [member])[0] ?? member),
     );
   }
 
-  listInvites(serverId: string): Effect.Effect<TeamInviteSummary[], RemoteWorkflowError> {
-    return this.#owned(this.#team.listInvites(serverId));
-  }
-
-  revokeInvite(serverId: string, inviteId: string): Effect.Effect<void, RemoteWorkflowError> {
-    return this.#owned(this.#team.revokeInvite(serverId, inviteId));
-  }
-
-  createInvite(
-    serverId: string,
-    input: { role: "admin" | "member"; email?: string; permanent?: boolean },
-  ): Effect.Effect<InviteSummary, RemoteWorkflowError> {
-    return this.#owned(this.#team.createInvite(serverId, input));
+  removeMember(serverId: string, memberId: string): Effect.Effect<void, RemoteWorkflowError> {
+    return this.#owned(this.#team.removeMember(serverId, memberId));
   }
 
   readonly setTyping = Effect.fn("RemoteManager.setTyping")(function* (
@@ -2039,9 +1716,7 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
     version: string,
     download: Effect.Effect<RemotePicture, RemoteWorkflowError, RemoteRequest>,
   ): Effect.fn.Return<RemotePicture, RemoteWorkflowError, RemoteRequest> {
-    const account = yield* remoteDecode(() => this.#centralAccount.getEmail().trim().toLowerCase()).pipe(
-      Effect.catch(() => Effect.succeed("")),
-    );
+    const account = this.#store.find(serverId)?.username.trim().toLowerCase() ?? "";
     if (!account) return yield* download;
     const key = { account, serverId, kind, id, version };
     const saved = yield* this.#pictures.read(key);
@@ -2500,58 +2175,6 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
     this.#emitChanged();
   }
 
-  readonly #syncWebRtcHosts = Effect.fn("RemoteManager.syncWebRtcHosts")(function* (
-    this: RemoteServerManager,
-  ): Effect.fn.Return<void, RemoteWorkflowError, RemoteRequest> {
-    const transport = this.#webrtcTransport;
-    if (!transport) return;
-    yield* this.#directorySync.withPermit(this.#syncWebRtcHostsOnce(transport));
-  });
-
-  readonly #syncWebRtcHostsOnce = Effect.fn("RemoteManager.syncWebRtcHostsOnce")(function* (
-    this: RemoteServerManager,
-    transport: TeamWebRtcClientTransport,
-  ): Effect.fn.Return<void, RemoteWorkflowError, RemoteRequest> {
-    const hosts = yield* transport.listHosts();
-    const email = yield* remoteDecode(() => this.#centralAccount.getEmail());
-    const localHostId = this.#getLocalHostId();
-    const followedHandovers = yield* followedHostKeyHandovers({
-      hosts,
-      servers: this.#store.servers,
-      preservedIdentities: this.#store.preservedIdentities,
-    });
-    const { servers, removedHostIds, staleTransportHostIds, pinnedKeys } = reconcileWebRtcHosts({
-      hosts,
-      followedHandovers,
-      isConnected: (hostId) => transport.isConnected(hostId),
-      servers: this.#store.servers,
-      preservedIdentities: this.#store.preservedIdentities,
-      localHostId,
-      isHiddenHost: (hostId) => this.#store.isHiddenHost(hostId),
-      username: email.trim().toLowerCase(),
-      keepOtherTransports: this.#allowLocalDevelopmentInvites,
-      isThisComputer: (serverId) => this.#thisComputerServers.has(serverId),
-    });
-    for (const { hostId, publicKey } of pinnedKeys) transport.pinHostKey(hostId, publicKey);
-    const keys = new Map(servers.map((server) => [server.id, server.publicKey]));
-    const changeTimes = yield* hostKeyChangeTimes(hosts, (host) =>
-      host.hostId === localHostId ? host.devicePublicKey : keys.get(host.hostId),
-    );
-    this.#keyChangedAt = new Map(
-      [...changeTimes].map(([hostId, changedAt]) => [hostId === localHostId ? LOCAL_SERVER_ID : hostId, changedAt]),
-    );
-    this.#accountHidden = new Map(
-      hosts.map((host) => [host.hostId === localHostId ? LOCAL_SERVER_ID : host.hostId, host.hidden === true]),
-    );
-    for (const serverId of removedHostIds) {
-      yield* transport.disconnect(serverId).pipe(Effect.catch(() => Effect.void));
-      this.#clearServerConnectionState(serverId);
-      this.#forgetPictures(serverId);
-    }
-    for (const serverId of staleTransportHostIds) this.#clearServerConnectionState(serverId);
-    yield* this.#store.replaceServers(servers);
-  });
-
   #handleWebRtcEvent(serverId: string, event: AgentEvent | TeamRealtimeEvent): void {
     if (event.type === "team-identity") {
       this.#applyServerIdentity(serverId, event);
@@ -2658,11 +2281,6 @@ function isMemberDisabled(error: unknown): boolean {
     error.status === 400 &&
     error.message === sourceText("error.team.memberDisabled")
   );
-}
-
-function isOwnServerInvitation(error: RemoteWorkflowError): boolean {
-  const { cause } = error;
-  return typeof cause === "object" && cause !== null && "code" in cause && cause.code === "owner_membership_protected";
 }
 
 function requiredServerSummary(servers: ServerSummary[], serverId: string): ServerSummary {

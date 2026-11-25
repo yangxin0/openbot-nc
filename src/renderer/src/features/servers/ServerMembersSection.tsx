@@ -119,8 +119,10 @@ export function createServerMembersSection(
 
   const permanentSupported = () => local() || props.server.apiUrl === null || props.server.thisComputer === true;
   const canManage = () => configured() && serverRoleCanAdminister(props.server);
+  const invites = () => props.invites ?? [];
+  const invitesAvailable = () => props.onCreateInvite !== undefined;
   const activeInvites = createMemo(() =>
-    props.invites.filter(
+    invites().filter(
       (item) => (item.permanent || item.usedAt === null) && (item.permanent || Date.parse(item.expiresAt) > now()),
     ),
   );
@@ -140,7 +142,7 @@ export function createServerMembersSection(
     Boolean(
       panels.invite.result &&
         !panels.invite.result.permanent &&
-        props.invites.some((invite) => invite.id === panels.invite.result?.id && invite.usedAt),
+        invites().some((invite) => invite.id === panels.invite.result?.id && invite.usedAt),
     );
   const inviteExpired = () =>
     Boolean(
@@ -178,7 +180,7 @@ export function createServerMembersSection(
   );
 
   createEffect(
-    () => ({ invites: props.invites, currentTime: now() }),
+    () => ({ invites: invites(), currentTime: now() }),
     ({ invites, currentTime }) => {
       const nextExpiry = untrack(
         () =>
@@ -244,8 +246,10 @@ export function createServerMembersSection(
     let result: InviteSummary | undefined;
     const role = panels.invite.role;
     const permanent = panels.invite.mode === "perma";
+    const create = props.onCreateInvite;
+    if (!create) return;
     const saved = await run("invite", async () => {
-      result = await props.onCreateInvite({ role, ...(email ? { email } : {}), ...(permanent ? { permanent } : {}) });
+      result = await create({ role, ...(email ? { email } : {}), ...(permanent ? { permanent } : {}) });
     });
     if (!saved || !result) return;
     const created = result;
@@ -310,7 +314,7 @@ export function createServerMembersSection(
     return (
       <>
         {accessSection()}
-        <Show when={canManage()}>{inviteComposer()}</Show>
+        <Show when={canManage() && invitesAvailable()}>{inviteComposer()}</Show>
         <Show when={configured()}>
           <SettingsSection
             class="server-settings-members-section"
@@ -364,7 +368,7 @@ export function createServerMembersSection(
             </ItemGroup>
           </SettingsSection>
         </Show>
-        <Show when={canManage()}>{pendingInvites()}</Show>
+        <Show when={canManage() && invitesAvailable()}>{pendingInvites()}</Show>
       </>
     );
   }
@@ -799,7 +803,7 @@ export function createServerMembersSection(
             onConfirm={async () => {
               const id = invite().id;
               await run(`invite:${id}`, async () => {
-                await props.onRevokeInvite(id);
+                await props.onRevokeInvite?.(id);
                 setPanels((state) => {
                   state.members.revokeInviteId = null;
                 });

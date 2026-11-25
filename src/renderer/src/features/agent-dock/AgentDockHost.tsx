@@ -293,10 +293,9 @@ function createServerDock(serverId: string, options: { readWhenHidden: boolean }
   );
 
   const isOwnSender = (senderId: string) => {
-    const state = auth.centralAuth();
     return isReaderAuthor(senderId, {
       memberId: readerMemberId(),
-      accountUserId: state.status === "signed_in" ? state.user.id : null,
+      accountUserId: auth.profile()?.id ?? null,
       onOwnComputer: activeServer()?.kind === "local",
     });
   };

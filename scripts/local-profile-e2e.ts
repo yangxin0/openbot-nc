@@ -5,9 +5,12 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { z } from "zod";
 import { runCauseEffect } from "../src/backend/effect-boundary";
-import { AccountServiceRemoved } from "../src/main/central-auth-effects";
-import { CentralAuthManager } from "../src/main/central-auth-manager";
-import { LOCAL_PROFILE_FILE, type LocalProfileStore, openLocalProfileStore } from "../src/main/local-profile-store";
+import {
+  LOCAL_PROFILE_FILE,
+  type LocalProfile,
+  type LocalProfileStore,
+  openLocalProfileStore,
+} from "../src/main/local-profile-store";
 import { TEAM_STORE_FILE, TeamStore } from "../src/main/team-store";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -81,29 +84,6 @@ async function open(path: string): Promise<{ team: TeamStore; profile: LocalProf
   return { team, profile };
 }
 
-function account(path: string, profile: LocalProfileStore, requests: string[]): CentralAuthManager {
-  return new CentralAuthManager({
-    apiUrl: "https://account.invalid",
-    storagePath: join(path, SESSION_FILE),
-    encrypt: (value) => Buffer.from(value),
-    decrypt: (value) => value.toString(),
-    fetch: (input) => {
-      requests.push(String(input));
-      return Promise.reject(new Error("The test account service must not get a request."));
-    },
-    localProfile: profile,
-  });
-}
-
-async function refused(operation: Promise<unknown>): Promise<boolean> {
-  try {
-    await operation;
-    return false;
-  } catch (error) {
-    return error instanceof AccountServiceRemoved;
-  }
-}
-
 const storedTeamFile = z.object({ hosts: z.array(z.object({ serverId: z.string() }).loose()) });
 
 async function storedHosts(path: string): Promise<string> {
@@ -155,22 +135,12 @@ try {
   const activeHostOwner = check("activeHostOwner", activeOpened.profile.get());
   assert.deepEqual(activeHostOwner, { id: "account-b", name: "Ben", chatColor: "#3366ff" });
 
-  const requests: string[] = [];
-  const manager = account(active, activeOpened.profile, requests);
-  const atOnce = manager.getState();
-  const initialized = await runCauseEffect(manager.initialize());
-  assert.equal(atOnce.status, "signed_in");
-  assert.deepEqual(initialized, {
-    status: "signed_in",
-    user: { id: "account-b", email: "", name: "Ben", avatarUrl: null, chatColor: "#3366ff" },
-  });
-  assert.equal((await runCauseEffect(manager.retry())).status, "signed_in");
-  assert.equal((await runCauseEffect(manager.refreshProfile())).status, "signed_in");
-  assert.equal((await runCauseEffect(manager.logout())).status, "signed_in");
-  const user = manager.getSignedInUser();
-  await runCauseEffect(activeOpened.team.activateAccount(user));
-  activeOpened.team.assertOwnerAccount(user);
-  await runCauseEffect(activeOpened.team.syncAccount(user));
+  const changes: LocalProfile[] = [];
+  activeOpened.profile.on("changed", (profile) => changes.push(profile));
+  const user = activeOpened.profile.get();
+  await runCauseEffect(activeOpened.team.activateOwner(user));
+  activeOpened.team.assertOwner(user);
+  await runCauseEffect(activeOpened.team.syncOwnerProfile(user));
   const owner = activeOpened.team.listMembers().find((member) => member.role === "owner");
   const member = activeOpened.team.listMembers().find((candidate) => candidate.role === "member");
   const existingHost = check("existingHost", {
@@ -190,37 +160,24 @@ try {
     memberDisabled: false,
   });
 
-  const renamed = await runCauseEffect(manager.updateName("Benjamin"));
-  const colored = await runCauseEffect(manager.updateChatColor("#aa5500"));
-  assert.equal(renamed.status === "signed_in" && renamed.user.name, "Benjamin");
-  assert.equal(colored.status === "signed_in" && colored.user.chatColor, "#aa5500");
+  const renamed = await runCauseEffect(activeOpened.profile.update({ name: "Benjamin" }));
+  const colored = await runCauseEffect(activeOpened.profile.update({ chatColor: "#aa5500" }));
+  assert.equal(renamed.name, "Benjamin");
+  assert.equal(colored.chatColor, "#aa5500");
+  const profileChanges = check(
+    "profileChanges",
+    changes.map((change) => [change.name, change.chatColor]),
+  );
+  assert.deepEqual(profileChanges, [
+    ["Benjamin", "#3366ff"],
+    ["Benjamin", "#aa5500"],
+  ]);
   const profileAfterEdit = check("profileAfterEdit", (await open(active)).profile.get());
   assert.deepEqual(profileAfterEdit, { id: "account-b", name: "Benjamin", chatColor: "#aa5500" });
-
-  const refusals = check("refusals", {
-    updateAvatar: await refused(runCauseEffect(manager.updateAvatar(null))),
-    requestEmailCode: await refused(runCauseEffect(manager.requestEmailCode("b@example.com"))),
-    verifyEmailCode: await refused(runCauseEffect(manager.verifyEmailCode("challenge", "000000"))),
-    listRemoteHosts: await refused(runCauseEffect(manager.listRemoteHosts())),
-    listRemoteMembers: await refused(runCauseEffect(manager.listRemoteMembers("b"))),
-    registerRemoteHost: await refused(
-      runCauseEffect(manager.registerRemoteHost({ hostId: "b", name: "B", ownerMembershipId: "owner-of-b" })),
-    ),
-    issueRemoteHostTicket: await refused(runCauseEffect(manager.issueRemoteHostTicket("b"))),
-    verifyRemoteSessionTicket: await refused(runCauseEffect(manager.verifyRemoteSessionTicket("ticket"))),
-    requestAuthorized: await refused(runCauseEffect(manager.requestAuthorized("/v1/skills/", {}, (value) => value))),
-    downloadAuthorized: await refused(runCauseEffect(manager.downloadAuthorized("/v1/skills/a/content"))),
-    createMobileConnect: await refused(
-      runCauseEffect(manager.createMobileConnect({ hostId: "b", fingerprint: "fingerprint" })),
-    ),
-  });
-  assert.deepEqual(
-    Object.entries(refusals).filter(([, wasRefused]) => !wasRefused),
-    [],
-  );
-  assert.equal(manager.getState().status, "signed_in");
-  await runCauseEffect(manager.dispose());
-  assert.equal(check("accountRequests", requests.length), 0);
+  await runCauseEffect(activeOpened.team.syncOwnerProfile(activeOpened.profile.get()));
+  const editedOwner = activeOpened.team.listMembers().find((candidate) => candidate.role === "owner");
+  const ownerAfterEdit = check("ownerAfterEdit", { name: editedOwner?.name, chatColor: editedOwner?.chatColor });
+  assert.deepEqual(ownerAfterEdit, { name: "Benjamin", chatColor: "#aa5500" });
   const sessionFileKept = check(
     "sessionFileKept",
     (await readFile(join(active, SESSION_FILE), "utf8")) === SESSION_BYTES,
@@ -236,8 +193,7 @@ try {
   const singleOpened = await open(single);
   const signedOutWithOneOwner = check("signedOutWithOneOwner", singleOpened.profile.get());
   assert.deepEqual(signedOutWithOneOwner, { id: "account-c", name: "Cy", chatColor: null });
-  const singleUser = account(single, singleOpened.profile, requests).getSignedInUser();
-  await runCauseEffect(singleOpened.team.activateAccount(singleUser));
+  await runCauseEffect(singleOpened.team.activateOwner(singleOpened.profile.get()));
   const signedOutWithOneOwnerHost = check("signedOutWithOneOwnerHost", singleOpened.team.getIdentity()?.serverId);
   assert.equal(signedOutWithOneOwnerHost, "c");
 
@@ -252,8 +208,7 @@ try {
   directories.push(several);
   const hostsBefore = await storedHosts(several);
   const severalOpened = await open(several);
-  const severalUser = account(several, severalOpened.profile, requests).getSignedInUser();
-  await runCauseEffect(severalOpened.team.activateAccount(severalUser));
+  await runCauseEffect(severalOpened.team.activateOwner(severalOpened.profile.get()));
   const signedOutWithSeveralOwners = check("signedOutWithSeveralOwners", {
     newId: !["account-d", "account-e"].includes(severalOpened.profile.get().id),
     activeHost: severalOpened.team.getIdentity()?.serverId ?? null,
@@ -264,13 +219,13 @@ try {
   const created = await directory("created");
   directories.push(created);
   const createdOpened = await open(created);
-  const createdUser = account(created, createdOpened.profile, requests).getSignedInUser();
-  await runCauseEffect(createdOpened.team.activateAccount(createdUser));
-  await runCauseEffect(createdOpened.team.configureWithAccount("My computer", createdUser));
-  createdOpened.team.assertOwnerAccount(createdUser);
+  const createdUser = createdOpened.profile.get();
+  await runCauseEffect(createdOpened.team.activateOwner(createdUser));
+  await runCauseEffect(createdOpened.team.configureForOwner("My computer", createdUser));
+  createdOpened.team.assertOwner(createdUser);
   const createdOwner = createdOpened.team.listMembers().find((candidate) => candidate.role === "owner");
   const reopened = await open(created);
-  await runCauseEffect(reopened.team.activateAccount(createdUser));
+  await runCauseEffect(reopened.team.activateOwner(createdUser));
   const hostOfProfileWithNoEmail = check("hostOfProfileWithNoEmail", {
     ownerEmail: createdOwner?.email,
     ownerUsername: createdOwner?.username,
@@ -283,7 +238,6 @@ try {
     ownerMemberFound: true,
     sameHostAfterRestart: true,
   });
-  assert.equal(requests.length, 0);
   passed = true;
 } catch (error) {
   failure = error instanceof Error ? (error.stack ?? error.message) : String(error);

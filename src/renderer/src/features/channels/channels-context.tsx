@@ -37,12 +37,9 @@ export function ChannelsProvider(props: ParentProps) {
   const { agentList, setAgentSetupOpen } = useAgents();
   const { clearDirectSelection, setDirectTyping } = useDirectMessages();
   const windowPage = useWindowPage();
-  const { centralAuth } = useAuth();
+  const { profile } = useAuth();
   const selectionServerId = untrack(activeServerId);
-  const accountKey = () => {
-    const auth = centralAuth();
-    return auth.status === "signed_in" ? auth.user.id : auth.status;
-  };
+  const accountKey = () => profile()?.id ?? "loading";
   const port = (): ChannelsPort => {
     const base = channelsPort();
     return {
@@ -68,10 +65,8 @@ export function ChannelsProvider(props: ParentProps) {
         ? null
         : (readChannelSelection()[account]?.[selectionServerId] ?? null),
     writeSelection: (channelId) => {
-      const status = centralAuth().status;
-      if (status === "signed_in" || status === "signed_out") {
-        writeChannelSelection(accountKey(), selectionServerId, channelId);
-      }
+      const id = profile()?.id;
+      if (id) writeChannelSelection(id, selectionServerId, channelId);
     },
     supported: () => activeServerSupportsCapability(CHANNEL_CHATS_CAPABILITY),
     deletionSupported: () => activeServer()?.kind !== "remote" || serverRoleCanAdminister(activeServer()),
@@ -102,9 +97,8 @@ export function ChannelsProvider(props: ParentProps) {
     canMarkRead: () => document.hasFocus() && !windowPage.conversationCovered(),
     onList: (channels) => {
       const server = activeServer();
-      const auth = centralAuth();
-      if (server?.kind === "remote" && auth.status === "signed_in")
-        saveRemoteFrameChannels(auth.user.id, server.id, channels);
+      const id = profile()?.id;
+      if (server?.kind === "remote" && id) saveRemoteFrameChannels(id, server.id, channels);
     },
   });
   return <ChannelsControllerProvider controller={controller}>{props.children}</ChannelsControllerProvider>;

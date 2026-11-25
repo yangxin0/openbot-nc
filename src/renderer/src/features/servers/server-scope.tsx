@@ -27,7 +27,6 @@ import { useBrowserTabs } from "../browser/browser-context";
 import { useChannels } from "../channels/channels-context";
 import { useConversation } from "../conversation/conversation-context";
 import { useDirectMessages } from "../conversation/direct-messages-context";
-import { clearStorageUsageCache } from "../files/storage-usage";
 import { useSetup } from "../onboarding/onboarding-context";
 import { useSidebar } from "../sidebar/sidebar-context";
 import { usePresence } from "../team/team-context";
@@ -46,7 +45,7 @@ import { serversPort } from "./servers-port";
 const ServerScope = createSimpleContext({
   name: "Server scope",
   init: () => {
-    const { centralAuth } = useAuth();
+    const { profile } = useAuth();
     const { setupState } = useSetup();
     const { servers, activeServerId, initialServersReady, serverLoadRequest, serversLoaded } = useServers();
     const {
@@ -124,7 +123,7 @@ const ServerScope = createSimpleContext({
     const transportReady = () => {
       const server = selectedServer();
       if (server?.kind !== "remote") return true;
-      return server.state === "online" && centralAuth().status !== "loading" && !server.capabilitiesPending;
+      return server.state === "online" && profile() !== null && !server.capabilitiesPending;
     };
     const loaded = () =>
       connection.hasContent &&
@@ -160,10 +159,7 @@ const ServerScope = createSimpleContext({
     const owner = getOwner();
     const scopeIsCurrent = (): boolean => !(owner && isDisposed(owner));
 
-    const signedInAccount = () => {
-      const auth = centralAuth();
-      return auth.status === "signed_in" ? auth.user.id : null;
-    };
+    const signedInAccount = () => profile()?.id ?? null;
     let loadedAccount: string | null | undefined;
 
     let loadGeneration = 0;
@@ -303,11 +299,7 @@ const ServerScope = createSimpleContext({
 
     onSettled(() => {
       const handleGlobalSearchShortcut = (event: KeyboardEvent) => {
-        if (
-          !matchesShortcut(event, "globalSearch") ||
-          centralAuth().status !== "signed_in" ||
-          setupState()?.completed !== true
-        ) {
+        if (!matchesShortcut(event, "globalSearch") || profile() === null || setupState()?.completed !== true) {
           return;
         }
         event.preventDefault();
@@ -386,15 +378,6 @@ const ServerScope = createSimpleContext({
       },
     );
 
-    createEffect(
-      () => centralAuth().status === "signed_out",
-      (signedOut) => {
-        if (!signedOut) return;
-        deleteRemoteWorkspaceFrames(null);
-        keepCachedWorkflows(null);
-        clearStorageUsageCache();
-      },
-    );
     createEffect(
       createMemo(() => {
         const account = signedInAccount();

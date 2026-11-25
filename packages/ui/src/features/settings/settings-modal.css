@@ -812,10 +812,6 @@
   width: 100%;
 }
 
-.settings-mobile-dialog-footer svg:is([class~="lucide-arrow-left"], [class~="lucide-arrow-right"]):dir(rtl) {
-  transform: scaleX(-1);
-}
-
 .settings-modal-page > .settings-modal-main > .settings-modal-scroll-frame > .settings-modal-content {
   gap: var(--openbot-space-6);
   padding-top: var(--openbot-space-6);

@@ -12,13 +12,12 @@ import { copyFile, mkdir, readFile, rm } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import { promisify } from "node:util";
 import { avatarFileExtension, isAvatarMimeType, isValidAvatarImage } from "@openbot/contracts/avatar-images";
-import { type HostKeyHandover, hostKeyHandoverStatement } from "@openbot/contracts/host-key-handover";
+import type { HostKeyHandover } from "@openbot/contracts/host-key-handover";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import { permanentInviteExpiresAt } from "@openbot/contracts/invite-links";
 import {
   type AvatarColor,
   type AvatarImageInput,
-  type CentralAuthUser,
   isAvatarColor,
   type TeamInviteSummary,
   type TeamMemberSummary,
@@ -178,17 +177,6 @@ export interface AuthenticatedMember {
   sessionExpiresAt: string;
 }
 
-export interface RemoteDirectoryMember {
-  membershipId: string;
-  email: string;
-  name: string | null;
-  avatarUrl: string | null;
-  chatColor?: AvatarColor | null;
-  role: TeamRole;
-  status: "active" | "revoked";
-  createdAt: number;
-}
-
 export class TeamStore {
   readonly #path: string;
   readonly #legacyPath: string | null;
@@ -300,36 +288,22 @@ export class TeamStore {
     Effect.uninterruptible,
   ).bind(this);
 
-  readonly activateAccount = Effect.fn("TeamStore.activateAccount")(
-    function* (this: TeamStore, user: CentralAuthUser): Effect.fn.Return<void, RemoteWorkflowError, TeamStoreFiles> {
-      const email = yield* remoteDecode(() => optionalEmail(user.email));
+  readonly activateOwner = Effect.fn("TeamStore.activateOwner")(
+    function* (this: TeamStore, user: LocalProfile): Effect.fn.Return<void, RemoteWorkflowError, TeamStoreFiles> {
       const hosts = this.#file.hosts;
       const unbound = hosts.find((host) => {
         const owner = hostOwner(host);
         return owner !== undefined && !owner.accountId && !owner.email;
       });
       const rollback = structuredClone(this.#file);
-      this.#state =
-        hosts.find((host) => ownerAccountId(host) === user.id) ??
-        (email === null
-          ? undefined
-          : hosts.find((host) => {
-              const owner = hostOwner(host);
-              if (!owner || owner.accountId) return false;
-              return owner.email ? normalizeEmail(owner.email) === email : false;
-            })) ??
-        unbound ??
-        null;
+      this.#state = hosts.find((host) => ownerAccountId(host) === user.id) ?? unbound ?? null;
       this.#file.activeAccountId = user.id;
       if (this.#state && this.#state === unbound) {
         const owner = hostOwner(this.#state);
-        if (owner) {
-          owner.accountId = user.id;
-          if (email !== null) owner.email = email;
-        }
+        if (owner) owner.accountId = user.id;
       }
       if (this.#state) {
-        yield* remoteDecode(() => this.#applyAccount(user));
+        yield* remoteDecode(() => this.#applyOwnerProfile(user));
         this.#dropExpired(this.#state);
       }
       return yield* Effect.gen({ self: this }, function* () {
@@ -339,32 +313,6 @@ export class TeamStore {
           Effect.gen({ self: this }, function* () {
             this.#file = rollback;
             this.#state = null;
-            return yield* new RemoteWorkflowError({ cause: error });
-          }),
-        ),
-      );
-    },
-    Effect.provide(TeamStoreFiles.layer),
-    Effect.uninterruptible,
-  ).bind(this);
-
-  unbindActiveHost(): void {
-    this.#state = null;
-  }
-
-  readonly deactivate = Effect.fn("TeamStore.deactivate")(
-    function* (this: TeamStore): Effect.fn.Return<void, RemoteWorkflowError, TeamStoreFiles> {
-      const previousState = this.#state;
-      const previousAccountId = this.#file.activeAccountId;
-      this.#state = null;
-      this.#file.activeAccountId = null;
-      return yield* Effect.gen({ self: this }, function* () {
-        yield* this.#recordActiveAccountEffect();
-      }).pipe(
-        Effect.catch(({ cause: error }) =>
-          Effect.gen({ self: this }, function* () {
-            this.#state = previousState;
-            this.#file.activeAccountId = previousAccountId;
             return yield* new RemoteWorkflowError({ cause: error });
           }),
         ),
@@ -389,17 +337,8 @@ export class TeamStore {
     return this.#state ? identityOf(this.#state) : null;
   }
 
-  getOwnerEmail(): string | null {
-    return this.#state?.members.find((member) => member.role === "owner")?.email ?? null;
-  }
-
   getOwnerMemberId(): string | null {
     return this.#state?.members.find((member) => member.role === "owner")?.id ?? null;
-  }
-
-  getOwnerAnalyticsIdentity(): Pick<CentralAuthUser, "id" | "email"> | null {
-    const owner = this.#state?.members.find((member) => member.role === "owner");
-    return owner?.accountId && owner.email ? { id: owner.accountId, email: owner.email } : null;
   }
 
   localProfileSeed(): LocalProfile | null {
@@ -427,15 +366,12 @@ export class TeamStore {
     return member && !member.disabled ? member.id : null;
   }
 
-  assertOwnerAccount(user: CentralAuthUser): void {
+  assertOwner(user: LocalProfile): void {
     const owner = this.#state?.members.find((member) => member.role === "owner");
     if (!owner || (!owner.accountId && !owner.email)) {
       throw new TeamStoreError(sourceText("error.team.ownerNotLinked"));
     }
-    const email = optionalEmail(user.email);
-    const ownerEmail = owner.email ? normalizeEmail(owner.email) : null;
-    const matches = owner.accountId ? owner.accountId === user.id : email !== null && email === ownerEmail;
-    if (!matches) {
+    if (owner.accountId !== user.id) {
       throw new TeamStoreError(sourceText("error.team.ownerEmailRequired"));
     }
   }
@@ -519,16 +455,15 @@ export class TeamStore {
     Effect.uninterruptible,
   ).bind(this);
 
-  readonly configureWithAccount = Effect.fn("TeamStore.configureWithAccount")(
+  readonly configureForOwner = Effect.fn("TeamStore.configureForOwner")(
     function* (
       this: TeamStore,
       serverName: string,
-      user: CentralAuthUser,
+      user: LocalProfile,
       logo?: AvatarImageInput | null,
       options: { serverId?: string } = {},
     ): Effect.fn.Return<TeamIdentity, RemoteWorkflowError, TeamStoreFiles> {
-      const email = yield* remoteDecode(() => optionalEmail(user.email));
-      yield* remoteDecode(() => this.#assertNoHostFor(user.id, email));
+      yield* remoteDecode(() => this.#assertNoHostFor(user.id));
       yield* remoteDecode(() => validateServerName(serverName));
       const activeAccountBefore = this.#file.activeAccountId;
       const { publicKey, privateKey } = yield* remoteDecode(() =>
@@ -539,7 +474,7 @@ export class TeamStore {
       );
       const serverLogo = logo ? yield* this.#writeLogoEffect(logo) : undefined;
       const attempt5 = yield* Effect.gen({ self: this }, function* () {
-        yield* remoteDecode(() => this.#assertNoHostFor(user.id, email));
+        yield* remoteDecode(() => this.#assertNoHostFor(user.id));
         if (this.#file.activeAccountId !== activeAccountBefore) {
           return yield* new RemoteWorkflowError({
             cause: new TeamStoreError(sourceText("error.team.accountChangedDuringCreate")),
@@ -563,10 +498,10 @@ export class TeamStore {
           {
             id: randomUUID(),
             accountId: user.id,
-            username: email ?? LOCAL_OWNER_USERNAME,
-            email,
+            username: LOCAL_OWNER_USERNAME,
+            email: null,
             name: yield* remoteDecode(() => normalizeName(user.name)),
-            avatarUrl: yield* remoteDecode(() => normalizeAvatarUrl(user.avatarUrl)),
+            avatarUrl: null,
             ...(isAvatarColor(user.chatColor) ? { chatColor: user.chatColor } : {}),
             role: "owner",
             disabled: false,
@@ -662,91 +597,6 @@ export class TeamStore {
         return yield* new RemoteWorkflowError({ cause: new TeamStoreError(sourceText("error.team.serverNotActive")) });
       }
       return identityOf(state);
-    },
-    Effect.provide(TeamStoreFiles.layer),
-    Effect.uninterruptible,
-  ).bind(this);
-
-  getPendingKeyHandover(): HostKeyHandover | null {
-    return this.#state?.pendingKeyRotation?.handover ?? null;
-  }
-
-  readonly beginKeyRotation = Effect.fn("TeamStore.beginKeyRotation")(
-    function* (this: TeamStore): Effect.fn.Return<HostKeyHandover, RemoteWorkflowError, TeamStoreFiles> {
-      const state = yield* remoteDecode(() => this.#requireState());
-      if (state.pendingKeyRotation) return state.pendingKeyRotation.handover;
-      const { publicKey, privateKey } = yield* remoteDecode(() =>
-        generateKeyPairSync("ed25519", {
-          publicKeyEncoding: { type: "spki", format: "pem" },
-          privateKeyEncoding: { type: "pkcs8", format: "pem" },
-        }),
-      );
-      const statement = {
-        hostId: state.serverId,
-        issuedAt: Date.now(),
-        previousPublicKey: state.publicKey,
-        publicKey,
-      };
-      const message = Buffer.from(hostKeyHandoverStatement(statement));
-      const handover: HostKeyHandover = {
-        ...statement,
-        previousSignature: sign(null, message, state.privateKey).toString("base64url"),
-        signature: sign(null, message, privateKey).toString("base64url"),
-      };
-      state.pendingKeyRotation = { publicKey, privateKey, handover };
-      const attempt = yield* this.#persistStateEffect(state).pipe(Effect.result);
-      if (Result.isFailure(attempt)) {
-        delete state.pendingKeyRotation;
-        return yield* attempt.failure;
-      }
-      return handover;
-    },
-    Effect.provide(TeamStoreFiles.layer),
-    Effect.uninterruptible,
-  ).bind(this);
-
-  readonly completeKeyRotation = Effect.fn("TeamStore.completeKeyRotation")(
-    function* (
-      this: TeamStore,
-      handover: HostKeyHandover,
-    ): Effect.fn.Return<TeamIdentity, RemoteWorkflowError, TeamStoreFiles> {
-      const state = yield* remoteDecode(() => this.#requireState());
-      const pending = state.pendingKeyRotation;
-      if (!pending || pending.handover.publicKey !== handover.publicKey)
-        return yield* new RemoteWorkflowError({
-          cause: new TeamStoreError(sourceText("error.team.keyRotationMissing")),
-        });
-      const previous = { publicKey: state.publicKey, privateKey: state.privateKey };
-      state.publicKey = pending.publicKey;
-      state.privateKey = pending.privateKey;
-      delete state.pendingKeyRotation;
-      const attempt = yield* this.#persistStateEffect(state).pipe(Effect.result);
-      if (Result.isFailure(attempt)) {
-        state.publicKey = previous.publicKey;
-        state.privateKey = previous.privateKey;
-        state.pendingKeyRotation = pending;
-        return yield* attempt.failure;
-      }
-      return identityOf(state);
-    },
-    Effect.provide(TeamStoreFiles.layer),
-    Effect.uninterruptible,
-  ).bind(this);
-
-  readonly discardKeyRotation = Effect.fn("TeamStore.discardKeyRotation")(
-    function* (
-      this: TeamStore,
-      handover: HostKeyHandover,
-    ): Effect.fn.Return<void, RemoteWorkflowError, TeamStoreFiles> {
-      const state = yield* remoteDecode(() => this.#requireState());
-      const pending = state.pendingKeyRotation;
-      if (!pending || pending.handover.publicKey !== handover.publicKey) return;
-      delete state.pendingKeyRotation;
-      const attempt = yield* this.#persistStateEffect(state).pipe(Effect.result);
-      if (Result.isFailure(attempt)) {
-        state.pendingKeyRotation = pending;
-        return yield* attempt.failure;
-      }
     },
     Effect.provide(TeamStoreFiles.layer),
     Effect.uninterruptible,
@@ -862,142 +712,6 @@ export class TeamStore {
     }
     return members;
   }
-
-  readonly syncRemoteDirectory = Effect.fn("TeamStore.syncRemoteDirectory")(
-    function* (
-      this: TeamStore,
-      serverId: string,
-      remoteMembers: RemoteDirectoryMember[],
-      options: { keepOwner?: boolean } = {},
-    ): Effect.fn.Return<string[], RemoteWorkflowError, TeamStoreFiles> {
-      const state = yield* remoteDecode(() => this.#requireState());
-      if (state.serverId !== serverId) {
-        return yield* new RemoteWorkflowError({ cause: new TeamStoreError(sourceText("error.team.serverNotActive")) });
-      }
-      const remoteOwner = remoteMembers.find((member) => member.role === "owner");
-      const localOwner = state.members.find((member) => member.role === "owner");
-      if (!options.keepOwner && remoteOwner && localOwner && remoteOwner.membershipId !== localOwner.id) {
-        if (state.members.some((member) => member.id === remoteOwner.membershipId)) {
-          return yield* new RemoteWorkflowError({
-            cause: new TeamStoreError(sourceText("error.team.ownerMembershipConflict")),
-          });
-        }
-        const previousOwnerId = localOwner.id;
-        localOwner.id = remoteOwner.membershipId;
-        for (const session of state.sessions) {
-          if (session.memberId === previousOwnerId) session.memberId = remoteOwner.membershipId;
-        }
-      }
-      const remoteIds = new Set(remoteMembers.map((member) => member.membershipId));
-      for (const remote of remoteMembers) {
-        if (options.keepOwner && remote.role === "owner") continue;
-        const member = state.members.find((candidate) => candidate.id === remote.membershipId);
-        if (!member) {
-          if (remote.role === "owner")
-            return yield* new RemoteWorkflowError({
-              cause: new TeamStoreError(sourceText("error.team.ownerIdentityMismatch")),
-            });
-          state.members.push({
-            id: remote.membershipId,
-            username: yield* remoteDecode(() => normalizeEmail(remote.email)),
-            email: yield* remoteDecode(() => normalizeEmail(remote.email)),
-            name: yield* remoteDecode(() => normalizeName(remote.name)),
-            avatarUrl: yield* remoteDecode(() => normalizeAvatarUrl(remote.avatarUrl)),
-            ...(isAvatarColor(remote.chatColor) ? { chatColor: remote.chatColor } : {}),
-            role: remote.role,
-            disabled: remote.status !== "active",
-            createdAt: new Date(remote.createdAt).toISOString(),
-          });
-          continue;
-        }
-        member.username = yield* remoteDecode(() => normalizeEmail(remote.email));
-        member.email = yield* remoteDecode(() => normalizeEmail(remote.email));
-        member.name = yield* remoteDecode(() => normalizeName(remote.name));
-        member.avatarUrl = yield* remoteDecode(() => normalizeAvatarUrl(remote.avatarUrl));
-        applyChatColor(member, remote.chatColor);
-        member.role = remote.role;
-        member.disabled = remote.status !== "active";
-      }
-      for (const member of state.members) {
-        if (member.role !== "owner" && !remoteIds.has(member.id)) member.disabled = true;
-      }
-      const activeRoles = new Map(
-        remoteMembers
-          .filter((member) => member.status === "active")
-          .map((member) => [member.membershipId, member.role]),
-      );
-      const closed: string[] = [];
-      for (const [tokenHash, session] of this.#remoteSessions) {
-        if (activeRoles.get(session.member.id) === session.member.role) {
-          const stored = state.members.find((member) => member.id === session.member.id);
-          if (stored) session.member = { ...publicMember(stored), role: session.member.role, disabled: false };
-          continue;
-        }
-        this.#remoteSessions.delete(tokenHash);
-        closed.push(session.sessionId);
-      }
-      yield* this.#persistEffect();
-      return closed;
-    },
-    Effect.provide(TeamStoreFiles.layer),
-    Effect.uninterruptible,
-  ).bind(this);
-
-  readonly transferOwnership = Effect.fn("TeamStore.transferOwnership")(
-    function* (
-      this: TeamStore,
-      serverId: string,
-      user: CentralAuthUser,
-    ): Effect.fn.Return<string[], RemoteWorkflowError, TeamStoreFiles> {
-      const host = this.#file.hosts.find((candidate) => candidate.serverId === serverId);
-      const owner = host ? hostOwner(host) : undefined;
-      if (!host || !owner) {
-        return yield* new RemoteWorkflowError({ cause: new TeamStoreError(sourceText("error.team.serverNotActive")) });
-      }
-      const email = yield* remoteDecode(() => normalizeEmail(user.email));
-      const rollback = structuredClone(this.#file);
-      const activeServerId = this.#state?.serverId ?? null;
-      const previousOwnerId = owner.id;
-      const joined = host.members.find(
-        (member) => member.role !== "owner" && (member.accountId === user.id || member.email === email),
-      );
-      const ownerId = joined?.id ?? previousOwnerId;
-      host.members = host.members.filter((member) => member !== joined);
-      host.sessions = host.sessions.filter(
-        (session) => session.memberId !== previousOwnerId && session.memberId !== joined?.id,
-      );
-      delete owner.passwordSalt;
-      delete owner.passwordHash;
-      owner.id = ownerId;
-      owner.accountId = user.id;
-      owner.email = email;
-      owner.username = email;
-      owner.name = yield* remoteDecode(() => normalizeName(user.name));
-      owner.avatarUrl = yield* remoteDecode(() => normalizeAvatarUrl(user.avatarUrl));
-      applyChatColor(owner, user.chatColor);
-      owner.disabled = false;
-      this.#file.activeAccountId = user.id;
-      const closed: string[] = [];
-      if (this.#state === host) {
-        for (const [tokenHash, session] of this.#remoteSessions) {
-          if (session.member.id !== previousOwnerId && session.member.id !== joined?.id) continue;
-          this.#remoteSessions.delete(tokenHash);
-          closed.push(session.sessionId);
-        }
-      }
-      return yield* this.#persistFileEffect().pipe(
-        Effect.as(closed),
-        Effect.catch((error) =>
-          Effect.sync(() => {
-            this.#file = rollback;
-            this.#state = rollback.hosts.find((candidate) => candidate.serverId === activeServerId) ?? null;
-          }).pipe(Effect.andThen(Effect.fail(error))),
-        ),
-      );
-    },
-    Effect.provide(TeamStoreFiles.layer),
-    Effect.uninterruptible,
-  ).bind(this);
 
   openRemoteSession(input: {
     sessionId: string;
@@ -1153,86 +867,6 @@ export class TeamStore {
       permanent: invite.permanent ?? false,
     };
   }
-
-  readonly acceptInviteWithAccount = Effect.fn("TeamStore.acceptInviteWithAccount")(
-    function* (
-      this: TeamStore,
-      token: string,
-      user: CentralAuthUser,
-    ): Effect.fn.Return<AuthenticatedMember, RemoteWorkflowError, TeamStoreFiles> {
-      const state = yield* remoteDecode(() => this.#requireState());
-      const email = yield* remoteDecode(() => normalizeEmail(user.email));
-      const invite = yield* remoteDecode(() => this.#findUsableInvite(token));
-      if (!invite)
-        return yield* new RemoteWorkflowError({ cause: new TeamStoreError(sourceText("error.team.inviteInvalid")) });
-      if (invite.email && invite.email !== email) {
-        return yield* new RemoteWorkflowError({
-          cause: new TeamStoreError(sourceText("error.team.inviteEmailMismatch")),
-        });
-      }
-      const existingMember = state.members.find((member) => member.email === email || member.username === email);
-      if (existingMember) {
-        if (existingMember.disabled)
-          return yield* new RemoteWorkflowError({ cause: new TeamStoreError(sourceText("error.team.memberDisabled")) });
-        existingMember.email = email;
-        existingMember.accountId = user.id;
-        existingMember.username = email;
-        existingMember.name = yield* remoteDecode(() => normalizeName(user.name));
-        existingMember.avatarUrl = yield* remoteDecode(() => normalizeAvatarUrl(user.avatarUrl));
-        applyChatColor(existingMember, user.chatColor);
-        this.#consumeInvite(invite);
-        const result = yield* remoteDecode(() => this.#createSession(existingMember));
-        yield* this.#persistEffect();
-        return result;
-      }
-      yield* remoteDecode(() => requireNewMemberSeat(state));
-      const member: StoredMember = {
-        id: randomUUID(),
-        accountId: user.id,
-        username: email,
-        email,
-        name: yield* remoteDecode(() => normalizeName(user.name)),
-        avatarUrl: yield* remoteDecode(() => normalizeAvatarUrl(user.avatarUrl)),
-        ...(isAvatarColor(user.chatColor) ? { chatColor: user.chatColor } : {}),
-        role: invite.role,
-        disabled: false,
-        createdAt: new Date().toISOString(),
-      };
-      this.#consumeInvite(invite);
-      state.members.push(member);
-      const result = yield* remoteDecode(() => this.#createSession(member));
-      yield* this.#persistEffect();
-      return result;
-    },
-    Effect.provide(TeamStoreFiles.layer),
-    Effect.uninterruptible,
-  ).bind(this);
-
-  readonly loginWithAccount = Effect.fn("TeamStore.loginWithAccount")(
-    function* (
-      this: TeamStore,
-      user: CentralAuthUser,
-    ): Effect.fn.Return<AuthenticatedMember, RemoteWorkflowError, TeamStoreFiles> {
-      const state = yield* remoteDecode(() => this.#requireState());
-      const email = yield* remoteDecode(() => normalizeEmail(user.email));
-      const member = state.members.find(
-        (candidate) => (candidate.email === email || candidate.username === email) && !candidate.disabled,
-      );
-      if (!member)
-        return yield* new RemoteWorkflowError({ cause: new TeamStoreError(sourceText("error.team.accountNotMember")) });
-      member.email = email;
-      member.accountId = user.id;
-      member.username = email;
-      member.name = yield* remoteDecode(() => normalizeName(user.name));
-      member.avatarUrl = yield* remoteDecode(() => normalizeAvatarUrl(user.avatarUrl));
-      applyChatColor(member, user.chatColor);
-      const result = yield* remoteDecode(() => this.#createSession(member));
-      yield* this.#persistEffect();
-      return result;
-    },
-    Effect.provide(TeamStoreFiles.layer),
-    Effect.uninterruptible,
-  ).bind(this);
 
   readonly acceptInvite = Effect.fn("TeamStore.acceptInvite")(
     function* (
@@ -1462,10 +1096,10 @@ export class TeamStore {
     Effect.uninterruptible,
   ).bind(this);
 
-  readonly syncAccount = Effect.fn("TeamStore.syncAccount")(
-    function* (this: TeamStore, user: CentralAuthUser): Effect.fn.Return<boolean, RemoteWorkflowError, TeamStoreFiles> {
+  readonly syncOwnerProfile = Effect.fn("TeamStore.syncOwnerProfile")(
+    function* (this: TeamStore, user: LocalProfile): Effect.fn.Return<boolean, RemoteWorkflowError, TeamStoreFiles> {
       yield* remoteDecode(() => this.#requireState());
-      if (!(yield* remoteDecode(() => this.#applyAccount(user)))) return false;
+      if (!(yield* remoteDecode(() => this.#applyOwnerProfile(user)))) return false;
       yield* this.#persistEffect();
       return true;
     },
@@ -1473,35 +1107,19 @@ export class TeamStore {
     Effect.uninterruptible,
   ).bind(this);
 
-  #applyAccount(user: CentralAuthUser): boolean {
-    const state = this.#requireState();
-    const accountEmail = optionalEmail(user.email);
-    const member =
-      state.members.find((candidate) => candidate.accountId === user.id) ??
-      (accountEmail === null
-        ? undefined
-        : state.members.find((candidate) => candidate.email === accountEmail || candidate.username === accountEmail));
+  #applyOwnerProfile(user: LocalProfile): boolean {
+    const member = this.#requireState().members.find((candidate) => candidate.accountId === user.id);
     if (!member) return false;
-    const email = accountEmail ?? member.email;
-    const username = accountEmail ?? member.username;
     const name = normalizeName(user.name);
-    const avatarUrl = normalizeAvatarUrl(user.avatarUrl);
-    const chatColor = user.chatColor === undefined ? member.chatColor : user.chatColor;
     if (
-      member.email === email &&
-      member.accountId === user.id &&
-      member.username === username &&
       member.name === name &&
-      (member.avatarUrl ?? null) === avatarUrl &&
-      (member.chatColor ?? null) === (chatColor ?? null)
+      (member.avatarUrl ?? null) === null &&
+      (member.chatColor ?? null) === (user.chatColor ?? null)
     ) {
       return false;
     }
-    member.email = email;
-    member.accountId = user.id;
-    member.username = username;
     member.name = name;
-    member.avatarUrl = avatarUrl;
+    member.avatarUrl = null;
     applyChatColor(member, user.chatColor);
     return true;
   }
@@ -1556,23 +1174,12 @@ export class TeamStore {
     }
   }
 
-  #assertNoHostFor(accountId: string, email: string | null): void {
-    const ownerless = this.#file.hosts.some((host) => {
+  #assertNoHostFor(accountId: string): void {
+    const taken = this.#file.hosts.some((host) => {
       const owner = hostOwner(host);
-      return owner !== undefined && !owner.accountId && !owner.email;
+      return owner !== undefined && (owner.accountId ? owner.accountId === accountId : !owner.email);
     });
-    if (this.#hostFor(accountId, email) || ownerless) {
-      throw new TeamStoreError(sourceText("error.team.alreadyConfigured"));
-    }
-  }
-
-  #hostFor(accountId: string, email: string | null): StoredTeam | undefined {
-    return this.#file.hosts.find((host) => {
-      const owner = hostOwner(host);
-      if (!owner) return false;
-      if (owner.accountId) return owner.accountId === accountId;
-      return owner.email && email !== null ? normalizeEmail(owner.email) === email : false;
-    });
+    if (taken) throw new TeamStoreError(sourceText("error.team.alreadyConfigured"));
   }
 
   readonly #pruneEffect = Effect.fn("TeamStore.prune")(function* (
@@ -1685,25 +1292,11 @@ function normalizeEmail(value: string): string {
   return normalized;
 }
 
-function optionalEmail(value: string): string | null {
-  return value.trim() ? normalizeEmail(value) : null;
-}
-
 function normalizeName(value: string | null): string | null {
   const normalized = value?.trim() ?? "";
   if (normalized.length > INPUT_LIMITS.accountName)
     throw new TeamStoreError(sourceText("error.team.accountNameTooLong"));
   return normalized || null;
-}
-
-function normalizeAvatarUrl(value: string | null): string | null {
-  if (!value) return null;
-  if (value.length > INPUT_LIMITS.avatarUrl) throw new TeamStoreError(sourceText("error.team.avatarUrlTooLong"));
-  const url = new URL(value);
-  if (url.protocol !== "https:" && url.protocol !== "http:") {
-    throw new TeamStoreError(sourceText("error.team.avatarUrlInvalid"));
-  }
-  return url.toString();
 }
 
 export function validateServerName(value: string): void {

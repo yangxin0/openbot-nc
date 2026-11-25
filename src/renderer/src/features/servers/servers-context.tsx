@@ -33,7 +33,6 @@ const Servers = createSimpleContext({
     const [serversLoadFailed, setServersLoadFailed] = createSignal(false);
     const [servers, setServers] = createSignal<ServerSummary[]>([]);
     const [hostStatus, setHostStatus] = createSignal<HostStatus>(FALLBACK_HOST_STATUS);
-    const [joinServerOpen, setJoinServerOpen] = createSignal(false);
     const [createLocalServerOpen, setCreateLocalServerOpen] = createSignal(false);
     const [serverLoadRequest, setServerLoadRequest] = createSignal<{
       serverId: string;
@@ -318,8 +317,6 @@ const Servers = createSimpleContext({
       activeServerSupportsCapability,
       hostStatus,
       setHostStatus,
-      joinServerOpen,
-      setJoinServerOpen,
       createLocalServerOpen,
       setCreateLocalServerOpen,
       reorderServers,

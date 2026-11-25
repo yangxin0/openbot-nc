@@ -20,15 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "Uzak etkinlikler kullanılamıyor.",
   "error.remote.signInAgain": "Tekrar oturum açın.",
   "error.remote.emailDeliveryUnavailable": "E-posta teslimatı kullanılamıyor.",
-  "error.remote.inviteHostMismatch": "Davet ana makinesi, davet belirteciyle eşleşmiyor.",
-  "error.remote.inviteIdentityMismatch": "Davet ana makinesinin kimliği, davet belirteciyle eşleşmiyor.",
-  "error.remote.inviteAcceptedOtherHost": "Hesap hizmeti farklı bir ana makineyi kabul etti.",
-  "error.remote.inviteIdentityChanged": "Davet ana makine kimliği kabul edilirken değişti.",
   "error.remote.localServerRemove": "Yerel sunucu kaldırılamaz.",
   "error.remote.viewerProxyUnavailable": "Yerel uzak görüntüleyici vekili kullanılamıyor.",
   "error.remote.viewerProxyNoPort": "Yerel uzak görüntüleyici vekili bir bağlantı noktası alamadı.",
-  "error.remote.inviteNeedsConnection": "Ana makine davet oluşturabilmek için önce bir kez bağlanmalıdır.",
-  "error.remote.permanentInviteUnsupported": "Bu sunucu bağlantısı kalıcı davet bağlantılarını desteklemiyor.",
   "error.remote.bridgeStartFailed": "Ekip WebRTC köprüsü başlatılamadı.",
   "error.remote.bridgeStopped": "Ekip WebRTC köprüsü durdu.",
   "error.remote.bridgeDidNotStart": "Ekip WebRTC köprüsü başlamadı.",
@@ -176,6 +170,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "OpenBot sunucuyu yükleyemedi. Tekrar deneyin.",
   "error.remote.localServerNotStarted":
     "Bu bilgisayardaki sunucu başlamadı. Tekrar deneyin. Başlamazsa OpenBot'u bu bilgisayarda yeniden başlatın.",
-  "error.remote.localServerAccountRemovalFailed":
-    "Sunucu kendi bilgisayarında silindi ancak hesap onu hâlâ listeliyor. Hesaptan kaldırmak için yeniden silin.",
 } as const satisfies PartialTranslation<typeof source>;

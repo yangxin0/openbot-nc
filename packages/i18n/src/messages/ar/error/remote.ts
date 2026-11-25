@@ -20,15 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "الأحداث البعيدة غير متاحة.",
   "error.remote.signInAgain": "سجّل الدخول مرة أخرى.",
   "error.remote.emailDeliveryUnavailable": "تسليم البريد الإلكتروني غير متاح.",
-  "error.remote.inviteHostMismatch": "مضيف الدعوة لا يطابق رمزها المميز.",
-  "error.remote.inviteIdentityMismatch": "هوية مضيف الدعوة لا تطابق رمزها المميز.",
-  "error.remote.inviteAcceptedOtherHost": "قبلت خدمة الحسابات مضيفًا مختلفًا.",
-  "error.remote.inviteIdentityChanged": "تغيّرت هوية مضيف الدعوة أثناء قبولها.",
   "error.remote.localServerRemove": "لا يمكن إزالة الخادم المحلي.",
   "error.remote.viewerProxyUnavailable": "وكيل العارض البعيد المحلي غير متاح.",
   "error.remote.viewerProxyNoPort": "لم يحصل وكيل العارض البعيد المحلي على منفذ.",
-  "error.remote.inviteNeedsConnection": "يجب أن يتصل المضيف مرة واحدة قبل أن يتمكن من إنشاء دعوات.",
-  "error.remote.permanentInviteUnsupported": "اتصال الخادم هذا لا يدعم روابط الدعوة الدائمة.",
   "error.remote.bridgeStartFailed": "فشل بدء جسر Team WebRTC.",
   "error.remote.bridgeStopped": "توقف جسر Team WebRTC.",
   "error.remote.bridgeDidNotStart": "لم يبدأ جسر Team WebRTC.",
@@ -171,8 +165,6 @@ export const messages = {
   "error.remote.localServerNotStarted":
     "لم يبدأ الخادم على هذا الحاسوب. حاول مرة أخرى. إذا لم يبدأ، فأعد تشغيل OpenBot على هذا الحاسوب.",
   "error.remote.localServerNotFound": "هذا الخادم ليس على هذا الحاسوب.",
-  "error.remote.localServerAccountRemovalFailed":
-    "حُذف الخادم على حاسوبه، لكن الحساب لا يزال يُدرجه. احذفه مرة أخرى لإزالته من الحساب.",
   "error.remote.localServerLimit": "يمكنك امتلاك {limit} خادم كحد أقصى على هذا الحاسوب. احذف واحدًا لإنشاء آخر.",
   "error.remote.localServersReadOnly":
     "لا يستطيع هذا الإصدار من OpenBot قراءة قائمة الخوادم على هذا الحاسوب. حدّث OpenBot.",

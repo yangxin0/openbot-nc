@@ -96,7 +96,6 @@ export const messages = {
   "account.login.changeEmail": "メールアドレスを変更",
   "account.login.resend": "コードを再送信",
   "account.login.resendIn": "{time} 後に再送信",
-  "account.login.loadFailed": "OpenBot はアカウントサービスを読み込めませんでした。",
   "account.otp.incorrect": "コードが正しくありません。もう一度お試しください。",
   "account.otp.verifying": "確認中…",
   "account.otp.entry": "ワンタイムコードの入力",

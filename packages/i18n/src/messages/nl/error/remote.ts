@@ -21,17 +21,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "Externe events zijn niet beschikbaar.",
   "error.remote.signInAgain": "Log opnieuw in.",
   "error.remote.emailDeliveryUnavailable": "Bezorging per e-mail is niet beschikbaar.",
-  "error.remote.inviteHostMismatch": "De host van de uitnodiging komt niet overeen met het token.",
-  "error.remote.inviteIdentityMismatch":
-    "De identiteit van de host van de uitnodiging komt niet overeen met het token.",
-  "error.remote.inviteAcceptedOtherHost": "De accountservice heeft een andere host geaccepteerd.",
-  "error.remote.inviteIdentityChanged":
-    "De identiteit van de host van de uitnodiging is gewijzigd tijdens het accepteren.",
   "error.remote.localServerRemove": "De lokale server kan niet worden verwijderd.",
   "error.remote.viewerProxyUnavailable": "De lokale proxy voor de externe viewer is niet beschikbaar.",
   "error.remote.viewerProxyNoPort": "De lokale proxy voor de externe viewer heeft geen poort gekregen.",
-  "error.remote.inviteNeedsConnection": "De host moet eerst één keer verbinden voordat hij uitnodigingen kan maken.",
-  "error.remote.permanentInviteUnsupported": "Deze serververbinding ondersteunt geen permanente uitnodigingslinks.",
   "error.remote.bridgeStartFailed": "De Team WebRTC-brug kon niet starten.",
   "error.remote.bridgeStopped": "De Team WebRTC-brug is gestopt.",
   "error.remote.bridgeDidNotStart": "De Team WebRTC-brug is niet gestart.",
@@ -182,6 +174,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "OpenBot kon de server niet laden. Probeer het opnieuw.",
   "error.remote.localServerNotStarted":
     "De server op deze computer is niet gestart. Probeer het opnieuw. Start hij niet, start OpenBot dan opnieuw op deze computer.",
-  "error.remote.localServerAccountRemovalFailed":
-    "De server is op zijn computer verwijderd, maar het account toont hem nog. Verwijder hem opnieuw om hem uit het account te halen.",
 } as const satisfies PartialTranslation<typeof source>;

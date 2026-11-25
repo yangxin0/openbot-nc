@@ -21,10 +21,8 @@ const READY = {
   publicKey: "public-key-1",
   ownerMemberId: "owner-member-1",
 };
-const MACHINE_TOKEN = "machine-token-of-the-server-on-this-computer";
 
 class ReadyChild extends ChildProcess {
-  readonly input: { stdin: string[]; control: string[] } = { stdin: [], control: [] };
   readonly #stdin = new PassThrough();
   readonly #stdout = new PassThrough();
   readonly #stderr = new PassThrough();
@@ -33,8 +31,6 @@ class ReadyChild extends ChildProcess {
 
   constructor() {
     super();
-    this.#stdin.on("data", (chunk: Buffer) => this.input.stdin.push(chunk.toString()));
-    this.#control.on("data", (chunk: Buffer) => this.input.control.push(chunk.toString()));
     this.stdin = this.#stdin;
     this.stdout = this.#stdout;
     this.stderr = this.#stderr;
@@ -98,16 +94,8 @@ function servers(
     },
     remoteServers: {
       setThisComputerServers: () => undefined,
-      setRegisteredThisComputerServers: () => undefined,
       attachLocalServer: attach,
       detachLocalServer: () => Effect.void,
-    },
-    account: {
-      accountId: () => "account-1",
-      register: () => Effect.void,
-      credential: () => MACHINE_TOKEN,
-      listMembers: () => Effect.succeed([]),
-      remove: () => Effect.void,
     },
     command: { executable: "/Applications/OpenBot.app/Contents/MacOS/OpenBot", args: [] },
     trash: () => Promise.resolve(),
@@ -163,30 +151,4 @@ describe("servers on this computer", () => {
     expect(log).toContain("Login refused for [redacted]");
     expect(log).not.toContain(secret);
   });
-
-  it.each(["darwin", "win32"] as const)(
-    "gives the machine token only to the child's control pipe on %s",
-    async (platform) => {
-      const lines: string[] = [];
-      const spawned: Spawned[] = [];
-      const local = servers(
-        (input) => Effect.succeed(summary(input)),
-        (line) => lines.push(line),
-        spawned,
-        platform,
-      );
-      await Effect.runPromise(local.load());
-      await Effect.runPromise(local.initialize());
-      await Effect.runPromise(local.create(READY.serverName, "device"));
-      expect(local.list().servers).toEqual([{ serverId: READY.serverId, name: READY.serverName, published: true }]);
-      await Effect.runPromise(local.stop());
-
-      const [used, unused] = platform === "win32" ? (["control", "stdin"] as const) : (["stdin", "control"] as const);
-      expect(spawned[0]?.child.input[used].join("")).toContain(MACHINE_TOKEN);
-      expect(spawned[0]?.child.input[unused].join("")).not.toContain(MACHINE_TOKEN);
-      expect(spawned[0]?.args.join(" ")).not.toContain(MACHINE_TOKEN);
-      expect(await readFile(join(root, LOCAL_SERVERS_FILE), "utf8")).not.toContain(MACHINE_TOKEN);
-      expect(lines.join("\n")).not.toContain(MACHINE_TOKEN);
-    },
-  );
 });

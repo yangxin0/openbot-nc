@@ -256,10 +256,6 @@ export const Onboarding: Story = {
   ),
 };
 
-export const SignedOut: Story = {
-  render: () => <OpenBotPlayground options={{ authState: { status: "signed_out" } }} />,
-};
-
 export const AgentStarting: Story = {
   render: () => (
     <OpenBotPlayground

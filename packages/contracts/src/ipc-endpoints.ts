@@ -130,7 +130,6 @@ import type {
 import type { AgentWaitsSnapshot, CancelAgentWaitInput } from "./ipc-agent-waits";
 import type {
   AgentDefaults,
-  AvatarImageInput,
   ClientAgentSummary,
   CreateAgentInput,
   DuplicateAgentResult,
@@ -141,7 +140,6 @@ import type {
   AppInfo,
   AppSetupState,
   BackgroundProcess,
-  CentralAuthState,
   ChatWindowTarget,
   ComputerUseHighlightPlacement,
   ComputerUsePermissionApp,
@@ -163,7 +161,7 @@ import type {
   UpdatePreferenceChange,
   UpdateRestartMode,
   UpdateStatus,
-  VerifyEmailCodeInput,
+  UserProfile,
 } from "./ipc-app-auth";
 import type { AppBehaviorPreference, AppBehaviorPreferenceChange } from "./ipc-app-behavior";
 import type {
@@ -490,7 +488,6 @@ import type {
 } from "./ipc-storage";
 import type {
   ConfigureHostInput,
-  CreateTeamInviteInput,
   DirectConversationPage,
   DirectConversationReadState,
   DirectConversationSnapshot,
@@ -498,10 +495,6 @@ import type {
   DirectThreadSummary,
   DirectTypingInput,
   HostStatus,
-  InvitePreview,
-  InviteSummary,
-  JoinServerInput,
-  LoginServerInput,
   MarkDirectReadInput,
   ReadDirectConversationPageInput,
   ReorderServersInput,
@@ -514,7 +507,6 @@ import type {
   SetServerMutedInput,
   SetServerNotificationLevelInput,
   SetTeamTypingInput,
-  TeamInviteSummary,
   TeamMemberSummary,
   TeamPresenceSnapshot,
   TeamSessionSummary,
@@ -573,8 +565,6 @@ import type {
   WorkflowVersion,
   WorkflowVersionInput,
 } from "./ipc-workflows";
-import type { AccountSession, MobileConnectedDevice, MobileConnectLink, MobileConnectTicket } from "./mobile-connect";
-import type { AcceptedOwnerTransfer, OwnerTransfer } from "./owner-transfer";
 import type { AgentActiveQueues } from "./team-protocol/agent-active-queues-v1";
 
 declare const payloadType: unique symbol;
@@ -1044,7 +1034,6 @@ export const IPC_ENDPOINTS = {
   },
   hostAdmin: {
     updateIdentity: scopedRequest<UpdateHostIdentityInput, ServerSummary, "required">()("host-admin:update-identity"),
-    rotateHostKey: scopedQuery<void, "required">()("host-admin:rotate-host-key"),
     restartHost: scopedQuery<void, "required">()("host-admin:restart-host"),
     getUpdateStatus: scopedQuery<HostUpdateStatus, "required">()("host-admin:get-update-status"),
     checkForUpdate: scopedQuery<HostUpdateStatus, "required">()("host-admin:check-for-update"),
@@ -1193,29 +1182,11 @@ export const IPC_ENDPOINTS = {
     restart: request<string, void>()("local-servers:restart"),
     delete: request<string, void>()("local-servers:delete"),
   },
-  auth: {
-    getState: request<undefined, CentralAuthState>()("auth:get-state"),
-    retry: request<undefined, CentralAuthState>()("auth:retry"),
-    requestEmailCode: request<string, CentralAuthState>()("auth:request-email-code"),
-    verifyEmailCode: request<VerifyEmailCodeInput, CentralAuthState>()("auth:verify-email-code"),
-    updateName: request<string, CentralAuthState>()("auth:update-name"),
-    updateAvatar: request<AvatarImageInput | null, CentralAuthState>()("auth:update-avatar"),
-    updateChatColor: request<AvatarColor | null, CentralAuthState>()("auth:update-chat-color"),
-    createMobileConnect: request<undefined, MobileConnectTicket>()("auth:create-mobile-connect"),
-    cancelMobileConnect: request<undefined, void>()("auth:cancel-mobile-connect"),
-    getMobileConnectLink: request<undefined, MobileConnectLink | null>()("auth:get-mobile-connect-link"),
-    createMobileConnectLink: request<undefined, MobileConnectLink>()("auth:create-mobile-connect-link"),
-    revokeMobileConnectLink: request<undefined, void>()("auth:revoke-mobile-connect-link"),
-    listMobileConnectedDevices: request<undefined, MobileConnectedDevice[]>()("auth:list-mobile-connected-devices"),
-    listAccountSessions: request<undefined, AccountSession[]>()("auth:list-account-sessions"),
-    revokeAccountSession: request<string, void>()("auth:revoke-account-session"),
-    revokeMobileConnectedDevice: request<string, void>()("auth:revoke-mobile-connected-device"),
-    logout: request<undefined, CentralAuthState>()("auth:logout"),
-    listOwnerTransfers: request<undefined, OwnerTransfer[]>()("auth:list-owner-transfers"),
-    acceptOwnerTransfer: request<string, AcceptedOwnerTransfer>()("auth:accept-owner-transfer"),
-    declineOwnerTransfer: request<string, void>()("auth:decline-owner-transfer"),
-    event: event<CentralAuthState>()("auth:event"),
-    ownerTransfersChanged: event<undefined>()("auth:owner-transfers-changed"),
+  profile: {
+    get: request<undefined, UserProfile>()("profile:get"),
+    updateName: request<string, UserProfile>()("profile:update-name"),
+    updateChatColor: request<AvatarColor | null, UserProfile>()("profile:update-chat-color"),
+    changed: event<UserProfile>()("profile:changed"),
   },
   update: {
     getStatus: request<undefined, UpdateStatus>()("update:get-status"),
@@ -1540,10 +1511,6 @@ export const IPC_ENDPOINTS = {
     setMuted: request<SetServerMutedInput, ServerSummary[]>()("servers:set-muted"),
     setHidden: request<SetServerHiddenInput, ServerSummary[]>()("servers:set-hidden"),
     setNotificationLevel: request<SetServerNotificationLevelInput, ServerSummary[]>()("servers:set-notification-level"),
-    join: request<JoinServerInput, ServerSummary>()("servers:join"),
-    previewInvite: request<JoinServerInput, InvitePreview>()("servers:preview-invite"),
-    takePendingInvite: request<undefined, string | null>()("servers:take-pending-invite"),
-    login: request<LoginServerInput, ServerSummary>()("servers:login"),
     retryConnection: request<string, ServerSummary>()("servers:retry-connection"),
     remove: request<string, void>()("servers:remove"),
     getPresence: request<undefined, TeamPresenceSnapshot>()("servers:get-presence"),
@@ -1552,12 +1519,6 @@ export const IPC_ENDPOINTS = {
     listMembers: request<string, TeamMemberSummary[]>()("servers:list-members"),
     updateMember: scopedRequest<UpdateTeamMemberInput, TeamMemberSummary, "required">()("servers:update-member"),
     removeMember: scopedRequest<string, void, "required">()("servers:remove-member"),
-    listInvites: request<string, TeamInviteSummary[]>()("servers:list-invites"),
-    revokeInvite: scopedRequest<string, void, "required">()("servers:revoke-invite"),
-    createInvite: scopedRequest<CreateTeamInviteInput, InviteSummary, "required">()("servers:create-invite"),
-    getOwnerTransfer: scopedQuery<OwnerTransfer | null, "required">()("servers:get-owner-transfer"),
-    startOwnerTransfer: scopedRequest<string, OwnerTransfer, "required">()("servers:start-owner-transfer"),
-    cancelOwnerTransfer: scopedQuery<void, "required">()("servers:cancel-owner-transfer"),
     setTyping: request<SetTeamTypingInput, void>()("servers:set-typing"),
     scopedPresence: event<ScopedTeamPresenceSnapshot>()("servers:presence"),
     listDirectThreads: request<undefined, DirectThreadSummary[]>()("servers:list-direct-threads"),
@@ -1571,7 +1532,6 @@ export const IPC_ENDPOINTS = {
     scopedDirectMessage: event<ScopedDirectMessageEvent>()("servers:direct-message"),
     scopedDirectTyping: event<ScopedDirectTypingEvent>()("servers:direct-typing"),
     event: event<ServerSummary[]>()("servers:event"),
-    invite: event<string>()("servers:invite"),
   },
   agentAdmin: {
     getAgentHostSettings: scopedRequest<string, AgentHostSettings>()("agent:admin:get-host-settings"),
@@ -1710,14 +1670,10 @@ export const IPC_ENDPOINTS = {
     getStatus: request<undefined, HostStatus>()("host:get-status"),
     configure: request<ConfigureHostInput, HostStatus>()("host:configure"),
     updateIdentity: request<UpdateHostIdentityInput, HostStatus>()("host:update-identity"),
-    rotateIdentityKey: request<undefined, HostStatus>()("host:rotate-identity-key"),
     getPresence: request<undefined, TeamPresenceSnapshot>()("host:get-presence"),
     start: request<undefined, HostStatus>()("host:start"),
     stop: request<undefined, HostStatus>()("host:stop"),
     listMembers: request<undefined, TeamMemberSummary[]>()("host:list-members"),
-    createInvite: request<CreateTeamInviteInput, InviteSummary>()("host:create-invite"),
-    listInvites: request<undefined, TeamInviteSummary[]>()("host:list-invites"),
-    revokeInvite: request<string, void>()("host:revoke-invite"),
     updateMember: request<UpdateTeamMemberInput, TeamMemberSummary>()("host:update-member"),
     removeMember: request<string, void>()("host:remove-member"),
     listSessions: request<undefined, TeamSessionSummary[]>()("host:list-sessions"),
@@ -1778,7 +1734,7 @@ export const IPC_GROUP_PATHS = {
   crm: "crm",
   routineResults: "routineResults",
   localServers: "localServers",
-  auth: "auth",
+  profile: "profile",
   update: "update",
   notifications: "notifications",
   agent: "agent",

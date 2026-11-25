@@ -2,9 +2,9 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { Effect, Result } from "effect";
 import { z } from "zod";
-import type { CentralAuthManager } from "./central-auth-manager";
 import { developmentRemoteConnectionPath } from "./development-runtime-directory";
 import { DEVELOPMENT_REMOTE_CLIENT_USERNAME, type HostService } from "./host-service";
+import type { LocalProfile } from "./local-profile-store";
 import type { DevelopmentRemoteServerConnection, RemoteServerManager } from "./remote-server-manager";
 import { RemoteWorkflowError, remoteCall, remoteDecode, toRemoteWorkflowError } from "./remote-service-effects";
 import { writeSetupState } from "./setup-store";
@@ -28,27 +28,26 @@ const developmentRemoteServerConnectionSchema: z.ZodType<DevelopmentRemoteServer
   role: z.enum(["owner", "admin", "member"]).optional(),
 });
 
-export interface DevelopmentRemoteAccountOptions {
+export interface DevelopmentRemoteProfileOptions {
   role: DevelopmentRemoteRole;
   testClientEnabled: boolean;
-  centralAuth: Pick<CentralAuthManager, "getSignedInUser">;
+  profile: LocalProfile;
   teamStore: TeamStore;
   setupFile: string;
   setupCompleted: boolean;
 }
 
-export const applyDevelopmentRemoteAccount = Effect.fn("DevelopmentRemote.applyAccount")(function* ({
+export const applyDevelopmentRemoteProfile = Effect.fn("DevelopmentRemote.applyProfile")(function* ({
   role,
   testClientEnabled,
-  centralAuth,
+  profile,
   teamStore,
   setupFile,
   setupCompleted,
-}: DevelopmentRemoteAccountOptions) {
-  const user = yield* remoteDecode(() => centralAuth.getSignedInUser());
-  yield* teamStore.activateAccount(user);
+}: DevelopmentRemoteProfileOptions) {
+  yield* teamStore.activateOwner(profile);
   if (role === "host" && !teamStore.configured) {
-    yield* teamStore.configureWithAccount("OpenBot Local Dev Host", user);
+    yield* teamStore.configureForOwner("OpenBot Local Dev Host", profile);
   }
   if (role === "client" && !setupCompleted) {
     yield* writeSetupState(setupFile, { preferredProvider: "codex", preferredModel: null }).pipe(toRemoteWorkflowError);

@@ -20,15 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "Entfernte Ereignisse sind nicht verfügbar.",
   "error.remote.signInAgain": "Melde dich erneut an.",
   "error.remote.emailDeliveryUnavailable": "Der E-Mail-Versand ist nicht verfügbar.",
-  "error.remote.inviteHostMismatch": "Der Einladungshost stimmt nicht mit seinem Token überein.",
-  "error.remote.inviteIdentityMismatch": "Die Identität des Einladungshosts stimmt nicht mit seinem Token überein.",
-  "error.remote.inviteAcceptedOtherHost": "Der Kontodienst hat einen anderen Host akzeptiert.",
-  "error.remote.inviteIdentityChanged": "Die Identität des Einladungshosts wurde während der Annahme geändert.",
   "error.remote.localServerRemove": "Der lokale Server kann nicht entfernt werden.",
   "error.remote.viewerProxyUnavailable": "Der lokale Proxy der Fernanzeige ist nicht verfügbar.",
   "error.remote.viewerProxyNoPort": "Der lokale Proxy der Fernanzeige hat keinen Port erhalten.",
-  "error.remote.inviteNeedsConnection": "Der Host muss sich einmal verbinden, bevor er Einladungen erstellen kann.",
-  "error.remote.permanentInviteUnsupported": "Diese Serververbindung unterstützt keine dauerhaften Einladungslinks.",
   "error.remote.bridgeStartFailed": "Die Team-WebRTC-Brücke konnte nicht gestartet werden.",
   "error.remote.bridgeStopped": "Die Team-WebRTC-Brücke wurde gestoppt.",
   "error.remote.bridgeDidNotStart": "Die Team-WebRTC-Brücke wurde nicht gestartet.",
@@ -186,6 +180,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "OpenBot konnte den Server nicht laden. Versuche es erneut.",
   "error.remote.localServerNotStarted":
     "Der Server auf diesem Computer wurde nicht gestartet. Versuche es erneut. Wenn er nicht startet, starte OpenBot auf diesem Computer neu.",
-  "error.remote.localServerAccountRemovalFailed":
-    "Der Server ist auf seinem Computer gelöscht, aber das Konto führt ihn noch. Lösche ihn erneut, um ihn aus dem Konto zu entfernen.",
 } as const satisfies PartialTranslation<typeof source>;

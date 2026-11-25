@@ -77,6 +77,8 @@ function relayRefusalMessage(code: RemoteRelayRefusalCode): string {
       return sourceText("error.remote.relayOtherTeam");
     case "host_certificate_refused":
       return sourceText("error.remote.relayHostCertificateRefused");
+    case "relay_server_refused":
+      return sourceText("error.remote.relayServerRefused");
     case "identity_changed":
       return sourceText("error.remote.identityNotVerified");
   }
@@ -100,6 +102,8 @@ export function relayRefusalForSocketCode(code: RelaySocketErrorCode): RemoteRel
       return "identity_unusable";
     case "peer_refused":
       return "host_certificate_refused";
+    case "server_refused":
+      return "relay_server_refused";
     default:
       return null;
   }

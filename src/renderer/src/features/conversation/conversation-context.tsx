@@ -29,7 +29,6 @@ import { createScopeGuard } from "../../scope-lifetime";
 import { createSimpleContext } from "../../simple-context";
 import { useTurns } from "../../turns";
 import { isConnectionDrop, useUiErrors } from "../../ui-errors";
-import { useAuth } from "../account/account-context";
 import { useAgentTasks } from "../agent-tasks/agent-tasks-context";
 import { useAgentReadTracking } from "../agents/agent-read-tracking";
 import { appendLatestRuntimeMessages, attentionKey } from "../agents/agent-runtime-snapshot";
@@ -142,15 +141,6 @@ const Conversation = createSimpleContext({
       setTurnProgress,
     } = useTurns();
     const { clearUiErrors } = useUiErrors();
-    const { centralAuth } = useAuth();
-    const signedInAccount = createMemo(() => {
-      const auth = centralAuth();
-      return auth.status === "signed_in" ? auth.user.id : null;
-    });
-    createEffect(signedInAccount, (account, previous) => {
-      if (account && previous !== undefined && account !== previous)
-        clearUiErrors(currentText().t("chat.errorStatus.readState"));
-    });
 
     const [conversations, writeConversations] = createStore<Record<string, ConversationState>>({});
     const rawAgentMessageBodies = new Map<string, string>();

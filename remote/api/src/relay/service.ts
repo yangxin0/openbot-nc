@@ -12,6 +12,7 @@ import {
 } from "@openbot/contracts/relay-protocol/messages";
 import { isRevoked, peerCertificate, type RelayIdentity, type RelayTrust, verifyRelayProof } from "./identity";
 import { type DecodedRelayClientMessage, decodeRelayClientMessage, encodeRelayServerMessage } from "./protocol";
+import { type RelayServerIdentity, serverProofMessage } from "./server-identity";
 
 export interface RelaySocket {
   readonly id: string;
@@ -104,9 +105,16 @@ export class RelayService {
   readonly #limits: RelayLimits;
   readonly #now: () => number;
   #trust: RelayTrust;
+  #serverIdentity: RelayServerIdentity;
 
-  constructor(trust: RelayTrust, limits: RelayLimits, now: () => number = Date.now) {
+  constructor(
+    trust: RelayTrust,
+    serverIdentity: RelayServerIdentity,
+    limits: RelayLimits,
+    now: () => number = Date.now,
+  ) {
     this.#trust = trust;
+    this.#serverIdentity = serverIdentity;
     this.#limits = limits;
     this.#now = now;
   }
@@ -185,6 +193,10 @@ export class RelayService {
     }
   }
 
+  applyServerIdentity(serverIdentity: RelayServerIdentity): void {
+    this.#serverIdentity = serverIdentity;
+  }
+
   expire(): void {
     const now = this.#now();
     for (const state of [...this.#sockets.values()]) {
@@ -219,13 +231,16 @@ export class RelayService {
 
   #authenticate(state: SocketState, phase: ChallengePhase, hello: Hello): void {
     clearTimeout(phase.deadline);
+    const target = hello.role === "client" ? hello.target : undefined;
+    const connectionId = hello.role === "accept" ? hello.connectionId : undefined;
     const check = verifyRelayProof(
       {
         nonce: phase.nonce,
+        clientNonce: hello.clientNonce,
         audience: hello.audience,
         role: hello.role,
-        target: hello.role === "client" ? hello.target : undefined,
-        connectionId: hello.role === "accept" ? hello.connectionId : undefined,
+        target,
+        connectionId,
         certificate: hello.certificate,
         chain: hello.chain ?? [],
         signature: hello.signature,
@@ -237,6 +252,18 @@ export class RelayService {
       this.#fail(state.socket.id, check.code, check.message);
       return;
     }
+    this.#send(
+      state.socket,
+      serverProofMessage(this.#serverIdentity, {
+        serverNonce: phase.nonce,
+        clientNonce: hello.clientNonce,
+        audience: hello.audience,
+        role: hello.role,
+        clientKeyId: check.identity.keyId,
+        target,
+        connectionId,
+      }),
+    );
     if (hello.role === "member") this.#admitMember(state, check.identity, hello);
     else if (hello.role === "client") this.#admitClient(state, check.identity, hello);
     else this.#admitAccept(state, check.identity, hello.connectionId);

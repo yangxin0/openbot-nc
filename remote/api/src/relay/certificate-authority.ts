@@ -10,6 +10,7 @@ import { RELAY_KEY_ID_PATTERN, RELAY_SUBJECT_NAME_PATTERN } from "@openbot/contr
 import { Effect, Schema } from "effect";
 import { z } from "zod";
 import { certificateFingerprint, type RelayTrust, trustedRoot } from "./identity";
+import { checkServerIdentity } from "./server-identity";
 import { generateSigningKey, type IssuedCertificate, issueCertificate, publicKeyId } from "./x509";
 
 const REGISTRY_VERSION = 1;
@@ -317,10 +318,37 @@ export class CertificateAuthority {
     }),
   );
 
+  readonly serverIdentity = Effect.fn("CertificateAuthority.serverIdentity")(() =>
+    Effect.gen({ self: this }, function* () {
+      const rootPem = yield* this.rootCertificate();
+      const root = yield* decode("The root certificate cannot be read.", () => new X509Certificate(rootPem));
+      const paths = tlsPaths(this.#directory);
+      const missing = `No server identity certificate is at ${paths.certificate}. Run "ca server --dns <public host>" to make it.`;
+      const certificatePem = yield* this.#readRequired(paths.certificate, missing);
+      const privateKeyPem = yield* this.#readRequired(paths.privateKey, missing);
+      const check = checkServerIdentity({
+        certificatePem,
+        privateKeyPem,
+        root,
+        publicUrl: this.#publicUrl,
+        now: this.#now(),
+      });
+      if (!check.ok) return yield* failure(check.message);
+      return check.identity;
+    }),
+  );
+
   readonly changeStamp = Effect.fn("CertificateAuthority.changeStamp")(() =>
     Effect.gen({ self: this }, function* () {
       const stamps: string[] = [];
-      for (const path of [this.#rootCertificatePath, this.#registryPath, this.#teamsDirectory]) {
+      const serverPaths = tlsPaths(this.#directory);
+      for (const path of [
+        this.#rootCertificatePath,
+        this.#registryPath,
+        this.#teamsDirectory,
+        serverPaths.certificate,
+        serverPaths.privateKey,
+      ]) {
         const status = yield* fileCall("The certificate store cannot be read.", () =>
           stat(path).catch((error: unknown) => (isMissing(error) ? null : Promise.reject(error))),
         );

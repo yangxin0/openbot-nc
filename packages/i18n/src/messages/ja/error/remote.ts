@@ -20,15 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "リモートイベントを利用できません。",
   "error.remote.signInAgain": "もう一度サインインしてください。",
   "error.remote.emailDeliveryUnavailable": "メールの配信を利用できません。",
-  "error.remote.inviteHostMismatch": "招待のホストがトークンと一致しません。",
-  "error.remote.inviteIdentityMismatch": "招待のホストの ID がトークンと一致しません。",
-  "error.remote.inviteAcceptedOtherHost": "アカウントサービスが別のホストを承認しました。",
-  "error.remote.inviteIdentityChanged": "招待の承認中に、ホストの ID が変わりました。",
   "error.remote.localServerRemove": "ローカルサーバーは削除できません。",
   "error.remote.viewerProxyUnavailable": "リモートビューアーのローカルプロキシを利用できません。",
   "error.remote.viewerProxyNoPort": "リモートビューアーのローカルプロキシがポートを取得できませんでした。",
-  "error.remote.inviteNeedsConnection": "招待を作成するには、ホストが一度接続する必要があります。",
-  "error.remote.permanentInviteUnsupported": "このサーバー接続は永続的な招待リンクに対応していません。",
   "error.remote.bridgeStartFailed": "Team WebRTC ブリッジの起動に失敗しました。",
   "error.remote.bridgeStopped": "Team WebRTC ブリッジが停止しました。",
   "error.remote.bridgeDidNotStart": "Team WebRTC ブリッジが起動しませんでした。",
@@ -180,6 +174,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "OpenBot はサーバーを読み込めませんでした。もう一度お試しください。",
   "error.remote.localServerNotStarted":
     "このコンピューターのサーバーが起動しませんでした。もう一度お試しください。起動しない場合は、このコンピューターで OpenBot を再起動してください。",
-  "error.remote.localServerAccountRemovalFailed":
-    "サーバーはそのコンピュータで削除されましたが、アカウントにはまだ表示されています。アカウントから外すには、もう一度削除してください。",
 } as const satisfies PartialTranslation<typeof source>;

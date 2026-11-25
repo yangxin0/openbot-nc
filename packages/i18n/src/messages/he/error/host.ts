@@ -2,20 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.keyRotationUnavailable": "השרת הזה לא יכול להחליף את המפתח שלו ללא שירות החשבונות.",
-  "error.host.keyRotationRefused": "שירות החשבונות לא קיבל את מפתח השרת החדש. המפתח הנוכחי נשאר בשימוש.",
   "error.host.webRtcNotConfigured": "שירות המארח של WebRTC לא הוגדר.",
-  "error.host.accountChangedDuringUpdate": "החשבון המחובר השתנה בזמן עדכון השרת הזה.",
   "error.host.nameBeforePublish": "יש לתת ל-OpenBot הזה שם לפני הפרסום.",
-  "error.host.memberNotFound": "החבר המרוחק לא קיים.",
   "error.host.publishBeforeInvite": "יש להפוך את OpenBot הזה לציבורי לפני יצירת הזמנה.",
   "error.host.teamAccessUnavailable": "הגישה לצוות שלך אינה זמינה.",
   "error.host.ownerIdentityUnavailable": "זהות הבעלים של המארח אינה זמינה.",
-  "error.host.reserveAddressFailed": "לא ניתן לשמור את הכתובת הציבורית.",
   "error.host.publishFailed": "לא ניתן לפרסם את OpenBot הזה.",
-  "error.host.mobileConnectPublishFailed": "לא ניתן לפרסם את OpenBot הזה עבור Mobile Connect.",
-  "error.host.mobileConnectHostChanged": "המארח של Mobile Connect השתנה. יש לנסות שוב.",
-  "error.host.mobileConnectHostMismatch": "בחשבון שלך יש מפתח אחר לשרת הזה. יש לנסות שוב.",
   "error.host.noServer": "במחשב הזה אין שרת לשינוי.",
   "error.host.identityLocalOnly": "אפשר לשנות את שם השרת ואת הלוגו שלו רק במחשב שמריץ אותו.",
   "error.host.timezoneInvalid": "אזור הזמן הזה אינו מוכר.",

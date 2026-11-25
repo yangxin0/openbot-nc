@@ -6,7 +6,6 @@ import { waitForSettingRow } from "@openbot/ui/features/conversation/agent-setti
 import { createEffect, createSignal, For, flush, onCleanup, Show } from "solid-js";
 import { useI18n } from "../../i18n-context";
 import { usePlatform } from "../../platform";
-import { useAuth } from "../account/account-context";
 import { useConnectors } from "../connectors/connectors-context";
 import { canManageStorage, serverHasBackgroundProcesses } from "../files/storage-usage";
 import type { ServerSettingsSection } from "../servers/ServerSettingsModal";
@@ -106,7 +105,6 @@ export function SettingsPage(props: { kind: SettingsKind }) {
   const platform = usePlatform();
   const connectors = useConnectors();
   const { activeServer } = useServers();
-  const { signedInAccount } = useAuth();
   const [personalQuery, setPersonalQuery] = createSignal("");
   const query = () => (props.kind === "personal" ? personalQuery() : windowPage.serverSettingsQuery());
   const setQuery = (value: string) =>
@@ -220,7 +218,7 @@ export function SettingsPage(props: { kind: SettingsKind }) {
           when={props.kind === "personal"}
           fallback={
             <PersonalSettingsLink
-              account={signedInAccount()}
+              account={null}
               onOpen={() => settings.openAppSettings(serverSettings.serverSettingsRestoreTarget())}
             />
           }

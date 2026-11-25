@@ -2,18 +2,15 @@ import { Socket } from "node:net";
 import { isAbsolute } from "node:path";
 import type { Readable } from "node:stream";
 import type { AgentSummary } from "@openbot/contracts/ipc";
-import { Deferred, Effect, Exit, Schema, Semaphore } from "effect";
-import { decodeRemoteMembers, type RemoteMemberRecord } from "./central-auth-records";
+import { Effect } from "effect";
 import type { HostService } from "./host-service";
 import { RemoteWorkflowError } from "./remote-service-effects";
 import type { TeamStore } from "./team-store";
 
 export const LOCAL_SERVER_OWNER_USERNAME = "owner";
 export const LOCAL_SERVER_READY_PREFIX = "OPENBOT_LOCAL_SERVER_READY ";
-export const LOCAL_SERVER_MEMBERS_REQUEST = "OPENBOT_LOCAL_SERVER_REQUEST members";
 export const LOCAL_SERVER_WORKING_PREFIX = "OPENBOT_LOCAL_SERVER_WORKING ";
 const LOCAL_SERVER_WORKING_DELAY_MS = 100;
-const LOCAL_SERVER_MEMBERS_TIMEOUT_MS = 30_000;
 
 export const LOCAL_SERVER_CONTROL_FD = 3;
 
@@ -52,84 +49,6 @@ export interface LocalServerReady {
   fingerprint: string;
   publicKey: string;
   ownerMemberId: string;
-}
-
-const localServerCommandSchema = Schema.Union([
-  Schema.Struct({ type: Schema.Literal("publish"), machineToken: Schema.String }),
-  Schema.Struct({ type: Schema.Literal("unpublish") }),
-  Schema.Struct({ type: Schema.Literal("members"), members: Schema.Unknown }),
-  Schema.Struct({ type: Schema.Literal("members-unavailable") }),
-]);
-export type LocalServerCommand = typeof localServerCommandSchema.Type;
-type ParsedLocalServerCommand =
-  | Exclude<LocalServerCommand, { type: "members" }>
-  | { type: "members"; members: RemoteMemberRecord[] };
-const decodeLocalServerCommand = Schema.decodeUnknownSync(localServerCommandSchema);
-
-export function formatLocalServerCommand(command: LocalServerCommand): string {
-  return `${JSON.stringify(command)}\n`;
-}
-
-export function formatLocalServerMembersRequest(): string {
-  return `${LOCAL_SERVER_MEMBERS_REQUEST}\n`;
-}
-
-function parseLocalServerCommand(line: string): ParsedLocalServerCommand | null {
-  try {
-    const command = decodeLocalServerCommand(JSON.parse(line));
-    return command.type === "members" ? { type: "members", members: decodeRemoteMembers(command) } : command;
-  } catch {
-    return null;
-  }
-}
-
-function membersUnavailable(): RemoteWorkflowError {
-  return new RemoteWorkflowError({ cause: new Error("The desktop app did not read the account directory.") });
-}
-
-export class LocalServerMembers {
-  readonly #request: () => void;
-  #pending: Deferred.Deferred<RemoteMemberRecord[], RemoteWorkflowError> | null = null;
-
-  constructor(request: () => void) {
-    this.#request = request;
-  }
-
-  readonly list = Effect.fn("LocalServerMembers.list")(function* (
-    this: LocalServerMembers,
-  ): Effect.fn.Return<RemoteMemberRecord[], RemoteWorkflowError> {
-    let pending = this.#pending;
-    if (!pending) {
-      pending = Deferred.makeUnsafe<RemoteMemberRecord[], RemoteWorkflowError>();
-      this.#pending = pending;
-      this.#request();
-    }
-    const current = pending;
-    return yield* Deferred.await(current).pipe(
-      Effect.timeoutOrElse({
-        duration: LOCAL_SERVER_MEMBERS_TIMEOUT_MS,
-        orElse: () => Effect.fail(membersUnavailable()),
-      }),
-      Effect.ensuring(
-        Effect.sync(() => {
-          if (this.#pending === current) this.#pending = null;
-        }),
-      ),
-    );
-  }).bind(this);
-
-  answer(members: RemoteMemberRecord[] | null): boolean {
-    const pending = this.#pending;
-    if (!pending) return false;
-    this.#pending = null;
-    Deferred.doneUnsafe(pending, members ? Exit.succeed(members) : Exit.fail(membersUnavailable()));
-    return true;
-  }
-}
-
-interface LocalServerPublisher {
-  publish(machineToken: string): Effect.Effect<void, RemoteWorkflowError>;
-  unpublish(): Effect.Effect<void, RemoteWorkflowError>;
 }
 
 export function takeLocalServerChildEnvironment(
@@ -176,12 +95,8 @@ export function formatLocalServerReady(ready: LocalServerReady): string {
 export interface StartLocalServerChildOptions {
   environment: LocalServerChildEnvironment;
   teamStore: Pick<TeamStore, "configured" | "configure" | "getIdentity" | "getOwnerMemberId">;
-  host: Pick<HostService, "startLoopbackOnly" | "applyAccountDirectory">;
-  members: Pick<LocalServerMembers, "answer">;
+  host: Pick<HostService, "startLoopbackOnly">;
   writeReady: (line: string) => void;
-  readCommands: (onLine: (line: string) => void) => void;
-  publisher: LocalServerPublisher;
-  warn: (message: string, cause: unknown) => void;
 }
 
 export const startLocalServerChild = Effect.fn("LocalServerChild.start")(function* ({
@@ -189,10 +104,6 @@ export const startLocalServerChild = Effect.fn("LocalServerChild.start")(functio
   teamStore,
   host,
   writeReady,
-  readCommands,
-  publisher,
-  members,
-  warn,
 }: StartLocalServerChildOptions) {
   if (!teamStore.configured)
     yield* teamStore.configure(environment.serverName, LOCAL_SERVER_OWNER_USERNAME, environment.ownerSecret);
@@ -201,38 +112,6 @@ export const startLocalServerChild = Effect.fn("LocalServerChild.start")(functio
   const ownerMemberId = teamStore.getOwnerMemberId();
   if (!identity || !status.apiUrl || !ownerMemberId)
     return yield* new RemoteWorkflowError({ cause: new Error("The local server has no identity or API address.") });
-  const commands = Semaphore.makeUnsafe(1);
-  readCommands((line) => {
-    const command = parseLocalServerCommand(line);
-    if (!command) return;
-    if (command.type === "members-unavailable") {
-      members.answer(null);
-      return;
-    }
-    if (command.type === "members") {
-      if (members.answer(command.members)) return;
-      Effect.runFork(
-        host
-          .applyAccountDirectory(command.members)
-          .pipe(
-            Effect.catch((error) =>
-              Effect.sync(() => warn("The server on this computer did not apply the account directory.", error.cause)),
-            ),
-          ),
-      );
-      return;
-    }
-    const run = command.type === "publish" ? publisher.publish(command.machineToken) : publisher.unpublish();
-    Effect.runFork(
-      commands.withPermit(
-        run.pipe(
-          Effect.catch((error) =>
-            Effect.sync(() => warn(`The server on this computer did not ${command.type}.`, error.cause)),
-          ),
-        ),
-      ),
-    );
-  });
   writeReady(
     formatLocalServerReady({
       serverId: identity.serverId,

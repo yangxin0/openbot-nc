@@ -95,7 +95,6 @@ export const messages = {
   "account.login.changeEmail": "이메일 변경",
   "account.login.resend": "코드 다시 보내기",
   "account.login.resendIn": "{time} 후 다시 보내기",
-  "account.login.loadFailed": "OpenBot이 계정 서비스를 불러오지 못했어요.",
   "account.otp.incorrect": "코드가 올바르지 않아요. 다시 시도해 주세요.",
   "account.otp.verifying": "확인 중…",
   "account.otp.entry": "일회용 코드 입력",

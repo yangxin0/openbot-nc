@@ -21,15 +21,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "Los eventos remotos no están disponibles.",
   "error.remote.signInAgain": "Inicia sesión de nuevo.",
   "error.remote.emailDeliveryUnavailable": "El envío de correo no está disponible.",
-  "error.remote.inviteHostMismatch": "El host de la invitación no coincide con su token.",
-  "error.remote.inviteIdentityMismatch": "La identidad del host de la invitación no coincide con su token.",
-  "error.remote.inviteAcceptedOtherHost": "El servicio de cuentas aceptó otro host.",
-  "error.remote.inviteIdentityChanged": "La identidad del host de la invitación cambió mientras se aceptaba.",
   "error.remote.localServerRemove": "No se puede eliminar el servidor local.",
   "error.remote.viewerProxyUnavailable": "El proxy local del visor remoto no está disponible.",
   "error.remote.viewerProxyNoPort": "El proxy local del visor remoto no recibió un puerto.",
-  "error.remote.inviteNeedsConnection": "El host debe conectarse una vez antes de poder crear invitaciones.",
-  "error.remote.permanentInviteUnsupported": "Esta conexión al servidor no admite enlaces de invitación permanentes.",
   "error.remote.bridgeStartFailed": "No se pudo iniciar el puente Team WebRTC.",
   "error.remote.bridgeStopped": "El puente Team WebRTC se detuvo.",
   "error.remote.bridgeDidNotStart": "El puente Team WebRTC no se inició.",
@@ -180,6 +174,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "OpenBot no pudo cargar el servidor. Inténtalo de nuevo.",
   "error.remote.localServerNotStarted":
     "El servidor de este equipo no se inició. Inténtalo de nuevo. Si no se inicia, reinicia OpenBot en este equipo.",
-  "error.remote.localServerAccountRemovalFailed":
-    "El servidor está eliminado en su ordenador, pero la cuenta aún lo muestra. Elimínalo otra vez para quitarlo de la cuenta.",
 } as const satisfies PartialTranslation<typeof source>;

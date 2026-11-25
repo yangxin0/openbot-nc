@@ -7,24 +7,19 @@ import { Readable, Writable } from "node:stream";
 import { type AgentSummary, isAgentSummary, LOCAL_SERVER_LIMIT, type ServerSummary } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
 import { registerSecretValue } from "@openbot/logging";
-import { Deferred, Duration, Effect, Exit, Schema, Scope, Semaphore } from "effect";
+import { Deferred, Duration, Effect, Exit, Schema, Scope } from "effect";
 import { causeHelpers } from "../../backend/effect-boundary";
-import type { RemoteMemberRecord } from "../central-auth-records";
 import {
-  formatLocalServerCommand,
   LOCAL_SERVER_CONTROL_FD,
   LOCAL_SERVER_ENVIRONMENT,
-  LOCAL_SERVER_MEMBERS_REQUEST,
   LOCAL_SERVER_OWNER_USERNAME,
   LOCAL_SERVER_READY_PREFIX,
   LOCAL_SERVER_WORKING_PREFIX,
-  type LocalServerCommand,
   type LocalServerReady,
 } from "../local-server-child";
 import type { LocalServerAttachInput, RemoteServerManager } from "../remote-server-manager";
 import type { TokenCipher } from "../remote-server-store";
 import { isLocalDevelopmentApi } from "../remote-server-urls";
-import type { RemoteWorkflowError } from "../remote-service-effects";
 import { validateServerName } from "../team-store";
 import { LocalServerRegistry, type StoredLocalServer } from "./local-server-registry";
 
@@ -135,19 +130,6 @@ interface RunningChild {
   stopping: boolean;
 }
 
-interface LocalServerAccount {
-  accountId(): string | null;
-  register(input: {
-    hostId: string;
-    name: string;
-    ownerMembershipId: string;
-    devicePublicKey: string;
-  }): Effect.Effect<void, RemoteWorkflowError>;
-  credential(hostId: string): string | null;
-  listMembers(hostId: string): Effect.Effect<RemoteMemberRecord[], RemoteWorkflowError>;
-  remove(hostId: string): Effect.Effect<void, RemoteWorkflowError>;
-}
-
 export interface LocalServerListing {
   serverId: string;
   name: string;
@@ -160,11 +142,7 @@ export interface LocalServersOptions {
   agentRoot: string;
   runtimeRoot: string;
   cipher: TokenCipher;
-  remoteServers: Pick<
-    RemoteServerManager,
-    "setThisComputerServers" | "setRegisteredThisComputerServers" | "attachLocalServer" | "detachLocalServer"
-  >;
-  account: LocalServerAccount;
+  remoteServers: Pick<RemoteServerManager, "setThisComputerServers" | "attachLocalServer" | "detachLocalServer">;
   command: { executable: string; args: readonly string[] };
   trash: (path: string) => Promise<void>;
   log: { info: (message: string) => void; warn: (message: string, detail?: unknown) => void };
@@ -190,10 +168,6 @@ export class LocalServers {
   readonly #starts = new Map<string, Deferred.Deferred<ServerSummary, LocalServerFailure>>();
   readonly #working = new Map<string, AgentSummary[]>();
   readonly #ready = new Map<string, LocalServerReady>();
-  readonly #published = new Set<string>();
-  #publishedAccountId: string | null = null;
-  readonly #memberReads = new Map<string, boolean>();
-  readonly #accountSteps = Semaphore.makeUnsafe(1);
   #stopped = false;
 
   constructor(options: LocalServersOptions) {
@@ -220,7 +194,7 @@ export class LocalServers {
               {
                 serverId: entry.serverId,
                 name: this.#ready.get(entry.id)?.serverName ?? entry.name,
-                published: this.#published.has(entry.id),
+                published: false,
               },
             ]
           : [],
@@ -228,26 +202,6 @@ export class LocalServers {
       limit: LOCAL_SERVER_LIMIT,
     };
   }
-
-  readonly accountChanged = Effect.fn("LocalServers.accountChanged")(
-    function* (this: LocalServers) {
-      if (this.#stopped) return;
-      const accountId = this.#options.account.accountId();
-      if (this.#publishedAccountId !== null && this.#publishedAccountId !== accountId) {
-        for (const id of this.#published) this.#send(id, { type: "unpublish" });
-        this.#published.clear();
-        this.#publishedAccountId = null;
-        this.#announcePublished();
-      }
-      if (accountId === null) return;
-      yield* this.#removeDeletedHosts();
-      for (const entry of this.#registry.servers) {
-        const running = this.#running.get(entry.id);
-        if (running && !this.#published.has(entry.id)) yield* this.#publishUnlocked(entry, running);
-      }
-    },
-    (operation) => this.#accountSteps.withPermit(operation),
-  );
 
   readonly load = Effect.fn("LocalServers.load")(function* (this: LocalServers) {
     yield* this.#registry
@@ -283,7 +237,6 @@ export class LocalServers {
   readonly create = Effect.fn("LocalServers.create")(function* (
     this: LocalServers,
     name: string,
-    from: "desktop" | "device" = "desktop",
   ): Effect.fn.Return<ServerSummary, LocalServerFailure> {
     const serverName = name.trim();
     yield* localSync(() => validateServerName(serverName));
@@ -305,7 +258,7 @@ export class LocalServers {
     return yield* localIO(() =>
       mkdir(join(this.#paths(entry).userData, PROVIDER_HOMES_FOLDER), { recursive: true, mode: 0o700 }),
     ).pipe(
-      Effect.andThen(this.#start(entry, from === "device")),
+      Effect.andThen(this.#start(entry)),
       Effect.tapError(() =>
         this.#forget(entry).pipe(
           Effect.catch(({ cause }) =>
@@ -323,20 +276,8 @@ export class LocalServers {
     yield* this.#start(entry);
   });
 
-  readonly delete = Effect.fn("LocalServers.delete")(function* (
-    this: LocalServers,
-    serverId: string,
-    from: "desktop" | "device" = "desktop",
-  ) {
-    const entry = this.#registry.findByServerId(serverId);
-    if (from === "desktop" || !this.#registry.removedHostIds.includes(serverId) || entry)
-      yield* this.#forget(yield* this.#entry(serverId), from === "desktop");
-    if (from === "desktop") return;
-    yield* this.#accountSteps.withPermit(this.#removeDeletedHosts());
-    if (this.#registry.removedHostIds.includes(serverId))
-      return yield* new LocalServerFailure({
-        cause: new Error(sourceText("error.remote.localServerAccountRemovalFailed")),
-      });
+  readonly delete = Effect.fn("LocalServers.delete")(function* (this: LocalServers, serverId: string) {
+    yield* this.#forget(yield* this.#entry(serverId));
   });
 
   readonly stop = Effect.fn("LocalServers.stop")(function* (this: LocalServers) {
@@ -362,133 +303,10 @@ export class LocalServers {
   }
 
   #announce(): void {
-    this.#options.remoteServers.setThisComputerServers([
-      ...this.#registry.servers.flatMap((entry) => (entry.serverId ? [entry.serverId] : [])),
-      ...this.#registry.removedHostIds,
-    ]);
-  }
-
-  #announcePublished(): void {
-    this.#options.remoteServers.setRegisteredThisComputerServers(
-      this.#registry.servers.flatMap((entry) =>
-        entry.serverId && this.#published.has(entry.id) ? [entry.serverId] : [],
-      ),
+    this.#options.remoteServers.setThisComputerServers(
+      this.#registry.servers.flatMap((entry) => (entry.serverId ? [entry.serverId] : [])),
     );
   }
-
-  sendMembers(serverId: string): void {
-    const entry = this.#registry.findByServerId(serverId);
-    if (entry) this.#readMembers(entry.id);
-  }
-
-  #readMembers(id: string): void {
-    if (this.#memberReads.has(id)) {
-      this.#memberReads.set(id, true);
-      return;
-    }
-    const ready = this.#ready.get(id);
-    const running = this.#running.get(id);
-    if (!ready || !running || !this.#published.has(id)) {
-      this.#send(id, { type: "members-unavailable" });
-      return;
-    }
-    this.#memberReads.set(id, false);
-    Effect.runFork(
-      Effect.forkIn(
-        this.#options.account.listMembers(ready.serverId).pipe(
-          Effect.map((members): LocalServerCommand => ({ type: "members", members })),
-          Effect.catch(({ cause }) =>
-            Effect.sync((): LocalServerCommand => {
-              this.#options.log.warn("The members of a server on this computer did not load.", cause);
-              return { type: "members-unavailable" };
-            }),
-          ),
-          Effect.flatMap((command) =>
-            Effect.sync(() => {
-              if (this.#running.get(id) === running) this.#send(id, command);
-            }),
-          ),
-          Effect.ensuring(
-            Effect.sync(() => {
-              const again = this.#memberReads.get(id) === true;
-              this.#memberReads.delete(id);
-              if (again) this.#readMembers(id);
-            }),
-          ),
-        ),
-        this.#scope,
-        { startImmediately: true },
-      ),
-    );
-  }
-
-  #send(id: string, command: LocalServerCommand): void {
-    const running = this.#running.get(id);
-    const control = running && !running.stopping ? controlPipe(running.child, this.#options.platform) : null;
-    if (!control?.writable) return;
-    control.write(formatLocalServerCommand(command));
-  }
-
-  readonly #publishUnlocked = Effect.fn("LocalServers.publish")(function* (
-    this: LocalServers,
-    entry: StoredLocalServer,
-    running: RunningChild,
-  ) {
-    const accountId = this.#options.account.accountId();
-    const ready = this.#ready.get(entry.id);
-    if (accountId === null || !ready || this.#stopped) return;
-    yield* this.#options.account
-      .register({
-        hostId: ready.serverId,
-        name: ready.serverName,
-        ownerMembershipId: ready.ownerMemberId,
-        devicePublicKey: ready.publicKey,
-      })
-      .pipe(
-        Effect.andThen(
-          Effect.sync(() => {
-            const machineToken = this.#options.account.credential(ready.serverId);
-            if (
-              !machineToken ||
-              this.#options.account.accountId() !== accountId ||
-              this.#running.get(entry.id) !== running
-            )
-              return;
-            registerSecretValue(machineToken);
-            this.#send(entry.id, { type: "publish", machineToken });
-            this.#published.add(entry.id);
-            this.#publishedAccountId = accountId;
-            this.#announcePublished();
-          }),
-        ),
-        Effect.catch(({ cause }) =>
-          Effect.sync(() =>
-            this.#options.log.warn("A server on this computer was not registered for the account.", cause),
-          ),
-        ),
-      );
-  });
-
-  readonly #removeDeletedHosts = Effect.fn("LocalServers.removeDeletedHosts")(function* (this: LocalServers) {
-    for (const hostId of this.#registry.removedHostIds) {
-      const removed = yield* this.#options.account.remove(hostId).pipe(
-        Effect.as(true),
-        Effect.catch(({ cause }) =>
-          Effect.sync(() => {
-            this.#options.log.warn("A deleted server on this computer was not removed from the account.", cause);
-            return false;
-          }),
-        ),
-      );
-      if (removed)
-        yield* this.#registry.forgetRemovedHost(hostId).pipe(
-          Effect.tap(() => Effect.sync(() => this.#announce())),
-          Effect.catch(({ cause }) =>
-            Effect.sync(() => this.#options.log.warn("The list of servers on this computer was not saved.", cause)),
-          ),
-        );
-    }
-  });
 
   #background(operation: Effect.Effect<unknown, LocalServerFailure>): void {
     Effect.runFork(
@@ -507,7 +325,6 @@ export class LocalServers {
   readonly #start = Effect.fn("LocalServers.start")(function* (
     this: LocalServers,
     entry: StoredLocalServer,
-    awaitRegistration = false,
   ): Effect.fn.Return<ServerSummary, LocalServerFailure> {
     if (this.#stopped) return yield* startFailure();
     const secret = yield* localSync(() => this.#options.cipher.decrypt(Buffer.from(entry.encryptedSecret, "base64")));
@@ -533,10 +350,6 @@ export class LocalServers {
     const ready = Deferred.makeUnsafe<LocalServerReady, LocalServerFailure>();
     if (child.stdout)
       createInterface({ input: child.stdout }).on("line", (line) => {
-        if (line === LOCAL_SERVER_MEMBERS_REQUEST) {
-          this.#readMembers(entry.id);
-          return;
-        }
         const working = parseWorkingLine(line);
         if (working) {
           if (this.#running.get(entry.id) === running) this.#working.set(entry.id, working);
@@ -575,9 +388,6 @@ export class LocalServers {
       const summary = yield* this.#options.remoteServers.attachLocalServer(attach).pipe(toLocalServerFailure);
       this.#options.log.info(`A server on this computer started (pid ${child.pid ?? "unknown"}).`);
       this.#ready.set(entry.id, value);
-      const register = this.#accountSteps.withPermit(this.#publishUnlocked(entry, running));
-      if (awaitRegistration) yield* register;
-      else this.#background(register);
       this.#background(this.#renewSession(entry, running, attach));
       return summary;
     }).pipe(Effect.tapError(() => this.#stopChild(entry, running)));
@@ -608,8 +418,6 @@ export class LocalServers {
     if (this.#running.get(entry.id) === running) {
       this.#running.delete(entry.id);
       this.#working.delete(entry.id);
-      this.#published.delete(entry.id);
-      this.#announcePublished();
     }
     if (running.stopping || this.#stopped) return;
     this.#options.log.warn(`A server on this computer stopped (code ${code ?? "none"}, signal ${signal ?? "none"}).`);
@@ -700,8 +508,6 @@ export class LocalServers {
       yield* terminate(running.child, this.#options.platform);
       if (this.#running.get(entry.id) === running) {
         this.#running.delete(entry.id);
-        this.#published.delete(entry.id);
-        this.#announcePublished();
       }
     }
     if (only && this.#running.has(entry.id)) return;
@@ -710,11 +516,7 @@ export class LocalServers {
       yield* this.#options.remoteServers.detachLocalServer(serverId, false).pipe(Effect.catch(() => Effect.void));
   });
 
-  readonly #forget = Effect.fn("LocalServers.forget")(function* (
-    this: LocalServers,
-    entry: StoredLocalServer,
-    removeFromAccount = true,
-  ) {
+  readonly #forget = Effect.fn("LocalServers.forget")(function* (this: LocalServers, entry: StoredLocalServer) {
     yield* this.#stopChild(entry);
     const paths = this.#paths(entry);
     for (const path of [paths.userData, paths.agentRoot]) {
@@ -726,8 +528,6 @@ export class LocalServers {
     this.#ready.delete(entry.id);
     if (serverId) yield* this.#options.remoteServers.detachLocalServer(serverId, true).pipe(toLocalServerFailure);
     this.#announce();
-    if (removeFromAccount && this.#options.account.accountId() !== null)
-      this.#background(this.#accountSteps.withPermit(this.#removeDeletedHosts()));
   });
 }
 

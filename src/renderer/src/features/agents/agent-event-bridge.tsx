@@ -80,13 +80,12 @@ export function AgentEventBridge() {
   const platform = usePlatform();
   const { activeServer, activeServerId } = useServers();
   const { setSkillsMarketplaceOpen } = useSettings();
-  const { applyAccountUsage, accountUsageTargetKey, refreshAccountUsage, centralAuth } = useAuth();
+  const { applyAccountUsage, accountUsageTargetKey, refreshAccountUsage, profile } = useAuth();
   const { readerMemberId } = usePresence();
   const isReader = (senderId: string) => {
-    const state = centralAuth();
     return isReaderAuthor(senderId, {
       memberId: readerMemberId(),
-      accountUserId: state.status === "signed_in" ? state.user.id : null,
+      accountUserId: profile()?.id ?? null,
       onOwnComputer: activeServer()?.kind === "local",
     });
   };

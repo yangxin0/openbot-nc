@@ -19,15 +19,15 @@
 - The servers of team members show the user and the device that share them. When the central server
   refuses a connection for good, for example for an expired certificate, the server screen has a
   "Team settings" action next to "Retry".
+- OpenBot and the central server now verify each other. The server proves with a certificate of the
+  team root that it is the team's own server, also when its TLS certificate comes from a public
+  authority. When the proof is wrong, OpenBot stops and says "The central server did not prove that
+  it belongs to your team." The server needs `ca server --dns <public host>` and this version.
 
 ### Changed
 
 - OpenBot opens with no sign-in. It makes a local profile on this computer, with your name and chat
-  color, and does not connect to an account service. A computer that was signed in keeps its
-  messages, read marks and server on this computer.
-- Features that need the account service do not work in this version: joined servers, invitations,
-  the phone link, the skill and agent marketplaces, hosted sites, feedback, billing and credits. Their actions show "This OpenBot
-  has no account service. This feature is not available." The profile picture cannot be changed.
+  color, and never connects to an account service. You cannot set a profile picture.
 - The "+" menu of the server list no longer offers "Add remote server" with an invitation, and the
   first start no longer shows the invitation step. Team servers come from the central server.
 - This build does not update itself: it does not check for, download or install releases, and
@@ -109,3 +109,20 @@
   follow and GitHub star prompts, the Guides, Discord and Full changelog items of the Help menu, the
   Terms and Privacy links of the first start, and the download buttons of the update and recovery
   screens. The Help menu opens What's new, which comes with the app.
+- The sign-in screen and the account sessions list. OpenBot always opens with the local profile.
+  Settings > Profile has no email, sign-out or sessions rows, and you cannot set a profile picture.
+  The old files `openbot-central-auth-v1.bin` and `openbot-remote-sessions-v1.bin` stay on disk and
+  are no longer read.
+- Mobile Connect. Settings has no Mobile Connect tab (QR code, phone link, connected phones and the
+  network route choice), and the server list has no "Get the mobile app" card.
+- Invitations on the desktop. Server Settings > Members has no invitation links, email invitations
+  or pending invitations, OpenBot no longer opens invitation links, and there is no "join with an
+  invitation" step. The members of a team come from the central server.
+- Owner transfer. OpenBot shows no ownership transfer offers, Server Settings has no Transfer
+  ownership section, and servers no longer offer `owner-transfer-v1`.
+- Server key rotation with the account service. Server Settings has no key rotation action, and
+  servers no longer offer `host-key-rotation-v1`.
+- Sign-in to a server with an account ticket (`/v1/join/account` and `/v1/auth/account`). A server
+  answers these addresses with 401.
+- Servers on this computer are no longer registered with the account service, and they no longer
+  read members from it.

@@ -1,10 +1,4 @@
-import type {
-  AvatarImageInput,
-  CentralAuthUser,
-  MobileConnectedDevice,
-  ServerSummary,
-  UpdateStatus,
-} from "@openbot/contracts/ipc";
+import type { CentralAuthUser, ServerSummary, UpdateStatus } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
 import { Button, Toaster, toast } from "@openbot/ui";
 import { DEFAULT_GENERAL_SETTINGS, type GeneralSettingsValue } from "@openbot/ui/features/settings/app-settings";
@@ -112,32 +106,6 @@ function SettingsModalStory(props: {
   const updateServer = (serverId: string, change: Partial<ServerSummary>): void => {
     setServers((list) => list.map((server) => (server.id === serverId ? { ...server, ...change } : server)));
   };
-  const [mobileDevices, setMobileDevices] = createSignal<MobileConnectedDevice[]>([
-    {
-      sessionId: "11111111-1111-4111-8111-111111111111",
-      name: "Norbert’s iPhone",
-      platform: "ios",
-      connectedAt: Date.now() - 86_400_000,
-      lastActiveAt: Date.now() - 45_000,
-      via: "code",
-    },
-    {
-      sessionId: "22222222-2222-4222-8222-222222222222",
-      name: "Pixel 9",
-      platform: "android",
-      connectedAt: Date.now() - 3_600_000,
-      lastActiveAt: Date.now() - 600_000,
-      via: "link",
-    },
-  ]);
-
-  async function updateAccountAvatar(image: AvatarImageInput | null): Promise<void> {
-    const avatarUrl = image
-      ? `data:${image.mimeType};base64,${btoa(Array.from(image.bytes, (byte) => String.fromCharCode(byte)).join(""))}`
-      : null;
-    setAccount((current) => ({ ...current, avatarUrl }));
-  }
-
   async function updateAccountName(name: string): Promise<void> {
     setAccount((current) => ({ ...current, name }));
   }
@@ -149,30 +117,6 @@ function SettingsModalStory(props: {
         ? { ...storyUpdateStatus, phase: "available", availableVersion: props.stagedVersion, checkedAt }
         : { ...storyUpdateStatus, phase: "up-to-date", checkedAt },
     );
-  }
-
-  let scanTimer: number | undefined;
-  onCleanup(() => window.clearTimeout(scanTimer));
-  async function createMobileConnect(): Promise<{ qrData: string; expiresAt: number }> {
-    window.clearTimeout(scanTimer);
-    scanTimer = window.setTimeout(() => {
-      setMobileDevices((current) => [
-        ...current,
-        {
-          sessionId: crypto.randomUUID(),
-          name: "Work iPhone",
-          platform: "ios",
-          connectedAt: Date.now(),
-          lastActiveAt: Date.now(),
-          via: "code",
-        },
-      ]);
-    }, 6_000);
-    return {
-      qrData:
-        "openbot://mobile-connect?api=https%3A%2F%2Fapi.example.com&ticket=storybook-mobile-ticket_1234567890abcdef",
-      expiresAt: Date.now() + 120_000,
-    };
   }
 
   return (
@@ -217,26 +161,9 @@ function SettingsModalStory(props: {
                 }}
                 account={account()}
                 onUpdateAccountName={updateAccountName}
-                onUpdateAccountAvatar={updateAccountAvatar}
                 onSetChatColor={async (chatColor) => {
                   setAccount((current) => ({ ...current, chatColor }));
                 }}
-                onCreateMobileConnect={createMobileConnect}
-                onCancelMobileConnect={async () => {
-                  window.clearTimeout(scanTimer);
-                  await mock.api.auth.cancelMobileConnect();
-                }}
-                onGetMobileConnectLink={mock.api.auth.getMobileConnectLink}
-                onCreateMobileConnectLink={mock.api.auth.createMobileConnectLink}
-                onRevokeMobileConnectLink={mock.api.auth.revokeMobileConnectLink}
-                onListMobileConnectedDevices={async () => mobileDevices()}
-                onListAccountSessions={mock.api.auth.listAccountSessions}
-                onRevokeAccountSession={mock.api.auth.revokeAccountSession}
-                onRevokeMobileConnectedDevice={async (sessionId) => {
-                  setMobileDevices((current) => current.filter((device) => device.sessionId !== sessionId));
-                }}
-                onGetRemoteNetworkRoute={mock.api.getRemoteNetworkRoute}
-                onSetRemoteNetworkRoute={(route) => mock.api.setRemoteNetworkRoute({ route })}
                 onUpdateAction={runUpdateAction}
                 agentDock={props.agentDock ? storyAgentDock : undefined}
               />
@@ -261,13 +188,7 @@ const meta = {
     onUpdateAction: fn(async () => undefined),
     account: storyAccount,
     onUpdateAccountName: fn(async () => undefined),
-    onUpdateAccountAvatar: fn(async () => undefined),
     onSetChatColor: fn(async () => undefined),
-    onCreateMobileConnect: fn(async () => ({
-      qrData:
-        "openbot://mobile-connect?api=https%3A%2F%2Fapi.example.com&ticket=storybook-mobile-ticket_1234567890abcdef",
-      expiresAt: Date.now() + 120_000,
-    })),
   },
   parameters: {
     layout: "fullscreen",
@@ -366,10 +287,6 @@ export const VoiceModelsDownloaded: Story = {
       voice={{ voiceModelsReady: ["parakeet-tdt-0.6b-v3", "parakeet-unified-en-0.6b"], speechModelReady: true }}
     />
   ),
-};
-
-export const MobileConnect: Story = {
-  render: () => <SettingsModalStory initialOpen initialTab="mobile-connect" />,
 };
 
 export const TeamNoIdentity: Story = {

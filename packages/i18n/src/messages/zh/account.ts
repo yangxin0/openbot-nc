@@ -95,7 +95,6 @@ export const messages = {
   "account.login.changeEmail": "更换邮箱",
   "account.login.resend": "重新发送验证码",
   "account.login.resendIn": "{time} 后可重发",
-  "account.login.loadFailed": "OpenBot 无法加载账号服务。",
   "account.otp.incorrect": "验证码不正确，请重试。",
   "account.otp.verifying": "正在验证…",
   "account.otp.entry": "一次性验证码输入",

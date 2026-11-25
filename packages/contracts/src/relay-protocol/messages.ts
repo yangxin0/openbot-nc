@@ -22,6 +22,7 @@ export const RELAY_SIGNATURE_PATTERN = /^[A-Za-z0-9_-]{1,1024}$/u;
 export const RELAY_SUBJECT_NAME_PATTERN = /^[\p{L}\p{N}][\p{L}\p{N} ._@-]{0,62}[\p{L}\p{N}]$|^[\p{L}\p{N}]$/u;
 
 const RELAY_HELLO_CONTEXT = "openbot-relay-hello-v1";
+const RELAY_SERVER_PROOF_CONTEXT = "openbot-relay-server-proof-v1";
 const RELAY_TEAM_ID_CONTEXT = "openbot-relay-team-v1";
 
 export const RELAY_SUBJECT_FIELDS = { team: "O", user: "CN", device: "OU" } as const;
@@ -75,6 +76,7 @@ interface RelayHelloProof {
   type: "hello";
   version: RelayProtocolVersion;
   audience: string;
+  clientNonce: string;
   certificate: string;
   chain?: string[];
   signature: string;
@@ -91,6 +93,7 @@ export type RelayClientMessage =
 
 export type RelayServerMessage =
   | { type: "challenge"; version: RelayProtocolVersion; nonce: string }
+  | { type: "server-proof"; version: RelayProtocolVersion; certificate: string; signature: string }
   | {
       type: "welcome";
       version: RelayProtocolVersion;
@@ -108,6 +111,7 @@ export type RelayServerMessage =
 
 export function relayHelloTranscript(input: {
   nonce: string;
+  clientNonce: string;
   audience: string;
   role: RelayRole;
   target?: string | undefined;
@@ -116,8 +120,32 @@ export function relayHelloTranscript(input: {
   return JSON.stringify([
     RELAY_HELLO_CONTEXT,
     input.nonce,
+    input.clientNonce,
     input.audience,
     input.role,
+    input.target ?? "",
+    input.connectionId ?? "",
+  ]);
+}
+
+export interface RelayServerProofTranscriptInput {
+  serverNonce: string;
+  clientNonce: string;
+  audience: string;
+  role: RelayRole;
+  clientKeyId: string;
+  target?: string | undefined;
+  connectionId?: string | undefined;
+}
+
+export function relayServerProofTranscript(input: RelayServerProofTranscriptInput): string {
+  return JSON.stringify([
+    RELAY_SERVER_PROOF_CONTEXT,
+    input.serverNonce,
+    input.clientNonce,
+    input.audience,
+    input.role,
+    input.clientKeyId,
     input.target ?? "",
     input.connectionId ?? "",
   ]);

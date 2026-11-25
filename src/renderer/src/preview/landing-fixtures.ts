@@ -627,10 +627,7 @@ export function createLandingPreviewOptions(now: Date): MockOpenBotOptions {
     Object.entries(LANDING_CONTEXT_TOKENS).map(([agentId, tokens]) => [agentId, tokens.before]),
   );
   return {
-    authState: {
-      status: "signed_in",
-      user: { id: "user-1", email: LANDING_PREVIEW_EMAIL, name: "Norbert", avatarUrl: null },
-    },
+    profile: { id: "user-1", name: "Norbert", chatColor: null },
     agentStatus: landingAgentStatus(),
     usage: landingUsage(nowMs),
     updateStatus: landingUpdateStatus(at),

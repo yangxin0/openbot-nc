@@ -8,5 +8,4 @@ export const messages = {
   "error.app.notReady": "OpenBot hazır değil.",
   "error.app.macSecureStorageUnavailable": "macOS güvenli depolaması kullanılamıyor.",
   "error.app.secretStorageUnavailable": "Sistem gizli anahtar depolaması kullanılamıyor.",
-  "error.app.remoteIdentityUnavailable": "Uzak ana makine kimliği kullanılamıyor.",
 } as const satisfies PartialTranslation<typeof source>;

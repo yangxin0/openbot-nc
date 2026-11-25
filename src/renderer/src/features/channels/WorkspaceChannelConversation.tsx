@@ -46,7 +46,7 @@ function DesktopChannelConversation(props: { channelId: string; account: () => C
   const { selectAgent, messageFocusRequest, globalSearchOpen } = useNavigation();
   const auth = useAuth();
   const { teamPresence, readerMemberId } = usePresence();
-  const { activeServer, activeServerSupportsCapability, joinServerOpen } = useServers();
+  const { activeServer, activeServerSupportsCapability } = useServers();
   const { serverSettingsOpen } = useServerSettings();
   const {
     appSettingsOpen,
@@ -70,10 +70,9 @@ function DesktopChannelConversation(props: { channelId: string; account: () => C
   } = useBrowserTabs();
   const windowPage = useWindowPage();
   const isOwnSender = (senderId: string) => {
-    const state = auth.centralAuth();
     return isReaderAuthor(senderId, {
       memberId: readerMemberId(),
-      accountUserId: state.status === "signed_in" ? state.user.id : null,
+      accountUserId: auth.profile()?.id ?? null,
       onOwnComputer: activeServer()?.kind === "local",
     });
   };
@@ -166,7 +165,6 @@ function DesktopChannelConversation(props: { channelId: string; account: () => C
       mcpSettingsOpen={skillsMarketplaceOpen()}
       globalOverlayOpen={
         globalSearchOpen() ||
-        joinServerOpen() ||
         serverSettingsOpen() ||
         appSettingsOpen() ||
         skillsMarketplaceOpen() ||

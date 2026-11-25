@@ -20,15 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "Удалённые события недоступны.",
   "error.remote.signInAgain": "Войдите снова.",
   "error.remote.emailDeliveryUnavailable": "Отправка по электронной почте недоступна.",
-  "error.remote.inviteHostMismatch": "Хост приглашения не соответствует его токену.",
-  "error.remote.inviteIdentityMismatch": "Идентификатор хоста приглашения не соответствует его токену.",
-  "error.remote.inviteAcceptedOtherHost": "Служба аккаунтов приняла другой хост.",
-  "error.remote.inviteIdentityChanged": "Идентификатор хоста приглашения изменился во время принятия.",
   "error.remote.localServerRemove": "Локальный сервер нельзя удалить.",
   "error.remote.viewerProxyUnavailable": "Локальный прокси просмотра удалённого рабочего стола недоступен.",
   "error.remote.viewerProxyNoPort": "Локальный прокси просмотра удалённого рабочего стола не получил порт.",
-  "error.remote.inviteNeedsConnection": "Хост должен один раз подключиться, прежде чем создавать приглашения.",
-  "error.remote.permanentInviteUnsupported": "Это подключение к серверу не поддерживает постоянные ссылки-приглашения.",
   "error.remote.bridgeStartFailed": "Не удалось запустить мост Team WebRTC.",
   "error.remote.bridgeStopped": "Мост Team WebRTC остановился.",
   "error.remote.bridgeDidNotStart": "Мост Team WebRTC не запустился.",
@@ -178,6 +172,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "Не удалось загрузить сервер. Повторите попытку.",
   "error.remote.localServerNotStarted":
     "Сервер на этом компьютере не запустился. Повторите попытку. Если он не запустится, перезапустите OpenBot на этом компьютере.",
-  "error.remote.localServerAccountRemovalFailed":
-    "Сервер удалён на своём компьютере, но в аккаунте он ещё есть. Удалите его ещё раз, чтобы убрать из аккаунта.",
 } as const satisfies PartialTranslation<typeof source>;

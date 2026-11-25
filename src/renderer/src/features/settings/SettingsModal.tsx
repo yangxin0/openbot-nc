@@ -1,15 +1,8 @@
 import type {
-  AccountSession,
   AppInfo,
   AvatarColor,
-  AvatarImageInput,
   CentralAuthUser,
   DynamicIslandGeometry,
-  MobileConnectedDevice,
-  MobileConnectLink,
-  MobileConnectTicket,
-  RemoteNetworkRoute,
-  RemoteNetworkRouteState,
   ServerNotificationLevel,
   ServerSummary,
   UpdateStatus,
@@ -30,12 +23,9 @@ import {
   SettingsNavGroupLabel,
   type SettingsPagePlacement,
 } from "@openbot/ui/features/settings/SettingsDialogShell";
-import type { MobileInstallRequest } from "@openbot/ui/features/settings/SettingsMobileConnectTab";
-import { SettingsMobileConnectTab } from "@openbot/ui/features/settings/SettingsMobileConnectTab";
 import { SettingsProfileTab } from "@openbot/ui/features/settings/SettingsProfileTab";
 import { SettingsTeamTab } from "@openbot/ui/features/settings/SettingsTeamTab";
 import { SettingsUpdatesTab } from "@openbot/ui/features/settings/SettingsUpdatesTab";
-import { createSettingsMobileConnectStore } from "@openbot/ui/features/settings/stores/mobile-connect-store";
 import { createSettingsProfileStore } from "@openbot/ui/features/settings/stores/profile-store";
 import { createSettingsUpdatesStore } from "@openbot/ui/features/settings/stores/updates-store";
 import { createEffect, createSignal, Show, untrack } from "solid-js";
@@ -77,24 +67,8 @@ export interface SettingsModalProps {
   onRestartNow?: () => Promise<void>;
   account: CentralAuthUser;
   onUpdateAccountName: (name: string) => Promise<void>;
-  onUpdateAccountAvatar: (image: AvatarImageInput | null) => Promise<void>;
   onSetChatColor: (color: AvatarColor | null) => Promise<void>;
-  onCreateMobileConnect?: () => Promise<MobileConnectTicket>;
-  onCancelMobileConnect?: () => Promise<void>;
-  onGetMobileConnectLink?: () => Promise<MobileConnectLink | null>;
-  onCreateMobileConnectLink?: () => Promise<MobileConnectLink>;
-  onRevokeMobileConnectLink?: () => Promise<void>;
-  onListMobileConnectedDevices?: () => Promise<MobileConnectedDevice[]>;
-  onRevokeMobileConnectedDevice?: (sessionId: string) => Promise<void>;
-  onGetRemoteNetworkRoute?: () => Promise<RemoteNetworkRouteState>;
-  onSetRemoteNetworkRoute?: (route: RemoteNetworkRoute) => Promise<RemoteNetworkRouteState>;
-  onListAccountSessions?: () => Promise<AccountSession[]>;
-  onRevokeAccountSession?: (sessionId: string) => Promise<void>;
-  onSignOut?: (() => Promise<void>) | undefined;
-  processAvatarFile?: (file: File) => Promise<AvatarImageInput>;
   onContactUs?: (() => void) | undefined;
-  mobileInstallRequest?: MobileInstallRequest | null;
-  onMobileInstallRequestHandled?: (() => void) | undefined;
   onTestNotification?: () => void | Promise<void>;
   onOpenNotificationSettings?: () => void | Promise<void>;
   restoreFocusTarget?: HTMLElement | null;
@@ -113,7 +87,6 @@ export function SettingsModal(props: SettingsModalProps) {
     () => props.open && activeTab() === "profile",
     (stats) => renderProfileShareImage(props.account, stats),
   );
-  const mobileConnect = createSettingsMobileConnectStore(props, () => activeTab() === "mobile-connect");
   const updates = createSettingsUpdatesStore(props);
   const voice = createSettingsVoiceStore(() => props.open && activeTab() === "voice");
   const notificationLevels = createNotificationLevelsStore({
@@ -158,7 +131,6 @@ export function SettingsModal(props: SettingsModalProps) {
         value === "computer-use" ||
         value === "team" ||
         value === "profile" ||
-        value === "mobile-connect" ||
         value === "updates"
       ) {
         setActiveTab(value);
@@ -357,22 +329,8 @@ export function SettingsModal(props: SettingsModalProps) {
             store={profile}
             account={props.account}
             activity={profileActivity}
-            canListSessions={Boolean(props.onListAccountSessions) && props.account.email !== ""}
-            canRevokeSession={Boolean(props.onRevokeAccountSession)}
-            onSignOut={props.account.email ? props.onSignOut : undefined}
-          />
-        </Tabs.Content>
-
-        <Tabs.Content value="mobile-connect" class="settings-modal-tab-panel" data-tab="mobile-connect">
-          <SettingsMobileConnectTab
-            store={mobileConnect}
-            canCreateTicket={Boolean(props.onCreateMobileConnect)}
-            canCancelTicket={Boolean(props.onCancelMobileConnect)}
-            canManageLink={Boolean(props.onCreateMobileConnectLink && props.onRevokeMobileConnectLink)}
-            canRevokeDevice={Boolean(props.onRevokeMobileConnectedDevice)}
-            canSetRoute={Boolean(props.onSetRemoteNetworkRoute)}
-            installRequest={props.open ? props.mobileInstallRequest : null}
-            onInstallRequestHandled={props.onMobileInstallRequestHandled}
+            canListSessions={false}
+            canRevokeSession={false}
           />
         </Tabs.Content>
 

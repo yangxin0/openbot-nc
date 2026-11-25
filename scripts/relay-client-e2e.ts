@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
-import { createHash, createPrivateKey, generateKeyPairSync, randomBytes, X509Certificate } from "node:crypto";
+import {
+  createHash,
+  createPrivateKey,
+  generateKeyPairSync,
+  type KeyObject,
+  randomBytes,
+  sign,
+  X509Certificate,
+} from "node:crypto";
 import { EventEmitter, once } from "node:events";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import {
@@ -10,15 +18,25 @@ import {
   type Server,
   type ServerResponse,
 } from "node:http";
+import { createServer as createHttpsServer } from "node:https";
 import { createServer as createNetServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { inspect } from "node:util";
 import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/contracts/relay-protocol/identity-bundle";
-import { RELAY_LABEL_LIMIT, RELAY_PATH, type RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
+import {
+  RELAY_LABEL_LIMIT,
+  RELAY_PATH,
+  RELAY_PROTOCOL_VERSION,
+  type RelayRole,
+  type RelayServerProofTranscriptInput,
+  type RelayTeamMember,
+  relayServerProofTranscript,
+} from "@openbot/contracts/relay-protocol/messages";
+import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { Effect, Result } from "effect";
 import WebSocket, { WebSocketServer } from "ws";
-import { issueCertificate } from "../remote/api/src/relay/x509";
+import { generateSigningKey, issueCertificate } from "../remote/api/src/relay/x509";
 import { RelayAcceptor } from "../src/main/relay/acceptor";
 import { RelayControl, type RelayControlState } from "../src/main/relay/control";
 import { RelayDialer } from "../src/main/relay/dialer";
@@ -31,6 +49,7 @@ import { rawDataBytes } from "../src/main/ws-raw-data";
 const ROOT = resolve(import.meta.dirname, "..");
 const OUT = resolve(ROOT, ".openbot-build/relay-client-e2e");
 const MAIN = resolve(ROOT, "remote/api/src/relay/main.ts");
+const SYSTEM_ROOTS_CHILD = resolve(ROOT, "scripts/relay-client-system-roots-child.ts");
 const WAIT_MS = 30_000;
 const TRANSFER_BYTES = 8 * 1024 * 1024;
 const HELD_BYTES = 32 * 1024 * 1024;
@@ -245,6 +264,118 @@ async function killRelay(relay: Relay): Promise<void> {
   await deadline("the relay server process ends", relay.exited);
 }
 
+interface FakeServerProof {
+  certificate: string;
+  privateKey: KeyObject;
+  change?: (transcript: RelayServerProofTranscriptInput) => RelayServerProofTranscriptInput;
+}
+
+interface FakeRelay {
+  url: string;
+  connections: number;
+  received: string[][];
+  closed: EventEmitter<{ closed: [] }>;
+  closedCount: number;
+  stop: () => void;
+}
+
+function helloTranscript(serverNonce: string, text: string): RelayServerProofTranscriptInput | null {
+  const hello = JSON.parse(text);
+  if (!isDynamicRecord(hello) || !isString(hello.certificate) || !isString(hello.clientNonce)) return null;
+  if (!isString(hello.audience) || !isRole(hello.role)) return null;
+  return {
+    serverNonce,
+    clientNonce: hello.clientNonce,
+    audience: hello.audience,
+    role: hello.role,
+    clientKeyId: createHash("sha256")
+      .update(new X509Certificate(hello.certificate).publicKey.export({ type: "spki", format: "der" }))
+      .digest("base64url"),
+    target: isString(hello.target) ? hello.target : undefined,
+    connectionId: isString(hello.connectionId) ? hello.connectionId : undefined,
+  };
+}
+
+function isRole(value: unknown): value is RelayRole {
+  return value === "member" || value === "client" || value === "accept";
+}
+
+async function startFakeRelay(tls: { cert: string; key: string }, proof: FakeServerProof): Promise<FakeRelay> {
+  const server = createHttpsServer(tls);
+  const sockets = new WebSocketServer({ server, path: RELAY_PATH });
+  const fake: FakeRelay = {
+    url: "",
+    connections: 0,
+    received: [],
+    closed: new EventEmitter<{ closed: [] }>(),
+    closedCount: 0,
+    stop: () => {
+      for (const client of sockets.clients) client.terminate();
+      sockets.close();
+      server.close();
+    },
+  };
+  sockets.on("connection", (socket) => {
+    fake.connections += 1;
+    const received: string[] = [];
+    fake.received.push(received);
+    const serverNonce = randomBytes(32).toString("base64url");
+    socket.send(JSON.stringify({ type: "challenge", version: RELAY_PROTOCOL_VERSION, nonce: serverNonce }));
+    socket.on("message", (data) => {
+      const message = Buffer.from(rawDataBytes(data)).toString("utf8");
+      received.push(message);
+      const transcript = received.length === 1 ? helloTranscript(serverNonce, message) : null;
+      if (!transcript) return;
+      const signature = sign(
+        "sha256",
+        Buffer.from(relayServerProofTranscript(proof.change?.(transcript) ?? transcript)),
+        {
+          key: proof.privateKey,
+          dsaEncoding: "ieee-p1363",
+        },
+      ).toString("base64url");
+      socket.send(
+        JSON.stringify({
+          type: "server-proof",
+          version: RELAY_PROTOCOL_VERSION,
+          certificate: proof.certificate,
+          signature,
+        }),
+      );
+      socket.send(
+        JSON.stringify({
+          type: "welcome",
+          version: RELAY_PROTOCOL_VERSION,
+          self: { keyId: transcript.clientKeyId, user: "dave", device: null },
+          team: { id: "t".repeat(43), name: "Alpha Team" },
+          members: [],
+        }),
+      );
+    });
+    socket.on("close", () => {
+      fake.closedCount += 1;
+      fake.closed.emit("closed");
+    });
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  if (!address || typeof address !== "object") throw new Error("The fake relay has no port.");
+  fake.url = `wss://127.0.0.1:${address.port}${RELAY_PATH}`;
+  return fake;
+}
+
+function untilFakeClosed(fake: FakeRelay, count: number): Promise<void> {
+  return until("the fake relay sees the socket close", (done) => {
+    const listener = () => {
+      if (fake.closedCount >= count) done(undefined);
+    };
+    fake.closed.on("closed", listener);
+    listener();
+    return () => fake.closed.off("closed", listener);
+  });
+}
+
 interface HostEvents {
   slowStarted: [];
   slowClosed: [];
@@ -396,6 +527,7 @@ try {
     const foreign = { RELAY_DATA_DIR: foreignDirectory, RELAY_PUBLIC_URL: relayUrl };
     assert.equal(command(foreign, "ca", "init").status, 0);
     assert.equal(command(foreign, "ca", "team", "add", "Alpha Team").status, 0);
+    assert.equal(command(foreign, "ca", "server", "--dns", "localhost", "--ip", "127.0.0.1").status, 0);
   });
 
   const alice = issue(environment, work, "Alpha Team", "alice", "laptop");
@@ -444,7 +576,7 @@ try {
     assert.match(stored, /"encryptedPrivateKey":"[A-Za-z0-9+/=]+"/u);
     const second = new RelayIdentityStore({ path: alicePath, cipher: testCipher });
     assert.deepEqual(await ok(second.load()), aliceStore.current());
-    assert.ok(second.signHello({ nonce: "n".repeat(43), role: "member" }));
+    assert.ok(second.signHello({ nonce: "n".repeat(43), clientNonce: "c".repeat(43), role: "member" }));
   });
 
   await check("A second import is refused, and an explicit replace is accepted", async () => {
@@ -941,6 +1073,159 @@ try {
     await ok(none.start());
     const noIdentity = await refused;
     assert.equal(noIdentity.status === "offline" ? noIdentity.code : null, "identity_unavailable");
+  });
+
+  const serverTls = {
+    cert: readFileSync(join(dataDirectory, "tls/server.crt"), "utf8"),
+    key: readFileSync(join(dataDirectory, "tls/server.key"), "utf8"),
+  };
+  const teamServerProof: FakeServerProof = { certificate: serverTls.cert, privateKey: createPrivateKey(serverTls.key) };
+  const fakeRelayStore = async (name: string, proof: FakeServerProof) => {
+    const fake = await startFakeRelay(serverTls, proof);
+    closers.push(fake.stop);
+    const store = new RelayIdentityStore({ path: join(storeDirectory, `${name}.json`), cipher: testCipher });
+    await ok(store.importBundle({ ...dave, relayUrl: fake.url }));
+    return { fake, store };
+  };
+  const refusedByProof = async (name: string, proof: FakeServerProof, reason: string) => {
+    const { fake, store } = await fakeRelayStore(name, proof);
+    const control = new RelayControl({ identity: store, reconnect });
+    controls.push(control);
+    const states: RelayControlState[] = [];
+    control.on("state", (state) => states.push(state));
+    const stopped = nextState(control, "the control stops", (state) => state.status === "offline");
+    await ok(control.start());
+    const final = await stopped;
+    await untilFakeClosed(fake, 1);
+    assert.deepEqual(
+      [final.status === "offline" ? final.code : null, final.status === "offline" ? final.retryInMs : 0],
+      ["server_refused", null],
+    );
+    assert.ok(final.status === "offline" && final.message.includes(`(${reason})`), JSON.stringify(final));
+    assert.deepEqual(
+      states.map((state) => state.status),
+      ["connecting", "offline"],
+    );
+    assert.equal(control.self(), null);
+    assert.equal(fake.connections, 1);
+    assert.equal(fake.received[0]?.length, 1);
+    return { fake, store };
+  };
+
+  await check("The desktop accepts a correct server proof", async () => {
+    const { fake, store } = await fakeRelayStore("proof-good", teamServerProof);
+    const control = new RelayControl({ identity: store, reconnect });
+    controls.push(control);
+    await ok(control.start());
+    await untilState(control, "the member is online at the fake relay", (state) => state.status === "online");
+    assert.equal(control.self()?.keyId, keyIdOf(dave));
+    await ok(control.stop());
+    assert.equal(fake.connections, 1);
+  });
+
+  await check("The desktop refuses a server identity of a different root and does not connect again", async () => {
+    const foreignServer = {
+      certificate: readFileSync(join(foreignDirectory, "tls/server.crt"), "utf8"),
+      privateKey: createPrivateKey(readFileSync(join(foreignDirectory, "tls/server.key"), "utf8")),
+    };
+    await refusedByProof("proof-foreign-root", foreignServer, "untrusted");
+  });
+
+  await check("The desktop refuses a server identity for a different host and does not connect again", async () => {
+    const key = generateSigningKey();
+    const issued = issueCertificate({
+      subject: { commonName: "relay.example.com" },
+      publicKey: key.publicKey,
+      profile: { kind: "server", dnsNames: ["relay.example.com"], ipAddresses: [] },
+      days: 30,
+      issuer: {
+        certificate: readFileSync(join(dataDirectory, "ca/root.crt"), "utf8"),
+        privateKey: createPrivateKey(readFileSync(join(dataDirectory, "ca/root.key"), "utf8")),
+      },
+      now: Date.now(),
+    });
+    await refusedByProof("proof-other-host", { certificate: issued.certificate, privateKey: key.privateKey }, "host");
+  });
+
+  await check("The desktop refuses a wrong server signature on control and tunnel sockets", async () => {
+    const { fake, store } = await refusedByProof(
+      "proof-wrong-signature",
+      {
+        ...teamServerProof,
+        change: (transcript) => ({ ...transcript, clientNonce: randomBytes(32).toString("base64url") }),
+      },
+      "signature",
+    );
+    const refused = await deadline(
+      "a dial to the fake relay",
+      failureOf(new RelayDialer({ identity: store }).dial(aliceKeyId)),
+    );
+    assert.equal(refused.code, "server_refused");
+    await untilFakeClosed(fake, 2);
+    assert.equal(fake.connections, 2);
+    assert.equal(fake.received[1]?.length, 1);
+  });
+
+  await check("The desktop trusts a TLS certificate of the system roots and of the identity root", async () => {
+    const publicDirectory = join(work, "public");
+    assert.equal(command({ RELAY_DATA_DIR: publicDirectory }, "ca", "init").status, 0);
+    assert.equal(
+      command({ RELAY_DATA_DIR: publicDirectory }, "ca", "server", "--dns", "localhost", "--ip", "127.0.0.1").status,
+      0,
+    );
+    const [publicPort, publicHealthPort] = await Promise.all([freePort(), freePort()]);
+    const publicUrl = `wss://127.0.0.1:${publicPort}${RELAY_PATH}`;
+    const publicRelay = await startRelay({
+      ...environment,
+      RELAY_PORT: String(publicPort),
+      RELAY_HEALTH_PORT: String(publicHealthPort),
+      RELAY_PUBLIC_URL: publicUrl,
+      RELAY_TLS_CERT_PATH: join(publicDirectory, "tls/server.crt"),
+      RELAY_TLS_KEY_PATH: join(publicDirectory, "tls/server.key"),
+    });
+    relayLogs.push(publicRelay.log);
+    try {
+      const frank = issue(environment, work, "Alpha Team", "frank");
+      const store = new RelayIdentityStore({ path: join(storeDirectory, "frank.json"), cipher: testCipher });
+      await ok(store.importBundle({ ...frank, relayUrl: publicUrl }));
+      const control = new RelayControl({ identity: store, reconnect });
+      controls.push(control);
+      const refused = nextState(
+        control,
+        "TLS refuses a root that is not trusted",
+        (state) => state.status === "offline",
+      );
+      await ok(control.start());
+      const first = await refused;
+      await ok(control.stop());
+      assert.deepEqual(
+        [first.status === "offline" ? first.code : null, first.status === "offline" && first.retryInMs !== null],
+        ["connect_failed", true],
+      );
+      const bundlePath = join(work, "frank-identity.json");
+      writeFileSync(bundlePath, JSON.stringify(frank), { mode: 0o600 });
+      const child = spawn(
+        process.execPath,
+        [...process.execArgv, SYSTEM_ROOTS_CHILD, bundlePath, storeDirectory, publicUrl, relayUrl],
+        {
+          cwd: ROOT,
+          env: { ...process.env, NODE_EXTRA_CA_CERTS: join(publicDirectory, "ca/root.crt") },
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
+      const output: string[] = [];
+      child.stdout.on("data", (chunk: Buffer) => output.push(chunk.toString()));
+      child.stderr.on("data", (chunk: Buffer) => output.push(chunk.toString()));
+      const [code] = await deadline("the process with the extra root ends", once(child, "exit"));
+      assert.equal(code, 0, output.join(""));
+      const lines = output.join("").trim().split("\n");
+      assert.deepEqual(JSON.parse(lines[lines.length - 1] ?? "null"), [
+        { relayUrl: publicUrl, status: "online", code: null },
+        { relayUrl, status: "online", code: null },
+      ]);
+    } finally {
+      await killRelay(publicRelay);
+    }
   });
 
   await check("The control connections come back after the relay server starts again", async () => {

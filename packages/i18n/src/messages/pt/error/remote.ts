@@ -21,16 +21,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "Os eventos remotos estão indisponíveis.",
   "error.remote.signInAgain": "Entre novamente.",
   "error.remote.emailDeliveryUnavailable": "A entrega de e-mail está indisponível.",
-  "error.remote.inviteHostMismatch": "O computador anfitrião do convite não corresponde ao token.",
-  "error.remote.inviteIdentityMismatch": "A identidade do computador anfitrião do convite não corresponde ao token.",
-  "error.remote.inviteAcceptedOtherHost": "O serviço de contas aceitou outro computador anfitrião.",
-  "error.remote.inviteIdentityChanged": "A identidade do computador anfitrião mudou durante a aceitação do convite.",
   "error.remote.localServerRemove": "O servidor local não pode ser removido.",
   "error.remote.viewerProxyUnavailable": "O proxy local do visualizador remoto está indisponível.",
   "error.remote.viewerProxyNoPort": "O proxy local do visualizador remoto não obteve uma porta.",
-  "error.remote.inviteNeedsConnection": "O computador anfitrião deve se conectar uma vez antes de criar convites.",
-  "error.remote.permanentInviteUnsupported":
-    "Esta conexão de servidor não oferece suporte a links de convite permanentes.",
   "error.remote.bridgeStartFailed": "A ponte Team WebRTC falhou ao iniciar.",
   "error.remote.bridgeStopped": "A ponte Team WebRTC parou.",
   "error.remote.bridgeDidNotStart": "A ponte Team WebRTC não iniciou.",
@@ -184,6 +177,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "O OpenBot não conseguiu carregar o servidor. Tente novamente.",
   "error.remote.localServerNotStarted":
     "O servidor neste computador não iniciou. Tente novamente. Se ele não iniciar, reinicie o OpenBot neste computador.",
-  "error.remote.localServerAccountRemovalFailed":
-    "O servidor foi excluído no computador dele, mas a conta ainda o mostra. Exclua de novo para removê-lo da conta.",
 } as const satisfies PartialTranslation<typeof source>;

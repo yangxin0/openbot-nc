@@ -2,7 +2,7 @@ import { AppLoadingScreen } from "@openbot/ui/features/account/AppLoadingScreen"
 import { UpdateRequiredScreen } from "@openbot/ui/features/updates/UpdateRequiredScreen";
 import { useText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, Loading, Show } from "solid-js";
-import { useAuth } from "./features/account/account-context";
+import { profileAccount, useAuth } from "./features/account/account-context";
 import { useProviderDetection } from "./features/custom-providers/provider-detection-context";
 import { createLanguageStep } from "./features/onboarding/language-step";
 import { useSetup } from "./features/onboarding/onboarding-context";
@@ -17,7 +17,7 @@ import { WhatsNewOverlay } from "./features/updates/WhatsNewOverlay";
 import { QuitShortcutHint } from "./features/window/QuitShortcutHint";
 import { startsAfterRestart } from "./features/window/restarted-start";
 import { useI18n } from "./i18n-context";
-import { AccountLogin, FirstRunFlow, LanguageStep } from "./lazy-views";
+import { FirstRunFlow, LanguageStep } from "./lazy-views";
 import { usePlatform } from "./platform";
 import { reportWorkspaceReady } from "./renderer-timing";
 import { startupLoadingScene } from "./startup-animation-preference";
@@ -39,6 +39,10 @@ export function AppAccessGate() {
   const platform = usePlatform();
   const i18n = useI18n();
   const auth = useAuth();
+  const account = createMemo(() => {
+    const profile = auth.profile();
+    return profile ? profileAccount(profile) : null;
+  });
   const setup = useSetup();
   const scope = useServerScope();
   const setupProviders = useSetupProviderProps();
@@ -69,11 +73,9 @@ export function AppAccessGate() {
     },
   );
   const workspaceShown = () =>
-    !languageStepShown() &&
-    !!auth.visibleSignedInAccount() &&
-    (setup.setupState()?.completed === true || !scope.connection.hasContent);
+    !languageStepShown() && !!account() && (setup.setupState()?.completed === true || !scope.connection.hasContent);
   const splashReady = () =>
-    started() && auth.centralAuth().status !== "loading" && (!workspaceShown() || workspaceReady() || updateRequired());
+    started() && account() !== null && (!workspaceShown() || workspaceReady() || updateRequired());
   createEffect(started, (ready) => {
     if (ready) performance.mark("openbot:app-started");
   });
@@ -93,24 +95,10 @@ export function AppAccessGate() {
       </Show>
       <Show when={started() && !updateRequired()}>
         <Show
-          when={!languageStepShown() && auth.visibleSignedInAccount()}
+          when={!languageStepShown() && account()}
           fallback={
             <Loading fallback={<LoadingScreen />}>
-              <Show
-                when={languageStepShown()}
-                fallback={
-                  <AccountLogin
-                    variant={platform.appInfo()?.variant ?? "production"}
-                    state={auth.centralAuth()}
-                    onRetry={auth.retryCentralAccount}
-                    onRequestEmailCode={auth.requestEmailCode}
-                    onVerifyEmailCode={auth.verifyEmailCode}
-                    onReset={auth.logoutCentralAccount}
-                    language={i18n.locale()}
-                    onChangeLanguage={languageStep.reopen}
-                  />
-                }
-              >
+              <Show when={languageStepShown()} fallback={<LoadingScreen />}>
                 <LanguageStep
                   variant={platform.appInfo()?.variant ?? "production"}
                   reopened={languageStep.reopened()}

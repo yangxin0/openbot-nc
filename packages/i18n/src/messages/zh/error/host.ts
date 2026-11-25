@@ -2,20 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.keyRotationUnavailable": "没有账号服务，该服务器无法更改密钥。",
-  "error.host.keyRotationRefused": "账号服务没有接受新的服务器密钥，仍继续使用当前密钥。",
   "error.host.webRtcNotConfigured": "WebRTC 主机服务未配置。",
-  "error.host.accountChangedDuringUpdate": "更新该服务器期间，已登录的账号发生了变更。",
   "error.host.nameBeforePublish": "发布前请先为该 OpenBot 命名。",
-  "error.host.memberNotFound": "该远程成员不存在。",
   "error.host.publishBeforeInvite": "创建邀请前请先将该 OpenBot 设为公开。",
   "error.host.teamAccessUnavailable": "你的团队访问权限不可用。",
   "error.host.ownerIdentityUnavailable": "主机所有者身份不可用。",
-  "error.host.reserveAddressFailed": "无法预留公网地址。",
   "error.host.publishFailed": "无法发布该 OpenBot。",
-  "error.host.mobileConnectPublishFailed": "无法为该 OpenBot 启用手机连接发布。",
-  "error.host.mobileConnectHostChanged": "手机连接的主机已更改，请重试。",
-  "error.host.mobileConnectHostMismatch": "你的账户中此服务器的密钥不同，请重试。",
   "error.host.noServer": "这台电脑没有可更改的服务器。",
   "error.host.identityLocalOnly": "服务器名称和标志只能在运行它的电脑上更改。",
   "error.host.timezoneInvalid": "未知的时区。",

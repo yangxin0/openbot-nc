@@ -24,7 +24,7 @@ const USAGE = `Usage:
   ca issue --team <team> --user <user> [--device <device>] [--days <n>] [--out <file>]
                                           Make the certificate of one device of a user.
   ca server --dns <name> [--ip <address>] [--days <n>]
-                                          Make the TLS certificate of this server.
+                                          Make the identity and TLS certificate of this server.
   ca revoke <serial | fingerprint | key identifier>
   ca list [--team <team>]
   ca root                                 Print the root certificate and its fingerprint.`;
@@ -133,7 +133,9 @@ async function certificateCommand(config: RelayConfig, command: string[]): Promi
       }),
     );
     console.log(`The server certificate is at ${paths.certificate}. Serial number: ${record.serial}`);
-    console.log("Start the server again to use it.");
+    console.log(
+      "A server that runs proves its identity with it in a few seconds. When TLS also uses this file, start the server again.",
+    );
     return;
   }
   if (action === "list") {
@@ -160,12 +162,13 @@ async function serve(config: RelayConfig): Promise<void> {
   });
   const trust = await run(authority.trust(config.audiences));
   const rootPem = await run(authority.rootCertificate());
+  const serverIdentity = await run(authority.serverIdentity());
   if (config.tls && !(await Bun.file(config.tls.certificatePath).exists())) {
     throw new UsageError(
       `No TLS certificate is at ${config.tls.certificatePath}. Run "ca server --dns <name>", set RELAY_TLS_CERT_PATH and RELAY_TLS_KEY_PATH, or set RELAY_TLS_DISABLED=true behind a TLS proxy.`,
     );
   }
-  const service = new RelayService(trust, config.limits);
+  const service = new RelayService(trust, serverIdentity, config.limits);
   const server = startRelayServer(config, service, [rootPem]);
   let stamp = await run(authority.changeStamp());
   let reloading = false;
@@ -176,6 +179,12 @@ async function serve(config: RelayConfig): Promise<void> {
       const next = await run(authority.changeStamp());
       if (next === stamp) return;
       service.applyTrust(await run(authority.trust(config.audiences)));
+      const nextIdentity = await Effect.runPromise(Effect.result(authority.serverIdentity()));
+      if (Result.isFailure(nextIdentity)) {
+        console.error(`The relay keeps its previous server identity. ${nextIdentity.failure.message}`);
+        return;
+      }
+      service.applyServerIdentity(nextIdentity.success);
       stamp = next;
       console.log("The relay loaded the changed certificate store.");
     })()

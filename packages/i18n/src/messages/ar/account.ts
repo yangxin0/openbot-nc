@@ -102,7 +102,6 @@ export const messages = {
   "account.login.changeEmail": "تغيير البريد الإلكتروني",
   "account.login.resend": "إعادة إرسال الرمز",
   "account.login.resendIn": "إعادة الإرسال بعد {time}",
-  "account.login.loadFailed": "تعذّر على OpenBot تحميل خدمة الحساب.",
   "account.login.companyTitle": "تابع في متصفحك",
   "account.login.companyDescription":
     "يسجّل {email} الدخول بحساب شركة. أكمل تسجيل الدخول في الصفحة التي فُتحت في متصفحك.",

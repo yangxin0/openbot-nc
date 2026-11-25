@@ -8,6 +8,7 @@ export const RELAY_CONNECTION_CODES = [
   "connect_failed",
   "deadline_exceeded",
   "peer_refused",
+  "server_refused",
   "closed",
   "stopped",
 ] as const;

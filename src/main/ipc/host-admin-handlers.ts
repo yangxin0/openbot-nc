@@ -85,10 +85,6 @@ import {
   type ServerAppearance,
 } from "@openbot/contracts/team-protocol/host-appearance-v1";
 import {
-  HOST_KEY_ROTATION_CAPABILITY,
-  HOST_KEY_ROTATION_ROUTES,
-} from "@openbot/contracts/team-protocol/host-key-rotation-v1";
-import {
   HOST_MEMBER_UPDATE_CAPABILITY,
   memberUpdateRoute,
 } from "@openbot/contracts/team-protocol/host-member-update-v1";
@@ -180,7 +176,7 @@ interface HostAdminRemoteServers {
 }
 
 interface HostAdminIpcDependencies {
-  host: Pick<HostService, "updateIdentity" | "rotateIdentityKey">;
+  host: Pick<HostService, "updateIdentity">;
   remoteServers: HostAdminRemoteServers;
   serverTimezone: Pick<ServerTimezonePreferenceStore, "get" | "set">;
   voiceModel: Pick<HostVoiceModelService, "snapshot" | "change">;
@@ -412,22 +408,6 @@ export function hostAdminIpcHandlers({
           await runCauseEffect(
             remoteServers.request(serverId, HOST_RESTART_ROUTES.restart, acceptEmpty, { method: "POST", body: {} }),
           );
-        },
-      }),
-      rotateHostKey: scopedQueryHandler({
-        local: async () => {
-          await runCauseEffect(host.rotateIdentityKey());
-        },
-        remote: async (serverId) => {
-          if (!remoteServers.supportsCapability(serverId, HOST_KEY_ROTATION_CAPABILITY))
-            throw new Error(sourceText("error.team.hostKeyRotationUnsupported"));
-          await runCauseEffect(
-            remoteServers.request(serverId, HOST_KEY_ROTATION_ROUTES.rotate, acceptEmpty, {
-              method: "POST",
-              body: {},
-            }),
-          );
-          await runCauseEffect(remoteServers.refreshIdentity(serverId)).catch(() => undefined);
         },
       }),
       getUpdateStatus: scopedQueryHandler({

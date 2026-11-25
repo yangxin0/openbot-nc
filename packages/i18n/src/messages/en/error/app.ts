@@ -7,5 +7,4 @@ export const messages = defineMessages("error.app", {
   "error.app.notReady": "OpenBot is not ready.",
   "error.app.macSecureStorageUnavailable": "macOS secure storage is unavailable.",
   "error.app.secretStorageUnavailable": "System secret storage is unavailable.",
-  "error.app.remoteIdentityUnavailable": "The remote host identity is unavailable.",
 });

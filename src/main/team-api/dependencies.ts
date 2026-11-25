@@ -3,7 +3,6 @@ import type {
   AgentModelId,
   AgentNotificationLevelsSnapshot,
   AgentProviderId,
-  CentralAuthUser,
   DirectMessageRealtimeEvent,
   DirectTypingRealtimeEvent,
   McpAccessLevel,
@@ -425,13 +424,11 @@ export interface TeamApiAdmin {
   identity?: TeamApiHostIdentity;
   update?: Pick<RequestedUpdate, "snapshot" | "check" | "start" | "requestWhenIdle" | "cancel" | "changeSettings">;
   restart?: { request(memberId: string): void };
-  ownerTransfer?: true;
   timezone?: Pick<ServerTimezonePreferenceStore, "get" | "set">;
   voiceModel?: Pick<HostVoiceModelService, "snapshot" | "change">;
   signalHome?: Pick<HostSignalHomeService, "snapshot" | "set">;
   turnLimits?: Pick<HostTurnLimitsPreferenceStore, "get" | "set">;
   personality?: Pick<ServerPersonalityPreferenceStore, "get" | "set">;
-  hostKey?: { rotate(): Effect.Effect<{ publicKey: string }, RemoteWorkflowError> };
   localServers?: {
     list(): Effect.Effect<TeamApiLocalServerList, RemoteWorkflowError>;
     create(name: string): Effect.Effect<TeamApiLocalServer, RemoteWorkflowError>;
@@ -615,10 +612,6 @@ export interface TeamApiOptions {
   attachmentPreviews?: TeamApiAttachmentPreviews | undefined;
   browser: TeamApiBrowser;
   browserView?: TeamApiBrowserView | undefined;
-  redeemCentralTicket?: (
-    ticket: string,
-    serverId: string,
-  ) => Effect.Effect<CentralAuthUser | null, RemoteWorkflowError>;
   onPresence?: ((snapshot: TeamPresenceSnapshot) => void) | undefined;
   chat?: TeamChatStore | undefined;
   onDirectMessage?: ((event: DirectMessageRealtimeEvent) => void) | undefined;

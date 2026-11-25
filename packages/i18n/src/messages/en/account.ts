@@ -94,7 +94,6 @@ export const messages = defineMessages("account", {
   "account.login.changeEmail": "Change email",
   "account.login.resend": "Resend code",
   "account.login.resendIn": "Resend in {time}",
-  "account.login.loadFailed": "OpenBot could not load the account service.",
   "account.login.companyTitle": "Continue in your browser",
   "account.login.companyDescription":
     "{email} signs in with a company account. Finish signing in on the page that opened in your browser.",

@@ -20,16 +20,9 @@ export const messages = {
   "error.remote.eventsUnavailable": "Zdalne zdarzenia są niedostępne.",
   "error.remote.signInAgain": "Zaloguj się ponownie.",
   "error.remote.emailDeliveryUnavailable": "Wysyłanie e-maili jest niedostępne.",
-  "error.remote.inviteHostMismatch": "Host zaproszenia nie pasuje do jego tokena.",
-  "error.remote.inviteIdentityMismatch": "Tożsamość hosta zaproszenia nie pasuje do jego tokena.",
-  "error.remote.inviteAcceptedOtherHost": "Usługa kont zaakceptowała inny host.",
-  "error.remote.inviteIdentityChanged": "Tożsamość hosta zaproszenia zmieniła się podczas akceptacji.",
   "error.remote.localServerRemove": "Nie można usunąć lokalnego serwera.",
   "error.remote.viewerProxyUnavailable": "Lokalny serwer proxy zdalnego podglądu jest niedostępny.",
   "error.remote.viewerProxyNoPort": "Lokalny serwer proxy zdalnego podglądu nie otrzymał portu.",
-  "error.remote.inviteNeedsConnection":
-    "Host musi połączyć się przynajmniej raz, zanim będzie mógł tworzyć zaproszenia.",
-  "error.remote.permanentInviteUnsupported": "To połączenie z serwerem nie obsługuje stałych linków z zaproszeniem.",
   "error.remote.bridgeStartFailed": "Nie udało się uruchomić mostka Team WebRTC.",
   "error.remote.bridgeStopped": "Mostek Team WebRTC zatrzymał się.",
   "error.remote.bridgeDidNotStart": "Mostek Team WebRTC nie uruchomił się.",
@@ -178,6 +171,4 @@ export const messages = {
   "error.remote.serverNotLoaded": "Nie udało się wczytać serwera. Spróbuj ponownie.",
   "error.remote.localServerNotStarted":
     "Serwer na tym komputerze się nie uruchomił. Spróbuj ponownie. Jeśli nadal się nie uruchamia, uruchom ponownie OpenBot na tym komputerze.",
-  "error.remote.localServerAccountRemovalFailed":
-    "Serwer został usunięty na swoim komputerze, ale konto nadal go pokazuje. Usuń go ponownie, aby usunąć go z konta.",
 } as const satisfies PartialTranslation<typeof source>;

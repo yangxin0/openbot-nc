@@ -13,9 +13,6 @@ export const CrmScreen = lazy(() =>
 export const ServerLibrary = lazy(() =>
   import("./features/files/ServerLibrary").then((module) => ({ default: module.ServerLibrary })),
 );
-export const AccountLogin = lazy(() =>
-  import("@openbot/ui/features/account/AccountLogin").then((module) => ({ default: module.AccountLogin })),
-);
 export const DirectConversation = lazy(() =>
   import("@openbot/ui/features/conversation/DirectConversation").then((module) => ({
     default: module.DirectConversation,

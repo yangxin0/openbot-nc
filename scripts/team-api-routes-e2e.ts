@@ -31,7 +31,6 @@ import {
   type AgentTaskHold,
   type AttachmentDataInput,
   type BitwardenConnectorStatus,
-  type CentralAuthUser,
   CHANNEL_CHATS_CAPABILITY,
   type Channel,
   type ChannelMessage,
@@ -2154,12 +2153,6 @@ const browser: TeamApiBrowser = {
   },
 };
 
-const accountUsers: Record<string, CentralAuthUser> = {
-  "ticket-bob": { id: "account-bob", email: "bob@example.com", name: "Bob", avatarUrl: null },
-  "ticket-stranger": { id: "account-stranger", email: "stranger@example.com", name: null, avatarUrl: null },
-};
-const redeemedServerIds: string[] = [];
-
 const BW_ITEM_ID = "12345678-1234-1234-1234-123456789abc";
 const BW_CLIENT_ID = "user.e2e-client";
 const BW_CLIENT_SECRET = ["bw", "e2e", "client", "secret"].join("-");
@@ -2452,8 +2445,6 @@ const voiceTranscription: TeamApiVoiceTranscription = {
 const clientBrowser = new ClientBrowserHub({ commandMs: 1_500, presenceMs: 60_000 });
 
 const memoryReviewFile = join(root, "memory-review.json");
-const ROTATED_HOST_KEY = "-----BEGIN PUBLIC KEY-----\nrotated-e2e\n-----END PUBLIC KEY-----\n";
-let refuseHostKeyRotation = false;
 const localServerList: { serverId: string; name: string; published: boolean }[] = [];
 const memoryReview = new MemoryReviewPreferenceStore(memoryReviewFile);
 const GITHUB_COMMIT = "0123456789abcdef0123456789abcdef01234567";
@@ -2788,15 +2779,6 @@ try {
       memoryReview,
       skillLearning,
       browsingMemory,
-      hostKey: {
-        rotate: () =>
-          refuseHostKeyRotation
-            ? Effect.fail(new RemoteWorkflowError({ cause: new Error(sourceText("error.host.keyRotationRefused")) }))
-            : Effect.sync(() => {
-                record("rotateHostKey");
-                return { publicKey: ROTATED_HOST_KEY };
-              }),
-      },
       restart: { request: (memberId) => record("restartHost", memberId) },
       identity: {
         updateIdentity: (input) =>
@@ -3223,11 +3205,6 @@ try {
           return hidden;
         }),
     },
-    redeemCentralTicket: (ticket, id) =>
-      Effect.sync(() => {
-        redeemedServerIds.push(id);
-        return accountUsers[ticket] ?? null;
-      }),
     now: () => clock,
     logger: createOpenBotLogger("team-api-e2e", (line) => logged.push(line)),
   });
@@ -3378,30 +3355,25 @@ try {
     summary(reuse),
   );
 
-  const unknownTicket = await call("POST", TEAM_API_ROUTES.join.account, {
-    json: { inviteToken: memberInvite.token, accountTicket: "ticket-unknown" },
+  const accountJoin = await call("POST", TEAM_API_ROUTES.join.account, {
+    json: { inviteToken: memberInvite.token, accountTicket: "ticket-bob" },
   });
   check(
-    "join with a ticket that the account service refuses gives 401 signInRequired",
-    errorIs(unknownTicket, 401, sourceText("error.team.signInRequired")),
-    summary(unknownTicket),
+    "the account invitation route is gone: it gets 401 authenticationRequired and uses no invitation",
+    errorIs(accountJoin, 401, sourceText("error.team.authenticationRequired")) &&
+      store.listInvites().some((invite) => invite.id === memberInvite.id && invite.usedAt === null),
+    summary(accountJoin),
   );
-  const bobJoin = await call("POST", TEAM_API_ROUTES.join.account, {
-    json: { inviteToken: memberInvite.token, accountTicket: "ticket-bob" },
+  const BOB_PASSWORD = "bob-password-e2e-1";
+  const bobJoin = await call("POST", TEAM_API_ROUTES.join.server, {
+    json: { inviteToken: memberInvite.token, username: "bob", password: BOB_PASSWORD },
   });
   const bobToken = field(bobJoin.body, "sessionToken");
   const bobId = field(bobJoin.body, "member", "id");
   check(
-    "join with an account ticket gives 201 and a member with the account email",
-    bobJoin.status === 201 &&
-      field(bobJoin.body, "member", "role") === "member" &&
-      field(bobJoin.body, "member", "email") === "bob@example.com",
+    "join with a member invitation gives 201 and a member session",
+    bobJoin.status === 201 && field(bobJoin.body, "member", "role") === "member",
     { status: bobJoin.status, role: field(bobJoin.body, "member", "role") },
-  );
-  check(
-    "the ticket is redeemed for this server only",
-    redeemedServerIds.length > 0 && redeemedServerIds.every((id) => id === serverId),
-    { redeemedServerIds, serverId },
   );
   assert.ok(typeof bobToken === "string" && typeof bobId === "string", "bob did not join.");
 
@@ -3473,29 +3445,25 @@ try {
   }
 
   const bobSessionsBefore = new Set(store.listSessions().map((session) => session.id));
-  const accountLogin = await call("POST", TEAM_API_ROUTES.auth.account, { json: { accountTicket: "ticket-bob" } });
-  const bobSecond = field(accountLogin.body, "sessionToken");
+  const bobLogin = await call("POST", TEAM_API_ROUTES.auth.login, {
+    json: { username: "bob", password: BOB_PASSWORD },
+  });
+  const bobSecond = field(bobLogin.body, "sessionToken");
   check(
-    "account sign-in with a member ticket gives a session for that member",
-    accountLogin.status === 200 && field(accountLogin.body, "member", "id") === bobId && typeof bobSecond === "string",
-    { status: accountLogin.status },
+    "a password sign-in of a member gives a second session for that member",
+    bobLogin.status === 200 && field(bobLogin.body, "member", "id") === bobId && typeof bobSecond === "string",
+    { status: bobLogin.status },
   );
-  assert.ok(typeof bobSecond === "string", "bob has no account session.");
+  assert.ok(typeof bobSecond === "string", "bob has no second session.");
   const bobSecondSession = store
     .listSessions()
     .find((session) => !bobSessionsBefore.has(session.id) && session.memberId === bobId);
-  const stranger = await call("POST", TEAM_API_ROUTES.auth.account, { json: { accountTicket: "ticket-stranger" } });
+  const accountLogin = await call("POST", TEAM_API_ROUTES.auth.account, { json: { accountTicket: "ticket-bob" } });
   check(
-    "account sign-in for an account that is not a member gives accountNotMember",
-    errorIs(stranger, 400, sourceText("error.team.accountNotMember")) &&
-      field(stranger.body, "sessionToken") === undefined,
-    summary(stranger),
-  );
-  const refusedTicket = await call("POST", TEAM_API_ROUTES.auth.account, { json: { accountTicket: "ticket-unknown" } });
-  check(
-    "account sign-in with a refused ticket gives 401 signInRequired",
-    errorIs(refusedTicket, 401, sourceText("error.team.signInRequired")),
-    summary(refusedTicket),
+    "the account sign-in route is gone: it gets 401 authenticationRequired and no session",
+    errorIs(accountLogin, 401, sourceText("error.team.authenticationRequired")) &&
+      field(accountLogin.body, "sessionToken") === undefined,
+    summary(accountLogin),
   );
 
   {
@@ -7778,35 +7746,10 @@ try {
   {
     const capabilities = [HOST_KEY_ROTATION_CAPABILITY];
     const compatibility = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: TEAM_PROTOCOL_V9 });
-    const older = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: 8 });
     check(
-      "the host advertises host-key-rotation-v1 to a protocol 9 peer and not to a protocol 8 peer",
-      list(field(compatibility.body, "capabilities")).includes(HOST_KEY_ROTATION_CAPABILITY) &&
-        !list(field(older.body, "capabilities")).includes(HOST_KEY_ROTATION_CAPABILITY),
-      [summary(compatibility), summary(older)],
-    );
-    const unsupported = await call("POST", HOST_KEY_ROTATION_ROUTES.rotate, { token: owner.sessionToken, json: {} });
-    check(
-      "the server key route without the capability gets 400 hostKeyRotationUnsupported",
-      errorIs(unsupported, 400, sourceText("error.team.hostKeyRotationUnsupported")),
-      summary(unsupported),
-    );
-    const adminRotate = await call("POST", HOST_KEY_ROTATION_ROUTES.rotate, {
-      token: adaToken,
-      json: {},
-      capabilities,
-    });
-    const memberRotate = await call("POST", HOST_KEY_ROTATION_ROUTES.rotate, {
-      token: bobToken,
-      json: {},
-      capabilities,
-    });
-    check(
-      "an admin and a member cannot change the server key, and the host does not start a change",
-      errorIs(adminRotate, 403, sourceText("error.team.ownerRequired")) &&
-        errorIs(memberRotate, 403, sourceText("error.team.ownerRequired")) &&
-        callsOf("rotateHostKey").length === 0,
-      [summary(adminRotate), summary(memberRotate)],
+      "the host no longer advertises host-key-rotation-v1, because no account takes the key handover",
+      !list(field(compatibility.body, "capabilities")).includes(HOST_KEY_ROTATION_CAPABILITY),
+      summary(compatibility),
     );
     const ownerRotate = await call("POST", HOST_KEY_ROTATION_ROUTES.rotate, {
       token: owner.sessionToken,
@@ -7814,23 +7757,9 @@ try {
       capabilities,
     });
     check(
-      "the owner changes the server key and gets only the new public key",
-      ownerRotate.status === 200 &&
-        isDeepStrictEqual(ownerRotate.body, { publicKey: ROTATED_HOST_KEY }) &&
-        callsOf("rotateHostKey").length === 1,
+      "the server key route is gone: the owner gets 404 routeNotFound and the host keeps its key",
+      errorIs(ownerRotate, 404, sourceText("error.team.routeNotFound")) && callsOf("rotateHostKey").length === 0,
       summary(ownerRotate),
-    );
-    refuseHostKeyRotation = true;
-    const refusedRotate = await call("POST", HOST_KEY_ROTATION_ROUTES.rotate, {
-      token: owner.sessionToken,
-      json: {},
-      capabilities,
-    });
-    refuseHostKeyRotation = false;
-    check(
-      "a refused key change gives the owner 409 with the reason, not a host fault",
-      errorIs(refusedRotate, 409, sourceText("error.host.keyRotationRefused")),
-      summary(refusedRotate),
     );
   }
 
@@ -12718,7 +12647,7 @@ try {
   }
 
   {
-    const bobSender = { id: bobId, name: "Bob" };
+    const bobSender = { id: bobId, name: "bob" };
     const queue = await call("GET", TEAM_API_ROUTES.agent.queue("agent-ada"), { token: bobToken });
     check(
       "the queue route returns the queue of the agent in the path",

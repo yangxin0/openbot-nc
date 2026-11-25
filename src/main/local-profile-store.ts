@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { type AvatarColor, isAvatarColor } from "@openbot/contracts/ipc";
+import { EventEmitter } from "node:events";
+import { isAvatarColor, type UserProfile } from "@openbot/contracts/ipc";
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { Effect, Result, Semaphore } from "effect";
 import { isMissingFileError } from "../backend/file-errors";
@@ -7,10 +8,10 @@ import { type PreferenceFileFailure, readPreferenceFile, writePreferenceFile } f
 
 export const LOCAL_PROFILE_FILE = "openbot-local-profile-v1.json";
 
-export interface LocalProfile {
-  id: string;
-  name: string | null;
-  chatColor: AvatarColor | null;
+export type LocalProfile = UserProfile;
+
+interface LocalProfileEvents {
+  changed: [profile: LocalProfile];
 }
 
 function decodeLocalProfile(parsed: unknown): LocalProfile | null {
@@ -23,12 +24,13 @@ function decodeLocalProfile(parsed: unknown): LocalProfile | null {
   };
 }
 
-export class LocalProfileStore {
+export class LocalProfileStore extends EventEmitter<LocalProfileEvents> {
   readonly #path: string;
   readonly #writes = Semaphore.makeUnsafe(1);
   #profile: LocalProfile;
 
   constructor(path: string, profile: LocalProfile) {
+    super();
     this.#path = path;
     this.#profile = { ...profile };
   }
@@ -47,6 +49,7 @@ export class LocalProfileStore {
           return writePreferenceFile(this.#path, { version: 1, ...next }).pipe(
             Effect.map(() => {
               this.#profile = next;
+              this.emit("changed", { ...next });
               return { ...next };
             }),
           );

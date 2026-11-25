@@ -2,8 +2,6 @@ import { existsSync } from "node:fs";
 import { readdir, readFile, rm } from "node:fs/promises";
 import { homedir, hostname, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { createInterface } from "node:readline";
-import type { Readable } from "node:stream";
 import { isManagedRuntimeProvider } from "@openbot/contracts/agent-providers";
 import { APP_HOME_FOLDER, APP_ID, APP_LINK_SCHEME } from "@openbot/contracts/app-identity";
 import { leadingAddress } from "@openbot/contracts/chat-tag-references";
@@ -12,7 +10,6 @@ import type {
   AppVariant,
   BrowserDisplayState,
   CapabilityState,
-  CentralAuthState,
   ComputerUseState,
   HostVoiceModelChange,
   ProviderRuntimeSnapshot,
@@ -41,7 +38,7 @@ import { isValidSemver } from "@openbot/contracts/release-version";
 import { CHANNEL_ROUTES } from "@openbot/contracts/team-protocol/channels-v1";
 import { localeDirection } from "@openbot/i18n";
 import { sourceText } from "@openbot/i18n/source";
-import { createOpenBotLogger, redactSecrets, registerSecretValue, toLogValue } from "@openbot/logging";
+import { createOpenBotLogger, redactSecrets, toLogValue } from "@openbot/logging";
 import { installRemoteSyncProfileSink } from "@openbot/team-client/sync-profile";
 import { makeWASocket } from "@openbot/whatsapp/baileys";
 import { makeOpenBotSignalRepository } from "@openbot/whatsapp/signal-repository";
@@ -117,7 +114,6 @@ import {
   type WorkflowsHandle,
   workflowNoticeEvent,
 } from "../backend/workflows/workflows";
-import { createCentralAuthManager } from "./account-service-access";
 import { type AcpRegistry, createAcpRegistry } from "./acp-registry";
 import { AGENT_ACCESS_FILE, AgentAccessStore } from "./agent-access-store";
 import { type AgentAdminSettingsService, createAgentAdminSettings } from "./agent-admin-settings";
@@ -168,7 +164,6 @@ import {
   cacheExpiryCompactionControl,
   createCacheExpiryCompactionPreferenceStore,
 } from "./cache-expiry-compaction-preference-store";
-import { type CentralAuthManager, isHostNotOnAccount } from "./central-auth-manager";
 import { type ChannelFolders, createChannelFolders } from "./channel-folders";
 import { ChatVisualPreviewer } from "./chat-visual-preview";
 import {
@@ -211,7 +206,7 @@ import { CustomProviderStore } from "./custom-provider-store";
 import { MCP_OAUTH_REDIRECT_URL } from "./deep-link-router";
 import { DetachedBrowserWindow } from "./detached-browser-window";
 import {
-  applyDevelopmentRemoteAccount,
+  applyDevelopmentRemoteProfile,
   type DevelopmentRemoteRole,
   readDevelopmentClientTransport,
   startDevelopmentRemoteRole,
@@ -256,12 +251,10 @@ import {
   setAboveAppsXWayland,
   usesX11Windows,
 } from "./linux-wayland-output";
-import { LOCAL_PROFILE_FILE, openLocalProfileStore } from "./local-profile-store";
+import { LOCAL_PROFILE_FILE, type LocalProfileStore, openLocalProfileStore } from "./local-profile-store";
 import { localRoutineFeedDocument } from "./local-routine-calendar";
 import {
-  formatLocalServerMembersRequest,
   type LocalServerChildEnvironment,
-  LocalServerMembers,
   reportLocalServerWorkingAgents,
   startLocalServerChild,
 } from "./local-server-child";
@@ -354,8 +347,7 @@ import {
   type RemoteNetworkRoutePreferenceStore,
 } from "./remote-network-route-preference-store";
 import { RemoteServerManager } from "./remote-server-manager";
-import { RemoteWorkflowError, toRemoteWorkflowError } from "./remote-service-effects";
-import { RemoteSessionCache } from "./remote-session-cache";
+import { RemoteWorkflowError } from "./remote-service-effects";
 import {
   createRemoteSessionReusePreferenceStore,
   type RemoteSessionReusePreferenceStore,
@@ -392,7 +384,6 @@ import { AGENT_CERTIFICATES_FILE, agentCertificateEnvironment } from "./system-c
 import { mcpSignInSharedWithOthers } from "./team-api/mcp-member-access";
 import { LEGACY_TEAM_STORE_FILE, TEAM_STORE_FILE, TeamStore } from "./team-store";
 import { TeamWebRtcBridge } from "./team-webrtc-bridge";
-import { TeamWebRtcClientTransport } from "./team-webrtc-client-transport";
 import type { TeardownRegistry } from "./teardown-registry";
 import { THEME_PALETTE_DIRECTORY } from "./theme-palette-files";
 import { TraceFile } from "./trace-file";
@@ -470,7 +461,6 @@ const DYNAMIC_ISLAND_PREFERENCE_FILE = "openbot-dynamic-island-preference-v1.jso
 const BROWSER_STATE_FILE = "openbot-browser-state-v1.json";
 const SIDEBAR_LAYOUT_FILE = "openbot-sidebar-layout-v1.json";
 const REMOTE_SERVERS_FILE = "openbot-remote-servers-v1.json";
-const REMOTE_SESSIONS_FILE = "openbot-remote-sessions-v1.bin";
 const LEGACY_REMOTE_DESKTOP_CREDENTIAL_FILE = "openbot-remote-desktop-credential-v1.json";
 const CUSTOM_PROVIDERS_FILE = "openbot-custom-providers-v1.json";
 const PROVIDER_CREDENTIAL_FILE = "openbot-provider-credentials-v1.json";
@@ -539,7 +529,6 @@ const TEARDOWN_ORDER = {
   service: 110,
   cuaDriver: 110.5,
   mcpOAuth: 111,
-  centralAuth: 115,
   trace: 120,
   providerLog: 121,
   agentLog: 122,
@@ -556,12 +545,10 @@ export interface ApplicationServiceContext {
   developmentTestClientEnabled: boolean;
   serverMode: ServerModeEnvironment | null;
   localServerChild: LocalServerChildEnvironment | null;
-  localServerControl: Readable | null;
   relayLaunch: RelayLaunchOptions;
   systemTimezone: () => string;
   macHapticFeedback: MacHapticFeedback;
   teardown: TeardownRegistry;
-  forwardCentralAuth: (state: CentralAuthState) => void;
   forwardBrowserDisplayState: (serverId: string, state: BrowserDisplayState) => void;
   forwardProviderRuntimeStatus: (snapshot: ProviderRuntimeSnapshot) => void;
   forwardVoiceModelStatus: (status: VoiceModelStatus) => void;
@@ -646,7 +633,6 @@ export interface ApplicationServices {
   externalLinks: ExternalLinkOpener;
   openLink: (url: string) => Promise<void>;
   remoteNetworkRoute: RemoteNetworkRoutePreferenceStore;
-  remoteSessionCache: RemoteSessionCache;
   appBehavior: AppBehaviorService;
   agentInitialization: AgentInitializationGate<AgentLifecycleFailed>;
   sidebarLayout: SidebarLayoutStore;
@@ -654,7 +640,7 @@ export interface ApplicationServices {
   remoteServers: RemoteServerManager;
   relay: RelayService;
   localServers: LocalServers | null;
-  centralAuth: CentralAuthManager;
+  localProfile: LocalProfileStore;
   skills: SkillMarketplaceService;
   routineFeed: RoutineFeedServer;
   events: HostEventsService;
@@ -683,8 +669,6 @@ export interface ApplicationServices {
   startup: StartupTiming | null;
   machineAlerts: MachineAlertMonitor;
   teamStore: TeamStore;
-  appliedAccount: CentralAuthState;
-  centralAuthInitialization: Effect.Effect<CentralAuthState, RemoteWorkflowError>;
 }
 
 function computerUseCapability(state: ComputerUseState): CapabilityState {
@@ -759,12 +743,10 @@ export async function createApplicationServices({
   developmentTestClientEnabled,
   serverMode: serverModeEnvironment,
   localServerChild,
-  localServerControl,
   relayLaunch,
   systemTimezone,
   macHapticFeedback,
   teardown,
-  forwardCentralAuth,
   forwardBrowserDisplayState,
   forwardProviderRuntimeStatus,
   forwardVoiceModelStatus,
@@ -914,16 +896,6 @@ export async function createApplicationServices({
   await runCauseEffect(teamStore.initialize());
   const localProfile = await runCauseEffect(
     openLocalProfileStore(join(app.getPath("userData"), LOCAL_PROFILE_FILE), () => teamStore.localProfileSeed()),
-  );
-  const centralAuth = createCentralAuthManager({
-    confirmSessionAtStart: false,
-    localProfile,
-  });
-  teardown.push(TEARDOWN_ORDER.centralAuth, "the account runtime", () => Effect.runPromise(centralAuth.dispose()));
-  centralAuth.on("changed", forwardCentralAuth);
-  const centralAuthInitialization = Effect.runSync(Effect.cached(centralAuth.initialize().pipe(toRemoteWorkflowError)));
-  void Effect.runPromise(centralAuthInitialization).catch((error) =>
-    logger.warn("The account did not initialize.", toLogValue(error)),
   );
   const agentDefaults = createAgentDefaultsPreferenceStore(
     join(app.getPath("userData"), AGENT_DEFAULTS_PREFERENCE_FILE),
@@ -1157,10 +1129,7 @@ export async function createApplicationServices({
   const hostSignalHome = new HostSignalHomeService({
     path: join(app.getPath("userData"), SIGNAL_HOME_PREFERENCE_FILE),
     fetch: (url, init) => net.fetch(url, { ...init, credentials: "omit", cache: "no-store" }),
-    listHomes: () => {
-      const hostId = teamStore.configured ? teamStore.getIdentity()?.serverId : undefined;
-      return hostId && host.getStatus().apiOnline ? centralAuth.listRemoteSignalHomes(hostId) : Effect.succeed([]);
-    },
+    listHomes: () => Effect.succeed([]),
     currentHome: () => host.signalHome(),
     followHome: () => host.followSignalHome(),
   });
@@ -1252,16 +1221,6 @@ export async function createApplicationServices({
   void Effect.runPromise(appBehavior.refreshLoginItem()).catch((error) =>
     logger.warn("The login item did not refresh.", toLogValue(error)),
   );
-  const remoteSessionCache = new RemoteSessionCache({
-    path: join(app.getPath("userData"), REMOTE_SESSIONS_FILE),
-    enabled: remoteSessionReuse.get().keepBetweenRuns,
-    ...safeStorageCipher("error.app.macSecureStorageUnavailable"),
-  });
-  const forgetSignedOutSessions = (state: CentralAuthState) => {
-    if (state.status === "signed_out") void Effect.runPromise(remoteSessionCache.clear());
-  };
-  forgetSignedOutSessions(centralAuth.getState());
-  centralAuth.on("changed", forgetSignedOutSessions);
   const updatePreference = await runCauseEffect(readUpdatePreference(updatePreferenceFile));
   const approvalAutomationFile = join(app.getPath("userData"), APPROVAL_AUTOMATION_FILE);
   const approvalAutomation = new ApprovalAutomation({
@@ -2247,10 +2206,10 @@ export async function createApplicationServices({
   });
   if (developmentRemoteRole) {
     await runCauseEffect(
-      applyDevelopmentRemoteAccount({
+      applyDevelopmentRemoteProfile({
         role: developmentRemoteRole,
         testClientEnabled: developmentTestClientEnabled,
-        centralAuth,
+        profile: localProfile.get(),
         teamStore,
         setupFile,
         setupCompleted: setupState.completed,
@@ -2561,7 +2520,6 @@ export async function createApplicationServices({
       windows.getMainWindow()?.webContents === contents ||
       windows.getChatWindows().some((chat) => chat.webContents === contents),
   );
-  const localServerMembers = new LocalServerMembers(() => process.stdout.write(formatLocalServerMembersRequest()));
   const mcpAccess: McpAccessControl = {
     revision: () => mcpAccessStore.revision(),
     get: (mcpServerId) => mcpAccessStore.get(mcpServerId),
@@ -2710,7 +2668,6 @@ export async function createApplicationServices({
             },
           }
         : {}),
-      ...(serverModeEnvironment ? { ownerTransfer: true as const } : {}),
       personality: serverPersonality,
       memoryLimit: agentMemoryLimitSetting,
       memoryReview,
@@ -2754,7 +2711,7 @@ export async function createApplicationServices({
               create: (name: string) =>
                 availableLocalServers().pipe(
                   Effect.flatMap((servers) =>
-                    servers.create(name, "device").pipe(
+                    servers.create(name).pipe(
                       Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause })),
                       Effect.map(
                         (summary) =>
@@ -2770,9 +2727,7 @@ export async function createApplicationServices({
               delete: (serverId: string) =>
                 availableLocalServers().pipe(
                   Effect.flatMap((servers) =>
-                    servers
-                      .delete(serverId, "device")
-                      .pipe(Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause }))),
+                    servers.delete(serverId).pipe(Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause }))),
                   ),
                 ),
             },
@@ -2790,12 +2745,6 @@ export async function createApplicationServices({
     privateNetwork: () => remoteNetworkRoute.get().route === "private",
     preferredSignalHome: () => hostSignalHome.preferred(),
     signalHomeAnswers: (home) => hostSignalHome.answers(home),
-    verifyRemoteSessionTicket: (ticket) => centralAuth.verifyRemoteSessionTicket(ticket).pipe(toRemoteWorkflowError),
-    endRemoteSession: (sessionId) => centralAuth.endRemoteSession(sessionId).pipe(toRemoteWorkflowError),
-    createRemoteInvite: (hostId, input) => centralAuth.createRemoteInvite(hostId, input).pipe(toRemoteWorkflowError),
-    listRemoteInvites: (hostId) => centralAuth.listRemoteInvites(hostId).pipe(toRemoteWorkflowError),
-    revokeRemoteInvite: (inviteId) => centralAuth.revokeRemoteInvite(inviteId).pipe(toRemoteWorkflowError),
-    ...(localServerChild ? { listRemoteMembers: () => localServerMembers.list() } : {}),
     localDevelopmentHost: developmentRemoteRole === "host",
     passwordOwner: localServerChild !== null,
     logDirectory: join(app.getPath("userData"), "logs", "remote"),
@@ -2807,22 +2756,10 @@ export async function createApplicationServices({
         },
         catch: (cause) => new RemoteWorkflowError({ cause }),
       }),
-    getSignedInUser: () => {
-      if (localServerChild) throw new Error(sourceText("error.auth.signInFirst"));
-      return centralAuth.getSignedInUser();
-    },
-    redeemCentralTicket: (ticket, serverId) =>
-      centralAuth.redeemTeamAuthTicket(ticket, serverId).pipe(toRemoteWorkflowError),
-    sendTeamInviteEmail: (input) => centralAuth.sendTeamInviteEmail(input).pipe(toRemoteWorkflowError),
+    ...(localServerChild ? {} : { getLocalProfile: () => localProfile.get() }),
   });
   teardown.push(TEARDOWN_ORDER.host, "the local host", () => runCauseEffect(host.shutdown()));
-  const signedInState = centralAuth.getState();
-  if (localServerChild) {
-  } else if (signedInState.status === "signed_in") {
-    await runCauseEffect(host.applySignedInAccount(signedInState.user));
-  } else if (signedInState.status === "signed_out") {
-    await runCauseEffect(host.applySignedInAccount(null));
-  }
+  if (!localServerChild) await runCauseEffect(host.applyLocalProfile(localProfile.get()));
   const trace = new TraceFile({ directory: join(app.getPath("userData"), "logs") });
   teardown.push(TEARDOWN_ORDER.trace, "the trace file", () => Effect.runPromise(trace.close()));
   const resourceMonitor = new ResourceMonitor({
@@ -2854,7 +2791,6 @@ export async function createApplicationServices({
   }
   const connectTrace = new RemoteConnectTrace((span) => trace.record(span));
   const developmentRoundTripMs = app.isPackaged ? 0 : Math.max(0, Number(process.env.OPENBOT_DEV_RTT_MS) || 0);
-  const developmentDownlinkKbps = app.isPackaged ? 0 : Math.max(0, Number(process.env.OPENBOT_DEV_DOWNLINK_KBPS) || 0);
   installRemoteSyncProfileSink(
     remoteSyncProfileFile({
       isPackaged: app.isPackaged,
@@ -2876,12 +2812,6 @@ export async function createApplicationServices({
     join(app.getPath("userData"), REMOTE_SERVERS_FILE),
     safeStorageCipher("error.app.macSecureStorageUnavailable"),
     {
-      createTeamAuthTicket: (serverId) => centralAuth.createTeamAuthTicket(serverId),
-      getEmail: () => centralAuth.getSignedInUser().email,
-      sendTeamInviteEmail: (input) => centralAuth.sendTeamInviteEmail(input),
-    },
-    {
-      allowLocalDevelopmentInvites: developmentRemoteRole !== null,
       appVersion: app.getVersion(),
       connectTrace,
       localNotificationLevels: {
@@ -2893,7 +2823,6 @@ export async function createApplicationServices({
             if (key === OWNER_NOTIFICATION_KEY) listener();
           }),
       },
-      accountReady: centralAuthInitialization,
       relayTransport: relayClient,
       headlessHost: Boolean(serverModeEnvironment),
       ...(serverModeEnvironment || localServerChild
@@ -2916,34 +2845,8 @@ export async function createApplicationServices({
             },
           }),
       getLocalHostId: () => teamStore.getIdentity()?.serverId ?? null,
-      webrtcTransport: new TeamWebRtcClientTransport({
-        bridge: teamWebRtcBridge,
-        listHosts: () => centralAuth.listRemoteHosts(),
-        startSession: (hostId) => centralAuth.startRemoteSession(hostId),
-        issueTicket: (sessionId, clientPublicKey) => centralAuth.issueRemoteSessionTicket(sessionId, clientPublicKey),
-        endSession: (sessionId) => centralAuth.endRemoteSession(sessionId),
-        createInvite: (hostId, input) => centralAuth.createRemoteInvite(hostId, input),
-        listInvites: (hostId) => centralAuth.listRemoteInvites(hostId),
-        previewInvite: (token) => centralAuth.previewRemoteInvite(token),
-        acceptInvite: (token) => centralAuth.acceptRemoteInvite(token),
-        revokeInvite: (inviteId) => centralAuth.revokeRemoteInvite(inviteId),
-        listMembers: (hostId) => centralAuth.listRemoteMembers(hostId),
-        updateMember: (hostId, membershipId, role, reactivate) =>
-          centralAuth.updateRemoteMember(hostId, membershipId, role, reactivate),
-        removeMember: (hostId, membershipId) => centralAuth.removeRemoteMember(hostId, membershipId),
-        removeOwnedHost: (hostId) => centralAuth.removeOwnedRemoteHost(hostId),
-        setHostHidden: (hostId, hidden) => centralAuth.setRemoteHostHidden(hostId, hidden),
-        getPrincipalId: () => centralAuth.getSignedInUser().id,
-        controlPlaneUrl: centralAuth.resolveApiUrl("/"),
-        transferDirectory: join(app.getPath("userData"), "remote-transfers"),
-        connectTrace,
-        sessionCache: remoteSessionCache,
-        developmentRoundTripMs,
-        developmentDownlinkKbps,
-      }),
     },
   );
-  teamWebRtcBridge.on("accountServersChanged", () => void Effect.runPromise(remoteServers.invalidateDirectory()));
   teardown.push(TEARDOWN_ORDER.remoteServers, "the remote servers", () => {
     return runCauseEffect(remoteServers.stop());
   });
@@ -2985,20 +2888,6 @@ export async function createApplicationServices({
             ],
           },
           trash: (path) => shell.trashItem(path),
-          account: {
-            accountId: () => {
-              const state = centralAuth.getState();
-              return state.status === "signed_in" ? state.user.id : null;
-            },
-            register: (input) => centralAuth.registerRemoteHost(input).pipe(Effect.asVoid, toRemoteWorkflowError),
-            credential: (hostId) => centralAuth.hostSiteCredential(hostId)?.machineToken ?? null,
-            listMembers: (hostId) => centralAuth.listRemoteMembers(hostId).pipe(toRemoteWorkflowError),
-            remove: (hostId) =>
-              centralAuth.removeOwnedRemoteHost(hostId).pipe(
-                Effect.catch((error) => (isHostNotOnAccount(error.cause) ? Effect.void : Effect.fail(error))),
-                toRemoteWorkflowError,
-              ),
-          },
           log: {
             info: (message) => logger.info(message),
             warn: (message, detail) => logger.warn(message, detail === undefined ? "" : toLogValue(detail)),
@@ -3010,10 +2899,6 @@ export async function createApplicationServices({
     teardown.push(TEARDOWN_ORDER.localServers, "the servers on this computer", () =>
       Effect.runPromise(localServers.stop()),
     );
-    centralAuth.on("changed", () => {
-      Effect.runFork(localServers.accountChanged());
-    });
-    remoteServers.setThisComputerMembersListener((serverId) => localServers.sendMembers(serverId));
     await Effect.runPromise(localServers.load());
   }
   await runCauseEffect(remoteServers.initialize());
@@ -3034,10 +2919,7 @@ export async function createApplicationServices({
       }),
     );
   }
-  if (localServers) {
-    await Effect.runPromise(localServers.initialize());
-    Effect.runFork(localServers.accountChanged());
-  }
+  if (localServers) await Effect.runPromise(localServers.initialize());
   if (localServerChild) {
     await runCauseEffect(
       startLocalServerChild({
@@ -3045,33 +2927,6 @@ export async function createApplicationServices({
         teamStore,
         host,
         writeReady: (line) => process.stdout.write(line),
-        members: localServerMembers,
-        readCommands: (onLine) => {
-          if (localServerControl) createInterface({ input: localServerControl }).on("line", onLine);
-        },
-        publisher: {
-          publish: (machineToken) =>
-            Effect.suspend(() => {
-              const serverId = teamStore.getIdentity()?.serverId;
-              if (!serverId)
-                return Effect.fail(
-                  new RemoteWorkflowError({ cause: new Error(sourceText("error.app.remoteIdentityUnavailable")) }),
-                );
-              registerSecretValue(machineToken);
-              centralAuth.useHostCredential(serverId, machineToken);
-              return host.publishLocalServer();
-            }),
-          unpublish: () =>
-            host.unpublishLocalServer().pipe(
-              Effect.ensuring(
-                Effect.sync(() => {
-                  const serverId = teamStore.getIdentity()?.serverId;
-                  if (serverId) centralAuth.useHostCredential(serverId, null);
-                }),
-              ),
-            ),
-        },
-        warn: (message, cause) => logger.warn(message, toLogValue(cause)),
       }),
     );
     reportLocalServerWorkingAgents({
@@ -3439,7 +3294,6 @@ export async function createApplicationServices({
     externalLinks,
     openLink,
     remoteNetworkRoute,
-    remoteSessionCache,
     appBehavior,
     agentInitialization,
     hostUpdateCoordinator,
@@ -3451,7 +3305,7 @@ export async function createApplicationServices({
     remoteServers,
     relay,
     localServers,
-    centralAuth,
+    localProfile,
     skills,
     routineFeed,
     events,
@@ -3480,8 +3334,6 @@ export async function createApplicationServices({
     startup,
     machineAlerts,
     teamStore,
-    appliedAccount: signedInState,
-    centralAuthInitialization,
   };
 }
 

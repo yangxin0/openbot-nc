@@ -1,4 +1,10 @@
-import type { OpenBotDesktopApi, ServerSummary } from "@openbot/contracts/ipc";
+import type {
+  CreateTeamInviteInput,
+  InviteSummary,
+  OpenBotDesktopApi,
+  ServerSummary,
+  TeamInviteSummary,
+} from "@openbot/contracts/ipc";
 
 export interface ServersPort {
   agent: Pick<
@@ -27,22 +33,17 @@ export interface ServersPort {
     | "removeMcpSignInApp"
   >;
   events: OpenBotDesktopApi["events"];
-  auth: Pick<OpenBotDesktopApi["auth"], "onEvent">;
   browser: Pick<OpenBotDesktopApi["browser"], "setVisible">;
   hostAdmin: Pick<
     OpenBotDesktopApi["hostAdmin"],
-    "cancelUpdate" | "getUpdateStatus" | "restartHost" | "rotateHostKey" | "startUpdate" | "updateIdentity"
+    "cancelUpdate" | "getUpdateStatus" | "restartHost" | "startUpdate" | "updateIdentity"
   >;
   localServers: OpenBotDesktopApi["localServers"];
-  host: Pick<
-    OpenBotDesktopApi["host"],
-    "configure" | "getStatus" | "onEvent" | "rotateIdentityKey" | "start" | "stop" | "updateIdentity"
-  >;
+  host: Pick<OpenBotDesktopApi["host"], "configure" | "getStatus" | "onEvent" | "start" | "stop" | "updateIdentity">;
   notifications: Pick<OpenBotDesktopApi["notifications"], "onOpened" | "onWorkflowOpened">;
   servers: Pick<
     OpenBotDesktopApi["servers"],
     | "getPresenceFor"
-    | "join"
     | "list"
     | "onEvent"
     | "onPresence"
@@ -61,22 +62,25 @@ export function serversPort(): ServersPort {
   return window.openbot;
 }
 
-export type ServerAdminPort = Pick<
+export type ServerMemberPort = Pick<
   OpenBotDesktopApi["host"],
-  "getPresence" | "listMembers" | "listInvites" | "createInvite" | "updateMember" | "removeMember" | "revokeInvite"
+  "getPresence" | "listMembers" | "updateMember" | "removeMember"
 >;
 
-export function serverAdminPort(server: Pick<ServerSummary, "id" | "kind">): ServerAdminPort {
+export type ServerAdminPort = ServerMemberPort & {
+  listInvites: () => Promise<TeamInviteSummary[]>;
+  createInvite: (input: CreateTeamInviteInput) => Promise<InviteSummary>;
+  revokeInvite: (inviteId: string) => Promise<void>;
+};
+
+export function serverMemberPort(server: Pick<ServerSummary, "id" | "kind">): ServerMemberPort {
   if (server.kind === "local") return window.openbot.host;
   const serverId = server.id;
   return {
     getPresence: () => window.openbot.servers.getPresenceFor(serverId),
     listMembers: () => window.openbot.servers.listMembers(serverId),
-    listInvites: () => window.openbot.servers.listInvites(serverId),
-    createInvite: (input) => window.openbot.servers.createInvite(input, serverId),
     updateMember: (input) => window.openbot.servers.updateMember(input, serverId),
     removeMember: (memberId) => window.openbot.servers.removeMember(memberId, serverId),
-    revokeInvite: (inviteId) => window.openbot.servers.revokeInvite(inviteId, serverId),
   };
 }
 

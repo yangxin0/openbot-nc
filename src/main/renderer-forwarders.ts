@@ -650,12 +650,6 @@ export function createRendererForwarders({
     for (const target of appWindows()) sendToRenderer(target, IPC_ENDPOINTS.instanceTransfer.uploadProgress, progress);
   }
 
-  function forwardOwnerTransfersChanged(): void {
-    const window = getMainWindow();
-    if (!window || window.isDestroyed()) return;
-    sendToRenderer(window, IPC_ENDPOINTS.auth.ownerTransfersChanged);
-  }
-
   return {
     closeChatNotifications,
     forwardAgentEvent,
@@ -683,7 +677,6 @@ export function createRendererForwarders({
     forwardAttachmentDownload,
     forwardAttachmentImportProgress,
     forwardInstanceTransferUploadProgress,
-    forwardOwnerTransfersChanged,
   };
 }
 

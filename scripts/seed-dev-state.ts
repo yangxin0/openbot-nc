@@ -1506,31 +1506,15 @@ function mentionAgent(agents: Map<string, AgentSummary>, agentId: string): strin
 async function seedTeam(profilePath: string, agentStore: AgentStore, clock: SeedClock): Promise<void> {
   const team = new TeamStore(join(profilePath, TEAM_FILE), join(profilePath, LEGACY_TEAM_FILE));
   await runCauseEffect(team.initialize());
-  const owner = {
-    id: "openbot-dev-owner",
-    email: "openbot-dev-host@example.com",
-    name: "Dev Owner",
-    avatarUrl: null,
-  };
-  const teamIdentity = await runCauseEffect(team.configureWithAccount("OpenBot Dev Team", owner));
+  const owner = { id: "openbot-dev-owner", name: "Dev Owner", chatColor: null };
+  const teamIdentity = await runCauseEffect(team.configureForOwner("OpenBot Dev Team", owner));
   const joined = [];
-  for (const member of [
-    { id: "openbot-dev-alice", email: "alice@example.com", name: "Alice Chen", role: "admin" as const },
-  ]) {
-    const invite = await runCauseEffect(team.createInvite(member.role, member.email));
-    joined.push(
-      await runCauseEffect(
-        team.acceptInviteWithAccount(invite.token, {
-          id: member.id,
-          email: member.email,
-          name: member.name,
-          avatarUrl: null,
-        }),
-      ),
-    );
+  for (const member of [{ username: "alice", password: "openbot-dev-alice-password", role: "admin" as const }]) {
+    const invite = await runCauseEffect(team.createInvite(member.role));
+    joined.push(await runCauseEffect(team.acceptInvite(invite.token, member.username, member.password)));
   }
-  await runCauseEffect(team.createInvite("member", "new-person@example.com"));
-  const ownerSession = await runCauseEffect(team.loginWithAccount(owner));
+  const ownerMemberId = team.getOwnerMemberId();
+  if (!ownerMemberId) throw new Error("The development team has no owner.");
   await runCauseEffect(team.setEnabledOnLaunch(teamIdentity.serverId, true));
 
   const [alice] = joined;
@@ -1538,7 +1522,7 @@ async function seedTeam(profilePath: string, agentStore: AgentStore, clock: Seed
   const chat = new TeamChatStore(agentStore.database);
   chat.sendMessage({
     clientMessageId: "dev-seed-dm-owner-alice-1",
-    senderMemberId: ownerSession.member.id,
+    senderMemberId: ownerMemberId,
     recipientMemberId: alice.member.id,
     text: "I added the launch notes. Can you review the last section?",
     createdAt: clock.at(3 * HOUR),
@@ -1546,7 +1530,7 @@ async function seedTeam(profilePath: string, agentStore: AgentStore, clock: Seed
   chat.sendMessage({
     clientMessageId: "dev-seed-dm-alice-owner-1",
     senderMemberId: alice.member.id,
-    recipientMemberId: ownerSession.member.id,
+    recipientMemberId: ownerMemberId,
     text: "The notes look good. I left one comment on the rollout section.",
     createdAt: clock.at(2 * HOUR + 40 * MINUTE),
   });

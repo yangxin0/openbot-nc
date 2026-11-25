@@ -28,17 +28,9 @@ export interface AppPort {
     "readConversationPage" | "searchConversationMessages" | "searchConversationFiles" | "listRoutines" | "listAgents"
   >;
   acpRegistry: OpenBotDesktopApi["acpRegistry"];
-  auth: Pick<
-    OpenBotDesktopApi["auth"],
-    "listOwnerTransfers" | "acceptOwnerTransfer" | "declineOwnerTransfer" | "onOwnerTransfersChanged"
-  >;
   routineFeed: OpenBotDesktopApi["routineFeed"];
   events: OpenBotDesktopApi["events"];
   plugins: Pick<OpenBotDesktopApi["plugins"], "onOpenListing" | "takePendingListing">;
-  servers: Pick<
-    OpenBotDesktopApi["servers"],
-    "onInvite" | "takePendingInvite" | "getOwnerTransfer" | "startOwnerTransfer" | "cancelOwnerTransfer"
-  >;
 }
 
 export function appPort(): AppPort {

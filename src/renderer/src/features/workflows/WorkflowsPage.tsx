@@ -51,7 +51,7 @@ export function WorkflowsPage(props: { serverId: string }) {
 function DesktopWorkflowsCanvas(props: { serverId: string; host: WorkflowHost; admin: boolean }) {
   const { agentList, agentStatus, modelOptions, serverSetupChoice } = useAgents();
   const { setupState } = useSetup();
-  const { signedInAccount } = useAuth();
+  const { profile } = useAuth();
   const { turnProgress, turnStepLines } = useTurns();
   const usage = useUsage();
   const request = {
@@ -69,7 +69,7 @@ function DesktopWorkflowsCanvas(props: { serverId: string; host: WorkflowHost; a
       agents={agentList()}
       models={modelOptions()}
       status={agentStatus()}
-      self={signedInAccount()?.name ?? undefined}
+      self={profile()?.name ?? undefined}
       preference={serverSetupChoice() ?? setupState()}
       request={request}
       agentProgress={(agentId) => workflowAgentProgress(agentId, turnProgress()[agentId], turnStepLines())}

@@ -362,6 +362,8 @@ function connectionMessage(code: RelaySocketErrorCode): string {
       return sourceText("error.remote.relayUrlMissing");
     case "insecure_relay_url":
       return sourceText("error.remote.relayUrlInsecure");
+    case "server_refused":
+      return sourceText("error.remote.relayServerRefused");
     case "replaced":
       return sourceText("error.remote.relayReplaced");
     case "rate_limited":
