@@ -3,11 +3,11 @@ import type { messages as source } from "../../en/mobile/share";
 
 export const messages = {
   "mobile.share.reading": "Paylaştığınız içerik okunuyor…",
-  "mobile.share.readFailed": "OpenBot paylaştığınız içeriği okuyamadı. Tekrar paylaşın.",
+  "mobile.share.readFailed": "OpenBot-NC paylaştığınız içeriği okuyamadı. Tekrar paylaşın.",
   "mobile.share.content": "Paylaşılacak",
   "mobile.share.footer":
     "Sohbet, bu içerik mesaj alanında olacak şekilde açılır. Siz gönderene kadar hiçbir şey gönderilmez.",
-  "mobile.share.sendFooter": "OpenBot bunu ajana gönderir, sonra sohbeti açar.",
+  "mobile.share.sendFooter": "OpenBot-NC bunu ajana gönderir, sonra sohbeti açar.",
   "mobile.share.lastUsed": "Son kullanılan",
   "mobile.share.noAgents": "Ajan yok",
   "mobile.share.chooseAgent": "Bir ajan seçin",

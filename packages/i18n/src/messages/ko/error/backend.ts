@@ -3,8 +3,8 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "이 호스트에서는 이벤트를 사용할 수 없어요.",
-  "error.backend.webhooksRemoved": "이 버전의 OpenBot에서는 웹훅 트리거를 사용할 수 없어요.",
-  "error.backend.databaseIntegrity": "OpenBot 데이터베이스가 무결성 검사에 실패했어요.",
+  "error.backend.webhooksRemoved": "이 버전의 OpenBot-NC에서는 웹훅 트리거를 사용할 수 없어요.",
+  "error.backend.databaseIntegrity": "OpenBot-NC 데이터베이스가 무결성 검사에 실패했어요.",
   "error.backend.webhookSettingsInvalid": "웹훅 설정을 확인한 후 다시 시도해 주세요.",
   "error.backend.webhookSenderSecretInvalid":
     "보낸 쪽의 서명 시크릿 전체를 붙여 넣으세요. 16~1024자이며 공백이 없습니다.",
@@ -13,8 +13,8 @@ export const messages = {
   "error.backend.browserViewLimit": "이 호스트에서 열린 브라우저 보기가 너무 많아요.",
   "error.backend.browserViewEnded": "이 페이지의 실시간 보기가 종료되었어요.",
   "error.backend.browserViewFailed": "이 페이지의 실시간 보기에 실패했어요.",
-  "error.backend.windowTemporarilyUnavailable": "OpenBot 창을 일시적으로 사용할 수 없어요.",
-  "error.backend.windowUnavailable": "OpenBot 창을 사용할 수 없어요.",
+  "error.backend.windowTemporarilyUnavailable": "OpenBot-NC 창을 일시적으로 사용할 수 없어요.",
+  "error.backend.windowUnavailable": "OpenBot-NC 창을 사용할 수 없어요.",
   "error.backend.channelDeleteUnsupported": "이 서버는 채널 삭제를 지원하지 않아요.",
   "error.backend.browserNavigateUnsupported": "이 원격 호스트는 기존 탭에서 주소 표시줄 이동을 지원하지 않아요.",
   "error.backend.browserUserControlBusy": "이 브라우저 탭이 비밀 값을 기다리고 있어요. 먼저 비밀 값 요청에 답하세요.",
@@ -24,26 +24,26 @@ export const messages = {
   "error.backend.browserTeachUnsupported": "이 원격 호스트는 작업 기록을 지원하지 않습니다.",
   "error.backend.browserUserControlUnsupported": "이 원격 호스트는 브라우저 탭 제어권 가져오기를 지원하지 않아요.",
   "error.backend.browserSignInUnsupported": "이 원격 호스트는 이 컴퓨터에서 로그인을 받을 수 없어요.",
-  "error.backend.browserSignInOpenFailed": "OpenBot이 로그인 창을 열 수 없었어요.",
+  "error.backend.browserSignInOpenFailed": "OpenBot-NC가 로그인 창을 열 수 없었어요.",
   "error.backend.browserSignInLoadFailed":
-    "OpenBot이 로그인 창에서 페이지를 불러올 수 없었어요. 인터넷 연결을 확인한 다음 로그인 창을 다시 열어 주세요.",
-  "error.backend.browserSignInReadFailed": "OpenBot이 창에서 로그인 정보를 읽을 수 없었어요.",
+    "OpenBot-NC가 로그인 창에서 페이지를 불러올 수 없었어요. 인터넷 연결을 확인한 다음 로그인 창을 다시 열어 주세요.",
+  "error.backend.browserSignInReadFailed": "OpenBot-NC가 창에서 로그인 정보를 읽을 수 없었어요.",
   "error.backend.browserStopUnsupported": "이 원격 호스트는 페이지 로딩을 중지할 수 없어요.",
   "error.backend.sharedDataLocalOnly": "공유 데이터는 이 에이전트를 실행하는 컴퓨터에서 관리해요.",
   "error.backend.browserUrlProtocol": "브라우저 URL은 HTTP(S)만 사용할 수 있어요.",
   "error.backend.channelLeadModelUnavailable": "채널 리더 모델을 사용할 수 없어요.",
   "error.backend.contextCompactionIneffective":
-    "압축해도 이 채팅이 작아지지 않아요. 두 번 압축한 뒤에도 모델 컨텍스트 창의 {percent}%를 사용해서 OpenBot이 압축을 멈춰요. 창의 대부분은 도구와 지침이 사용해요. 이 에이전트에 필요 없는 MCP 서버나 컴퓨터 사용을 끄거나, 창이 더 큰 모델을 선택하세요. 그런 다음 새 채팅을 시작하세요.",
+    "압축해도 이 채팅이 작아지지 않아요. 두 번 압축한 뒤에도 모델 컨텍스트 창의 {percent}%를 사용해서 OpenBot-NC가 압축을 멈춰요. 창의 대부분은 도구와 지침이 사용해요. 이 에이전트에 필요 없는 MCP 서버나 컴퓨터 사용을 끄거나, 창이 더 큰 모델을 선택하세요. 그런 다음 새 채팅을 시작하세요.",
   "error.backend.contextCompactionStopped":
-    '이 채팅의 압축이 두 번 연속 실패하여 OpenBot이 자동 압축을 중지합니다. 시도할 때마다 채팅 전체가 모델로 전송되어 요금제 한도를 사용합니다. 다시 시도하려면 "지금 압축"을 선택하거나 새 채팅을 시작하세요.',
+    '이 채팅의 압축이 두 번 연속 실패하여 OpenBot-NC가 자동 압축을 중지합니다. 시도할 때마다 채팅 전체가 모델로 전송되어 요금제 한도를 사용합니다. 다시 시도하려면 "지금 압축"을 선택하거나 새 채팅을 시작하세요.',
   "error.backend.providerModelAtCapacity":
     "모델 용량이 가득 찼습니다. 제공업체가 몇 분 후에 다시 시도합니다. 지금 계속하려면 턴을 중지하고 다른 모델을 선택하세요.",
   "error.backend.providerRetrying":
     "제공자가 이 요청에 {attempts}번 실패해서 다시 시도하고 있어요. 에이전트가 계속하지 않으면 턴을 중지하세요.",
   "error.backend.providerRetryingLargeContext":
-    "제공자가 이 요청에 {attempts}번 실패해서 다시 시도하고 있어요. 이 채팅은 모델 컨텍스트 창의 {percent}%를 사용해요. 에이전트가 계속하지 않으면 턴을 중지하세요. 그러면 OpenBot이 다음 메시지 전에 채팅을 압축해요.",
+    "제공자가 이 요청에 {attempts}번 실패해서 다시 시도하고 있어요. 이 채팅은 모델 컨텍스트 창의 {percent}%를 사용해요. 에이전트가 계속하지 않으면 턴을 중지하세요. 그러면 OpenBot-NC가 다음 메시지 전에 채팅을 압축해요.",
   "error.backend.sharedDataUnavailable": "공유 데이터를 사용할 수 없어요.",
-  "error.backend.shuttingDown": "OpenBot이 종료되는 중이에요.",
+  "error.backend.shuttingDown": "OpenBot-NC가 종료되는 중이에요.",
   "error.backend.channelUnconfirmedStart":
     "채널에 시작을 확인하지 못한 배정이 있어요. 삭제하기 전에 결과를 확인하세요.",
   "error.backend.channelNotFound": "채널을 찾을 수 없어요.",
@@ -97,7 +97,7 @@ export const messages = {
     "실행이 오류로 멈췄지만 이유가 전달되지 않았습니다. 실행을 열어 에이전트가 한 일을 확인하세요.",
   "error.backend.turnNotStarted": "제공자가 이 턴을 시작하지 않았어요.",
   "error.backend.turnStartUnconfirmed":
-    "{provider}이(가) 이 메시지를 시작했는지 제때 확인하지 않았어요. 작업이 두 번 실행되지 않도록 OpenBot은 메시지를 다시 보내지 않아요. OpenBot은 에이전트가 시작할 때까지 최대 5분 기다려요.",
+    "{provider}이(가) 이 메시지를 시작했는지 제때 확인하지 않았어요. 작업이 두 번 실행되지 않도록 OpenBot-NC는 메시지를 다시 보내지 않아요. OpenBot-NC는 에이전트가 시작할 때까지 최대 5분 기다려요.",
   "error.backend.turnStartAbandoned": "에이전트가 5분 안에 이 메시지를 시작하지 않았어요. 메시지를 다시 보내 주세요.",
   "error.backend.routineResultConnectionOff": "이 메시징 연결이 꺼져 있거나 제거되었어요. 다른 위치를 선택하세요.",
   "error.backend.routineResultNoDelivery": "이 실행에는 다시 보낼 답변이 없어요.",
@@ -134,7 +134,8 @@ export const messages = {
   "error.backend.queueOrderStale": "대기열 순서가 오래되었어요. 대기열을 새로 고친 후 다시 시도해 주세요.",
   "error.backend.fileGone": "파일이 없거나 이미 삭제되었어요.",
   "error.backend.managedAttachmentChanged": "관리 중인 첨부 파일이 없거나 변경되었어요: {name}",
-  "error.backend.mailboxStateCorrupt": "메일함 상태가 손상되었거나 더 새로운 OpenBot 버전의 것이에요. 덮어쓰지 않아요.",
+  "error.backend.mailboxStateCorrupt":
+    "메일함 상태가 손상되었거나 더 새로운 OpenBot-NC 버전의 것이에요. 덮어쓰지 않아요.",
   "error.backend.recipientDeleting": "받는 사람을 삭제하는 중이에요. 삭제가 끝난 후 다시 시도해 주세요.",
   "error.backend.recipientHidden": "이 에이전트는 숨겨져 있어요. 메시지를 보내려면 복원하세요.",
   "error.backend.agentIdUnknown":
@@ -149,7 +150,7 @@ export const messages = {
   "error.backend.videoGenerationNoVideo": "동영상 생성 결과로 동영상이 오지 않았어요.",
   "error.backend.videoGenerationInterrupted": "동영상 생성이 중단됐어요.",
   "error.backend.attachmentNotRegularFile": "일반 파일만 첨부할 수 있어요: {name}",
-  "error.backend.attachmentCopyFailed": "OpenBot이 {name}을(를) 복사할 수 없었어요.",
+  "error.backend.attachmentCopyFailed": "OpenBot-NC가 {name}을(를) 복사할 수 없었어요.",
   "error.backend.routineNameRequired": "루틴 이름이 필요해요.",
   "error.backend.routineNameTooLong": "루틴 이름이 너무 길어요.",
   "error.backend.routineInstructionRequired": "루틴 지침이 필요해요.",
@@ -171,14 +172,14 @@ export const messages = {
   "error.backend.routineWaitForAgent": "루틴을 실행하기 전에 에이전트 작업이 끝날 때까지 기다려 주세요.",
   "error.backend.routineRunStarting": "이 루틴 실행이 아직 시작되는 중이에요. 턴이 시작된 후 다시 시도해 주세요.",
   "error.backend.routineRunNoSession":
-    "제공자 세션을 사용할 수 없어서 OpenBot이 진행 중인 루틴 실행을 중단할 수 없어요.",
+    "제공자 세션을 사용할 수 없어서 OpenBot-NC가 진행 중인 루틴 실행을 중단할 수 없어요.",
   "error.backend.interruptSelf": "에이전트는 자기 자신을 중단할 수 없어요.",
   "error.backend.interruptOtherWork":
     "이 에이전트는 회원님의 메시지로 시작되지 않은 작업을 하고 있어요. 사용자 또는 해당 작업을 보낸 쪽만 중지할 수 있어요.",
   "error.backend.interruptSharedWork":
     "이 에이전트의 턴은 회원님의 메시지와 함께 사용자 또는 다른 에이전트의 메시지도 처리하고 있어요. 사용자만 해당 에이전트 채팅의 에이전트 중지로 멈출 수 있어요.",
   "error.backend.interruptStarting": "이 에이전트가 아직 턴을 시작하는 중이에요. 턴이 시작된 후 다시 시도해 주세요.",
-  "error.backend.interruptNoSession": "제공자 세션을 사용할 수 없어서 OpenBot이 이 에이전트를 중단할 수 없어요.",
+  "error.backend.interruptNoSession": "제공자 세션을 사용할 수 없어서 OpenBot-NC가 이 에이전트를 중단할 수 없어요.",
   "error.backend.memoryTextRequired": "메모리 내용이 필요해요.",
   "error.backend.memoryTextTooLong": "메모리 내용이 너무 길어요.",
   "error.backend.mcpServerGone": "이 MCP 서버는 더 이상 없어요.",
@@ -210,9 +211,9 @@ export const messages = {
   "error.backend.messagePinLimit":
     "이 채팅에는 고정된 메시지가 50개 있습니다. 다른 메시지를 고정하려면 먼저 하나를 해제하세요.",
   "error.backend.routineFlowHandoffFailed": "루틴이 이 에이전트에게 작업을 넘기지 못했어요.",
-  "error.backend.mcpServerLimit": "OpenBot은 MCP 서버를 최대 {limit}개까지 유지해요.",
+  "error.backend.mcpServerLimit": "OpenBot-NC는 MCP 서버를 최대 {limit}개까지 유지해요.",
   "error.backend.mcpServerNameTaken": "{name}(이)라는 MCP 서버가 이미 있어요.",
-  "error.backend.mcpServerInvalid": "OpenBot이 이 MCP 서버 설정을 저장할 수 없어요.",
+  "error.backend.mcpServerInvalid": "OpenBot-NC가 이 MCP 서버 설정을 저장할 수 없어요.",
   "error.backend.mcpHeaderNameInvalid":
     "헤더 이름에는 공백이나 : ( ) / 같은 기호를 쓸 수 없어요. Authorization 같은 이름을 쓰고 키나 토큰은 값에 넣어 주세요.",
   "error.backend.mcpServerNoAnswer": "서버가 {seconds}초 안에 응답하지 않았어요.",
@@ -222,27 +223,27 @@ export const messages = {
   "error.backend.mcpSignInAccountRefused":
     "서버가 로그인한 계정을 거부했어요. 이 계정이 서비스를 사용할 수 있는지 확인하세요. 다른 계정을 사용하려면 로그아웃한 다음 다시 로그인하세요.",
   "error.backend.mcpSignInClientRefused":
-    "로그인을 완료할 때 로그인 서버가 OpenBot을 받아들이지 않았어요. 다시 로그인하세요. OpenBot이 서버에 다시 등록해요.",
+    "로그인을 완료할 때 로그인 서버가 OpenBot-NC를 받아들이지 않았어요. 다시 로그인하세요. OpenBot-NC가 서버에 다시 등록해요.",
   "error.backend.mcpSignInAppRefused":
     "로그인 서버가 이 서버의 로그인 앱을 받아들이지 않았어요. 로그인 앱의 클라이언트 ID와 클라이언트 시크릿을 확인한 후 다시 로그인하세요.",
   "error.backend.mcpCommandNotFound": "명령을 찾을 수 없어요: {command}",
   "error.backend.mcpProviderLimit":
     "이 에이전트는 정해진 수의 MCP 서버만 쓸 수 있어요. 이 서버를 쓰려면 에이전트에 필요 없는 MCP 서버를 꺼 주세요.",
   "error.backend.mcpRegistrationRefused":
-    "로그인 서버가 아직 OpenBot을 앱으로 허용하지 않아요. 계정 문제가 아니에요. 로컬 MCP 서버처럼 다른 방법으로 연결하세요.",
+    "로그인 서버가 아직 OpenBot-NC를 앱으로 허용하지 않아요. 계정 문제가 아니에요. 로컬 MCP 서버처럼 다른 방법으로 연결하세요.",
   "error.backend.mcpRegistrationUnavailable":
-    "로그인 서버가 OpenBot을 앱으로 등록할 수 없어요. 계정 문제가 아니에요. 연결하려면 마켓플레이스, 앱에서 이 서버를 저장한 다음 로그인 앱을 추가하세요.",
+    "로그인 서버가 OpenBot-NC를 앱으로 등록할 수 없어요. 계정 문제가 아니에요. 연결하려면 마켓플레이스, 앱에서 이 서버를 저장한 다음 로그인 앱을 추가하세요.",
   "error.backend.mcpSignInNeedsClientDocument":
-    "이 로그인 서버는 클라이언트 ID 문서를 게시하는 앱만 받아요. 이 OpenBot 빌드는 그 문서를 게시하지 않아요. 이 서버용 로그인 앱이 따로 있다면 마켓플레이스, 앱에서 서버를 저장한 다음 그 로그인 앱을 추가하세요.",
+    "이 로그인 서버는 클라이언트 ID 문서를 게시하는 앱만 받아요. 이 OpenBot-NC 빌드는 그 문서를 게시하지 않아요. 이 서버용 로그인 앱이 따로 있다면 마켓플레이스, 앱에서 서버를 저장한 다음 그 로그인 앱을 추가하세요.",
   "error.backend.mcpSignInAbandonedGeneric": "로그인이 중단되었어요.",
   "error.backend.mcpSignInForgotten": "MCP 로그인이 진행 중에 삭제되었어요.",
   "error.backend.mcpSignInAbandoned": "MCP 로그인이 중단되었어요.",
   "error.backend.mcpSignInNoBrowser": "이 MCP 로그인에서는 브라우저를 열 수 없어요.",
   "error.backend.mcpSignInNotWebPage": "로그인 주소가 웹 페이지가 아니에요.",
   "error.backend.mcpSignInRequired": "이 서버에 로그인해야 해요. 로그인을 선택해 브라우저에서 계속하세요.",
-  "error.backend.mcpSignInOnHost": "이 서버에 로그인해야 해요. 호스트 컴퓨터의 OpenBot에서 로그인하세요.",
+  "error.backend.mcpSignInOnHost": "이 서버에 로그인해야 해요. 호스트 컴퓨터의 OpenBot-NC에서 로그인하세요.",
   "error.backend.mcpSignInNeedsHttps":
-    "이 서버에 로그인해야 하는데, OpenBot은 https로만 로그인해요. URL을 {url}(으)로 변경하세요.",
+    "이 서버에 로그인해야 하는데, OpenBot-NC는 https로만 로그인해요. URL을 {url}(으)로 변경하세요.",
   "error.backend.mcpSignInOtherAddress":
     "이 서버는 {url}에서만 로그인할 수 있습니다. URL을 이 주소로 바꾼 다음 다시 로그인하세요.",
   "error.backend.mcpSignInCancelled": "로그인이 취소되었어요.",
@@ -250,9 +251,9 @@ export const messages = {
   "error.backend.mcpSignInRefused": "로그인 페이지에서 접근을 거부했어요. 다시 로그인하세요.",
   "error.backend.mcpSignInResponseTimedOut": "로그인 응답이 제시간에 도착하지 않았어요.",
   "error.backend.mcpSignInMetadataUnreadable":
-    "OpenBot이 이 서버의 로그인 정보를 읽을 수 없었어요. 서버 주소를 확인한 후 다시 시도해 주세요.",
+    "OpenBot-NC가 이 서버의 로그인 정보를 읽을 수 없었어요. 서버 주소를 확인한 후 다시 시도해 주세요.",
   "error.backend.mcpSignInAnswerUnreadable":
-    "로그인 서버가 OpenBot이 읽을 수 없는 응답을 보냈어요. 서비스에서 API 키나 토큰을 제공한다면 이 서버의 설정에 추가한 후 다시 연결을 테스트해 주세요.",
+    "로그인 서버가 OpenBot-NC가 읽을 수 없는 응답을 보냈어요. 서비스에서 API 키나 토큰을 제공한다면 이 서버의 설정에 추가한 후 다시 연결을 테스트해 주세요.",
   "error.backend.mcpServerExited": "서버가 응답하기 전에 중지되었어요. 터미널에서 명령을 실행해 오류를 확인하세요.",
   "error.backend.mcpServerExitedWithOutput": "서버가 응답하기 전에 중지되었어요. 출력: {detail}",
   "error.backend.mcpServerFailedToStart": "서버가 시작되지 않았어요: {reason}",
@@ -268,7 +269,7 @@ export const messages = {
   "error.backend.mcpServerFailedForProvider":
     "{provider}이(가) MCP 서버 {name}을(를) 시작할 수 없었어요. 마켓플레이스, 앱에서 {name}을(를) 열고 연결 테스트를 선택하면 원인을 확인할 수 있어요.",
   "error.backend.mcpServerFailedInProvider":
-    "{provider}이(가) MCP 서버 {name}을(를) 시작할 수 없었어요. {provider}은(는) 이 서버의 도구를 사용할 수 없어요. {provider}은(는) 서버를 직접 시작하므로 OpenBot의 연결 테스트는 성공할 수 있어요. 새 채팅을 시작해 다시 시도하세요.",
+    "{provider}이(가) MCP 서버 {name}을(를) 시작할 수 없었어요. {provider}은(는) 이 서버의 도구를 사용할 수 없어요. {provider}은(는) 서버를 직접 시작하므로 OpenBot-NC의 연결 테스트는 성공할 수 있어요. 새 채팅을 시작해 다시 시도하세요.",
   "error.backend.mcpServerTimedOutInProvider":
     "서버가 제시간에 응답하지 않아 {provider}이(가) MCP 서버 {name}을(를) 시작할 수 없었어요. 새 채팅을 시작해 다시 시도하세요.",
   "error.backend.mcpServerUnavailableInProvider":
@@ -278,12 +279,12 @@ export const messages = {
   "error.backend.githubToolsNotStarted":
     "GitHub가 응답하지 않아 {provider}이(가) GitHub 도구를 가져올 수 없었어요. 마켓플레이스, 앱에서 GitHub를 열고, 요청하면 다시 연결하세요. 그런 다음 새 채팅을 시작해 다시 시도하세요.",
   "error.backend.mcpOAuthProxyUnavailable":
-    "OpenBot이 이 서버용 로컬 로그인 연결을 시작할 수 없었어요. OpenBot을 다시 시작한 후 시도해 주세요.",
+    "OpenBot-NC가 이 서버용 로컬 로그인 연결을 시작할 수 없었어요. OpenBot-NC를 다시 시작한 후 시도해 주세요.",
   "error.backend.mcpOAuthSignInNeeded":
-    "이 MCP 서버의 로그인이 종료되었어요. 사용자가 OpenBot에서 다시 로그인해야 해요.",
+    "이 MCP 서버의 로그인이 종료되었어요. 사용자가 OpenBot-NC에서 다시 로그인해야 해요.",
   "error.backend.mcpOAuthRenewalFailed":
-    "OpenBot이 지금 이 MCP 서버의 로그인을 갱신하지 못했어요. 로그인은 유지되며 다음 요청에서 다시 시도해요. 이 오류가 계속되면 사용자는 OpenBot에서 이 서버에서 로그아웃한 다음 다시 로그인할 수 있어요.",
-  "error.backend.mcpServerUnreachable": "OpenBot이 서버에 연결할 수 없었어요. URL과 네트워크를 확인하세요.",
+    "OpenBot-NC가 지금 이 MCP 서버의 로그인을 갱신하지 못했어요. 로그인은 유지되며 다음 요청에서 다시 시도해요. 이 오류가 계속되면 사용자는 OpenBot-NC에서 이 서버에서 로그아웃한 다음 다시 로그인할 수 있어요.",
+  "error.backend.mcpServerUnreachable": "OpenBot-NC가 서버에 연결할 수 없었어요. URL과 네트워크를 확인하세요.",
   "error.backend.mcpLocalServerOff":
     "이 컴퓨터의 {address}에서 응답하는 서버가 없어요. 서버를 시작하거나 서버를 실행하는 앱에서 켠 후 다시 시도해 주세요.",
   "error.backend.mcpServerBlocked":
@@ -291,7 +292,7 @@ export const messages = {
   "error.backend.mcpServerIncompatible":
     "이 주소에서 응답은 있지만 Streamable HTTP 기반 MCP 서버가 아니에요. URL을 확인하고 서버를 실행하는 앱을 업데이트하세요.",
   "error.backend.mcpRemoteBridge":
-    "{reason} 이 명령은 mcp-remote 브리지를 실행해요. 대신 Streamable HTTP를 선택하고 URL {url}을(를) 사용하면 OpenBot이 로그인해 줘요.",
+    "{reason} 이 명령은 mcp-remote 브리지를 실행해요. 대신 Streamable HTTP를 선택하고 URL {url}을(를) 사용하면 OpenBot-NC가 로그인해 줘요.",
   "error.backend.oauthNotHttps": "OAuth 엔드포인트 {origin}이(가) https가 아니어서 자격 증명을 보내지 않았어요.",
   "error.backend.oauthTooManyRedirects": "OAuth 엔드포인트가 너무 많이 리디렉션했어요.",
   "error.backend.oauthRedirectOrigin": "OAuth 엔드포인트가 {origin}(으)로 리디렉션해서 자격 증명을 전달하지 않았어요.",
@@ -344,14 +345,14 @@ export const messages = {
   "error.backend.uiBlockActionNotAllowed": "서버 소유자 또는 관리자만 이 작업을 선택할 수 있어요.",
   "error.backend.approvalInactive": "이 승인은 더 이상 활성 상태가 아니에요.",
   "error.backend.feedbackNeedsPhone":
-    "이 신고는 OpenBot 휴대폰 앱에서만 보낼 수 있어요. 휴대폰의 버전과 지원 로그를 추가하기 때문이에요. 휴대폰에서 이 채팅을 열어 주세요. 거기서도 이 메시지가 보이면 휴대폰 앱을 업데이트해 주세요.",
+    "이 신고는 OpenBot-NC 휴대폰 앱에서만 보낼 수 있어요. 휴대폰의 버전과 지원 로그를 추가하기 때문이에요. 휴대폰에서 이 채팅을 열어 주세요. 거기서도 이 메시지가 보이면 휴대폰 앱을 업데이트해 주세요.",
   "error.backend.takeoverInactive": "이 브라우저 제어권 가져오기는 더 이상 활성 상태가 아니에요.",
   "error.backend.authSubmitting": "인증을 이미 제출하는 중이에요.",
-  "error.backend.apiKeyListFailed": "OpenBot이 저장된 API 키를 읽을 수 없었어요.",
-  "error.backend.apiKeySaveFailed": "OpenBot이 API 키를 저장할 수 없었어요. 다시 시도해 주세요.",
+  "error.backend.apiKeyListFailed": "OpenBot-NC가 저장된 API 키를 읽을 수 없었어요.",
+  "error.backend.apiKeySaveFailed": "OpenBot-NC가 API 키를 저장할 수 없었어요. 다시 시도해 주세요.",
   "error.backend.apiKeySaving": "API 키를 이미 저장하는 중이에요.",
   "error.backend.apiKeyAnswerUnreadable":
-    "OpenBot이 API 키를 읽지 못했어요. 8,000자 이하의 키를 입력하고 키를 사용할 대상을 선택하세요.",
+    "OpenBot-NC가 API 키를 읽지 못했어요. 8,000자 이하의 키를 입력하고 키를 사용할 대상을 선택하세요.",
   "error.backend.authRequestInactive": "이 보안 인증 요청은 더 이상 활성 상태가 아니에요.",
   "error.backend.secureAuthUnavailable": "보안 인증을 사용할 수 없어요.",
   "error.backend.browserUrlRequired": "브라우저 URL이 필요해요.",
@@ -372,7 +373,7 @@ export const messages = {
   "error.backend.browserProxyUnreachable": "프록시 {name}이(가) 응답하지 않아 페이지를 열지 못했어요.",
   "error.backend.browserProxySignInRefused": "프록시 {name}이(가) 로그인을 거부해 페이지를 열지 못했어요.",
   "error.backend.browserSystemProxyFailed":
-    "OpenBot을 실행하는 컴퓨터 설정의 프록시가 응답하지 않거나 연결을 거부해 페이지를 열지 못했어요. 그 컴퓨터의 프록시 설정을 확인하세요.",
+    "OpenBot-NC를 실행하는 컴퓨터 설정의 프록시가 응답하지 않거나 연결을 거부해 페이지를 열지 못했어요. 그 컴퓨터의 프록시 설정을 확인하세요.",
   "error.backend.browserProxyComputerUnreachable":
     "이 프로필이 사용하는 컴퓨터가 응답하지 않아 페이지를 열지 못했어요.",
   "error.backend.browserProxyComputerLocalAddress":
@@ -408,7 +409,7 @@ export const messages = {
   "error.backend.mcpSignInAppUrl": "로그인 앱에는 올바른 서버 URL이 필요해요.",
   "error.backend.mcpSignInAppClientId": "로그인 앱의 클라이언트 ID를 입력하세요.",
   "error.backend.mcpSignInAppIssuerChanged":
-    "이 MCP 서버의 로그인 서버가 바뀌어서 OpenBot이 로그인 앱을 보내지 않았어요. 변경이 맞다면 로그인 앱을 제거한 후 다시 추가하세요.",
+    "이 MCP 서버의 로그인 서버가 바뀌어서 OpenBot-NC가 로그인 앱을 보내지 않았어요. 변경이 맞다면 로그인 앱을 제거한 후 다시 추가하세요.",
   "error.backend.mcpSignInAppNoServer": "로그인 앱을 추가하기 전에 이 MCP 서버를 URL 서버로 저장하세요.",
   "error.backend.mcpSignInAppUnavailable": "이 컴퓨터에서는 로그인 앱을 보관할 수 없어요.",
   "error.backend.taskMoveRefused": "이 에이전트에게만 보낸 메시지만 작업으로 실행할 수 있어요.",
@@ -436,6 +437,6 @@ export const messages = {
   "error.backend.taskOpenLimitReached":
     "이 에이전트에는 열린 작업이 {count}개 있어요. 작업 하나를 닫은 후 다른 작업을 시작하거나 여세요.",
   "error.backend.taskRemoteUnsupported": "작업은 이 컴퓨터의 에이전트에서만 사용할 수 있어요.",
-  "error.backend.taskMessageFailed": "OpenBot이 작업에 메시지를 보낼 수 없었어요. 나중에 다시 시도하세요.",
-  "error.backend.taskStartFailed": "OpenBot이 작업을 시작할 수 없었어요. 대신 이 턴에서 작업을 처리하세요.",
+  "error.backend.taskMessageFailed": "OpenBot-NC가 작업에 메시지를 보낼 수 없었어요. 나중에 다시 시도하세요.",
+  "error.backend.taskStartFailed": "OpenBot-NC가 작업을 시작할 수 없었어요. 대신 이 턴에서 작업을 처리하세요.",
 } as const satisfies PartialTranslation<typeof source>;

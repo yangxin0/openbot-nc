@@ -25,7 +25,7 @@ export const messages = {
   "status.agent.screenCaptureScreen": "التقاط الشاشة الرئيسية وإرسال الصورة إلى نموذج الوكيل.",
   "status.agent.screenCaptureChannel":
     "تظهر الصورة في القناة {channel}، ويمكن لكل عضو في هذا الخادم يقرأ القناة رؤيتها.",
-  "status.agent.screenCapturePermissionNext": "قد يطلب منك macOS بعد ذلك السماح لـ OpenBot بـ «تسجيل الشاشة».",
+  "status.agent.screenCapturePermissionNext": "قد يطلب منك macOS بعد ذلك السماح لـ OpenBot-NC بـ «تسجيل الشاشة».",
   "status.agent.screenCaptureDisplay": "التقاط الشاشة {name} وإرسال الصورة إلى نموذج الوكيل.",
   "status.agent.screenCaptureWindow": "التقاط النافذة {name} وإرسال الصورة إلى نموذج الوكيل.",
   "status.agent.screenCaptureRegion":
@@ -38,12 +38,12 @@ export const messages = {
   "status.agent.sendIdea": "يصبح هذا مشكلة عامة على GitHub. لا يظهر اسمك.",
   "status.agent.feedbackRecentErrors": "الأخطاء الأخيرة في المحادثة:",
   "status.agent.feedbackSameAs": "يُضاف إلى المشكلة #{issue}",
-  "status.agent.feedbackSent": "أُرسل إلى فريق OpenBot: {title}",
+  "status.agent.feedbackSent": "أُرسل إلى فريق OpenBot-NC: {title}",
   "status.agent.feedbackWithdrawn": "أُزيل من GitHub: {title}",
   "status.agent.browserProfileNamed":
     "انقل {agents} إلى ملف تعريف المتصفح {profile}. يحصلون على تسجيلات الدخول وملفات تعريف الارتباط الخاصة به. تُغلق علاماتهم المفتوحة.",
-  "status.agent.commitCoAuthorOff": "إيقاف إضافة OpenBot كمؤلف مشارك في إيداعات جميع الوكلاء.",
-  "status.agent.commitCoAuthorOn": "إضافة OpenBot مجددًا كمؤلف مشارك في إيداعات جميع الوكلاء.",
+  "status.agent.commitCoAuthorOff": "إيقاف إضافة OpenBot-NC كمؤلف مشارك في إيداعات جميع الوكلاء.",
+  "status.agent.commitCoAuthorOn": "إضافة OpenBot-NC مجددًا كمؤلف مشارك في إيداعات جميع الوكلاء.",
   "status.agent.browserProfileNew":
     "أنشئ ملف تعريف المتصفح الجديد {profile} وانقل {agents} إليه. لا يحتوي على أي تسجيل دخول. تُغلق علاماتهم المفتوحة.",
   "status.agent.browserProfileShared":
@@ -107,9 +107,9 @@ export const messages = {
   "status.agent.memoryChangesWithConflicts":
     "الذاكرة: حُفظ {saved}، وحُدّث {updated}، ونُسي {forgotten}، ولم يتغير {notChanged} لأن سلسلة أخرى غيّرته أولًا.",
   "status.agent.mcpServerAdd":
-    "إضافة خادم MCP {name}: {target}. يحصل كل وكيل على هذا الخادم على أدواته. يتصل OpenBot به لاختباره.",
+    "إضافة خادم MCP {name}: {target}. يحصل كل وكيل على هذا الخادم على أدواته. يتصل OpenBot-NC به لاختباره.",
   "status.agent.mcpServerChange":
-    "تغيير خادم MCP {name} إلى {target}. يحصل كل وكيل على هذا الخادم على أدواته. يتصل OpenBot به لاختباره.",
+    "تغيير خادم MCP {name} إلى {target}. يحصل كل وكيل على هذا الخادم على أدواته. يتصل OpenBot-NC به لاختباره.",
   "status.agent.mcpServerHeaders": "ويغيّر أيضًا هذه الترويسات: {names}.",
   "status.agent.mcpServerEnable": "تشغيل خادم MCP {name} لكل وكيل على هذا الخادم.",
   "status.agent.mcpServerDisable": "إيقاف خادم MCP {name} لكل وكيل على هذا الخادم.",

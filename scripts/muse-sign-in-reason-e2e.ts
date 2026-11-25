@@ -77,7 +77,7 @@ const CASES: Case[] = [
   {
     name: "no-reason",
     answer: { outcome: "denied" },
-    check: (row) => assert.equal(row.message, "OpenBot could not connect Muse. Try again."),
+    check: (row) => assert.equal(row.message, "OpenBot-NC could not connect Muse. Try again."),
   },
   {
     name: "granted",

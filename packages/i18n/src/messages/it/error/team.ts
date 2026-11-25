@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/team";
 
 export const messages = {
-  "error.team.ownerNotLinked": "Questo host non è collegato a un account proprietario di OpenBot.",
-  "error.team.ownerEmailRequired": "Accedi con l'email OpenBot che ha creato questo host.",
+  "error.team.ownerNotLinked": "Questo host non è collegato a un account proprietario di OpenBot-NC.",
+  "error.team.ownerEmailRequired": "Accedi con l'email OpenBot-NC che ha creato questo host.",
   "error.team.hostNotConfigured": "L'host del team non è configurato.",
   "error.team.alreadyConfigured": "Il server del team è già configurato.",
   "error.team.identityCreateFailed": "Non è stato possibile creare l'identità del team.",
   "error.team.accountChangedDuringCreate":
     "L'account con cui hai effettuato l'accesso è cambiato durante la creazione del server.",
-  "error.team.notConfigured": "Questo OpenBot non è stato configurato.",
+  "error.team.notConfigured": "Questo OpenBot-NC non è stato configurato.",
   "error.team.serverNotActive": "Questo server non è più quello attivo per l'account con cui hai effettuato l'accesso.",
   "error.team.logoInvalid": "Scegli un'immagine PNG, JPEG o WebP valida, fino a 512 KB.",
   "error.team.permanentInviteEmail": "Un link d'invito permanente non può avere un indirizzo email.",
@@ -19,7 +19,7 @@ export const messages = {
   "error.team.memberDisabled": "Questo membro del team è disattivato.",
   "error.team.memberLimit": "Un host può avere fino a {limit} membri.",
   "error.team.usernameTaken": "Questo nome utente è già in uso.",
-  "error.team.inviteRequiresAccount": "Questo invito richiede un account OpenBot verificato.",
+  "error.team.inviteRequiresAccount": "Questo invito richiede un account OpenBot-NC verificato.",
   "error.team.loginIncorrect": "Nome utente o password non corretti.",
   "error.team.currentPasswordIncorrect": "La password attuale non è corretta.",
   "error.team.memberNotFound": "Membro del team non trovato.",
@@ -45,16 +45,16 @@ export const messages = {
   "error.team.routeNotFound": "Percorso non trovato.",
   "error.team.requestFailed": "Richiesta non riuscita.",
   "error.team.tooManySignInAttempts": "Troppi tentativi di accesso. Riprova più tardi.",
-  "error.team.clientUpdateRequired": "Aggiorna questo client OpenBot prima di connetterti a questo host.",
-  "error.team.hostUpdateRequired": "Aggiorna OpenBot sull'host prima di connetterti.",
-  "error.team.serverSafeMode": "Questo server è in modalità provvisoria perché OpenBot non si avvia.",
+  "error.team.clientUpdateRequired": "Aggiorna questo client OpenBot-NC prima di connetterti a questo host.",
+  "error.team.hostUpdateRequired": "Aggiorna OpenBot-NC sull'host prima di connetterti.",
+  "error.team.serverSafeMode": "Questo server è in modalità provvisoria perché OpenBot-NC non si avvia.",
   "error.team.serverSafeModeNewerDatabase":
-    "OpenBot {version} su questo server non può aprire i suoi dati perché una versione più recente di OpenBot li ha salvati. Una versione più recente di OpenBot sul server risolve il problema.",
+    "OpenBot-NC {version} su questo server non può aprire i suoi dati perché una versione più recente di OpenBot-NC li ha salvati. Una versione più recente di OpenBot-NC sul server risolve il problema.",
   "error.team.serverSafeModeStartFailed":
-    "OpenBot {version} su questo server si è fermato dopo molti avvii non riusciti. Una versione più recente di OpenBot sul server risolve il problema.",
+    "OpenBot-NC {version} su questo server si è fermato dopo molti avvii non riusciti. Una versione più recente di OpenBot-NC sul server risolve il problema.",
   "error.team.sidebarLayoutUnavailable": "Il layout della barra laterale non è disponibile.",
   "error.team.providersUnsupported": "Le impostazioni dei provider non sono supportate da questa connessione.",
-  "error.team.providerNotManaged": "OpenBot non gestisce la CLI di questo provider.",
+  "error.team.providerNotManaged": "OpenBot-NC non gestisce la CLI di questo provider.",
   "error.team.channelsUnsupported": "Le chat dei canali non sono supportate da questa connessione.",
   "error.team.channelContextUnsupported":
     "Questa connessione non supporta una nuova conversazione né la compattazione in un canale.",
@@ -94,9 +94,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "Le cartelle della Libreria non sono supportate da questa connessione.",
   "error.team.workflowFoldersUnsupported": "Questa connessione non supporta le cartelle di workflow.",
   "error.team.agentNotificationLevelsUnsupported":
-    "Questo server non può salvare il tuo livello di notifiche per ogni agente. Aggiorna OpenBot sul computer che lo esegue.",
+    "Questo server non può salvare il tuo livello di notifiche per ogni agente. Aggiorna OpenBot-NC sul computer che lo esegue.",
   "error.team.sidebarPinsUnsupported":
-    "Questo server non può salvare le chat fissate per tutti i tuoi dispositivi. Aggiorna OpenBot sul computer che lo esegue.",
+    "Questo server non può salvare le chat fissate per tutti i tuoi dispositivi. Aggiorna OpenBot-NC sul computer che lo esegue.",
   "error.team.agentInstructionsUnsupported":
     "La modifica delle istruzioni degli agenti non è supportata da questa connessione.",
   "error.team.contextResetUnsupported": "L'avvio di una nuova chat non è supportato da questa connessione.",
@@ -108,7 +108,7 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "Questa connessione non supporta la ricerca nei thread secondari.",
   "error.team.sideQuestionUnsupported": "Questa connessione non supporta le domande a parte.",
   "error.team.routineFlowsUnsupported":
-    "Questo server non supporta i flussi di routine. Aggiorna OpenBot sul computer che lo esegue.",
+    "Questo server non supporta i flussi di routine. Aggiorna OpenBot-NC sul computer che lo esegue.",
   "error.team.routineCanvasTooLarge":
     "La tela di questa routine è troppo grande per essere inviata a questo dispositivo. Accorcia le istruzioni della routine sul computer che esegue il server.",
   "error.team.conversationPageTooLarge":
@@ -150,9 +150,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "Sessione della vista del browser non trovata.",
   "error.team.mcpUnsupported": "I server MCP non sono supportati da questa connessione.",
   "error.team.mcpServerListNeedsUpdate":
-    "Aggiorna OpenBot su questo dispositivo per usare più di {limit} server MCP su questo server.",
+    "Aggiorna OpenBot-NC su questo dispositivo per usare più di {limit} server MCP su questo server.",
   "error.team.providerAccountListNeedsUpdate":
-    "Aggiorna OpenBot su questo dispositivo per usare più di {limit} account di un provider su questo server.",
+    "Aggiorna OpenBot-NC su questo dispositivo per usare più di {limit} account di un provider su questo server.",
   "error.team.storageUnsupported": "L'archiviazione non è supportata da questa connessione.",
   "error.team.machineResourcesUnsupported": "L'uso della macchina non è supportato da questa connessione.",
   "error.team.machineAlertMemberInvalid":
@@ -180,9 +180,9 @@ export const messages = {
     "Solo la persona che ha aggiunto questo server MCP, o un amministratore, può modificarlo.",
   "error.team.ownerRequired": "Solo il proprietario di questo server può farlo.",
   "error.team.requestTooLarge": "Il corpo della richiesta è troppo grande.",
-  "error.team.signInRelayUnsupported": "Questo server non può inoltrare gli accessi. Aggiorna OpenBot sull'host.",
+  "error.team.signInRelayUnsupported": "Questo server non può inoltrare gli accessi. Aggiorna OpenBot-NC sull'host.",
   "error.team.connectorsUnsupported":
-    "Questo server non può gestire le proprie connessioni da qui. Aggiorna OpenBot sull'host.",
+    "Questo server non può gestire le proprie connessioni da qui. Aggiorna OpenBot-NC sull'host.",
   "error.team.signInRelayUnknown": "Questo accesso è terminato o non esiste.",
   "error.team.signInRelayUsed": "Questo accesso è già stato inviato.",
   "error.team.signInRelayMismatch": "Questo indirizzo non appartiene a questo accesso.",

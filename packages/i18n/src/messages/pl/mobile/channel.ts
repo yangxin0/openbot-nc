@@ -110,7 +110,7 @@ export const messages = {
     "Wiadomości znikają, a członkowie o nich zapominają. Konfiguracja kanału zostaje.",
   "mobile.channel.deleteHistory.confirmTitle": "Usunąć historię kanału {name}?",
   "mobile.channel.deleteHistory.confirmBody":
-    "Wszystkie wiadomości i pliki tego kanału znikną z OpenBot, a członkowie o nich zapomną. Nie można tego cofnąć. Członkowie, instrukcje, wspomnienia, rutyny i zadania się nie zmienią.",
+    "Wszystkie wiadomości i pliki tego kanału znikną z OpenBot-NC, a członkowie o nich zapomną. Nie można tego cofnąć. Członkowie, instrukcje, wspomnienia, rutyny i zadania się nie zmienią.",
   "mobile.channel.deleteHistory.confirm": "Usuń historię",
   "mobile.channel.deleteHistory.failed": "Nie udało się usunąć historii",
   "mobile.channel.deleteHistory.failedBody": "Host nie mógł usunąć historii.",

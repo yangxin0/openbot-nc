@@ -10,8 +10,8 @@ export const messages = {
   "error.voice.modelUnavailable": "Das Sprachmodell ist nicht verfügbar.",
   "error.voice.transcriptionTimedOut": "Die Zeit für die Sprachtranskription ist abgelaufen.",
   "error.voice.prepareRequired":
-    "Lokale Sprachtranskription ist nicht verfügbar. Führe `bun run voice:prepare` aus und starte OpenBot neu.",
-  "error.voice.transcriptionFailed": "OpenBot konnte diese Aufnahme nicht transkribieren.",
+    "Lokale Sprachtranskription ist nicht verfügbar. Führe `bun run voice:prepare` aus und starte OpenBot-NC neu.",
+  "error.voice.transcriptionFailed": "OpenBot-NC konnte diese Aufnahme nicht transkribieren.",
   "error.voice.videoModelMissing":
     "Unter Einstellungen → Diktat ist kein Spracherkennungsmodell für Aufnahmen eingerichtet.",
   "error.voice.videoModelMissingServer":
@@ -29,9 +29,9 @@ export const messages = {
   "error.voice.speech.runtimeUnavailable": "Lokale Sprachausgabe ist auf dieser Plattform nicht verfügbar.",
   "error.voice.speech.modelRequired": "Lade das Sprachausgabemodell unter Einstellungen → Diktat herunter.",
   "error.voice.speech.timedOut": "Das Vorlesen der Antwort hat zu lange gedauert.",
-  "error.voice.speech.failed": "OpenBot konnte die Antwort nicht vorlesen.",
+  "error.voice.speech.failed": "OpenBot-NC konnte die Antwort nicht vorlesen.",
   "error.voice.speech.providerRefused": "{provider} hat die Audioausgabe abgelehnt: {reason}",
-  "error.voice.recordingNotKept": "OpenBot konnte die Sprachaufnahme nicht speichern.",
+  "error.voice.recordingNotKept": "OpenBot-NC konnte die Sprachaufnahme nicht speichern.",
   "error.voice.server.modelUnsupported":
     "{host} kann mit {model} nicht transkribieren. Wähle in den Einstellungen ein anderes Diktatmodell für den Sprachserver.",
 } as const satisfies PartialTranslation<typeof source>;

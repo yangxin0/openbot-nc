@@ -27,7 +27,7 @@ export const messages = {
   "status.agent.screenCaptureScreen": "메인 화면을 캡처해서 이미지를 에이전트의 모델에 보내요.",
   "status.agent.screenCaptureChannel":
     "이미지가 {channel} 채널에 표시되고, 이 채널을 읽는 서버의 모든 멤버가 볼 수 있어요.",
-  "status.agent.screenCapturePermissionNext": "그다음 macOS가 OpenBot의 화면 녹화를 허용할지 물어볼 수 있어요.",
+  "status.agent.screenCapturePermissionNext": "그다음 macOS가 OpenBot-NC의 화면 녹화를 허용할지 물어볼 수 있어요.",
   "status.agent.screenCaptureDisplay": "디스플레이 {name}을(를) 캡처해서 이미지를 에이전트의 모델에 보내요.",
   "status.agent.screenCaptureWindow": "창 {name}을(를) 캡처해서 이미지를 에이전트의 모델에 보내요.",
   "status.agent.screenCaptureRegion":
@@ -38,12 +38,12 @@ export const messages = {
   "status.agent.sendIdea": "공개 GitHub 이슈가 됩니다. 이름은 표시되지 않습니다.",
   "status.agent.feedbackRecentErrors": "채팅의 최근 오류:",
   "status.agent.feedbackSameAs": "이슈 #{issue}에 추가됩니다",
-  "status.agent.feedbackSent": "OpenBot 팀에 보냄: {title}",
+  "status.agent.feedbackSent": "OpenBot-NC 팀에 보냄: {title}",
   "status.agent.feedbackWithdrawn": "GitHub에서 삭제함: {title}",
   "status.agent.browserProfileNamed":
     "{agents}을(를) 브라우저 프로필 {profile}(으)로 옮깁니다. 그 프로필의 로그인 정보와 쿠키를 사용하게 됩니다. 열린 탭은 닫힙니다.",
-  "status.agent.commitCoAuthorOff": "모든 에이전트의 커밋에 OpenBot을 공동 작성자로 추가하지 않습니다.",
-  "status.agent.commitCoAuthorOn": "모든 에이전트의 커밋에 OpenBot을 다시 공동 작성자로 추가합니다.",
+  "status.agent.commitCoAuthorOff": "모든 에이전트의 커밋에 OpenBot-NC를 공동 작성자로 추가하지 않습니다.",
+  "status.agent.commitCoAuthorOn": "모든 에이전트의 커밋에 OpenBot-NC를 다시 공동 작성자로 추가합니다.",
   "status.agent.browserProfileNew":
     "새 브라우저 프로필 {profile}을(를) 만들고 {agents}을(를) 옮깁니다. 로그인 정보가 없습니다. 열린 탭은 닫힙니다.",
   "status.agent.browserProfileShared":
@@ -100,9 +100,9 @@ export const messages = {
   "status.agent.memoryChangesWithConflicts":
     "메모리: {saved}개 저장, {updated}개 업데이트, {forgotten}개 삭제, {notChanged}개는 다른 스레드가 먼저 변경해서 변경 안 됨.",
   "status.agent.mcpServerAdd":
-    "MCP 서버 {name}을(를) 추가해요: {target}. 이 서버의 모든 에이전트가 해당 도구를 사용할 수 있어요. OpenBot이 연결을 테스트해요.",
+    "MCP 서버 {name}을(를) 추가해요: {target}. 이 서버의 모든 에이전트가 해당 도구를 사용할 수 있어요. OpenBot-NC가 연결을 테스트해요.",
   "status.agent.mcpServerChange":
-    "MCP 서버 {name}을(를) {target}(으)로 변경해요. 이 서버의 모든 에이전트가 해당 도구를 사용할 수 있어요. OpenBot이 연결을 테스트해요.",
+    "MCP 서버 {name}을(를) {target}(으)로 변경해요. 이 서버의 모든 에이전트가 해당 도구를 사용할 수 있어요. OpenBot-NC가 연결을 테스트해요.",
   "status.agent.mcpServerHeaders": "다음 헤더도 변경해요: {names}.",
   "status.agent.mcpServerEnable": "이 서버의 모든 에이전트에 MCP 서버 {name}을(를) 켜요.",
   "status.agent.mcpServerDisable": "이 서버의 모든 에이전트에 MCP 서버 {name}을(를) 꺼요.",

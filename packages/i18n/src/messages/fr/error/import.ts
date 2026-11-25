@@ -3,9 +3,9 @@ import type { messages as source } from "../../en/error/import";
 
 export const messages = {
   "error.import.manifestNotJson": "{manifest} n’est pas un fichier JSON valide.",
-  "error.import.notAgentExport": "{manifest} n’est pas une exportation d’agents OpenBot.",
+  "error.import.notAgentExport": "{manifest} n’est pas une exportation d’agents OpenBot-NC.",
   "error.import.newerExportSkill":
-    "Cette exportation a été créée par une compétence d’exportation plus récente. Mettez à jour OpenBot, puis réessayez.",
+    "Cette exportation a été créée par une compétence d’exportation plus récente. Mettez à jour OpenBot-NC, puis réessayez.",
   "error.import.noAgents": "L’exportation ne contient aucun agent.",
   "error.import.tooManyAgents": "L’exportation contient plus de {limit} agents.",
   "error.import.tooManyChannels": "L’exportation contient plus de {limit} canaux.",
@@ -50,16 +50,16 @@ export const messages = {
   "error.import.uploadDiskSpace":
     "L’export nécessite {size} Go d’espace disque libre sur le serveur, et {free} Go sont libres. Libérez de l’espace sur le serveur, puis choisissez à nouveau l’export.",
   "error.import.remoteZipTooLargeOldHost":
-    "Ce serveur accepte un export de 100 Mo au maximum. Mettez à jour OpenBot sur le serveur pour importer un export plus grand.",
+    "Ce serveur accepte un export de 100 Mo au maximum. Mettez à jour OpenBot-NC sur le serveur pour importer un export plus grand.",
   "error.import.skillKept":
     "{name} : le serveur a déjà la compétence « {skill} », l’agent utilise donc celle-ci. Demandez à un administrateur de la mettre à jour.",
   "error.import.skillRenamed":
     "{name} : le nom de la compétence « {skill} » est trop proche de celui d’une autre compétence, elle est donc enregistrée sous « {renamed} ».",
   "error.import.transferRemoteTooLarge":
     "Un fichier de transfert pour un serveur rejoint doit faire moins de 100 Mo. Désactivez les fichiers des espaces de travail ou exportez moins d’agents.",
-  "error.import.transferNotFile": "Ce fichier n’est pas un fichier de transfert OpenBot.",
+  "error.import.transferNotFile": "Ce fichier n’est pas un fichier de transfert OpenBot-NC.",
   "error.import.transferNewer":
-    "Ce fichier a été créé par une version plus récente d’OpenBot. Mettez à jour OpenBot et réessayez.",
+    "Ce fichier a été créé par une version plus récente d’OpenBot-NC. Mettez à jour OpenBot-NC et réessayez.",
   "error.import.transferEmpty": "Le fichier ne contient ni agents ni réglages.",
   "error.import.transferTooLarge":
     "Un fichier de transfert doit faire moins de 2 Go et contenir moins de 50 000 fichiers. Désactivez les fichiers des espaces de travail ou exportez moins d’agents.",

@@ -24,7 +24,7 @@ export const messages = {
   "status.agent.channelTaskCancelled": "{agent} 已取消任务“{task}”及其子任务，这是 {person} 的请求。",
   "status.agent.screenCaptureScreen": "截取主屏幕，并把图像发送给助手的模型。",
   "status.agent.screenCaptureChannel": "图像会显示在频道 {channel} 中，该服务器上每位阅读该频道的成员都能看到。",
-  "status.agent.screenCapturePermissionNext": "之后 macOS 可能会请你允许 OpenBot 进行屏幕录制。",
+  "status.agent.screenCapturePermissionNext": "之后 macOS 可能会请你允许 OpenBot-NC 进行屏幕录制。",
   "status.agent.screenCaptureDisplay": "截取显示器 {name}，并把图像发送给助手的模型。",
   "status.agent.screenCaptureWindow": "截取窗口 {name}，并把图像发送给助手的模型。",
   "status.agent.screenCaptureRegion": "截取 {x}、{y} 处 {width} × {height} 点的屏幕区域，并把图像发送给助手的模型。",
@@ -36,12 +36,12 @@ export const messages = {
   "status.agent.sendIdea": "这会成为一个公开的 GitHub issue。不会显示你的名字。",
   "status.agent.feedbackRecentErrors": "聊天中的最近错误：",
   "status.agent.feedbackSameAs": "添加到 issue #{issue}",
-  "status.agent.feedbackSent": "已发送给 OpenBot 团队：{title}",
+  "status.agent.feedbackSent": "已发送给 OpenBot-NC 团队：{title}",
   "status.agent.feedbackWithdrawn": "已从 GitHub 删除：{title}",
   "status.agent.browserProfileNamed":
     "将 {agents} 移到浏览器配置文件 {profile}。它们会使用其中的登录信息和 Cookie。它们打开的标签页会关闭。",
-  "status.agent.commitCoAuthorOff": "不再将 OpenBot 作为共同作者添加到所有智能体的提交中。",
-  "status.agent.commitCoAuthorOn": "重新将 OpenBot 作为共同作者添加到所有智能体的提交中。",
+  "status.agent.commitCoAuthorOff": "不再将 OpenBot-NC 作为共同作者添加到所有智能体的提交中。",
+  "status.agent.commitCoAuthorOn": "重新将 OpenBot-NC 作为共同作者添加到所有智能体的提交中。",
   "status.agent.browserProfileNew":
     "新建浏览器配置文件 {profile} 并将 {agents} 移到其中。它没有登录信息。它们打开的标签页会关闭。",
   "status.agent.browserProfileShared":
@@ -96,9 +96,9 @@ export const messages = {
   "status.agent.memoryChangesWithConflicts":
     "记忆：已保存 {saved} 条，已更新 {updated} 条，已忘记 {forgotten} 条，{notChanged} 条因另一个话题先更改而未更改。",
   "status.agent.mcpServerAdd":
-    "添加 MCP 服务器 {name}：{target}。该服务器上的每个助手都能使用它的工具。OpenBot 会连接它进行测试。",
+    "添加 MCP 服务器 {name}：{target}。该服务器上的每个助手都能使用它的工具。OpenBot-NC 会连接它进行测试。",
   "status.agent.mcpServerChange":
-    "把 MCP 服务器 {name} 改为 {target}。该服务器上的每个助手都能使用它的工具。OpenBot 会连接它进行测试。",
+    "把 MCP 服务器 {name} 改为 {target}。该服务器上的每个助手都能使用它的工具。OpenBot-NC 会连接它进行测试。",
   "status.agent.mcpServerHeaders": "同时更改这些标头：{names}。",
   "status.agent.mcpServerEnable": "为该服务器上的每个助手开启 MCP 服务器 {name}。",
   "status.agent.mcpServerDisable": "为该服务器上的每个助手关闭 MCP 服务器 {name}。",

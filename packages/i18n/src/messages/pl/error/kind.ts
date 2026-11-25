@@ -5,9 +5,9 @@ export const messages = {
   "error.kind.network": "Nie udało się połączyć. Sprawdź połączenie i spróbuj ponownie.",
   "error.kind.timeout": "Żądanie trwało zbyt długo. Sprawdź, czy działanie się zakończyło, zanim spróbujesz ponownie.",
   "error.kind.storage":
-    "Za mało miejsca na dysku. Zwolnij miejsce na komputerze, na którym działa OpenBot, a potem spróbuj ponownie.",
+    "Za mało miejsca na dysku. Zwolnij miejsce na komputerze, na którym działa OpenBot-NC, a potem spróbuj ponownie.",
   "error.kind.filePermission":
-    "OpenBot nie ma uprawnień do wykonania tego działania. Sprawdź uprawnienia pliku lub folderu, a potem spróbuj ponownie.",
+    "OpenBot-NC nie ma uprawnień do wykonania tego działania. Sprawdź uprawnienia pliku lub folderu, a potem spróbuj ponownie.",
   "error.kind.notFound":
     "Nie znaleziono wymaganego pliku lub folderu. Przywróć go lub wybierz inny, a potem spróbuj ponownie.",
   "error.kind.readOnly": "Ten folder jest tylko do odczytu. Wybierz folder z prawem zapisu, a potem spróbuj ponownie.",
@@ -18,6 +18,6 @@ export const messages = {
   "error.kind.rateLimit": "Za dużo żądań. Poczekaj chwilę, a potem spróbuj ponownie.",
   "error.kind.service": "Usługa jest niedostępna. Poczekaj chwilę, a potem spróbuj ponownie.",
   "error.kind.clock":
-    "Nie udało się nawiązać bezpiecznego połączenia, bo data lub godzina na komputerze, na którym działa OpenBot, jest prawdopodobnie błędna. Popraw datę i godzinę, a potem spróbuj ponownie.",
+    "Nie udało się nawiązać bezpiecznego połączenia, bo data lub godzina na komputerze, na którym działa OpenBot-NC, jest prawdopodobnie błędna. Popraw datę i godzinę, a potem spróbuj ponownie.",
   "error.kind.interrupted": "Połączenie zostało zamknięte, zanim odpowiedź się zakończyła. Wyślij wiadomość ponownie.",
 } as const satisfies PartialTranslation<typeof source>;

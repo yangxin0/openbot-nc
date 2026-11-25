@@ -4,7 +4,7 @@ import type { messages as source } from "../en/account";
 export const messages = {
   "account.menu.signOut": "Abmelden",
   "account.menu.signingOut": "Abmeldung läuft…",
-  "account.menu.updateFailed": "OpenBot konnte nicht aktualisiert werden.",
+  "account.menu.updateFailed": "OpenBot-NC konnte nicht aktualisiert werden.",
   "account.menu.signOutFailed": "Die Abmeldung ist fehlgeschlagen.",
   "account.usage.title": "Nutzung",
   "account.usage.refresh": "Aktualisieren",
@@ -62,7 +62,7 @@ export const messages = {
   "account.update.progress": "Downloadfortschritt des Updates",
   "account.login.email": "E-Mail",
   "account.login.sendCode": "Anmeldecode senden",
-  "account.login.verified": "Bestätigt. OpenBot wird geöffnet…",
+  "account.login.verified": "Bestätigt. OpenBot-NC wird geöffnet…",
   "account.login.developmentCode": "Entwicklungscode: {code}",
   "account.otp.incorrect": "Dieser Code ist falsch. Versuche es erneut.",
   "account.otp.verifying": "Wird geprüft…",

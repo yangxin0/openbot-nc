@@ -21,7 +21,7 @@ export const messages = {
   "error.agent.toolCallUnknownToolSuggest":
     "ツールは実行されませんでした。tool_call はこの名前のツールを見つけられませんでした。完全修飾名は {name} の可能性があります。その場合は、その名前でもう一度呼び出してください。",
   "error.agent.toolDescribeUnknownNames":
-    "tool_describe は {names} という名前の OpenBot ツールを見つけられませんでした。openbot.tool_search が一覧にする OpenBot とブラウザーのツールだけを説明し、MCP ツールは説明しません。",
+    "tool_describe は {names} という名前の OpenBot-NC ツールを見つけられませんでした。openbot.tool_search が一覧にする OpenBot-NC とブラウザーのツールだけを説明し、MCP ツールは説明しません。",
   "error.agent.toolDescribeDiscoveryNames":
     "{names} は直接呼び出してください。tool_describe は検索ツールを説明しません。",
   "error.agent.routineScheduleArgumentsInvalid":
@@ -42,7 +42,7 @@ export const messages = {
   "error.agent.instructionsTooLarge":
     "指示ファイルが大きすぎるため、ここでは開けません。テキストエディタで短くしてください。",
   "error.agent.instructionsOutside":
-    "指示ファイルがエージェントのワークスペース外を指しているため、OpenBot では開きません。",
+    "指示ファイルがエージェントのワークスペース外を指しているため、OpenBot-NC では開きません。",
   "error.agent.instructionsReadFailed": "指示ファイルを読み込めませんでした。",
   "error.agent.instructionsSaveFailed": "指示ファイルを保存できませんでした。",
   "error.agent.profileGenerationBusy": "プロフィールの生成中です。しばらくしてからもう一度お試しください。",
@@ -101,19 +101,19 @@ export const messages = {
   "error.agent.changedWhileDuplicating": "複製中にエージェントが変更されました。もう一度お試しください。",
   "error.agent.duplicatedAgentGone": "複製したエージェントはもう存在しません。",
   "error.agent.stateCorrupt":
-    "エージェントの状態が破損しているか、新しいバージョンの OpenBot のものです。上書きしません。",
+    "エージェントの状態が破損しているか、新しいバージョンの OpenBot-NC のものです。上書きしません。",
   "error.agent.oldRoleField":
-    "保存されたエージェントのプロフィールは古い role フィールドを使用しています。OpenBot を起動する前にデータを更新してください。",
+    "保存されたエージェントのプロフィールは古い role フィールドを使用しています。OpenBot-NC を起動する前にデータを更新してください。",
   "error.agent.duplicateIds": "エージェントの状態に重複したエージェント ID があります。上書きしません。",
-  "error.agent.copyNameFailed": "OpenBot はエージェントのコピーに固有の名前を作成できませんでした。",
+  "error.agent.copyNameFailed": "OpenBot-NC はエージェントのコピーに固有の名前を作成できませんでした。",
   "error.agent.endpointRemoved":
     "このエージェントが使用していたエンドポイントは削除されました。別のモデルを選択してください。",
   "error.agent.turnStalled":
-    "{provider} が応答しなくなったため、OpenBot はこのターンを終了しました。メッセージをもう一度送信するか、別のモデルを選択してください。",
+    "{provider} が応答しなくなったため、OpenBot-NC はこのターンを終了しました。メッセージをもう一度送信するか、別のモデルを選択してください。",
   "error.agent.promptCancelled":
     "{provider} が開始前にこのメッセージをキャンセルしました。メッセージをもう一度送信してください。",
   "error.agent.toolLoopStopped":
-    "{provider} が失敗した手順を何度も繰り返したため、OpenBot はこのターンを停止しました。メッセージをもう一度送信するか、別のモデルを選択してください。",
+    "{provider} が失敗した手順を何度も繰り返したため、OpenBot-NC はこのターンを停止しました。メッセージをもう一度送信するか、別のモデルを選択してください。",
   "error.agent.answerCutOff":
     "エージェントが回答を終える前に停止したため、回答は完全ではありません。メッセージをもう一度送信してください。",
   "error.agent.compactionConnectionLost":
@@ -121,7 +121,7 @@ export const messages = {
   "error.agent.compactionConnectionLostAddress":
     "エージェントがコンテキストを圧縮している間に接続が切れたため、タスクが停止しました。インターネット接続を確認してください。{provider} の設定の「変数」にある {variable} が、モデルサービスの API アドレス（多くの場合 /v1 で終わります）であることも確認してください。その後、メッセージを送信してください。",
   "error.agent.compactionLoopStopped":
-    "{provider} がコンテキストを何度も圧縮しましたが、毎回いっぱいのままで続行できなかったため、OpenBot はこのターンを停止しました。このエージェントに不要な MCP サーバーやコンピューター操作をオフにしてから、メッセージを送信してください。{provider} が圧縮するタイミングをあなたかエージェントが変更した場合は、その変更を元に戻してください。",
+    "{provider} がコンテキストを何度も圧縮しましたが、毎回いっぱいのままで続行できなかったため、OpenBot-NC はこのターンを停止しました。このエージェントに不要な MCP サーバーやコンピューター操作をオフにしてから、メッセージを送信してください。{provider} が圧縮するタイミングをあなたかエージェントが変更した場合は、その変更を元に戻してください。",
   "error.agent.selectedGone": "選択したエージェントはもう存在しません。",
   "error.agent.profileEndpointsChanged": "生成中にカスタムエンドポイントが変更されました。もう一度お試しください。",
   "error.agent.profileInvalid": "プロバイダーが無効なプロフィールを返しました。指示を修正してみてください。",
@@ -138,19 +138,19 @@ export const messages = {
   "error.agent.deleteIncomplete":
     "エージェントのデータを完全には削除できませんでした。エージェントの削除を再試行してください。",
   "error.agent.deleteFolderInUse":
-    "別のエージェントの作業がまだこのエージェントのフォルダを使っています。その作業が終わったとき、または OpenBot を再起動したあとに、もう一度削除してください。",
+    "別のエージェントの作業がまだこのエージェントのフォルダを使っています。その作業が終わったとき、または OpenBot-NC を再起動したあとに、もう一度削除してください。",
   "error.agent.deleteFolderLocked":
     "別のプログラム（エージェントが起動したプログラムなど）がまだこのエージェントのフォルダを使っています。そのプログラムを閉じるか、このエージェントが動いているコンピューターを再起動してから、もう一度エージェントを削除してください。",
   "error.agent.deleteWhenFolderFree":
-    "別のエージェントの作業がまだこのエージェントのフォルダを使っています。その作業が終わると、OpenBot がこのエージェントを削除します。",
+    "別のエージェントの作業がまだこのエージェントのフォルダを使っています。その作業が終わると、OpenBot-NC がこのエージェントを削除します。",
   "error.agent.duplicationBusy": "このエージェントはすでに複製中です。",
   "error.agent.waitBeforeDuplicate": "複製する前に、エージェントが終わるまで待ち、キューを空にしてください。",
   "error.agent.saveOtherAgent": "この保存は別のエージェントのものです。",
   "error.agent.savedGone": "保存したエージェントはもう存在しません。",
   "error.agent.storedProfileUnreadable":
-    "保存されたエージェントのプロフィールに読み取れない「{field}」の値があります。OpenBot を起動する前にデータを更新してください。",
+    "保存されたエージェントのプロフィールに読み取れない「{field}」の値があります。OpenBot-NC を起動する前にデータを更新してください。",
   "error.agent.storedProfileUnreadableId":
-    "保存されたエージェントのプロフィール {id} に読み取れない「{field}」の値があります。OpenBot を起動する前にデータを更新してください。",
+    "保存されたエージェントのプロフィール {id} に読み取れない「{field}」の値があります。OpenBot-NC を起動する前にデータを更新してください。",
   "error.agent.queueEditRejected": "キューの編集が拒否されました: {reason}",
   "error.agent.computerUseLocalOnly": "Computer Use は、エージェントを実行しているコンピューターでのみ変更できます。",
   "error.agent.automationLocalOnly":
@@ -183,7 +183,7 @@ export const messages = {
   "error.agent.lowMemoryServer":
     "このサーバーはメモリーが不足しています。メッセージはキューで待機し、メモリーが空くと開始します。",
   "error.agent.workspaceOnlyToolMissing":
-    "「ワークスペースのみ」には {tool} が必要ですが、OpenBot は見つけられませんでした。インストールするか、エージェントの設定で「フルアクセス」を選んでください。",
+    "「ワークスペースのみ」には {tool} が必要ですが、OpenBot-NC は見つけられませんでした。インストールするか、エージェントの設定で「フルアクセス」を選んでください。",
   "error.agent.codexSandboxUnavailable":
     "「ワークスペースのみ」には Codex のサンドボックスが必要ですが、このコンピューターでは Codex がサンドボックスを開始できないため、エージェントのコマンドが失敗します。エージェントの設定で「事前に確認」か「フルアクセス」を選んでください。",
   "error.agent.claudeSandboxUnavailable":
@@ -208,9 +208,9 @@ export const messages = {
   "error.agent.screenCaptureRegionOutside":
     "この領域は 1 つのディスプレイの中に収まっていません。list_capture_sources が返す 1 つのディスプレイの範囲内で、デスクトップのポイント座標を使ってください。",
   "error.agent.screenCapturePermissionMissing":
-    "OpenBot に画面収録の権限がありません。ユーザーに「システム設定」→「プライバシーとセキュリティ」→「画面収録とシステムオーディオ録音」を開いて OpenBot をオンにし、OpenBot を終了してから再度開くよう依頼してください。",
+    "OpenBot-NC に画面収録の権限がありません。ユーザーに「システム設定」→「プライバシーとセキュリティ」→「画面収録とシステムオーディオ録音」を開いて OpenBot-NC をオンにし、OpenBot-NC を終了してから再度開くよう依頼してください。",
   "error.agent.screenCaptureListPermission":
-    "OpenBot にはまだ画面収録の権限がないため、ウインドウを一覧表示できません。ディスプレイをキャプチャするには、target screen で capture_screen を呼び出してください。ユーザーが先にキャプチャを承認し、その後 macOS がユーザーに権限を求めることがあります。",
+    "OpenBot-NC にはまだ画面収録の権限がないため、ウインドウを一覧表示できません。ディスプレイをキャプチャするには、target screen で capture_screen を呼び出してください。ユーザーが先にキャプチャを承認し、その後 macOS がユーザーに権限を求めることがあります。",
   "error.agent.screenCaptureEmptyWindows":
     "Windows が空の画像を返しました。コンピューターのロックを解除し、保護されたコンテンツを閉じるようユーザーに依頼してください。組織のポリシーによって画面キャプチャが止められている場合もあります。",
   "error.agent.screenCaptureFailed": "画面キャプチャに失敗しました。もう一度お試しください。",

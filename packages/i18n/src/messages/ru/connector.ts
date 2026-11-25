@@ -16,10 +16,10 @@ export const messages = {
   "connector.github.connectedAs": "Подключено как @{login}",
   "connector.github.repositoriesTitle": "Репозитории",
   "connector.github.repositoriesDescription":
-    "Агенты могут использовать только те репозитории, где установлено приложение OpenBot GitHub App.",
+    "Агенты могут использовать только те репозитории, где установлено приложение OpenBot-NC GitHub App.",
   "connector.github.chooseRepositories": "Выбрать репозитории",
   "connector.github.repositoriesLoading": "Чтение репозиториев с GitHub",
-  "connector.github.noRepositories": "Приложение OpenBot GitHub App пока не установлено ни в один репозиторий.",
+  "connector.github.noRepositories": "Приложение OpenBot-NC GitHub App пока не установлено ни в один репозиторий.",
   "connector.github.moreRepositories": {
     one: "И ещё {count} репозиторий",
     few: "И ещё {count} репозитория",
@@ -33,7 +33,7 @@ export const messages = {
   "connector.github.expiredTitle": "Подключение к GitHub истекло",
   "connector.github.expiredDescription": "Подключитесь снова как @{login}, чтобы вернуть агентам доступ к GitHub.",
   "connector.github.reconnect": "Переподключить",
-  "connector.github.actionFailed": "OpenBot не удалось изменить подключение к GitHub.",
+  "connector.github.actionFailed": "OpenBot-NC не удалось изменить подключение к GitHub.",
   "connector.github.statusConnected": "Подключено",
   "connector.github.statusConnecting": "Подключение",
   "connector.github.statusExpired": "Истекло",
@@ -48,7 +48,7 @@ export const messages = {
   "connector.github.noMatch": "Нет репозиториев по запросу «{query}».",
   "connector.github.stepSignIn": "Вход",
   "connector.github.stepConnected": "Подключено",
-  "connector.github.requestingCode": "OpenBot запрашивает код у GitHub.",
+  "connector.github.requestingCode": "OpenBot-NC запрашивает код у GitHub.",
   "connector.github.codeLabel": "Код {code}",
   "connector.github.failedTitle": "GitHub не подключился",
   "connector.github.cancelConnecting": "Отменить подключение к GitHub",
@@ -63,7 +63,7 @@ export const messages = {
   "connector.github.disconnectConfirmTitle": "Отключить GitHub?",
   "connector.github.disconnectConfirmDescription": "При отключении вход @{login} будет удалён с этого компьютера.",
   "connector.github.disconnectEffectTools": "Все агенты потеряют инструменты GitHub, gh и git.",
-  "connector.github.disconnectEffectRevoke": "Затем откроется GitHub, где можно отозвать доступ OpenBot.",
+  "connector.github.disconnectEffectRevoke": "Затем откроется GitHub, где можно отозвать доступ OpenBot-NC.",
   "connector.github.disconnectEffectKept": "Чаты, файлы и память агентов останутся на этом компьютере.",
   "connector.github.descriptionHost":
     "Каждый агент на сервере {host} может работать с вашими репозиториями, задачами и пул-реквестами GitHub, а также с gh и git.",
@@ -79,7 +79,7 @@ export const messages = {
   "connector.github.close": "Закрыть",
   "connector.dangerZone": "Опасная зона",
   "connector.statusUnknown": "Неизвестно",
-  "connector.readFailed": "OpenBot не смог прочитать состояние этого подключения.",
+  "connector.readFailed": "OpenBot-NC не смог прочитать состояние этого подключения.",
 
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
@@ -113,16 +113,16 @@ export const messages = {
   "connector.whatsapp.numbersTitle": "Номера",
   "connector.whatsapp.linkNumber": "Привязать номер",
   "connector.whatsapp.ownNumberNote":
-    "OpenBot получает сообщения из вашего чата «Сообщение себе» и от людей, которым вы разрешили писать.",
+    "OpenBot-NC получает сообщения из вашего чата «Сообщение себе» и от людей, которым вы разрешили писать.",
   "connector.whatsapp.dedicatedNote":
-    "OpenBot получает сообщения из вашего чата «Сообщение себе» и от людей, которым вы разрешили писать. Остальные получают код, который нужно передать вам.",
+    "OpenBot-NC получает сообщения из вашего чата «Сообщение себе» и от людей, которым вы разрешили писать. Остальные получают код, который нужно передать вам.",
   "connector.whatsapp.helpLoggedOut": "WhatsApp удалил этот компьютер из связанных устройств. Привяжите номер заново.",
   "connector.whatsapp.helpLoggedOutHost": "WhatsApp удалил этот сервер из связанных устройств. Привяжите номер заново.",
   "connector.whatsapp.helpError":
-    "OpenBot не может связаться с WhatsApp на этом номере. Переподключите или отключите номер.",
+    "OpenBot-NC не может связаться с WhatsApp на этом номере. Переподключите или отключите номер.",
   "connector.whatsapp.helpKeysUnreadable":
-    "OpenBot не может прочитать сохранённые ключи этого номера. Привяжите номер заново.",
-  "connector.whatsapp.retryAt": "WhatsApp попросил OpenBot подождать. Следующая попытка в {time}.",
+    "OpenBot-NC не может прочитать сохранённые ключи этого номера. Привяжите номер заново.",
+  "connector.whatsapp.retryAt": "WhatsApp попросил OpenBot-NC подождать. Следующая попытка в {time}.",
   "connector.whatsapp.pause": "Приостановить",
   "connector.whatsapp.resume": "Возобновить",
   "connector.whatsapp.reconnect": "Переподключить",
@@ -132,20 +132,20 @@ export const messages = {
   "connector.whatsapp.disconnectAllSummary":
     "Все номера будут отключены. Связаться с вашими агентами через WhatsApp будет нельзя.",
   "connector.whatsapp.disconnectAllSummaryOrchestrator":
-    "Все номера будут отключены. Оркестратор WhatsApp и его разговоры будут удалены из OpenBot.",
+    "Все номера будут отключены. Оркестратор WhatsApp и его разговоры будут удалены из OpenBot-NC.",
   "connector.whatsapp.rowAction": "{action}: {name}",
   "connector.whatsapp.ownNumber": "Личный номер",
   "connector.whatsapp.ownNumberDescription":
-    "Писать могут только вы в чате «Сообщение себе» и люди, которым вы разрешили. Другие люди не получают ответа. Если выключено, OpenBot отвечает незнакомым людям кодом.",
+    "Писать могут только вы в чате «Сообщение себе» и люди, которым вы разрешили. Другие люди не получают ответа. Если выключено, OpenBot-NC отвечает незнакомым людям кодом.",
   "connector.whatsapp.workingMessage": "Сообщение «Уже работаю…»",
   "connector.whatsapp.workingMessageDescription":
-    "OpenBot отправляет его, пока агент работает, а затем заменяет ответом. Запрос, который ждёт предыдущий, тоже получает сообщение об ожидании. На личном номере эти сообщения получает только чат «Сообщение себе». Выключите, чтобы отправлять только ответ.",
+    "OpenBot-NC отправляет его, пока агент работает, а затем заменяет ответом. Запрос, который ждёт предыдущий, тоже получает сообщение об ожидании. На личном номере эти сообщения получает только чат «Сообщение себе». Выключите, чтобы отправлять только ответ.",
   "connector.whatsapp.statusReactions": "Реакции статуса",
   "connector.whatsapp.statusReactionsDescription":
-    "OpenBot ставит 👀, когда приходит сообщение, и ✅, когда ответ готов. Выключите, чтобы не отправлять реакции.",
+    "OpenBot-NC ставит 👀, когда приходит сообщение, и ✅, когда ответ готов. Выключите, чтобы не отправлять реакции.",
   "connector.whatsapp.orchestratorTitle": "Оркестратор WhatsApp",
   "connector.whatsapp.orchestratorDescription":
-    "Этот агент получает сообщения для OpenBot со всех ваших привязанных номеров. Короткие он обрабатывает сам, остальную работу передаёт нужному агенту и отвечает в WhatsApp.",
+    "Этот агент получает сообщения для OpenBot-NC со всех ваших привязанных номеров. Короткие он обрабатывает сам, остальную работу передаёт нужному агенту и отвечает в WhatsApp.",
   "connector.whatsapp.orchestratorNone": "Пока никто не отвечает",
   "connector.whatsapp.orchestratorNoneDescription": "Добавьте Оркестратора WhatsApp, иначе WhatsApp не получит ответа.",
   "connector.whatsapp.note":
@@ -158,10 +158,10 @@ export const messages = {
   "connector.whatsapp.kindLabel": "Номер",
   "connector.whatsapp.kindPersonal": "Мой личный номер",
   "connector.whatsapp.kindPersonalDescription":
-    "OpenBot отвечает только в вашем чате «Сообщение себе» и людям, которым вы разрешили. Другие люди не получают ответа.",
-  "connector.whatsapp.kindDedicated": "Номер только для OpenBot",
+    "OpenBot-NC отвечает только в вашем чате «Сообщение себе» и людям, которым вы разрешили. Другие люди не получают ответа.",
+  "connector.whatsapp.kindDedicated": "Номер только для OpenBot-NC",
   "connector.whatsapp.kindDedicatedDescription":
-    "OpenBot отвечает с этого номера каждому незнакомому человеку кодом, который нужно передать вам. Вы одобряете их здесь.",
+    "OpenBot-NC отвечает с этого номера каждому незнакомому человеку кодом, который нужно передать вам. Вы одобряете их здесь.",
   "connector.whatsapp.methodLabel": "Способ привязки",
   "connector.whatsapp.methodQr": "QR-код",
   "connector.whatsapp.methodCode": "Код привязки",
@@ -187,26 +187,27 @@ export const messages = {
   "connector.whatsapp.failedTimeout": "Срок действия кода истёк до того, как телефон его использовал.",
   "connector.whatsapp.failedRefused": "WhatsApp отклонил привязку. Подождите несколько минут и повторите попытку.",
   "connector.whatsapp.failedBusy": "Уже идёт другая привязка. Дождитесь её завершения и повторите попытку.",
-  "connector.whatsapp.failedUnavailable": "OpenBot не может связаться с WhatsApp. Проверьте подключение к интернету.",
+  "connector.whatsapp.failedUnavailable":
+    "OpenBot-NC не может связаться с WhatsApp. Проверьте подключение к интернету.",
   "connector.whatsapp.tryAgain": "Повторить",
   "connector.whatsapp.agentStepTitle": "Добавьте Оркестратора WhatsApp",
   "connector.whatsapp.agentStepDescription":
-    "Этот новый агент отвечает на сообщения для OpenBot на {number} и на каждом номере, который вы привяжете позже.",
+    "Этот новый агент отвечает на сообщения для OpenBot-NC на {number} и на каждом номере, который вы привяжете позже.",
   "connector.whatsapp.orchestratorName": "Оркестратор WhatsApp",
   "connector.whatsapp.orchestratorRole": "Отвечает в WhatsApp и обращается к команде",
-  "connector.whatsapp.orchestratorDoesReceive": "Первым получает каждое сообщение WhatsApp для OpenBot",
+  "connector.whatsapp.orchestratorDoesReceive": "Первым получает каждое сообщение WhatsApp для OpenBot-NC",
   "connector.whatsapp.orchestratorDoesDelegate": "Передаёт каждую задачу наиболее подходящему агенту",
   "connector.whatsapp.orchestratorDoesAnswer": "Отвечает в чате WhatsApp",
   "connector.whatsapp.orchestratorModel": "Модель",
-  "connector.whatsapp.doneTitle": "OpenBot привязан к {number}",
+  "connector.whatsapp.doneTitle": "OpenBot-NC привязан к {number}",
   "connector.whatsapp.done": "Готово",
   "connector.whatsapp.disconnectTitle": "Отключить {number}?",
   "connector.whatsapp.disconnectDescription":
-    "OpenBot выйдет из WhatsApp на {number}. Если OpenBot был выключен, также удалите устройство в WhatsApp > Связанные устройства.",
+    "OpenBot-NC выйдет из WhatsApp на {number}. Если OpenBot-NC был выключен, также удалите устройство в WhatsApp > Связанные устройства.",
   "connector.whatsapp.disconnectEffect": "Люди больше не смогут обращаться к вашим агентам через {number}.",
-  "connector.whatsapp.removeEffectKept": "Диалоги и Оркестратор WhatsApp останутся в OpenBot.",
+  "connector.whatsapp.removeEffectKept": "Диалоги и Оркестратор WhatsApp останутся в OpenBot-NC.",
   "connector.whatsapp.removeEffectDeleted":
-    "Это последний номер, поэтому Оркестратор WhatsApp и его диалоги будут удалены из OpenBot.",
+    "Это последний номер, поэтому Оркестратор WhatsApp и его диалоги будут удалены из OpenBot-NC.",
   "connector.whatsapp.keep": "Оставить привязанным",
   "connector.whatsapp.close": "Закрыть",
   "connector.whatsapp.sendersTitle": "Кто может писать на {number}",
@@ -230,7 +231,7 @@ export const messages = {
     "Участники этой группы могут поручать работу вашим агентам, когда упоминают этот номер или отвечают на его сообщения.",
   "connector.whatsapp.groupSearch": "Поиск групп",
   "connector.whatsapp.groupsLoading": "Загрузка групп…",
-  "connector.whatsapp.groupsLoadFailed": "OpenBot не смог прочитать группы",
+  "connector.whatsapp.groupsLoadFailed": "OpenBot-NC не смог прочитать группы",
   "connector.whatsapp.groupsEmpty": "Этот номер не состоит ни в одной группе.",
   "connector.whatsapp.groupsNoMatch": "Нет группы с таким названием.",
   "connector.whatsapp.groupAdded": "Добавлена",
@@ -243,9 +244,9 @@ export const messages = {
   "connector.whatsapp.deny": "Отклонить",
   "connector.onePassword.title": "1Password",
   "connector.onePassword.description":
-    "Дайте OpenBot доступ к отдельному хранилищу 1Password через сервисный аккаунт, чтобы агенты могли входить на сайты в браузере OpenBot.",
+    "Дайте OpenBot-NC доступ к отдельному хранилищу 1Password через сервисный аккаунт, чтобы агенты могли входить на сайты в браузере OpenBot-NC.",
   "connector.onePassword.howItWorks":
-    "При подключении в вашем аккаунте 1Password создаётся хранилище «Shared with OpenBot» и сервисный аккаунт, который может читать только его. OpenBot подставляет сохранённые логины в своём браузере на этом компьютере, поэтому общими становятся только записи, которые вы переместите в это хранилище. Агенты никогда не видят пароль.",
+    "При подключении в вашем аккаунте 1Password создаётся хранилище «Shared with OpenBot» и сервисный аккаунт, который может читать только его. OpenBot-NC подставляет сохранённые логины в своём браузере на этом компьютере, поэтому общими становятся только записи, которые вы переместите в это хранилище. Агенты никогда не видят пароль.",
   "connector.onePassword.connect": "Подключить 1Password",
   "connector.onePassword.setupTitle": "Настройка",
   "connector.onePassword.stepCliTitle": "Установите 1Password CLI",
@@ -253,20 +254,20 @@ export const messages = {
   "connector.onePassword.stepCliInstalling": "Загрузка 1Password CLI с сайта 1Password",
   "connector.onePassword.stepCliReady": "Установлена версия {version}.",
   "connector.onePassword.stepCliMissing":
-    "OpenBot скачает его с сайта 1Password в свою папку. Пароль администратора не нужен.",
+    "OpenBot-NC скачает его с сайта 1Password в свою папку. Пароль администратора не нужен.",
   "connector.onePassword.stepCliManual":
-    "OpenBot не может установить его на этом компьютере. Установите его с сайта 1Password и вернитесь на эту страницу.",
+    "OpenBot-NC не может установить его на этом компьютере. Установите его с сайта 1Password и вернитесь на эту страницу.",
   "connector.onePassword.installCli": "Установить",
   "connector.onePassword.stepAppTitle": "Включите интеграцию с CLI",
   "connector.onePassword.stepAppDescription":
     "В приложении 1Password откройте «Настройки» > «Разработчик» и включите «Integrate with 1Password CLI».",
   "connector.onePassword.stepAppReady": "Приложение 1Password позволяет CLI создать общее хранилище.",
   "connector.onePassword.openApp": "Открыть 1Password",
-  "connector.onePassword.openAppFailed": "OpenBot не смог открыть 1Password.",
+  "connector.onePassword.openAppFailed": "OpenBot-NC не смог открыть 1Password.",
   "connector.onePassword.checkAgain": "Проверить снова",
   "connector.onePassword.stepVaultTitle": "Создайте общее хранилище",
   "connector.onePassword.stepVaultDescription":
-    "OpenBot создаёт хранилище «Shared with OpenBot» и сервисный аккаунт, который может только читать его. 1Password попросит вас подтвердить.",
+    "OpenBot-NC создаёт хранилище «Shared with OpenBot» и сервисный аккаунт, который может только читать его. 1Password попросит вас подтвердить.",
   "connector.onePassword.useTokenDescription": "Вместо этих шагов вставьте токен сервисного аккаунта с 1Password.com.",
   "connector.onePassword.useTokenAction": "Использовать токен",
   "connector.onePassword.tokenLabel": "Токен сервисного аккаунта",
@@ -275,7 +276,7 @@ export const messages = {
   "connector.onePassword.approveInApp": "Подтвердите запрос в приложении 1Password",
   "connector.onePassword.cancel": "Отмена",
   "connector.onePassword.chooseAccountTitle": "Выберите аккаунт",
-  "connector.onePassword.chooseAccountDescription": "OpenBot создаст общее хранилище в выбранном вами аккаунте.",
+  "connector.onePassword.chooseAccountDescription": "OpenBot-NC создаст общее хранилище в выбранном вами аккаунте.",
   "connector.onePassword.useAccount": "Использовать этот аккаунт",
   "connector.onePassword.vaultTitle": "Общее хранилище",
   "connector.onePassword.vaultDescription":
@@ -290,14 +291,14 @@ export const messages = {
   "connector.onePassword.disconnect": "Отключить",
   "connector.onePassword.disconnectTitle": "Отключить 1Password",
   "connector.onePassword.disconnectSummary":
-    "OpenBot забудет токен. Хранилище и сервисный аккаунт останутся в 1Password; если они больше не нужны, удалите их там.",
-  "connector.onePassword.actionFailed": "OpenBot не удалось изменить подключение к 1Password.",
+    "OpenBot-NC забудет токен. Хранилище и сервисный аккаунт останутся в 1Password; если они больше не нужны, удалите их там.",
+  "connector.onePassword.actionFailed": "OpenBot-NC не удалось изменить подключение к 1Password.",
   "connector.onePassword.statusConnected": "Подключено",
   "connector.onePassword.statusConnecting": "Подключение",
   "connector.onePassword.descriptionHost":
-    "Предоставьте OpenBot на {host} доступ к отдельному хранилищу 1Password через сервисный аккаунт, чтобы агенты на {host} могли входить на сайты в его браузере.",
+    "Предоставьте OpenBot-NC на {host} доступ к отдельному хранилищу 1Password через сервисный аккаунт, чтобы агенты на {host} могли входить на сайты в его браузере.",
   "connector.onePassword.howItWorksHost":
-    "{host} подключается по токену сервисного аккаунта. На 1Password.com создайте сервисный аккаунт, который может читать только хранилище, открытое для OpenBot, и вставьте сюда его токен. {host} проверяет токен и хранит его; этот компьютер его не хранит. Агенты никогда не видят пароль.",
+    "{host} подключается по токену сервисного аккаунта. На 1Password.com создайте сервисный аккаунт, который может читать только хранилище, открытое для OpenBot-NC, и вставьте сюда его токен. {host} проверяет токен и хранит его; этот компьютер его не хранит. Агенты никогда не видят пароль.",
   "connector.onePassword.disconnectSummaryHost":
     "{host} забудет токен. Хранилище и сервисный аккаунт останутся в 1Password; если они больше не нужны, удалите их там.",
   "connector.bitwarden.title": "Bitwarden",
@@ -305,24 +306,24 @@ export const messages = {
   "connector.bitwarden.setup":
     "Установите Bitwarden CLI и войдите командой bw login. Создайте папку Shared with OpenBot и положите в неё только те логины, которые разрешено использовать агентам. Выполните bw unlock --raw и вставьте ключ сессии ниже. Не вставляйте мастер-пароль.",
   "connector.bitwarden.scope":
-    "Все агенты на этом компьютере могут использовать подходящие логины из Shared with OpenBot. OpenBot сопоставляет точные источники HTTPS. Записи, для которых нужен запрос мастер-пароля или особое правило сопоставления URI, не используются.",
+    "Все агенты на этом компьютере могут использовать подходящие логины из Shared with OpenBot. OpenBot-NC сопоставляет точные источники HTTPS. Записи, для которых нужен запрос мастер-пароля или особое правило сопоставления URI, не используются.",
   "connector.bitwarden.session":
-    "Ключ сессии хранится в памяти. Подключитесь снова, если хранилищем не пользовались 8 часов или OpenBot был закрыт. Отключение прекращает доступ OpenBot, но не блокирует другие клиенты Bitwarden.",
+    "Ключ сессии хранится в памяти. Подключитесь снова, если хранилищем не пользовались 8 часов или OpenBot-NC был закрыт. Отключение прекращает доступ OpenBot-NC, но не блокирует другие клиенты Bitwarden.",
   "connector.bitwarden.sessionKey": "Ключ сессии Bitwarden",
   "connector.bitwarden.connect": "Подключить Bitwarden",
   "connector.bitwarden.disconnect": "Отключить Bitwarden",
   "connector.bitwarden.disconnectAction": "Отключить",
   "connector.bitwarden.disconnectSummary":
-    "OpenBot забудет ключ сеанса. Агенты больше не смогут подставлять логины из Bitwarden. Другие клиенты Bitwarden останутся разблокированными.",
+    "OpenBot-NC забудет ключ сеанса. Агенты больше не смогут подставлять логины из Bitwarden. Другие клиенты Bitwarden останутся разблокированными.",
   "connector.bitwarden.disconnectSummaryHost":
     "{host} удалит ключ API и мастер-пароль. Агенты на {host} больше не смогут подставлять логины из Bitwarden.",
   "connector.bitwarden.connected": "Подключено",
-  "connector.bitwarden.actionFailed": "OpenBot не удалось изменить подключение к Bitwarden.",
+  "connector.bitwarden.actionFailed": "OpenBot-NC не удалось изменить подключение к Bitwarden.",
   "connector.bitwarden.descriptionHost": "Заполнять логины в браузере на {host} из Bitwarden или Vaultwarden.",
   "connector.bitwarden.setupHost":
     "{host} входит через свой Bitwarden CLI. В хранилище создайте папку с именем Shared with OpenBot и положите в неё только логины, которые могут использовать агенты. В веб-хранилище откройте Настройки › Безопасность › Ключи и посмотрите ключ API. Ниже введите адрес сервера, client_id, client_secret и мастер-пароль.",
   "connector.bitwarden.scopeHost":
-    "Все агенты на {host} могут использовать подходящие логины из Shared with OpenBot. OpenBot использует точные HTTPS-источники. Он не использует элементы, которые запрашивают мастер-пароль, и элементы с собственным правилом сопоставления URI.",
+    "Все агенты на {host} могут использовать подходящие логины из Shared with OpenBot. OpenBot-NC использует точные HTTPS-источники. Он не использует элементы, которые запрашивают мастер-пароль, и элементы с собственным правилом сопоставления URI.",
   "connector.bitwarden.sessionHost":
     "{host} хранит ключ API и мастер-пароль в зашифрованном виде, чтобы снова разблокировать хранилище после перезапуска. Этот компьютер их не хранит. Отключение удаляет их с {host}. {host} должен подключаться к адресу сервера по HTTPS.",
   "connector.bitwarden.serverUrl": "Адрес сервера",
@@ -346,19 +347,19 @@ export const messages = {
   "connector.protonPass.keyPlaceholder": "pst_…",
   "connector.protonPass.setupTitle": "Настройка",
   "connector.protonPass.setupDescription":
-    "Кнопка «Подключить» открывает вход в Proton в браузере. Затем OpenBot создаёт общее хранилище и хранит только ключ для чтения.",
+    "Кнопка «Подключить» открывает вход в Proton в браузере. Затем OpenBot-NC создаёт общее хранилище и хранит только ключ для чтения.",
   "connector.protonPass.setupDescriptionHost":
     "Кнопка «Подключить» открывает вход в Proton в браузере. Затем {host} создаёт общее хранилище и хранит только ключ для чтения.",
   "connector.protonPass.vaultName": "Shared with OpenBot",
   "connector.protonPass.vaultSetup":
-    "OpenBot создаёт это хранилище при подключении. Переместите в него учётные данные, чтобы поделиться ими.",
+    "OpenBot-NC создаёт это хранилище при подключении. Переместите в него учётные данные, чтобы поделиться ими.",
   "connector.protonPass.showSteps": "Показать шаги",
   "connector.protonPass.stepsLabel": "Шаги подключения",
   "connector.protonPass.stepSignIn": "Вход",
   "connector.protonPass.stepVault": "Создание хранилища",
   "connector.protonPass.stepDone": "Готово",
   "connector.protonPass.signInTitle": "Вход в Proton",
-  "connector.protonPass.signInStarting": "OpenBot начинает вход. Страница Proton откроется в браузере.",
+  "connector.protonPass.signInStarting": "OpenBot-NC начинает вход. Страница Proton откроется в браузере.",
   "connector.protonPass.signInDescription": "Вход открыт в браузере. Proton запросит пароль и второй фактор.",
   "connector.protonPass.signInDescriptionHost":
     "Вход для {host} открыт в браузере. Proton запросит пароль и второй фактор.",
@@ -368,7 +369,7 @@ export const messages = {
   "connector.protonPass.continue": "Продолжить",
   "connector.protonPass.setupStepTitle": "Создание общего хранилища",
   "connector.protonPass.setupStepDescription":
-    "OpenBot создаёт хранилище «{vault}» и ключ для чтения. Затем завершает сеанс Proton.",
+    "OpenBot-NC создаёт хранилище «{vault}» и ключ для чтения. Затем завершает сеанс Proton.",
   "connector.protonPass.doneTitle": "Proton Pass подключён",
   "connector.protonPass.doneDescription": "Переместите учётные данные в «{vault}», чтобы агенты могли входить с ними.",
   "connector.protonPass.failedTitle": "Proton Pass не подключён",
@@ -402,9 +403,9 @@ export const messages = {
   "connector.protonPass.keyNoExpiry": "Только чтение. Бессрочно.",
   "connector.protonPass.disconnectTitle": "Отключить Proton Pass",
   "connector.protonPass.disconnectSummary":
-    "OpenBot удаляет свой ключ доступа на этом компьютере. Хранилище и его учётные данные остаются в вашем аккаунте Proton.",
+    "OpenBot-NC удаляет свой ключ доступа на этом компьютере. Хранилище и его учётные данные остаются в вашем аккаунте Proton.",
   "connector.protonPass.disconnectSummaryHost":
-    "OpenBot удаляет свой ключ доступа на {host}. Хранилище и его учётные данные остаются в вашем аккаунте Proton.",
+    "OpenBot-NC удаляет свой ключ доступа на {host}. Хранилище и его учётные данные остаются в вашем аккаунте Proton.",
   "connector.protonPass.disconnect": "Отключить",
-  "connector.protonPass.actionFailed": "OpenBot не смог изменить подключение Proton Pass.",
+  "connector.protonPass.actionFailed": "OpenBot-NC не смог изменить подключение Proton Pass.",
 } as const satisfies PartialTranslation<typeof source>;

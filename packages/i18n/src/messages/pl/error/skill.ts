@@ -40,7 +40,7 @@ export const messages = {
   "error.skill.tooManySkills": "Agent może mieć maksymalnie {limit} umiejętności.",
   "error.skill.unmanagedExists": "Niezarządzana umiejętność już istnieje w {path}.",
   "error.skill.managedSlug":
-    "OpenBot daje każdemu agentowi własną umiejętność {slug}. Nadaj tej umiejętności inną nazwę.",
+    "OpenBot-NC daje każdemu agentowi własną umiejętność {slug}. Nadaj tej umiejętności inną nazwę.",
   "error.skill.localNoRevisions": "Lokalna umiejętność nie ma opublikowanych wersji.",
   "error.skill.localNotFound": "Ta lokalna umiejętność nie istnieje. Sprawdź jej ID na liście lokalnych umiejętności.",
   "error.skill.localRevisionNotFound":
@@ -56,11 +56,13 @@ export const messages = {
   "error.skill.pathSymlink": "Ścieżki umiejętności nie mogą zawierać dowiązań symbolicznych.",
   "error.skill.folderNotRead": "{provider} nie czyta folderu {folder}. Skopiuj ten folder do {target}.",
   "error.skill.githubLinkInvalid": "Wklej link do repozytorium lub folderu w GitHub.",
-  "error.skill.githubNotFound": "OpenBot nie może otworzyć {repository}. Repozytorium jest prywatne albo nie istnieje.",
+  "error.skill.githubNotFound":
+    "OpenBot-NC nie może otworzyć {repository}. Repozytorium jest prywatne albo nie istnieje.",
   "error.skill.githubNoSkills": "W {folder} nie ma pliku SKILL.md.",
-  "error.skill.githubUnavailable": "OpenBot nie może teraz odczytać GitHub. Spróbuj ponownie później.",
+  "error.skill.githubUnavailable": "OpenBot-NC nie może teraz odczytać GitHub. Spróbuj ponownie później.",
   "error.skill.githubRateLimited":
-    "GitHub ogranicza, jak często OpenBot może go odczytać bez konta. Spróbuj ponownie za godzinę.",
-  "error.skill.githubTooLarge": "OpenBot nie może odczytać wszystkich plików {repository}. Repozytorium jest za duże.",
+    "GitHub ogranicza, jak często OpenBot-NC może go odczytać bez konta. Spróbuj ponownie za godzinę.",
+  "error.skill.githubTooLarge":
+    "OpenBot-NC nie może odczytać wszystkich plików {repository}. Repozytorium jest za duże.",
   "error.skill.githubHostTooOld": "Zaktualizuj ten serwer, aby dodawać umiejętności z GitHub.",
 } as const satisfies PartialTranslation<typeof source>;

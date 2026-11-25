@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "该服务器不支持 CRM，请更新运行它的电脑上的 OpenBot。",
+  "error.crm.serverTooOld": "该服务器不支持 CRM，请更新运行它的电脑上的 OpenBot-NC。",
   "error.crm.tooLargeToSend": "该 CRM 页面过大，无法发送到此客户端。",
   "error.crm.customerMissing": "该客户已不存在。",
   "error.crm.planMissing": "该套餐已不存在。",
@@ -35,9 +35,9 @@ export const messages = {
   "error.crm.sourceInvalidKey": "Stripe 不接受该密钥。请重新复制受限密钥。",
   "error.crm.sourcePermission": "该密钥无法读取客户、发票、订阅、事件和产品。请为它授予对这些内容的读取权限。",
   "error.crm.sourceRateLimited": "Stripe 收到的请求过多。请一分钟后重试。",
-  "error.crm.sourceNetwork": "OpenBot 无法连接到 Stripe。请检查网络连接。",
-  "error.crm.sourceFailed": "Stripe 返回了 OpenBot 无法读取的响应。请稍后重试。",
-  "error.crm.sourceKeySaveFailed": "OpenBot 无法在这台电脑上保存 Stripe 密钥。",
+  "error.crm.sourceNetwork": "OpenBot-NC 无法连接到 Stripe。请检查网络连接。",
+  "error.crm.sourceFailed": "Stripe 返回了 OpenBot-NC 无法读取的响应。请稍后重试。",
+  "error.crm.sourceKeySaveFailed": "OpenBot-NC 无法在这台电脑上保存 Stripe 密钥。",
   "error.crm.off": "CRM 已关闭。所有者或管理员可以在“服务器设置 > 实验性”中开启它。",
-  "error.crm.settingsSaveFailed": "OpenBot 无法在此服务器上保存 CRM 设置。",
+  "error.crm.settingsSaveFailed": "OpenBot-NC 无法在此服务器上保存 CRM 设置。",
 } as const satisfies PartialTranslation<typeof source>;

@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/webClient";
 
 export const messages = {
-  "webClient.loading": "Carregando o OpenBot…",
+  "webClient.loading": "Carregando o OpenBot-NC…",
   "webClient.loadingLine.wake": "Acordando os agentes…",
   "webClient.loadingLine.coffee": "Servindo café para os agentes…",
   "webClient.loadingLine.tokens": "Contando tokens nos dedos…",
   "webClient.loadingLine.prompts": "Desembaraçando os prompts…",
   "webClient.loadingLine.sleepy": "Pedindo com carinho ao sonolento…",
   "webClient.loadingLine.almost": "Quase lá. Provavelmente.",
-  "webClient.slowLoad.title": "O OpenBot está demorando mais que o normal",
+  "webClient.slowLoad.title": "O OpenBot-NC está demorando mais que o normal",
   "webClient.slowLoad.body": "Verifique sua conexão com a internet e recarregue a página.",
   "webClient.slowLoad.reload": "Recarregar",
   "webClient.pane.navigation": "Navegação do espaço de trabalho",
@@ -18,7 +18,7 @@ export const messages = {
   "webClient.notice.connecting": "Conectando ao seu servidor",
   "webClient.notice.findingHosts": "Buscando seus servidores",
   "webClient.otherTab.title": "{name} está aberto em outra aba",
-  "webClient.otherTab.description": "O OpenBot pode usar um servidor em uma aba de cada vez.",
+  "webClient.otherTab.description": "O OpenBot-NC pode usar um servidor em uma aba de cada vez.",
   "webClient.otherTab.useHere": "Usar aqui",
   "webClient.agent.modelsFailed": "Não foi possível carregar os modelos do servidor.",
   "webClient.agent.refreshFailed":
@@ -28,7 +28,7 @@ export const messages = {
   "webClient.error.usageOffline": "Conecte-se ao seu servidor para ver o uso.",
   "webClient.error.desktopOnly": "Esta ação está disponível no app para computador.",
   "webClient.settings.preferences.title": "Preferências",
-  "webClient.settings.preferences.description": "Escolha o idioma e os sons do OpenBot neste navegador.",
+  "webClient.settings.preferences.description": "Escolha o idioma e os sons do OpenBot-NC neste navegador.",
   "webClient.error.checkConversation": "Verifique a conversa antes de enviar novamente.",
   "webClient.error.hostReported": "O servidor informou um erro. Verifique a conversa e o status do servidor.",
   "webClient.error.requestFailed": "A solicitação falhou.",
@@ -56,7 +56,7 @@ export const messages = {
   "webClient.error.identityChanged": "A identidade do servidor mudou. Conexão recusada.",
   "webClient.error.connectionUnavailable": "A conexão com o servidor está indisponível.",
   "webClient.error.incompatible":
-    "Este servidor não é compatível com o OpenBot web. Atualize-o e recarregue esta página.",
+    "Este servidor não é compatível com o OpenBot-NC web. Atualize-o e recarregue esta página.",
   "webClient.error.sendUnconfirmed": "A entrega da mensagem não foi confirmada. Atualize antes de enviá-la novamente.",
   "webClient.error.fileType": "Atualize o servidor para anexar este tipo de arquivo.",
   "webClient.error.uploadCancelled": "O envio do anexo foi cancelado.",

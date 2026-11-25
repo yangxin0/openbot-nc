@@ -3,31 +3,31 @@ import type { messages as source } from "../../en/error/connector";
 
 export const messages = {
   "error.connector.onePasswordCliMissing":
-    "OpenBot non trova la CLI di 1Password. Installala e attiva la sua integrazione nell'app 1Password, oppure usa un token di service account.",
+    "OpenBot-NC non trova la CLI di 1Password. Installala e attiva la sua integrazione nell'app 1Password, oppure usa un token di service account.",
   "error.connector.onePasswordCliInstallFailed":
-    "OpenBot non è riuscito a installare la CLI di 1Password. Controlla la connessione a internet e riprova.",
+    "OpenBot-NC non è riuscito a installare la CLI di 1Password. Controlla la connessione a internet e riprova.",
   "error.connector.onePasswordCliSignedOut":
     "La CLI di 1Password non ha effettuato l'accesso. Attiva la sua integrazione nell'app 1Password, poi connetti di nuovo.",
   "error.connector.onePasswordAppUnreachable":
-    "OpenBot non riesce a raggiungere l'app 1Password. Apri 1Password e sbloccalo. In Impostazioni > Sviluppatore, verifica che «Integra con la CLI di 1Password» sia attivo. Poi riprova.",
+    "OpenBot-NC non riesce a raggiungere l'app 1Password. Apri 1Password e sbloccalo. In Impostazioni > Sviluppatore, verifica che «Integra con la CLI di 1Password» sia attivo. Poi riprova.",
   "error.connector.onePasswordCliFailed": "La CLI di 1Password è fallita: {detail}",
   "error.connector.onePasswordCliForbidden":
     "Il tuo account 1Password non ti permette di creare il vault condiviso o un service account. Chiedi questo permesso a un proprietario o a un amministratore dell'account, oppure chiedigli un token del service account e fai clic su «Usa token».",
   "error.connector.onePasswordUnexpected": "1Password ha inviato una risposta inattesa: {detail}",
   "error.connector.onePasswordTokenRejected": "1Password non ha accettato il token del service account.",
   "error.connector.onePasswordUnreachable":
-    "OpenBot non è riuscito a connettersi a 1Password. Controlla la connessione a internet e riprova.",
+    "OpenBot-NC non è riuscito a connettersi a 1Password. Controlla la connessione a internet e riprova.",
   "error.connector.onePasswordRateLimited": "1Password ha ricevuto troppe richieste. Attendi qualche minuto e riprova.",
   "error.connector.onePasswordNoVault":
     "Il service account non può leggere nessun vault. Dagli accesso a un vault e riprova.",
   "error.connector.onePasswordReadFailed":
-    "OpenBot non riesce a leggere i tuoi login in 1Password. Disconnetti 1Password e poi ricollegalo.",
+    "OpenBot-NC non riesce a leggere i tuoi login in 1Password. Disconnetti 1Password e poi ricollegalo.",
   "error.connector.onePasswordFileUnreadable": "Il file di connessione a 1Password non è leggibile.",
   "error.connector.onePasswordFileTooLarge": "Il file di connessione a 1Password è troppo grande.",
   "error.connector.bitwardenFailed":
     "Impossibile leggere Bitwarden. Installa la CLI bw, accedi, sbloccala e crea una cartella chiamata Shared with OpenBot. Connetti con una nuova chiave di sessione.",
   "error.connector.bitwardenCliMissing":
-    "OpenBot non trova la CLI di Bitwarden. Installa bw, verifica che funzioni in un nuovo terminale, poi connetti di nuovo.",
+    "OpenBot-NC non trova la CLI di Bitwarden. Installa bw, verifica che funzioni in un nuovo terminale, poi connetti di nuovo.",
   "error.connector.bitwardenFolderMissing":
     "Bitwarden deve avere esattamente una cartella chiamata Shared with OpenBot. Creala o rimuovi quella in più, poi connetti di nuovo.",
   "error.connector.bitwardenHostInput":
@@ -41,7 +41,7 @@ export const messages = {
   "error.connector.bitwardenCliInstallFailed":
     "Impossibile installare la CLI di Bitwarden su questo server. Controlla la sua connessione di rete, poi connetti di nuovo.",
   "error.connector.bitwardenFileUnreadable": "Il file di connessione di Bitwarden non è leggibile.",
-  "error.connector.passwordManagerUnknown": "OpenBot non conosce questo gestore di password.",
+  "error.connector.passwordManagerUnknown": "OpenBot-NC non conosce questo gestore di password.",
   "error.connector.passwordManagerMethod": "Questo gestore di password non può connettersi in questo modo.",
   "error.connector.passwordManagerNoSignIn": "Nessuna pagina di accesso è aperta. Connetti di nuovo.",
   "error.connector.protonPassFailed": "Impossibile connettere Proton Pass. Connetti di nuovo.",

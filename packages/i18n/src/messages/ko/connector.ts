@@ -15,10 +15,10 @@ export const messages = {
   "connector.github.cancel": "취소",
   "connector.github.connectedAs": "@{login}(으)로 연결됨",
   "connector.github.repositoriesTitle": "저장소",
-  "connector.github.repositoriesDescription": "에이전트는 OpenBot GitHub 앱이 설치된 저장소만 사용할 수 있어요.",
+  "connector.github.repositoriesDescription": "에이전트는 OpenBot-NC GitHub 앱이 설치된 저장소만 사용할 수 있어요.",
   "connector.github.chooseRepositories": "저장소 선택",
   "connector.github.repositoriesLoading": "GitHub에서 저장소를 읽는 중",
-  "connector.github.noRepositories": "아직 OpenBot GitHub 앱이 설치된 저장소가 없어요.",
+  "connector.github.noRepositories": "아직 OpenBot-NC GitHub 앱이 설치된 저장소가 없어요.",
   "connector.github.moreRepositories": { other: "저장소 {count}개 더 있음" },
   "connector.github.private": "비공개",
   "connector.github.disconnect": "연결 해제",
@@ -27,7 +27,7 @@ export const messages = {
   "connector.github.expiredTitle": "GitHub 연결이 만료됐어요",
   "connector.github.expiredDescription": "에이전트가 GitHub를 다시 사용하려면 @{login}(으)로 다시 연결하세요.",
   "connector.github.reconnect": "다시 연결",
-  "connector.github.actionFailed": "OpenBot이 GitHub 연결을 변경하지 못했어요.",
+  "connector.github.actionFailed": "OpenBot-NC가 GitHub 연결을 변경하지 못했어요.",
   "connector.github.statusConnected": "연결됨",
   "connector.github.statusConnecting": "연결 중",
   "connector.github.statusExpired": "만료됨",
@@ -37,7 +37,7 @@ export const messages = {
   "connector.github.noMatch": "“{query}”와(과) 일치하는 저장소가 없어요.",
   "connector.github.stepSignIn": "로그인",
   "connector.github.stepConnected": "연결됨",
-  "connector.github.requestingCode": "OpenBot이 GitHub에 코드를 요청하고 있어요.",
+  "connector.github.requestingCode": "OpenBot-NC가 GitHub에 코드를 요청하고 있어요.",
   "connector.github.codeLabel": "코드 {code}",
   "connector.github.failedTitle": "GitHub에 연결하지 못했어요",
   "connector.github.cancelConnecting": "GitHub 연결 취소",
@@ -49,7 +49,7 @@ export const messages = {
   "connector.github.disconnectConfirmTitle": "GitHub 연결을 해제할까요?",
   "connector.github.disconnectConfirmDescription": "연결을 해제하면 이 컴퓨터에서 @{login}의 로그인 정보가 삭제돼요.",
   "connector.github.disconnectEffectTools": "모든 에이전트가 GitHub 도구, gh, git을 사용할 수 없게 돼요.",
-  "connector.github.disconnectEffectRevoke": "그다음 GitHub가 열리면 OpenBot의 접근 권한을 취소할 수 있어요.",
+  "connector.github.disconnectEffectRevoke": "그다음 GitHub가 열리면 OpenBot-NC의 접근 권한을 취소할 수 있어요.",
   "connector.github.disconnectEffectKept": "채팅, 파일, 에이전트 메모리는 이 컴퓨터에 그대로 남아요.",
   "connector.github.descriptionHost":
     "{host}의 모든 에이전트가 내 GitHub 저장소, 이슈, 풀 리퀘스트와 gh, git을 사용할 수 있어요.",
@@ -62,7 +62,7 @@ export const messages = {
   "connector.github.close": "닫기",
   "connector.dangerZone": "위험 구역",
   "connector.statusUnknown": "알 수 없음",
-  "connector.readFailed": "OpenBot이 이 연결의 상태를 읽지 못했어요.",
+  "connector.readFailed": "OpenBot-NC가 이 연결의 상태를 읽지 못했어요.",
 
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
@@ -80,15 +80,16 @@ export const messages = {
   "connector.whatsapp.actionFailed": "WhatsApp이 변경 사항을 받아들이지 않았어요",
   "connector.whatsapp.numbersTitle": "번호",
   "connector.whatsapp.linkNumber": "번호 연결",
-  "connector.whatsapp.ownNumberNote": "“나에게 메시지 보내기” 채팅과 허용한 사람들이 OpenBot에 연락할 수 있어요.",
+  "connector.whatsapp.ownNumberNote": "“나에게 메시지 보내기” 채팅과 허용한 사람들이 OpenBot-NC에 연락할 수 있어요.",
   "connector.whatsapp.dedicatedNote":
-    "“나에게 메시지 보내기” 채팅과 허용한 사람들이 OpenBot에 연락할 수 있어요. 다른 사람은 나에게 알려 줄 코드를 받아요.",
+    "“나에게 메시지 보내기” 채팅과 허용한 사람들이 OpenBot-NC에 연락할 수 있어요. 다른 사람은 나에게 알려 줄 코드를 받아요.",
   "connector.whatsapp.helpLoggedOut": "WhatsApp이 연결된 기기에서 이 컴퓨터를 삭제했어요. 번호를 다시 연결해 주세요.",
   "connector.whatsapp.helpLoggedOutHost": "WhatsApp이 연결된 기기에서 이 서버를 삭제했어요. 번호를 다시 연결해 주세요.",
   "connector.whatsapp.helpError":
-    "OpenBot이 이 번호로 WhatsApp에 접근할 수 없어요. 다시 연결하거나 번호 연결을 해제해 주세요.",
-  "connector.whatsapp.helpKeysUnreadable": "OpenBot이 이 번호에 저장된 키를 읽을 수 없어요. 번호를 다시 연결해 주세요.",
-  "connector.whatsapp.retryAt": "WhatsApp이 OpenBot에 기다리라고 요청했어요. {time}에 다시 시도해요.",
+    "OpenBot-NC가 이 번호로 WhatsApp에 접근할 수 없어요. 다시 연결하거나 번호 연결을 해제해 주세요.",
+  "connector.whatsapp.helpKeysUnreadable":
+    "OpenBot-NC가 이 번호에 저장된 키를 읽을 수 없어요. 번호를 다시 연결해 주세요.",
+  "connector.whatsapp.retryAt": "WhatsApp이 OpenBot-NC에 기다리라고 요청했어요. {time}에 다시 시도해요.",
   "connector.whatsapp.pause": "일시 정지",
   "connector.whatsapp.resume": "재개",
   "connector.whatsapp.reconnect": "다시 연결",
@@ -98,20 +99,20 @@ export const messages = {
   "connector.whatsapp.disconnectAllSummary":
     "모든 번호의 연결이 해제돼요. 더 이상 WhatsApp으로 에이전트에게 연락할 수 없어요.",
   "connector.whatsapp.disconnectAllSummaryOrchestrator":
-    "모든 번호의 연결이 해제돼요. WhatsApp 오케스트레이터와 그 대화가 OpenBot에서 삭제돼요.",
+    "모든 번호의 연결이 해제돼요. WhatsApp 오케스트레이터와 그 대화가 OpenBot-NC에서 삭제돼요.",
   "connector.whatsapp.rowAction": "{action}: {name}",
   "connector.whatsapp.ownNumber": "개인 번호",
   "connector.whatsapp.ownNumberDescription":
-    "“나에게 메시지 보내기” 채팅과 허용한 사람들만 메시지를 보낼 수 있어요. 다른 사람에게는 답장하지 않아요. 끄면 OpenBot이 모르는 사람에게 코드를 답장해요.",
+    "“나에게 메시지 보내기” 채팅과 허용한 사람들만 메시지를 보낼 수 있어요. 다른 사람에게는 답장하지 않아요. 끄면 OpenBot-NC가 모르는 사람에게 코드를 답장해요.",
   "connector.whatsapp.workingMessage": "“작업 중이에요…” 메시지",
   "connector.whatsapp.workingMessageDescription":
-    "에이전트가 작업하는 동안 OpenBot이 보내고, 이후 답변으로 바꿔요. 이전 요청을 기다리는 요청에는 대기 메시지도 보내요. 개인 번호에서는 “나에게 메시지 보내기” 채팅에만 이 메시지를 보내요. 답변만 보내려면 끄세요.",
+    "에이전트가 작업하는 동안 OpenBot-NC가 보내고, 이후 답변으로 바꿔요. 이전 요청을 기다리는 요청에는 대기 메시지도 보내요. 개인 번호에서는 “나에게 메시지 보내기” 채팅에만 이 메시지를 보내요. 답변만 보내려면 끄세요.",
   "connector.whatsapp.statusReactions": "상태 반응",
   "connector.whatsapp.statusReactionsDescription":
-    "메시지가 도착하면 OpenBot이 👀로, 답변이 준비되면 ✅로 반응해요. 반응을 보내지 않으려면 끄세요.",
+    "메시지가 도착하면 OpenBot-NC가 👀로, 답변이 준비되면 ✅로 반응해요. 반응을 보내지 않으려면 끄세요.",
   "connector.whatsapp.orchestratorTitle": "WhatsApp 오케스트레이터",
   "connector.whatsapp.orchestratorDescription":
-    "이 에이전트가 연결된 모든 번호에서 OpenBot에게 오는 메시지를 받아요. 짧은 요청은 직접 답하고, 나머지는 알맞은 에이전트에게 맡긴 뒤 WhatsApp에서 답해요.",
+    "이 에이전트가 연결된 모든 번호에서 OpenBot-NC에게 오는 메시지를 받아요. 짧은 요청은 직접 답하고, 나머지는 알맞은 에이전트에게 맡긴 뒤 WhatsApp에서 답해요.",
   "connector.whatsapp.orchestratorNone": "아직 답변하는 에이전트 없음",
   "connector.whatsapp.orchestratorNoneDescription":
     "WhatsApp 오케스트레이터를 추가하지 않으면 WhatsApp에는 답변이 가지 않아요.",
@@ -125,10 +126,10 @@ export const messages = {
   "connector.whatsapp.kindLabel": "번호",
   "connector.whatsapp.kindPersonal": "내 개인 번호",
   "connector.whatsapp.kindPersonalDescription":
-    "OpenBot은 “나에게 메시지 보내기” 채팅과 허용한 사람들에게만 답해요. 다른 사람에게는 답장하지 않아요.",
-  "connector.whatsapp.kindDedicated": "OpenBot 전용 번호",
+    "OpenBot-NC는 “나에게 메시지 보내기” 채팅과 허용한 사람들에게만 답해요. 다른 사람에게는 답장하지 않아요.",
+  "connector.whatsapp.kindDedicated": "OpenBot-NC 전용 번호",
   "connector.whatsapp.kindDedicatedDescription":
-    "OpenBot이 이 번호로 모르는 사람마다 나에게 알려 줄 코드를 답장해요. 여기에서 승인하세요.",
+    "OpenBot-NC가 이 번호로 모르는 사람마다 나에게 알려 줄 코드를 답장해요. 여기에서 승인하세요.",
   "connector.whatsapp.methodLabel": "연결 방법",
   "connector.whatsapp.methodQr": "QR 코드",
   "connector.whatsapp.methodCode": "페어링 코드",
@@ -153,25 +154,25 @@ export const messages = {
   "connector.whatsapp.failedTimeout": "휴대폰이 사용하기 전에 코드가 만료되었어요.",
   "connector.whatsapp.failedRefused": "WhatsApp이 연결을 거부했어요. 몇 분 기다린 다음 다시 시도해 주세요.",
   "connector.whatsapp.failedBusy": "다른 연결이 진행 중이에요. 끝날 때까지 기다린 다음 다시 시도해 주세요.",
-  "connector.whatsapp.failedUnavailable": "OpenBot이 WhatsApp에 연결할 수 없어요. 인터넷 연결을 확인하세요.",
+  "connector.whatsapp.failedUnavailable": "OpenBot-NC가 WhatsApp에 연결할 수 없어요. 인터넷 연결을 확인하세요.",
   "connector.whatsapp.tryAgain": "다시 시도",
   "connector.whatsapp.agentStepTitle": "WhatsApp 오케스트레이터 추가",
   "connector.whatsapp.agentStepDescription":
-    "이 새 에이전트가 {number} 및 이후에 연결하는 모든 번호에서 OpenBot에게 오는 메시지에 답해요.",
+    "이 새 에이전트가 {number} 및 이후에 연결하는 모든 번호에서 OpenBot-NC에게 오는 메시지에 답해요.",
   "connector.whatsapp.orchestratorName": "WhatsApp 오케스트레이터",
   "connector.whatsapp.orchestratorRole": "WhatsApp에서 답하고 팀에 물어봐요",
-  "connector.whatsapp.orchestratorDoesReceive": "OpenBot에게 오는 모든 WhatsApp 메시지를 가장 먼저 받아요",
+  "connector.whatsapp.orchestratorDoesReceive": "OpenBot-NC에게 오는 모든 WhatsApp 메시지를 가장 먼저 받아요",
   "connector.whatsapp.orchestratorDoesDelegate": "각 작업을 가장 알맞은 에이전트에게 맡겨요",
   "connector.whatsapp.orchestratorDoesAnswer": "WhatsApp 채팅에 답변을 올려요",
   "connector.whatsapp.orchestratorModel": "모델",
-  "connector.whatsapp.doneTitle": "OpenBot이 {number}에 연결되었어요",
+  "connector.whatsapp.doneTitle": "OpenBot-NC가 {number}에 연결되었어요",
   "connector.whatsapp.done": "완료",
   "connector.whatsapp.disconnectTitle": "{number} 연결을 해제할까요?",
   "connector.whatsapp.disconnectDescription":
-    "OpenBot이 {number}의 WhatsApp에서 로그아웃해요. OpenBot이 꺼져 있었다면 WhatsApp > 연결된 기기에서도 기기를 삭제하세요.",
+    "OpenBot-NC가 {number}의 WhatsApp에서 로그아웃해요. OpenBot-NC가 꺼져 있었다면 WhatsApp > 연결된 기기에서도 기기를 삭제하세요.",
   "connector.whatsapp.disconnectEffect": "더 이상 {number}을(를) 통해 내 에이전트에게 연락할 수 없어요.",
-  "connector.whatsapp.removeEffectKept": "대화와 WhatsApp 오케스트레이터는 OpenBot에 그대로 남아요.",
-  "connector.whatsapp.removeEffectDeleted": "마지막 번호라서 WhatsApp 오케스트레이터와 대화가 OpenBot에서 삭제돼요.",
+  "connector.whatsapp.removeEffectKept": "대화와 WhatsApp 오케스트레이터는 OpenBot-NC에 그대로 남아요.",
+  "connector.whatsapp.removeEffectDeleted": "마지막 번호라서 WhatsApp 오케스트레이터와 대화가 OpenBot-NC에서 삭제돼요.",
   "connector.whatsapp.keep": "연결 유지",
   "connector.whatsapp.close": "닫기",
   "connector.whatsapp.sendersTitle": "{number}에 메시지를 보낼 수 있는 사람",
@@ -195,7 +196,7 @@ export const messages = {
     "이 그룹의 사람들은 이 번호를 멘션하거나 이 번호의 메시지에 답장하면 내 에이전트에게 작업을 맡길 수 있어요.",
   "connector.whatsapp.groupSearch": "그룹 검색",
   "connector.whatsapp.groupsLoading": "그룹을 읽는 중이에요…",
-  "connector.whatsapp.groupsLoadFailed": "OpenBot이 그룹을 읽지 못했어요",
+  "connector.whatsapp.groupsLoadFailed": "OpenBot-NC가 그룹을 읽지 못했어요",
   "connector.whatsapp.groupsEmpty": "이 번호가 속한 그룹이 없어요.",
   "connector.whatsapp.groupsNoMatch": "이 이름의 그룹이 없어요.",
   "connector.whatsapp.groupAdded": "추가됨",
@@ -208,9 +209,9 @@ export const messages = {
   "connector.whatsapp.deny": "거부",
   "connector.onePassword.title": "1Password",
   "connector.onePassword.description":
-    "서비스 계정을 통해 전용 1Password 보관함을 OpenBot과 공유하면, 에이전트가 OpenBot 브라우저에서 사이트에 로그인할 수 있어요.",
+    "서비스 계정을 통해 전용 1Password 보관함을 OpenBot-NC와 공유하면, 에이전트가 OpenBot-NC 브라우저에서 사이트에 로그인할 수 있어요.",
   "connector.onePassword.howItWorks":
-    "연결하면 1Password 계정에 “Shared with OpenBot” 보관함과 그 보관함만 읽을 수 있는 서비스 계정이 만들어져요. OpenBot은 이 컴퓨터의 브라우저에서 저장된 로그인 정보를 입력하므로, 그 보관함으로 옮긴 항목만 공유돼요. 에이전트는 비밀번호를 볼 수 없어요.",
+    "연결하면 1Password 계정에 “Shared with OpenBot” 보관함과 그 보관함만 읽을 수 있는 서비스 계정이 만들어져요. OpenBot-NC는 이 컴퓨터의 브라우저에서 저장된 로그인 정보를 입력하므로, 그 보관함으로 옮긴 항목만 공유돼요. 에이전트는 비밀번호를 볼 수 없어요.",
   "connector.onePassword.connect": "1Password 연결",
   "connector.onePassword.setupTitle": "설정",
   "connector.onePassword.stepCliTitle": "1Password CLI 설치",
@@ -218,19 +219,19 @@ export const messages = {
   "connector.onePassword.stepCliInstalling": "1Password에서 1Password CLI를 다운로드하는 중",
   "connector.onePassword.stepCliReady": "버전 {version}이(가) 설치돼 있어요.",
   "connector.onePassword.stepCliMissing":
-    "OpenBot이 1Password에서 자체 폴더로 다운로드해요. 관리자 비밀번호는 필요 없어요.",
+    "OpenBot-NC가 1Password에서 자체 폴더로 다운로드해요. 관리자 비밀번호는 필요 없어요.",
   "connector.onePassword.stepCliManual":
-    "OpenBot이 이 컴퓨터에 설치할 수 없어요. 1Password에서 직접 설치한 뒤 이 페이지로 돌아오세요.",
+    "OpenBot-NC가 이 컴퓨터에 설치할 수 없어요. 1Password에서 직접 설치한 뒤 이 페이지로 돌아오세요.",
   "connector.onePassword.installCli": "설치",
   "connector.onePassword.stepAppTitle": "CLI 연동 켜기",
   "connector.onePassword.stepAppDescription": "1Password 앱에서 설정 > 개발자를 열고 “1Password CLI와 통합”을 켜세요.",
   "connector.onePassword.stepAppReady": "1Password 앱이 CLI가 공유 보관함을 만들 수 있도록 허용했어요.",
   "connector.onePassword.openApp": "1Password 열기",
-  "connector.onePassword.openAppFailed": "OpenBot이 1Password를 열지 못했어요.",
+  "connector.onePassword.openAppFailed": "OpenBot-NC가 1Password를 열지 못했어요.",
   "connector.onePassword.checkAgain": "다시 확인",
   "connector.onePassword.stepVaultTitle": "공유 보관함 만들기",
   "connector.onePassword.stepVaultDescription":
-    "OpenBot이 “Shared with OpenBot” 보관함과 그 보관함만 읽을 수 있는 서비스 계정을 만들어요. 1Password에서 승인을 요청해요.",
+    "OpenBot-NC가 “Shared with OpenBot” 보관함과 그 보관함만 읽을 수 있는 서비스 계정을 만들어요. 1Password에서 승인을 요청해요.",
   "connector.onePassword.useTokenDescription": "이 단계 대신 1Password.com의 서비스 계정 토큰을 붙여넣으세요.",
   "connector.onePassword.useTokenAction": "토큰 사용",
   "connector.onePassword.tokenLabel": "서비스 계정 토큰",
@@ -239,7 +240,7 @@ export const messages = {
   "connector.onePassword.approveInApp": "1Password 앱에서 요청을 승인하세요",
   "connector.onePassword.cancel": "취소",
   "connector.onePassword.chooseAccountTitle": "계정 선택",
-  "connector.onePassword.chooseAccountDescription": "OpenBot이 선택한 계정에 공유 보관함을 만들어요.",
+  "connector.onePassword.chooseAccountDescription": "OpenBot-NC가 선택한 계정에 공유 보관함을 만들어요.",
   "connector.onePassword.useAccount": "이 계정 사용",
   "connector.onePassword.vaultTitle": "공유 보관함",
   "connector.onePassword.vaultDescription":
@@ -249,14 +250,14 @@ export const messages = {
   "connector.onePassword.disconnect": "연결 해제",
   "connector.onePassword.disconnectTitle": "1Password 연결 해제",
   "connector.onePassword.disconnectSummary":
-    "OpenBot이 토큰을 삭제해요. 보관함과 서비스 계정은 1Password에 남으므로, 필요 없다면 그곳에서 삭제하세요.",
-  "connector.onePassword.actionFailed": "OpenBot이 1Password 연결을 변경하지 못했어요.",
+    "OpenBot-NC가 토큰을 삭제해요. 보관함과 서비스 계정은 1Password에 남으므로, 필요 없다면 그곳에서 삭제하세요.",
+  "connector.onePassword.actionFailed": "OpenBot-NC가 1Password 연결을 변경하지 못했어요.",
   "connector.onePassword.statusConnected": "연결됨",
   "connector.onePassword.statusConnecting": "연결 중",
   "connector.onePassword.descriptionHost":
-    "서비스 계정을 통해 전용 1Password 보관함을 {host}의 OpenBot과 공유하면, {host}의 에이전트가 브라우저에서 사이트에 로그인할 수 있어요.",
+    "서비스 계정을 통해 전용 1Password 보관함을 {host}의 OpenBot-NC와 공유하면, {host}의 에이전트가 브라우저에서 사이트에 로그인할 수 있어요.",
   "connector.onePassword.howItWorksHost":
-    "{host}은(는) 서비스 계정 토큰으로 연결해요. 1Password.com에서 OpenBot과 공유할 보관함만 읽을 수 있는 서비스 계정을 만들고, 그 토큰을 여기에 붙여넣으세요. {host}이(가) 토큰을 확인하고 보관하며, 이 컴퓨터에는 보관되지 않아요. 에이전트는 비밀번호를 볼 수 없어요.",
+    "{host}은(는) 서비스 계정 토큰으로 연결해요. 1Password.com에서 OpenBot-NC와 공유할 보관함만 읽을 수 있는 서비스 계정을 만들고, 그 토큰을 여기에 붙여넣으세요. {host}이(가) 토큰을 확인하고 보관하며, 이 컴퓨터에는 보관되지 않아요. 에이전트는 비밀번호를 볼 수 없어요.",
   "connector.onePassword.disconnectSummaryHost":
     "{host}이(가) 토큰을 삭제해요. 보관함과 서비스 계정은 1Password에 남으므로, 필요 없다면 그곳에서 삭제하세요.",
   "connector.bitwarden.title": "Bitwarden",
@@ -264,24 +265,24 @@ export const messages = {
   "connector.bitwarden.setup":
     "Bitwarden CLI를 설치하고 bw login으로 로그인하세요. Shared with OpenBot이라는 폴더를 만들고 에이전트가 사용해도 되는 로그인 정보만 넣으세요. bw unlock --raw를 실행하고 세션 키를 아래에 붙여넣으세요. 마스터 비밀번호는 붙여넣지 마세요.",
   "connector.bitwarden.scope":
-    "이 컴퓨터의 모든 에이전트가 Shared with OpenBot의 일치하는 로그인 정보를 사용할 수 있어요. OpenBot은 정확히 일치하는 HTTPS 출처만 사용해요. 마스터 비밀번호 확인이 필요한 항목이나 사용자 지정 URI 일치 규칙이 있는 항목은 사용하지 않아요.",
+    "이 컴퓨터의 모든 에이전트가 Shared with OpenBot의 일치하는 로그인 정보를 사용할 수 있어요. OpenBot-NC는 정확히 일치하는 HTTPS 출처만 사용해요. 마스터 비밀번호 확인이 필요한 항목이나 사용자 지정 URI 일치 규칙이 있는 항목은 사용하지 않아요.",
   "connector.bitwarden.session":
-    "세션 키는 메모리에만 보관돼요. 보관함을 8시간 동안 쓰지 않거나 OpenBot이 종료되면 다시 연결하세요. 연결을 해제하면 OpenBot의 접근이 중지되지만, 다른 Bitwarden 클라이언트는 잠기지 않아요.",
+    "세션 키는 메모리에만 보관돼요. 보관함을 8시간 동안 쓰지 않거나 OpenBot-NC가 종료되면 다시 연결하세요. 연결을 해제하면 OpenBot-NC의 접근이 중지되지만, 다른 Bitwarden 클라이언트는 잠기지 않아요.",
   "connector.bitwarden.sessionKey": "Bitwarden 세션 키",
   "connector.bitwarden.connect": "Bitwarden 연결",
   "connector.bitwarden.disconnect": "Bitwarden 연결 해제",
   "connector.bitwarden.disconnectAction": "연결 해제",
   "connector.bitwarden.disconnectSummary":
-    "OpenBot이 세션 키를 삭제해요. 에이전트가 더 이상 Bitwarden에서 로그인을 채울 수 없어요. 다른 Bitwarden 클라이언트는 잠금 해제 상태로 유지돼요.",
+    "OpenBot-NC가 세션 키를 삭제해요. 에이전트가 더 이상 Bitwarden에서 로그인을 채울 수 없어요. 다른 Bitwarden 클라이언트는 잠금 해제 상태로 유지돼요.",
   "connector.bitwarden.disconnectSummaryHost":
     "{host}에서 API 키와 마스터 비밀번호를 삭제해요. {host}의 에이전트가 더 이상 Bitwarden에서 로그인을 채울 수 없어요.",
   "connector.bitwarden.connected": "연결됨",
-  "connector.bitwarden.actionFailed": "OpenBot이 Bitwarden 연결을 변경하지 못했어요.",
+  "connector.bitwarden.actionFailed": "OpenBot-NC가 Bitwarden 연결을 변경하지 못했어요.",
   "connector.bitwarden.descriptionHost": "Bitwarden 또는 Vaultwarden에서 {host}의 브라우저 로그인 정보를 입력해요.",
   "connector.bitwarden.setupHost":
     "{host}은(는) 자체 Bitwarden CLI로 로그인해요. 보관함에 Shared with OpenBot이라는 폴더를 만들고 에이전트가 사용해도 되는 로그인 정보만 넣으세요. 웹 보관함에서 설정 › 보안 › 키를 열어 API 키를 확인하세요. 아래에 서버 주소, client_id, client_secret, 마스터 비밀번호를 입력하세요.",
   "connector.bitwarden.scopeHost":
-    "{host}의 모든 에이전트가 Shared with OpenBot의 일치하는 로그인 정보를 사용할 수 있어요. OpenBot은 정확히 일치하는 HTTPS 출처만 사용해요. 마스터 비밀번호 확인이 필요한 항목이나 사용자 지정 URI 일치 규칙이 있는 항목은 사용하지 않아요.",
+    "{host}의 모든 에이전트가 Shared with OpenBot의 일치하는 로그인 정보를 사용할 수 있어요. OpenBot-NC는 정확히 일치하는 HTTPS 출처만 사용해요. 마스터 비밀번호 확인이 필요한 항목이나 사용자 지정 URI 일치 규칙이 있는 항목은 사용하지 않아요.",
   "connector.bitwarden.sessionHost":
     "{host}은(는) 재시작 후에도 다시 잠금 해제할 수 있도록 API 키와 마스터 비밀번호를 암호화해 보관해요. 이 컴퓨터에는 보관되지 않아요. 연결을 해제하면 {host}에서 삭제돼요. {host}이(가) 서버 주소에 HTTPS로 접근할 수 있어야 해요.",
   "connector.bitwarden.serverUrl": "서버 주소",
@@ -305,18 +306,19 @@ export const messages = {
   "connector.protonPass.keyPlaceholder": "pst_…",
   "connector.protonPass.setupTitle": "설정",
   "connector.protonPass.setupDescription":
-    "연결을 누르면 브라우저에서 Proton 로그인이 열립니다. 그다음 OpenBot이 공유 보관함을 만들고 읽기 전용 키만 보관합니다.",
+    "연결을 누르면 브라우저에서 Proton 로그인이 열립니다. 그다음 OpenBot-NC가 공유 보관함을 만들고 읽기 전용 키만 보관합니다.",
   "connector.protonPass.setupDescriptionHost":
     "연결을 누르면 브라우저에서 Proton 로그인이 열립니다. 그다음 {host}이(가) 공유 보관함을 만들고 읽기 전용 키만 보관합니다.",
   "connector.protonPass.vaultName": "Shared with OpenBot",
-  "connector.protonPass.vaultSetup": "연결하면 OpenBot이 이 보관함을 만듭니다. 공유할 로그인 정보를 여기로 옮기세요.",
+  "connector.protonPass.vaultSetup":
+    "연결하면 OpenBot-NC가 이 보관함을 만듭니다. 공유할 로그인 정보를 여기로 옮기세요.",
   "connector.protonPass.showSteps": "단계 보기",
   "connector.protonPass.stepsLabel": "연결 단계",
   "connector.protonPass.stepSignIn": "로그인",
   "connector.protonPass.stepVault": "공유 보관함 만들기",
   "connector.protonPass.stepDone": "완료",
   "connector.protonPass.signInTitle": "Proton에 로그인",
-  "connector.protonPass.signInStarting": "OpenBot이 로그인을 시작합니다. 브라우저에서 Proton 페이지가 열립니다.",
+  "connector.protonPass.signInStarting": "OpenBot-NC가 로그인을 시작합니다. 브라우저에서 Proton 페이지가 열립니다.",
   "connector.protonPass.signInDescription":
     "브라우저에서 로그인이 열려 있습니다. Proton이 비밀번호와 2단계 인증을 요청합니다.",
   "connector.protonPass.signInDescriptionHost":
@@ -327,7 +329,7 @@ export const messages = {
   "connector.protonPass.continue": "계속",
   "connector.protonPass.setupStepTitle": "공유 보관함 만드는 중",
   "connector.protonPass.setupStepDescription":
-    "OpenBot이 보관함 “{vault}”와 읽기 전용 키를 만듭니다. 그다음 Proton 세션에서 로그아웃합니다.",
+    "OpenBot-NC가 보관함 “{vault}”와 읽기 전용 키를 만듭니다. 그다음 Proton 세션에서 로그아웃합니다.",
   "connector.protonPass.doneTitle": "Proton Pass가 연결되었습니다",
   "connector.protonPass.doneDescription":
     "로그인 정보를 “{vault}”(으)로 옮기면 에이전트가 그 정보로 로그인할 수 있습니다.",
@@ -356,9 +358,9 @@ export const messages = {
   "connector.protonPass.keyNoExpiry": "읽기 전용. 만료되지 않습니다.",
   "connector.protonPass.disconnectTitle": "Proton Pass 연결 해제",
   "connector.protonPass.disconnectSummary":
-    "OpenBot이 이 컴퓨터의 액세스 키를 삭제합니다. 보관함과 그 안의 로그인 정보는 Proton 계정에 남습니다.",
+    "OpenBot-NC가 이 컴퓨터의 액세스 키를 삭제합니다. 보관함과 그 안의 로그인 정보는 Proton 계정에 남습니다.",
   "connector.protonPass.disconnectSummaryHost":
-    "OpenBot이 {host}의 액세스 키를 삭제합니다. 보관함과 그 안의 로그인 정보는 Proton 계정에 남습니다.",
+    "OpenBot-NC가 {host}의 액세스 키를 삭제합니다. 보관함과 그 안의 로그인 정보는 Proton 계정에 남습니다.",
   "connector.protonPass.disconnect": "연결 해제",
-  "connector.protonPass.actionFailed": "OpenBot이 Proton Pass 연결을 변경하지 못했습니다.",
+  "connector.protonPass.actionFailed": "OpenBot-NC가 Proton Pass 연결을 변경하지 못했습니다.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -2,13 +2,13 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/team";
 
 export const messages = {
-  "error.team.ownerNotLinked": "Ten host nie jest powiązany z kontem właściciela OpenBot.",
-  "error.team.ownerEmailRequired": "Zaloguj się adresem e-mail OpenBot, którym utworzono tego hosta.",
+  "error.team.ownerNotLinked": "Ten host nie jest powiązany z kontem właściciela OpenBot-NC.",
+  "error.team.ownerEmailRequired": "Zaloguj się adresem e-mail OpenBot-NC, którym utworzono tego hosta.",
   "error.team.hostNotConfigured": "Host zespołu nie jest skonfigurowany.",
   "error.team.alreadyConfigured": "Serwer zespołu jest już skonfigurowany.",
   "error.team.identityCreateFailed": "Nie udało się utworzyć tożsamości zespołu.",
   "error.team.accountChangedDuringCreate": "Zalogowane konto zmieniło się podczas tworzenia tego serwera.",
-  "error.team.notConfigured": "Ten OpenBot nie został skonfigurowany.",
+  "error.team.notConfigured": "Ten OpenBot-NC nie został skonfigurowany.",
   "error.team.serverNotActive": "Ten serwer nie jest już aktywnym serwerem zalogowanego konta.",
   "error.team.logoInvalid": "Wybierz prawidłowy obraz PNG, JPEG lub WebP o rozmiarze do 512 KB.",
   "error.team.permanentInviteEmail": "Stały link z zaproszeniem nie może mieć adresu e-mail.",
@@ -18,7 +18,7 @@ export const messages = {
   "error.team.memberDisabled": "Ten członek zespołu jest wyłączony.",
   "error.team.memberLimit": "Host może mieć maksymalnie {limit} członków.",
   "error.team.usernameTaken": "Ta nazwa użytkownika jest już zajęta.",
-  "error.team.inviteRequiresAccount": "To zaproszenie wymaga zweryfikowanego konta OpenBot.",
+  "error.team.inviteRequiresAccount": "To zaproszenie wymaga zweryfikowanego konta OpenBot-NC.",
   "error.team.loginIncorrect": "Nazwa użytkownika lub hasło są nieprawidłowe.",
   "error.team.currentPasswordIncorrect": "Bieżące hasło jest nieprawidłowe.",
   "error.team.memberNotFound": "Nie znaleziono członka zespołu.",
@@ -43,16 +43,16 @@ export const messages = {
   "error.team.routeNotFound": "Nie znaleziono ścieżki.",
   "error.team.requestFailed": "Żądanie nie powiodło się.",
   "error.team.tooManySignInAttempts": "Zbyt wiele prób logowania. Spróbuj ponownie później.",
-  "error.team.clientUpdateRequired": "Zaktualizuj tego klienta OpenBot przed połączeniem z tym hostem.",
-  "error.team.hostUpdateRequired": "Zaktualizuj OpenBot na hoście przed połączeniem.",
-  "error.team.serverSafeMode": "Ten serwer działa w trybie awaryjnym, ponieważ OpenBot się na nim nie uruchamia.",
+  "error.team.clientUpdateRequired": "Zaktualizuj tego klienta OpenBot-NC przed połączeniem z tym hostem.",
+  "error.team.hostUpdateRequired": "Zaktualizuj OpenBot-NC na hoście przed połączeniem.",
+  "error.team.serverSafeMode": "Ten serwer działa w trybie awaryjnym, ponieważ OpenBot-NC się na nim nie uruchamia.",
   "error.team.serverSafeModeNewerDatabase":
-    "OpenBot {version} na tym serwerze nie może otworzyć swoich danych, ponieważ zapisała je nowsza wersja OpenBot. Nowsze wydanie OpenBot na serwerze rozwiąże ten problem.",
+    "OpenBot-NC {version} na tym serwerze nie może otworzyć swoich danych, ponieważ zapisała je nowsza wersja OpenBot-NC. Nowsze wydanie OpenBot-NC na serwerze rozwiąże ten problem.",
   "error.team.serverSafeModeStartFailed":
-    "OpenBot {version} na tym serwerze zatrzymał się po wielu nieudanych próbach uruchomienia. Nowsze wydanie OpenBot na serwerze rozwiąże ten problem.",
+    "OpenBot-NC {version} na tym serwerze zatrzymał się po wielu nieudanych próbach uruchomienia. Nowsze wydanie OpenBot-NC na serwerze rozwiąże ten problem.",
   "error.team.sidebarLayoutUnavailable": "Układ paska bocznego jest niedostępny.",
   "error.team.providersUnsupported": "To połączenie nie obsługuje ustawień dostawców.",
-  "error.team.providerNotManaged": "OpenBot nie zarządza CLI tego dostawcy.",
+  "error.team.providerNotManaged": "OpenBot-NC nie zarządza CLI tego dostawcy.",
   "error.team.channelsUnsupported": "To połączenie nie obsługuje czatów kanałów.",
   "error.team.channelContextUnsupported": "To połączenie nie obsługuje nowej rozmowy ani kompaktowania w kanale.",
   "error.team.channelPictureUnsupported": "To połączenie nie obsługuje obrazów kanałów.",
@@ -84,9 +84,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "To połączenie nie obsługuje folderów Biblioteki.",
   "error.team.workflowFoldersUnsupported": "To połączenie nie obsługuje folderów przepływów pracy.",
   "error.team.agentNotificationLevelsUnsupported":
-    "Ten serwer nie może zapisać Twojego poziomu powiadomień dla każdego agenta. Zaktualizuj OpenBot na komputerze, na którym działa.",
+    "Ten serwer nie może zapisać Twojego poziomu powiadomień dla każdego agenta. Zaktualizuj OpenBot-NC na komputerze, na którym działa.",
   "error.team.sidebarPinsUnsupported":
-    "Ten serwer nie może zapisać przypiętych czatów dla wszystkich Twoich urządzeń. Zaktualizuj OpenBot na komputerze, na którym działa.",
+    "Ten serwer nie może zapisać przypiętych czatów dla wszystkich Twoich urządzeń. Zaktualizuj OpenBot-NC na komputerze, na którym działa.",
   "error.team.agentInstructionsUnsupported": "To połączenie nie obsługuje edytowania instrukcji agentów.",
   "error.team.contextResetUnsupported": "To połączenie nie obsługuje rozpoczynania nowego czatu.",
   "error.team.contextCompactUnsupported": "To połączenie nie obsługuje kompaktowania kontekstu.",
@@ -96,7 +96,7 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "To połączenie nie obsługuje wyszukiwania w wątkach pobocznych.",
   "error.team.sideQuestionUnsupported": "To połączenie nie obsługuje pytań pobocznych.",
   "error.team.routineFlowsUnsupported":
-    "Ten serwer nie obsługuje przepływów rutyn. Zaktualizuj OpenBot na komputerze, na którym działa.",
+    "Ten serwer nie obsługuje przepływów rutyn. Zaktualizuj OpenBot-NC na komputerze, na którym działa.",
   "error.team.routineCanvasTooLarge":
     "Ta kanwa rutyn jest za duża, aby wysłać ją na to urządzenie. Skróć instrukcje rutyn na komputerze, na którym działa serwer.",
   "error.team.conversationPageTooLarge":
@@ -135,9 +135,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "Nie znaleziono sesji podglądu przeglądarki.",
   "error.team.mcpUnsupported": "To połączenie nie obsługuje serwerów MCP.",
   "error.team.mcpServerListNeedsUpdate":
-    "Zaktualizuj OpenBot na tym urządzeniu, aby używać na tym serwerze więcej niż {limit} serwerów MCP.",
+    "Zaktualizuj OpenBot-NC na tym urządzeniu, aby używać na tym serwerze więcej niż {limit} serwerów MCP.",
   "error.team.providerAccountListNeedsUpdate":
-    "Zaktualizuj OpenBot na tym urządzeniu, aby używać na tym serwerze więcej niż {limit} kont jednego dostawcy.",
+    "Zaktualizuj OpenBot-NC na tym urządzeniu, aby używać na tym serwerze więcej niż {limit} kont jednego dostawcy.",
   "error.team.storageUnsupported": "To połączenie nie obsługuje pamięci dyskowej.",
   "error.team.machineResourcesUnsupported": "To połączenie nie obsługuje użycia maszyny.",
   "error.team.machineAlertMemberInvalid":
@@ -164,9 +164,9 @@ export const messages = {
   "error.team.mcpServerNotYours": "Ten serwer MCP może zmienić tylko osoba, która go dodała, albo administrator.",
   "error.team.ownerRequired": "Tylko właściciel tego serwera może to zrobić.",
   "error.team.requestTooLarge": "Treść żądania jest za duża.",
-  "error.team.signInRelayUnsupported": "Ten serwer nie może przekazywać logowań. Zaktualizuj OpenBot na hoście.",
+  "error.team.signInRelayUnsupported": "Ten serwer nie może przekazywać logowań. Zaktualizuj OpenBot-NC na hoście.",
   "error.team.connectorsUnsupported":
-    "Połączeniami tego serwera nie można zarządzać stąd. Zaktualizuj OpenBot na hoście.",
+    "Połączeniami tego serwera nie można zarządzać stąd. Zaktualizuj OpenBot-NC na hoście.",
   "error.team.signInRelayUnknown": "To logowanie się zakończyło albo nie istnieje.",
   "error.team.signInRelayUsed": "To logowanie zostało już wysłane.",
   "error.team.signInRelayMismatch": "Ten adres nie pochodzi z tego logowania.",

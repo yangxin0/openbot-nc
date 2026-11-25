@@ -338,7 +338,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "Sleutel maken in {source}",
   "crm.source.stripeKeyHelp":
-    "Stripe opent een sleutel met alleen leestoegang, klaar om te maken. Maak hem, kopieer dan de sleutel en plak hem hier. OpenBot leest alleen uit Stripe.",
+    "Stripe opent een sleutel met alleen leestoegang, klaar om te maken. Maak hem, kopieer dan de sleutel en plak hem hier. OpenBot-NC leest alleen uit Stripe.",
   "crm.source.connect": "Verbinden",
   "crm.source.account": "Account",
   "crm.source.testMode": "Testmodus",
@@ -354,9 +354,9 @@ export const messages = {
     "De sleutel kan niet alles lezen wat de synchronisatie nodig heeft. Geef hem leestoegang in {source}.",
   "crm.source.errorRateLimited": "{source} kreeg te veel verzoeken. De volgende synchronisatie probeert het opnieuw.",
   "crm.source.errorNetwork":
-    "OpenBot kan geen verbinding maken met {source}. De volgende synchronisatie probeert het opnieuw.",
+    "OpenBot-NC kan geen verbinding maken met {source}. De volgende synchronisatie probeert het opnieuw.",
   "crm.source.errorFailed":
-    "{source} stuurde een antwoord dat OpenBot niet kan lezen. De volgende synchronisatie probeert het opnieuw.",
+    "{source} stuurde een antwoord dat OpenBot-NC niet kan lezen. De volgende synchronisatie probeert het opnieuw.",
   "crm.source.skipped": "Niet geïmporteerd",
   "crm.source.skippedCurrency": "Andere valuta: {rows}",
   "crm.source.skippedInterval": "Ander factureringsinterval: {rows}",
@@ -368,5 +368,5 @@ export const messages = {
   "crm.source.disconnect": "Verbinding verbreken",
   "crm.source.disconnectTitle": "Verbinding met {source} verbreken?",
   "crm.source.disconnectBody":
-    "OpenBot stopt de synchronisatie en verwijdert de sleutel. De geïmporteerde rijen blijven staan en je kunt ze wijzigen.",
+    "OpenBot-NC stopt de synchronisatie en verwijdert de sleutel. De geïmporteerde rijen blijven staan en je kunt ze wijzigen.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -57,10 +57,10 @@ export const messages = {
   "browser.pip.reattach": "Rattacher le navigateur au panneau de droite",
   "browser.pip.reattachTitle": "Rattacher le navigateur",
   "browser.pip.close": "Fermer la fenêtre du navigateur",
-  "browser.pip.reattachFailed": "OpenBot n’a pas pu rattacher le navigateur.",
-  "browser.pip.closeFailed": "OpenBot n’a pas pu fermer la fenêtre du navigateur.",
+  "browser.pip.reattachFailed": "OpenBot-NC n’a pas pu rattacher le navigateur.",
+  "browser.pip.closeFailed": "OpenBot-NC n’a pas pu fermer la fenêtre du navigateur.",
   "browser.window.open": "Ouvrir le navigateur dans une nouvelle fenêtre",
-  "browser.window.openFailed": "OpenBot n’a pas pu ouvrir la fenêtre du navigateur.",
+  "browser.window.openFailed": "OpenBot-NC n’a pas pu ouvrir la fenêtre du navigateur.",
   "browser.popupBlocked.title": "Fenêtre contextuelle bloquée",
   "browser.popupBlocked.dismiss": "Ignorer le message de fenêtre contextuelle",
   "browser.liveView.label": "Vue en direct de la page sur le serveur",
@@ -98,17 +98,17 @@ export const messages = {
   "browser.secret.failed": "Impossible de terminer la demande. Vérifiez la connexion et réessayez.",
   "browser.secret.ended": "Cette demande de connexion est terminée. Demandez à l’agent de réessayer.",
   "browser.secret.vaultSkip.agentScript":
-    "OpenBot n’a pas utilisé votre identifiant enregistré, car l’agent a exécuté un script sur cette page. Pour l’utiliser, demandez à l’agent de recharger la page et de réessayer.",
+    "OpenBot-NC n’a pas utilisé votre identifiant enregistré, car l’agent a exécuté un script sur cette page. Pour l’utiliser, demandez à l’agent de recharger la page et de réessayer.",
   "browser.secret.vaultSkip.fieldKind":
-    "OpenBot n’a pas utilisé votre identifiant enregistré, car l’agent a choisi le mauvais champ sur la page.",
+    "OpenBot-NC n’a pas utilisé votre identifiant enregistré, car l’agent a choisi le mauvais champ sur la page.",
   "browser.secret.vaultSkip.loginChoice":
-    "OpenBot n’a utilisé aucun identifiant enregistré, car l’agent n’a choisi aucun des identifiants enregistrés pour ce site. Indiquez à l’agent le compte à utiliser.",
+    "OpenBot-NC n’a utilisé aucun identifiant enregistré, car l’agent n’a choisi aucun des identifiants enregistrés pour ce site. Indiquez à l’agent le compte à utiliser.",
   "browser.secret.vaultSkip.noPassword":
-    "OpenBot n’a pas utilisé votre identifiant enregistré, car il n’a pas de mot de passe pour ce site.",
+    "OpenBot-NC n’a pas utilisé votre identifiant enregistré, car il n’a pas de mot de passe pour ce site.",
   "browser.secret.vaultSkip.noAuthenticatorKey":
-    "OpenBot n’a pas utilisé votre identifiant enregistré, car il n’a pas de clé d’authentificateur.",
+    "OpenBot-NC n’a pas utilisé votre identifiant enregistré, car il n’a pas de clé d’authentificateur.",
   "browser.secret.vaultSkip.vaultUnreadable":
-    "OpenBot n’a utilisé aucun identifiant enregistré, car il n’a pas pu lire votre gestionnaire de mots de passe.",
+    "OpenBot-NC n’a utilisé aucun identifiant enregistré, car il n’a pas pu lire votre gestionnaire de mots de passe.",
   "browser.error.openAddress": "Impossible d’ouvrir l’adresse dans cet onglet.",
   "browser.error.channelNoBrowserMember": "Aucun membre ne peut ouvrir un nouvel onglet dans ce canal.",
   "browser.error.closeTab": "Impossible de fermer l’onglet du navigateur.",
@@ -168,22 +168,22 @@ export const messages = {
   "browser.signIn.local": "Se connecter sur cet ordinateur",
   "browser.signIn.title": "Se connecter à {site}",
   "browser.signIn.description":
-    "Certains sites refusent une connexion depuis un serveur. Connectez-vous sur cet ordinateur, et OpenBot envoie la connexion à {site} vers {server}. Tous les agents et membres de {server} peuvent ensuite l’utiliser dans le navigateur.",
+    "Certains sites refusent une connexion depuis un serveur. Connectez-vous sur cet ordinateur, et OpenBot-NC envoie la connexion à {site} vers {server}. Tous les agents et membres de {server} peuvent ensuite l’utiliser dans le navigateur.",
   "browser.signIn.windowOpen":
-    "Connectez-vous dans la fenêtre qui s’est ouverte. OpenBot envoie la connexion quand elle est terminée. Si la fenêtre reste ouverte, sélectionnez Terminé.",
+    "Connectez-vous dans la fenêtre qui s’est ouverte. OpenBot-NC envoie la connexion quand elle est terminée. Si la fenêtre reste ouverte, sélectionnez Terminé.",
   "browser.signIn.windowClosed":
     "La fenêtre de connexion est fermée. Sélectionnez Terminé pour envoyer la connexion, ou ouvrez à nouveau la fenêtre.",
   "browser.signIn.reopen": "Ouvrir la fenêtre de connexion",
   "browser.signIn.sending": "Envoi vers {server}…",
   "browser.signIn.sent": "Connecté à {site} sur {server}",
   "browser.signIn.notFound":
-    "OpenBot n’a trouvé aucune connexion pour {site}. Connectez-vous dans la fenêtre, puis sélectionnez Terminé.",
+    "OpenBot-NC n’a trouvé aucune connexion pour {site}. Connectez-vous dans la fenêtre, puis sélectionnez Terminé.",
   "browser.signIn.stillSignedOut":
     "{server} affiche toujours une page de connexion de {site}. Terminez la connexion dans la fenêtre.",
-  "browser.signIn.failed": "OpenBot n’a pas pu envoyer la connexion.",
+  "browser.signIn.failed": "OpenBot-NC n’a pas pu envoyer la connexion.",
   "browser.profiles.title": "Profils de navigateur",
   "browser.profiles.subtitle":
-    "Chaque profil garde ses propres connexions, cookies et données de sites sur l’ordinateur qui exécute OpenBot.",
+    "Chaque profil garde ses propres connexions, cookies et données de sites sur l’ordinateur qui exécute OpenBot-NC.",
   "browser.profiles.label": "Profils de navigateur",
   "browser.profiles.newName": "Nom du profil",
   "browser.profiles.create": "Ajouter",
@@ -202,8 +202,8 @@ export const messages = {
   "browser.profiles.deleteDescription":
     "Cette action supprime les connexions, les cookies et les données de sites du profil. Ses onglets ouverts se ferment.",
   "browser.profiles.deleteAgents": "Ces agents passent au profil partagé : {agents}.",
-  "browser.profiles.failed": "OpenBot n’a pas pu modifier les profils de navigateur.",
-  "browser.profiles.loadFailed": "OpenBot n’a pas pu charger les profils de navigateur.",
+  "browser.profiles.failed": "OpenBot-NC n’a pas pu modifier les profils de navigateur.",
+  "browser.profiles.loadFailed": "OpenBot-NC n’a pas pu charger les profils de navigateur.",
   "browser.profiles.tabLabel": "Profil : {name}",
   "browser.profiles.tabLabelProxy": "Profil : {name} · Proxy : {proxy}",
   "browser.profiles.agentTabLabel": "Profil propre à l’agent",
@@ -218,7 +218,7 @@ export const messages = {
   "browser.proxies.addTitle": "Ajouter un proxy",
   "browser.proxies.editTitle": "Modifier {name}",
   "browser.proxies.dialogDescription":
-    "Utilisez socks5, http ou https. Le nom d’utilisateur et le mot de passe sont facultatifs pour chaque type. Le mot de passe reste chiffré sur l’ordinateur qui exécute OpenBot.",
+    "Utilisez socks5, http ou https. Le nom d’utilisateur et le mot de passe sont facultatifs pour chaque type. Le mot de passe reste chiffré sur l’ordinateur qui exécute OpenBot-NC.",
   "browser.proxies.address": "Adresse",
   "browser.proxies.addressPlaceholder": "socks5://user:password@host:1080",
   "browser.proxies.deleteUsed": {
@@ -228,7 +228,7 @@ export const messages = {
   "browser.proxies.deleteUnused": "Aucun profil n’utilise ce proxy.",
   "browser.proxies.failing": "{name} ne répond pas",
   "browser.proxies.signInRefused": "{name} a refusé l’identification",
-  "browser.proxies.unsupported": "Ce serveur ne peut pas utiliser de proxys. Mettez à jour OpenBot sur ce serveur.",
+  "browser.proxies.unsupported": "Ce serveur ne peut pas utiliser de proxys. Mettez à jour OpenBot-NC sur ce serveur.",
   "browser.proxies.yourComputer": "Votre ordinateur",
   "browser.proxies.memberComputer": "Ordinateur de {name}",
   "browser.proxies.unknownComputer": "Ordinateur d’un membre",
@@ -239,7 +239,7 @@ export const messages = {
   "browser.proxies.offlineBadge": "{name} est hors ligne",
   "browser.proxies.shareTitle": "Partager la connexion de cet ordinateur ?",
   "browser.proxies.shareDescription":
-    "Les profils qui utilisent votre ordinateur ouvrent les sites publics via la connexion Internet de cet ordinateur. Cela ne fonctionne que tant qu’OpenBot est ouvert ici. Le serveur ne peut pas ouvrir les adresses de votre réseau local.",
+    "Les profils qui utilisent votre ordinateur ouvrent les sites publics via la connexion Internet de cet ordinateur. Cela ne fonctionne que tant qu’OpenBot-NC est ouvert ici. Le serveur ne peut pas ouvrir les adresses de votre réseau local.",
   "browser.proxies.share": "Partager",
   "browser.proxies.stopSharing": "Arrêter le partage",
   "browser.proxies.closesTabs": {

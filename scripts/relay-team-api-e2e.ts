@@ -48,7 +48,7 @@ const READY_LINE = "OpenBot relay is ready";
 const APP_VERSION = "0.0.0-e2e";
 const TEAM = "Acme";
 const HOST_USER = "host-user";
-const SERVER_NAME = "OpenBot";
+const SERVER_NAME = "OpenBot-NC";
 const RELAY_SIGN_IN_ONLY = "A relay connection signs in only with its certificate.";
 const MEMBER_DISABLED = "This team member is disabled.";
 
@@ -498,7 +498,7 @@ try {
     assert.equal(status.serverName, SERVER_NAME);
     assert.equal(status.apiUrl, relayUrl);
     const online = await untilHost("the host is online at the relay", (current) => current.apiOnline);
-    assert.equal(online.message, "Your team can connect to this OpenBot through the relay server.");
+    assert.equal(online.message, "Your team can connect to this OpenBot-NC through the relay server.");
     assert.equal(hostService.relayHostingState()?.status, "online");
     assert.equal(decodeStoredTeam(readFileSync(teamPath, "utf8")).hosts.length, 1);
     assert.deepEqual(

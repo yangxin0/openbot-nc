@@ -105,7 +105,7 @@ export const messages = {
   "mobile.channel.deleteHistory.footer": "メッセージを削除し、メンバーも忘れます。チャンネルの設定は残ります。",
   "mobile.channel.deleteHistory.confirmTitle": "{name} の履歴を削除しますか？",
   "mobile.channel.deleteHistory.confirmBody":
-    "このチャンネルのすべてのメッセージとファイルをOpenBotから削除し、メンバーも忘れます。元に戻せません。メンバー、指示、メモリー、ルーティン、タスクは変わりません。",
+    "このチャンネルのすべてのメッセージとファイルをOpenBot-NCから削除し、メンバーも忘れます。元に戻せません。メンバー、指示、メモリー、ルーティン、タスクは変わりません。",
   "mobile.channel.deleteHistory.confirm": "履歴を削除",
   "mobile.channel.deleteHistory.failed": "履歴を削除できませんでした",
   "mobile.channel.deleteHistory.failedBody": "ホストは履歴を削除できませんでした。",

@@ -10,7 +10,7 @@ import { type DevInstanceRecord, readDevInstanceRecords } from "./dev-automation
 
 const NAME = "workflow-canvas-pictures-perf";
 const ROOT = resolve(import.meta.dirname, "..");
-const HOST_NAME = "OpenBot Local Dev Host";
+const HOST_NAME = "OpenBot-NC Local Dev Host";
 const PICTURE_SIDE = 1024;
 const COLUMNS = 4;
 const SPACING = 380;

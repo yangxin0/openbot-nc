@@ -9,7 +9,7 @@ import { type DevInstanceRecord, readDevInstanceRecords } from "./dev-automation
 
 const NAME = "workflow-duplicate-references";
 const ROOT = resolve(import.meta.dirname, "..");
-const HOST_NAME = "OpenBot Local Dev Host";
+const HOST_NAME = "OpenBot-NC Local Dev Host";
 const PICTURE_SIDE = 64;
 const REFERENCES = 2;
 const SOURCE = "image-original";

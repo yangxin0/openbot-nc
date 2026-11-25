@@ -11,7 +11,7 @@ export const messages = {
   "mobile.onboarding.server.title": "你的助手在哪里工作？",
   "mobile.onboarding.server.body": "助手运行在服务器上。请选择连接方式。",
   "mobile.onboarding.server.computer": "我的电脑",
-  "mobile.onboarding.server.computerBody": "把电脑上的 OpenBot 作为服务器。",
+  "mobile.onboarding.server.computerBody": "把电脑上的 OpenBot-NC 作为服务器。",
   "mobile.onboarding.server.computerTitle": "连接你的电脑",
   "mobile.onboarding.server.connecting": "正在连接 {name}…",
   "mobile.onboarding.agent.title": "挑选你的第一位助手",

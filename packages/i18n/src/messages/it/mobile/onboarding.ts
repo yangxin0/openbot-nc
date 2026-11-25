@@ -12,7 +12,7 @@ export const messages = {
   "mobile.onboarding.server.title": "Dove lavoreranno i tuoi agenti?",
   "mobile.onboarding.server.body": "Gli agenti funzionano su un server. Scegli come collegarne uno.",
   "mobile.onboarding.server.computer": "Il mio computer",
-  "mobile.onboarding.server.computerBody": "Usa OpenBot sul tuo computer come server.",
+  "mobile.onboarding.server.computerBody": "Usa OpenBot-NC sul tuo computer come server.",
   "mobile.onboarding.server.computerTitle": "Collega il computer",
   "mobile.onboarding.server.connecting": "Connessione a {name}…",
   "mobile.onboarding.agent.title": "Scegli il tuo primo agente",

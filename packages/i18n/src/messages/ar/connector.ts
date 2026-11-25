@@ -15,10 +15,10 @@ export const messages = {
   "connector.github.cancel": "إلغاء",
   "connector.github.connectedAs": "متصل باسم @{login}",
   "connector.github.repositoriesTitle": "المستودعات",
-  "connector.github.repositoriesDescription": "يمكن للوكلاء استخدام المستودعات المثبَّت فيها OpenBot GitHub App فقط.",
+  "connector.github.repositoriesDescription": "يمكن للوكلاء استخدام المستودعات المثبَّت فيها OpenBot-NC GitHub App فقط.",
   "connector.github.chooseRepositories": "اختيار المستودعات",
   "connector.github.repositoriesLoading": "جارٍ قراءة المستودعات من GitHub",
-  "connector.github.noRepositories": "لم يُثبَّت OpenBot GitHub App على أي مستودع بعد.",
+  "connector.github.noRepositories": "لم يُثبَّت OpenBot-NC GitHub App على أي مستودع بعد.",
   "connector.github.moreRepositories": {
     zero: "ولا مستودعات أخرى",
     one: "ومستودع آخر",
@@ -34,7 +34,7 @@ export const messages = {
   "connector.github.expiredTitle": "انتهت صلاحية اتصال GitHub",
   "connector.github.expiredDescription": "اربط مرة أخرى باسم @{login} لتعيد GitHub إلى الوكلاء.",
   "connector.github.reconnect": "إعادة الربط",
-  "connector.github.actionFailed": "تعذّر على OpenBot تغيير اتصال GitHub.",
+  "connector.github.actionFailed": "تعذّر على OpenBot-NC تغيير اتصال GitHub.",
   "connector.github.statusConnected": "متصل",
   "connector.github.statusConnecting": "جارٍ الاتصال",
   "connector.github.statusExpired": "منتهي الصلاحية",
@@ -51,7 +51,7 @@ export const messages = {
   "connector.github.noMatch": "لا يوجد مستودع يطابق «{query}».",
   "connector.github.stepSignIn": "تسجيل الدخول",
   "connector.github.stepConnected": "متصل",
-  "connector.github.requestingCode": "يطلب OpenBot رمزًا من GitHub.",
+  "connector.github.requestingCode": "يطلب OpenBot-NC رمزًا من GitHub.",
   "connector.github.codeLabel": "الرمز {code}",
   "connector.github.failedTitle": "لم يتم ربط GitHub",
   "connector.github.cancelConnecting": "إلغاء ربط GitHub",
@@ -68,7 +68,7 @@ export const messages = {
   "connector.github.disconnectConfirmTitle": "هل تريد قطع اتصال GitHub؟",
   "connector.github.disconnectConfirmDescription": "يزيل قطع الاتصال تسجيل دخول @{login} من هذا الحاسوب.",
   "connector.github.disconnectEffectTools": "يفقد كل وكيل أدوات GitHub وgh وgit.",
-  "connector.github.disconnectEffectRevoke": "ثم يُفتح GitHub حيث يمكنك إلغاء وصول OpenBot.",
+  "connector.github.disconnectEffectRevoke": "ثم يُفتح GitHub حيث يمكنك إلغاء وصول OpenBot-NC.",
   "connector.github.disconnectEffectKept": "تبقى الدردشات والملفات وذاكرة الوكلاء على هذا الحاسوب.",
   "connector.github.descriptionHost":
     "يمكن لكل وكيل على {host} استخدام مستودعات GitHub ومشكلاتها وطلبات الدمج الخاصة بك، واستخدام gh وgit.",
@@ -86,7 +86,7 @@ export const messages = {
   "connector.github.close": "إغلاق",
   "connector.dangerZone": "منطقة الخطر",
   "connector.statusUnknown": "غير معروف",
-  "connector.readFailed": "تعذّر على OpenBot قراءة حالة هذا الاتصال.",
+  "connector.readFailed": "تعذّر على OpenBot-NC قراءة حالة هذا الاتصال.",
 
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description": "اربط رقم WhatsApp بهذا الحاسوب. يسأل WhatsApp Orchestrator الوكيل المناسب ويجيب.",
@@ -124,15 +124,16 @@ export const messages = {
   "connector.whatsapp.actionFailed": "لم يقبل WhatsApp التغيير",
   "connector.whatsapp.numbersTitle": "الأرقام",
   "connector.whatsapp.linkNumber": "ربط رقم",
-  "connector.whatsapp.ownNumberNote": "تصل دردشة «مراسلة نفسك» والأشخاص الذين تسمح لهم إلى OpenBot.",
+  "connector.whatsapp.ownNumberNote": "تصل دردشة «مراسلة نفسك» والأشخاص الذين تسمح لهم إلى OpenBot-NC.",
   "connector.whatsapp.dedicatedNote":
-    "تصل دردشة «مراسلة نفسك» والأشخاص الذين تسمح لهم إلى OpenBot. يحصل الآخرون على رمز ليعطوه لك.",
+    "تصل دردشة «مراسلة نفسك» والأشخاص الذين تسمح لهم إلى OpenBot-NC. يحصل الآخرون على رمز ليعطوه لك.",
   "connector.whatsapp.helpLoggedOut": "أزال WhatsApp هذا الحاسوب من الأجهزة المرتبطة. اربط الرقم مرة أخرى.",
   "connector.whatsapp.helpLoggedOutHost": "أزال WhatsApp هذا الخادم من الأجهزة المرتبطة. اربط الرقم مرة أخرى.",
   "connector.whatsapp.helpError":
-    "لا يستطيع OpenBot الوصول إلى WhatsApp على هذا الرقم. أعد الربط، أو اقطع اتصال الرقم.",
-  "connector.whatsapp.helpKeysUnreadable": "لا يستطيع OpenBot قراءة المفاتيح المحفوظة لهذا الرقم. اربط الرقم مرة أخرى.",
-  "connector.whatsapp.retryAt": "طلب WhatsApp من OpenBot الانتظار. سيحاول مرة أخرى في {time}.",
+    "لا يستطيع OpenBot-NC الوصول إلى WhatsApp على هذا الرقم. أعد الربط، أو اقطع اتصال الرقم.",
+  "connector.whatsapp.helpKeysUnreadable":
+    "لا يستطيع OpenBot-NC قراءة المفاتيح المحفوظة لهذا الرقم. اربط الرقم مرة أخرى.",
+  "connector.whatsapp.retryAt": "طلب WhatsApp من OpenBot-NC الانتظار. سيحاول مرة أخرى في {time}.",
   "connector.whatsapp.pause": "إيقاف مؤقت",
   "connector.whatsapp.resume": "استئناف",
   "connector.whatsapp.reconnect": "إعادة الربط",
@@ -142,20 +143,20 @@ export const messages = {
   "connector.whatsapp.disconnectAllSummary":
     "يُقطع اتصال كل الأرقام. لن يتمكن الأشخاص بعد ذلك من الوصول إلى وكلائك عبر WhatsApp.",
   "connector.whatsapp.disconnectAllSummaryOrchestrator":
-    "يُقطع اتصال كل الأرقام. يُحذف WhatsApp Orchestrator ومحادثاته من OpenBot.",
+    "يُقطع اتصال كل الأرقام. يُحذف WhatsApp Orchestrator ومحادثاته من OpenBot-NC.",
   "connector.whatsapp.rowAction": "{action}: {name}",
   "connector.whatsapp.ownNumber": "رقم شخصي",
   "connector.whatsapp.ownNumberDescription":
-    "يمكن فقط لدردشة «مراسلة نفسك» والأشخاص الذين تسمح لهم المراسلة. لا يتلقى الآخرون أي رد. عند إيقافه، يرد OpenBot على الأشخاص غير المعروفين برمز.",
+    "يمكن فقط لدردشة «مراسلة نفسك» والأشخاص الذين تسمح لهم المراسلة. لا يتلقى الآخرون أي رد. عند إيقافه، يرد OpenBot-NC على الأشخاص غير المعروفين برمز.",
   "connector.whatsapp.workingMessage": "رسالة «جارٍ العمل على ذلك…»",
   "connector.whatsapp.workingMessageDescription":
-    "يرسلها OpenBot أثناء عمل الوكيل، ثم يستبدلها بالإجابة. ويرسل أيضًا رسالة انتظار عندما ينتظر طلبٌ طلبًا سابقًا. على الرقم الشخصي، تصل هذه الرسائل إلى دردشة «مراسلة نفسك» فقط. أوقفها لإرسال الإجابة فقط.",
+    "يرسلها OpenBot-NC أثناء عمل الوكيل، ثم يستبدلها بالإجابة. ويرسل أيضًا رسالة انتظار عندما ينتظر طلبٌ طلبًا سابقًا. على الرقم الشخصي، تصل هذه الرسائل إلى دردشة «مراسلة نفسك» فقط. أوقفها لإرسال الإجابة فقط.",
   "connector.whatsapp.statusReactions": "تفاعلات الحالة",
   "connector.whatsapp.statusReactionsDescription":
-    "يتفاعل OpenBot بـ 👀 عند وصول رسالة، وبـ ✅ عندما تصبح الإجابة جاهزة. أوقفها لعدم إرسال أي تفاعلات.",
+    "يتفاعل OpenBot-NC بـ 👀 عند وصول رسالة، وبـ ✅ عندما تصبح الإجابة جاهزة. أوقفها لعدم إرسال أي تفاعلات.",
   "connector.whatsapp.orchestratorTitle": "WhatsApp Orchestrator",
   "connector.whatsapp.orchestratorDescription":
-    "يستقبل هذا الوكيل الرسائل الموجّهة إلى OpenBot من كل أرقامك المرتبطة. يجيب بنفسه عن الرسائل القصيرة، ويسند الأعمال الأخرى إلى الوكيل المناسب، ويجيب في WhatsApp.",
+    "يستقبل هذا الوكيل الرسائل الموجّهة إلى OpenBot-NC من كل أرقامك المرتبطة. يجيب بنفسه عن الرسائل القصيرة، ويسند الأعمال الأخرى إلى الوكيل المناسب، ويجيب في WhatsApp.",
   "connector.whatsapp.orchestratorNone": "لا يجيب أي وكيل بعد",
   "connector.whatsapp.orchestratorNoneDescription": "أضف WhatsApp Orchestrator، وإلا فلن يتلقى WhatsApp أي إجابة.",
   "connector.whatsapp.note": "على رقمك الشخصي، اكتب في دردشة «مراسلة نفسك». يكتب الأشخاص الذين تسمح لهم إلى الرقم.",
@@ -167,10 +168,10 @@ export const messages = {
   "connector.whatsapp.kindLabel": "الرقم",
   "connector.whatsapp.kindPersonal": "رقمي الشخصي",
   "connector.whatsapp.kindPersonalDescription":
-    "يجيب OpenBot فقط عن دردشة «مراسلة نفسك» والأشخاص الذين تسمح لهم. لا يتلقى الآخرون أي رد.",
-  "connector.whatsapp.kindDedicated": "رقم مخصص لـ OpenBot فقط",
+    "يجيب OpenBot-NC فقط عن دردشة «مراسلة نفسك» والأشخاص الذين تسمح لهم. لا يتلقى الآخرون أي رد.",
+  "connector.whatsapp.kindDedicated": "رقم مخصص لـ OpenBot-NC فقط",
   "connector.whatsapp.kindDedicatedDescription":
-    "يرد OpenBot من هذا الرقم على كل شخص غير معروف برمز ليعطيه لك. توافق عليهم هنا.",
+    "يرد OpenBot-NC من هذا الرقم على كل شخص غير معروف برمز ليعطيه لك. توافق عليهم هنا.",
   "connector.whatsapp.methodLabel": "طريقة الربط",
   "connector.whatsapp.methodQr": "رمز QR",
   "connector.whatsapp.methodCode": "رمز الإقران",
@@ -195,25 +196,25 @@ export const messages = {
   "connector.whatsapp.failedTimeout": "انتهت صلاحية الرمز قبل أن يستخدمه الهاتف.",
   "connector.whatsapp.failedRefused": "رفض WhatsApp الربط. انتظر بضع دقائق، ثم أعد المحاولة.",
   "connector.whatsapp.failedBusy": "هناك عملية ربط أخرى قيد التنفيذ. انتظر حتى تنتهي، ثم أعد المحاولة.",
-  "connector.whatsapp.failedUnavailable": "لا يستطيع OpenBot الوصول إلى WhatsApp. تحقق من اتصال الإنترنت.",
+  "connector.whatsapp.failedUnavailable": "لا يستطيع OpenBot-NC الوصول إلى WhatsApp. تحقق من اتصال الإنترنت.",
   "connector.whatsapp.tryAgain": "أعد المحاولة",
   "connector.whatsapp.agentStepTitle": "إضافة WhatsApp Orchestrator",
   "connector.whatsapp.agentStepDescription":
-    "يجيب هذا الوكيل الجديد عن الرسائل الموجّهة إلى OpenBot على {number} وعلى كل رقم تربطه لاحقًا.",
+    "يجيب هذا الوكيل الجديد عن الرسائل الموجّهة إلى OpenBot-NC على {number} وعلى كل رقم تربطه لاحقًا.",
   "connector.whatsapp.orchestratorName": "WhatsApp Orchestrator",
   "connector.whatsapp.orchestratorRole": "يجيب في WhatsApp ويسأل الفريق",
-  "connector.whatsapp.orchestratorDoesReceive": "يستقبل كل رسالة WhatsApp موجّهة إلى OpenBot أولًا",
+  "connector.whatsapp.orchestratorDoesReceive": "يستقبل كل رسالة WhatsApp موجّهة إلى OpenBot-NC أولًا",
   "connector.whatsapp.orchestratorDoesDelegate": "يسند كل مهمة إلى الوكيل الأنسب لها",
   "connector.whatsapp.orchestratorDoesAnswer": "يجيب في دردشة WhatsApp",
   "connector.whatsapp.orchestratorModel": "النموذج",
-  "connector.whatsapp.doneTitle": "OpenBot مرتبط بـ {number}",
+  "connector.whatsapp.doneTitle": "OpenBot-NC مرتبط بـ {number}",
   "connector.whatsapp.done": "تم",
   "connector.whatsapp.disconnectTitle": "هل تريد قطع اتصال {number}؟",
   "connector.whatsapp.disconnectDescription":
-    "يسجّل OpenBot الخروج من WhatsApp على {number}. إذا كان OpenBot متوقفًا، فأزل الجهاز أيضًا من WhatsApp > الأجهزة المرتبطة.",
+    "يسجّل OpenBot-NC الخروج من WhatsApp على {number}. إذا كان OpenBot-NC متوقفًا، فأزل الجهاز أيضًا من WhatsApp > الأجهزة المرتبطة.",
   "connector.whatsapp.disconnectEffect": "لن يتمكن الأشخاص بعد ذلك من الوصول إلى وكلائك عبر {number}.",
-  "connector.whatsapp.removeEffectKept": "تبقى المحادثات وWhatsApp Orchestrator في OpenBot.",
-  "connector.whatsapp.removeEffectDeleted": "هذا آخر رقم، لذلك يُحذف WhatsApp Orchestrator ومحادثاته من OpenBot.",
+  "connector.whatsapp.removeEffectKept": "تبقى المحادثات وWhatsApp Orchestrator في OpenBot-NC.",
+  "connector.whatsapp.removeEffectDeleted": "هذا آخر رقم، لذلك يُحذف WhatsApp Orchestrator ومحادثاته من OpenBot-NC.",
   "connector.whatsapp.keep": "إبقاء الربط",
   "connector.whatsapp.close": "إغلاق",
   "connector.whatsapp.sendersTitle": "من يستطيع الكتابة إلى {number}",
@@ -237,7 +238,7 @@ export const messages = {
     "يمكن للأشخاص في هذه المجموعة إسناد أعمال إلى وكلائك عندما يذكرون الرقم أو يردّون على رسائله.",
   "connector.whatsapp.groupSearch": "بحث في المجموعات",
   "connector.whatsapp.groupsLoading": "جارٍ قراءة المجموعات…",
-  "connector.whatsapp.groupsLoadFailed": "تعذّرت قراءة المجموعات على OpenBot",
+  "connector.whatsapp.groupsLoadFailed": "تعذّرت قراءة المجموعات على OpenBot-NC",
   "connector.whatsapp.groupsEmpty": "هذا الرقم ليس في أي مجموعة.",
   "connector.whatsapp.groupsNoMatch": "لا توجد مجموعة بهذا الاسم.",
   "connector.whatsapp.groupAdded": "تمت الإضافة",
@@ -250,29 +251,30 @@ export const messages = {
   "connector.whatsapp.deny": "رفض",
   "connector.onePassword.title": "1Password",
   "connector.onePassword.description":
-    "شارك خزنة 1Password مخصّصة مع OpenBot عبر حساب خدمة، ليتمكن الوكلاء من تسجيل الدخول إلى المواقع في متصفح OpenBot.",
+    "شارك خزنة 1Password مخصّصة مع OpenBot-NC عبر حساب خدمة، ليتمكن الوكلاء من تسجيل الدخول إلى المواقع في متصفح OpenBot-NC.",
   "connector.onePassword.howItWorks":
-    "ينشئ الربط خزنة «Shared with OpenBot» في حساب 1Password لديك وحساب خدمة لا يستطيع قراءة سوى تلك الخزنة. يملأ OpenBot بيانات الدخول المحفوظة في متصفحه على هذا الحاسوب، لذلك لا يُشارَك إلا العناصر التي تنقلها إلى تلك الخزنة. لا يرى الوكلاء أي كلمة مرور.",
+    "ينشئ الربط خزنة «Shared with OpenBot» في حساب 1Password لديك وحساب خدمة لا يستطيع قراءة سوى تلك الخزنة. يملأ OpenBot-NC بيانات الدخول المحفوظة في متصفحه على هذا الحاسوب، لذلك لا يُشارَك إلا العناصر التي تنقلها إلى تلك الخزنة. لا يرى الوكلاء أي كلمة مرور.",
   "connector.onePassword.connect": "ربط 1Password",
   "connector.onePassword.setupTitle": "الإعداد",
   "connector.onePassword.stepCliTitle": "تثبيت 1Password CLI",
   "connector.onePassword.stepCliChecking": "جارٍ البحث عن 1Password CLI على هذا الحاسوب",
   "connector.onePassword.stepCliInstalling": "جارٍ تنزيل 1Password CLI من 1Password",
   "connector.onePassword.stepCliReady": "الإصدار {version} مثبَّت.",
-  "connector.onePassword.stepCliMissing": "ينزّله OpenBot من 1Password إلى مجلده الخاص. لا يحتاج إلى كلمة مرور المسؤول.",
+  "connector.onePassword.stepCliMissing":
+    "ينزّله OpenBot-NC من 1Password إلى مجلده الخاص. لا يحتاج إلى كلمة مرور المسؤول.",
   "connector.onePassword.stepCliManual":
-    "لا يستطيع OpenBot تثبيته على هذا الحاسوب. ثبّته من 1Password، ثم عُد إلى هذه الصفحة.",
+    "لا يستطيع OpenBot-NC تثبيته على هذا الحاسوب. ثبّته من 1Password، ثم عُد إلى هذه الصفحة.",
   "connector.onePassword.installCli": "تثبيت",
   "connector.onePassword.stepAppTitle": "تشغيل تكامل CLI",
   "connector.onePassword.stepAppDescription":
     "في تطبيق 1Password، افتح Settings > Developer وشغّل «Integrate with 1Password CLI».",
   "connector.onePassword.stepAppReady": "يسمح تطبيق 1Password لـ CLI بإنشاء الخزنة المشتركة.",
   "connector.onePassword.openApp": "فتح 1Password",
-  "connector.onePassword.openAppFailed": "تعذّر على OpenBot فتح 1Password.",
+  "connector.onePassword.openAppFailed": "تعذّر على OpenBot-NC فتح 1Password.",
   "connector.onePassword.checkAgain": "التحقق مرة أخرى",
   "connector.onePassword.stepVaultTitle": "إنشاء الخزنة المشتركة",
   "connector.onePassword.stepVaultDescription":
-    "ينشئ OpenBot الخزنة «Shared with OpenBot» وحساب خدمة لا يستطيع سوى قراءتها. يطلب منك 1Password الموافقة.",
+    "ينشئ OpenBot-NC الخزنة «Shared with OpenBot» وحساب خدمة لا يستطيع سوى قراءتها. يطلب منك 1Password الموافقة.",
   "connector.onePassword.useTokenDescription": "بدلًا من هذه الخطوات، الصق رمز حساب خدمة من 1Password.com.",
   "connector.onePassword.useTokenAction": "استخدام رمز",
   "connector.onePassword.tokenLabel": "رمز حساب الخدمة",
@@ -281,7 +283,7 @@ export const messages = {
   "connector.onePassword.approveInApp": "وافق على الطلب في تطبيق 1Password",
   "connector.onePassword.cancel": "إلغاء",
   "connector.onePassword.chooseAccountTitle": "اختيار حساب",
-  "connector.onePassword.chooseAccountDescription": "ينشئ OpenBot الخزنة المشتركة في الحساب الذي تختاره.",
+  "connector.onePassword.chooseAccountDescription": "ينشئ OpenBot-NC الخزنة المشتركة في الحساب الذي تختاره.",
   "connector.onePassword.useAccount": "استخدام هذا الحساب",
   "connector.onePassword.vaultTitle": "الخزنة المشتركة",
   "connector.onePassword.vaultDescription":
@@ -298,14 +300,14 @@ export const messages = {
   "connector.onePassword.disconnect": "قطع الاتصال",
   "connector.onePassword.disconnectTitle": "قطع اتصال 1Password",
   "connector.onePassword.disconnectSummary":
-    "ينسى OpenBot الرمز. تبقى الخزنة وحساب الخدمة في 1Password؛ أزِلهما هناك إذا لم تعد تحتاج إليهما.",
-  "connector.onePassword.actionFailed": "تعذّر على OpenBot تغيير اتصال 1Password.",
+    "ينسى OpenBot-NC الرمز. تبقى الخزنة وحساب الخدمة في 1Password؛ أزِلهما هناك إذا لم تعد تحتاج إليهما.",
+  "connector.onePassword.actionFailed": "تعذّر على OpenBot-NC تغيير اتصال 1Password.",
   "connector.onePassword.statusConnected": "متصل",
   "connector.onePassword.statusConnecting": "جارٍ الاتصال",
   "connector.onePassword.descriptionHost":
-    "شارك خزنة 1Password مخصّصة مع OpenBot على {host} عبر حساب خدمة، ليتمكن الوكلاء على {host} من تسجيل الدخول إلى المواقع في متصفحه.",
+    "شارك خزنة 1Password مخصّصة مع OpenBot-NC على {host} عبر حساب خدمة، ليتمكن الوكلاء على {host} من تسجيل الدخول إلى المواقع في متصفحه.",
   "connector.onePassword.howItWorksHost":
-    "يتصل {host} برمز حساب خدمة. في 1Password.com، أنشئ حساب خدمة لا يستطيع قراءة سوى الخزنة التي تشاركها مع OpenBot، ثم الصق رمزه هنا. يتحقق {host} من الرمز ويحتفظ به؛ لا يحتفظ به هذا الحاسوب. لا يرى الوكلاء أي كلمة مرور.",
+    "يتصل {host} برمز حساب خدمة. في 1Password.com، أنشئ حساب خدمة لا يستطيع قراءة سوى الخزنة التي تشاركها مع OpenBot-NC، ثم الصق رمزه هنا. يتحقق {host} من الرمز ويحتفظ به؛ لا يحتفظ به هذا الحاسوب. لا يرى الوكلاء أي كلمة مرور.",
   "connector.onePassword.disconnectSummaryHost":
     "ينسى {host} الرمز. تبقى الخزنة وحساب الخدمة في 1Password؛ أزِلهما هناك إذا لم تعد تحتاج إليهما.",
   "connector.bitwarden.title": "Bitwarden",
@@ -313,24 +315,24 @@ export const messages = {
   "connector.bitwarden.setup":
     "ثبّت Bitwarden CLI وسجّل الدخول باستخدام bw login. أنشئ مجلدًا باسم Shared with OpenBot وضع فيه فقط بيانات الدخول التي يجوز للوكلاء استخدامها. شغّل bw unlock --raw والصق مفتاح الجلسة أدناه. لا تلصق كلمة المرور الرئيسية.",
   "connector.bitwarden.scope":
-    "يمكن لكل الوكلاء على هذا الحاسوب استخدام بيانات الدخول المطابقة في Shared with OpenBot. يستخدم OpenBot أصول HTTPS المطابقة تمامًا. لا يستخدم العناصر التي تتطلب إدخال كلمة المرور الرئيسية أو قاعدة مطابقة URI مخصّصة.",
+    "يمكن لكل الوكلاء على هذا الحاسوب استخدام بيانات الدخول المطابقة في Shared with OpenBot. يستخدم OpenBot-NC أصول HTTPS المطابقة تمامًا. لا يستخدم العناصر التي تتطلب إدخال كلمة المرور الرئيسية أو قاعدة مطابقة URI مخصّصة.",
   "connector.bitwarden.session":
-    "يبقى مفتاح الجلسة في الذاكرة. اربط مرة أخرى بعد 8 ساعات دون استخدام الخزنة أو بعد إغلاق OpenBot. يوقف قطع الاتصال وصول OpenBot؛ ولا يقفل عملاء Bitwarden الآخرين.",
+    "يبقى مفتاح الجلسة في الذاكرة. اربط مرة أخرى بعد 8 ساعات دون استخدام الخزنة أو بعد إغلاق OpenBot-NC. يوقف قطع الاتصال وصول OpenBot-NC؛ ولا يقفل عملاء Bitwarden الآخرين.",
   "connector.bitwarden.sessionKey": "مفتاح جلسة Bitwarden",
   "connector.bitwarden.connect": "ربط Bitwarden",
   "connector.bitwarden.disconnect": "قطع اتصال Bitwarden",
   "connector.bitwarden.disconnectAction": "قطع الاتصال",
   "connector.bitwarden.disconnectSummary":
-    "ينسى OpenBot مفتاح الجلسة. لن يتمكن الوكلاء بعد ذلك من ملء بيانات الدخول من Bitwarden. يبقى عملاء Bitwarden الآخرون غير مقفلين.",
+    "ينسى OpenBot-NC مفتاح الجلسة. لن يتمكن الوكلاء بعد ذلك من ملء بيانات الدخول من Bitwarden. يبقى عملاء Bitwarden الآخرون غير مقفلين.",
   "connector.bitwarden.disconnectSummaryHost":
     "يزيل {host} مفتاح API وكلمة المرور الرئيسية. لن يتمكن الوكلاء على {host} بعد ذلك من ملء بيانات الدخول من Bitwarden.",
   "connector.bitwarden.connected": "متصل",
-  "connector.bitwarden.actionFailed": "تعذّر على OpenBot تغيير اتصال Bitwarden.",
+  "connector.bitwarden.actionFailed": "تعذّر على OpenBot-NC تغيير اتصال Bitwarden.",
   "connector.bitwarden.descriptionHost": "ملء بيانات الدخول في المتصفح على {host} من Bitwarden أو Vaultwarden.",
   "connector.bitwarden.setupHost":
     "يسجّل {host} الدخول باستخدام Bitwarden CLI الخاص به. في خزنتك، أنشئ مجلدًا باسم Shared with OpenBot وضع فيه فقط بيانات الدخول التي يجوز للوكلاء استخدامها. في خزنة الويب، افتح Settings › Security › Keys واعرض مفتاح API. أدخل عنوان الخادم وclient_id وclient_secret وكلمة المرور الرئيسية أدناه.",
   "connector.bitwarden.scopeHost":
-    "يمكن لكل الوكلاء على {host} استخدام بيانات الدخول المطابقة في Shared with OpenBot. يستخدم OpenBot أصول HTTPS المطابقة تمامًا. لا يستخدم العناصر التي تتطلب إدخال كلمة المرور الرئيسية أو قاعدة مطابقة URI مخصّصة.",
+    "يمكن لكل الوكلاء على {host} استخدام بيانات الدخول المطابقة في Shared with OpenBot. يستخدم OpenBot-NC أصول HTTPS المطابقة تمامًا. لا يستخدم العناصر التي تتطلب إدخال كلمة المرور الرئيسية أو قاعدة مطابقة URI مخصّصة.",
   "connector.bitwarden.sessionHost":
     "يحتفظ {host} بمفتاح API وكلمة المرور الرئيسية مشفّرين، ليتمكن من فك القفل مرة أخرى بعد إعادة التشغيل. لا يحتفظ بهما هذا الحاسوب. يزيلهما قطع الاتصال من {host}. يجب أن يصل {host} إلى عنوان الخادم عبر HTTPS.",
   "connector.bitwarden.serverUrl": "عنوان الخادم",
@@ -354,18 +356,18 @@ export const messages = {
   "connector.protonPass.keyPlaceholder": "pst_…",
   "connector.protonPass.setupTitle": "الإعداد",
   "connector.protonPass.setupDescription":
-    "يفتح «اتصال» تسجيل الدخول إلى Proton في متصفحك. ثم ينشئ OpenBot الخزنة المشتركة ويحتفظ بمفتاح للقراءة فقط.",
+    "يفتح «اتصال» تسجيل الدخول إلى Proton في متصفحك. ثم ينشئ OpenBot-NC الخزنة المشتركة ويحتفظ بمفتاح للقراءة فقط.",
   "connector.protonPass.setupDescriptionHost":
     "يفتح «اتصال» تسجيل الدخول إلى Proton في متصفحك. ثم ينشئ {host} الخزنة المشتركة ويحتفظ بمفتاح للقراءة فقط.",
   "connector.protonPass.vaultName": "Shared with OpenBot",
-  "connector.protonPass.vaultSetup": "ينشئ OpenBot هذه الخزنة عند الاتصال. انقل بيانات الدخول إليها لمشاركتها.",
+  "connector.protonPass.vaultSetup": "ينشئ OpenBot-NC هذه الخزنة عند الاتصال. انقل بيانات الدخول إليها لمشاركتها.",
   "connector.protonPass.showSteps": "عرض الخطوات",
   "connector.protonPass.stepsLabel": "خطوات الاتصال",
   "connector.protonPass.stepSignIn": "تسجيل الدخول",
   "connector.protonPass.stepVault": "إنشاء الخزنة المشتركة",
   "connector.protonPass.stepDone": "تم",
   "connector.protonPass.signInTitle": "سجّل الدخول إلى Proton",
-  "connector.protonPass.signInStarting": "يبدأ OpenBot تسجيل الدخول. تُفتح صفحة Proton في متصفحك.",
+  "connector.protonPass.signInStarting": "يبدأ OpenBot-NC تسجيل الدخول. تُفتح صفحة Proton في متصفحك.",
   "connector.protonPass.signInDescription": "تسجيل الدخول مفتوح في متصفحك. يطلب Proton كلمة المرور والعامل الثاني.",
   "connector.protonPass.signInDescriptionHost":
     "تسجيل الدخول إلى {host} مفتوح في متصفحك. يطلب Proton كلمة المرور والعامل الثاني.",
@@ -375,7 +377,7 @@ export const messages = {
   "connector.protonPass.continue": "متابعة",
   "connector.protonPass.setupStepTitle": "جارٍ إنشاء الخزنة المشتركة",
   "connector.protonPass.setupStepDescription":
-    "ينشئ OpenBot الخزنة «{vault}» ومفتاحًا للقراءة فقط لها. ثم يسجّل الخروج من جلسة Proton.",
+    "ينشئ OpenBot-NC الخزنة «{vault}» ومفتاحًا للقراءة فقط لها. ثم يسجّل الخروج من جلسة Proton.",
   "connector.protonPass.doneTitle": "تم توصيل Proton Pass",
   "connector.protonPass.doneDescription": "انقل بيانات الدخول إلى «{vault}» ليسجّل الوكلاء الدخول بها.",
   "connector.protonPass.failedTitle": "لم يتصل Proton Pass",
@@ -411,9 +413,9 @@ export const messages = {
   "connector.protonPass.keyNoExpiry": "للقراءة فقط. لا تنتهي صلاحيته.",
   "connector.protonPass.disconnectTitle": "فصل Proton Pass",
   "connector.protonPass.disconnectSummary":
-    "يحذف OpenBot مفتاح الوصول الخاص به على هذا الكمبيوتر. تبقى الخزنة وبيانات الدخول فيها في حساب Proton.",
+    "يحذف OpenBot-NC مفتاح الوصول الخاص به على هذا الكمبيوتر. تبقى الخزنة وبيانات الدخول فيها في حساب Proton.",
   "connector.protonPass.disconnectSummaryHost":
-    "يحذف OpenBot مفتاح الوصول الخاص به على {host}. تبقى الخزنة وبيانات الدخول فيها في حساب Proton.",
+    "يحذف OpenBot-NC مفتاح الوصول الخاص به على {host}. تبقى الخزنة وبيانات الدخول فيها في حساب Proton.",
   "connector.protonPass.disconnect": "قطع الاتصال",
-  "connector.protonPass.actionFailed": "تعذّر على OpenBot تغيير اتصال Proton Pass.",
+  "connector.protonPass.actionFailed": "تعذّر على OpenBot-NC تغيير اتصال Proton Pass.",
 } as const satisfies PartialTranslation<typeof source>;

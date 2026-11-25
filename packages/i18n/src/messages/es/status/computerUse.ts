@@ -8,9 +8,9 @@ export const messages = {
   "status.computerUse.driverNoAnswer": "El controlador de uso del equipo no respondió. {reason}",
   "status.computerUse.driverStopped": "El controlador de uso del equipo se detuvo.",
   "status.computerUse.unsupported": "El uso del equipo está disponible en macOS, Windows y Linux.",
-  "status.computerUse.driverMissing": "Esta versión de OpenBot no incluye un controlador de uso del equipo.",
+  "status.computerUse.driverMissing": "Esta versión de OpenBot-NC no incluye un controlador de uso del equipo.",
   "status.computerUse.inputRefused":
-    "En este escritorio, OpenBot no puede escribir ni hacer clic en otras apps. Para tareas en sitios web, pide al agente que use el navegador de OpenBot.",
+    "En este escritorio, OpenBot-NC no puede escribir ni hacer clic en otras apps. Para tareas en sitios web, pide al agente que use el navegador de OpenBot-NC.",
   "status.computerUse.progressActing": "Usando una aplicación de este equipo…",
   "status.computerUse.progressDeciding": "Decidiendo el siguiente paso en la aplicación…",
 } as const satisfies PartialTranslation<typeof source>;

@@ -4,9 +4,9 @@ import type { messages as source } from "../en/vault";
 export const messages = {
   "vault.items.title": "Opgeslagen items",
   "vault.items.description":
-    "Elke agent op deze server kan deze items gebruiken. OpenBot typt wachtwoorden, kaartnummers en beveiligingscodes zelf in de pagina, zodat agents ze nooit zien. Agents lezen API-sleutels uit een bestand, niet uit de chat.",
+    "Elke agent op deze server kan deze items gebruiken. OpenBot-NC typt wachtwoorden, kaartnummers en beveiligingscodes zelf in de pagina, zodat agents ze nooit zien. Agents lezen API-sleutels uit een bestand, niet uit de chat.",
   "vault.items.scopedDescription":
-    "Elk item is voor de agents die je kiest. OpenBot typt wachtwoorden, kaartnummers en beveiligingscodes zelf in de pagina, zodat agents ze nooit zien. Agents lezen API-sleutels uit een bestand, niet uit de chat. Alle agents draaien als dezelfde systeemgebruiker, dus een agent kan ook een API-sleutelbestand lezen dat voor andere agents is.",
+    "Elk item is voor de agents die je kiest. OpenBot-NC typt wachtwoorden, kaartnummers en beveiligingscodes zelf in de pagina, zodat agents ze nooit zien. Agents lezen API-sleutels uit een bestand, niet uit de chat. Alle agents draaien als dezelfde systeemgebruiker, dus een agent kan ook een API-sleutelbestand lezen dat voor andere agents is.",
   "vault.agents.label": "Agents",
   "vault.agents.all": "Alle agents",
   "vault.agents.some": "{chosen} van {total}",
@@ -89,18 +89,19 @@ export const messages = {
   "vault.importMenu": "Importeren uit CSV",
   "vault.importTitle": "Importeren uit een CSV-bestand",
   "vault.importDescription":
-    "Importeer logins uit een CSV-bestand dat 1Password, Bitwarden, Chrome, Edge, Firefox, Safari, Apple Wachtwoorden, LastPass of Proton Pass exporteert. OpenBot leest het bestand op deze computer en uploadt het niet.",
+    "Importeer logins uit een CSV-bestand dat 1Password, Bitwarden, Chrome, Edge, Firefox, Safari, Apple Wachtwoorden, LastPass of Proton Pass exporteert. OpenBot-NC leest het bestand op deze computer en uploadt het niet.",
   "vault.importChoose": "CSV-bestand kiezen",
   "vault.importDone": "Geïmporteerd: {imported}. Overgeslagen: {skipped}.",
   "vault.unavailableTitle": "Deze computer kan geen geheimen bewaren",
   "vault.unavailableDescription":
-    "OpenBot versleutelt de kluis met de geheimenopslag van het systeem. Stel een sleutelhanger in en open deze pagina daarna opnieuw.",
-  "vault.unreadableTitle": "OpenBot kan de kluis niet lezen",
+    "OpenBot-NC versleutelt de kluis met de geheimenopslag van het systeem. Stel een sleutelhanger in en open deze pagina daarna opnieuw.",
+  "vault.unreadableTitle": "OpenBot-NC kan de kluis niet lezen",
   "vault.unreadableDescription":
-    "Het kluisbestand staat op deze computer, maar OpenBot kan het niet ontsleutelen. Dit kan gebeuren als de sleutelhanger van het systeem verandert. Reset de kluis om opnieuw te beginnen zonder items.",
+    "Het kluisbestand staat op deze computer, maar OpenBot-NC kan het niet ontsleutelen. Dit kan gebeuren als de sleutelhanger van het systeem verandert. Reset de kluis om opnieuw te beginnen zonder items.",
   "vault.reset": "Kluis resetten",
   "vault.resetTitle": "De kluis resetten?",
-  "vault.resetDescription": "OpenBot verwijdert het kluisbestand en alle items erin. Je kunt dit niet ongedaan maken.",
+  "vault.resetDescription":
+    "OpenBot-NC verwijdert het kluisbestand en alle items erin. Je kunt dit niet ongedaan maken.",
   "vault.request.private": "Gaat naar je Kluis. {agent} ziet het nooit.",
   "vault.request.privateUnnamed": "Gaat naar je Kluis. De agent ziet het nooit.",
   "vault.request.addLogin": "Login toevoegen",
@@ -120,7 +121,7 @@ export const messages = {
   },
   "vault.twoStep.setupTitle": "Verificatiecode instellen",
   "vault.twoStep.setupIntro":
-    "Zet op {site} verificatie in twee stappen aan met een authenticator-app. Als de site een QR-code toont, geef OpenBot de sleutel.",
+    "Zet op {site} verificatie in twee stappen aan met een authenticator-app. Als de site een QR-code toont, geef OpenBot-NC de sleutel.",
   "vault.twoStep.keyLabel": "Instelsleutel of otpauth://-link",
   "vault.twoStep.keyHint":
     "De meeste sites tonen hem onder de QR-code, als “Kun je niet scannen?” of “Sleutel handmatig invoeren”.",

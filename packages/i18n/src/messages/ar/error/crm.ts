@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "لا يدعم هذا الخادم CRM. حدّث OpenBot على الحاسوب الذي يشغّله.",
+  "error.crm.serverTooOld": "لا يدعم هذا الخادم CRM. حدّث OpenBot-NC على الحاسوب الذي يشغّله.",
   "error.crm.tooLargeToSend": "صفحة CRM هذه كبيرة جدًا لإرسالها إلى هذا التطبيق.",
   "error.crm.customerMissing": "لم يعد هذا العميل موجودًا.",
   "error.crm.planMissing": "لم تعد هذه الخطة موجودة.",
@@ -36,9 +36,9 @@ export const messages = {
   "error.crm.sourcePermission":
     "لا يستطيع هذا المفتاح قراءة العملاء والفواتير والاشتراكات والأحداث والمنتجات. امنحه صلاحية القراءة عليها.",
   "error.crm.sourceRateLimited": "تلقى Stripe طلبات كثيرة جدًا. حاول مرة أخرى بعد دقيقة.",
-  "error.crm.sourceNetwork": "لا يستطيع OpenBot الاتصال بـ Stripe. تحقق من اتصال الإنترنت.",
-  "error.crm.sourceFailed": "أرسل Stripe ردًا لا يستطيع OpenBot قراءته. حاول مرة أخرى لاحقًا.",
-  "error.crm.sourceKeySaveFailed": "لا يستطيع OpenBot حفظ مفتاح Stripe على هذا الكمبيوتر.",
+  "error.crm.sourceNetwork": "لا يستطيع OpenBot-NC الاتصال بـ Stripe. تحقق من اتصال الإنترنت.",
+  "error.crm.sourceFailed": "أرسل Stripe ردًا لا يستطيع OpenBot-NC قراءته. حاول مرة أخرى لاحقًا.",
+  "error.crm.sourceKeySaveFailed": "لا يستطيع OpenBot-NC حفظ مفتاح Stripe على هذا الكمبيوتر.",
   "error.crm.off": "CRM متوقف. يمكن للمالك أو المسؤول تشغيله من إعدادات الخادم > تجريبي.",
-  "error.crm.settingsSaveFailed": "لا يستطيع OpenBot حفظ إعداد CRM على هذا الخادم.",
+  "error.crm.settingsSaveFailed": "لا يستطيع OpenBot-NC حفظ إعداد CRM على هذا الخادم.",
 } as const satisfies PartialTranslation<typeof source>;

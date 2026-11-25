@@ -18,9 +18,9 @@ export const messages = defineMessages("dialog", {
   "dialog.saveExportSkill": "Save the export skill",
   "dialog.saveTransfer": "Save the transfer file",
   "dialog.chooseTransfer": "Choose a transfer file",
-  "dialog.filter.transfer": "OpenBot transfer files",
+  "dialog.filter.transfer": "OpenBot-NC transfer files",
   "dialog.saveWorkflow": "Save the workflow file",
-  "dialog.filter.workflow": "OpenBot workflow files",
+  "dialog.filter.workflow": "OpenBot-NC workflow files",
   "dialog.chooseExternalLinkApp": "Choose a browser",
   "dialog.filter.applications": "Applications",
 });

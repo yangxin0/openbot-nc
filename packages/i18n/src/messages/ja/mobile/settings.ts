@@ -8,16 +8,16 @@ export const messages = {
   "mobile.settings.language.system": "システムの設定",
   "mobile.settings.language.footer":
     "「システムの設定」は、スマートフォンの設定で最初に表示される言語に従います。まだ翻訳されていないテキストは英語で表示されます。",
-  "mobile.settings.language.restartTitle": "OpenBot を再起動しますか？",
+  "mobile.settings.language.restartTitle": "OpenBot-NC を再起動しますか？",
   "mobile.settings.language.restartBody":
-    "この言語は逆方向に読みます。OpenBot を次に起動したときに画面の向きが切り替わります。再起動後も画面がおかしい場合は、App スイッチャーで OpenBot を閉じてから開き直してください。",
+    "この言語は逆方向に読みます。OpenBot-NC を次に起動したときに画面の向きが切り替わります。再起動後も画面がおかしい場合は、App スイッチャーで OpenBot-NC を閉じてから開き直してください。",
   "mobile.settings.language.restartNow": "今すぐ再起動",
   "mobile.settings.language.restartFailed":
-    "OpenBot を再起動できませんでした。次に OpenBot を開いたときに画面の向きが切り替わります。",
+    "OpenBot-NC を再起動できませんでした。次に OpenBot-NC を開いたときに画面の向きが切り替わります。",
   "mobile.settings.dictation.language": "音声入力の言語",
   "mobile.settings.about.development": "開発版",
   "mobile.settings.home.preferences": "環境設定",
-  "mobile.settings.home.about": "OpenBot について",
+  "mobile.settings.home.about": "OpenBot-NC について",
   "mobile.settings.support.log": "サポートログ",
   "mobile.settings.support.show": "ログを表示",
   "mobile.settings.support.save": "ログファイルを保存",
@@ -204,7 +204,7 @@ export const messages = {
   "mobile.settings.voice.supertonic.male": "男性の声 {number}",
   "mobile.settings.voice.elevenLabs.title": "ElevenLabs",
   "mobile.settings.voice.elevenLabs.footer":
-    "OpenBot はあなたのキーで各返信のテキストを ElevenLabs に送信し、料金はあなたのアカウントに請求されます。キーはこのスマートフォンのキーチェーンに保存されます。",
+    "OpenBot-NC はあなたのキーで各返信のテキストを ElevenLabs に送信し、料金はあなたのアカウントに請求されます。キーはこのスマートフォンのキーチェーンに保存されます。",
   "mobile.settings.voice.elevenLabs.key": "API キー",
   "mobile.settings.voice.elevenLabs.keySaved": "このスマートフォンに保存済み",
   "mobile.settings.voice.elevenLabs.chooseVoice": "声を選択",
@@ -214,7 +214,7 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.removeBody": "Supertonic 3 が再び返信を読み上げます。",
   "mobile.settings.voice.elevenLabs.saveKey": "キーを保存",
   "mobile.settings.voice.elevenLabs.testing": "キーを確認中",
-  "mobile.settings.voice.elevenLabs.keyHint": "OpenBot は保存前に最初の 2 つの権限を確認します。",
+  "mobile.settings.voice.elevenLabs.keyHint": "OpenBot-NC は保存前に最初の 2 つの権限を確認します。",
   "mobile.settings.voice.elevenLabs.testFailed": "ElevenLabs から応答がありません。もう一度お試しください。",
   "mobile.settings.voice.elevenLabs.refused": "ElevenLabs がリクエストを拒否しました: {reason}",
   "mobile.settings.voice.elevenLabs.getKey": "API キーを取得",
@@ -268,16 +268,16 @@ export const messages = {
   "mobile.settings.voice.pause.title": "送信までの間",
   "mobile.settings.voice.pause.label": "新しい言葉を待つ時間",
   "mobile.settings.voice.pause.footer":
-    "音声会話では、この長さだけ新しい言葉を認識しないと OpenBot が言葉を送信します。言葉のない雑音では聞き取りは続きません。ゆっくり話す場合や考えるために止まる場合は、長めの間を選んでください。",
+    "音声会話では、この長さだけ新しい言葉を認識しないと OpenBot-NC が言葉を送信します。言葉のない雑音では聞き取りは続きません。ゆっくり話す場合や考えるために止まる場合は、長めの間を選んでください。",
   "mobile.settings.voice.pause.seconds": "{seconds} 秒",
   "mobile.settings.voice.speed.title": "返信の速度",
-  "mobile.settings.voice.speed.footer": "OpenBot が読み上げる返信の速度です。音声会話にも適用されます。",
+  "mobile.settings.voice.speed.footer": "OpenBot-NC が読み上げる返信の速度です。音声会話にも適用されます。",
   "mobile.settings.voice.speed.value": "{speed}×",
   "mobile.settings.voice.server.title": "音声サーバー",
   "mobile.settings.voice.server.row": "OpenAI 互換サーバー",
   "mobile.settings.voice.server.notSetUp": "未設定",
   "mobile.settings.voice.server.footer":
-    "デスクトップと同じく、Speaches や Kokoro-FastAPI など、OpenAI の /v1/audio ルートを持つ自分のサーバーです。OpenBot は録音と返信のテキストをそのアドレスにだけ送ります。同じネットワークなど、電話からそのアドレスに接続できる必要があります。",
+    "デスクトップと同じく、Speaches や Kokoro-FastAPI など、OpenAI の /v1/audio ルートを持つ自分のサーバーです。OpenBot-NC は録音と返信のテキストをそのアドレスにだけ送ります。同じネットワークなど、電話からそのアドレスに接続できる必要があります。",
   "mobile.settings.voice.server.choice": "自分の音声サーバー",
   "mobile.settings.voice.server.dictationReady": "音声サーバー · {model}",
   "mobile.settings.voice.server.dictationOff": "音声サーバーで音声入力を設定してください",
@@ -302,7 +302,7 @@ export const messages = {
     "サーバーが聞き取りや読み上げをしていた所は、電話の音声認識と Supertonic 3 が引き継ぎます。API キーはこの電話から削除されます。",
   "mobile.settings.voice.server.removeFailed": "音声サーバーを削除できませんでした。",
   "mobile.settings.voice.elevenLabs.recognitionFooter":
-    "OpenBot は 1 回限りのトークンで音声を ElevenLabs にストリーミングし、料金は ElevenLabs のアカウントに請求されます。キーはこの端末に保存されます。",
+    "OpenBot-NC は 1 回限りのトークンで音声を ElevenLabs にストリーミングし、料金は ElevenLabs のアカウントに請求されます。キーはこの端末に保存されます。",
   "mobile.settings.voice.elevenLabs.model.title": "モデル",
   "mobile.settings.voice.elevenLabs.model.footer":
     "ElevenLabs ではモデルごとに料金が異なります。変更は次の返信から適用されます。",
@@ -335,9 +335,9 @@ export const messages = {
     "新しいメッセージはキューに入らず、エージェントの現在の作業に加わります。対応していないエージェントでは、キューで待機します。",
   "mobile.settings.agents.planCardFooter": "長いタスクの前に、エージェントが計画を表示します。",
   "mobile.settings.agents.commitSection": "Git コミット",
-  "mobile.settings.agents.commitCoAuthor": "コミットに OpenBot を記載",
+  "mobile.settings.agents.commitCoAuthor": "コミットに OpenBot-NC を記載",
   "mobile.settings.agents.commitCoAuthorFooter":
-    "エージェントが作成するコミットに OpenBot を共同作成者として追加します。作成者はあなたのままです。",
+    "エージェントが作成するコミットに OpenBot-NC を共同作成者として追加します。作成者はあなたのままです。",
   "mobile.settings.agents.planStart.title": "作業の開始",
   "mobile.settings.agents.planStart.wait": "開始を押したとき",
   "mobile.settings.agents.planStart.after": "{time}後",
@@ -353,7 +353,7 @@ export const messages = {
     "ローカルスクリプトが1時間に各エージェントへ送れるメッセージとルーティン実行の上限です。このサーバーのすべてのエージェントに適用されます。",
   "mobile.settings.agents.processes.title": "バックグラウンドプロセス",
   "mobile.settings.agents.processes.description":
-    "エージェントが起動して実行したままにしたプログラム（開発サーバーなど）です。チャットが終わっても、OpenBot を終了しても動き続けます。",
+    "エージェントが起動して実行したままにしたプログラム（開発サーバーなど）です。チャットが終わっても、OpenBot-NC を終了しても動き続けます。",
   "mobile.settings.agents.processes.empty": "実行中のエージェントのプログラムはありません。",
   "mobile.settings.agents.processes.loadFailed": "バックグラウンドプロセスを読み込めませんでした。",
   "mobile.settings.agents.processes.noAgent": "エージェントなし",
@@ -365,7 +365,7 @@ export const messages = {
   "mobile.settings.agents.processes.stopLabel": "プロセス {pid} を停止",
   "mobile.settings.quickActions.title": "アプリアイコンのメニュー",
   "mobile.settings.quickActions.footer":
-    "OpenBotのアイコンを長押しすると、これらの操作が表示されます。最大{count}個までオンにできます。",
+    "OpenBot-NCのアイコンを長押しすると、これらの操作が表示されます。最大{count}個までオンにできます。",
   "mobile.settings.quickActions.latestChat": "最新のチャット",
   "mobile.settings.quickActions.secondChat": "2番目に新しいチャット",
 } as const satisfies PartialTranslation<typeof source>;

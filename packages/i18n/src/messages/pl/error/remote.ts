@@ -7,7 +7,7 @@ export const messages = {
   "error.remote.invalidData": "Host zwrócił nieprawidłowe dane.",
   "error.remote.unsafeData": "Host zwrócił dane, których ta aplikacja nie może bezpiecznie użyć.",
   "error.remote.requestFailedStatus": "Żądanie do zdalnego serwera nie powiodło się ({status}).",
-  "error.remote.appUpdateRequired": "Zaktualizuj tę aplikację OpenBot, zanim połączysz się z hostem.",
+  "error.remote.appUpdateRequired": "Zaktualizuj tę aplikację OpenBot-NC, zanim połączysz się z hostem.",
   "error.remote.identityNotVerified": "Nie udało się zweryfikować tożsamości serwera.",
   "error.remote.invalidCompatibility": "Host zwrócił nieprawidłowe informacje o zgodności.",
   "error.remote.serverListUnreadable": "Lista zdalnych serwerów ma format, którego ta wersja nie może odczytać.",
@@ -22,12 +22,12 @@ export const messages = {
   "error.remote.localServerRemove": "Nie można usunąć lokalnego serwera.",
   "error.remote.viewerProxyUnavailable": "Lokalny serwer proxy zdalnego podglądu jest niedostępny.",
   "error.remote.hostKeyMissing":
-    "OpenBot nie może zweryfikować tego serwera, ponieważ brakuje jego klucza bezpieczeństwa lub klucz się zmienił. Poproś właściciela serwera o sprawdzenie serwera.",
+    "OpenBot-NC nie może zweryfikować tego serwera, ponieważ brakuje jego klucza bezpieczeństwa lub klucz się zmienił. Poproś właściciela serwera o sprawdzenie serwera.",
   "error.remote.connectionNotStarted":
-    "OpenBot nie mógł nawiązać połączenia z tym serwerem. Jeśli problem się powtarza, zamknij OpenBot i otwórz go ponownie.",
+    "OpenBot-NC nie mógł nawiązać połączenia z tym serwerem. Jeśli problem się powtarza, zamknij OpenBot-NC i otwórz go ponownie.",
   "error.remote.connectionServiceUnreachable":
-    "Ten komputer nie może połączyć się z usługą połączeń OpenBot. Sprawdź jego połączenie z internetem. OpenBot połączy się ponownie automatycznie.",
-  "error.remote.serverAnswerTimeout": "Serwer nie odpowiedział na czas. OpenBot połączy się ponownie automatycznie.",
+    "Ten komputer nie może połączyć się z usługą połączeń OpenBot-NC. Sprawdź jego połączenie z internetem. OpenBot-NC połączy się ponownie automatycznie.",
+  "error.remote.serverAnswerTimeout": "Serwer nie odpowiedział na czas. OpenBot-NC połączy się ponownie automatycznie.",
   "error.remote.connectionCancelled": "Zdalne połączenie zostało anulowane.",
   "error.remote.fileTransportIsStopped": "Transport plików WebRTC jest zatrzymany.",
   "error.remote.fileTooLarge": "Plik jest większy niż 100 MB.",
@@ -88,14 +88,14 @@ export const messages = {
   "error.remote.signalInvalidMessage": "Signal zwrócił nieprawidłową wiadomość.",
   "error.remote.sessionInvalid": "Zdalna sesja jest nieprawidłowa.",
   "error.remote.ticketInvalid": "Bilet połączenia jest nieprawidłowy.",
-  "error.remote.mobileUpdateRequired": "Zaktualizuj OpenBot Mobile lub aplikację desktopową przed połączeniem.",
+  "error.remote.mobileUpdateRequired": "Zaktualizuj OpenBot-NC Mobile lub aplikację desktopową przed połączeniem.",
   "error.remote.connectionStepFailed": "Nie udało się ukończyć tego kroku połączenia.",
   "error.remote.dataChannelFailed": "Kanał {kind} uległ awarii.",
   "error.remote.hostBusy": "Host obsługuje inne połączenie. Spróbuj ponownie za chwilę.",
   "error.remote.signalPermissionDenied": "Twoje konto nie ma dostępu do tego hosta. Poproś właściciela o dostęp.",
-  "error.remote.signalRateLimited": "Zbyt wiele prób połączenia. OpenBot spróbuje ponownie za {seconds} s.",
+  "error.remote.signalRateLimited": "Zbyt wiele prób połączenia. OpenBot-NC spróbuje ponownie za {seconds} s.",
   "error.remote.signalProtocolError":
-    "Signal i ta aplikacja nie zgadzają się co do protokołu połączenia. Zaktualizuj OpenBot, a następnie spróbuj ponownie.",
+    "Signal i ta aplikacja nie zgadzają się co do protokołu połączenia. Zaktualizuj OpenBot-NC, a następnie spróbuj ponownie.",
   "error.remote.signalRefused": "Signal odrzucił połączenie.",
   "error.remote.signalClosed": "Połączenie z Signal zamknęło się, zanim host odpowiedział.",
   "error.remote.relayUnavailable":
@@ -103,18 +103,18 @@ export const messages = {
   "error.remote.iceFailed":
     "Nie udało się nawiązać bezpośredniego połączenia z hostem. Może je blokować zapora, VPN lub serwer proxy.",
   "error.remote.iceDisconnected": "Bezpośrednie połączenie z hostem zostało utracone.",
-  "error.remote.directoryUnreachable": "OpenBot nie mógł połączyć się z usługą OpenBot. Sprawdź połączenie.",
-  "error.remote.directoryTimeout": "Usługa OpenBot nie odpowiedziała na czas. Spróbuj ponownie.",
+  "error.remote.directoryUnreachable": "OpenBot-NC nie mógł połączyć się z usługą OpenBot-NC. Sprawdź połączenie.",
+  "error.remote.directoryTimeout": "Usługa OpenBot-NC nie odpowiedziała na czas. Spróbuj ponownie.",
   "error.remote.inviteAlreadyUsed": "To zaproszenie zostało już użyte. Poproś o nowe zaproszenie.",
   "error.remote.inviteNotFound": "To zaproszenie nie istnieje lub wygasło. Poproś o nowe zaproszenie.",
   "error.remote.licenseUsersFull":
     "Licencja właściciela serwera nie ma wolnego użytkownika. Poproś właściciela o dodanie użytkownika do licencji.",
   "error.remote.memberLimitReached": "Ten host osiągnął limit członków. Poproś właściciela o zwolnienie miejsca.",
-  "error.remote.hostNotRegistered": "Ten host nie jest już zarejestrowany w usłudze OpenBot.",
+  "error.remote.hostNotRegistered": "Ten host nie jest już zarejestrowany w usłudze OpenBot-NC.",
   "error.remote.membershipEnded": "Nie jesteś już członkiem tego hosta. Poproś właściciela o nowe zaproszenie.",
   "error.remote.accountSessionInactive": "Twoje logowanie nie jest już aktywne. Zaloguj się ponownie.",
   "error.remote.hostOtherAccount": "Ten host należy do innego konta.",
-  "error.remote.remoteNotConfigured": "Zdalne połączenia nie są skonfigurowane w tej usłudze OpenBot.",
+  "error.remote.remoteNotConfigured": "Zdalne połączenia nie są skonfigurowane w tej usłudze OpenBot-NC.",
   "error.remote.hostRefused": "Host odrzucił żądanie ({status}).",
   "error.remote.formUnavailable": "Ten formularz nie jest już dostępny.",
   "error.remote.channelsUnsupported": "Zaktualizuj ten serwer desktopowy, aby używać kanałów.",
@@ -123,5 +123,5 @@ export const messages = {
   "error.remote.taskHistoryRefreshFailed": "Zadanie zostało zmienione, ale nie udało się odświeżyć historii czatu.",
   "error.remote.serverNotLoaded": "Nie udało się wczytać serwera. Spróbuj ponownie.",
   "error.remote.localServerNotStarted":
-    "Serwer na tym komputerze się nie uruchomił. Spróbuj ponownie. Jeśli nadal się nie uruchamia, uruchom ponownie OpenBot na tym komputerze.",
+    "Serwer na tym komputerze się nie uruchomił. Spróbuj ponownie. Jeśli nadal się nie uruchamia, uruchom ponownie OpenBot-NC na tym komputerze.",
 } as const satisfies PartialTranslation<typeof source>;

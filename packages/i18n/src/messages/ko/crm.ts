@@ -320,7 +320,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "{source}에서 키 만들기",
   "crm.source.stripeKeyHelp":
-    "Stripe에 읽기 전용 키가 준비된 상태로 열려요. 키를 만든 다음 복사해서 여기에 붙여 넣으세요. OpenBot은 Stripe에서 읽기만 해요.",
+    "Stripe에 읽기 전용 키가 준비된 상태로 열려요. 키를 만든 다음 복사해서 여기에 붙여 넣으세요. OpenBot-NC는 Stripe에서 읽기만 해요.",
   "crm.source.connect": "연결",
   "crm.source.account": "계정",
   "crm.source.testMode": "테스트 모드",
@@ -334,8 +334,8 @@ export const messages = {
   "crm.source.errorPermission":
     "이 키로는 동기화에 필요한 모든 데이터를 읽을 수 없어요. {source}에서 읽기 권한을 주세요.",
   "crm.source.errorRateLimited": "{source}에 요청이 너무 많았어요. 다음 동기화에서 다시 시도해요.",
-  "crm.source.errorNetwork": "OpenBot이 {source}에 연결할 수 없어요. 다음 동기화에서 다시 시도해요.",
-  "crm.source.errorFailed": "{source}에서 OpenBot이 읽을 수 없는 응답을 보냈어요. 다음 동기화에서 다시 시도해요.",
+  "crm.source.errorNetwork": "OpenBot-NC가 {source}에 연결할 수 없어요. 다음 동기화에서 다시 시도해요.",
+  "crm.source.errorFailed": "{source}에서 OpenBot-NC가 읽을 수 없는 응답을 보냈어요. 다음 동기화에서 다시 시도해요.",
   "crm.source.skipped": "가져오지 않음",
   "crm.source.skippedCurrency": "다른 통화: {rows}",
   "crm.source.skippedInterval": "다른 청구 주기: {rows}",
@@ -346,5 +346,5 @@ export const messages = {
   "crm.connectors.synced": "{time} 동기화됨",
   "crm.source.disconnect": "연결 해제",
   "crm.source.disconnectTitle": "{source} 연결을 해제할까요?",
-  "crm.source.disconnectBody": "OpenBot이 동기화를 멈추고 키를 삭제해요. 가져온 행은 그대로 남고, 변경할 수 있어요.",
+  "crm.source.disconnectBody": "OpenBot-NC가 동기화를 멈추고 키를 삭제해요. 가져온 행은 그대로 남고, 변경할 수 있어요.",
 } as const satisfies PartialTranslation<typeof source>;

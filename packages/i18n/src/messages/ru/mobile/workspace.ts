@@ -15,7 +15,8 @@ export const messages = {
   "mobile.workspace.error.transportNotReady": "Мобильный транспорт не готов.",
   "mobile.workspace.error.sectionsUnsupported": "Этот хост не поддерживает изменение папок.",
   "mobile.workspace.error.agentNotOnHost": "Агента нет на этом хосте.",
-  "mobile.workspace.error.filesUnsupported": "Этот хост не поддерживает управление файлами. Обновите OpenBot на хосте.",
+  "mobile.workspace.error.filesUnsupported":
+    "Этот хост не поддерживает управление файлами. Обновите OpenBot-NC на хосте.",
   "mobile.workspace.error.agentUnavailableOnHost": "Агент недоступен на этом хосте.",
   "mobile.workspace.error.agentUnavailable": "Агент недоступен.",
   "mobile.workspace.error.formUnavailable": "Эта форма больше недоступна.",

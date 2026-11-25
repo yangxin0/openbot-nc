@@ -84,7 +84,7 @@ export const messages = {
     "「{name}」をディスクから削除します。このファイルを表示するメッセージは、ファイルなしでチャットに残ります。",
   "mobile.agent.files.keep": "残す",
   "mobile.agent.files.deleteFailed": "ファイルを削除できませんでした",
-  "mobile.agent.files.deleteFailedBody": "OpenBot はこのファイルを削除できませんでした。",
+  "mobile.agent.files.deleteFailedBody": "OpenBot-NC はこのファイルを削除できませんでした。",
   "mobile.agent.files.downloading": "ダウンロード中…",
   "mobile.agent.files.removeNamed": "{name} を一覧から外す",
   "mobile.agent.files.deleteNamed": "{name} を削除",
@@ -135,13 +135,14 @@ export const messages = {
   "mobile.agent.info.addMemory": "メモリーを追加",
   "mobile.agent.info.noRoutines": "ルーティンはまだありません。",
   "mobile.agent.info.addRoutine": "ルーティンを追加",
-  "mobile.agent.info.skillsUnsupported": "このホストはスキルに対応していません。ホストの OpenBot を更新してください。",
+  "mobile.agent.info.skillsUnsupported":
+    "このホストはスキルに対応していません。ホストの OpenBot-NC を更新してください。",
   "mobile.agent.info.noSkills": "スキルはまだありません。",
   "mobile.agent.info.skillsManaged": "このエージェントのスキルはホストで管理されています。",
   "mobile.agent.info.skillsAddOnComputer":
-    "+ を使うと、このエージェントとスキルを作成できます。マーケットプレイスのスキルは、コンピューターの OpenBot か Web アプリで追加します。",
+    "+ を使うと、このエージェントとスキルを作成できます。マーケットプレイスのスキルは、コンピューターの OpenBot-NC か Web アプリで追加します。",
   "mobile.agent.info.filesUnsupported":
-    "このホストはファイル管理に対応していません。ホストの OpenBot を更新してください。",
+    "このホストはファイル管理に対応していません。ホストの OpenBot-NC を更新してください。",
   "mobile.agent.info.memoryGone": "このメモリーは利用できなくなりました。",
   "mobile.agent.info.routineGone": "このルーティンは利用できなくなりました。",
   "mobile.agent.skill.workspaceFolder": "ワークスペースのフォルダー",
@@ -153,14 +154,15 @@ export const messages = {
   "mobile.agent.skill.uninstall": "アンインストール",
   "mobile.agent.skill.uninstallNamed": "{name} をアンインストール",
   "mobile.agent.skill.uninstallTitle": "{name} をアンインストールしますか？",
-  "mobile.agent.skill.uninstallBody": "OpenBot はこのスキルをエージェントから削除します。チャット履歴は残ります。",
+  "mobile.agent.skill.uninstallBody": "OpenBot-NC はこのスキルをエージェントから削除します。チャット履歴は残ります。",
   "mobile.agent.skill.uninstallModifiedBody":
     "このスキルにはエージェントのワークスペースでのローカルな変更があります。アンインストールするとそれらのファイルは削除されます。チャット履歴は残ります。",
   "mobile.agent.skill.uninstalling": "アンインストール中…",
   "mobile.agent.skill.uninstallFailed": "{name} をアンインストールできませんでした。",
   "mobile.agent.skill.enableFailed": "{name} を有効にできませんでした。",
   "mobile.agent.skill.disableFailed": "{name} を無効にできませんでした。",
-  "mobile.agent.skill.manageUnsupported": "このホストではスキルを変更できません。ホストの OpenBot を更新してください。",
+  "mobile.agent.skill.manageUnsupported":
+    "このホストではスキルを変更できません。ホストの OpenBot-NC を更新してください。",
   "mobile.agent.discard.title": "変更を破棄しますか？",
   "mobile.agent.discard.body": "変更は保存されていません。",
   "mobile.agent.discard.keepEditing": "編集を続ける",
@@ -199,7 +201,7 @@ export const messages = {
   "mobile.agent.record.addEventFilter": "フィルターを追加",
   "mobile.agent.record.removeEventFilter": "フィルターを削除",
   "mobile.agent.record.eventsUnsupported":
-    "このホストはイベントのルーティンに対応していません。ホストの OpenBot を更新してください。",
+    "このホストはイベントのルーティンに対応していません。ホストの OpenBot-NC を更新してください。",
   "mobile.agent.webhook.url": "エンドポイント",
   "mobile.agent.webhook.urlNew": "エンドポイントと署名シークレットを取得するには、ルーティンを保存してください。",
   "mobile.agent.webhook.urlPending":
@@ -277,7 +279,7 @@ export const messages = {
   "mobile.agent.record.resultDestination.createFailed":
     "ルーティンは保存されましたが、メッセージの送信先は保存されていません。ルーティンを開いて送信先をもう一度選んでください。",
   "mobile.agent.record.resultDestinationUnsupported":
-    "このホストはルーティンの回答をメッセージの送信先に送れません。ホストの OpenBot を更新してください。",
+    "このホストはルーティンの回答をメッセージの送信先に送れません。ホストの OpenBot-NC を更新してください。",
   "mobile.agent.record.enabled": "有効",
   "mobile.agent.record.routine": "ルーティン",
   "mobile.agent.record.testStarting": "開始中…",
@@ -293,7 +295,7 @@ export const messages = {
   "mobile.agent.permissions.title": "権限",
   "mobile.agent.advanced.title": "詳細設定",
   "mobile.agent.runtime.unavailable": "利用できません",
-  "mobile.agent.runtime.updateToUse": "{name} を使うには OpenBot を更新してください",
+  "mobile.agent.runtime.updateToUse": "{name} を使うには OpenBot-NC を更新してください",
   "mobile.agent.runtime.hostDefault": "ホストの既定",
   "mobile.agent.runtime.provider": "プロバイダー",
   "mobile.agent.runtime.account": "アカウント",
@@ -332,7 +334,7 @@ export const messages = {
     "このホストでは Turbo モードがオンのため、すべてのエージェントが自動承認します。",
   "mobile.agent.access.workspaceNote": "エージェントは、ホスト上のワークスペースと共有フォルダーで作業します。",
   "mobile.agent.access.askNote":
-    "エージェントは、OpenBot のツールを使う前、サイトを公開する前、およびプロバイダーが承認を求めたときに確認します。",
+    "エージェントは、OpenBot-NC のツールを使う前、サイトを公開する前、およびプロバイダーが承認を求めたときに確認します。",
   "mobile.agent.access.fullNote": "エージェントは、あなたへの質問を除き、確認せずに操作します。",
   "mobile.agent.access.fullTitle": "このエージェントにフルアクセスを許可しますか？",
   "mobile.agent.access.askTitle": "このエージェントにワークスペースの外での作業を許可しますか？",
@@ -397,11 +399,11 @@ export const messages = {
     "各プロファイルは独自のサインインと Cookie を保持します。変更するとエージェントの開いているタブは閉じます。",
   "mobile.agent.browserProfile.movedNote":
     "サイトへのサインインは古いプロファイルに残ります。エージェントはこれらのサイトに再度サインインする必要があります。",
-  "mobile.agent.browserProfile.saveFailed": "OpenBot はエージェントのブラウザープロファイルを変更できませんでした。",
+  "mobile.agent.browserProfile.saveFailed": "OpenBot-NC はエージェントのブラウザープロファイルを変更できませんでした。",
   "mobile.agent.planCard.label": "長いタスクの前に計画を表示",
   "mobile.agent.planCard.footer":
     "長いタスクの前に、エージェントが計画を表示します。10 秒後、または開始を押すと始まります。",
-  "mobile.agent.builtinMemory.label": "OpenBot のメモリー",
+  "mobile.agent.builtinMemory.label": "OpenBot-NC のメモリー",
   "mobile.agent.builtinMemory.footer":
     "エージェントが自分のメモリーを保存して読み込みます。Mem0 などのメモリーアプリだけを使うにはオフにします。保存済みのメモリーは残ります。",
   "mobile.agent.workspace.title": "ワークスペースのフォルダー",
@@ -432,7 +434,7 @@ export const messages = {
     "まだテーブルはありません。タスクでターン間にレコードが必要になると、エージェントが自分で作成します。どのエージェントも使用できます。",
   "mobile.agent.tables.note":
     "このホストのすべてのエージェントがこれらのテーブルを共有します。削除したテーブルは、すべてのエージェントから消えます。",
-  "mobile.agent.tables.madeOutside": "OpenBot の外部で作成 · どのエージェントでも削除できます",
+  "mobile.agent.tables.madeOutside": "OpenBot-NC の外部で作成 · どのエージェントでも削除できます",
   "mobile.agent.tables.keptBy": "{name} が保持",
   "mobile.agent.tables.keptByDeleted": "存在しないエージェントが保持",
   "mobile.agent.tables.notCounted": "未集計",
@@ -442,7 +444,7 @@ export const messages = {
   "mobile.agent.tables.deleteBody": "このテーブルはすべてのエージェントから削除されます。レコードは復元できません。",
   "mobile.agent.tables.keep": "残す",
   "mobile.agent.tables.deleteFailed": "テーブルを削除できませんでした",
-  "mobile.agent.tables.deleteFailedBody": "OpenBot はこのテーブルを削除できませんでした。",
+  "mobile.agent.tables.deleteFailedBody": "OpenBot-NC はこのテーブルを削除できませんでした。",
   "mobile.agent.tables.unsupported": "このホストでは、リモートデバイスにテーブルを表示できません。",
   "mobile.agent.publish.title": "公開",
   "mobile.agent.publish.loading": "読み込んでいます…",
@@ -550,7 +552,7 @@ export const messages = {
   "mobile.agent.list.waiting.state.question": "回答を待っています",
   "mobile.agent.list.waiting.state.approval": "承認を待っています",
   "mobile.agent.list.waiting.state.takeover": "ブラウザーでの操作を待っています",
-  "mobile.agent.add.failed": "OpenBot はこのエージェントを作成できませんでした。",
+  "mobile.agent.add.failed": "OpenBot-NC はこのエージェントを作成できませんでした。",
   "mobile.agent.add.create": "エージェントを作成",
   "mobile.agent.add.creating": "作成中…",
   "mobile.agent.form.name": "名前",
@@ -560,7 +562,7 @@ export const messages = {
   "mobile.agent.add.nameRequired": "このエージェントの名前を入力してください。",
   "mobile.agent.edit.loading": "エージェントを読み込んでいます…",
   "mobile.agent.edit.gone": "このエージェントは、このホストで利用できなくなりました。",
-  "mobile.agent.edit.failed": "OpenBot はこのエージェントを更新できませんでした。",
+  "mobile.agent.edit.failed": "OpenBot-NC はこのエージェントを更新できませんでした。",
   "mobile.agent.edit.appearance": "外観を編集",
   "mobile.agent.edit.title": "タイトル",
   "mobile.agent.edit.titlePlaceholder": "エージェントが行うことを説明してください",
@@ -595,7 +597,7 @@ export const messages = {
   "mobile.agent.home.serversFailedBody": "デスクトップアプリが実行中か確認して、もう一度お試しください。",
   "mobile.agent.home.noServers": "利用できるサーバーはありません",
   "mobile.agent.home.noServersBody":
-    "このアカウントでコンピューターの OpenBot を開き、「サーバーの設定」→「メンバー」で「このサーバーを公開」をオンにしてください。または、リモートサーバーに参加してください。",
+    "このアカウントでコンピューターの OpenBot-NC を開き、「サーバーの設定」→「メンバー」で「このサーバーを公開」をオンにしてください。または、リモートサーバーに参加してください。",
   "mobile.agent.home.chooseServer": "サーバーを選択",
   "mobile.agent.home.openServers": "サーバーを開く",
   "mobile.agent.home.noChatOpen": "チャットが開いていません",
@@ -649,7 +651,7 @@ export const messages = {
   "mobile.agent.folders.inShared": "{folder} は共有フォルダー内にあるため、{agent} はすでに変更できます",
   "mobile.agent.folders.inFolder": "{folder} は追加済みの {parent} 内にあります",
   "mobile.agent.folders.protected":
-    "{folder} は追加できません。OpenBot のデータか他のエージェントのファイルが含まれています",
+    "{folder} は追加できません。OpenBot-NC のデータか他のエージェントのファイルが含まれています",
   "mobile.agent.folders.missing": "{folder} はホストのコンピューター上のフォルダではありません",
   "mobile.agent.folders.limit": { other: "追加できるフォルダーは最大 {count} 個です" },
   "mobile.agent.folders.failed": "フォルダーを変更できませんでした",
@@ -702,7 +704,7 @@ export const messages = {
   "mobile.agent.deleteHistory.footer": "このチャットのメッセージを削除し、エージェントも忘れます。設定は残ります。",
   "mobile.agent.deleteHistory.confirmTitle": "{name} とのチャット履歴を削除しますか？",
   "mobile.agent.deleteHistory.confirmBody":
-    "このチャットのすべてのメッセージとファイルをOpenBotから削除し、エージェントも忘れます。元に戻せません。サイドスレッド、指示、モデル、ツール、メモリー、ワークスペース、ブラウザーは変わりません。",
+    "このチャットのすべてのメッセージとファイルをOpenBot-NCから削除し、エージェントも忘れます。元に戻せません。サイドスレッド、指示、モデル、ツール、メモリー、ワークスペース、ブラウザーは変わりません。",
   "mobile.agent.deleteHistory.confirm": "履歴を削除",
   "mobile.agent.deleteHistory.failed": "履歴を削除できませんでした",
   "mobile.agent.deleteHistory.failedBody": "ホストは履歴を削除できませんでした。",

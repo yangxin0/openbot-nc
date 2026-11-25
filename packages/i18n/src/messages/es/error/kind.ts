@@ -6,9 +6,9 @@ export const messages = {
   "error.kind.timeout":
     "La solicitud tardó demasiado. Comprueba si la acción se completó antes de intentarlo de nuevo.",
   "error.kind.storage":
-    "No hay suficiente espacio de almacenamiento. Libera espacio en el equipo que ejecuta OpenBot e inténtalo de nuevo.",
+    "No hay suficiente espacio de almacenamiento. Libera espacio en el equipo que ejecuta OpenBot-NC e inténtalo de nuevo.",
   "error.kind.filePermission":
-    "OpenBot no tiene permiso para completar esta acción. Comprueba los permisos del archivo o la carpeta e inténtalo de nuevo.",
+    "OpenBot-NC no tiene permiso para completar esta acción. Comprueba los permisos del archivo o la carpeta e inténtalo de nuevo.",
   "error.kind.notFound":
     "No se encontró un archivo o una carpeta necesarios. Restáuralos o elige otros e inténtalo de nuevo.",
   "error.kind.readOnly":
@@ -19,6 +19,6 @@ export const messages = {
   "error.kind.rateLimit": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
   "error.kind.service": "El servicio no está disponible. Espera un momento e inténtalo de nuevo.",
   "error.kind.clock":
-    "No se pudo establecer una conexión segura porque la fecha o la hora del equipo que ejecuta OpenBot probablemente son incorrectas. Corrige la fecha y la hora e inténtalo de nuevo.",
+    "No se pudo establecer una conexión segura porque la fecha o la hora del equipo que ejecuta OpenBot-NC probablemente son incorrectas. Corrige la fecha y la hora e inténtalo de nuevo.",
   "error.kind.interrupted": "La conexión se cerró antes de que terminara la respuesta. Envía tu mensaje de nuevo.",
 } as const satisfies PartialTranslation<typeof source>;

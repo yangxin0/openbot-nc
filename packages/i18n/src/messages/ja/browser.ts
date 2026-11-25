@@ -56,10 +56,10 @@ export const messages = {
   "browser.pip.reattach": "ブラウザーを右のサイドバーに戻す",
   "browser.pip.reattachTitle": "ブラウザーを戻す",
   "browser.pip.close": "ブラウザーのポップアップを閉じる",
-  "browser.pip.reattachFailed": "OpenBot はブラウザーをサイドバーに戻せませんでした。",
-  "browser.pip.closeFailed": "OpenBot はブラウザーのポップアップを閉じられませんでした。",
+  "browser.pip.reattachFailed": "OpenBot-NC はブラウザーをサイドバーに戻せませんでした。",
+  "browser.pip.closeFailed": "OpenBot-NC はブラウザーのポップアップを閉じられませんでした。",
   "browser.window.open": "ブラウザーを新しいウィンドウで開く",
-  "browser.window.openFailed": "OpenBot はブラウザーのウィンドウを開けませんでした。",
+  "browser.window.openFailed": "OpenBot-NC はブラウザーのウィンドウを開けませんでした。",
   "browser.popupBlocked.title": "ポップアップがブロックされました",
   "browser.popupBlocked.dismiss": "ポップアップのメッセージを閉じる",
   "browser.liveView.label": "サーバー上のページのライブビュー",
@@ -96,17 +96,17 @@ export const messages = {
   "browser.secret.failed": "リクエストを完了できませんでした。接続を確認して、もう一度お試しください。",
   "browser.secret.ended": "このサインインのリクエストは終了しました。エージェントにもう一度試すよう依頼してください。",
   "browser.secret.vaultSkip.agentScript":
-    "エージェントがこのページでスクリプトを実行したため、OpenBot は保存したログイン情報を使いませんでした。使うには、ページを再読み込みしてもう一度試すようにエージェントに頼んでください。",
+    "エージェントがこのページでスクリプトを実行したため、OpenBot-NC は保存したログイン情報を使いませんでした。使うには、ページを再読み込みしてもう一度試すようにエージェントに頼んでください。",
   "browser.secret.vaultSkip.fieldKind":
-    "エージェントがページ上の違う欄を選んだため、OpenBot は保存したログイン情報を使いませんでした。",
+    "エージェントがページ上の違う欄を選んだため、OpenBot-NC は保存したログイン情報を使いませんでした。",
   "browser.secret.vaultSkip.loginChoice":
-    "エージェントがこのサイトの保存済みログイン情報を選ばなかったため、OpenBot は保存したログイン情報を使いませんでした。どのアカウントを使うかエージェントに伝えてください。",
+    "エージェントがこのサイトの保存済みログイン情報を選ばなかったため、OpenBot-NC は保存したログイン情報を使いませんでした。どのアカウントを使うかエージェントに伝えてください。",
   "browser.secret.vaultSkip.noPassword":
-    "このサイトのパスワードがないため、OpenBot は保存したログイン情報を使いませんでした。",
+    "このサイトのパスワードがないため、OpenBot-NC は保存したログイン情報を使いませんでした。",
   "browser.secret.vaultSkip.noAuthenticatorKey":
-    "認証アプリのキーがないため、OpenBot は保存したログイン情報を使いませんでした。",
+    "認証アプリのキーがないため、OpenBot-NC は保存したログイン情報を使いませんでした。",
   "browser.secret.vaultSkip.vaultUnreadable":
-    "パスワードマネージャーを読み取れなかったため、OpenBot は保存したログイン情報を使いませんでした。",
+    "パスワードマネージャーを読み取れなかったため、OpenBot-NC は保存したログイン情報を使いませんでした。",
   "browser.error.openAddress": "このタブでアドレスを開けませんでした。",
   "browser.error.channelNoBrowserMember": "このチャンネルでは、新しいタブを開けるメンバーがいません。",
   "browser.error.closeTab": "ブラウザーのタブを閉じられませんでした。",
@@ -163,22 +163,22 @@ export const messages = {
   "browser.signIn.local": "このコンピュータでサインイン",
   "browser.signIn.title": "{site} にサインイン",
   "browser.signIn.description":
-    "一部のサイトはサーバーからのサインインを拒否します。このコンピュータでサインインすると、OpenBot が {site} のサインインを {server} に送信します。{server} のすべてのエージェントとメンバーがブラウザでそれを使用できます。",
+    "一部のサイトはサーバーからのサインインを拒否します。このコンピュータでサインインすると、OpenBot-NC が {site} のサインインを {server} に送信します。{server} のすべてのエージェントとメンバーがブラウザでそれを使用できます。",
   "browser.signIn.windowOpen":
-    "開いたウィンドウでサインインしてください。サインインが完了すると、OpenBot が送信します。ウィンドウが開いたままの場合は、完了を選択してください。",
+    "開いたウィンドウでサインインしてください。サインインが完了すると、OpenBot-NC が送信します。ウィンドウが開いたままの場合は、完了を選択してください。",
   "browser.signIn.windowClosed":
     "サインインウィンドウは閉じています。完了を選択してサインインを送信するか、ウィンドウをもう一度開いてください。",
   "browser.signIn.reopen": "サインインウィンドウを開く",
   "browser.signIn.sending": "{server} に送信中…",
   "browser.signIn.sent": "{server} で {site} にサインインしました",
   "browser.signIn.notFound":
-    "OpenBot は {site} のサインインを見つけられませんでした。ウィンドウでサインインしてから、完了を選択してください。",
+    "OpenBot-NC は {site} のサインインを見つけられませんでした。ウィンドウでサインインしてから、完了を選択してください。",
   "browser.signIn.stillSignedOut":
     "{server} にはまだ {site} のサインインページが表示されています。ウィンドウでサインインを完了してください。",
-  "browser.signIn.failed": "OpenBot はサインインを送信できませんでした。",
+  "browser.signIn.failed": "OpenBot-NC はサインインを送信できませんでした。",
   "browser.profiles.title": "ブラウザープロファイル",
   "browser.profiles.subtitle":
-    "各プロファイルは、専用のサインイン、Cookie、サイトデータを OpenBot を実行しているコンピューターに保持します。",
+    "各プロファイルは、専用のサインイン、Cookie、サイトデータを OpenBot-NC を実行しているコンピューターに保持します。",
   "browser.profiles.label": "ブラウザープロファイル",
   "browser.profiles.newName": "プロファイル名",
   "browser.profiles.create": "追加",
@@ -197,8 +197,8 @@ export const messages = {
   "browser.profiles.deleteDescription":
     "プロファイルのサインイン、Cookie、サイトデータを削除します。開いているタブは閉じます。",
   "browser.profiles.deleteAgents": "次のエージェントは共有プロファイルに切り替わります: {agents}。",
-  "browser.profiles.failed": "OpenBot はブラウザープロファイルを変更できませんでした。",
-  "browser.profiles.loadFailed": "OpenBot はブラウザープロファイルを読み込めませんでした。",
+  "browser.profiles.failed": "OpenBot-NC はブラウザープロファイルを変更できませんでした。",
+  "browser.profiles.loadFailed": "OpenBot-NC はブラウザープロファイルを読み込めませんでした。",
   "browser.profiles.tabLabel": "プロファイル: {name}",
   "browser.profiles.tabLabelProxy": "プロファイル: {name} · プロキシ: {proxy}",
   "browser.profiles.agentTabLabel": "エージェント専用のプロファイル",
@@ -213,7 +213,7 @@ export const messages = {
   "browser.proxies.addTitle": "プロキシを追加",
   "browser.proxies.editTitle": "{name} を編集",
   "browser.proxies.dialogDescription":
-    "socks5、http、https を使用できます。ユーザー名とパスワードはどの種類でも任意です。パスワードは OpenBot を実行しているコンピューターに暗号化して保存されます。",
+    "socks5、http、https を使用できます。ユーザー名とパスワードはどの種類でも任意です。パスワードは OpenBot-NC を実行しているコンピューターに暗号化して保存されます。",
   "browser.proxies.address": "アドレス",
   "browser.proxies.addressPlaceholder": "socks5://user:password@host:1080",
   "browser.proxies.deleteUsed": {
@@ -222,7 +222,7 @@ export const messages = {
   "browser.proxies.deleteUnused": "このプロキシを使用しているプロファイルはありません。",
   "browser.proxies.failing": "{name} が応答しません",
   "browser.proxies.signInRefused": "{name} がサインインを拒否しました",
-  "browser.proxies.unsupported": "このサーバーではプロキシを使用できません。サーバーの OpenBot を更新してください。",
+  "browser.proxies.unsupported": "このサーバーではプロキシを使用できません。サーバーの OpenBot-NC を更新してください。",
   "browser.proxies.yourComputer": "あなたのコンピュータ",
   "browser.proxies.memberComputer": "{name} のコンピュータ",
   "browser.proxies.unknownComputer": "メンバーのコンピュータ",
@@ -233,7 +233,7 @@ export const messages = {
   "browser.proxies.offlineBadge": "{name} はオフラインです",
   "browser.proxies.shareTitle": "このコンピュータの接続を共有しますか？",
   "browser.proxies.shareDescription":
-    "あなたのコンピュータを使用するプロファイルは、このコンピュータのインターネット接続を通じて公開サイトを開きます。これは、ここで OpenBot が開いている間だけ機能します。サーバーはローカルネットワーク上のアドレスを開けません。",
+    "あなたのコンピュータを使用するプロファイルは、このコンピュータのインターネット接続を通じて公開サイトを開きます。これは、ここで OpenBot-NC が開いている間だけ機能します。サーバーはローカルネットワーク上のアドレスを開けません。",
   "browser.proxies.share": "共有",
   "browser.proxies.stopSharing": "共有を停止",
   "browser.proxies.closesTabs": {

@@ -20,7 +20,7 @@ export const messages = {
   "error.agent.toolCallUnknownToolSuggest":
     "لم تعمل الأداة. لم يجد tool_call أداة بهذا الاسم. قد يكون الاسم المؤهل {name}. إذا كان كذلك، فأرسل الاستدعاء مرة أخرى بهذا الاسم.",
   "error.agent.toolDescribeUnknownNames":
-    "لم يعثر tool_describe على أداة OpenBot باسم {names}. يصف فقط أدوات OpenBot والمتصفح التي يسردها openbot.tool_search، وليس أدوات MCP.",
+    "لم يعثر tool_describe على أداة OpenBot-NC باسم {names}. يصف فقط أدوات OpenBot-NC والمتصفح التي يسردها openbot.tool_search، وليس أدوات MCP.",
   "error.agent.toolDescribeDiscoveryNames": "استدعِ {names} مباشرةً. لا يصف tool_describe أدوات البحث.",
   "error.agent.routineScheduleArgumentsInvalid":
     "جدول المهمة الدورية غير صالح: {detail} صحّح الجدول وحاول مرة أخرى. يعطي openbot.tool_describe المخطط.",
@@ -36,7 +36,7 @@ export const messages = {
   "error.agent.promptAnswersTooLong": "الإجابات على المطالبة طويلة جدًا.",
   "error.agent.gone": "لم يعد هذا الوكيل موجودًا.",
   "error.agent.instructionsTooLarge": "ملف التعليمات أكبر من أن يُفتح هنا. اختصره في محرر نصوص.",
-  "error.agent.instructionsOutside": "يرتبط ملف التعليمات بمكان خارج مساحة العمل للوكيل، لذا لا يفتحه OpenBot.",
+  "error.agent.instructionsOutside": "يرتبط ملف التعليمات بمكان خارج مساحة العمل للوكيل، لذا لا يفتحه OpenBot-NC.",
   "error.agent.instructionsReadFailed": "تعذّرت قراءة ملف التعليمات.",
   "error.agent.instructionsSaveFailed": "تعذّر حفظ ملف التعليمات.",
   "error.agent.profileGenerationBusy": "إنشاء الملف التعريفي مشغول. أعد المحاولة بعد قليل.",
@@ -83,24 +83,24 @@ export const messages = {
   "error.agent.hostLimit": "يمكن أن يكون للمضيف {limit} وكيل كحد أقصى.",
   "error.agent.changedWhileDuplicating": "تغيّر الوكيل أثناء تكراره. أعد المحاولة.",
   "error.agent.duplicatedAgentGone": "لم يعد الوكيل المكرَّر موجودًا.",
-  "error.agent.stateCorrupt": "حالة الوكيل تالفة أو من نسخة أحدث من OpenBot؛ لن تتم الكتابة فوقها.",
+  "error.agent.stateCorrupt": "حالة الوكيل تالفة أو من نسخة أحدث من OpenBot-NC؛ لن تتم الكتابة فوقها.",
   "error.agent.oldRoleField":
-    "تستخدم الملفات التعريفية المخزّنة للوكلاء حقل الدور القديم؛ حدّث البيانات قبل تشغيل OpenBot.",
+    "تستخدم الملفات التعريفية المخزّنة للوكلاء حقل الدور القديم؛ حدّث البيانات قبل تشغيل OpenBot-NC.",
   "error.agent.duplicateIds": "تحتوي حالة الوكلاء على معرّفات وكلاء مكررة؛ لن تتم الكتابة فوقها.",
-  "error.agent.copyNameFailed": "تعذّر على OpenBot إنشاء اسم فريد لنسخة الوكيل.",
+  "error.agent.copyNameFailed": "تعذّر على OpenBot-NC إنشاء اسم فريد لنسخة الوكيل.",
   "error.agent.endpointRemoved": "أُزيلت نقطة النهاية التي استخدمها هذا الوكيل. اختر نموذجًا آخر له.",
   "error.agent.turnStalled":
-    "توقّف {provider} عن الاستجابة، لذا أنهى OpenBot هذا الدور. أرسل الرسالة مرة أخرى، أو اختر نموذجًا آخر.",
+    "توقّف {provider} عن الاستجابة، لذا أنهى OpenBot-NC هذا الدور. أرسل الرسالة مرة أخرى، أو اختر نموذجًا آخر.",
   "error.agent.promptCancelled": "ألغى {provider} هذه الرسالة قبل أن تبدأ. أرسل الرسالة مرة أخرى.",
   "error.agent.toolLoopStopped":
-    "كرر {provider} خطوة فاشلة مرات كثيرة، لذلك أوقف OpenBot هذا الدور. أرسل الرسالة مرة أخرى، أو اختر نموذجًا آخر.",
+    "كرر {provider} خطوة فاشلة مرات كثيرة، لذلك أوقف OpenBot-NC هذا الدور. أرسل الرسالة مرة أخرى، أو اختر نموذجًا آخر.",
   "error.agent.answerCutOff": "توقف الوكيل قبل أن ينهي إجابته، لذلك الإجابة غير كاملة. أرسل الرسالة مرة أخرى.",
   "error.agent.compactionConnectionLost":
     "توقف الاتصال أثناء ضغط الوكيل لسياقه، لذلك توقفت المهمة. تحقق من اتصالك بالإنترنت، ثم أرسل رسالة للمتابعة.",
   "error.agent.compactionConnectionLostAddress":
     "توقف الاتصال أثناء ضغط الوكيل لسياقه، لذلك توقفت المهمة. تحقق من اتصالك بالإنترنت. وتأكد أيضًا أن {variable} ضمن المتغيرات في إعدادات {provider} هو عنوان API لخدمة النموذج لديك، وغالبًا ما ينتهي بـ /v1. ثم أرسل رسالة.",
   "error.agent.compactionLoopStopped":
-    "ضغط {provider} السياق مرارًا، وبقي ممتلئًا جدًا في كل مرة فلم يستطع المتابعة، لذلك أوقف OpenBot هذا الدور. أوقف خوادم MCP أو استخدام الكمبيوتر التي لا يحتاجها هذا الوكيل، ثم أرسل رسالة. إذا غيّرت أنت أو الوكيل وقت ضغط {provider}، فتراجع عن هذا التغيير.",
+    "ضغط {provider} السياق مرارًا، وبقي ممتلئًا جدًا في كل مرة فلم يستطع المتابعة، لذلك أوقف OpenBot-NC هذا الدور. أوقف خوادم MCP أو استخدام الكمبيوتر التي لا يحتاجها هذا الوكيل، ثم أرسل رسالة. إذا غيّرت أنت أو الوكيل وقت ضغط {provider}، فتراجع عن هذا التغيير.",
   "error.agent.selectedGone": "لم يعد الوكيل المحدد موجودًا.",
   "error.agent.profileEndpointsChanged": "تغيّرت نقاط النهاية المخصصة أثناء الإنشاء. أعد المحاولة.",
   "error.agent.profileInvalid": "أعاد المزوّد ملفًا تعريفيًا غير صالح. جرّب تعديل المطالبة.",
@@ -115,19 +115,19 @@ export const messages = {
   "error.agent.stopBeforeDelete": "أوقف الوكيل وألغِ رسائله في قائمة الانتظار قبل حذفه.",
   "error.agent.deleteIncomplete": "تعذّرت إزالة بيانات الوكيل بالكامل. أعد محاولة حذف الوكيل.",
   "error.agent.deleteFolderInUse":
-    "لا يزال عمل وكيل آخر يستخدم مجلد هذا الوكيل. احذف هذا الوكيل مرة أخرى عند انتهاء ذلك العمل، أو بعد إعادة تشغيل OpenBot.",
+    "لا يزال عمل وكيل آخر يستخدم مجلد هذا الوكيل. احذف هذا الوكيل مرة أخرى عند انتهاء ذلك العمل، أو بعد إعادة تشغيل OpenBot-NC.",
   "error.agent.deleteFolderLocked":
     "لا يزال برنامج آخر يستخدم مجلد هذا الوكيل، مثل برنامج بدأه الوكيل. أغلق ذلك البرنامج أو أعد تشغيل الكمبيوتر الذي يعمل عليه هذا الوكيل، ثم احذف الوكيل مرة أخرى.",
   "error.agent.deleteWhenFolderFree":
-    "لا يزال عمل وكيل آخر يستخدم مجلد هذا الوكيل. يحذف OpenBot هذا الوكيل عند انتهاء ذلك العمل.",
+    "لا يزال عمل وكيل آخر يستخدم مجلد هذا الوكيل. يحذف OpenBot-NC هذا الوكيل عند انتهاء ذلك العمل.",
   "error.agent.duplicationBusy": "يجري تكرار هذا الوكيل بالفعل.",
   "error.agent.waitBeforeDuplicate": "انتظر انتهاء الوكيل وإفراغ قائمة انتظاره قبل تكراره.",
   "error.agent.saveOtherAgent": "عملية الحفظ هذه تخص وكيلًا آخر.",
   "error.agent.savedGone": "لم يعد الوكيل المحفوظ موجودًا.",
   "error.agent.storedProfileUnreadable":
-    "يحتوي ملف تعريفي مخزّن لوكيل على قيمة «{field}» غير مقروءة؛ حدّث البيانات قبل تشغيل OpenBot.",
+    "يحتوي ملف تعريفي مخزّن لوكيل على قيمة «{field}» غير مقروءة؛ حدّث البيانات قبل تشغيل OpenBot-NC.",
   "error.agent.storedProfileUnreadableId":
-    "يحتوي الملف التعريفي المخزّن للوكيل {id} على قيمة «{field}» غير مقروءة؛ حدّث البيانات قبل تشغيل OpenBot.",
+    "يحتوي الملف التعريفي المخزّن للوكيل {id} على قيمة «{field}» غير مقروءة؛ حدّث البيانات قبل تشغيل OpenBot-NC.",
   "error.agent.queueEditRejected": "رُفض تعديل قائمة الانتظار: {reason}",
   "error.agent.computerUseLocalOnly": "لا يمكن تغيير التحكم في الحاسوب إلا على الحاسوب الذي يشغّل الوكيل.",
   "error.agent.automationLocalOnly": "لا يمكن السماح بالسكربتات المحلية إلا على الحاسوب الذي يشغّل الوكيل.",
@@ -155,7 +155,7 @@ export const messages = {
     "خيار «مساحة العمل فقط» متاح لهذا المزوّد على macOS فقط. اختر الوصول الكامل في إعدادات الوكيل.",
   "error.agent.lowMemoryServer": "ذاكرة هذا الخادم منخفضة. تنتظر رسالتك في قائمة الانتظار وتبدأ عند توفر الذاكرة.",
   "error.agent.workspaceOnlyToolMissing":
-    "يحتاج خيار «مساحة العمل فقط» إلى {tool}، ولم يجده OpenBot. ثبّته، أو اختر الوصول الكامل في إعدادات الوكيل.",
+    "يحتاج خيار «مساحة العمل فقط» إلى {tool}، ولم يجده OpenBot-NC. ثبّته، أو اختر الوصول الكامل في إعدادات الوكيل.",
   "error.agent.codexSandboxUnavailable":
     "يحتاج خيار «مساحة العمل فقط» إلى بيئة Codex المعزولة، ولا يستطيع Codex تشغيلها على هذا الحاسوب، لذلك تفشل أوامر الوكيل. اختر «السؤال أولًا» أو «وصول كامل» في إعدادات الوكيل.",
   "error.agent.claudeSandboxUnavailable":
@@ -178,9 +178,9 @@ export const messages = {
   "error.agent.mcpServerHeadersNeedHttp":
     "يشغّل خادم MCP {name} أمرًا محليًا، لذا لا يقبل ترويسات. اطلب من المستخدم إدخال مفاتيحه في المتجر، التطبيقات، {name}.",
   "error.agent.mcpServerHeadersNeedPerson":
-    "يمكن لمستخدم OpenBot هذا فقط، في محادثة معك، أن يعطي مفاتيح خادم MCP {name}. اطلب من المستخدم إدخالها في المتجر، التطبيقات، {name}.",
+    "يمكن لمستخدم OpenBot-NC هذا فقط، في محادثة معك، أن يعطي مفاتيح خادم MCP {name}. اطلب من المستخدم إدخالها في المتجر، التطبيقات، {name}.",
   "error.agent.mcpServerBuiltIn":
-    "{name} جزء من OpenBot، لذلك لا يمكن لأدوات MCP اختباره أو تشغيله أو إيقافه أو إزالته. يتحكم فيه المستخدم على الحاسوب الذي يشغّل OpenBot: اتصال GitHub في المتجر، التطبيقات، GitHub، والتحكم في الحاسوب في الإعدادات، التحكم في الحاسوب.",
+    "{name} جزء من OpenBot-NC، لذلك لا يمكن لأدوات MCP اختباره أو تشغيله أو إيقافه أو إزالته. يتحكم فيه المستخدم على الحاسوب الذي يشغّل OpenBot-NC: اتصال GitHub في المتجر، التطبيقات، GitHub، والتحكم في الحاسوب في الإعدادات، التحكم في الحاسوب.",
   "error.agent.mcpServerUnknown": "لا يوجد خادم MCP باسم {name}. استدعِ list_mcp_servers لمعرفة الأسماء.",
   "error.agent.screenCaptureWindowMissing":
     "تلك النافذة غير مفتوحة الآن. استدعِ list_capture_sources للحصول على معرّفات النوافذ الحالية.",
@@ -189,9 +189,9 @@ export const messages = {
   "error.agent.screenCaptureRegionOutside":
     "المنطقة ليست داخل شاشة واحدة. استخدم نقاط سطح المكتب داخل حدود شاشة واحدة من list_capture_sources.",
   "error.agent.screenCapturePermissionMissing":
-    "لا يملك OpenBot إذن «تسجيل الشاشة». اطلب من المستخدم فتح System Settings > Privacy & Security > Screen & System Audio Recording، وتشغيل OpenBot، ثم إنهاء OpenBot وفتحه مرة أخرى.",
+    "لا يملك OpenBot-NC إذن «تسجيل الشاشة». اطلب من المستخدم فتح System Settings > Privacy & Security > Screen & System Audio Recording، وتشغيل OpenBot-NC، ثم إنهاء OpenBot-NC وفتحه مرة أخرى.",
   "error.agent.screenCaptureListPermission":
-    "لا يملك OpenBot إذن «تسجيل الشاشة» بعد، لذا لا يمكنه سرد النوافذ. لالتقاط شاشة، استدعِ capture_screen مع target screen. يوافق المستخدم على الالتقاط أولًا، ثم قد يطلب macOS من المستخدم الإذن.",
+    "لا يملك OpenBot-NC إذن «تسجيل الشاشة» بعد، لذا لا يمكنه سرد النوافذ. لالتقاط شاشة، استدعِ capture_screen مع target screen. يوافق المستخدم على الالتقاط أولًا، ثم قد يطلب macOS من المستخدم الإذن.",
   "error.agent.screenCaptureEmptyWindows":
     "أعاد Windows صورة فارغة. اطلب من المستخدم إلغاء قفل الحاسوب وإغلاق المحتوى المحمي. يمكن أيضًا لسياسة المؤسسة إيقاف التقاط الشاشة.",
   "error.agent.screenCaptureFailed": "فشل التقاط الشاشة. أعد المحاولة.",

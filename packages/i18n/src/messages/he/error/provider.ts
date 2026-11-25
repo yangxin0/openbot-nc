@@ -3,28 +3,28 @@ import type { messages as source } from "../../en/error/provider";
 
 export const messages = {
   "error.provider.mcpConfig":
-    "OpenBot לא הצליח לרשום שרתי MCP בהגדרות של Codex. יש לוודא שהקובץ config.toml של Codex תקין וניתן לכתיבה, ואז להפעיל מחדש את OpenBot.",
+    "OpenBot-NC לא הצליח לרשום שרתי MCP בהגדרות של Codex. יש לוודא שהקובץ config.toml של Codex תקין וניתן לכתיבה, ואז להפעיל מחדש את OpenBot-NC.",
   "error.provider.computerUseConfig":
-    "OpenBot לא הצליח לרשום את שליטה במחשב בהגדרות של Codex. יש לוודא שהקובץ config.toml של Codex תקין וניתן לכתיבה, ואז להפעיל מחדש את OpenBot. אפשר לכבות את שליטה במחשב בהגדרות הסוכן כדי להמשיך בלעדיה.",
-  "error.provider.codexUnresponsive": "Codex הפסיק להגיב, ולכן OpenBot סיים את התהליך שלו.",
-  "error.provider.acpUnresponsive": "{provider} לא הגיב בזמן, ולכן OpenBot סיים את התהליך שלו.",
+    "OpenBot-NC לא הצליח לרשום את שליטה במחשב בהגדרות של Codex. יש לוודא שהקובץ config.toml של Codex תקין וניתן לכתיבה, ואז להפעיל מחדש את OpenBot-NC. אפשר לכבות את שליטה במחשב בהגדרות הסוכן כדי להמשיך בלעדיה.",
+  "error.provider.codexUnresponsive": "Codex הפסיק להגיב, ולכן OpenBot-NC סיים את התהליך שלו.",
+  "error.provider.acpUnresponsive": "{provider} לא הגיב בזמן, ולכן OpenBot-NC סיים את התהליך שלו.",
   "error.provider.acpSignInLost":
-    "ההתחברות של {provider} אבדה, ולכן OpenBot סיים את התהליך שלו. יש לשלוח את ההודעה שוב.",
+    "ההתחברות של {provider} אבדה, ולכן OpenBot-NC סיים את התהליך שלו. יש לשלוח את ההודעה שוב.",
   "error.provider.acpRefusedUntilRestart":
-    "{provider} דחה הודעה, ולכן OpenBot סיים את התהליך שלו. יש לשלוח את ההודעה שוב.",
+    "{provider} דחה הודעה, ולכן OpenBot-NC סיים את התהליך שלו. יש לשלוח את ההודעה שוב.",
   "error.provider.acpServerLost": "{provider} איבד את החיבור שלו. יש לשלוח את ההודעה שוב.",
-  "error.provider.acpServerLostEnded": "{provider} איבד את החיבור שלו, ולכן OpenBot סיים את התהליך שלו.",
+  "error.provider.acpServerLostEnded": "{provider} איבד את החיבור שלו, ולכן OpenBot-NC סיים את התהליך שלו.",
   "error.provider.acpSettingsTimedOut": "{provider} לא הגיב בזמן. יש לנסות שוב בעוד רגע.",
   "error.provider.acpPlanUsedUp":
     "{provider} מדווח שהתוכנית שלך נוצלה במלואה. יש לבחור מודל אחר או לשדרג את התוכנית של {provider}.",
   "error.provider.acpMcpNotLoaded":
-    "{provider} לא טען את הכלים של OpenBot, ולכן הסוכן הזה לא יכול להשתמש בהם או להגיע לחברי הצוות שלו. מדיניות צוות של {provider} יכולה לחסום שרתי MCP מקומיים. יש לבקש ממנהל הצוות לאפשר אותם, ואז לנסות שוב.",
+    "{provider} לא טען את הכלים של OpenBot-NC, ולכן הסוכן הזה לא יכול להשתמש בהם או להגיע לחברי הצוות שלו. מדיניות צוות של {provider} יכולה לחסום שרתי MCP מקומיים. יש לבקש ממנהל הצוות לאפשר אותם, ואז לנסות שוב.",
   "error.provider.acpToolsNotLoaded":
-    "{provider} הריץ את ההודעה הזו בלי הכלים של OpenBot, ולכן הסוכן לא יכול היה להגיע לחברי הצוות שלו, להשתמש בדפדפן או לצרף קבצים. יש לנסות שוב.",
+    "{provider} הריץ את ההודעה הזו בלי הכלים של OpenBot-NC, ולכן הסוכן לא יכול היה להגיע לחברי הצוות שלו, להשתמש בדפדפן או לצרף קבצים. יש לנסות שוב.",
   "error.provider.acpOwnMcpServerFailed":
-    "{provider} לא הצליח להפעיל את שרת ה-MCP {name}, ולכן התשובה נעצרה. השרת הזה נמצא בהגדרות {provider} שלך, ולא ב-OpenBot. הסר את השרת משם או תקן אותו, ואז התחל צ׳אט חדש.",
+    "{provider} לא הצליח להפעיל את שרת ה-MCP {name}, ולכן התשובה נעצרה. השרת הזה נמצא בהגדרות {provider} שלך, ולא ב-OpenBot-NC. הסר את השרת משם או תקן אותו, ואז התחל צ׳אט חדש.",
   "error.provider.endpointsReadOnly":
-    "נקודות הקצה השמורות נכתבו בגרסה חדשה יותר של OpenBot, או שלא ניתן לקרוא את הקובץ. יש לעדכן את OpenBot כדי לשנות אותן.",
+    "נקודות הקצה השמורות נכתבו בגרסה חדשה יותר של OpenBot-NC, או שלא ניתן לקרוא את הקובץ. יש לעדכן את OpenBot-NC כדי לשנות אותן.",
   "error.provider.endpointNoSecureStorage":
     "במחשב הזה אין אחסון מאובטח, ולכן לא ניתן לשמור מפתח API או כותרת. יש להסיר אותם, או להשתמש בנקודת קצה שלא דורשת פרטי הזדהות.",
   "error.provider.endpointDuplicate": "כבר נשמרה נקודת קצה עם מזהה הספק הזה. יש להסיר אותה קודם, או להשתמש במזהה אחר.",
@@ -34,21 +34,21 @@ export const messages = {
   "error.provider.endpointSecretUnreadable":
     "המחשב הזה לא יכול לקרוא את מפתח ה-API והכותרות השמורים. יש להזין שוב את מפתח ה-API ואת הכותרות, כדי שאף אחד מהם לא יאבד.",
   "error.provider.discoveryTimeout": "{host} לא הגיב בזמן.",
-  "error.provider.discoveryUnreachable": "OpenBot לא הצליח להתחבר אל {host}.",
+  "error.provider.discoveryUnreachable": "OpenBot-NC לא הצליח להתחבר אל {host}.",
   "error.provider.discoveryRedirect": "{host} שלח הפניה. יש להזין את הכתובת הסופית של השרת.",
   "error.provider.discoveryRefused": "{host} דחה את הבקשה. יש לבדוק את מפתח ה-API ואת הכותרות.",
   "error.provider.discoveryHttp": "{host} השיב עם HTTP {status}.",
   "error.provider.discoveryTooLarge": "רשימת המודלים מ-{host} גדולה מדי.",
   "error.provider.discoveryInvalid": "{host} לא שלח רשימת מודלים תואמת OpenAI.",
   "error.provider.detectionSettingsReadOnly":
-    "הגדרות הזיהוי נכתבו בגרסה חדשה יותר של OpenBot, או שלא ניתן לקרוא את הקובץ. יש לעדכן את OpenBot כדי לשנות אותן.",
+    "הגדרות הזיהוי נכתבו בגרסה חדשה יותר של OpenBot-NC, או שלא ניתן לקרוא את הקובץ. יש לעדכן את OpenBot-NC כדי לשנות אותן.",
   "error.provider.detectionEntryInvalid":
     "כתובת חייבת להיות URL מסוג http:// או https:// בלי סיסמה, ותיקייה חייבת להיות נתיב מוחלט.",
   "error.provider.detectionEntriesTooMany": "יש יותר מדי כתובות או תיקיות.",
   "error.provider.credentialFileUnreadable": "לא ניתן לקרוא את קובץ פרטי ההזדהות של הספק.",
   "error.provider.credentialFileTooLarge": "קובץ פרטי ההזדהות של הספק גדול מדי.",
   "error.provider.environmentNameInvalid": "{name} אינו שם משתנה תקין. השתמשו באותיות, ספרות ו-_, ואל תתחילו בספרה.",
-  "error.provider.environmentNameReserved": "OpenBot מגדיר את {name} לספק הזה. הסירו את המשתנה הזה.",
+  "error.provider.environmentNameReserved": "OpenBot-NC מגדיר את {name} לספק הזה. הסירו את המשתנה הזה.",
   "error.provider.environmentNameDuplicate": "{name} מופיע ברשימה יותר מפעם אחת.",
   "error.provider.environmentValueTooLong": "הערך של {name} ארוך מדי.",
   "error.provider.environmentTooMany": "לספק יכולים להיות עד {limit} משתנים.",
@@ -75,14 +75,14 @@ export const messages = {
   "error.provider.bunLicenseChecksum": "סכום הביקורת של הרישיון של Bun אינו תואם.",
   "error.provider.bunxDamaged": "מריץ מנהל החבילות של Bun חסר או פגום.",
   "error.provider.releaseSourcesUnreachable":
-    "OpenBot לא הצליח להגיע למקורות הגרסאות של הספק. יש לבדוק את החיבור ולנסות שוב.",
+    "OpenBot-NC לא הצליח להגיע למקורות הגרסאות של הספק. יש לבדוק את החיבור ולנסות שוב.",
   "error.provider.runtimesUnsupported": "סביבות הרצה של ספקים אינן זמינות בפלטפורמה הזו.",
-  "error.provider.closing": "OpenBot נסגר.",
+  "error.provider.closing": "OpenBot-NC נסגר.",
   "error.provider.removeWhileOn": "יש לכבות את הספק לפני הסרת ההורדה שלו.",
   "error.provider.removeWhileDownloading": "יש להמתין לסיום ההורדה ואז להסיר אותה.",
   "error.provider.removeIncomplete": "תוכנה משתמשת בחלק מהקבצים של ה-CLI הזה. יש לסגור אותה ואז לנסות שוב.",
   "error.provider.removeDownloadsFailed": "לא ניתן להסיר את הורדות ה-CLI של {providers}.",
-  "error.provider.cliOverride": "יש להסיר את עקיפת הנתיב המפורשת של ה-CLI לפני עדכון ב-OpenBot.",
+  "error.provider.cliOverride": "יש להסיר את עקיפת הנתיב המפורשת של ה-CLI לפני עדכון ב-OpenBot-NC.",
   "error.provider.runtimeUpdateIncomplete": "עדכון סביבת ההרצה לא הושלם.",
   "error.provider.downloadHttp": "הורדת סביבת ההרצה נכשלה עם HTTP {status}.",
   "error.provider.downloadNoData": "הורדת סביבת ההרצה לא החזירה נתונים.",
@@ -99,7 +99,7 @@ export const messages = {
   "error.provider.unexpectedVersion": "סביבת ההרצה של הספק החזירה גרסה לא צפויה.",
   "error.provider.metadataNoData": "הורדת המטא-נתונים של סביבת ההרצה לא החזירה נתונים.",
   "error.provider.metadataTooLarge": "המטא-נתונים של סביבת ההרצה גדולים מדי.",
-  "error.provider.requestFailed": "OpenBot לא הצליח להוריד את {url}. {reason}",
+  "error.provider.requestFailed": "OpenBot-NC לא הצליח להוריד את {url}. {reason}",
   "error.provider.installRecordMismatch": "רשומת ההתקנה של סביבת ההרצה אינה תואמת.",
   "error.provider.runtimeChecksum": "סכום הביקורת של סביבת ההרצה של הספק אינו תואם.",
   "error.provider.codexReleaseShape": "לגרסה של Codex יש מבנה לא צפוי.",
@@ -138,26 +138,26 @@ export const messages = {
   "error.provider.noModel": "לספק שנבחר אין מודל זמין.",
   "error.provider.noModelNamed": "ל-{provider} אין מודל זמין.",
   "error.provider.acpModelsNotLoaded": "{provider} לא הצליח לטעון את המודלים שלו. יש לשלוח שוב את ההודעה.",
-  "error.provider.acpNoModels": "ה-CLI של ACP לא פרסם אף מודל ACP. OpenBot לא ינחש מודל חלופי.",
+  "error.provider.acpNoModels": "ה-CLI של ACP לא פרסם אף מודל ACP. OpenBot-NC לא ינחש מודל חלופי.",
   "error.provider.endpointRemoveBusy": "יש להמתין לסיום הפעולה הפעילה והתור לפני הסרת נקודת הקצה הזו.",
-  "error.provider.codexOutdated": "Codex CLI {version} ישן מדי. OpenBot דורש גרסה 0.156.0 ומעלה.",
+  "error.provider.codexOutdated": "Codex CLI {version} ישן מדי. OpenBot-NC דורש גרסה 0.156.0 ומעלה.",
   "error.provider.codexNotStarted": "Codex CLI נמצא אך לא ניתן להפעיל אותו.",
   "error.provider.codexNotStartedHint":
     "Codex CLI נמצא אך לא ניתן להפעיל אותו. יש להריץ `codex --version` בטרמינל חדש.",
-  "error.provider.codexManagedNotStarted": "ChatGPT הורד אך לא ניתן להפעיל אותו. יש להוריד אותו שוב ב-OpenBot.",
-  "error.provider.codexMissing": "ChatGPT לא הורד. יש להוריד אותו ב-OpenBot כדי להמשיך.",
-  "error.provider.claudeOutdated": "Claude Code {version} ישן מדי. OpenBot דורש גרסה 2.1.232 ומעלה.",
+  "error.provider.codexManagedNotStarted": "ChatGPT הורד אך לא ניתן להפעיל אותו. יש להוריד אותו שוב ב-OpenBot-NC.",
+  "error.provider.codexMissing": "ChatGPT לא הורד. יש להוריד אותו ב-OpenBot-NC כדי להמשיך.",
+  "error.provider.claudeOutdated": "Claude Code {version} ישן מדי. OpenBot-NC דורש גרסה 2.1.232 ומעלה.",
   "error.provider.claudeNotStarted": "Claude CLI נמצא אך לא ניתן להפעיל אותו.",
   "error.provider.claudeNotStartedHint":
     "Claude CLI נמצא אך לא ניתן להפעיל אותו. יש להריץ `claude --version` בטרמינל חדש.",
-  "error.provider.claudeManagedNotStarted": "Claude הורד אך לא ניתן להפעיל אותו. יש להוריד אותו שוב ב-OpenBot.",
-  "error.provider.claudeMissing": "Claude לא הורד. יש להוריד אותו ב-OpenBot כדי להמשיך.",
-  "error.provider.grokOutdated": "Grok CLI {version} ישן מדי. OpenBot דורש גרסה 1.0.5 ומעלה.",
+  "error.provider.claudeManagedNotStarted": "Claude הורד אך לא ניתן להפעיל אותו. יש להוריד אותו שוב ב-OpenBot-NC.",
+  "error.provider.claudeMissing": "Claude לא הורד. יש להוריד אותו ב-OpenBot-NC כדי להמשיך.",
+  "error.provider.grokOutdated": "Grok CLI {version} ישן מדי. OpenBot-NC דורש גרסה 1.0.5 ומעלה.",
   "error.provider.grokNotStarted": "Grok CLI נמצא אך לא ניתן להפעיל אותו.",
   "error.provider.grokNotStartedHint": "Grok CLI נמצא אך לא ניתן להפעיל אותו. יש להריץ `grok --version` בטרמינל חדש.",
-  "error.provider.grokMissing": "Grok לא הורד. יש להוריד אותו ב-OpenBot כדי להמשיך.",
+  "error.provider.grokMissing": "Grok לא הורד. יש להוריד אותו ב-OpenBot-NC כדי להמשיך.",
   "error.provider.opencodeNotStarted": "OpenCode לא הצליח לפעול. יש להריץ `opencode --version` בטרמינל.",
-  "error.provider.opencodeMissing": "OpenCode לא הורד. יש להוריד אותו ב-OpenBot כדי להמשיך.",
+  "error.provider.opencodeMissing": "OpenCode לא הורד. יש להוריד אותו ב-OpenBot-NC כדי להמשיך.",
   "error.provider.codexVersionUnreadable": "לא ניתן לקרוא את הגרסה של Codex CLI.",
   "error.provider.claudeVersionUnreadable": "לא ניתן לקרוא את הגרסה של Claude CLI.",
   "error.provider.grokVersionUnreadable": "לא ניתן לקרוא את הגרסה של Grok CLI.",
@@ -165,23 +165,23 @@ export const messages = {
   "error.provider.bunVersionUnreadable": "לא ניתן לקרוא את הגרסה של סביבת ההרצה Bun.",
   "error.provider.connectBeforeProfile": "יש לחבר את הספק שנבחר לפני יצירת פרופיל.",
   "error.provider.cliNotReady": "ה-CLI של {provider} אינו מוכן או שאינו מחובר.",
-  "error.provider.cliTimedOut": "{provider} לא הגיב בזמן. ייתכן שהמחשב עמוס. OpenBot ינסה שוב.",
+  "error.provider.cliTimedOut": "{provider} לא הגיב בזמן. ייתכן שהמחשב עמוס. OpenBot-NC ינסה שוב.",
   "error.provider.cliTimedOutRefresh": "{provider} לא הגיב בזמן. ייתכן שהמחשב עמוס. יש לרענן את הספקים כדי לנסות שוב.",
   "error.provider.stoppedBeforeStart": "{provider} נעצר לפני שההודעה הזו התחילה. יש לשלוח את ההודעה שוב.",
   "error.provider.sessionStartTimedOut":
-    "{provider} לא פתח צ׳אט חדש בזמן, ולכן ההודעה הזו לא התחילה. במחשב שמריץ את OpenBot, יש לפתוח את ספקים, לבחור את {provider} וללחוץ על הפעלה מחדש. אחר כך יש לנסות שוב.",
+    "{provider} לא פתח צ׳אט חדש בזמן, ולכן ההודעה הזו לא התחילה. במחשב שמריץ את OpenBot-NC, יש לפתוח את ספקים, לבחור את {provider} וללחוץ על הפעלה מחדש. אחר כך יש לנסות שוב.",
   "error.provider.sessionResumeTimedOut":
-    "{provider} לא פתח את הצ׳אט הזה בזמן, ולכן ההודעה הזו לא התחילה. במחשב שמריץ את OpenBot, יש לפתוח את ספקים, לבחור את {provider} וללחוץ על הפעלה מחדש. אחר כך יש לנסות שוב.",
+    "{provider} לא פתח את הצ׳אט הזה בזמן, ולכן ההודעה הזו לא התחילה. במחשב שמריץ את OpenBot-NC, יש לפתוח את ספקים, לבחור את {provider} וללחוץ על הפעלה מחדש. אחר כך יש לנסות שוב.",
   "error.provider.serviceUnreachable":
-    "{provider} לא מצליח להתחבר לשירות שלו. יש לבדוק את החיבור לאינטרנט. OpenBot ינסה שוב.",
+    "{provider} לא מצליח להתחבר לשירות שלו. יש לבדוק את החיבור לאינטרנט. OpenBot-NC ינסה שוב.",
   "error.provider.serviceUnreachableRefresh":
     "{provider} לא מצליח להתחבר לשירות שלו. יש לבדוק את החיבור לאינטרנט ואז לרענן את הספקים.",
   "error.provider.acpStartTimedOut": "{provider} לא סיים להתחיל תוך {seconds} שניות. ייתכן שהמחשב עמוס.",
   "error.provider.acpModelsTimedOut": "{provider} לא הציג את המודלים שלו תוך {seconds} שניות. ייתכן שהמחשב עמוס.",
   "error.provider.startStopped":
-    "{provider} לא התחיל כמה פעמים ברצף, ולכן OpenBot הפסיק לנסות. יש לרענן את הספקים כדי לנסות שוב.",
+    "{provider} לא התחיל כמה פעמים ברצף, ולכן OpenBot-NC הפסיק לנסות. יש לרענן את הספקים כדי לנסות שוב.",
   "error.provider.startPaused":
-    "{provider} לא הופעל כמה פעמים ברציפות. OpenBot ינסה שוב בהודעה או בשגרה הבאה. כדי לנסות עכשיו, רענן את הספקים.",
+    "{provider} לא הופעל כמה פעמים ברציפות. OpenBot-NC ינסה שוב בהודעה או בשגרה הבאה. כדי לנסות עכשיו, רענן את הספקים.",
   "error.provider.tempDiskSpace":
     "{provider} צריך לפחות 1 GB של שטח דיסק פנוי כדי להתחיל. יש לפנות מקום ואז לרענן את הספקים.",
   "error.provider.noCodeSignIn": "לא ניתן להתחבר אל {provider} באמצעות קוד.",
@@ -192,11 +192,11 @@ export const messages = {
   "error.provider.codeLoginRefused": "הספק לא קיבל את הקוד. יש להתחיל את ההתחברות מחדש.",
   "error.provider.codeLoginUnsupported": "השרת הזה לא יכול להתחבר עם קוד מודבק. יש להתחבר במחשב השרת, בדפדפן שלו.",
   "error.provider.claudeLoginNotSaved":
-    "Claude לא הצליח לשמור את ההתחברות ב-Mac. יש להפעיל מחדש את ה-Mac שמריץ את OpenBot, ואז לחבר שוב את Claude.",
+    "Claude לא הצליח לשמור את ההתחברות ב-Mac. יש להפעיל מחדש את ה-Mac שמריץ את OpenBot-NC, ואז לחבר שוב את Claude.",
   "error.provider.cliBusyRetry": "ה-CLI של {provider} עובד על פעולה. יש להמתין לסיומה ואז לנסות שוב.",
   "error.provider.cliSigningIn": "ה-CLI של {provider} מתחבר. יש לסיים או לבטל את ההתחברות ואז לעדכן.",
   "error.provider.cliBusyUpdate": "ה-CLI של {provider} עובד על פעולה. יש להמתין לסיומה ואז לעדכן.",
-  "error.provider.cliSelectFailed": "OpenBot לא הצליח לבחור את ה-CLI המנוהל שהותקן.",
+  "error.provider.cliSelectFailed": "OpenBot-NC לא הצליח לבחור את ה-CLI המנוהל שהותקן.",
   "error.provider.noAuthenticatedAccount": "{provider} לא החזיר חשבון מאומת.",
   "error.provider.codexModelProvider":
     "Codex במחשב הזה משתמש בספק מודלים אחר, והספק הזה לא משתמש בהתחברות ל-ChatGPT או במפתח API של OpenAI. סוכני ChatGPT יכולים להשתמש בספק הזה כבר עכשיו. כדי להשתמש בחשבון ChatGPT שלך, יש להחזיר את ספק המודלים של Codex ל-OpenAI.",
@@ -231,7 +231,7 @@ export const messages = {
     "OpenCode Go דחה את הבקשה. מפתח API חדש לא יפתור את זה. ייתכן שהתוכנית שלך ב-OpenCode Go לא פעילה, או ש-OpenCode Go חוסם את הרשת שלך: חלק מהשירותים חוסמים VPN, שרתי Proxy או מדינות מסוימות. ודא ב-OpenCode Console שהתוכנית פעילה, או כבה את ה-VPN, ואז נסה שוב. אפשר גם לבחור מודל אחר.",
   "error.provider.opencodeServiceFailure":
     "OpenCode לא הצליח להשלים את הפעולה הזו כי השירות המקומי שלו נכשל. יש לנסות שוב. אם השגיאה נמשכת, יש לחבר מחדש את OpenCode בהגדרות.",
-  "error.provider.opencodeStillStarting": "OpenCode לא סיים להיטען בזמן. OpenBot ינסה שוב.",
+  "error.provider.opencodeStillStarting": "OpenCode לא סיים להיטען בזמן. OpenBot-NC ינסה שוב.",
   "error.provider.opencodeRateLimited":
     "ספק המודלים דחה את הבקשה בגלל מגבלת הקצב שלו. יש להמתין כמה דקות או לבחור מודל אחר, ואז לנסות שוב.\n{detail}",
   "error.provider.opencodeBilling":
@@ -239,11 +239,11 @@ export const messages = {
   "error.provider.opencodeInvalidUpload":
     "ספק המודלים של OpenCode דיווח על בקשת העלאה לא תקינה. יש לבחור מודל אחר ולהמשיך. כדאי לבדוק שגרות שמורות לפני שיוצרים אותן שוב.\n{detail}",
   "error.provider.opencodeUnreadableContent":
-    'המודל הזה לא יכול לקרוא קובץ או תמונה בצ\'אט הזה. OpenBot התחיל סשן OpenCode חדש עם היסטוריית הצ\'אט. יש לשלוח את ההודעה שוב בלי הקובץ, או לבחור מודל שיכול לקרוא קבצים. אם הוספת את המודל הזה לספק מותאם אישית, יש לבטל את הסימון של "תמונות" ב"מקבל" בהגדרות שלו.',
+    'המודל הזה לא יכול לקרוא קובץ או תמונה בצ\'אט הזה. OpenBot-NC התחיל סשן OpenCode חדש עם היסטוריית הצ\'אט. יש לשלוח את ההודעה שוב בלי הקובץ, או לבחור מודל שיכול לקרוא קבצים. אם הוספת את המודל הזה לספק מותאם אישית, יש לבטל את הסימון של "תמונות" ב"מקבל" בהגדרות שלו.',
   "error.provider.opencodeOutOfMemory":
-    "לשרת המודל נגמר הזיכרון עבור השיחה הזו. התחל שיחה חדשה, או טען את המודל עם אורך הקשר קטן יותר והזן את אותו חלון בהגדרות הספק שלו ב-OpenBot.",
+    "לשרת המודל נגמר הזיכרון עבור השיחה הזו. התחל שיחה חדשה, או טען את המודל עם אורך הקשר קטן יותר והזן את אותו חלון בהגדרות הספק שלו ב-OpenBot-NC.",
   "error.provider.opencodeContextTooSmall":
-    "השיחה הזו לא נכנסת בחלון ההקשר של המודל. ב-Ollama או ב-LM Studio, טען את המודל עם אורך הקשר גדול יותר, והזן את אותו חלון בהגדרות הספק שלו ב-OpenBot. או בחר מודל גדול יותר.",
+    "השיחה הזו לא נכנסת בחלון ההקשר של המודל. ב-Ollama או ב-LM Studio, טען את המודל עם אורך הקשר גדול יותר, והזן את אותו חלון בהגדרות הספק שלו ב-OpenBot-NC. או בחר מודל גדול יותר.",
   "error.provider.opencodeFreeLimit":
     "מודלי OpenCode החינמיים הגיעו למגבלת השימוש. כל המודלים החינמיים חולקים את המגבלה הזו. כדי להמשיך, יש להדביק מפתח OpenCode Go בהגדרות OpenCode, או לבחור מודל מספק אחר.",
   "error.provider.opencodeProviderFailed":
@@ -262,13 +262,13 @@ export const messages = {
   "error.provider.opencodeSafetyBlocked":
     "ספק המודל חסם את ההודעה הזאת בגלל כללי הבטיחות שלו. יש לשלוח את הבקשה שוב במילים אחרות. אם הוא חוסם גם את ההודעות הבאות, יש להתחיל צ'אט חדש או לבחור מודל אחר.",
   "error.provider.opencodeNetwork":
-    "OpenCode לא הצליח להתחבר לספק המודלים. יש לבדוק את חיבור הרשת של המחשב שמריץ את OpenBot ואז לנסות שוב.\n{detail}",
+    "OpenCode לא הצליח להתחבר לספק המודלים. יש לבדוק את חיבור הרשת של המחשב שמריץ את OpenBot-NC ואז לנסות שוב.\n{detail}",
   "error.provider.codexStateBusy":
     "ChatGPT עדיין מכין את ההיסטוריה המקומית שלו אחרי הפעלה קודמת. יש להמתין כמה דקות ואז לנסות שוב.",
   "error.provider.codexThreadInUse":
     "אפליקציית Codex אחרת פתחה את הצ'אט הזה, למשל אפליקציית Codex למחשב, Codex CLI או תוסף IDE. רק אפליקציה אחת בכל פעם יכולה לכתוב לצ'אט של Codex. יש לסגור את הצ'אט באותה אפליקציה ואז לשלוח את ההודעה שוב.",
   "error.provider.realtimeLimitZero":
-    "Linux עצר את הספק כי ל-OpenBot יש מגבלת מעבד בזמן אמת של 0. המגבלה מגיעה מהמערכת שלך. יש להתקין ולהפעיל את rtkit (`rtkit-daemon`), להריץ `systemctl --user restart xdg-desktop-portal`, ואז להפעיל מחדש את OpenBot. הפעלה מחדש של xdg-desktop-portal בלבד לא תעזור כל עוד rtkit חסר.",
+    "Linux עצר את הספק כי ל-OpenBot-NC יש מגבלת מעבד בזמן אמת של 0. המגבלה מגיעה מהמערכת שלך. יש להתקין ולהפעיל את rtkit (`rtkit-daemon`), להריץ `systemctl --user restart xdg-desktop-portal`, ואז להפעיל מחדש את OpenBot-NC. הפעלה מחדש של xdg-desktop-portal בלבד לא תעזור כל עוד rtkit חסר.",
   "error.provider.cpuUnsupported": "המעבד של המחשב הזה לא יכול להריץ את הספק הזה. השתמש בספק אחר.",
   "error.provider.largeMemoryPages":
     "הספק הזה לא יכול לרוץ על ליבת Linux הזו, כי הליבה משתמשת בדפי זיכרון גדולים מ-4 KiB, כמו ב-Raspberry Pi 5 או ב-Asahi Linux. השתמש בליבה עם דפים של 4 KiB או בספק אחר.",
@@ -292,19 +292,19 @@ export const messages = {
   "error.provider.channelNoAnswer":
     "{provider} סיים את התור בלי תשובה. בערוץ, יש ללחוץ על המשך כדי להריץ את המשימה שוב, או על הקצאה מחדש כדי לתת אותה לחבר אחר.",
   "error.provider.acpProcessStopped": "{provider} נעצר לפני שענה. יש לשלוח את ההודעה שוב.",
-  "error.provider.chatgptPageFailed": "OpenBot לא הצליח לפתוח את דף החיבור של ChatGPT.",
+  "error.provider.chatgptPageFailed": "OpenBot-NC לא הצליח לפתוח את דף החיבור של ChatGPT.",
   "error.provider.noneReady": "אין ספק סוכנים מוכן.",
   "error.provider.claudeTurnActive": "יש להמתין לפעולה הפעילה של Claude לפני רענון ההקשר שלו.",
   "error.provider.codexLoginRequired": "Codex דורש התחברות עם מנוי ChatGPT. יש להריץ `codex login`.",
-  "error.provider.cliUpdateFailed": "OpenBot לא הצליח לעדכן את ה-CLI של {provider}. {reason}",
+  "error.provider.cliUpdateFailed": "OpenBot-NC לא הצליח לעדכן את ה-CLI של {provider}. {reason}",
   "error.provider.tryAgain": "יש לנסות שוב.",
   "error.provider.noAgentProcess": "ל-{provider} אין תהליך שרץ עבור הסוכן הזה.",
   "error.provider.stoppedBeforeAgentProcess": "{provider} נעצר לפני שהתהליך של הסוכן התחיל.",
   "error.provider.archiveUnreadable": "לא ניתן לקרוא את ארכיון סביבת ההרצה או שהוא בפורמט שאינו נתמך.",
-  "error.provider.antigravityMissing": "Gemini לא הורד. יש להוריד אותו ב-OpenBot כדי להמשיך.",
+  "error.provider.antigravityMissing": "Gemini לא הורד. יש להוריד אותו ב-OpenBot-NC כדי להמשיך.",
   "error.provider.antigravityNotStarted": "שרת Gemini נמצא, אך לא ניתן לקרוא את הגרסה שלו.",
   "error.provider.antigravityOverrideInvalid":
-    "שרת Gemini ב-OPENBOT_ANTIGRAVITY_PATH חסר או שאינו ניתן להרצה. יש לתקן את הנתיב או להסיר את המשתנה, ואז להפעיל מחדש את OpenBot.",
+    "שרת Gemini ב-OPENBOT_ANTIGRAVITY_PATH חסר או שאינו ניתן להרצה. יש לתקן את הנתיב או להסיר את המשתנה, ואז להפעיל מחדש את OpenBot-NC.",
   "error.provider.antigravityVersionUnreadable": "לא ניתן לקרוא את הגרסה של שרת Gemini.",
   "error.provider.antigravitySignIn": "יש להתחבר עם Google כדי להשתמש ב-Gemini.",
   "error.provider.antigravityModelAtCapacity":
@@ -323,11 +323,11 @@ export const messages = {
     "Gemini דחה את הבקשה הזו. יש לבחור מודל אחר ולשלוח את ההודעה שוב. אם זה נכשל שוב, יש להתחיל צ'אט חדש.\n{detail}",
   "error.provider.antigravityNetwork": "Gemini איבד את החיבור ל-Google. יש לשלוח שוב את ההודעה. ({cause})",
   "error.provider.antigravitySessionRejected":
-    "Gemini דחה את הבקשה הזו ולא מסר את הסיבה. פריט בהיסטוריית הצ'אט יכול לגרום לכך, למשל תמונה שהסוכן פתח. OpenBot התחיל סשן חדש של Gemini עם היסטוריית הצ'אט. יש לנסות שוב. אם השגיאה נמשכת, יש לבחור מודל אחר.",
+    "Gemini דחה את הבקשה הזו ולא מסר את הסיבה. פריט בהיסטוריית הצ'אט יכול לגרום לכך, למשל תמונה שהסוכן פתח. OpenBot-NC התחיל סשן חדש של Gemini עם היסטוריית הצ'אט. יש לנסות שוב. אם השגיאה נמשכת, יש לבחור מודל אחר.",
   "error.provider.antigravityHistoryUnreadable":
-    "Gemini לא הצליח לקרוא את ההיסטוריה השמורה של הצ'אט הזה. OpenBot התחיל סשן חדש של Gemini עם היסטוריית הצ'אט. יש לשלוח את ההודעה שוב.",
+    "Gemini לא הצליח לקרוא את ההיסטוריה השמורה של הצ'אט הזה. OpenBot-NC התחיל סשן חדש של Gemini עם היסטוריית הצ'אט. יש לשלוח את ההודעה שוב.",
   "error.provider.acpTurnStuck":
-    "{provider} לא סיים את התור הקודם שלו, ולכן לא קיבל את ההודעה הזו. OpenBot התחיל סשן {provider} חדש עם היסטוריית הצ'אט. יש לשלוח את ההודעה שוב.",
+    "{provider} לא סיים את התור הקודם שלו, ולכן לא קיבל את ההודעה הזו. OpenBot-NC התחיל סשן {provider} חדש עם היסטוריית הצ'אט. יש לשלוח את ההודעה שוב.",
   "error.provider.antigravityLocationUnsupported":
     "חברת Google לא מאפשרת ל-Gemini לפעול ממיקום הרשת של המחשב שמריץ את הסוכן הזה. יש להשתמש ב-Gemini במחשב אחר, או לבחור ספק אחר לסוכן הזה.\n{detail}",
   "error.provider.antigravityTurnStopped":
@@ -342,7 +342,7 @@ export const messages = {
   "error.provider.cursorArchivePath": "בארכיון של Cursor יש קובץ לא צפוי.",
   "error.provider.cursorChecksum": "סכום הביקורת של סביבת ההרצה של Cursor אינו תואם.",
   "error.provider.cursorReleaseShape": "לגרסה של Cursor יש מבנה לא צפוי.",
-  "error.provider.cursorMissing": "Cursor לא הורד. יש להוריד אותו ב-OpenBot כדי להמשיך.",
+  "error.provider.cursorMissing": "Cursor לא הורד. יש להוריד אותו ב-OpenBot-NC כדי להמשיך.",
   "error.provider.cursorNotStarted": "סוכן Cursor נמצא, אך לא ניתן לקרוא את הגרסה שלו.",
   "error.provider.cursorVersionUnreadable": "לא ניתן לקרוא את הגרסה של סוכן Cursor.",
   "error.provider.cursorSignIn": "יש להתחבר עם Cursor או להגדיר CURSOR_API_KEY כדי להשתמש ב-Cursor.",
@@ -352,16 +352,16 @@ export const messages = {
   "error.provider.clinePackageMismatch": "החבילה של Cline אינה תואמת לקטלוג סביבות ההרצה.",
   "error.provider.clineChecksum": "סכום הביקורת של סביבת ההרצה של Cline אינו תואם.",
   "error.provider.clineLicenseChecksum": "סכום הביקורת של הרישיון של Cline אינו תואם.",
-  "error.provider.clineMissing": "Cline לא הורד. יש להוריד אותו ב-OpenBot כדי להמשיך.",
-  "error.provider.clineOutdated": "Cline CLI {version} ישן מדי. OpenBot דורש גרסה 3.0.68 ומעלה.",
+  "error.provider.clineMissing": "Cline לא הורד. יש להוריד אותו ב-OpenBot-NC כדי להמשיך.",
+  "error.provider.clineOutdated": "Cline CLI {version} ישן מדי. OpenBot-NC דורש גרסה 3.0.68 ומעלה.",
   "error.provider.clineNotStarted": "Cline לא הצליח לפעול. יש להריץ `cline --version` בטרמינל.",
   "error.provider.clineVersionUnreadable": "לא ניתן לקרוא את הגרסה של Cline CLI.",
   "error.provider.clineSignIn": "יש להתחבר עם Cline או להגדיר CLINE_API_KEY כדי להשתמש ב-Cline.",
   "error.provider.kimiArchivePath": "בארכיון של Kimi יש נתיב לא צפוי.",
   "error.provider.kimiChecksum": "סכום הביקורת של סביבת ההרצה של Kimi אינו תואם.",
   "error.provider.kimiLicenseChecksum": "סכום הביקורת של הרישיון של Kimi אינו תואם.",
-  "error.provider.kimiMissing": "Kimi לא הורד. יש להוריד אותו ב-OpenBot כדי להמשיך.",
-  "error.provider.kimiOutdated": "Kimi CLI {version} ישן מדי. OpenBot דורש גרסה 1.52.0 ומעלה.",
+  "error.provider.kimiMissing": "Kimi לא הורד. יש להוריד אותו ב-OpenBot-NC כדי להמשיך.",
+  "error.provider.kimiOutdated": "Kimi CLI {version} ישן מדי. OpenBot-NC דורש גרסה 1.52.0 ומעלה.",
   "error.provider.kimiNotStarted": "Kimi לא הצליח לפעול. יש להריץ `kimi --version` בטרמינל.",
   "error.provider.kimiVersionUnreadable": "לא ניתן לקרוא את הגרסה של Kimi CLI.",
   "error.provider.kimiSignIn": "יש להתחבר עם Kimi Code כדי להשתמש ב-Kimi.",
@@ -375,7 +375,7 @@ export const messages = {
   "error.provider.hermesTurnFailed":
     "Hermes לא הצליח לסיים את התור הזה. אם התשובה שלו מציינת סיבה, פעל לפיה. אם לא, ייתכן ששרת MCP של הסוכן הזה אינו זמין: בדוק אותו בחנות, אפליקציות, ואז שלח את ההודעה שוב.",
   "error.provider.hermesRefused":
-    "Hermes דחה את ההודעה הזו לפני שהתחילה. שלח אותה שוב. אם Hermes דוחה כל הודעה, הפעל מחדש את OpenBot במחשב שמריץ את הסוכן הזה.",
+    "Hermes דחה את ההודעה הזו לפני שהתחילה. שלח אותה שוב. אם Hermes דוחה כל הודעה, הפעל מחדש את OpenBot-NC במחשב שמריץ את הסוכן הזה.",
   "error.provider.hermesConnectionLost":
     "Hermes איבד את החיבור שלו במהלך ההודעה הזו, ולכן הוא לא יודע אם העבודה הסתיימה. יש לבדוק מה הסוכן עשה לפני שליחת ההודעה שוב.",
   "error.provider.copilotThinkingRejected":
@@ -384,7 +384,7 @@ export const messages = {
     "המודל עצר לפני שהתשובה שלו הושלמה. שלחו שוב את ההודעה, או בחרו מודל אחר לסוכן הזה.",
   "error.provider.usageLimitReached": "החשבון הגיע למגבלת השימוש שלו.",
   "error.provider.claudeContextFull":
-    "הצ'אט הזה נעשה ארוך מדי עבור Claude. OpenBot התחיל סשן חדש של Claude Code עם היסטוריית הצ'אט. יש לנסות שוב.",
+    "הצ'אט הזה נעשה ארוך מדי עבור Claude. OpenBot-NC התחיל סשן חדש של Claude Code עם היסטוריית הצ'אט. יש לנסות שוב.",
   "error.provider.claudeApiKeyNoCredit":
     "אין קרדיט API במפתח Anthropic API. מינוי Claude לא משלם על בקשות עם מפתח API. אפשר להוסיף קרדיט ב-Anthropic Console, או להתחבר ל-Claude בהגדרות ולבחור את חשבון Claude בתפריט המודל של הסוכן.",
   "error.provider.claudeAccountNoCredit":
@@ -392,43 +392,43 @@ export const messages = {
   "error.provider.claudeServiceBlocked":
     "השירות של Claude חסם את הבקשה הזו. בדרך כלל זו תקלה קצרה אצל Claude, ולא בעיה בחשבון שלך. אפשר לשלוח את ההודעה שוב בעוד כמה דקות.",
   "error.provider.foreignReasoning":
-    "{provider} לא קיבל את החשיבה הקודמת בצ'אט הזה, כי חשבון או מפתח API אחר קיבל אותה. OpenBot התחיל סשן חדש של {provider} עם היסטוריית הצ'אט. יש לנסות שוב.",
+    "{provider} לא קיבל את החשיבה הקודמת בצ'אט הזה, כי חשבון או מפתח API אחר קיבל אותה. OpenBot-NC התחיל סשן חדש של {provider} עם היסטוריית הצ'אט. יש לנסות שוב.",
   "error.provider.blankHistoryText":
-    "המודל לא קיבל את הצ'אט הזה, כי בהיסטוריה השמורה שלו יש הודעה ריקה. OpenBot התחיל סשן חדש של {provider} עם היסטוריית הצ'אט. יש לנסות שוב.",
+    "המודל לא קיבל את הצ'אט הזה, כי בהיסטוריה השמורה שלו יש הודעה ריקה. OpenBot-NC התחיל סשן חדש של {provider} עם היסטוריית הצ'אט. יש לנסות שוב.",
   "error.provider.codexHistoryItemMissing":
-    "Codex לא הצליח להמשיך את הצ'אט הזה, כי פריט בהיסטוריה השמורה שלו חסר. OpenBot התחיל סשן חדש של Codex עם היסטוריית הצ'אט. יש לנסות שוב.",
+    "Codex לא הצליח להמשיך את הצ'אט הזה, כי פריט בהיסטוריה השמורה שלו חסר. OpenBot-NC התחיל סשן חדש של Codex עם היסטוריית הצ'אט. יש לנסות שוב.",
   "error.provider.codexRequestRefused":
-    "{provider} דחה את הבקשה של הצ'אט הזה ולא מסר את הסיבה. זה יכול לקרות בצ'אט ארוך עם הרבה תמונות. OpenBot התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
+    "{provider} דחה את הבקשה של הצ'אט הזה ולא מסר את הסיבה. זה יכול לקרות בצ'אט ארוך עם הרבה תמונות. OpenBot-NC התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
   "error.provider.codexSafetyBlocked":
     "{provider} חסם את ההודעה הזאת בגלל כללי הבטיחות שלו: {reason} הסוכן כבר לא רואה את ההודעה הזאת, ולכן היא לא עוצרת את ההודעות הבאות שלך. שלח את הבקשה שוב במילים אחרות.",
   "error.provider.codexSafetyBlockedKept":
     "{provider} חסם את ההודעה הזאת בגלל כללי הבטיחות שלו: {reason} אם {provider} חוסם גם את ההודעות הבאות שלך, התחל צ'אט חדש.",
   "error.provider.codexAudioRefused":
-    "המודל הזה לא יכול להאזין לאודיו, ולכן הוא לא קיבל את הצליל בצ'אט הזה. OpenBot התחיל סשן Codex חדש עם היסטוריית הצ'אט. כדי להמשיך, שלח שוב את הבקשה ובקש מהסוכן לעבוד בלי הצליל. כדי לבדוק צליל, בחר בתפריט המודל של הסוכן מודל שיכול להאזין לאודיו.",
+    "המודל הזה לא יכול להאזין לאודיו, ולכן הוא לא קיבל את הצליל בצ'אט הזה. OpenBot-NC התחיל סשן Codex חדש עם היסטוריית הצ'אט. כדי להמשיך, שלח שוב את הבקשה ובקש מהסוכן לעבוד בלי הצליל. כדי לבדוק צליל, בחר בתפריט המודל של הסוכן מודל שיכול להאזין לאודיו.",
   "error.provider.codexAccountSettingsUnreadable":
     "Codex לא הצליח לטעון את ההגדרות של חשבון ChatGPT, ולכן הסוכן נעצר. יש לנסות שוב. אם הוא נעצר שוב, יש לבחור חיבור מחדש עבור ChatGPT בהגדרות שרת ← ספקים.",
   "error.provider.imageTooSmall":
-    "המודל לא קיבל תמונה בצ'אט הזה כי התמונה קטנה מדי. OpenBot התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
+    "המודל לא קיבל תמונה בצ'אט הזה כי התמונה קטנה מדי. OpenBot-NC התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
   "error.provider.imageTooLarge":
-    "המודל לא קיבל תמונה בצ'אט הזה כי התמונה גדולה מדי. OpenBot התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
+    "המודל לא קיבל תמונה בצ'אט הזה כי התמונה גדולה מדי. OpenBot-NC התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
   "error.provider.imageCountLimit":
-    "המודל לא קיבל את הצ'אט הזה כי יש בו יותר מדי תמונות. OpenBot התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
+    "המודל לא קיבל את הצ'אט הזה כי יש בו יותר מדי תמונות. OpenBot-NC התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
   "error.provider.imageUnreadable":
-    "המודל לא הצליח לקרוא תמונה בצ'אט הזה. OpenBot התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב. אם שלחת תמונה, שלח תמונה אחרת.",
+    "המודל לא הצליח לקרוא תמונה בצ'אט הזה. OpenBot-NC התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב. אם שלחת תמונה, שלח תמונה אחרת.",
   "error.provider.requestTooLarge":
-    "הצ'אט הזה נעשה גדול מדי לשליחה למודל. תמונות בצ'אט גורמות לכך לעיתים קרובות. OpenBot התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
+    "הצ'אט הזה נעשה גדול מדי לשליחה למודל. תמונות בצ'אט גורמות לכך לעיתים קרובות. OpenBot-NC התחיל סשן {provider} חדש עם היסטוריית הצ'אט. נסה שוב.",
   "error.provider.opencodeSessionRejected":
-    "OpenCode דחה את הבקשה ולא מסר את הסיבה. זה יכול לקרות בצ'אט ארוך או אחרי החלפת מודל. OpenBot התחיל סשן חדש של OpenCode עם היסטוריית הצ'אט. יש לנסות שוב. אם השגיאה נמשכת, יש לבחור מודל אחר או רמת מאמץ נמוכה יותר.",
+    "OpenCode דחה את הבקשה ולא מסר את הסיבה. זה יכול לקרות בצ'אט ארוך או אחרי החלפת מודל. OpenBot-NC התחיל סשן חדש של OpenCode עם היסטוריית הצ'אט. יש לנסות שוב. אם השגיאה נמשכת, יש לבחור מודל אחר או רמת מאמץ נמוכה יותר.",
   "error.provider.opencodeInputRefused":
-    "המודל דחה את התוכן של הצ'אט הזה ולא מסר את הסיבה. קובץ בצ'אט, כמו PDF או תמונה, יכול לגרום לזה. OpenBot התחיל סשן חדש של OpenCode עם היסטוריית הצ'אט. יש לשלוח את ההודעה שוב בלי הקובץ, או לבחור מודל אחר.",
+    "המודל דחה את התוכן של הצ'אט הזה ולא מסר את הסיבה. קובץ בצ'אט, כמו PDF או תמונה, יכול לגרום לזה. OpenBot-NC התחיל סשן חדש של OpenCode עם היסטוריית הצ'אט. יש לשלוח את ההודעה שוב בלי הקובץ, או לבחור מודל אחר.",
   "error.provider.opencodeCompactionFailed":
-    "המודל לא הצליח לסכם את הצ'אט הארוך הזה כדי לפנות מקום בחלון ההקשר. OpenBot התחיל סשן חדש של OpenCode עם היסטוריית הצ'אט. יש לנסות שוב. אם השגיאה נמשכת, יש לבחור מודל חזק יותר.",
+    "המודל לא הצליח לסכם את הצ'אט הארוך הזה כדי לפנות מקום בחלון ההקשר. OpenBot-NC התחיל סשן חדש של OpenCode עם היסטוריית הצ'אט. יש לנסות שוב. אם השגיאה נמשכת, יש לבחור מודל חזק יותר.",
   "error.provider.museMcpStartupFault":
-    "Muse לא הצליח להפעיל שרת MCP וחסם MCP בסשן הזה. OpenBot התחיל סשן חדש של Muse עם היסטוריית הצ'אט. יש לנסות שוב. אם השגיאה נמשכת, יש לכבות את שליטה במחשב או את שרת ה-MCP שנכשל עבור הסוכן הזה.",
+    "Muse לא הצליח להפעיל שרת MCP וחסם MCP בסשן הזה. OpenBot-NC התחיל סשן חדש של Muse עם היסטוריית הצ'אט. יש לנסות שוב. אם השגיאה נמשכת, יש לכבות את שליטה במחשב או את שרת ה-MCP שנכשל עבור הסוכן הזה.",
   "error.provider.claudeSessionMissing":
-    "Claude Code לא מצא את הסשן השמור של הצ'אט הזה. OpenBot התחיל סשן חדש של Claude Code עם היסטוריית הצ'אט. יש לנסות שוב.",
+    "Claude Code לא מצא את הסשן השמור של הצ'אט הזה. OpenBot-NC התחיל סשן חדש של Claude Code עם היסטוריית הצ'אט. יש לנסות שוב.",
   "error.provider.grokSignIn": "יש להריץ `grok login` או להגדיר XAI_API_KEY כדי להשתמש ב-Grok.",
-  "error.provider.acpSignInNoStart": "הספק לא הופעל, ולכן ההתחברות לא יכלה להתחיל. נסה שוב או הפעל מחדש את OpenBot.",
+  "error.provider.acpSignInNoStart": "הספק לא הופעל, ולכן ההתחברות לא יכלה להתחיל. נסה שוב או הפעל מחדש את OpenBot-NC.",
   "error.provider.acpSignInTimedOut": "זמן ההתחברות אזל.",
   "error.provider.acpSignInStopped": "ההתחברות נעצרה לפני שהושלמה.",
   "error.provider.geminiNoBrowserUseCode":
@@ -440,7 +440,7 @@ export const messages = {
   "error.provider.acpSignInFailed": "ההתחברות לא הושלמה.",
   "error.provider.acpSignInFailedReason": "ההתחברות לא הושלמה: {reason}",
   "error.provider.acpSignInNetwork":
-    "ההתחברות לא הצליחה להגיע לשרת של הספק. בדקו את חיבור הרשת ואת הגדרות ה-DNS של המחשב שמריץ את OpenBot, ואז נסו שוב.",
+    "ההתחברות לא הצליחה להגיע לשרת של הספק. בדקו את חיבור הרשת ואת הגדרות ה-DNS של המחשב שמריץ את OpenBot-NC, ואז נסו שוב.",
   "error.provider.acpSignOutFailed": "ההתנתקות לא הושלמה.",
   "error.provider.acpSignOutFailedReason": "ההתנתקות לא הושלמה: {reason}",
   "error.provider.acpSignInMethodMissing":
@@ -455,7 +455,7 @@ export const messages = {
   "error.provider.geminiAccountSettingsUnreadable":
     "Gemini לא יכול לפתוח את קובץ ההגדרות של החשבון הזה, ולכן אינו יכול להתחבר. יש להסיר את החשבון ולהוסיף אותו שוב.",
   "error.provider.geminiSettingsUnreadable":
-    "Gemini לא יכול לפתוח את קובץ ההגדרות שלו במחשב הזה, ולכן אינו יכול להתחבר. יש לסגור את האפליקציות האחרות שמשתמשות ב-Gemini, ואז לסגור ולפתוח שוב את OpenBot.",
+    "Gemini לא יכול לפתוח את קובץ ההגדרות שלו במחשב הזה, ולכן אינו יכול להתחבר. יש לסגור את האפליקציות האחרות שמשתמשות ב-Gemini, ואז לסגור ולפתוח שוב את OpenBot-NC.",
   "error.provider.geminiVerificationRequired":
     "נדרש אימות של החשבון שלך ב-Google לפני ש-Gemini יוכל לענות. יש לאמת את חשבון Google בדפדפן, ואז לשלוח את ההודעה שוב.",
   "error.provider.keyProviderRefused":
@@ -468,7 +468,7 @@ export const messages = {
     "שירות המודל דחה את הבקשה. יש לבחור מודל אחר, או לבדוק את הגישה שלך למודל הזה בשירות.",
   "error.provider.modelServiceRefusedReason":
     "שירות המודל דחה את הבקשה: {reason}. יש לבחור מודל אחר, או לבדוק את הגישה שלך למודל הזה בשירות.",
-  "error.provider.messageTooLarge": "OpenBot עצר את {provider} כי הוא שלח הודעה גדולה מ-{limit} MB.",
+  "error.provider.messageTooLarge": "OpenBot-NC עצר את {provider} כי הוא שלח הודעה גדולה מ-{limit} MB.",
   "error.provider.customAgentIdInvalid":
     "מזהה סוכן חייב להכיל אותיות קטנות באנגלית, ספרות או `-`, ולא יכול להיות המזהה של ספק מובנה.",
   "error.provider.customAgentEnvInvalid":
@@ -478,33 +478,35 @@ export const messages = {
   "error.provider.customAgentArgsInvalid": "ארגומנט לא יכול להכיל מעבר שורה. אפשר להשתמש בעד 32 ארגומנטים.",
   "error.provider.customAgentWindowsScript":
     "פקודת .cmd או .bat יכולה לקבל בארגומנטים שלה רק אותיות, מספרים והתווים - _ . , : = @ + / \\",
-  "error.provider.customAgentNotFound": "OpenBot לא מוצא את {command}. יש להזין את הנתיב המלא של הפקודה.",
+  "error.provider.customAgentNotFound": "OpenBot-NC לא מוצא את {command}. יש להזין את הנתיב המלא של הפקודה.",
   "error.provider.customAgentCheckTimedOut": "הסוכן לא השיב תוך 20 שניות.",
   "error.provider.customAgentCheckStopped": "הסוכן נעצר לפני שהשיב.",
-  "error.provider.customAgentProtocolVersion": "הסוכן משתמש ב-ACP גרסה {version}. OpenBot משתמש בגרסה 1.",
+  "error.provider.customAgentProtocolVersion": "הסוכן משתמש ב-ACP גרסה {version}. OpenBot-NC משתמש בגרסה 1.",
   "error.provider.customAgentCheckFailed": "הסוכן לא השיב כסוכן ACP.",
   "error.provider.customAgentRemoveBusy": "יש להמתין לסיום הפעולה הפעילה והתור לפני הסרת הסוכן המותאם הזה.",
   "error.provider.customAgentNone": "לא נשמר סוכן מותאם.",
-  "error.provider.customAgentsUnavailable": "השרת הזה לא יכול לשנות את הסוכנים המותאמים שלו. יש לעדכן בו את OpenBot.",
+  "error.provider.customAgentsUnavailable":
+    "השרת הזה לא יכול לשנות את הסוכנים המותאמים שלו. יש לעדכן בו את OpenBot-NC.",
   "error.provider.customAgentMissing": "הסוכן המותאם הזה אינו שמור כעת. יש לבחור מודל אחר.",
   "error.provider.customAgentSignIn": "יש להתחבר באמצעות הפקודה של הסוכן עצמו, ואז לנסות שוב.",
   "error.provider.customAgentsReadOnly":
-    "הסוכנים המותאמים השמורים נכתבו בגרסה חדשה יותר של OpenBot, או שלא ניתן לקרוא את הקובץ. יש לעדכן את OpenBot כדי לשנות אותם.",
+    "הסוכנים המותאמים השמורים נכתבו בגרסה חדשה יותר של OpenBot-NC, או שלא ניתן לקרוא את הקובץ. יש לעדכן את OpenBot-NC כדי לשנות אותם.",
   "error.provider.customAgentNoSecureStorage":
     "במחשב הזה אין אחסון מאובטח, ולכן לא ניתן לשמור ערכי סביבה. יש להסיר אותם ולנסות שוב.",
   "error.provider.customAgentNotSaved": "הסוכן המותאם הזה לא נשמר. יש לרענן את הרשימה ולנסות שוב.",
   "error.provider.customAgentWorkspaceOnly": "{reason}. מצב סביבת עבודה בלבד חוסם זאת. אפשר לנסות גישה מלאה.",
   "error.provider.customAgentTooMany": "אפשר לשמור עד {count} סוכנים מותאמים.",
   "error.provider.customAgentEnvValueMissing": "יש להזין ערך עבור {name}.",
-  "error.provider.off": "{provider} כבוי ב-OpenBot. יש להפעיל אותו קודם בהגדרות הספקים.",
+  "error.provider.off": "{provider} כבוי ב-OpenBot-NC. יש להפעיל אותו קודם בהגדרות הספקים.",
   "error.provider.inUse": "סוכן משתמש ב-{provider}. יש לשנות את המודל שלו לפני כיבוי הספק הזה.",
   "error.provider.useBusy": "יש להמתין לסיום בדיקת הספק או ההתחברות, ואז לנסות שוב.",
-  "error.provider.useSettingsReadOnly": "לא ניתן לקרוא את הגדרות הספקים השמורות. יש לעדכן את OpenBot לפני שינוי שלהן.",
-  "error.provider.useChangeFailed": "OpenBot לא הצליח לשנות את הגדרת הספק.",
+  "error.provider.useSettingsReadOnly":
+    "לא ניתן לקרוא את הגדרות הספקים השמורות. יש לעדכן את OpenBot-NC לפני שינוי שלהן.",
+  "error.provider.useChangeFailed": "OpenBot-NC לא הצליח לשנות את הגדרת הספק.",
   "error.provider.accountsUnsupported": "{provider} יכול להחזיק חשבון אחד בלבד.",
   "error.provider.accountNeedsConnection": "יש לחבר את {provider} לפני הוספת חשבון נוסף.",
   "error.provider.usageResetUnsupported": "{provider} לא יכול לאפס מגבלות שימוש.",
-  "error.provider.signOutUnsupported": "OpenBot לא יכול לנתק את ההתחברות אל {provider}.",
+  "error.provider.signOutUnsupported": "OpenBot-NC לא יכול לנתק את ההתחברות אל {provider}.",
   "error.provider.usageResetNotConnected": "יש להתחבר שוב אל חשבון {provider} הזה לפני איפוס השימוש שלו.",
   "error.provider.accountLimit": "{provider} יכול להחזיק עד {limit} חשבונות.",
   "error.provider.accountNotFound": "חשבון {provider} הזה אינו במחשב הזה. יש לרענן ולנסות שוב.",
@@ -513,13 +515,13 @@ export const messages = {
   "error.provider.accountUsesKey":
     "חשבון {provider} הזה משתמש במפתח ה-API השמור ואין לו התחברות. יש לשנות את המפתח בהגדרות שרת ← ספקים.",
   "error.provider.accountNeedsKey":
-    "חשבון {provider} חדש צריך מפתח API. יש לעדכן את OpenBot במכשיר הזה ואז להוסיף את החשבון שוב.",
+    "חשבון {provider} חדש צריך מפתח API. יש לעדכן את OpenBot-NC במכשיר הזה ואז להוסיף את החשבון שוב.",
   "error.provider.accountKeyRefused": "{provider} לא קיבל את מפתח ה-API הזה. יש לבדוק את המפתח ולנסות שוב.",
   "error.provider.accountKeyUnreachable":
-    "OpenBot לא הצליח להגיע אל {provider} כדי לבדוק את מפתח ה-API. יש לבדוק את החיבור לאינטרנט ולנסות שוב.",
+    "OpenBot-NC לא הצליח להגיע אל {provider} כדי לבדוק את מפתח ה-API. יש לבדוק את החיבור לאינטרנט ולנסות שוב.",
   "error.provider.accountKeySignedOut": "{provider} כבר לא מקבל את מפתח ה-API של החשבון הזה. יש לתת לחשבון מפתח חדש.",
   "error.provider.accountInUse": "סוכן בחשבון הזה עובד. יש לנסות שוב כשהסוכן יעצור.",
-  "error.provider.accountsReadOnly": "לא ניתן לקרוא את חשבונות הספקים השמורים. יש לעדכן את OpenBot לפני שינוי שלהם.",
+  "error.provider.accountsReadOnly": "לא ניתן לקרוא את חשבונות הספקים השמורים. יש לעדכן את OpenBot-NC לפני שינוי שלהם.",
   "error.provider.accountSignedOut": "חשבון {provider} הזה מנותק. יש להתחבר שוב.",
   "error.provider.sessionSettingUnavailable": "ההגדרה הזו אינה זמינה בסשן הנוכחי של הספק.",
   "error.provider.sessionSettingInvalid": "הערך הזה אינו זמין עבור ההגדרה.",
@@ -532,7 +534,7 @@ export const messages = {
   "error.provider.piSessionBusy": "יש להמתין לסיום הפעולה הנוכחית של Pi.",
   "error.provider.acpSessionBusy": "{provider} עדיין מסיים פעולה שנעצרה. יש לנסות שוב בעוד רגע.",
   "error.provider.acpSettingsConflict":
-    "{provider} שינה את הצ'אט הזה בזמן ש-OpenBot החיל את ההגדרות שלו. יש לנסות שוב.",
+    "{provider} שינה את הצ'אט הזה בזמן ש-OpenBot-NC החיל את ההגדרות שלו. יש לנסות שוב.",
   "error.provider.acpSessionStale": "{provider} לא הצליח לטעון את הגרסה האחרונה של הצ'אט הזה. יש לשלוח את ההודעה שוב.",
   "error.provider.acpModelNotOffered": "{provider} לא מציע כעת את {model}. בחרו מודל אחר לסוכן הזה ונסו שוב.",
   "error.provider.piStopped": "Pi אינו פועל. יש לחבר את Pi ולנסות שוב.",
@@ -559,7 +561,7 @@ export const messages = {
   "error.provider.museRequestUnsupported": "בקשת שרת Muse אינה נתמכת.",
   "error.provider.museConnectionFailed": "החיבור אל Muse נכשל. יש לחדש את השיחה כדי לשחזר את ההיסטוריה השמורה שלה.",
   "error.provider.museUnknownSession": "סשן Muse לא מוכר.",
-  "error.provider.museInvalidToolResult": "תוצאת כלי OpenBot לא תקינה.",
+  "error.provider.museInvalidToolResult": "תוצאת כלי OpenBot-NC לא תקינה.",
   "error.provider.museMcpRequired": "Muse חייב לתמוך בשרתי MCP של סשן.",
   "error.provider.museSessionMismatch": "Muse החזיר סשן אחר.",
   "error.provider.museCompactRejected": "Muse לא קיבל את הכיווץ.",

@@ -11,7 +11,7 @@ export const messages = {
   "mobile.onboarding.server.title": "에이전트가 어디에서 일할까요?",
   "mobile.onboarding.server.body": "에이전트는 서버에서 실행돼요. 서버에 연결할 방법을 선택하세요.",
   "mobile.onboarding.server.computer": "내 컴퓨터",
-  "mobile.onboarding.server.computerBody": "컴퓨터의 OpenBot을 서버로 사용해요.",
+  "mobile.onboarding.server.computerBody": "컴퓨터의 OpenBot-NC를 서버로 사용해요.",
   "mobile.onboarding.server.computerTitle": "컴퓨터 연결",
   "mobile.onboarding.server.connecting": "{name}에 연결 중…",
   "mobile.onboarding.agent.title": "첫 에이전트를 골라보세요",

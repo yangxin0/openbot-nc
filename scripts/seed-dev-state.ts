@@ -1507,7 +1507,7 @@ async function seedTeam(profilePath: string, agentStore: AgentStore, clock: Seed
   const team = new TeamStore(join(profilePath, TEAM_FILE), join(profilePath, LEGACY_TEAM_FILE));
   await runCauseEffect(team.initialize());
   const owner = { id: "openbot-dev-owner", name: "Dev Owner", chatColor: null };
-  const teamIdentity = await runCauseEffect(team.configureForOwner("OpenBot Dev Team", owner));
+  const teamIdentity = await runCauseEffect(team.configureForOwner("OpenBot-NC Dev Team", owner));
   const joined = [];
   for (const member of [{ username: "alice", password: "openbot-dev-alice-password", role: "admin" as const }]) {
     const invite = await runCauseEffect(team.createInvite(member.role));

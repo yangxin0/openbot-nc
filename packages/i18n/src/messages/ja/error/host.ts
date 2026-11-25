@@ -2,11 +2,11 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.nameBeforePublish": "公開する前に、この OpenBot に名前を付けてください。",
-  "error.host.publishBeforeInvite": "招待を作成する前に、この OpenBot を公開してください。",
+  "error.host.nameBeforePublish": "公開する前に、この OpenBot-NC に名前を付けてください。",
+  "error.host.publishBeforeInvite": "招待を作成する前に、この OpenBot-NC を公開してください。",
   "error.host.teamAccessUnavailable": "チームへのアクセスを利用できません。",
   "error.host.ownerIdentityUnavailable": "ホストのオーナーの ID を利用できません。",
-  "error.host.publishFailed": "この OpenBot を公開できませんでした。",
+  "error.host.publishFailed": "この OpenBot-NC を公開できませんでした。",
   "error.host.noServer": "このコンピューターには変更できるサーバーがありません。",
   "error.host.identityLocalOnly": "サーバーの名前とロゴは、サーバーを実行しているコンピューターでのみ変更できます。",
   "error.host.timezoneInvalid": "このタイムゾーンは不明です。",

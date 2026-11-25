@@ -1,3 +1,4 @@
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import { type DynamicRecord, isBoolean, isDynamicRecord, isNumber, isString } from "@openbot/contracts/runtime-values";
 import {
   CLIENT_BROWSER_LIMITS,
@@ -255,7 +256,7 @@ async function openTab(url: string, context: CommandContext): Promise<ClientBrow
   if (created.id === undefined) throw new BrowserCommandError("failed", "Chrome did not open the tab.");
   await context.addToGroup(created.id);
   const tab = await waitForLoad(created.id);
-  return result(`Opened ${tab.url ?? url} in a new tab of the OpenBot group.`, tab);
+  return result(`Opened ${tab.url ?? url} in a new tab of the ${APP_NAME} group.`, tab);
 }
 
 async function navigate(

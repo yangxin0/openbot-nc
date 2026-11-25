@@ -4,7 +4,7 @@ import type { messages as source } from "../en/account";
 export const messages = {
   "account.menu.signOut": "Выйти",
   "account.menu.signingOut": "Выходим…",
-  "account.menu.updateFailed": "Не удалось обновить OpenBot.",
+  "account.menu.updateFailed": "Не удалось обновить OpenBot-NC.",
   "account.menu.signOutFailed": "Не удалось выйти.",
   "account.usage.title": "Использование",
   "account.usage.refresh": "Обновить",
@@ -64,7 +64,7 @@ export const messages = {
   "account.update.progress": "Ход загрузки обновления",
   "account.login.email": "Эл. почта",
   "account.login.sendCode": "Отправить код для входа",
-  "account.login.verified": "Проверено. Открываем OpenBot…",
+  "account.login.verified": "Проверено. Открываем OpenBot-NC…",
   "account.login.developmentCode": "Код для разработки: {code}",
   "account.otp.incorrect": "Неверный код. Повторите попытку.",
   "account.otp.verifying": "Проверка…",

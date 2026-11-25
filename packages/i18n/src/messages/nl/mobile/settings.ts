@@ -8,16 +8,16 @@ export const messages = {
   "mobile.settings.language.system": "Systeemstandaard",
   "mobile.settings.language.footer":
     "Systeemstandaard volgt de eerste taal in de instellingen van je telefoon. Tekst die nog niet is vertaald, wordt in het Engels getoond.",
-  "mobile.settings.language.restartTitle": "OpenBot opnieuw starten?",
+  "mobile.settings.language.restartTitle": "OpenBot-NC opnieuw starten?",
   "mobile.settings.language.restartBody":
-    "Deze taal lees je in de andere richting. De schermen draaien om wanneer OpenBot opnieuw start. Zien de schermen er na de herstart nog verkeerd uit, sluit OpenBot dan in de appkiezer en open het opnieuw.",
+    "Deze taal lees je in de andere richting. De schermen draaien om wanneer OpenBot-NC opnieuw start. Zien de schermen er na de herstart nog verkeerd uit, sluit OpenBot-NC dan in de appkiezer en open het opnieuw.",
   "mobile.settings.language.restartNow": "Nu opnieuw starten",
   "mobile.settings.language.restartFailed":
-    "OpenBot kon niet opnieuw starten. De schermen draaien om wanneer je OpenBot de volgende keer opent.",
+    "OpenBot-NC kon niet opnieuw starten. De schermen draaien om wanneer je OpenBot-NC de volgende keer opent.",
   "mobile.settings.dictation.language": "Dicteertaal",
   "mobile.settings.about.development": "Ontwikkeling",
   "mobile.settings.home.preferences": "Voorkeuren",
-  "mobile.settings.home.about": "Over OpenBot",
+  "mobile.settings.home.about": "Over OpenBot-NC",
   "mobile.settings.support.log": "Ondersteuningslog",
   "mobile.settings.support.show": "Log tonen",
   "mobile.settings.support.save": "Logbestand opslaan",
@@ -179,13 +179,14 @@ export const messages = {
   "mobile.settings.voice.pause.title": "Pauze voor verzenden",
   "mobile.settings.voice.pause.label": "Wachten op nieuwe woorden",
   "mobile.settings.voice.pause.footer":
-    "In een spraakgesprek verstuurt OpenBot je woorden als het zo lang geen nieuwe woorden herkent. Geluid zonder woorden houdt het luisteren niet open. Kies een langere pauze als je langzaam spreekt of stopt om na te denken.",
+    "In een spraakgesprek verstuurt OpenBot-NC je woorden als het zo lang geen nieuwe woorden herkent. Geluid zonder woorden houdt het luisteren niet open. Kies een langere pauze als je langzaam spreekt of stopt om na te denken.",
   "mobile.settings.voice.pause.seconds": "{seconds} s",
   "mobile.settings.voice.speed.title": "Snelheid antwoorden",
-  "mobile.settings.voice.speed.footer": "De snelheid van antwoorden die OpenBot voorleest, ook in een spraakgesprek.",
+  "mobile.settings.voice.speed.footer":
+    "De snelheid van antwoorden die OpenBot-NC voorleest, ook in een spraakgesprek.",
   "mobile.settings.voice.speed.value": "{speed}×",
   "mobile.settings.voice.elevenLabs.recognitionFooter":
-    "OpenBot streamt je spraak met een eenmalige token naar ElevenLabs, en ElevenLabs brengt het in rekening op je account. De sleutel blijft op deze telefoon.",
+    "OpenBot-NC streamt je spraak met een eenmalige token naar ElevenLabs, en ElevenLabs brengt het in rekening op je account. De sleutel blijft op deze telefoon.",
   "mobile.settings.voice.elevenLabs.model.title": "Model",
   "mobile.settings.voice.elevenLabs.model.footer":
     "Elk model heeft bij ElevenLabs een eigen prijs. De wijziging geldt vanaf het volgende antwoord.",
@@ -218,9 +219,9 @@ export const messages = {
     "Nieuwe berichten gaan naar het huidige werk van de agent, niet naar de wachtrij. Bij agents die dit niet kunnen, wachten ze in de wachtrij.",
   "mobile.settings.agents.planCardFooter": "Vóór een lange taak toont de agent zijn plan.",
   "mobile.settings.agents.commitSection": "Git-commits",
-  "mobile.settings.agents.commitCoAuthor": "OpenBot vermelden in commits",
+  "mobile.settings.agents.commitCoAuthor": "OpenBot-NC vermelden in commits",
   "mobile.settings.agents.commitCoAuthorFooter":
-    "Agents voegen OpenBot toe als co-auteur van hun commits. Jij blijft de auteur.",
+    "Agents voegen OpenBot-NC toe als co-auteur van hun commits. Jij blijft de auteur.",
   "mobile.settings.agents.planStart.title": "Het werk starten",
   "mobile.settings.agents.planStart.wait": "Als ik op Starten druk",
   "mobile.settings.agents.planStart.after": "Na {time}",
@@ -236,7 +237,7 @@ export const messages = {
     "Het maximale aantal berichten en routine-uitvoeringen dat lokale scripts per uur naar elke agent kunnen sturen. Dit geldt voor alle agents op deze server.",
   "mobile.settings.agents.processes.title": "Achtergrondprocessen",
   "mobile.settings.agents.processes.description":
-    "Programma's die agents hebben gestart en laten draaien, zoals dev-servers. Ze blijven draaien als de chat eindigt en als je OpenBot afsluit.",
+    "Programma's die agents hebben gestart en laten draaien, zoals dev-servers. Ze blijven draaien als de chat eindigt en als je OpenBot-NC afsluit.",
   "mobile.settings.agents.processes.empty": "Er draaien geen programma's van agents.",
   "mobile.settings.agents.processes.loadFailed": "De achtergrondprocessen konden niet worden gelezen.",
   "mobile.settings.agents.processes.noAgent": "Geen agent",
@@ -248,7 +249,7 @@ export const messages = {
   "mobile.settings.agents.processes.stopLabel": "Proces {pid} stoppen",
   "mobile.settings.quickActions.title": "App-symboolmenu",
   "mobile.settings.quickActions.footer":
-    "Houd het OpenBot-symbool ingedrukt om deze acties te zien. Je kunt er maximaal {count} aanzetten.",
+    "Houd het OpenBot-NC-symbool ingedrukt om deze acties te zien. Je kunt er maximaal {count} aanzetten.",
   "mobile.settings.quickActions.latestChat": "Laatste chat",
   "mobile.settings.quickActions.secondChat": "Op één na laatste chat",
 } as const satisfies PartialTranslation<typeof source>;

@@ -1,7 +1,7 @@
 import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("error.crm", {
-  "error.crm.serverTooOld": "This server does not support the CRM. Update OpenBot on the computer that runs it.",
+  "error.crm.serverTooOld": "This server does not support the CRM. Update OpenBot-NC on the computer that runs it.",
   "error.crm.tooLargeToSend": "This CRM page is too large to send to this client.",
   "error.crm.customerMissing": "This customer no longer exists.",
   "error.crm.planMissing": "This plan no longer exists.",
@@ -37,9 +37,9 @@ export const messages = defineMessages("error.crm", {
   "error.crm.sourcePermission":
     "This key cannot read customers, invoices, subscriptions, events and products. Give it read access to them.",
   "error.crm.sourceRateLimited": "Stripe got too many requests. Try again in a minute.",
-  "error.crm.sourceNetwork": "OpenBot cannot connect to Stripe. Check the internet connection.",
-  "error.crm.sourceFailed": "Stripe sent an answer that OpenBot cannot read. Try again later.",
-  "error.crm.sourceKeySaveFailed": "OpenBot cannot save the Stripe key on this computer.",
+  "error.crm.sourceNetwork": "OpenBot-NC cannot connect to Stripe. Check the internet connection.",
+  "error.crm.sourceFailed": "Stripe sent an answer that OpenBot-NC cannot read. Try again later.",
+  "error.crm.sourceKeySaveFailed": "OpenBot-NC cannot save the Stripe key on this computer.",
   "error.crm.off": "The CRM is off. An owner or admin can turn it on in Server Settings > Experimental.",
-  "error.crm.settingsSaveFailed": "OpenBot cannot save the CRM setting on this server.",
+  "error.crm.settingsSaveFailed": "OpenBot-NC cannot save the CRM setting on this server.",
 });

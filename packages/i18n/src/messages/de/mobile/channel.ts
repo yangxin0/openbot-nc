@@ -110,7 +110,7 @@ export const messages = {
     "Die Nachrichten werden gelöscht, und die Mitglieder vergessen sie. Die Kanaleinrichtung bleibt.",
   "mobile.channel.deleteHistory.confirmTitle": "Verlauf von {name} löschen?",
   "mobile.channel.deleteHistory.confirmBody":
-    "Alle Nachrichten und Dateien dieses Kanals werden aus OpenBot gelöscht, und die Mitglieder vergessen sie. Das lässt sich nicht rückgängig machen. Mitglieder, Anweisungen, Erinnerungen, Routinen und Aufgaben ändern sich nicht.",
+    "Alle Nachrichten und Dateien dieses Kanals werden aus OpenBot-NC gelöscht, und die Mitglieder vergessen sie. Das lässt sich nicht rückgängig machen. Mitglieder, Anweisungen, Erinnerungen, Routinen und Aufgaben ändern sich nicht.",
   "mobile.channel.deleteHistory.confirm": "Verlauf löschen",
   "mobile.channel.deleteHistory.failed": "Der Verlauf konnte nicht gelöscht werden",
   "mobile.channel.deleteHistory.failedBody": "Der Host konnte den Verlauf nicht löschen.",

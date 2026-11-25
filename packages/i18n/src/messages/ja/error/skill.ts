@@ -40,7 +40,7 @@ export const messages = {
   "error.skill.tooManySkills": "エージェントに追加できるスキルは {limit} 個までです。",
   "error.skill.unmanagedExists": "管理されていないスキルが {path} にすでに存在します。",
   "error.skill.managedSlug":
-    "OpenBot はすべてのエージェントに独自の {slug} スキルを提供します。このスキルには別の名前を付けてください。",
+    "OpenBot-NC はすべてのエージェントに独自の {slug} スキルを提供します。このスキルには別の名前を付けてください。",
   "error.skill.localNoRevisions": "ローカルスキルに公開済みのリビジョンがありません。",
   "error.skill.localNotFound": "このローカルスキルは存在しません。ローカルスキルの一覧で ID を確認してください。",
   "error.skill.localRevisionNotFound":
@@ -58,12 +58,13 @@ export const messages = {
   "error.skill.folderNotRead":
     "{provider} は {folder} を読み込みません。このフォルダーを {target} にコピーしてください。",
   "error.skill.githubLinkInvalid": "GitHub のリポジトリかフォルダーへのリンクを貼り付けてください。",
-  "error.skill.githubNotFound": "OpenBot は {repository} を開けません。リポジトリが非公開か、存在しません。",
+  "error.skill.githubNotFound": "OpenBot-NC は {repository} を開けません。リポジトリが非公開か、存在しません。",
   "error.skill.githubNoSkills": "{folder} に SKILL.md がありません。",
-  "error.skill.githubUnavailable": "OpenBot は現在 GitHub を読み込めません。しばらくしてからもう一度お試しください。",
+  "error.skill.githubUnavailable":
+    "OpenBot-NC は現在 GitHub を読み込めません。しばらくしてからもう一度お試しください。",
   "error.skill.githubRateLimited":
-    "GitHub はアカウントなしで OpenBot が読み込める回数を制限しています。1 時間後にもう一度お試しください。",
+    "GitHub はアカウントなしで OpenBot-NC が読み込める回数を制限しています。1 時間後にもう一度お試しください。",
   "error.skill.githubTooLarge":
-    "OpenBot は {repository} のすべてのファイルを読み取れません。リポジトリが大きすぎます。",
+    "OpenBot-NC は {repository} のすべてのファイルを読み取れません。リポジトリが大きすぎます。",
   "error.skill.githubHostTooOld": "GitHub からスキルを追加するには、このサーバーを更新してください。",
 } as const satisfies PartialTranslation<typeof source>;

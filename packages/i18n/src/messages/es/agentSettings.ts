@@ -42,7 +42,8 @@ export const messages = {
   "agentSettings.folders.inWorkspace": "{folder} está en el espacio de trabajo, así que {agent} ya puede modificarla",
   "agentSettings.folders.inShared": "{folder} está en la carpeta compartida, así que {agent} ya puede modificarla",
   "agentSettings.folders.inFolder": "{folder} está en {parent}, que ya está añadida",
-  "agentSettings.folders.protected": "No puedes añadir {folder}: contiene datos de OpenBot o archivos de otros agentes",
+  "agentSettings.folders.protected":
+    "No puedes añadir {folder}: contiene datos de OpenBot-NC o archivos de otros agentes",
   "agentSettings.folders.missing": "{folder} no es una carpeta de este equipo",
   "agentSettings.folders.limit": {
     one: "Puedes añadir {count} carpeta como máximo",
@@ -153,7 +154,7 @@ export const messages = {
   "agentSettings.runtime.fullAccessNote":
     "El agente se ejecuta con acceso completo al equipo desde su espacio de trabajo y la carpeta compartida.",
   "agentSettings.runtime.askNote":
-    "Te pregunta antes de usar una herramienta de OpenBot o publicar un sitio, y cuando su proveedor pide aprobación.",
+    "Te pregunta antes de usar una herramienta de OpenBot-NC o publicar un sitio, y cuando su proveedor pide aprobación.",
   "agentSettings.runtime.fullNote": "Actúa sin preguntar, salvo las preguntas que te haga.",
   "agentSettings.access.workspace": "Solo espacio de trabajo",
   "agentSettings.access.ask": "Preguntar antes",
@@ -187,7 +188,7 @@ export const messages = {
   "agentSettings.deleteHistory.button": "Eliminar",
   "agentSettings.deleteHistory.confirmTitle": "¿Eliminar el historial del chat con {name}?",
   "agentSettings.deleteHistory.confirmDescription":
-    "Todos los mensajes y archivos de este chat se eliminan de OpenBot y el agente los olvida. No se puede deshacer. Los hilos secundarios, las instrucciones, el modelo, las herramientas, las memorias, el espacio de trabajo y el navegador no cambian.",
+    "Todos los mensajes y archivos de este chat se eliminan de OpenBot-NC y el agente los olvida. No se puede deshacer. Los hilos secundarios, las instrucciones, el modelo, las herramientas, las memorias, el espacio de trabajo y el navegador no cambian.",
   "agentSettings.deleteHistory.confirm": "Eliminar historial",
   "agentSettings.deleteHistory.failed": "No se pudo eliminar el historial.",
   "agentSettings.fullAccess.title": "¿Dar acceso completo a este agente?",
@@ -228,7 +229,7 @@ export const messages = {
   "agentSettings.runtime.workspaceEnforcedClaude":
     "Una edición de archivo fuera te pedirá permiso primero. Un comando no puede escribir fuera.",
   "agentSettings.runtime.workspaceUnlimited":
-    "El uso del equipo y el navegador de OpenBot no están limitados; puedes desactivar el uso del equipo a continuación.",
+    "El uso del equipo y el navegador de OpenBot-NC no están limitados; puedes desactivar el uso del equipo a continuación.",
   "agentSettings.computerUse.title": "Uso del equipo",
   "agentSettings.computerUse.description": "Permitir que este agente controle apps en este equipo",
   "agentSettings.automation.title": "Scripts locales",
@@ -239,7 +240,7 @@ export const messages = {
     "Permite que el agente inicie un chat nuevo cuando su chat sea largo. Antes guarda notas.",
   "agentSettings.quickAcknowledgement.title": "Mostrar el plan antes de tareas largas",
   "agentSettings.quickAcknowledgement.description": "Antes de una tarea larga, el agente muestra su plan.",
-  "agentSettings.builtinMemory.title": "Memoria de OpenBot",
+  "agentSettings.builtinMemory.title": "Memoria de OpenBot-NC",
   "agentSettings.builtinMemory.description":
     "El agente guarda y lee sus propios recuerdos. Desactívala para usar solo una app de memoria, como Mem0. Los recuerdos guardados se mantienen.",
   "agentSettings.browserProfile.label": "Perfil del navegador",

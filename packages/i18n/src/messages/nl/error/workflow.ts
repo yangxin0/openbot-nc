@@ -7,19 +7,19 @@ export const messages = {
   "error.workflow.annotation": "Tekst, notities en vormen kunnen geen verbindingen hebben.",
   "error.workflow.port": "Een stap kan dit type invoer niet aannemen.",
   "error.workflow.unknownValue":
-    "Deze OpenBot kent een instelling van een stap niet. Werk OpenBot bij en probeer het opnieuw.",
+    "Deze OpenBot-NC kent een instelling van een stap niet. Werk OpenBot-NC bij en probeer het opnieuw.",
   "error.workflow.branch": "Alleen een voorwaarde kan ja- en nee-verbindingen hebben.",
   "error.workflow.conditionBranch": "Elke verbinding vanuit een voorwaarde moet ja of nee zijn.",
   "error.workflow.duplicateEdge": "Deze twee stappen hebben deze verbinding al.",
   "error.workflow.serverTooOld":
-    "Deze server ondersteunt geen workflows. Werk OpenBot bij op de computer waarop de server draait.",
+    "Deze server ondersteunt geen workflows. Werk OpenBot-NC bij op de computer waarop de server draait.",
   "error.workflow.newerSteps":
-    "Deze workflow heeft stappen uit een nieuwere OpenBot. Werk OpenBot bij om hem te wijzigen.",
+    "Deze workflow heeft stappen uit een nieuwere OpenBot-NC. Werk OpenBot-NC bij om hem te wijzigen.",
   "error.workflow.nodeUnsupported":
-    "Deze versie van OpenBot kan nog geen stappen voor afbeeldingen, bestanden en berichten uitvoeren.",
-  "error.workflow.interrupted": "OpenBot is gestopt terwijl deze stap liep. Voer hem opnieuw uit.",
+    "Deze versie van OpenBot-NC kan nog geen stappen voor afbeeldingen, bestanden en berichten uitvoeren.",
+  "error.workflow.interrupted": "OpenBot-NC is gestopt terwijl deze stap liep. Voer hem opnieuw uit.",
   "error.workflow.agentMissing": "Kies een agent voor deze stap.",
-  "error.workflow.handoffFailed": "OpenBot kon deze stap niet naar de agent sturen.",
+  "error.workflow.handoffFailed": "OpenBot-NC kon deze stap niet naar de agent sturen.",
   "error.workflow.agentStepEnded": "Het bericht van de agent voor deze stap is verwijderd voordat de agent antwoordde.",
   "error.workflow.agentStepStopped":
     "De agent is gestopt voordat hij deze stap beantwoordde. Voer de stap opnieuw uit.",
@@ -48,7 +48,7 @@ export const messages = {
     "Het model van deze stap is niet beschikbaar. Kies een ander model voor deze stap.",
   "error.workflow.providerBusy": "De provider is bezet. Wacht een paar minuten en voer de stap dan opnieuw uit.",
   "error.workflow.providerOffline":
-    "OpenBot kon de provider niet bereiken. Controleer de internetverbinding en voer de stap dan opnieuw uit.",
+    "OpenBot-NC kon de provider niet bereiken. Controleer de internetverbinding en voer de stap dan opnieuw uit.",
   "error.workflow.modelBusy": "Er loopt een ander verzoek aan het model. Voer de stap zo opnieuw uit.",
   "error.workflow.mediaFailed": "Het model kon de afbeelding of video niet maken. Voer de stap opnieuw uit.",
   "error.workflow.mediaNotMade": "Het model heeft de afbeelding of video niet gemaakt. Het antwoordde: {answer}",
@@ -70,7 +70,7 @@ export const messages = {
   "error.workflow.outputPlaceMissing": "Kies een berichtenplek voor deze uitvoer.",
   "error.workflow.outputChannelMissing": "Kies een kanaal voor deze uitvoer.",
   "error.workflow.outputChannelFailed":
-    "OpenBot kon het resultaat niet in het kanaal plaatsen. Voer de stap opnieuw uit.",
+    "OpenBot-NC kon het resultaat niet in het kanaal plaatsen. Voer de stap opnieuw uit.",
   "error.workflow.discordNoMessage":
     "Deze uitvoer werkt op het Discord-bericht dat de run startte. Start de run vanuit een vermelding in Discord, of kies Posten in kanaal.",
   "error.workflow.slackNoMessage":
@@ -80,7 +80,7 @@ export const messages = {
   "error.workflow.outputConnectionOff":
     "De berichtenverbinding van deze uitvoer staat uit of is verwijderd. Kies opnieuw een plek.",
   "error.workflow.outputNotRunning": "De berichtenverbinding draait nu niet. Probeer het opnieuw als hij draait.",
-  "error.workflow.outputRefused": "De plek heeft het bericht geweigerd. Zorg dat OpenBot daar mag posten.",
+  "error.workflow.outputRefused": "De plek heeft het bericht geweigerd. Zorg dat OpenBot-NC daar mag posten.",
   "error.workflow.outputUncertain":
     "Het bericht is onderweg gestopt. Een deel ervan kan op de plek staan. Kijk daar voordat je het opnieuw probeert.",
   "error.workflow.tooLarge":
@@ -111,7 +111,7 @@ export const messages = {
     "Sunra gebruikt invoerafbeeldingen alleen met een persoonlijk account. Selecteer je persoonlijke account in Sunra of verwijder de afbeeldingsverbindingen.",
   "error.workflow.sunraFailed": "Sunra kon het bestand niet maken: {reason}",
   "error.workflow.sunraTimeout":
-    "Sunra heeft het bestand niet op tijd gemaakt. Kijk in het project OpenBot op sunra.ai voordat je de stap opnieuw uitvoert.",
+    "Sunra heeft het bestand niet op tijd gemaakt. Kijk in het project OpenBot-NC op sunra.ai voordat je de stap opnieuw uitvoert.",
   "error.workflow.higgsfieldSignIn": "Meld je aan bij Higgsfield in Apps om Higgsfield-modellen te gebruiken.",
   "error.workflow.higgsfieldNoCredits":
     "Je Higgsfield-account heeft niet genoeg tegoed. Voeg tegoed toe op higgsfield.ai/pricing en voer de stap daarna opnieuw uit.",

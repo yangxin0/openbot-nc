@@ -33,7 +33,7 @@ export const messages = {
 
   "provider.status.off": "Kapalı",
   "provider.gemini.hostSignIn":
-    "Gemini'yi bağlamak için ana makinede OpenBot'u açın ve Sunucu ayarları > Sağlayıcılar bölümünde Bağlan'ı seçin. Google ile oturum açmak için o ana makinede bir tarayıcı gerekir. Uzaktan oturum açma desteklenmez.",
+    "Gemini'yi bağlamak için ana makinede OpenBot-NC'yi açın ve Sunucu ayarları > Sağlayıcılar bölümünde Bağlan'ı seçin. Google ile oturum açmak için o ana makinede bir tarayıcı gerekir. Uzaktan oturum açma desteklenmez.",
   "provider.key.free": "Ücretsiz",
 
   "provider.action.connect": "Bağlan",
@@ -60,13 +60,13 @@ export const messages = {
   "provider.aria.cancelSignIn": "{name} oturum açmasını iptal et",
   "provider.aria.apiKey": "{name} API anahtarı",
   "provider.connecting.browserHint": "Bir tarayıcı sayfası açılırsa oturum açmayı tamamlayın.",
-  "provider.connecting.cancelFailed": "OpenBot, {name} oturum açma işlemini iptal edemedi. Tekrar deneyin.",
+  "provider.connecting.cancelFailed": "OpenBot-NC, {name} oturum açma işlemini iptal edemedi. Tekrar deneyin.",
   "provider.aria.install": "{name} sağlayıcısını yükle",
   "provider.aria.signIn": "{name} sağlayıcısında oturum aç",
   "provider.aria.codeFallback": "{name} için kodla oturum aç",
   "provider.aria.moreActions": "{name} için diğer eylemler",
 
-  "provider.aria.use": "OpenBot'ta {name} kullan",
+  "provider.aria.use": "OpenBot-NC'de {name} kullan",
   "provider.use.inUseOne":
     "{agent}, {name} kullanıyor. Bu ajanın modelini değiştirin, ardından {name} sağlayıcısını kapatın.",
   "provider.use.inUse": {
@@ -74,7 +74,7 @@ export const messages = {
     other: "{count} ajan {name} kullanıyor. Bu ajanların modelini değiştirin, ardından {name} sağlayıcısını kapatın.",
   },
   "provider.codeLogin.title": "Kodla {name} hesabında oturum açın",
-  "provider.codeLogin.description": "Telefonunuzda veya başka bir tarayıcıda tamamlayın. OpenBot burada bekler.",
+  "provider.codeLogin.description": "Telefonunuzda veya başka bir tarayıcıda tamamlayın. OpenBot-NC burada bekler.",
   "provider.codeLogin.starting": "{name} kaynağından bir kod alınıyor…",
   "provider.codeLogin.qrLabel": "{name} oturum açma sayfası için QR kodu",
   "provider.codeLogin.open": "Aç",
@@ -95,12 +95,12 @@ export const messages = {
   "provider.codeLogin.pageDescription": "Bu sayfa {host} üzerindeki tarayıcıda açık. Burada oturum açın.",
   "provider.codeLogin.relayStarting": "{name} oturum açma işlemi {host} üzerinde başlatılıyor…",
   "provider.codeLogin.pageOpening": "{name} oturum açma sayfası {host} üzerinde açılıyor…",
-  "provider.codeLogin.linkStep": "{name} hesabında oturum açın. OpenBot kendiliğinden devam eder.",
+  "provider.codeLogin.linkStep": "{name} hesabında oturum açın. OpenBot-NC kendiliğinden devam eder.",
   "provider.codeLogin.chatgptDeviceSetting":
     "Bir bilgisayarda ChatGPT'de güvenlik ayarlarını açın ve Codex için cihaz koduyla oturum açmayı açın. İş hesabında bunu çalışma alanı yöneticiniz açar.",
-  "provider.useApp.title": "{name} bağlantısını OpenBot uygulamasında yapın",
+  "provider.useApp.title": "{name} bağlantısını OpenBot-NC uygulamasında yapın",
   "provider.useApp.description":
-    "{name} oturum açma işlemi onu başlatan bilgisayara döner ve bir tarayıcı sekmesi bunu alamaz. {name} bağlantısını OpenBot uygulamasında yapın. Uygulama oturum açmayı kendiliğinden tamamlar.",
+    "{name} oturum açma işlemi onu başlatan bilgisayara döner ve bir tarayıcı sekmesi bunu alamaz. {name} bağlantısını OpenBot-NC uygulamasında yapın. Uygulama oturum açmayı kendiliğinden tamamlar.",
   "provider.useApp.download": "Uygulamayı indir",
 
   "provider.picker.noEndpoints": "Henüz uç nokta yok",
@@ -111,7 +111,7 @@ export const messages = {
   "provider.picker.providers": "Model sağlayıcıları",
   "provider.picker.downloading": "{percent} indiriliyor",
   "provider.picker.unavailable": "{name} kullanılamıyor.",
-  "provider.picker.updateToUse": "{name} kullanmak için OpenBot'u güncelleyin",
+  "provider.picker.updateToUse": "{name} kullanmak için OpenBot-NC'yi güncelleyin",
   "provider.picker.models": "{name} modelleri",
   "provider.picker.addProvider": "Sağlayıcı ekle",
   "provider.picker.download": "{name} indirmesi",
@@ -192,21 +192,21 @@ export const messages = {
   "provider.cursorKey.label": "Cursor API anahtarı",
   "provider.inceptionKey.title": "Inception API anahtarı",
   "provider.inceptionKey.description":
-    "Mercury modellerini kullanmak için bu bilgisayara bir Inception API anahtarı kaydedin. OpenBot bunları indirdiği Pi CLI'da çalıştırır.",
+    "Mercury modellerini kullanmak için bu bilgisayara bir Inception API anahtarı kaydedin. OpenBot-NC bunları indirdiği Pi CLI'da çalıştırır.",
   "provider.inceptionKey.descriptionHost":
-    "Mercury modellerini kullanmak için ana makineye bir Inception API anahtarı kaydedin. OpenBot bunları indirdiği Pi CLI'da çalıştırır.",
+    "Mercury modellerini kullanmak için ana makineye bir Inception API anahtarı kaydedin. OpenBot-NC bunları indirdiği Pi CLI'da çalıştırır.",
   "provider.inceptionKey.label": "Inception API anahtarı",
   "provider.deepseekKey.title": "DeepSeek API anahtarı",
   "provider.deepseekKey.description":
-    "DeepSeek modellerini kullanmak için bu bilgisayara bir DeepSeek API anahtarı kaydedin. OpenBot bunları indirdiği Pi CLI'da çalıştırır.",
+    "DeepSeek modellerini kullanmak için bu bilgisayara bir DeepSeek API anahtarı kaydedin. OpenBot-NC bunları indirdiği Pi CLI'da çalıştırır.",
   "provider.deepseekKey.descriptionHost":
-    "DeepSeek modellerini kullanmak için ana makineye bir DeepSeek API anahtarı kaydedin. OpenBot bunları indirdiği Pi CLI'da çalıştırır.",
+    "DeepSeek modellerini kullanmak için ana makineye bir DeepSeek API anahtarı kaydedin. OpenBot-NC bunları indirdiği Pi CLI'da çalıştırır.",
   "provider.deepseekKey.label": "DeepSeek API anahtarı",
   "provider.openrouterKey.title": "OpenRouter API anahtarı",
   "provider.openrouterKey.description":
-    "OpenRouter modellerini kullanmak için bu bilgisayara bir OpenRouter API anahtarı kaydedin. OpenBot bunları indirdiği Pi CLI'da çalıştırır.",
+    "OpenRouter modellerini kullanmak için bu bilgisayara bir OpenRouter API anahtarı kaydedin. OpenBot-NC bunları indirdiği Pi CLI'da çalıştırır.",
   "provider.openrouterKey.descriptionHost":
-    "OpenRouter modellerini kullanmak için ana makineye bir OpenRouter API anahtarı kaydedin. OpenBot bunları indirdiği Pi CLI'da çalıştırır.",
+    "OpenRouter modellerini kullanmak için ana makineye bir OpenRouter API anahtarı kaydedin. OpenBot-NC bunları indirdiği Pi CLI'da çalıştırır.",
   "provider.openrouterKey.label": "OpenRouter API anahtarı",
   "provider.openCodeKey.title": "OpenCode Go'da oturum açın",
   "provider.openCodeKey.description":
@@ -265,20 +265,20 @@ export const messages = {
   "provider.settings.disconnectTitle": "{name} bağlantısı kesilsin mi?",
   "provider.settings.disconnectOthers": "Diğer {provider} hesapları, {provider} yeniden bağlanana kadar bekler.",
   "provider.settings.disconnectLocal":
-    "OpenBot bu bilgisayarda {provider} oturumunu kapatır. Terminalinizdeki {provider} CLI oturumu da kapanır.",
-  "provider.settings.disconnectHost": "OpenBot sunucuda {provider} oturumunu kapatır.",
+    "OpenBot-NC bu bilgisayarda {provider} oturumunu kapatır. Terminalinizdeki {provider} CLI oturumu da kapanır.",
+  "provider.settings.disconnectHost": "OpenBot-NC sunucuda {provider} oturumunu kapatır.",
   "provider.settings.geminiKeyReplacesAccount":
     "Google oturumu yerine kayıtlı bir Gemini API anahtarı kullanılıyor. Bir Google planını ve modellerini kullanmak için anahtarı kaldır.",
   "provider.settings.museKeyInUse":
     "Muse oturum açmanızı değil, bu anahtarı kullanır. Oturum açmanızı kullanmak için anahtarı kaldırın.",
   "provider.settings.versionInstalledByUser": "{version} · senin yüklediğin",
-  "provider.settings.versionDownloaded": "{version} · OpenBot tarafından indirildi",
+  "provider.settings.versionDownloaded": "{version} · OpenBot-NC tarafından indirildi",
   "provider.settings.otherVersionInstalledByUser": "Kullanılmıyor: {version} · senin yüklediğin",
-  "provider.settings.otherVersionDownloaded": "Kullanılmıyor: {version} · OpenBot tarafından indirildi",
+  "provider.settings.otherVersionDownloaded": "Kullanılmıyor: {version} · OpenBot-NC tarafından indirildi",
   "provider.settings.installedVersionIncomplete":
-    "Bazı modeller bu sürümde olmayan bir bileşene ihtiyaç duyar. Bunları kullanmak için OpenBot sürümünü indir.",
+    "Bazı modeller bu sürümde olmayan bir bileşene ihtiyaç duyar. Bunları kullanmak için OpenBot-NC sürümünü indir.",
   "provider.settings.useInstalledVersion": "Yüklü sürümü kullan",
-  "provider.settings.useDownloadedVersion": "OpenBot sürümünü kullan",
+  "provider.settings.useDownloadedVersion": "OpenBot-NC sürümünü kullan",
   "provider.settings.cache": "Önbellek",
   "provider.settings.promptCache": "İstem önbelleği",
   "provider.settings.promptCacheDescription":
@@ -341,11 +341,11 @@ export const messages = {
   "provider.settings.modelsLoadFailed": "Bu sunucunun modelleri yüklenemedi.",
   "provider.settings.deleteTitle": "{name} sil",
   "provider.settings.deleteOn":
-    "{name} kapatılır ve OpenBot'un indirdiği CLI silinir. Hesaplar, oturumlar ve ajanlar kalır.",
+    "{name} kapatılır ve OpenBot-NC'nin indirdiği CLI silinir. Hesaplar, oturumlar ve ajanlar kalır.",
   "provider.settings.deleteOff":
-    "OpenBot'un {name} için indirdiği CLI silinir ({size}). Hesaplar, oturumlar ve ajanlar kalır.",
+    "OpenBot-NC'nin {name} için indirdiği CLI silinir ({size}). Hesaplar, oturumlar ve ajanlar kalır.",
   "provider.settings.removeDownloadFailed": "İndirme kaldırılamadı.",
   "provider.settings.disconnectLocalOnly":
-    "OpenBot bu bilgisayarda {provider} oturumunu kapatır. Terminalindeki {provider} CLI kendi oturumunu korur.",
+    "OpenBot-NC bu bilgisayarda {provider} oturumunu kapatır. Terminalindeki {provider} CLI kendi oturumunu korur.",
   "provider.settings.updateAll": "Tümünü güncelle",
 } as const satisfies PartialTranslation<typeof source>;

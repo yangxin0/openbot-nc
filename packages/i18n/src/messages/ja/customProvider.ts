@@ -12,7 +12,7 @@ export const messages = {
   "customProvider.registry.update": "アップデート",
   "customProvider.registry.remove": "ランタイムを削除",
   "customProvider.registry.searchFailed": "レジストリを検索できませんでした。もう一度お試しください。",
-  "customProvider.registry.statusFailed": "インストールの進行状況を確認できませんでした。OpenBot が再試行します。",
+  "customProvider.registry.statusFailed": "インストールの進行状況を確認できませんでした。OpenBot-NC が再試行します。",
   "customProvider.registry.installFailed": "エージェントをインストールできませんでした。もう一度お試しください。",
   "customProvider.registry.updateFailed": "エージェントをアップデートできませんでした。もう一度お試しください。",
   "customProvider.registry.removeFailed": "ランタイムを削除できませんでした。もう一度お試しください。",
@@ -22,7 +22,7 @@ export const messages = {
     "小文字の英字、数字、ハイフン、アンダースコアを使い、英字か数字で始めてください。",
   "customProvider.error.providerIdLength": "プロバイダー ID は {max} 文字未満にしてください。",
   "customProvider.error.providerIdBuiltIn":
-    "OpenBot には {id} という名前のプロバイダーがすでにあります。別の ID を選んでください。",
+    "OpenBot-NC には {id} という名前のプロバイダーがすでにあります。別の ID を選んでください。",
   "customProvider.error.providerIdSaved":
     "{id} という名前のエンドポイントはすでに保存されています。先に削除するか、別の ID を選んでください。",
   "customProvider.error.displayNameRequired": "表示名を入力してください。",
@@ -48,14 +48,14 @@ export const messages = {
   "customProvider.error.baseUrlProtocol": "http:// または https:// の URL を使ってください。",
   "customProvider.error.baseUrlCredential": "認証情報は URL ではなくヘッダーに入れてください。",
 
-  "customProvider.saved.restarted": "保存しました。OpenBot がモデルを読み込んでいます。",
+  "customProvider.saved.restarted": "保存しました。OpenBot-NC がモデルを読み込んでいます。",
   "customProvider.saved.skippedBusy": "保存しました。プロバイダーは現在のタスクが止まったあとで一覧を読み込みます。",
   "customProvider.saved.notRunning": "保存しました。プロバイダーは次回の起動時に一覧を読み込みます。",
-  "customProvider.removed.restarted": "削除しました。OpenBot がモデルを読み込んでいます。",
+  "customProvider.removed.restarted": "削除しました。OpenBot-NC がモデルを読み込んでいます。",
   "customProvider.removed.skippedBusy": "削除しました。プロバイダーは現在のタスクが止まったあとで一覧を読み込みます。",
   "customProvider.removed.notRunning": "削除しました。プロバイダーは次回の起動時に一覧を読み込みます。",
-  "customProvider.saveFailed": "OpenBot はこのエンドポイントを保存できませんでした。",
-  "customProvider.removeFailed": "OpenBot は {name} を削除できませんでした。",
+  "customProvider.saveFailed": "OpenBot-NC はこのエンドポイントを保存できませんでした。",
+  "customProvider.removeFailed": "OpenBot-NC は {name} を削除できませんでした。",
   "customProvider.saveUnavailable": "このビルドではエンドポイントを保存できません。",
   "customProvider.removeUnavailable": "このビルドではエンドポイントを削除できません。",
 
@@ -140,7 +140,7 @@ export const messages = {
   "customProvider.detected.titleServer": "サーバーで見つかったもの",
   "customProvider.detected.scanning": "ローカルのモデルとエージェントを探しています。",
   "customProvider.detected.scanAgain": "再スキャン",
-  "customProvider.detected.empty": "OpenBot はローカルのモデルサーバーも ACP エージェントも見つけられませんでした。",
+  "customProvider.detected.empty": "OpenBot-NC はローカルのモデルサーバーも ACP エージェントも見つけられませんでした。",
   "customProvider.detected.add": "追加",
   "customProvider.detected.addLabel": "{name} を追加",
   "customProvider.detected.added": "追加済み",
@@ -154,10 +154,10 @@ export const messages = {
 
   "customProvider.detection.title": "ローカル検出",
   "customProvider.detection.saveFailed": "検出の設定を保存できませんでした。",
-  "customProvider.detection.description": "OpenBot がローカルのモデルサーバーと ACP エージェントを探す場所です。",
+  "customProvider.detection.description": "OpenBot-NC がローカルのモデルサーバーと ACP エージェントを探す場所です。",
   "customProvider.detection.enabled": "ローカルのモデルとエージェントを探す",
   "customProvider.detection.enabledDescription":
-    "OpenBot は Ollama と LM Studio のデフォルトのアドレスを確認し、PATH にある既知の ACP エージェントを探します。",
+    "OpenBot-NC は Ollama と LM Studio のデフォルトのアドレスを確認し、PATH にある既知の ACP エージェントを探します。",
   "customProvider.detection.enabledDescriptionServer":
     "サーバーは Ollama と LM Studio のデフォルトのアドレスを確認し、サーバーの PATH にある既知の ACP エージェントを探します。",
   "customProvider.detection.addresses": "その他のモデルサーバーのアドレス",
@@ -179,13 +179,13 @@ export const messages = {
   "customProvider.acp.agentId": "エージェント ID",
   "customProvider.acp.agentIdHint": "小文字の英字、数字、ハイフン。あとから変更できません。",
   "customProvider.acp.command": "コマンド",
-  "customProvider.acp.commandHint": "起動するプログラムです。OpenBot は PATH からこれを探します。",
+  "customProvider.acp.commandHint": "起動するプログラムです。OpenBot-NC は PATH からこれを探します。",
   "customProvider.acp.commandHintServer": "起動するプログラムです。サーバーは自身の PATH からこれを探します。",
   "customProvider.acp.args": "引数",
   "customProvider.acp.argsHint": "引数はスペースで区切ってください。スペースを含む引数は引用符で囲んでください。",
   "customProvider.acp.usagePrompt": "使用量コマンド",
   "customProvider.acp.usagePromptHint":
-    "OpenBot は最短 5 分ごとにこれを送信し、最新の回答を表示します。/usage など、エージェント自身が答えるコマンドを使用してください。",
+    "OpenBot-NC は最短 5 分ごとにこれを送信し、最新の回答を表示します。/usage など、エージェント自身が答えるコマンドを使用してください。",
   "customProvider.acp.env": "環境変数",
   "customProvider.acp.env.name": "変数 {number} の名前",
   "customProvider.acp.env.value": "変数 {number} の値",
@@ -193,7 +193,7 @@ export const messages = {
   "customProvider.acp.env.add": "変数を追加",
   "customProvider.acp.check": "接続",
   "customProvider.acp.checkRun": "エージェントを確認",
-  "customProvider.acp.checkIdle": "OpenBot はコマンドを一度起動して、応答することを確認します。",
+  "customProvider.acp.checkIdle": "OpenBot-NC はコマンドを一度起動して、応答することを確認します。",
   "customProvider.acp.checking": "{command} を起動しています。",
   "customProvider.acp.checkOk": "{name} が応答しました",
   "customProvider.acp.checkOkVersion": "{name} {version} が応答しました",
@@ -204,10 +204,10 @@ export const messages = {
   "customProvider.acp.checkFailed": "エージェントが応答しませんでした",
   "customProvider.acp.trustTitle": "このコマンドはこのコンピューターで実行されます",
   "customProvider.acp.trustDescription":
-    "OpenBot はあなたのユーザーアカウントでこれを起動します。エージェントはファイルの読み取りと変更、コマンドの実行ができます。信頼できるエージェントだけを追加してください。",
+    "OpenBot-NC はあなたのユーザーアカウントでこれを起動します。エージェントはファイルの読み取りと変更、コマンドの実行ができます。信頼できるエージェントだけを追加してください。",
   "customProvider.acp.hostTrustTitle": "このコマンドはサーバーで実行されます",
   "customProvider.acp.hostTrustDescription":
-    "OpenBot はサーバーのユーザーアカウントでこれを起動します。エージェントはサーバー上のファイルの読み取りと変更、コマンドの実行ができます。信頼できるエージェントだけを追加してください。",
+    "OpenBot-NC はサーバーのユーザーアカウントでこれを起動します。エージェントはサーバー上のファイルの読み取りと変更、コマンドの実行ができます。信頼できるエージェントだけを追加してください。",
   "customProvider.acp.submit": "エージェントを追加",
   "customProvider.acp.editTitle": "カスタム ACP エージェントを編集",
   "customProvider.acp.submitEdit": "エージェントを保存",
@@ -224,8 +224,8 @@ export const messages = {
     "小文字の英字、数字、ハイフンを使い、英字か数字で始めてください。40 文字以内にしてください。",
 
   "customProvider.agents.title": "カスタムエージェント",
-  "customProvider.agents.description": "OpenBot がこのコンピューターで起動する ACP エージェントです。",
-  "customProvider.agents.hostDescription": "OpenBot がサーバーのコンピューターで起動する ACP エージェントです。",
+  "customProvider.agents.description": "OpenBot-NC がこのコンピューターで起動する ACP エージェントです。",
+  "customProvider.agents.hostDescription": "OpenBot-NC がサーバーのコンピューターで起動する ACP エージェントです。",
   "customProvider.agents.empty": "カスタムエージェントはまだありません。",
   "customProvider.agents.add": "エージェントを追加",
   "customProvider.agents.restart": "エージェントを再起動",
@@ -237,12 +237,12 @@ export const messages = {
   "customProvider.agents.deleteLabel": "{name} を削除",
   "customProvider.agents.confirmDescription":
     "保存した変数は破棄されます。これを使っているエージェントはデフォルトのモデルに移ります。",
-  "customProvider.agents.saveFailed": "OpenBot はこのエージェントを保存できませんでした。",
-  "customProvider.agents.saved.restarted": "保存しました。OpenBot はカスタムエージェントを再起動しました。",
+  "customProvider.agents.saveFailed": "OpenBot-NC はこのエージェントを保存できませんでした。",
+  "customProvider.agents.saved.restarted": "保存しました。OpenBot-NC はカスタムエージェントを再起動しました。",
   "customProvider.agents.saved.skippedBusy":
     "保存しました。カスタムエージェントは現在のタスクが止まったあとで再起動します。",
   "customProvider.agents.saved.notRunning": "保存しました。カスタムエージェントは次回の起動時に読み込みます。",
-  "customProvider.agents.removed.restarted": "削除しました。OpenBot はカスタムエージェントを再起動しました。",
+  "customProvider.agents.removed.restarted": "削除しました。OpenBot-NC はカスタムエージェントを再起動しました。",
   "customProvider.agents.removed.skippedBusy":
     "削除しました。カスタムエージェントは現在のタスクが止まったあとで再起動します。",
   "customProvider.agents.removed.notRunning": "削除しました。カスタムエージェントは次回の起動時に読み込みます。",

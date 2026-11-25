@@ -15,7 +15,7 @@ export const messages = {
   "mobile.workspace.error.transportNotReady": "שכבת התעבורה בנייד אינה מוכנה.",
   "mobile.workspace.error.sectionsUnsupported": "המארח הזה לא תומך בשינויי תיקיות.",
   "mobile.workspace.error.agentNotOnHost": "הסוכן אינו נמצא במארח הזה.",
-  "mobile.workspace.error.filesUnsupported": "המארח הזה לא תומך בניהול קבצים. יש לעדכן את OpenBot במארח.",
+  "mobile.workspace.error.filesUnsupported": "המארח הזה לא תומך בניהול קבצים. יש לעדכן את OpenBot-NC במארח.",
   "mobile.workspace.error.agentUnavailableOnHost": "הסוכן אינו זמין במארח הזה.",
   "mobile.workspace.error.agentUnavailable": "הסוכן אינו זמין.",
   "mobile.workspace.error.formUnavailable": "הטופס הזה כבר לא זמין.",

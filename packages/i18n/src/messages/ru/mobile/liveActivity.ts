@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/liveActivity";
 
 export const messages = {
-  "mobile.liveActivity.appName": "OpenBot",
+  "mobile.liveActivity.appName": "OpenBot-NC",
   "mobile.liveActivity.badge.working": "Работает",
   "mobile.liveActivity.badge.message": "Сообщение",
   "mobile.liveActivity.badge.question": "Вопросы",
@@ -36,10 +36,10 @@ export const messages = {
   "mobile.liveActivity.button.approve": "Одобрить",
   "mobile.liveActivity.button.openDetails": "Подробнее",
   "mobile.liveActivity.stale.label": "Устарело",
-  "mobile.liveActivity.stale.detail": "Откройте OpenBot, чтобы увидеть актуальное состояние.",
+  "mobile.liveActivity.stale.detail": "Откройте OpenBot-NC, чтобы увидеть актуальное состояние.",
   "mobile.liveActivity.island.taskWorking": "Работаю над вашим запросом",
   "mobile.liveActivity.island.questionHeader": "Вопрос от агента",
-  "mobile.liveActivity.island.questionText": "Откройте OpenBot, чтобы ответить на вопрос.",
+  "mobile.liveActivity.island.questionText": "Откройте OpenBot-NC, чтобы ответить на вопрос.",
   "mobile.liveActivity.island.optionFallback": "Вариант {number}",
   "mobile.liveActivity.island.takeoverTitle": "Нужна ваша помощь в браузере",
   "mobile.liveActivity.island.takeoverDetail": "Выполните вход, проверку или подтвердите согласие в браузере.",

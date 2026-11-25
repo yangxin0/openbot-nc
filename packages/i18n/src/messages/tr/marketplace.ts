@@ -20,11 +20,11 @@ export const messages = {
   "marketplace.description.apps": "Ajanlarınızın çalıştığı araçları ve hizmetleri bağlayın.",
   "marketplace.description.skills": "Bir ajana bir görevi veya aracı öğreten talimatlar.",
 
-  "marketplace.plugins.missing": "Bu eklenti OpenBot kataloğunda yok.",
+  "marketplace.plugins.missing": "Bu eklenti OpenBot-NC kataloğunda yok.",
 
   "marketplace.agents.all": "Tüm ajanlar",
   "marketplace.skill.loading": "Beceri yükleniyor",
-  "marketplace.try.readFailed": "OpenBot bu ajanın becerilerini okuyamadı. Tekrar deneyin.",
+  "marketplace.try.readFailed": "OpenBot-NC bu ajanın becerilerini okuyamadı. Tekrar deneyin.",
   "marketplace.try.enable": "Bu beceriyi denemek için ajan ayarlarından etkinleştirin.",
   "marketplace.try.repair": "Bu beceriyi denemek için ajan ayarlarından onarın.",
   "marketplace.try.update": "Bu sürümü denemek için bu beceriyi güncelleyin.",
@@ -91,25 +91,25 @@ export const messages = {
   "marketplace.app.setup.account": "Tarayıcıda {name} hesabınızla oturum açın.",
   "marketplace.app.setup.key": "{name} hesabınızdan bir API anahtarı gerekir.",
   "marketplace.app.setup.keySaved": "{field}, {host} üzerinde kayıtlı.",
-  "marketplace.app.account.removeDescription": "OpenBot bu hesabın oturum bilgilerini {host} üzerinde siler.",
+  "marketplace.app.account.removeDescription": "OpenBot-NC bu hesabın oturum bilgilerini {host} üzerinde siler.",
   "marketplace.app.setup.desktop": "{name} masaüstü uygulamasında {address} adresinde çalışır.",
   "marketplace.app.setup.desktopConnected": "{address} adresine bağlı.",
   "marketplace.app.setup.open": "Oturum açma veya anahtar gerekmez.",
   "marketplace.app.blocked.update":
-    "{host} uygulama bağlayamayan eski bir OpenBot sürümü çalıştırıyor. {host} üzerindeki OpenBot'u güncelleyin veya sahibinden güncellemesini isteyin.",
+    "{host} uygulama bağlayamayan eski bir OpenBot-NC sürümü çalıştırıyor. {host} üzerindeki OpenBot-NC'yi güncelleyin veya sahibinden güncellemesini isteyin.",
   "marketplace.app.blocked.member":
-    "{host} üzerinde yalnızca bir sahip veya yönetici uygulama bağlayabilir. Onlardan {name} uygulamasını bağlamalarını ya da üyelerin uygulama bağlayabilmesi için {host} üzerindeki OpenBot'u güncellemelerini isteyin.",
-  "marketplace.app.blocked.mac": "{name} yalnızca OpenBot çalıştıran bir Mac'te çalışır.",
+    "{host} üzerinde yalnızca bir sahip veya yönetici uygulama bağlayabilir. Onlardan {name} uygulamasını bağlamalarını ya da üyelerin uygulama bağlayabilmesi için {host} üzerindeki OpenBot-NC'yi güncellemelerini isteyin.",
+  "marketplace.app.blocked.mac": "{name} yalnızca OpenBot-NC çalıştıran bir Mac'te çalışır.",
   "marketplace.app.connectAgain": "Tekrar bağlan",
   "marketplace.app.automation.askOnInstall": "Yüklerken macOS'ten erişim iste",
   "marketplace.app.automation.title": "Apple uygulamalarına erişim",
   "marketplace.app.automation.description":
     "macOS her uygulama için bir istem gösterir. Kapalı bir uygulama kısa bir süre açılır, sonra kapanır.",
   "marketplace.app.automation.request": "Erişim iste",
-  "marketplace.app.automation.allowed": "OpenBot artık tüm Apple uygulamalarını kontrol edebilir.",
+  "marketplace.app.automation.allowed": "OpenBot-NC artık tüm Apple uygulamalarını kontrol edebilir.",
   "marketplace.app.automation.refused":
-    "macOS şu uygulamalara erişim vermedi: {apps}. Sistem Ayarları › Gizlilik ve Güvenlik › Otomasyon'da OpenBot'a izin verin.",
-  "marketplace.app.automation.failed": "OpenBot, şu uygulamalar için macOS'e soramadı: {apps}. Tekrar deneyin.",
+    "macOS şu uygulamalara erişim vermedi: {apps}. Sistem Ayarları › Gizlilik ve Güvenlik › Otomasyon'da OpenBot-NC'ye izin verin.",
+  "marketplace.app.automation.failed": "OpenBot-NC, şu uygulamalar için macOS'e soramadı: {apps}. Tekrar deneyin.",
   "marketplace.app.automation.app.calendar": "Takvim",
   "marketplace.app.automation.app.contacts": "Kişiler",
   "marketplace.app.automation.app.mail": "Mail",
@@ -171,7 +171,7 @@ export const messages = {
   "marketplace.plugin.cobrain.prompt.saveNote": "Bugün ne yaptığımızı ve neyin kaldığını Cobrain'e not olarak kaydet.",
   "marketplace.plugin.honcho.tagline": "Tüm yapay zekâ araçlarında hafızanız",
   "marketplace.plugin.honcho.description":
-    "Plastic Labs'in Honcho'su, ajanlara sizinle ilgili, bağladığınız diğer yapay zekâ araçlarının da paylaşabileceği uzun süreli bir hafıza verir. Ajanlar öğrendiklerini kaydeder, Honcho da bunlar üzerinde akıl yürüterek tercihlerinizin, hedeflerinizin ve çalışma biçimlerinizin bir modelini oluşturur. Ajanlar başlamadan önce ona sorular sorar. OpenBot ajanlarının kendi hafızası da vardır; Honcho sizi diğer araçlara da izleyen hafızadır. Ajanların kaydettiği mesajlar Honcho hesabınıza gider.",
+    "Plastic Labs'in Honcho'su, ajanlara sizinle ilgili, bağladığınız diğer yapay zekâ araçlarının da paylaşabileceği uzun süreli bir hafıza verir. Ajanlar öğrendiklerini kaydeder, Honcho da bunlar üzerinde akıl yürüterek tercihlerinizin, hedeflerinizin ve çalışma biçimlerinizin bir modelini oluşturur. Ajanlar başlamadan önce ona sorular sorar. OpenBot-NC ajanlarının kendi hafızası da vardır; Honcho sizi diğer araçlara da izleyen hafızadır. Ajanların kaydettiği mesajlar Honcho hesabınıza gider.",
   "marketplace.plugin.honcho.app":
     "Tek bir MCP sunucusu üzerinden Honcho çalışma alanlarınızda uzun süreli hafızayı kaydedin ve sorgulayın.",
   "marketplace.plugin.honcho.prompt.recall":
@@ -181,7 +181,7 @@ export const messages = {
   "marketplace.plugin.honcho.hint.apiKey": "app.honcho.dev adresinde bir anahtar oluşturun.",
   "marketplace.plugin.hindsight.tagline": "Zamanla öğrenen hafıza",
   "marketplace.plugin.hindsight.description":
-    "Vectorize'ın Hindsight'ı, ajanlara Hindsight Cloud'da uzun süreli bir hafıza verir. Ajanlar olguları ve olayları saklar, onları anlam, zaman ve varlığa göre hatırlar ve zihinsel modeller oluşturmak için üzerlerinde düşünür. Anılar bankalarda tutulur ve ajanlar her proje ya da kişi için bir banka oluşturabilir. OpenBot ajanlarının kendi hafızası da vardır; Hindsight, bağladığınız diğer yapay zekâ araçlarının paylaşabileceği hafızadır. Ajanların sakladıkları Hindsight Cloud hesabınıza gider.",
+    "Vectorize'ın Hindsight'ı, ajanlara Hindsight Cloud'da uzun süreli bir hafıza verir. Ajanlar olguları ve olayları saklar, onları anlam, zaman ve varlığa göre hatırlar ve zihinsel modeller oluşturmak için üzerlerinde düşünür. Anılar bankalarda tutulur ve ajanlar her proje ya da kişi için bir banka oluşturabilir. OpenBot-NC ajanlarının kendi hafızası da vardır; Hindsight, bağladığınız diğer yapay zekâ araçlarının paylaşabileceği hafızadır. Ajanların sakladıkları Hindsight Cloud hesabınıza gider.",
   "marketplace.plugin.hindsight.app":
     "Tek bir MCP sunucusu üzerinden Hindsight Cloud bankalarınızdaki anıları saklayın, hatırlayın ve üzerinde düşünün.",
   "marketplace.plugin.hindsight.prompt.recall":
@@ -200,7 +200,7 @@ export const messages = {
   "marketplace.plugin.figma.prompt.assets": "Pazarlama simgelerini uygulama paketi için 2x boyutunda dışa aktar.",
   "marketplace.plugin.paper.tagline": "HTML ve CSS üzerine kurulu tasarım tuvali",
   "marketplace.plugin.paper.description":
-    "Paper, ajanların Paper Desktop'ta açık olan tasarım dosyasını okuyup yazmasına olanak tanır: çizim yüzeylerini, seçimleri, hesaplanan stilleri, JSX'i ve token'ları inceler; çerçeveler, metinler ve stiller oluşturur veya değiştirir. Başlamadan önce Paper Desktop'u yükleyin, bir kez açın ve bir dosya açın. OpenBot, Paper Desktop'un yüklediği Paper CLI'yi başlatır. Paper anahtar gerektirmez. Yazma araçları açık dosyayı değiştirir, bu yüzden her yazmayı onaylamadan önce inceleyin.",
+    "Paper, ajanların Paper Desktop'ta açık olan tasarım dosyasını okuyup yazmasına olanak tanır: çizim yüzeylerini, seçimleri, hesaplanan stilleri, JSX'i ve token'ları inceler; çerçeveler, metinler ve stiller oluşturur veya değiştirir. Başlamadan önce Paper Desktop'u yükleyin, bir kez açın ve bir dosya açın. OpenBot-NC, Paper Desktop'un yüklediği Paper CLI'yi başlatır. Paper anahtar gerektirmez. Yazma araçları açık dosyayı değiştirir, bu yüzden her yazmayı onaylamadan önce inceleyin.",
   "marketplace.plugin.paper.app":
     "Açık Paper Desktop dosyasını, Paper CLI'nin aktardığı yerel MCP sunucusu üzerinden okur ve yazar. Bir dosyası açık Paper Desktop gerektirir.",
   "marketplace.plugin.paper.prompt.implement":
@@ -237,7 +237,7 @@ export const messages = {
   "marketplace.plugin.elevenlabs.prompt.conversations": "Destek sesli ajanımın son on konuşmasını özetle.",
   "marketplace.plugin.appleApps.tagline": "Mac'inizde Mail, Takvim ve daha fazlası",
   "marketplace.plugin.appleApps.description":
-    "Apple apps, ajanların bu Mac'te Mail, Takvim, Kişiler, Anımsatıcılar, Notlar, Mesajlar ve Safari'yi kullanmasını sağlar. Yalnızca macOS'te çalışır. OpenBot, Apple veya OpenBot tarafından yapılmamış bir topluluk sunucusu olan mcp-icloud'u başlatır. Sunucu uygulamaları bu bilgisayarda AppleScript ile kontrol eder ve hesap ya da anahtar gerektirmez. Yükleme sırasında OpenBot, macOS'ten bu uygulamaların tümüne tek seferde erişim isteyebilir; her uygulama için bir istem gösterilir. İstemezseniz, bir ajan bir uygulamayı ilk kez kullandığında macOS sorar. Bunu daha sonra değiştirmek için Sistem Ayarları › Gizlilik ve Güvenlik › Otomasyon'u açın. Ajanlar e-posta ve iMessage gönderebilir, etkinlikleri, kişileri ve anımsatıcıları değiştirebilir veya silebilir; bu yüzden her yazma işlemini onaylamadan önce gözden geçirin. Araçların okuduğu içerik, örneğin e-posta metni, ajanın model sağlayıcısına gider.",
+    "Apple apps, ajanların bu Mac'te Mail, Takvim, Kişiler, Anımsatıcılar, Notlar, Mesajlar ve Safari'yi kullanmasını sağlar. Yalnızca macOS'te çalışır. OpenBot-NC, Apple veya OpenBot-NC tarafından yapılmamış bir topluluk sunucusu olan mcp-icloud'u başlatır. Sunucu uygulamaları bu bilgisayarda AppleScript ile kontrol eder ve hesap ya da anahtar gerektirmez. Yükleme sırasında OpenBot-NC, macOS'ten bu uygulamaların tümüne tek seferde erişim isteyebilir; her uygulama için bir istem gösterilir. İstemezseniz, bir ajan bir uygulamayı ilk kez kullandığında macOS sorar. Bunu daha sonra değiştirmek için Sistem Ayarları › Gizlilik ve Güvenlik › Otomasyon'u açın. Ajanlar e-posta ve iMessage gönderebilir, etkinlikleri, kişileri ve anımsatıcıları değiştirebilir veya silebilir; bu yüzden her yazma işlemini onaylamadan önce gözden geçirin. Araçların okuduğu içerik, örneğin e-posta metni, ajanın model sağlayıcısına gider.",
   "marketplace.plugin.appleApps.app":
     "Yerel mcp-icloud sunucusu üzerinden Mail, Takvim, Kişiler, Anımsatıcılar, Notlar, Mesajlar ve Safari. macOS ve Otomasyon izni gerekir.",
   "marketplace.plugin.appleApps.prompt.unread": "Apple Mail'deki bugünkü okunmamış e-postalarımı özetle.",
@@ -539,7 +539,8 @@ export const messages = {
   "marketplace.skills.origin.github": "GitHub'dan · {repository}",
   "marketplace.skills.github.search": "Arayın veya bir GitHub bağlantısı yapıştırın",
   "marketplace.skills.github.reading": "Depoda beceriler aranıyor",
-  "marketplace.skills.github.trust": "OpenBot, GitHub'daki becerileri incelemedi. Bir beceriyi eklemeden önce okuyun.",
+  "marketplace.skills.github.trust":
+    "OpenBot-NC, GitHub'daki becerileri incelemedi. Bir beceriyi eklemeden önce okuyun.",
   "marketplace.skills.github.source": "GitHub · {repository}, {commit} işlemesi",
   "marketplace.skills.github.open": "GitHub",
   "marketplace.skills.github.openName": "{repository} deposunu GitHub'da aç",

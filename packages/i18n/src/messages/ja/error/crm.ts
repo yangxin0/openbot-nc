@@ -3,7 +3,7 @@ import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
   "error.crm.serverTooOld":
-    "このサーバーは CRM に対応していません。サーバーを実行しているコンピューターの OpenBot を更新してください。",
+    "このサーバーは CRM に対応していません。サーバーを実行しているコンピューターの OpenBot-NC を更新してください。",
   "error.crm.tooLargeToSend": "この CRM ページは大きすぎるため、このクライアントに送信できません。",
   "error.crm.customerMissing": "この顧客はもう存在しません。",
   "error.crm.planMissing": "このプランはもう存在しません。",
@@ -39,10 +39,10 @@ export const messages = {
   "error.crm.sourcePermission":
     "このキーでは顧客、請求書、サブスクリプション、イベント、商品を読み取れません。これらへの読み取りアクセスを付与してください。",
   "error.crm.sourceRateLimited": "Stripe へのリクエストが多すぎます。1 分後にもう一度お試しください。",
-  "error.crm.sourceNetwork": "OpenBot は Stripe に接続できません。インターネット接続を確認してください。",
+  "error.crm.sourceNetwork": "OpenBot-NC は Stripe に接続できません。インターネット接続を確認してください。",
   "error.crm.sourceFailed":
-    "Stripe が OpenBot で読み取れない応答を返しました。しばらくしてからもう一度お試しください。",
-  "error.crm.sourceKeySaveFailed": "OpenBot はこのコンピューターに Stripe キーを保存できません。",
+    "Stripe が OpenBot-NC で読み取れない応答を返しました。しばらくしてからもう一度お試しください。",
+  "error.crm.sourceKeySaveFailed": "OpenBot-NC はこのコンピューターに Stripe キーを保存できません。",
   "error.crm.off": "CRM はオフです。オーナーまたは管理者が「サーバー設定 > 試験運用」でオンにできます。",
-  "error.crm.settingsSaveFailed": "OpenBot はこのサーバーで CRM の設定を保存できません。",
+  "error.crm.settingsSaveFailed": "OpenBot-NC はこのサーバーで CRM の設定を保存できません。",
 } as const satisfies PartialTranslation<typeof source>;

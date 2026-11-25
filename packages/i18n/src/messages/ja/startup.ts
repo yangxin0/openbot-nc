@@ -2,26 +2,26 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/startup";
 
 export const messages = {
-  "startup.failedTitle": "OpenBot を起動できませんでした",
+  "startup.failedTitle": "OpenBot-NC を起動できませんでした",
   "startup.failedBody":
     "{message}\n\nお使いのデータは初期化も上書きもされていません。復旧の手順はトラブルシューティングガイドをご覧ください。",
-  "startup.archiveChangedTitle": "OpenBot のファイルが変更されました",
+  "startup.archiveChangedTitle": "OpenBot-NC のファイルが変更されました",
   "startup.archiveChangedBody":
-    "別のプログラムが OpenBot のファイル app.asar を変更しました。OpenBot は今は動作していますが、終了すると次は起動しません。\n\n修復するには、OpenBot をもう一度インストールしてください。ローカルのデータはそのまま残ります。",
+    "別のプログラムが OpenBot-NC のファイル app.asar を変更しました。OpenBot-NC は今は動作していますが、終了すると次は起動しません。\n\n修復するには、OpenBot-NC をもう一度インストールしてください。ローカルのデータはそのまま残ります。",
   "startup.filesDamagedBody":
-    "OpenBot の一部のファイルが破損しているか、見つかりません。\n\n修復するには、OpenBot をもう一度インストールしてください。ローカルのデータはそのまま残ります。",
-  "startup.newerDataTitle": "最新の OpenBot をインストールしてください",
+    "OpenBot-NC の一部のファイルが破損しているか、見つかりません。\n\n修復するには、OpenBot-NC をもう一度インストールしてください。ローカルのデータはそのまま残ります。",
+  "startup.newerDataTitle": "最新の OpenBot-NC をインストールしてください",
   "startup.newerDataBody":
-    "新しいバージョンの OpenBot がデータを保存したため、このバージョン ({version}) では開けません。データを開くには最新バージョンをインストールしてください。\n\nローカルデータはリセットも上書きもされていません。",
+    "新しいバージョンの OpenBot-NC がデータを保存したため、このバージョン ({version}) では開けません。データを開くには最新バージョンをインストールしてください。\n\nローカルデータはリセットも上書きもされていません。",
   "startup.newerDataQuit": "終了",
-  "startup.newerDataLoopTitle": "最新の OpenBot が開きませんでした",
+  "startup.newerDataLoopTitle": "最新の OpenBot-NC が開きませんでした",
   "startup.newerDataLoopBody":
-    "新しいバージョンの OpenBot がデータを保存したため、このバージョン ({version}) では開けません。OpenBot {loopVersion} は開く前に何度も続けて停止したため、再インストールしません。\n\n{loopVersion} より新しいバージョンが公開されたら、それをインストールしてください。サポートが必要な場合は、ガイドを開いてください。\n\nローカルデータはリセットも上書きもされていません。",
-  "startup.recoveryWindowTitle": "OpenBot の復旧",
-  "startup.recoveryTitle": "OpenBot を開けませんでした",
+    "新しいバージョンの OpenBot-NC がデータを保存したため、このバージョン ({version}) では開けません。OpenBot-NC {loopVersion} は開く前に何度も続けて停止したため、再インストールしません。\n\n{loopVersion} より新しいバージョンが公開されたら、それをインストールしてください。サポートが必要な場合は、ガイドを開いてください。\n\nローカルデータはリセットも上書きもされていません。",
+  "startup.recoveryWindowTitle": "OpenBot-NC の復旧",
+  "startup.recoveryTitle": "OpenBot-NC を開けませんでした",
   "startup.recoveryBody": {
     other:
-      "OpenBot {version} は開く前に {count} 回続けて停止しました。ローカルデータはリセットも上書きもされていません。",
+      "OpenBot-NC {version} は開く前に {count} 回続けて停止しました。ローカルデータはリセットも上書きもされていません。",
   },
   "startup.recoveryHint":
     "もう一度試すか、最後に開けたバージョンをインストールしてください。サポートが必要な場合は、診断情報を書き出し、そのファイルをレポートと一緒に送ってください。",
@@ -32,5 +32,5 @@ export const messages = {
   "startup.recoveryOpenDataFolder": "データフォルダを開く",
   "startup.recoveryQuit": "終了",
   "startup.recoveryDiagnosticsSaved": "診断ファイルを保存しました。",
-  "startup.recoveryActionFailed": "OpenBot はこの操作を実行できませんでした。",
+  "startup.recoveryActionFailed": "OpenBot-NC はこの操作を実行できませんでした。",
 } as const satisfies PartialTranslation<typeof source>;

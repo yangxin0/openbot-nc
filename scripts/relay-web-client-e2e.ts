@@ -462,7 +462,7 @@ try {
     await pasteField.fill(JSON.stringify(aliceBundle));
     await importButton.click();
     await agentInSidebar(openPage).waitFor({ timeout: WAIT_MS });
-    await openPage.getByRole("button", { name: english("server.menu.open", { name: "OpenBot" }) }).click();
+    await openPage.getByRole("button", { name: english("server.menu.open", { name: "OpenBot-NC" }) }).click();
     const row = openPage.getByRole("menuitem", {
       name: new RegExp(english("server.rail.relayHost", { host: `${HOST_USER} · ${HOST_DEVICE}` }), "u"),
     });

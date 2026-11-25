@@ -3,8 +3,8 @@ import type { messages as source } from "../../en/error/import";
 
 export const messages = {
   "error.import.manifestNotJson": "{manifest} 不是有效的 JSON。",
-  "error.import.notAgentExport": "{manifest} 不是 OpenBot 助手导出文件。",
-  "error.import.newerExportSkill": "该导出由更新版本的导出技能生成，请更新 OpenBot 后重试。",
+  "error.import.notAgentExport": "{manifest} 不是 OpenBot-NC 助手导出文件。",
+  "error.import.newerExportSkill": "该导出由更新版本的导出技能生成，请更新 OpenBot-NC 后重试。",
   "error.import.noAgents": "该导出中没有任何助手。",
   "error.import.tooManyAgents": "该导出中的助手超过 {limit} 个。",
   "error.import.tooManyChannels": "该导出中的频道超过 {limit} 个。",
@@ -43,7 +43,7 @@ export const messages = {
   "error.import.uploadDiskSpace":
     "该导出需要服务器上有 {size} GB 可用磁盘空间，目前只有 {free} GB 可用。请先释放服务器空间，然后重新选择导出文件。",
   "error.import.remoteZipTooLargeOldHost":
-    "此服务器只接受不超过 100 MB 的导出文件。请更新服务器上的 OpenBot，以导入更大的导出文件。",
+    "此服务器只接受不超过 100 MB 的导出文件。请更新服务器上的 OpenBot-NC，以导入更大的导出文件。",
   "error.import.skillKept": "{name}：服务器已有技能“{skill}”，因该助手会使用该技能。请联系管理员更新它。",
   "error.import.skillRenamed": "{name}：技能“{skill}”的名称与另一个技能的名称过于相似，因此保存为“{renamed}”。",
   "error.import.hermesNoProfiles": "该文件夹中没有 Hermes 配置。请选择包含 config.yaml 或 SOUL.md 的 Hermes 文件夹。",
@@ -53,11 +53,12 @@ export const messages = {
     "{name}：SOUL.md 超过 {limit} 个字符，因此指令只保留开头部分。完整文件在 imported/hermes/SOUL.md。",
   "error.import.hermesSkillSkipped": "{name}：已跳过技能“{skill}”。{reason}",
   "error.import.hermesSkillCodeAdded": "它含有读取这些配置时还没有的代码。请重新读取以允许它。",
-  "error.import.hermesLinkNotSaved": "{name}：OpenBot 无法保存哪个助手来自该配置，因此下次导入会把它作为新助手添加。",
+  "error.import.hermesLinkNotSaved":
+    "{name}：OpenBot-NC 无法保存哪个助手来自该配置，因此下次导入会把它作为新助手添加。",
   "error.import.transferRemoteTooLarge":
     "已加入服务器的迁移文件必须小于 100 MB。请关闭工作区文件，或减少导出的助手数量。",
-  "error.import.transferNotFile": "该文件不是 OpenBot 迁移文件。",
-  "error.import.transferNewer": "该文件由更新版本的 OpenBot 生成，请更新 OpenBot 后重试。",
+  "error.import.transferNotFile": "该文件不是 OpenBot-NC 迁移文件。",
+  "error.import.transferNewer": "该文件由更新版本的 OpenBot-NC 生成，请更新 OpenBot-NC 后重试。",
   "error.import.transferEmpty": "该文件既没有助手也没有设置。",
   "error.import.transferTooLarge":
     "迁移文件必须小于 2 GB 且文件数不超过 50,000。请关闭工作区文件，或减少导出的助手数量。",

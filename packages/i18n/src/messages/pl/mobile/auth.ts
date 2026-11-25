@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/auth";
 
 export const messages = {
-  "mobile.auth.logo.animate": "Animuj logo OpenBot",
+  "mobile.auth.logo.animate": "Animuj logo OpenBot-NC",
   "mobile.auth.logo.animateHint": "Logo puszcza oko",
   "mobile.auth.scanner.connectFailed": "Nie udało się połączyć",
   "mobile.auth.scanner.codeFailed": "Nie udało się użyć tego kodu",
@@ -18,10 +18,10 @@ export const messages = {
   "mobile.auth.scanner.cameraFailed": "Nie udało się uruchomić aparatu. Spróbuj ponownie.",
   "mobile.auth.camera.title": "Wymagany dostęp do aparatu",
   "mobile.auth.camera.pairingReason":
-    "OpenBot używa aparatu tylko do zeskanowania jednorazowego kodu QR z aplikacji na komputer.",
-  "mobile.auth.camera.invitationReason": "OpenBot używa aparatu tylko do zeskanowania kodu QR zaproszenia.",
+    "OpenBot-NC używa aparatu tylko do zeskanowania jednorazowego kodu QR z aplikacji na komputer.",
+  "mobile.auth.camera.invitationReason": "OpenBot-NC używa aparatu tylko do zeskanowania kodu QR zaproszenia.",
   "mobile.auth.camera.blocked":
-    "Dostęp do aparatu jest zablokowany. Włącz go dla OpenBot w ustawieniach urządzenia, a potem wróć tutaj, aby zeskanować kod.",
+    "Dostęp do aparatu jest zablokowany. Włącz go dla OpenBot-NC w ustawieniach urządzenia, a potem wróć tutaj, aby zeskanować kod.",
   "mobile.auth.camera.allow": "Zezwól na dostęp do aparatu",
   "mobile.auth.camera.openSettings": "Otwórz ustawienia",
   "mobile.auth.error.signOutUnconfirmed":

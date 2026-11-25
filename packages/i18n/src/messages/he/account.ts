@@ -4,7 +4,7 @@ import type { messages as source } from "../en/account";
 export const messages = {
   "account.menu.signOut": "התנתקות",
   "account.menu.signingOut": "מתנתק…",
-  "account.menu.updateFailed": "לא ניתן היה לעדכן את OpenBot.",
+  "account.menu.updateFailed": "לא ניתן היה לעדכן את OpenBot-NC.",
   "account.menu.signOutFailed": "לא ניתן היה להתנתק.",
   "account.usage.title": "שימוש",
   "account.usage.refresh": "רענון",
@@ -59,7 +59,7 @@ export const messages = {
   "account.update.progress": "התקדמות הורדת העדכון",
   "account.login.email": "אימייל",
   "account.login.sendCode": "שליחת קוד התחברות",
-  "account.login.verified": "האימות הושלם. פותח את OpenBot…",
+  "account.login.verified": "האימות הושלם. פותח את OpenBot-NC…",
   "account.login.developmentCode": "קוד פיתוח: {code}",
   "account.otp.incorrect": "הקוד שגוי. יש לנסות שוב.",
   "account.otp.verifying": "מאמת…",

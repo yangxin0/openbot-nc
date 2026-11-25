@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/webClient";
 
 export const messages = {
-  "webClient.loading": "OpenBot yükleniyor…",
+  "webClient.loading": "OpenBot-NC yükleniyor…",
   "webClient.loadingLine.wake": "Ajanlar uyandırılıyor…",
   "webClient.loadingLine.coffee": "Ajanlara kahve dolduruluyor…",
   "webClient.loadingLine.tokens": "Token'lar parmakla sayılıyor…",
   "webClient.loadingLine.prompts": "İstemler çözülüyor…",
   "webClient.loadingLine.sleepy": "Uykulu ajana nazikçe soruluyor…",
   "webClient.loadingLine.almost": "Neredeyse bitti. Muhtemelen.",
-  "webClient.slowLoad.title": "OpenBot her zamankinden uzun sürüyor",
+  "webClient.slowLoad.title": "OpenBot-NC her zamankinden uzun sürüyor",
   "webClient.slowLoad.body": "İnternet bağlantınızı kontrol edin, ardından sayfayı yeniden yükleyin.",
   "webClient.slowLoad.reload": "Yeniden yükle",
   "webClient.pane.navigation": "Çalışma alanı gezintisi",
@@ -18,7 +18,7 @@ export const messages = {
   "webClient.notice.connecting": "Sunucunuza bağlanılıyor",
   "webClient.notice.findingHosts": "Sunucularınız aranıyor",
   "webClient.otherTab.title": "{name} başka bir sekmede açık",
-  "webClient.otherTab.description": "OpenBot bir sunucuyu aynı anda yalnızca bir sekmede kullanabilir.",
+  "webClient.otherTab.description": "OpenBot-NC bir sunucuyu aynı anda yalnızca bir sekmede kullanabilir.",
   "webClient.otherTab.useHere": "Burada kullan",
   "webClient.agent.modelsFailed": "Sunucu modelleri yüklenemedi.",
   "webClient.agent.refreshFailed":
@@ -27,7 +27,7 @@ export const messages = {
   "webClient.error.usageOffline": "Kullanımı görüntülemek için sunucunuza bağlanın.",
   "webClient.error.desktopOnly": "Bu eylem masaüstü uygulamasında kullanılabilir.",
   "webClient.settings.preferences.title": "Tercihler",
-  "webClient.settings.preferences.description": "Bu tarayıcıda OpenBot'un dilini ve seslerini seçin.",
+  "webClient.settings.preferences.description": "Bu tarayıcıda OpenBot-NC'nin dilini ve seslerini seçin.",
   "webClient.error.checkConversation": "Tekrar göndermeden önce konuşmayı kontrol edin.",
   "webClient.error.hostReported": "Sunucu bir hata bildirdi. Konuşmayı ve sunucu durumunu kontrol edin.",
   "webClient.error.requestFailed": "İstek başarısız oldu.",
@@ -53,7 +53,7 @@ export const messages = {
   "webClient.error.identityChanged": "Sunucu kimliği değişti. Bağlantı reddedildi.",
   "webClient.error.connectionUnavailable": "Sunucu bağlantısı kullanılamıyor.",
   "webClient.error.incompatible":
-    "Bu sunucu OpenBot web ile uyumlu değil. Sunucuyu güncelleyin ve bu sayfayı yeniden yükleyin.",
+    "Bu sunucu OpenBot-NC web ile uyumlu değil. Sunucuyu güncelleyin ve bu sayfayı yeniden yükleyin.",
   "webClient.error.sendUnconfirmed": "Mesaj teslimatı doğrulanmadı. Tekrar göndermeden önce sayfayı yenileyin.",
   "webClient.error.fileType": "Bu dosya türünü eklemek için sunucuyu güncelleyin.",
   "webClient.error.uploadCancelled": "Ek yüklemesi iptal edildi.",

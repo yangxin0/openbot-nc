@@ -103,7 +103,7 @@ export const messages = {
   "mobile.channel.deleteHistory.footer": "메시지가 삭제되고 멤버도 잊어요. 채널 설정은 그대로예요.",
   "mobile.channel.deleteHistory.confirmTitle": "{name}의 기록을 삭제할까요?",
   "mobile.channel.deleteHistory.confirmBody":
-    "이 채널의 모든 메시지와 파일이 OpenBot에서 삭제되고 멤버도 잊어요. 되돌릴 수 없어요. 멤버, 지침, 메모리, 루틴, 작업은 바뀌지 않아요.",
+    "이 채널의 모든 메시지와 파일이 OpenBot-NC에서 삭제되고 멤버도 잊어요. 되돌릴 수 없어요. 멤버, 지침, 메모리, 루틴, 작업은 바뀌지 않아요.",
   "mobile.channel.deleteHistory.confirm": "기록 삭제",
   "mobile.channel.deleteHistory.failed": "기록을 삭제할 수 없어요",
   "mobile.channel.deleteHistory.failedBody": "호스트가 기록을 삭제하지 못했어요.",

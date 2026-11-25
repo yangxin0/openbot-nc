@@ -15,7 +15,7 @@ export const messages = {
   "mobile.workspace.error.transportNotReady": "手机端传输尚未就绪。",
   "mobile.workspace.error.sectionsUnsupported": "这台主机不支持更改文件夹。",
   "mobile.workspace.error.agentNotOnHost": "该助手不在这台主机上。",
-  "mobile.workspace.error.filesUnsupported": "这台主机不支持文件管理，请更新主机上的 OpenBot。",
+  "mobile.workspace.error.filesUnsupported": "这台主机不支持文件管理，请更新主机上的 OpenBot-NC。",
   "mobile.workspace.error.agentUnavailableOnHost": "该助手在这台主机上不可用。",
   "mobile.workspace.error.agentUnavailable": "该助手不可用。",
   "mobile.workspace.error.formUnavailable": "该表单已不可用。",

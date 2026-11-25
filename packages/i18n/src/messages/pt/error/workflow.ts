@@ -7,19 +7,19 @@ export const messages = {
   "error.workflow.annotation": "Textos, notas e formas não podem ter conexões.",
   "error.workflow.port": "Uma etapa não pode receber este tipo de entrada.",
   "error.workflow.unknownValue":
-    "Este OpenBot não conhece uma configuração de uma etapa. Atualize o OpenBot e tente novamente.",
+    "Este OpenBot-NC não conhece uma configuração de uma etapa. Atualize o OpenBot-NC e tente novamente.",
   "error.workflow.branch": "Somente uma condição pode ter conexões de sim e não.",
   "error.workflow.conditionBranch": "Cada conexão de uma condição deve ser sim ou não.",
   "error.workflow.duplicateEdge": "Estas duas etapas já têm esta conexão.",
   "error.workflow.serverTooOld":
-    "Este servidor não oferece suporte a fluxos de trabalho. Atualize o OpenBot no computador que o executa.",
+    "Este servidor não oferece suporte a fluxos de trabalho. Atualize o OpenBot-NC no computador que o executa.",
   "error.workflow.newerSteps":
-    "Este fluxo de trabalho tem etapas de uma versão mais recente do OpenBot. Atualize o OpenBot para alterá-lo.",
+    "Este fluxo de trabalho tem etapas de uma versão mais recente do OpenBot-NC. Atualize o OpenBot-NC para alterá-lo.",
   "error.workflow.nodeUnsupported":
-    "Esta versão do OpenBot ainda não pode executar etapas de imagem, arquivo e mensagem.",
-  "error.workflow.interrupted": "O OpenBot parou enquanto esta etapa era executada. Execute-a novamente.",
+    "Esta versão do OpenBot-NC ainda não pode executar etapas de imagem, arquivo e mensagem.",
+  "error.workflow.interrupted": "O OpenBot-NC parou enquanto esta etapa era executada. Execute-a novamente.",
   "error.workflow.agentMissing": "Escolha um agente para esta etapa.",
-  "error.workflow.handoffFailed": "O OpenBot não conseguiu enviar esta etapa ao agente.",
+  "error.workflow.handoffFailed": "O OpenBot-NC não conseguiu enviar esta etapa ao agente.",
   "error.workflow.agentStepEnded": "A mensagem ao agente foi removida antes da resposta.",
   "error.workflow.agentStepStopped": "O agente parou antes de responder a esta etapa. Execute a etapa novamente.",
   "error.workflow.conditionUnclear": "O modelo não respondeu sim ou não.",
@@ -46,7 +46,7 @@ export const messages = {
   "error.workflow.modelUnavailable": "O modelo desta etapa não está disponível. Escolha outro modelo para esta etapa.",
   "error.workflow.providerBusy": "O provedor está ocupado. Aguarde alguns minutos e execute a etapa novamente.",
   "error.workflow.providerOffline":
-    "O OpenBot não conseguiu acessar o provedor. Verifique a conexão com a internet e execute a etapa novamente.",
+    "O OpenBot-NC não conseguiu acessar o provedor. Verifique a conexão com a internet e execute a etapa novamente.",
   "error.workflow.modelBusy": "Outra solicitação ao modelo está em andamento. Execute a etapa novamente em breve.",
   "error.workflow.mediaFailed": "O modelo não conseguiu criar a imagem ou o vídeo. Execute a etapa novamente.",
   "error.workflow.mediaNotMade": "O modelo não criou a imagem ou o vídeo. Ele respondeu: {answer}",
@@ -68,7 +68,7 @@ export const messages = {
   "error.workflow.outputPlaceMissing": "Escolha um local de mensagens para esta saída.",
   "error.workflow.outputChannelMissing": "Escolha um canal para esta saída.",
   "error.workflow.outputChannelFailed":
-    "O OpenBot não conseguiu publicar o resultado no canal. Execute a etapa novamente.",
+    "O OpenBot-NC não conseguiu publicar o resultado no canal. Execute a etapa novamente.",
   "error.workflow.discordNoMessage":
     "Esta saída age na mensagem do Discord que iniciou a execução. Inicie a execução a partir de uma menção no Discord ou escolha Publicar no canal.",
   "error.workflow.slackNoMessage":
@@ -78,7 +78,7 @@ export const messages = {
   "error.workflow.outputConnectionOff":
     "A conexão de mensagens desta saída está desativada ou foi removida. Escolha um local novamente.",
   "error.workflow.outputNotRunning": "A conexão de mensagens não está em execução agora. Tente de novo quando estiver.",
-  "error.workflow.outputRefused": "O local recusou a publicação. Verifique se o OpenBot pode publicar lá.",
+  "error.workflow.outputRefused": "O local recusou a publicação. Verifique se o OpenBot-NC pode publicar lá.",
   "error.workflow.outputUncertain":
     "A publicação parou no caminho. Uma parte pode já estar no local. Verifique antes de tentar de novo.",
   "error.workflow.tooLarge":
@@ -108,7 +108,7 @@ export const messages = {
     "O Sunra usa imagens de entrada apenas com uma conta pessoal. Selecione sua conta pessoal no Sunra ou remova as conexões de imagem.",
   "error.workflow.sunraFailed": "O Sunra não conseguiu criar o arquivo: {reason}",
   "error.workflow.sunraTimeout":
-    "O Sunra não terminou o arquivo a tempo. Veja o projeto OpenBot em sunra.ai antes de executar a etapa novamente.",
+    "O Sunra não terminou o arquivo a tempo. Veja o projeto OpenBot-NC em sunra.ai antes de executar a etapa novamente.",
   "error.workflow.higgsfieldSignIn": "Entre no Higgsfield em Apps para usar os modelos do Higgsfield.",
   "error.workflow.higgsfieldNoCredits":
     "Sua conta do Higgsfield não tem créditos suficientes. Adicione créditos em higgsfield.ai/pricing e execute a etapa novamente.",

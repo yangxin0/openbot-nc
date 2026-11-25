@@ -16,10 +16,10 @@ export const messages = {
   "connector.github.connectedAs": "@{login} olarak bağlandı",
   "connector.github.repositoriesTitle": "Depolar",
   "connector.github.repositoriesDescription":
-    "Ajanlar yalnızca OpenBot GitHub Uygulamasının yüklü olduğu depoları kullanabilir.",
+    "Ajanlar yalnızca OpenBot-NC GitHub Uygulamasının yüklü olduğu depoları kullanabilir.",
   "connector.github.chooseRepositories": "Depoları seç",
   "connector.github.repositoriesLoading": "Depolar GitHub'dan okunuyor",
-  "connector.github.noRepositories": "OpenBot GitHub Uygulaması henüz bir depoya yüklenmedi.",
+  "connector.github.noRepositories": "OpenBot-NC GitHub Uygulaması henüz bir depoya yüklenmedi.",
   "connector.github.moreRepositories": {
     one: "Ve {count} depo daha",
     other: "Ve {count} depo daha",
@@ -31,7 +31,7 @@ export const messages = {
   "connector.github.expiredTitle": "GitHub bağlantısının süresi doldu",
   "connector.github.expiredDescription": "Ajanlara yeniden GitHub erişimi vermek için @{login} olarak tekrar bağlanın.",
   "connector.github.reconnect": "Yeniden bağlan",
-  "connector.github.actionFailed": "OpenBot GitHub bağlantısını değiştiremedi.",
+  "connector.github.actionFailed": "OpenBot-NC GitHub bağlantısını değiştiremedi.",
   "connector.github.statusConnected": "Bağlandı",
   "connector.github.statusConnecting": "Bağlanıyor",
   "connector.github.statusExpired": "Süresi doldu",
@@ -44,7 +44,7 @@ export const messages = {
   "connector.github.noMatch": "“{query}” ile eşleşen depo bulunamadı.",
   "connector.github.stepSignIn": "Oturum aç",
   "connector.github.stepConnected": "Bağlandı",
-  "connector.github.requestingCode": "OpenBot GitHub'dan bir kod istiyor.",
+  "connector.github.requestingCode": "OpenBot-NC GitHub'dan bir kod istiyor.",
   "connector.github.codeLabel": "Kod {code}",
   "connector.github.failedTitle": "GitHub bağlanamadı",
   "connector.github.cancelConnecting": "GitHub bağlantısını iptal et",
@@ -57,7 +57,7 @@ export const messages = {
   "connector.github.disconnectConfirmTitle": "GitHub bağlantısı kesilsin mi?",
   "connector.github.disconnectConfirmDescription": "Bağlantıyı kesmek @{login} oturumunu bu bilgisayardan kaldırır.",
   "connector.github.disconnectEffectTools": "Tüm ajanlar GitHub araçlarını, gh ve git erişimini kaybeder.",
-  "connector.github.disconnectEffectRevoke": "Ardından OpenBot yetkisini kaldırabileceğiniz GitHub açılır.",
+  "connector.github.disconnectEffectRevoke": "Ardından OpenBot-NC yetkisini kaldırabileceğiniz GitHub açılır.",
   "connector.github.disconnectEffectKept": "Sohbetler, dosyalar ve ajan belleği bu bilgisayarda kalır.",
   "connector.github.descriptionHost":
     "{host} sunucusundaki her ajan GitHub depolarınızı, sorunlarınızı (issues), çekme isteklerinizi (pull requests), gh ve git araçlarını kullanabilir.",
@@ -72,7 +72,7 @@ export const messages = {
   "connector.github.close": "Kapat",
   "connector.dangerZone": "Tehlikeli bölge",
   "connector.statusUnknown": "Bilinmiyor",
-  "connector.readFailed": "OpenBot bu bağlantının durumunu okuyamadı.",
+  "connector.readFailed": "OpenBot-NC bu bağlantının durumunu okuyamadı.",
 
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
@@ -99,16 +99,17 @@ export const messages = {
   "connector.whatsapp.actionFailed": "WhatsApp değişikliği kabul etmedi",
   "connector.whatsapp.numbersTitle": "Numaralar",
   "connector.whatsapp.linkNumber": "Numara bağla",
-  "connector.whatsapp.ownNumberNote": "“Kendine mesaj gönder” sohbetiniz ve izin verdiğiniz kişiler OpenBot'a ulaşır.",
+  "connector.whatsapp.ownNumberNote":
+    "“Kendine mesaj gönder” sohbetiniz ve izin verdiğiniz kişiler OpenBot-NC'ye ulaşır.",
   "connector.whatsapp.dedicatedNote":
-    "“Kendine mesaj gönder” sohbetiniz ve izin verdiğiniz kişiler OpenBot'a ulaşır. Diğer kişiler size iletmeleri için bir kod alır.",
+    "“Kendine mesaj gönder” sohbetiniz ve izin verdiğiniz kişiler OpenBot-NC'ye ulaşır. Diğer kişiler size iletmeleri için bir kod alır.",
   "connector.whatsapp.helpLoggedOut": "WhatsApp bu bilgisayarı bağlı cihazlardan kaldırdı. Numarayı yeniden bağlayın.",
   "connector.whatsapp.helpLoggedOutHost": "WhatsApp bu sunucuyu bağlı cihazlardan kaldırdı. Numarayı yeniden bağlayın.",
   "connector.whatsapp.helpError":
-    "OpenBot bu numarada WhatsApp'a ulaşamıyor. Yeniden bağlanın veya numaranın bağlantısını kesin.",
+    "OpenBot-NC bu numarada WhatsApp'a ulaşamıyor. Yeniden bağlanın veya numaranın bağlantısını kesin.",
   "connector.whatsapp.helpKeysUnreadable":
-    "OpenBot bu numaranın kayıtlı anahtarlarını okuyamıyor. Numarayı yeniden bağlayın.",
-  "connector.whatsapp.retryAt": "WhatsApp OpenBot'tan beklemesini istedi. {time} saatinde tekrar deneyecek.",
+    "OpenBot-NC bu numaranın kayıtlı anahtarlarını okuyamıyor. Numarayı yeniden bağlayın.",
+  "connector.whatsapp.retryAt": "WhatsApp OpenBot-NC'den beklemesini istedi. {time} saatinde tekrar deneyecek.",
   "connector.whatsapp.pause": "Duraklat",
   "connector.whatsapp.resume": "Sürdür",
   "connector.whatsapp.reconnect": "Yeniden bağlan",
@@ -118,20 +119,20 @@ export const messages = {
   "connector.whatsapp.disconnectAllSummary":
     "Tüm numaraların bağlantısı kesilir. Kimse ajanlarınıza artık WhatsApp üzerinden ulaşamaz.",
   "connector.whatsapp.disconnectAllSummaryOrchestrator":
-    "Tüm numaraların bağlantısı kesilir. WhatsApp Düzenleyicisi ve sohbetleri OpenBot'tan silinir.",
+    "Tüm numaraların bağlantısı kesilir. WhatsApp Düzenleyicisi ve sohbetleri OpenBot-NC'den silinir.",
   "connector.whatsapp.rowAction": "{action}: {name}",
   "connector.whatsapp.ownNumber": "Kişisel numara",
   "connector.whatsapp.ownNumberDescription":
-    "Yalnızca “Kendine mesaj gönder” sohbetiniz ve izin verdiğiniz kişiler yazabilir. Diğer kişiler yanıt almaz. Kapalıyken OpenBot tanımadığınız kişilere bir kodla yanıt verir.",
+    "Yalnızca “Kendine mesaj gönder” sohbetiniz ve izin verdiğiniz kişiler yazabilir. Diğer kişiler yanıt almaz. Kapalıyken OpenBot-NC tanımadığınız kişilere bir kodla yanıt verir.",
   "connector.whatsapp.workingMessage": "“Üzerinde çalışılıyor…” mesajı",
   "connector.whatsapp.workingMessageDescription":
-    "OpenBot bunu ajan çalışırken gönderir, sonra yanıtla değiştirir. Önceki bir isteği bekleyen istek de bir bekleme mesajı alır. Kişisel numarada bu mesajları yalnızca “Kendine mesaj gönder” sohbetiniz alır. Yalnızca yanıtı göndermek için kapatın.",
+    "OpenBot-NC bunu ajan çalışırken gönderir, sonra yanıtla değiştirir. Önceki bir isteği bekleyen istek de bir bekleme mesajı alır. Kişisel numarada bu mesajları yalnızca “Kendine mesaj gönder” sohbetiniz alır. Yalnızca yanıtı göndermek için kapatın.",
   "connector.whatsapp.statusReactions": "Durum tepkileri",
   "connector.whatsapp.statusReactionsDescription":
-    "OpenBot bir mesaj geldiğinde 👀, yanıt hazır olduğunda ✅ tepkisi verir. Hiç tepki göndermemek için kapatın.",
+    "OpenBot-NC bir mesaj geldiğinde 👀, yanıt hazır olduğunda ✅ tepkisi verir. Hiç tepki göndermemek için kapatın.",
   "connector.whatsapp.orchestratorTitle": "WhatsApp Düzenleyicisi",
   "connector.whatsapp.orchestratorDescription":
-    "Bu ajan bağlı tüm numaralarınızdan OpenBot'a gelen mesajları alır. Kısa olanları kendisi yanıtlar, diğer işleri doğru ajana iletir ve WhatsApp'ta yanıt verir.",
+    "Bu ajan bağlı tüm numaralarınızdan OpenBot-NC'ye gelen mesajları alır. Kısa olanları kendisi yanıtlar, diğer işleri doğru ajana iletir ve WhatsApp'ta yanıt verir.",
   "connector.whatsapp.orchestratorNone": "Henüz yanıt veren bir ajan yok",
   "connector.whatsapp.orchestratorNoneDescription":
     "WhatsApp Düzenleyicisini ekleyin, aksi takdirde WhatsApp yanıt alamaz.",
@@ -147,10 +148,10 @@ export const messages = {
   "connector.whatsapp.kindLabel": "Numara",
   "connector.whatsapp.kindPersonal": "Kişisel numaram",
   "connector.whatsapp.kindPersonalDescription":
-    "OpenBot yalnızca “Kendine mesaj gönder” sohbetinizi ve izin verdiğiniz kişileri yanıtlar. Diğer kişiler yanıt almaz.",
-  "connector.whatsapp.kindDedicated": "Yalnızca OpenBot için bir numara",
+    "OpenBot-NC yalnızca “Kendine mesaj gönder” sohbetinizi ve izin verdiğiniz kişileri yanıtlar. Diğer kişiler yanıt almaz.",
+  "connector.whatsapp.kindDedicated": "Yalnızca OpenBot-NC için bir numara",
   "connector.whatsapp.kindDedicatedDescription":
-    "OpenBot bu numaradan tanımadığınız her kişiye, size iletmesi için bir kodla yanıt verir. Onları burada onaylarsınız.",
+    "OpenBot-NC bu numaradan tanımadığınız her kişiye, size iletmesi için bir kodla yanıt verir. Onları burada onaylarsınız.",
   "connector.whatsapp.methodLabel": "Bağlama yöntemi",
   "connector.whatsapp.methodQr": "QR kodu",
   "connector.whatsapp.methodCode": "Eşleme kodu",
@@ -175,26 +176,26 @@ export const messages = {
   "connector.whatsapp.failedTimeout": "Telefon kullanmadan önce kodun süresi doldu.",
   "connector.whatsapp.failedRefused": "WhatsApp bağlantıyı reddetti. Birkaç dakika bekleyin, sonra tekrar deneyin.",
   "connector.whatsapp.failedBusy": "Başka bir bağlama işlemi sürüyor. Bitmesini bekleyin, sonra tekrar deneyin.",
-  "connector.whatsapp.failedUnavailable": "OpenBot WhatsApp'a ulaşamıyor. İnternet bağlantısını kontrol edin.",
+  "connector.whatsapp.failedUnavailable": "OpenBot-NC WhatsApp'a ulaşamıyor. İnternet bağlantısını kontrol edin.",
   "connector.whatsapp.tryAgain": "Tekrar dene",
   "connector.whatsapp.agentStepTitle": "WhatsApp Düzenleyicisini ekleyin",
   "connector.whatsapp.agentStepDescription":
-    "Bu yeni ajan, {number} üzerinde ve daha sonra bağladığınız her numarada OpenBot'a gelen mesajları yanıtlar.",
+    "Bu yeni ajan, {number} üzerinde ve daha sonra bağladığınız her numarada OpenBot-NC'ye gelen mesajları yanıtlar.",
   "connector.whatsapp.orchestratorName": "WhatsApp Düzenleyicisi",
   "connector.whatsapp.orchestratorRole": "WhatsApp'ta yanıt verir ve ekibe sorar",
-  "connector.whatsapp.orchestratorDoesReceive": "OpenBot'a gelen her WhatsApp mesajını ilk olarak alır",
+  "connector.whatsapp.orchestratorDoesReceive": "OpenBot-NC'ye gelen her WhatsApp mesajını ilk olarak alır",
   "connector.whatsapp.orchestratorDoesDelegate": "Her görevi en uygun ajana iletir",
   "connector.whatsapp.orchestratorDoesAnswer": "Yanıtı WhatsApp sohbetinde paylaşır",
   "connector.whatsapp.orchestratorModel": "Model",
-  "connector.whatsapp.doneTitle": "OpenBot {number} ile bağlandı",
+  "connector.whatsapp.doneTitle": "OpenBot-NC {number} ile bağlandı",
   "connector.whatsapp.done": "Bitti",
   "connector.whatsapp.disconnectTitle": "{number} bağlantısı kesilsin mi?",
   "connector.whatsapp.disconnectDescription":
-    "OpenBot {number} üzerinde WhatsApp oturumunu kapatır. OpenBot kapalıysa cihazı WhatsApp > Bağlı cihazlar bölümünden de kaldırın.",
+    "OpenBot-NC {number} üzerinde WhatsApp oturumunu kapatır. OpenBot-NC kapalıysa cihazı WhatsApp > Bağlı cihazlar bölümünden de kaldırın.",
   "connector.whatsapp.disconnectEffect": "Kişiler artık {number} üzerinden ajanlarınıza ulaşamaz.",
-  "connector.whatsapp.removeEffectKept": "Konuşmalar ve WhatsApp Düzenleyicisi OpenBot'ta kalır.",
+  "connector.whatsapp.removeEffectKept": "Konuşmalar ve WhatsApp Düzenleyicisi OpenBot-NC'de kalır.",
   "connector.whatsapp.removeEffectDeleted":
-    "Bu son numara olduğundan WhatsApp Düzenleyicisi ve konuşmaları OpenBot'tan silinir.",
+    "Bu son numara olduğundan WhatsApp Düzenleyicisi ve konuşmaları OpenBot-NC'den silinir.",
   "connector.whatsapp.keep": "Bağlı tut",
   "connector.whatsapp.close": "Kapat",
   "connector.whatsapp.sendersTitle": "{number} için kimler yazabilir",
@@ -218,7 +219,7 @@ export const messages = {
     "Bu gruptaki kişiler numarayı etiketlediğinde veya mesajlarını yanıtladığında ajanlarınıza iş verebilir.",
   "connector.whatsapp.groupSearch": "Grup ara",
   "connector.whatsapp.groupsLoading": "Gruplar okunuyor…",
-  "connector.whatsapp.groupsLoadFailed": "OpenBot grupları okuyamadı",
+  "connector.whatsapp.groupsLoadFailed": "OpenBot-NC grupları okuyamadı",
   "connector.whatsapp.groupsEmpty": "Bu numara hiçbir grupta değil.",
   "connector.whatsapp.groupsNoMatch": "Bu adda bir grup yok.",
   "connector.whatsapp.groupAdded": "Eklendi",
@@ -231,9 +232,9 @@ export const messages = {
   "connector.whatsapp.deny": "Reddet",
   "connector.onePassword.title": "1Password",
   "connector.onePassword.description":
-    "Ajanların OpenBot tarayıcısında sitelere oturum açabilmesi için özel bir 1Password kasasını bir hizmet hesabı aracılığıyla OpenBot ile paylaşın.",
+    "Ajanların OpenBot-NC tarayıcısında sitelere oturum açabilmesi için özel bir 1Password kasasını bir hizmet hesabı aracılığıyla OpenBot-NC ile paylaşın.",
   "connector.onePassword.howItWorks":
-    "Bağlanma, 1Password hesabınızda “Shared with OpenBot” adlı bir kasa ve yalnızca bu kasayı okuyabilen bir hizmet hesabı oluşturur. OpenBot kayıtlı girişleri bu bilgisayardaki kendi tarayıcısında doldurur; bu nedenle yalnızca o kasaya taşıdığınız öğeler paylaşılır. Ajanlar hiçbir zaman parola görmez.",
+    "Bağlanma, 1Password hesabınızda “Shared with OpenBot” adlı bir kasa ve yalnızca bu kasayı okuyabilen bir hizmet hesabı oluşturur. OpenBot-NC kayıtlı girişleri bu bilgisayardaki kendi tarayıcısında doldurur; bu nedenle yalnızca o kasaya taşıdığınız öğeler paylaşılır. Ajanlar hiçbir zaman parola görmez.",
   "connector.onePassword.connect": "1Password'e bağlan",
   "connector.onePassword.setupTitle": "Kurulum",
   "connector.onePassword.stepCliTitle": "1Password CLI'yi yükleyin",
@@ -241,20 +242,20 @@ export const messages = {
   "connector.onePassword.stepCliInstalling": "1Password CLI, 1Password'den indiriliyor",
   "connector.onePassword.stepCliReady": "{version} sürümü yüklü.",
   "connector.onePassword.stepCliMissing":
-    "OpenBot bunu 1Password'den kendi klasörüne indirir. Yönetici parolası gerekmez.",
+    "OpenBot-NC bunu 1Password'den kendi klasörüne indirir. Yönetici parolası gerekmez.",
   "connector.onePassword.stepCliManual":
-    "OpenBot bunu bu bilgisayara yükleyemiyor. 1Password'den yükleyin, ardından bu sayfaya dönün.",
+    "OpenBot-NC bunu bu bilgisayara yükleyemiyor. 1Password'den yükleyin, ardından bu sayfaya dönün.",
   "connector.onePassword.installCli": "Yükle",
   "connector.onePassword.stepAppTitle": "CLI entegrasyonunu açın",
   "connector.onePassword.stepAppDescription":
     "1Password uygulamasında Settings > Developer bölümünü açın ve “Integrate with 1Password CLI” seçeneğini açın.",
   "connector.onePassword.stepAppReady": "1Password uygulaması, CLI'nin paylaşılan kasayı oluşturmasına izin veriyor.",
   "connector.onePassword.openApp": "1Password'ü aç",
-  "connector.onePassword.openAppFailed": "OpenBot, 1Password'ü açamadı.",
+  "connector.onePassword.openAppFailed": "OpenBot-NC, 1Password'ü açamadı.",
   "connector.onePassword.checkAgain": "Tekrar denetle",
   "connector.onePassword.stepVaultTitle": "Paylaşılan kasayı oluşturun",
   "connector.onePassword.stepVaultDescription":
-    "OpenBot, “Shared with OpenBot” kasasını ve yalnızca onu okuyabilen bir hizmet hesabı oluşturur. 1Password sizden onay ister.",
+    "OpenBot-NC, “Shared with OpenBot” kasasını ve yalnızca onu okuyabilen bir hizmet hesabı oluşturur. 1Password sizden onay ister.",
   "connector.onePassword.useTokenDescription":
     "Bu adımlar yerine 1Password.com'dan bir hizmet hesabı belirteci yapıştırın.",
   "connector.onePassword.useTokenAction": "Belirteç kullan",
@@ -264,7 +265,7 @@ export const messages = {
   "connector.onePassword.approveInApp": "İsteği 1Password uygulamasında onaylayın",
   "connector.onePassword.cancel": "İptal",
   "connector.onePassword.chooseAccountTitle": "Bir hesap seçin",
-  "connector.onePassword.chooseAccountDescription": "OpenBot paylaşılan kasayı seçtiğiniz hesapta oluşturur.",
+  "connector.onePassword.chooseAccountDescription": "OpenBot-NC paylaşılan kasayı seçtiğiniz hesapta oluşturur.",
   "connector.onePassword.useAccount": "Bu hesabı kullan",
   "connector.onePassword.vaultTitle": "Paylaşılan kasa",
   "connector.onePassword.vaultDescription":
@@ -277,14 +278,14 @@ export const messages = {
   "connector.onePassword.disconnect": "Bağlantıyı kes",
   "connector.onePassword.disconnectTitle": "1Password bağlantısını kes",
   "connector.onePassword.disconnectSummary":
-    "OpenBot belirteci unutur. Kasa ve hizmet hesabı 1Password'de kalır; artık gerekmiyorsa onları orada kaldırın.",
-  "connector.onePassword.actionFailed": "OpenBot 1Password bağlantısını değiştiremedi.",
+    "OpenBot-NC belirteci unutur. Kasa ve hizmet hesabı 1Password'de kalır; artık gerekmiyorsa onları orada kaldırın.",
+  "connector.onePassword.actionFailed": "OpenBot-NC 1Password bağlantısını değiştiremedi.",
   "connector.onePassword.statusConnected": "Bağlandı",
   "connector.onePassword.statusConnecting": "Bağlanıyor",
   "connector.onePassword.descriptionHost":
-    "Ayrı bir 1Password kasasını bir hizmet hesabıyla {host} üzerindeki OpenBot ile paylaşın; böylece {host} üzerindeki ajanlar onun tarayıcısında sitelere oturum açabilir.",
+    "Ayrı bir 1Password kasasını bir hizmet hesabıyla {host} üzerindeki OpenBot-NC ile paylaşın; böylece {host} üzerindeki ajanlar onun tarayıcısında sitelere oturum açabilir.",
   "connector.onePassword.howItWorksHost":
-    "{host} bir hizmet hesabı belirteciyle bağlanır. 1Password.com'da yalnızca OpenBot ile paylaştığınız kasayı okuyabilen bir hizmet hesabı oluşturun ve belirtecini buraya yapıştırın. {host} belirteci denetler ve saklar; bu bilgisayar saklamaz. Ajanlar hiçbir zaman parola görmez.",
+    "{host} bir hizmet hesabı belirteciyle bağlanır. 1Password.com'da yalnızca OpenBot-NC ile paylaştığınız kasayı okuyabilen bir hizmet hesabı oluşturun ve belirtecini buraya yapıştırın. {host} belirteci denetler ve saklar; bu bilgisayar saklamaz. Ajanlar hiçbir zaman parola görmez.",
   "connector.onePassword.disconnectSummaryHost":
     "{host} belirteci unutur. Kasa ve hizmet hesabı 1Password'de kalır; artık gerekmiyorsa onları orada kaldırın.",
   "connector.bitwarden.title": "Bitwarden",
@@ -292,25 +293,25 @@ export const messages = {
   "connector.bitwarden.setup":
     "Bitwarden CLI'yi yükleyin ve bw login ile oturum açın. Shared with OpenBot adlı bir klasör oluşturun ve içine yalnızca ajanların kullanabileceği girişleri koyun. bw unlock --raw komutunu çalıştırın ve oturum anahtarını aşağıya yapıştırın. Ana parolanızı yapıştırmayın.",
   "connector.bitwarden.scope":
-    "Bu bilgisayardaki tüm ajanlar Shared with OpenBot içindeki eşleşen girişleri kullanabilir. OpenBot tam HTTPS kaynaklarını kullanır. Ana parola istemi veya özel URI eşleştirme kuralı gerektiren öğeleri kullanmaz.",
+    "Bu bilgisayardaki tüm ajanlar Shared with OpenBot içindeki eşleşen girişleri kullanabilir. OpenBot-NC tam HTTPS kaynaklarını kullanır. Ana parola istemi veya özel URI eşleştirme kuralı gerektiren öğeleri kullanmaz.",
   "connector.bitwarden.session":
-    "Oturum anahtarı bellekte kalır. Kasa 8 saat kullanılmazsa veya OpenBot kapanırsa tekrar bağlanın. Bağlantıyı kesmek OpenBot erişimini durdurur; diğer Bitwarden istemcilerini kilitlemez.",
+    "Oturum anahtarı bellekte kalır. Kasa 8 saat kullanılmazsa veya OpenBot-NC kapanırsa tekrar bağlanın. Bağlantıyı kesmek OpenBot-NC erişimini durdurur; diğer Bitwarden istemcilerini kilitlemez.",
   "connector.bitwarden.sessionKey": "Bitwarden oturum anahtarı",
   "connector.bitwarden.connect": "Bitwarden'a bağlan",
   "connector.bitwarden.disconnect": "Bitwarden bağlantısını kes",
   "connector.bitwarden.disconnectAction": "Bağlantıyı kes",
   "connector.bitwarden.disconnectSummary":
-    "OpenBot oturum anahtarını unutur. Ajanlar artık Bitwarden'dan giriş bilgisi dolduramaz. Diğer Bitwarden istemcilerinin kilidi açık kalır.",
+    "OpenBot-NC oturum anahtarını unutur. Ajanlar artık Bitwarden'dan giriş bilgisi dolduramaz. Diğer Bitwarden istemcilerinin kilidi açık kalır.",
   "connector.bitwarden.disconnectSummaryHost":
     "{host} API anahtarını ve ana parolayı kaldırır. {host} üzerindeki ajanlar artık Bitwarden'dan giriş bilgisi dolduramaz.",
   "connector.bitwarden.connected": "Bağlandı",
-  "connector.bitwarden.actionFailed": "OpenBot Bitwarden bağlantısını değiştiremedi.",
+  "connector.bitwarden.actionFailed": "OpenBot-NC Bitwarden bağlantısını değiştiremedi.",
   "connector.bitwarden.descriptionHost":
     "{host} üzerindeki tarayıcı girişlerini Bitwarden veya Vaultwarden'dan doldurun.",
   "connector.bitwarden.setupHost":
     "{host} kendi Bitwarden CLI'si ile oturum açar. Kasanızda Shared with OpenBot adlı bir klasör oluşturun ve içine yalnızca ajanların kullanabileceği girişleri koyun. Web kasasında Ayarlar › Güvenlik › Anahtarlar'ı açın ve API anahtarınızı görüntüleyin. Aşağıya sunucu adresini, client_id, client_secret ve ana parolanızı girin.",
   "connector.bitwarden.scopeHost":
-    "{host} üzerindeki tüm ajanlar Shared with OpenBot içindeki eşleşen girişleri kullanabilir. OpenBot tam HTTPS kaynaklarını kullanır. Ana parola isteyen öğeleri veya özel URI eşleşme kuralı olan öğeleri kullanmaz.",
+    "{host} üzerindeki tüm ajanlar Shared with OpenBot içindeki eşleşen girişleri kullanabilir. OpenBot-NC tam HTTPS kaynaklarını kullanır. Ana parola isteyen öğeleri veya özel URI eşleşme kuralı olan öğeleri kullanmaz.",
   "connector.bitwarden.sessionHost":
     "{host}, yeniden başlatmadan sonra kilidi tekrar açabilmek için API anahtarını ve ana parolayı şifreli olarak saklar. Bu bilgisayar bunları saklamaz. Bağlantıyı kesmek bunları {host} üzerinden kaldırır. {host} sunucu adresine HTTPS ile ulaşabilmelidir.",
   "connector.bitwarden.serverUrl": "Sunucu adresi",
@@ -335,19 +336,19 @@ export const messages = {
   "connector.protonPass.keyPlaceholder": "pst_…",
   "connector.protonPass.setupTitle": "Kurulum",
   "connector.protonPass.setupDescription":
-    "Bağla, Proton oturum açma sayfasını tarayıcınızda açar. Sonra OpenBot paylaşılan kasayı oluşturur ve yalnızca salt okunur bir anahtar saklar.",
+    "Bağla, Proton oturum açma sayfasını tarayıcınızda açar. Sonra OpenBot-NC paylaşılan kasayı oluşturur ve yalnızca salt okunur bir anahtar saklar.",
   "connector.protonPass.setupDescriptionHost":
     "Bağla, Proton oturum açma sayfasını tarayıcınızda açar. Sonra {host} paylaşılan kasayı oluşturur ve yalnızca salt okunur bir anahtar saklar.",
   "connector.protonPass.vaultName": "Shared with OpenBot",
   "connector.protonPass.vaultSetup":
-    "OpenBot bu kasayı bağlandığınızda oluşturur. Paylaşmak için oturum bilgilerini buraya taşıyın.",
+    "OpenBot-NC bu kasayı bağlandığınızda oluşturur. Paylaşmak için oturum bilgilerini buraya taşıyın.",
   "connector.protonPass.showSteps": "Adımları göster",
   "connector.protonPass.stepsLabel": "Bağlantı adımları",
   "connector.protonPass.stepSignIn": "Oturum aç",
   "connector.protonPass.stepVault": "Paylaşılan kasayı oluştur",
   "connector.protonPass.stepDone": "Bitti",
   "connector.protonPass.signInTitle": "Proton’da oturum açın",
-  "connector.protonPass.signInStarting": "OpenBot oturum açmayı başlatıyor. Proton sayfası tarayıcınızda açılır.",
+  "connector.protonPass.signInStarting": "OpenBot-NC oturum açmayı başlatıyor. Proton sayfası tarayıcınızda açılır.",
   "connector.protonPass.signInDescription":
     "Oturum açma tarayıcınızda açık. Proton parolanızı ve ikinci faktörünüzü ister.",
   "connector.protonPass.signInDescriptionHost":
@@ -358,7 +359,7 @@ export const messages = {
   "connector.protonPass.continue": "Devam",
   "connector.protonPass.setupStepTitle": "Paylaşılan kasa oluşturuluyor",
   "connector.protonPass.setupStepDescription":
-    "OpenBot “{vault}” kasasını ve onun için salt okunur bir anahtar oluşturur. Sonra Proton oturumunuzu kapatır.",
+    "OpenBot-NC “{vault}” kasasını ve onun için salt okunur bir anahtar oluşturur. Sonra Proton oturumunuzu kapatır.",
   "connector.protonPass.doneTitle": "Proton Pass bağlandı",
   "connector.protonPass.doneDescription":
     "Ajanların oturum açabilmesi için oturum bilgilerini “{vault}” kasasına taşıyın.",
@@ -388,9 +389,9 @@ export const messages = {
   "connector.protonPass.keyNoExpiry": "Salt okunur. Süresi dolmaz.",
   "connector.protonPass.disconnectTitle": "Proton Pass bağlantısını kes",
   "connector.protonPass.disconnectSummary":
-    "OpenBot bu bilgisayardaki erişim anahtarını siler. Kasa ve içindeki oturum bilgileri Proton hesabınızda kalır.",
+    "OpenBot-NC bu bilgisayardaki erişim anahtarını siler. Kasa ve içindeki oturum bilgileri Proton hesabınızda kalır.",
   "connector.protonPass.disconnectSummaryHost":
-    "OpenBot {host} üzerindeki erişim anahtarını siler. Kasa ve içindeki oturum bilgileri Proton hesabınızda kalır.",
+    "OpenBot-NC {host} üzerindeki erişim anahtarını siler. Kasa ve içindeki oturum bilgileri Proton hesabınızda kalır.",
   "connector.protonPass.disconnect": "Bağlantıyı kes",
-  "connector.protonPass.actionFailed": "OpenBot, Proton Pass bağlantısını değiştiremedi.",
+  "connector.protonPass.actionFailed": "OpenBot-NC, Proton Pass bağlantısını değiştiremedi.",
 } as const satisfies PartialTranslation<typeof source>;

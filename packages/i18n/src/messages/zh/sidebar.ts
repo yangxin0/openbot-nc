@@ -138,7 +138,7 @@ export const messages = {
   "sidebar.delete.pending": "正在删除…",
   "sidebar.delete.title": "删除 {name}？",
   "sidebar.delete.agentDescription":
-    "这会从应用中移除该助手及其 OpenBot 对话，该助手的队列、记忆、自动化任务和工作区都会被删除。由所连接的 CLI 服务商单独保存的历史记录不会被删除。",
+    "这会从应用中移除该助手及其 OpenBot-NC 对话，该助手的队列、记忆、自动化任务和工作区都会被删除。由所连接的 CLI 服务商单独保存的历史记录不会被删除。",
   "sidebar.delete.channelDescription":
     "这会停止该频道。其历史记录会保留在“已删除的频道”中，仅供预览。你可以从那里恢复。频道内的助手会被保留。",
   "sidebar.delete.sectionDescription": "该文件夹内的对话和文件夹会上移一级，不会删除任何助手或频道。",

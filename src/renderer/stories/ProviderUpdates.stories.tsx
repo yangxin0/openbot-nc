@@ -300,7 +300,7 @@ export const WaitsForTurn: Story = {
 };
 
 const LONG_FAILURE =
-  "OpenBot could not update the Claude CLI. The registry at https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-2.1.250.tgz answered with a checksum that does not match the published package, so the download stopped before it replaced the version you have.";
+  "OpenBot-NC could not update the Claude CLI. The registry at https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-2.1.250.tgz answered with a checksum that does not match the published package, so the download stopped before it replaced the version you have.";
 
 export const LongFailure: Story = {
   render: () => <ProviderUpdateFlow controls failure={LONG_FAILURE} />,

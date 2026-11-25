@@ -68,7 +68,7 @@ const relay: ServerModeOptions["relay"] = {
         ...relayState,
         hosting: enabled,
         hostingState: enabled
-          ? { status: "online", message: "Your team can connect to this OpenBot through the relay server." }
+          ? { status: "online", message: "Your team can connect to this OpenBot-NC through the relay server." }
           : { status: "off", message: null },
       };
       return structuredClone(relayState);

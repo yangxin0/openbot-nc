@@ -1,3 +1,4 @@
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import type { ProviderCodeLoginStart } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
 import { classifyUserError } from "@openbot/user-errors";
@@ -19,7 +20,7 @@ import { ProviderSignInError, signInReason } from "../provider-client-effects";
 import { recordRestartActivity } from "../restart-activity";
 
 const CODEX_LOGIN_TIMEOUT_MS = 10 * 60_000;
-const UNVERIFIED_MESSAGE = "OpenBot could not verify the ChatGPT connection. Try again.";
+const UNVERIFIED_MESSAGE = `${APP_NAME} could not verify the ChatGPT connection. Try again.`;
 
 interface PendingCodexLogin {
   client: AgentClient;
@@ -89,7 +90,7 @@ export class CodexLoginFlow {
         this.#track(client, cli, login.loginId);
         const opened = yield* Effect.result(loginIo(() => openExternal(login.authUrl)));
         if (Result.isFailure(opened)) {
-          yield* this.cancel("OpenBot could not open the ChatGPT connection page.");
+          yield* this.cancel(sourceText("error.provider.chatgptPageFailed"));
           return yield* new CodexLoginFailed({ cause: new Error(sourceText("error.provider.chatgptPageFailed")) });
         }
       }),

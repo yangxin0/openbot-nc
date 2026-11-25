@@ -338,7 +338,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "Créer une clé dans {source}",
   "crm.source.stripeKeyHelp":
-    "Stripe ouvre une clé en lecture seule, prête à être créée. Créez-la, puis copiez la clé et collez-la ici. OpenBot ne fait que lire dans Stripe.",
+    "Stripe ouvre une clé en lecture seule, prête à être créée. Créez-la, puis copiez la clé et collez-la ici. OpenBot-NC ne fait que lire dans Stripe.",
   "crm.source.connect": "Connecter",
   "crm.source.account": "Compte",
   "crm.source.testMode": "Mode test",
@@ -353,9 +353,9 @@ export const messages = {
   "crm.source.errorPermission":
     "La clé ne peut pas lire tout ce dont la synchronisation a besoin. Donnez-lui l'accès en lecture dans {source}.",
   "crm.source.errorRateLimited": "{source} a reçu trop de requêtes. La prochaine synchronisation réessaiera.",
-  "crm.source.errorNetwork": "OpenBot ne peut pas se connecter à {source}. La prochaine synchronisation réessaiera.",
+  "crm.source.errorNetwork": "OpenBot-NC ne peut pas se connecter à {source}. La prochaine synchronisation réessaiera.",
   "crm.source.errorFailed":
-    "{source} a envoyé une réponse qu'OpenBot ne peut pas lire. La prochaine synchronisation réessaiera.",
+    "{source} a envoyé une réponse qu'OpenBot-NC ne peut pas lire. La prochaine synchronisation réessaiera.",
   "crm.source.skipped": "Non importé",
   "crm.source.skippedCurrency": "Autre devise : {rows}",
   "crm.source.skippedInterval": "Autre intervalle de facturation : {rows}",
@@ -367,5 +367,5 @@ export const messages = {
   "crm.source.disconnect": "Déconnecter",
   "crm.source.disconnectTitle": "Déconnecter {source} ?",
   "crm.source.disconnectBody":
-    "OpenBot arrête la synchronisation et supprime la clé. Les lignes importées restent, et vous pouvez les modifier.",
+    "OpenBot-NC arrête la synchronisation et supprime la clé. Les lignes importées restent, et vous pouvez les modifier.",
 } as const satisfies PartialTranslation<typeof source>;

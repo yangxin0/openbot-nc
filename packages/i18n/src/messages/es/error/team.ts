@@ -2,13 +2,13 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/team";
 
 export const messages = {
-  "error.team.ownerNotLinked": "Este host no está vinculado a una cuenta de propietario de OpenBot.",
-  "error.team.ownerEmailRequired": "Inicia sesión con el correo de OpenBot que creó este host.",
+  "error.team.ownerNotLinked": "Este host no está vinculado a una cuenta de propietario de OpenBot-NC.",
+  "error.team.ownerEmailRequired": "Inicia sesión con el correo de OpenBot-NC que creó este host.",
   "error.team.hostNotConfigured": "El host del equipo no está configurado.",
   "error.team.alreadyConfigured": "El servidor del equipo ya está configurado.",
   "error.team.identityCreateFailed": "No se pudo crear la identidad del equipo.",
   "error.team.accountChangedDuringCreate": "La cuenta con sesión iniciada cambió mientras se creaba este servidor.",
-  "error.team.notConfigured": "Este OpenBot no se ha configurado.",
+  "error.team.notConfigured": "Este OpenBot-NC no se ha configurado.",
   "error.team.serverNotActive": "Este servidor ya no es el activo para la cuenta con sesión iniciada.",
   "error.team.logoInvalid": "Elige una imagen PNG, JPEG o WebP válida de hasta 512 KB.",
   "error.team.permanentInviteEmail": "Un enlace de invitación permanente no puede tener una dirección de correo.",
@@ -18,7 +18,7 @@ export const messages = {
   "error.team.memberDisabled": "Este miembro del equipo está desactivado.",
   "error.team.memberLimit": "Un host puede tener hasta {limit} miembros.",
   "error.team.usernameTaken": "Este nombre de usuario ya está en uso.",
-  "error.team.inviteRequiresAccount": "Esta invitación requiere una cuenta de OpenBot verificada.",
+  "error.team.inviteRequiresAccount": "Esta invitación requiere una cuenta de OpenBot-NC verificada.",
   "error.team.loginIncorrect": "El nombre de usuario o la contraseña son incorrectos.",
   "error.team.currentPasswordIncorrect": "La contraseña actual es incorrecta.",
   "error.team.memberNotFound": "No se encontró el miembro del equipo.",
@@ -43,16 +43,16 @@ export const messages = {
   "error.team.routeNotFound": "No se encontró la ruta.",
   "error.team.requestFailed": "La solicitud falló.",
   "error.team.tooManySignInAttempts": "Demasiados intentos de inicio de sesión. Inténtalo más tarde.",
-  "error.team.clientUpdateRequired": "Actualiza este cliente de OpenBot antes de conectarte a este host.",
-  "error.team.hostUpdateRequired": "Actualiza OpenBot en el host antes de conectarte.",
-  "error.team.serverSafeMode": "Este servidor está en modo seguro porque OpenBot no se inicia en él.",
+  "error.team.clientUpdateRequired": "Actualiza este cliente de OpenBot-NC antes de conectarte a este host.",
+  "error.team.hostUpdateRequired": "Actualiza OpenBot-NC en el host antes de conectarte.",
+  "error.team.serverSafeMode": "Este servidor está en modo seguro porque OpenBot-NC no se inicia en él.",
   "error.team.serverSafeModeNewerDatabase":
-    "OpenBot {version} en este servidor no puede abrir sus datos porque una versión más reciente de OpenBot los guardó. Una versión más reciente de OpenBot en el servidor lo soluciona.",
+    "OpenBot-NC {version} en este servidor no puede abrir sus datos porque una versión más reciente de OpenBot-NC los guardó. Una versión más reciente de OpenBot-NC en el servidor lo soluciona.",
   "error.team.serverSafeModeStartFailed":
-    "OpenBot {version} en este servidor se detuvo tras fallar al iniciarse muchas veces. Una versión más reciente de OpenBot en el servidor lo soluciona.",
+    "OpenBot-NC {version} en este servidor se detuvo tras fallar al iniciarse muchas veces. Una versión más reciente de OpenBot-NC en el servidor lo soluciona.",
   "error.team.sidebarLayoutUnavailable": "La distribución de la barra lateral no está disponible.",
   "error.team.providersUnsupported": "Esta conexión no admite los ajustes de proveedores.",
-  "error.team.providerNotManaged": "OpenBot no gestiona la CLI de este proveedor.",
+  "error.team.providerNotManaged": "OpenBot-NC no gestiona la CLI de este proveedor.",
   "error.team.channelsUnsupported": "Esta conexión no admite chats de canal.",
   "error.team.channelContextUnsupported":
     "Esta conexión no admite una nueva conversación ni la compactación en un canal.",
@@ -89,9 +89,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "Esta conexión no permite carpetas de la Biblioteca.",
   "error.team.workflowFoldersUnsupported": "Esta conexión no admite carpetas de flujos de trabajo.",
   "error.team.agentNotificationLevelsUnsupported":
-    "Este servidor no puede guardar tu propio nivel de notificaciones para cada agente. Actualiza OpenBot en el ordenador que lo ejecuta.",
+    "Este servidor no puede guardar tu propio nivel de notificaciones para cada agente. Actualiza OpenBot-NC en el ordenador que lo ejecuta.",
   "error.team.sidebarPinsUnsupported":
-    "Este servidor no puede guardar tus chats fijados para todos tus dispositivos. Actualiza OpenBot en el ordenador que lo ejecuta.",
+    "Este servidor no puede guardar tus chats fijados para todos tus dispositivos. Actualiza OpenBot-NC en el ordenador que lo ejecuta.",
   "error.team.agentInstructionsUnsupported": "Esta conexión no permite editar las instrucciones de los agentes.",
   "error.team.contextResetUnsupported": "Esta conexión no permite iniciar un nuevo chat.",
   "error.team.contextCompactUnsupported": "Esta conexión no admite compactar el contexto.",
@@ -101,7 +101,7 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "Esta conexión no permite buscar en los hilos laterales.",
   "error.team.sideQuestionUnsupported": "Esta conexión no permite preguntas aparte.",
   "error.team.routineFlowsUnsupported":
-    "Este servidor no admite flujos de rutinas. Actualiza OpenBot en el equipo que lo ejecuta.",
+    "Este servidor no admite flujos de rutinas. Actualiza OpenBot-NC en el equipo que lo ejecuta.",
   "error.team.routineCanvasTooLarge":
     "Este lienzo de rutinas es demasiado grande para enviarlo a este dispositivo. Acorta las instrucciones de las rutinas en el equipo que ejecuta el servidor.",
   "error.team.conversationPageTooLarge":
@@ -139,9 +139,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "No se encontró la sesión de vista del navegador.",
   "error.team.mcpUnsupported": "Esta conexión no admite servidores MCP.",
   "error.team.mcpServerListNeedsUpdate":
-    "Actualiza OpenBot en este dispositivo para usar más de {limit} servidores MCP en este servidor.",
+    "Actualiza OpenBot-NC en este dispositivo para usar más de {limit} servidores MCP en este servidor.",
   "error.team.providerAccountListNeedsUpdate":
-    "Actualiza OpenBot en este dispositivo para usar más de {limit} cuentas de un proveedor en este servidor.",
+    "Actualiza OpenBot-NC en este dispositivo para usar más de {limit} cuentas de un proveedor en este servidor.",
   "error.team.storageUnsupported": "Esta conexión no admite almacenamiento.",
   "error.team.machineResourcesUnsupported": "Esta conexión no admite el uso de la máquina.",
   "error.team.machineAlertMemberInvalid":
@@ -169,9 +169,9 @@ export const messages = {
   "error.team.ownerRequired": "Solo el propietario de este servidor puede hacer esto.",
   "error.team.requestTooLarge": "El cuerpo de la solicitud es demasiado grande.",
   "error.team.signInRelayUnsupported":
-    "Este servidor no puede retransmitir inicios de sesión. Actualiza OpenBot en el host.",
+    "Este servidor no puede retransmitir inicios de sesión. Actualiza OpenBot-NC en el host.",
   "error.team.connectorsUnsupported":
-    "Las conexiones de este servidor no se pueden gestionar desde aquí. Actualiza OpenBot en el host.",
+    "Las conexiones de este servidor no se pueden gestionar desde aquí. Actualiza OpenBot-NC en el host.",
   "error.team.signInRelayUnknown": "Este inicio de sesión terminó o no existe.",
   "error.team.signInRelayUsed": "Este inicio de sesión ya se envió.",
   "error.team.signInRelayMismatch": "Esta dirección no es de este inicio de sesión.",

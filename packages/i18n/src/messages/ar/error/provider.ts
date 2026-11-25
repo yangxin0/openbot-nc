@@ -3,25 +3,25 @@ import type { messages as source } from "../../en/error/provider";
 
 export const messages = {
   "error.provider.mcpConfig":
-    "تعذّر على OpenBot تسجيل خوادم MCP في إعدادات Codex. تأكد من أن ملف config.toml الخاص بـ Codex صالح وقابل للكتابة، ثم أعد تشغيل OpenBot.",
+    "تعذّر على OpenBot-NC تسجيل خوادم MCP في إعدادات Codex. تأكد من أن ملف config.toml الخاص بـ Codex صالح وقابل للكتابة، ثم أعد تشغيل OpenBot-NC.",
   "error.provider.computerUseConfig":
-    "تعذّر على OpenBot تسجيل التحكم في الحاسوب في إعدادات Codex. تأكد من أن ملف config.toml الخاص بـ Codex صالح وقابل للكتابة، ثم أعد تشغيل OpenBot. يمكنك إيقاف التحكم في الحاسوب في إعدادات الزميل للمتابعة بدونه.",
-  "error.provider.codexUnresponsive": "توقف Codex عن الاستجابة، لذا أنهى OpenBot عمليته.",
-  "error.provider.acpUnresponsive": "لم يستجب {provider} في الوقت المحدد، لذا أنهى OpenBot عمليته.",
-  "error.provider.acpSignInLost": "فقد {provider} تسجيل دخوله، لذا أنهى OpenBot عمليته. أرسل رسالتك مرة أخرى.",
-  "error.provider.acpRefusedUntilRestart": "رفض {provider} رسالة، لذا أنهى OpenBot عمليته. أرسل رسالتك مرة أخرى.",
+    "تعذّر على OpenBot-NC تسجيل التحكم في الحاسوب في إعدادات Codex. تأكد من أن ملف config.toml الخاص بـ Codex صالح وقابل للكتابة، ثم أعد تشغيل OpenBot-NC. يمكنك إيقاف التحكم في الحاسوب في إعدادات الزميل للمتابعة بدونه.",
+  "error.provider.codexUnresponsive": "توقف Codex عن الاستجابة، لذا أنهى OpenBot-NC عمليته.",
+  "error.provider.acpUnresponsive": "لم يستجب {provider} في الوقت المحدد، لذا أنهى OpenBot-NC عمليته.",
+  "error.provider.acpSignInLost": "فقد {provider} تسجيل دخوله، لذا أنهى OpenBot-NC عمليته. أرسل رسالتك مرة أخرى.",
+  "error.provider.acpRefusedUntilRestart": "رفض {provider} رسالة، لذا أنهى OpenBot-NC عمليته. أرسل رسالتك مرة أخرى.",
   "error.provider.acpServerLost": "فقد {provider} اتصاله. أرسل رسالتك مرة أخرى.",
-  "error.provider.acpServerLostEnded": "فقد {provider} اتصاله، لذا أنهى OpenBot عمليته.",
+  "error.provider.acpServerLostEnded": "فقد {provider} اتصاله، لذا أنهى OpenBot-NC عمليته.",
   "error.provider.acpSettingsTimedOut": "لم يستجب {provider} في الوقت المحدد. حاول مرة أخرى بعد قليل.",
   "error.provider.acpPlanUsedUp": "يقول {provider} إن خطتك استُنفدت. اختر نموذجًا آخر، أو قم بترقية خطة {provider}.",
   "error.provider.acpMcpNotLoaded":
-    "لم يحمّل {provider} أدوات OpenBot، لذا لا يمكن لهذا الوكيل استخدامها أو الوصول إلى زملائه. قد تحظر سياسة فريق {provider} خوادم MCP المحلية. اطلب من مسؤول فريقك السماح بها، ثم أعد المحاولة.",
+    "لم يحمّل {provider} أدوات OpenBot-NC، لذا لا يمكن لهذا الوكيل استخدامها أو الوصول إلى زملائه. قد تحظر سياسة فريق {provider} خوادم MCP المحلية. اطلب من مسؤول فريقك السماح بها، ثم أعد المحاولة.",
   "error.provider.acpToolsNotLoaded":
-    "شغّل {provider} هذه الرسالة بدون أدوات OpenBot، لذا لم يتمكن الوكيل من الوصول إلى زملائه أو استخدام المتصفح أو إرفاق الملفات. أعد المحاولة.",
+    "شغّل {provider} هذه الرسالة بدون أدوات OpenBot-NC، لذا لم يتمكن الوكيل من الوصول إلى زملائه أو استخدام المتصفح أو إرفاق الملفات. أعد المحاولة.",
   "error.provider.acpOwnMcpServerFailed":
-    "تعذّر على {provider} تشغيل خادم MCP {name}، لذا توقّف الرد. هذا الخادم موجود في إعدادات {provider} الخاصة بك، وليس في OpenBot. أزِل الخادم من هناك أو أصلحه، ثم ابدأ محادثة جديدة.",
+    "تعذّر على {provider} تشغيل خادم MCP {name}، لذا توقّف الرد. هذا الخادم موجود في إعدادات {provider} الخاصة بك، وليس في OpenBot-NC. أزِل الخادم من هناك أو أصلحه، ثم ابدأ محادثة جديدة.",
   "error.provider.endpointsReadOnly":
-    "كُتبت نقاط النهاية المحفوظة بإصدار أحدث من OpenBot، أو تتعذّر قراءة الملف. حدّث OpenBot لتغييرها.",
+    "كُتبت نقاط النهاية المحفوظة بإصدار أحدث من OpenBot-NC، أو تتعذّر قراءة الملف. حدّث OpenBot-NC لتغييرها.",
   "error.provider.endpointNoSecureStorage":
     "لا يحتوي هذا الحاسوب على تخزين آمن، لذا لا يمكن حفظ مفتاح API أو ترويسة. أزلها، أو استخدم نقطة نهاية لا تحتاج إلى بيانات اعتماد.",
   "error.provider.endpointDuplicate": "توجد نقطة نهاية محفوظة بمعرّف المزوّد هذا. أزلها أولًا، أو استخدم معرّفًا آخر.",
@@ -31,21 +31,21 @@ export const messages = {
   "error.provider.endpointSecretUnreadable":
     "لا يستطيع هذا الحاسوب قراءة مفتاح API والترويسات المحفوظة. أدخل مفتاح API والترويسات مرة أخرى، حتى لا يُفقد أي منها.",
   "error.provider.discoveryTimeout": "لم يستجب {host} في الوقت المحدد.",
-  "error.provider.discoveryUnreachable": "تعذّر على OpenBot الاتصال بـ {host}.",
+  "error.provider.discoveryUnreachable": "تعذّر على OpenBot-NC الاتصال بـ {host}.",
   "error.provider.discoveryRedirect": "أرسل {host} إعادة توجيه. أدخل العنوان النهائي للخادم.",
   "error.provider.discoveryRefused": "رفض {host} الطلب. تحقق من مفتاح API والترويسات.",
   "error.provider.discoveryHttp": "استجاب {host} برمز HTTP {status}.",
   "error.provider.discoveryTooLarge": "قائمة النماذج من {host} كبيرة جدًا.",
   "error.provider.discoveryInvalid": "لم يرسل {host} قائمة نماذج متوافقة مع OpenAI.",
   "error.provider.detectionSettingsReadOnly":
-    "كُتبت إعدادات الاكتشاف بإصدار أحدث من OpenBot، أو تتعذّر قراءة الملف. حدّث OpenBot لتغييرها.",
+    "كُتبت إعدادات الاكتشاف بإصدار أحدث من OpenBot-NC، أو تتعذّر قراءة الملف. حدّث OpenBot-NC لتغييرها.",
   "error.provider.detectionEntryInvalid":
     "يجب أن يكون العنوان رابط URL يبدأ بـ http:// أو https:// بدون كلمة مرور، ويجب أن يكون المجلد مسارًا مطلقًا.",
   "error.provider.detectionEntriesTooMany": "عدد العناوين أو المجلدات كبير جدًا.",
   "error.provider.credentialFileUnreadable": "تتعذّر قراءة ملف بيانات اعتماد المزوّد.",
   "error.provider.credentialFileTooLarge": "ملف بيانات اعتماد المزوّد كبير جدًا.",
   "error.provider.environmentNameInvalid": "{name} ليس اسم متغير صالحًا. استخدم الحروف والأرقام و_ ولا تبدأ برقم.",
-  "error.provider.environmentNameReserved": "يضبط OpenBot المتغير {name} لهذا المزوّد. أزل هذا المتغير.",
+  "error.provider.environmentNameReserved": "يضبط OpenBot-NC المتغير {name} لهذا المزوّد. أزل هذا المتغير.",
   "error.provider.environmentNameDuplicate": "يرد {name} في القائمة أكثر من مرة.",
   "error.provider.environmentValueTooLong": "قيمة {name} طويلة جدًا.",
   "error.provider.environmentTooMany": "يمكن أن يكون للمزوّد {limit} متغيرًا كحد أقصى.",
@@ -72,14 +72,14 @@ export const messages = {
   "error.provider.bunLicenseChecksum": "عدم تطابق المجموع الاختباري لترخيص Bun.",
   "error.provider.bunxDamaged": "مشغّل مدير حزم Bun مفقود أو تالف.",
   "error.provider.releaseSourcesUnreachable":
-    "تعذّر على OpenBot الوصول إلى مصادر إصدارات المزوّد. تحقق من الاتصال وأعد المحاولة.",
+    "تعذّر على OpenBot-NC الوصول إلى مصادر إصدارات المزوّد. تحقق من الاتصال وأعد المحاولة.",
   "error.provider.runtimesUnsupported": "بيئات تشغيل المزوّدين غير متاحة على هذا النظام.",
-  "error.provider.closing": "يجري إغلاق OpenBot.",
+  "error.provider.closing": "يجري إغلاق OpenBot-NC.",
   "error.provider.removeWhileOn": "أوقف المزوّد قبل إزالة تنزيله.",
   "error.provider.removeWhileDownloading": "انتظر حتى ينتهي التنزيل، ثم أزله.",
   "error.provider.removeIncomplete": "يستخدم برنامج بعض ملفات واجهة CLI هذه. أغلقه، ثم أعد المحاولة.",
   "error.provider.removeDownloadsFailed": "تعذّرت إزالة تنزيلات CLI الخاصة بـ {providers}.",
-  "error.provider.cliOverride": "أزل مسار CLI المخصص قبل التحديث في OpenBot.",
+  "error.provider.cliOverride": "أزل مسار CLI المخصص قبل التحديث في OpenBot-NC.",
   "error.provider.runtimeUpdateIncomplete": "لم يكتمل تحديث بيئة التشغيل.",
   "error.provider.downloadHttp": "فشل تنزيل بيئة التشغيل برمز HTTP {status}.",
   "error.provider.downloadNoData": "لم يُرجع تنزيل بيئة التشغيل أي بيانات.",
@@ -95,7 +95,7 @@ export const messages = {
   "error.provider.unexpectedVersion": "أرجعت بيئة تشغيل المزوّد إصدارًا غير متوقع.",
   "error.provider.metadataNoData": "لم يُرجع تنزيل بيانات تعريف بيئة التشغيل أي بيانات.",
   "error.provider.metadataTooLarge": "بيانات تعريف بيئة التشغيل كبيرة جدًا.",
-  "error.provider.requestFailed": "تعذّر على OpenBot تنزيل {url}. {reason}",
+  "error.provider.requestFailed": "تعذّر على OpenBot-NC تنزيل {url}. {reason}",
   "error.provider.installRecordMismatch": "سجل تثبيت بيئة التشغيل غير مطابق.",
   "error.provider.runtimeChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل المزوّد.",
   "error.provider.codexReleaseShape": "إصدار Codex بتنسيق غير متوقع.",
@@ -135,26 +135,26 @@ export const messages = {
   "error.provider.noModel": "لا يتوفر نموذج للمزوّد المحدد.",
   "error.provider.noModelNamed": "لا يتوفر نموذج لدى {provider}.",
   "error.provider.acpModelsNotLoaded": "تعذّر على {provider} تحميل نماذجه. أرسل رسالتك مرة أخرى.",
-  "error.provider.acpNoModels": "لم تُعلن واجهة ACP CLI عن أي نماذج ACP. لن يخمّن OpenBot نموذجًا بديلًا.",
+  "error.provider.acpNoModels": "لم تُعلن واجهة ACP CLI عن أي نماذج ACP. لن يخمّن OpenBot-NC نموذجًا بديلًا.",
   "error.provider.endpointRemoveBusy": "انتظر حتى ينتهي الدور النشط وقائمة الانتظار قبل إزالة نقطة النهاية هذه.",
-  "error.provider.codexOutdated": "إصدار Codex CLI {version} قديم جدًا. يتطلب OpenBot الإصدار 0.156.0 أو أحدث.",
+  "error.provider.codexOutdated": "إصدار Codex CLI {version} قديم جدًا. يتطلب OpenBot-NC الإصدار 0.156.0 أو أحدث.",
   "error.provider.codexNotStarted": "عُثر على Codex CLI لكن تعذّر تشغيله.",
   "error.provider.codexNotStartedHint":
     "عُثر على Codex CLI لكن تعذّر تشغيله. شغّل `codex --version` في نافذة طرفية جديدة.",
-  "error.provider.codexManagedNotStarted": "نُزّل ChatGPT لكن تعذّر تشغيله. نزّله مرة أخرى في OpenBot.",
-  "error.provider.codexMissing": "لم يُنزَّل ChatGPT. نزّله في OpenBot للمتابعة.",
-  "error.provider.claudeOutdated": "إصدار Claude Code {version} قديم جدًا. يتطلب OpenBot الإصدار 2.1.232 أو أحدث.",
+  "error.provider.codexManagedNotStarted": "نُزّل ChatGPT لكن تعذّر تشغيله. نزّله مرة أخرى في OpenBot-NC.",
+  "error.provider.codexMissing": "لم يُنزَّل ChatGPT. نزّله في OpenBot-NC للمتابعة.",
+  "error.provider.claudeOutdated": "إصدار Claude Code {version} قديم جدًا. يتطلب OpenBot-NC الإصدار 2.1.232 أو أحدث.",
   "error.provider.claudeNotStarted": "عُثر على Claude CLI لكن تعذّر تشغيله.",
   "error.provider.claudeNotStartedHint":
     "عُثر على Claude CLI لكن تعذّر تشغيله. شغّل `claude --version` في نافذة طرفية جديدة.",
-  "error.provider.claudeManagedNotStarted": "نُزّل Claude لكن تعذّر تشغيله. نزّله مرة أخرى في OpenBot.",
-  "error.provider.claudeMissing": "لم يُنزَّل Claude. نزّله في OpenBot للمتابعة.",
-  "error.provider.grokOutdated": "إصدار Grok CLI {version} قديم جدًا. يتطلب OpenBot الإصدار 1.0.5 أو أحدث.",
+  "error.provider.claudeManagedNotStarted": "نُزّل Claude لكن تعذّر تشغيله. نزّله مرة أخرى في OpenBot-NC.",
+  "error.provider.claudeMissing": "لم يُنزَّل Claude. نزّله في OpenBot-NC للمتابعة.",
+  "error.provider.grokOutdated": "إصدار Grok CLI {version} قديم جدًا. يتطلب OpenBot-NC الإصدار 1.0.5 أو أحدث.",
   "error.provider.grokNotStarted": "عُثر على Grok CLI لكن تعذّر تشغيله.",
   "error.provider.grokNotStartedHint": "عُثر على Grok CLI لكن تعذّر تشغيله. شغّل `grok --version` في نافذة طرفية جديدة.",
-  "error.provider.grokMissing": "لم يُنزَّل Grok. نزّله في OpenBot للمتابعة.",
+  "error.provider.grokMissing": "لم يُنزَّل Grok. نزّله في OpenBot-NC للمتابعة.",
   "error.provider.opencodeNotStarted": "تعذّر تشغيل OpenCode. شغّل `opencode --version` في نافذة طرفية.",
-  "error.provider.opencodeMissing": "لم يُنزَّل OpenCode. نزّله في OpenBot للمتابعة.",
+  "error.provider.opencodeMissing": "لم يُنزَّل OpenCode. نزّله في OpenBot-NC للمتابعة.",
   "error.provider.codexVersionUnreadable": "تتعذّر قراءة إصدار Codex CLI.",
   "error.provider.claudeVersionUnreadable": "تتعذّر قراءة إصدار Claude CLI.",
   "error.provider.grokVersionUnreadable": "تتعذّر قراءة إصدار Grok CLI.",
@@ -162,24 +162,25 @@ export const messages = {
   "error.provider.bunVersionUnreadable": "تتعذّر قراءة إصدار بيئة تشغيل Bun.",
   "error.provider.connectBeforeProfile": "اربط المزوّد المحدد قبل إنشاء ملف تعريف.",
   "error.provider.cliNotReady": "واجهة {provider} CLI غير جاهزة أو لم يُسجَّل الدخول إليها.",
-  "error.provider.cliTimedOut": "لم يستجب {provider} في الوقت المحدد. قد يكون الحاسوب مشغولًا. سيعيد OpenBot المحاولة.",
+  "error.provider.cliTimedOut":
+    "لم يستجب {provider} في الوقت المحدد. قد يكون الحاسوب مشغولًا. سيعيد OpenBot-NC المحاولة.",
   "error.provider.cliTimedOutRefresh":
     "لم يستجب {provider} في الوقت المحدد. قد يكون الحاسوب مشغولًا. حدّث المزوّدين لإعادة المحاولة.",
   "error.provider.stoppedBeforeStart": "توقف {provider} قبل أن تبدأ هذه الرسالة. أرسل الرسالة مرة أخرى.",
   "error.provider.sessionStartTimedOut":
-    "لم يفتح {provider} محادثة جديدة في الوقت المحدد، لذلك لم تبدأ هذه الرسالة. على الكمبيوتر الذي يشغّل OpenBot، افتح المزوّدون، واختر {provider}، وانقر إعادة التشغيل. ثم حاول مرة أخرى.",
+    "لم يفتح {provider} محادثة جديدة في الوقت المحدد، لذلك لم تبدأ هذه الرسالة. على الكمبيوتر الذي يشغّل OpenBot-NC، افتح المزوّدون، واختر {provider}، وانقر إعادة التشغيل. ثم حاول مرة أخرى.",
   "error.provider.sessionResumeTimedOut":
-    "لم يفتح {provider} هذه المحادثة في الوقت المحدد، لذلك لم تبدأ هذه الرسالة. على الكمبيوتر الذي يشغّل OpenBot، افتح المزوّدون، واختر {provider}، وانقر إعادة التشغيل. ثم حاول مرة أخرى.",
+    "لم يفتح {provider} هذه المحادثة في الوقت المحدد، لذلك لم تبدأ هذه الرسالة. على الكمبيوتر الذي يشغّل OpenBot-NC، افتح المزوّدون، واختر {provider}، وانقر إعادة التشغيل. ثم حاول مرة أخرى.",
   "error.provider.serviceUnreachable":
-    "لا يستطيع {provider} الاتصال بخدمته. تحقّق من اتصال الإنترنت. سيعيد OpenBot المحاولة.",
+    "لا يستطيع {provider} الاتصال بخدمته. تحقّق من اتصال الإنترنت. سيعيد OpenBot-NC المحاولة.",
   "error.provider.serviceUnreachableRefresh":
     "لا يستطيع {provider} الاتصال بخدمته. تحقّق من اتصال الإنترنت، ثم حدّث المزوّدين.",
   "error.provider.acpStartTimedOut": "لم يكتمل تشغيل {provider} خلال {seconds} ث. قد يكون الحاسوب مشغولًا.",
   "error.provider.acpModelsTimedOut": "لم يعرض {provider} نماذجه خلال {seconds} ث. قد يكون الحاسوب مشغولًا.",
   "error.provider.startStopped":
-    "فشل تشغيل {provider} عدة مرات متتالية، لذا توقف OpenBot عن المحاولة. حدّث المزوّدين لإعادة المحاولة.",
+    "فشل تشغيل {provider} عدة مرات متتالية، لذا توقف OpenBot-NC عن المحاولة. حدّث المزوّدين لإعادة المحاولة.",
   "error.provider.startPaused":
-    "فشل تشغيل {provider} عدة مرات متتالية. سيحاول OpenBot مرة أخرى مع الرسالة أو المهمة الدورية التالية. للمحاولة الآن، حدّث المزوّدين.",
+    "فشل تشغيل {provider} عدة مرات متتالية. سيحاول OpenBot-NC مرة أخرى مع الرسالة أو المهمة الدورية التالية. للمحاولة الآن، حدّث المزوّدين.",
   "error.provider.tempDiskSpace":
     "يحتاج {provider} إلى 1 GB على الأقل من مساحة القرص الفارغة ليعمل. حرّر مساحة، ثم حدّث المزوّدين.",
   "error.provider.noCodeSignIn": "لا يمكن تسجيل الدخول إلى {provider} برمز.",
@@ -191,11 +192,11 @@ export const messages = {
   "error.provider.codeLoginUnsupported":
     "لا يمكن لهذا الخادم تسجيل الدخول برمز ملصوق. سجّل الدخول على حاسوب الخادم، في متصفحه.",
   "error.provider.claudeLoginNotSaved":
-    "تعذّر على Claude حفظ تسجيل الدخول على جهاز Mac. أعد تشغيل جهاز Mac الذي يشغّل OpenBot، ثم اربط Claude مرة أخرى.",
+    "تعذّر على Claude حفظ تسجيل الدخول على جهاز Mac. أعد تشغيل جهاز Mac الذي يشغّل OpenBot-NC، ثم اربط Claude مرة أخرى.",
   "error.provider.cliBusyRetry": "تعمل واجهة {provider} CLI على دور. انتظر حتى ينتهي، ثم أعد المحاولة.",
   "error.provider.cliSigningIn": "تُجري واجهة {provider} CLI تسجيل الدخول. أكمل تسجيل الدخول أو ألغه، ثم حدّث.",
   "error.provider.cliBusyUpdate": "تعمل واجهة {provider} CLI على دور. انتظر حتى ينتهي، ثم حدّث.",
-  "error.provider.cliSelectFailed": "تعذّر على OpenBot اختيار واجهة CLI المُدارة المثبتة.",
+  "error.provider.cliSelectFailed": "تعذّر على OpenBot-NC اختيار واجهة CLI المُدارة المثبتة.",
   "error.provider.noAuthenticatedAccount": "لم يُرجع {provider} حسابًا مصادقًا عليه.",
   "error.provider.codexModelProvider":
     "يستخدم Codex على هذا الكمبيوتر مزوّد نماذج آخر، وهذا المزوّد لا يستخدم تسجيل الدخول إلى ChatGPT أو مفتاح OpenAI API. يمكن لوكلاء ChatGPT استخدام هذا المزوّد الآن. لاستخدام حساب ChatGPT، أعد مزوّد النماذج في Codex إلى OpenAI.",
@@ -230,7 +231,7 @@ export const messages = {
     "رفض OpenCode Go الطلب. لا يحل مفتاح API جديد هذه المشكلة. قد لا تكون خطة OpenCode Go نشطة، أو قد يحظر OpenCode Go شبكتك: بعض الخدمات تحظر شبكات VPN أو الخوادم الوكيلة أو بعض البلدان. تأكد من أن خطتك نشطة في OpenCode Console، أو أوقف VPN، ثم حاول مرة أخرى. يمكنك أيضًا اختيار نموذج آخر.",
   "error.provider.opencodeServiceFailure":
     "تعذّر على OpenCode إكمال هذا الدور لأن خدمته المحلية فشلت. أعد المحاولة. إذا استمر الخطأ، أعد ربط OpenCode في الإعدادات.",
-  "error.provider.opencodeStillStarting": "لم ينتهِ OpenCode من التحميل في الوقت المحدد. سيحاول OpenBot مرة أخرى.",
+  "error.provider.opencodeStillStarting": "لم ينتهِ OpenCode من التحميل في الوقت المحدد. سيحاول OpenBot-NC مرة أخرى.",
   "error.provider.opencodeRateLimited":
     "رفض مزوّد النموذج الطلب بسبب حد المعدل. انتظر بضع دقائق أو اختر نموذجًا آخر، ثم أعد المحاولة.\n{detail}",
   "error.provider.opencodeBilling":
@@ -238,11 +239,11 @@ export const messages = {
   "error.provider.opencodeInvalidUpload":
     "أبلغ مزوّد نموذج OpenCode عن طلب رفع غير صالح. اختر نموذجًا آخر وتابع. تحقق من المهام الدورية المحفوظة قبل إنشائها مرة أخرى.\n{detail}",
   "error.provider.opencodeUnreadableContent":
-    "لا يستطيع هذا النموذج قراءة ملف أو صورة في هذه الدردشة. بدأ OpenBot جلسة OpenCode جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى بدون الملف، أو اختر نموذجًا يمكنه قراءة الملفات. إذا أضفت هذا النموذج إلى مزوّد مخصص، فألغِ تحديد «الصور» في «يقبل» في إعداداته.",
+    "لا يستطيع هذا النموذج قراءة ملف أو صورة في هذه الدردشة. بدأ OpenBot-NC جلسة OpenCode جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى بدون الملف، أو اختر نموذجًا يمكنه قراءة الملفات. إذا أضفت هذا النموذج إلى مزوّد مخصص، فألغِ تحديد «الصور» في «يقبل» في إعداداته.",
   "error.provider.opencodeOutOfMemory":
-    "نفدت ذاكرة خادم النموذج لهذه المحادثة. ابدأ محادثة جديدة، أو حمّل النموذج بطول سياق أصغر وأدخل النافذة نفسها في إعدادات مزوده في OpenBot.",
+    "نفدت ذاكرة خادم النموذج لهذه المحادثة. ابدأ محادثة جديدة، أو حمّل النموذج بطول سياق أصغر وأدخل النافذة نفسها في إعدادات مزوده في OpenBot-NC.",
   "error.provider.opencodeContextTooSmall":
-    "هذه المحادثة لا تتسع في نافذة سياق النموذج. في Ollama أو LM Studio، حمّل النموذج بطول سياق أكبر، وأدخل النافذة نفسها في إعدادات مزوده في OpenBot. أو اختر نموذجًا أكبر.",
+    "هذه المحادثة لا تتسع في نافذة سياق النموذج. في Ollama أو LM Studio، حمّل النموذج بطول سياق أكبر، وأدخل النافذة نفسها في إعدادات مزوده في OpenBot-NC. أو اختر نموذجًا أكبر.",
   "error.provider.opencodeFreeLimit":
     "بلغت نماذج OpenCode المجانية حد الاستخدام. تشترك جميع النماذج المجانية في هذا الحد. للمتابعة، الصق مفتاح OpenCode Go في إعدادات OpenCode، أو اختر نموذجًا من مزوّد آخر.",
   "error.provider.opencodeProviderFailed":
@@ -261,12 +262,12 @@ export const messages = {
   "error.provider.opencodeSafetyBlocked":
     "حظر مزوّد النموذج هذه الرسالة بسبب قواعد الأمان الخاصة به. أرسل طلبك مرة أخرى بكلمات مختلفة. إذا حظر رسائلك التالية أيضًا، فابدأ محادثة جديدة أو اختر نموذجًا آخر.",
   "error.provider.opencodeNetwork":
-    "تعذّر على OpenCode الاتصال بمزوّد النموذج. تحقق من اتصال الشبكة للحاسوب الذي يشغّل OpenBot، ثم أعد المحاولة.\n{detail}",
+    "تعذّر على OpenCode الاتصال بمزوّد النموذج. تحقق من اتصال الشبكة للحاسوب الذي يشغّل OpenBot-NC، ثم أعد المحاولة.\n{detail}",
   "error.provider.codexStateBusy": "لا يزال ChatGPT يجهّز سجله المحلي بعد تشغيل سابق. انتظر بضع دقائق، ثم أعد المحاولة.",
   "error.provider.codexThreadInUse":
     "تطبيق Codex آخر يفتح هذه الدردشة، مثل تطبيق Codex لسطح المكتب أو Codex CLI أو إضافة IDE. يمكن لتطبيق واحد فقط في كل مرة أن يكتب في دردشة Codex. أغلق الدردشة في ذلك التطبيق، ثم أرسل رسالتك مرة أخرى.",
   "error.provider.realtimeLimitZero":
-    "أوقف Linux المزوّد لأن حد وقت المعالج في الوقت الحقيقي لدى OpenBot هو 0. يأتي هذا الحد من نظامك. ثبّت rtkit وشغّله (`rtkit-daemon`)، ثم نفّذ `systemctl --user restart xdg-desktop-portal`، ثم أعد تشغيل OpenBot. إعادة تشغيل xdg-desktop-portal وحدها لا تكفي ما دام rtkit غير مثبّت.",
+    "أوقف Linux المزوّد لأن حد وقت المعالج في الوقت الحقيقي لدى OpenBot-NC هو 0. يأتي هذا الحد من نظامك. ثبّت rtkit وشغّله (`rtkit-daemon`)، ثم نفّذ `systemctl --user restart xdg-desktop-portal`، ثم أعد تشغيل OpenBot-NC. إعادة تشغيل xdg-desktop-portal وحدها لا تكفي ما دام rtkit غير مثبّت.",
   "error.provider.cpuUnsupported": "لا يمكن لمعالج هذا الكمبيوتر تشغيل هذا المزوّد. استخدم مزوّدًا آخر.",
   "error.provider.largeMemoryPages":
     "لا يمكن تشغيل هذا المزوّد على نواة Linux هذه، لأن النواة تستخدم صفحات ذاكرة أكبر من 4 KiB، كما في Raspberry Pi 5 أو Asahi Linux. استخدم نواة بصفحات 4 KiB أو مزوّدًا آخر.",
@@ -290,19 +291,19 @@ export const messages = {
   "error.provider.channelNoAnswer":
     "أنهى {provider} الدور بدون إجابة. في القناة، انقر على «متابعة» لتشغيل المهمة مرة أخرى، أو على «إعادة الإسناد» لإعطائها لعضو آخر.",
   "error.provider.acpProcessStopped": "توقف {provider} قبل أن يجيب. أرسل الرسالة مرة أخرى.",
-  "error.provider.chatgptPageFailed": "تعذّر على OpenBot فتح صفحة ربط ChatGPT.",
+  "error.provider.chatgptPageFailed": "تعذّر على OpenBot-NC فتح صفحة ربط ChatGPT.",
   "error.provider.noneReady": "لا يوجد مزوّد وكلاء جاهز.",
   "error.provider.claudeTurnActive": "انتظر انتهاء دور Claude النشط قبل تحديث سياقه.",
   "error.provider.codexLoginRequired": "يتطلب Codex تسجيل الدخول باشتراك ChatGPT. شغّل `codex login`.",
-  "error.provider.cliUpdateFailed": "تعذّر على OpenBot تحديث واجهة {provider} CLI. {reason}",
+  "error.provider.cliUpdateFailed": "تعذّر على OpenBot-NC تحديث واجهة {provider} CLI. {reason}",
   "error.provider.tryAgain": "أعد المحاولة.",
   "error.provider.noAgentProcess": "لا توجد عملية {provider} قيد التشغيل لهذا الوكيل.",
   "error.provider.stoppedBeforeAgentProcess": "توقف {provider} قبل بدء عملية الوكيل.",
   "error.provider.archiveUnreadable": "تتعذّر قراءة أرشيف بيئة التشغيل أو أنه يستخدم تنسيقًا غير مدعوم.",
-  "error.provider.antigravityMissing": "لم يُنزَّل Gemini. نزّله في OpenBot للمتابعة.",
+  "error.provider.antigravityMissing": "لم يُنزَّل Gemini. نزّله في OpenBot-NC للمتابعة.",
   "error.provider.antigravityNotStarted": "عُثر على خادم Gemini، لكن تتعذّر قراءة إصداره.",
   "error.provider.antigravityOverrideInvalid":
-    "خادم Gemini في OPENBOT_ANTIGRAVITY_PATH غير موجود أو غير قابل للتنفيذ. صحّح المسار أو احذف المتغير، ثم أعد تشغيل OpenBot.",
+    "خادم Gemini في OPENBOT_ANTIGRAVITY_PATH غير موجود أو غير قابل للتنفيذ. صحّح المسار أو احذف المتغير، ثم أعد تشغيل OpenBot-NC.",
   "error.provider.antigravityVersionUnreadable": "تتعذّر قراءة إصدار خادم Gemini.",
   "error.provider.antigravitySignIn": "سجّل الدخول باستخدام Google لاستخدام Gemini.",
   "error.provider.antigravityModelAtCapacity":
@@ -321,11 +322,11 @@ export const messages = {
     "رفض Gemini هذا الطلب. اختر نموذجًا آخر، ثم أرسل رسالتك مرة أخرى. إذا فشل مرة أخرى، فابدأ دردشة جديدة.\n{detail}",
   "error.provider.antigravityNetwork": "فقد Gemini الاتصال بـ Google. أرسل رسالتك مرة أخرى. ({cause})",
   "error.provider.antigravitySessionRejected":
-    "رفض Gemini هذا الطلب ولم يذكر السبب. قد يسبب هذا عنصر في سجل الدردشة، مثل صورة فتحها الوكيل. بدأ OpenBot جلسة Gemini جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا آخر.",
+    "رفض Gemini هذا الطلب ولم يذكر السبب. قد يسبب هذا عنصر في سجل الدردشة، مثل صورة فتحها الوكيل. بدأ OpenBot-NC جلسة Gemini جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا آخر.",
   "error.provider.antigravityHistoryUnreadable":
-    "تعذّر على Gemini قراءة السجل المحفوظ لهذه الدردشة. بدأ OpenBot جلسة Gemini جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى.",
+    "تعذّر على Gemini قراءة السجل المحفوظ لهذه الدردشة. بدأ OpenBot-NC جلسة Gemini جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى.",
   "error.provider.acpTurnStuck":
-    "لم يُنهِ {provider} دوره السابق، لذلك لم يقبل هذه الرسالة. بدأ OpenBot جلسة {provider} جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى.",
+    "لم يُنهِ {provider} دوره السابق، لذلك لم يقبل هذه الرسالة. بدأ OpenBot-NC جلسة {provider} جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى.",
   "error.provider.antigravityLocationUnsupported":
     "لا تسمح Google بتشغيل Gemini من الموقع الشبكي للكمبيوتر الذي يشغّل هذا الوكيل. استخدم Gemini على كمبيوتر آخر، أو اختر مزوّدًا آخر لهذا الوكيل.\n{detail}",
   "error.provider.antigravityTurnStopped":
@@ -339,7 +340,7 @@ export const messages = {
   "error.provider.cursorArchivePath": "يحتوي أرشيف Cursor على ملف غير متوقع.",
   "error.provider.cursorChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل Cursor.",
   "error.provider.cursorReleaseShape": "إصدار Cursor بتنسيق غير متوقع.",
-  "error.provider.cursorMissing": "لم يُنزَّل Cursor. نزّله في OpenBot للمتابعة.",
+  "error.provider.cursorMissing": "لم يُنزَّل Cursor. نزّله في OpenBot-NC للمتابعة.",
   "error.provider.cursorNotStarted": "عُثر على وكيل Cursor، لكن تتعذّر قراءة إصداره.",
   "error.provider.cursorVersionUnreadable": "تتعذّر قراءة إصدار وكيل Cursor.",
   "error.provider.cursorSignIn": "سجّل الدخول باستخدام Cursor أو عيّن CURSOR_API_KEY لاستخدام Cursor.",
@@ -349,16 +350,16 @@ export const messages = {
   "error.provider.clinePackageMismatch": "لا تطابق حزمة Cline كتالوج بيئات التشغيل.",
   "error.provider.clineChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل Cline.",
   "error.provider.clineLicenseChecksum": "عدم تطابق المجموع الاختباري لترخيص Cline.",
-  "error.provider.clineMissing": "لم يُنزَّل Cline. نزّله في OpenBot للمتابعة.",
-  "error.provider.clineOutdated": "إصدار Cline CLI {version} قديم جدًا. يتطلب OpenBot الإصدار 3.0.68 أو أحدث.",
+  "error.provider.clineMissing": "لم يُنزَّل Cline. نزّله في OpenBot-NC للمتابعة.",
+  "error.provider.clineOutdated": "إصدار Cline CLI {version} قديم جدًا. يتطلب OpenBot-NC الإصدار 3.0.68 أو أحدث.",
   "error.provider.clineNotStarted": "تعذّر تشغيل Cline. شغّل `cline --version` في نافذة طرفية.",
   "error.provider.clineVersionUnreadable": "تتعذّر قراءة إصدار Cline CLI.",
   "error.provider.clineSignIn": "سجّل الدخول باستخدام Cline أو عيّن CLINE_API_KEY لاستخدام Cline.",
   "error.provider.kimiArchivePath": "يحتوي أرشيف Kimi على مسار غير متوقع.",
   "error.provider.kimiChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل Kimi.",
   "error.provider.kimiLicenseChecksum": "عدم تطابق المجموع الاختباري لترخيص Kimi.",
-  "error.provider.kimiMissing": "لم يُنزَّل Kimi. نزّله في OpenBot للمتابعة.",
-  "error.provider.kimiOutdated": "إصدار Kimi CLI {version} قديم جدًا. يتطلب OpenBot الإصدار 1.52.0 أو أحدث.",
+  "error.provider.kimiMissing": "لم يُنزَّل Kimi. نزّله في OpenBot-NC للمتابعة.",
+  "error.provider.kimiOutdated": "إصدار Kimi CLI {version} قديم جدًا. يتطلب OpenBot-NC الإصدار 1.52.0 أو أحدث.",
   "error.provider.kimiNotStarted": "تعذّر تشغيل Kimi. شغّل `kimi --version` في نافذة طرفية.",
   "error.provider.kimiVersionUnreadable": "تتعذّر قراءة إصدار Kimi CLI.",
   "error.provider.kimiSignIn": "سجّل الدخول باستخدام Kimi Code لاستخدام Kimi.",
@@ -373,7 +374,7 @@ export const messages = {
   "error.provider.hermesTurnFailed":
     "لم يتمكن Hermes من إنهاء هذا الدور. إذا ذكر ردّه سببًا، فاتبع ما يقوله. وإلا فقد يكون أحد خوادم MCP لهذا الوكيل غير متاح: تحقق منه في المتجر، التطبيقات، ثم أرسل رسالتك مرة أخرى.",
   "error.provider.hermesRefused":
-    "رفض Hermes هذه الرسالة قبل أن تبدأ. أرسلها مرة أخرى. إذا رفض Hermes كل رسالة، فأعد تشغيل OpenBot على الكمبيوتر الذي يشغّل هذا الوكيل.",
+    "رفض Hermes هذه الرسالة قبل أن تبدأ. أرسلها مرة أخرى. إذا رفض Hermes كل رسالة، فأعد تشغيل OpenBot-NC على الكمبيوتر الذي يشغّل هذا الوكيل.",
   "error.provider.hermesConnectionLost":
     "فقد Hermes اتصاله أثناء هذه الرسالة، لذا لا يعرف ما إذا كان العمل قد اكتمل. تحقق مما فعله الوكيل قبل أن ترسل الرسالة مرة أخرى.",
   "error.provider.copilotThinkingRejected":
@@ -382,7 +383,7 @@ export const messages = {
     "توقف النموذج قبل أن تكتمل إجابته. أرسل رسالتك مرة أخرى، أو اختر نموذجًا آخر لهذا الوكيل.",
   "error.provider.usageLimitReached": "بلغ الحساب حد الاستخدام.",
   "error.provider.claudeContextFull":
-    "أصبحت هذه الدردشة طويلة جدًا على Claude. بدأ OpenBot جلسة Claude Code جديدة بسجل الدردشة. أعد المحاولة.",
+    "أصبحت هذه الدردشة طويلة جدًا على Claude. بدأ OpenBot-NC جلسة Claude Code جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.claudeApiKeyNoCredit":
     "لا يوجد رصيد API في مفتاح Anthropic API. لا تدفع خطة Claude مقابل الطلبات التي تستخدم مفتاح API. أضف رصيدًا في Anthropic Console، أو سجّل الدخول إلى Claude في الإعدادات واختر حساب Claude في قائمة نموذج الوكيل.",
   "error.provider.claudeAccountNoCredit":
@@ -390,43 +391,44 @@ export const messages = {
   "error.provider.claudeServiceBlocked":
     "حظرت خدمة Claude هذا الطلب. عادةً تكون هذه مشكلة قصيرة من جهة Claude، وليست مشكلة في حسابك. أرسل الرسالة مرة أخرى بعد بضع دقائق.",
   "error.provider.foreignReasoning":
-    "لم يقبل {provider} الاستدلال السابق في هذه الدردشة، لأن حسابًا أو مفتاح API مختلفًا استلمه. بدأ OpenBot جلسة {provider} جديدة بسجل الدردشة. أعد المحاولة.",
+    "لم يقبل {provider} الاستدلال السابق في هذه الدردشة، لأن حسابًا أو مفتاح API مختلفًا استلمه. بدأ OpenBot-NC جلسة {provider} جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.blankHistoryText":
-    "لم يقبل النموذج هذه الدردشة، لأن سجلها المحفوظ يحتوي على رسالة فارغة. بدأ OpenBot جلسة {provider} جديدة بسجل الدردشة. أعد المحاولة.",
+    "لم يقبل النموذج هذه الدردشة، لأن سجلها المحفوظ يحتوي على رسالة فارغة. بدأ OpenBot-NC جلسة {provider} جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.codexHistoryItemMissing":
-    "لم يتمكن Codex من متابعة هذه الدردشة، لأن عنصرًا في سجله المحفوظ مفقود. بدأ OpenBot جلسة Codex جديدة بسجل الدردشة. أعد المحاولة.",
+    "لم يتمكن Codex من متابعة هذه الدردشة، لأن عنصرًا في سجله المحفوظ مفقود. بدأ OpenBot-NC جلسة Codex جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.codexRequestRefused":
-    "رفض {provider} طلب هذه الدردشة ولم يذكر السبب. قد يحدث هذا في دردشة طويلة تحتوي على صور كثيرة. بدأ OpenBot جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "رفض {provider} طلب هذه الدردشة ولم يذكر السبب. قد يحدث هذا في دردشة طويلة تحتوي على صور كثيرة. بدأ OpenBot-NC جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.codexSafetyBlocked":
     "حظر {provider} هذه الرسالة بسبب قواعد الأمان الخاصة به: {reason} لم يعد الوكيل يرى هذه الرسالة، لذلك لن تمنع رسائلك التالية. أرسل طلبك مرة أخرى بكلمات مختلفة.",
   "error.provider.codexSafetyBlockedKept":
     "حظر {provider} هذه الرسالة بسبب قواعد الأمان الخاصة به: {reason} إذا حظر {provider} رسائلك التالية أيضًا، فابدأ دردشة جديدة.",
   "error.provider.codexAudioRefused":
-    "لا يستطيع هذا النموذج الاستماع إلى الصوت، لذلك لم يقبل الصوت في هذه الدردشة. بدأ OpenBot جلسة Codex جديدة مع سجل الدردشة. للمتابعة، أرسل طلبك مرة أخرى واطلب من الوكيل أن يعمل بدون الصوت. لفحص الصوت، اختر في قائمة نموذج الوكيل نموذجًا يستطيع الاستماع إلى الصوت.",
+    "لا يستطيع هذا النموذج الاستماع إلى الصوت، لذلك لم يقبل الصوت في هذه الدردشة. بدأ OpenBot-NC جلسة Codex جديدة مع سجل الدردشة. للمتابعة، أرسل طلبك مرة أخرى واطلب من الوكيل أن يعمل بدون الصوت. لفحص الصوت، اختر في قائمة نموذج الوكيل نموذجًا يستطيع الاستماع إلى الصوت.",
   "error.provider.codexAccountSettingsUnreadable":
     "لم يتمكن Codex من تحميل إعدادات حساب ChatGPT، لذلك توقف الوكيل. أعد المحاولة. إذا توقف مرة أخرى، فاختر إعادة الاتصال لـ ChatGPT في إعدادات الخادم ← المزوّدون.",
   "error.provider.imageTooSmall":
-    "لم يقبل النموذج صورة في هذه الدردشة لأن الصورة صغيرة جدًا. بدأ OpenBot جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "لم يقبل النموذج صورة في هذه الدردشة لأن الصورة صغيرة جدًا. بدأ OpenBot-NC جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.imageTooLarge":
-    "لم يقبل النموذج صورة في هذه الدردشة لأن الصورة كبيرة جدًا. بدأ OpenBot جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "لم يقبل النموذج صورة في هذه الدردشة لأن الصورة كبيرة جدًا. بدأ OpenBot-NC جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.imageCountLimit":
-    "لم يقبل النموذج هذه الدردشة لأن فيها صورًا كثيرة جدًا. بدأ OpenBot جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "لم يقبل النموذج هذه الدردشة لأن فيها صورًا كثيرة جدًا. بدأ OpenBot-NC جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.imageUnreadable":
-    "لم يتمكن النموذج من قراءة صورة في هذه الدردشة. بدأ OpenBot جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى. إذا أرسلت صورة، فأرسل صورة أخرى.",
+    "لم يتمكن النموذج من قراءة صورة في هذه الدردشة. بدأ OpenBot-NC جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى. إذا أرسلت صورة، فأرسل صورة أخرى.",
   "error.provider.requestTooLarge":
-    "أصبحت هذه الدردشة كبيرة جدًا بحيث لا يمكن إرسالها إلى النموذج. غالبًا ما تسبب الصور في الدردشة ذلك. بدأ OpenBot جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "أصبحت هذه الدردشة كبيرة جدًا بحيث لا يمكن إرسالها إلى النموذج. غالبًا ما تسبب الصور في الدردشة ذلك. بدأ OpenBot-NC جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.opencodeSessionRejected":
-    "رفض OpenCode الطلب ولم يذكر السبب. قد يحدث هذا في دردشة طويلة أو بعد تغيير النموذج. بدأ OpenBot جلسة OpenCode جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا مختلفًا أو مستوى جهد أقل.",
+    "رفض OpenCode الطلب ولم يذكر السبب. قد يحدث هذا في دردشة طويلة أو بعد تغيير النموذج. بدأ OpenBot-NC جلسة OpenCode جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا مختلفًا أو مستوى جهد أقل.",
   "error.provider.opencodeInputRefused":
-    "رفض النموذج محتوى هذه الدردشة ولم يذكر السبب. قد يسبب ذلك ملف في الدردشة، مثل ملف PDF أو صورة. بدأ OpenBot جلسة OpenCode جديدة بسجل الدردشة. أرسل رسالتك مرة أخرى بدون الملف، أو اختر نموذجًا مختلفًا.",
+    "رفض النموذج محتوى هذه الدردشة ولم يذكر السبب. قد يسبب ذلك ملف في الدردشة، مثل ملف PDF أو صورة. بدأ OpenBot-NC جلسة OpenCode جديدة بسجل الدردشة. أرسل رسالتك مرة أخرى بدون الملف، أو اختر نموذجًا مختلفًا.",
   "error.provider.opencodeCompactionFailed":
-    "لم يتمكن النموذج من تلخيص هذه الدردشة الطويلة لإفساح المجال في نافذة السياق. بدأ OpenBot جلسة OpenCode جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا أقوى.",
+    "لم يتمكن النموذج من تلخيص هذه الدردشة الطويلة لإفساح المجال في نافذة السياق. بدأ OpenBot-NC جلسة OpenCode جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا أقوى.",
   "error.provider.museMcpStartupFault":
-    "تعذّر على Muse تشغيل خادم MCP فحظر MCP في هذه الجلسة. بدأ OpenBot جلسة Muse جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، أوقف التحكم في الحاسوب أو خادم MCP الفاشل لهذا الوكيل.",
+    "تعذّر على Muse تشغيل خادم MCP فحظر MCP في هذه الجلسة. بدأ OpenBot-NC جلسة Muse جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، أوقف التحكم في الحاسوب أو خادم MCP الفاشل لهذا الوكيل.",
   "error.provider.claudeSessionMissing":
-    "لم يعثر Claude Code على الجلسة المحفوظة لهذه الدردشة. بدأ OpenBot جلسة Claude Code جديدة بسجل الدردشة. أعد المحاولة.",
+    "لم يعثر Claude Code على الجلسة المحفوظة لهذه الدردشة. بدأ OpenBot-NC جلسة Claude Code جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.grokSignIn": "شغّل `grok login` أو عيّن XAI_API_KEY لاستخدام Grok.",
-  "error.provider.acpSignInNoStart": "لم يبدأ المزوّد، لذلك لم يبدأ تسجيل الدخول. حاول مرة أخرى، أو أعد تشغيل OpenBot.",
+  "error.provider.acpSignInNoStart":
+    "لم يبدأ المزوّد، لذلك لم يبدأ تسجيل الدخول. حاول مرة أخرى، أو أعد تشغيل OpenBot-NC.",
   "error.provider.acpSignInTimedOut": "انتهت مهلة تسجيل الدخول.",
   "error.provider.acpSignInStopped": "توقف تسجيل الدخول قبل اكتماله.",
   "error.provider.geminiNoBrowserUseCode":
@@ -438,7 +440,7 @@ export const messages = {
   "error.provider.acpSignInFailed": "لم يكتمل تسجيل الدخول.",
   "error.provider.acpSignInFailedReason": "لم يكتمل تسجيل الدخول: {reason}",
   "error.provider.acpSignInNetwork":
-    "تعذّر على تسجيل الدخول الوصول إلى خادم المزوّد. تحقّق من اتصال الشبكة وإعدادات DNS في الكمبيوتر الذي يشغّل OpenBot، ثم حاول مرة أخرى.",
+    "تعذّر على تسجيل الدخول الوصول إلى خادم المزوّد. تحقّق من اتصال الشبكة وإعدادات DNS في الكمبيوتر الذي يشغّل OpenBot-NC، ثم حاول مرة أخرى.",
   "error.provider.acpSignOutFailed": "لم يكتمل تسجيل الخروج.",
   "error.provider.acpSignOutFailedReason": "لم يكتمل تسجيل الخروج: {reason}",
   "error.provider.acpSignInMethodMissing":
@@ -453,7 +455,7 @@ export const messages = {
   "error.provider.geminiAccountSettingsUnreadable":
     "لا يستطيع Gemini فتح ملف إعدادات هذا الحساب، لذا لا يمكنه تسجيل الدخول. أزل هذا الحساب ثم أضفه مرة أخرى.",
   "error.provider.geminiSettingsUnreadable":
-    "لا يستطيع Gemini فتح ملف إعداداته على هذا الكمبيوتر، لذا لا يمكنه تسجيل الدخول. أغلق التطبيقات الأخرى التي تستخدم Gemini، ثم أغلق OpenBot وافتحه مرة أخرى.",
+    "لا يستطيع Gemini فتح ملف إعداداته على هذا الكمبيوتر، لذا لا يمكنه تسجيل الدخول. أغلق التطبيقات الأخرى التي تستخدم Gemini، ثم أغلق OpenBot-NC وافتحه مرة أخرى.",
   "error.provider.geminiVerificationRequired":
     "يجب أن يتحقق Google من حسابك قبل أن يتمكن Gemini من الرد. تحقق من حساب Google في متصفح، ثم أرسل رسالتك مرة أخرى.",
   "error.provider.keyProviderRefused":
@@ -466,7 +468,7 @@ export const messages = {
     "رفضت خدمة النموذج الطلب. اختر نموذجًا آخر، أو تحقق من صلاحية وصولك إلى هذا النموذج لدى الخدمة.",
   "error.provider.modelServiceRefusedReason":
     "رفضت خدمة النموذج الطلب: {reason}. اختر نموذجًا آخر، أو تحقق من صلاحية وصولك إلى هذا النموذج لدى الخدمة.",
-  "error.provider.messageTooLarge": "أوقف OpenBot {provider} لأنه أرسل رسالة أكبر من {limit} MB.",
+  "error.provider.messageTooLarge": "أوقف OpenBot-NC {provider} لأنه أرسل رسالة أكبر من {limit} MB.",
   "error.provider.customAgentIdInvalid":
     "يجب أن يتكوّن معرّف الوكيل من أحرف صغيرة أو أرقام أو `-`، ولا يمكن أن يكون معرّف مزوّد مدمج.",
   "error.provider.customAgentEnvInvalid":
@@ -477,33 +479,33 @@ export const messages = {
   "error.provider.customAgentArgsInvalid": "لا يمكن أن تحتوي الوسيطة على فاصل أسطر. استخدم 32 وسيطة كحد أقصى.",
   "error.provider.customAgentWindowsScript":
     "لا يقبل أمر .cmd أو .bat في وسيطاته إلا الأحرف والأرقام و - _ . , : = @ + / \\.",
-  "error.provider.customAgentNotFound": "لا يستطيع OpenBot العثور على {command}. أدخل المسار الكامل للأمر.",
+  "error.provider.customAgentNotFound": "لا يستطيع OpenBot-NC العثور على {command}. أدخل المسار الكامل للأمر.",
   "error.provider.customAgentCheckTimedOut": "لم يستجب الوكيل خلال 20 ثانية.",
   "error.provider.customAgentCheckStopped": "توقف الوكيل قبل أن يستجيب.",
-  "error.provider.customAgentProtocolVersion": "يستخدم الوكيل إصدار ACP {version}. يستخدم OpenBot الإصدار 1.",
+  "error.provider.customAgentProtocolVersion": "يستخدم الوكيل إصدار ACP {version}. يستخدم OpenBot-NC الإصدار 1.",
   "error.provider.customAgentCheckFailed": "لم يستجب الوكيل كوكيل ACP.",
   "error.provider.customAgentRemoveBusy": "انتظر حتى ينتهي الدور النشط وقائمة الانتظار قبل إزالة هذا الوكيل المخصص.",
   "error.provider.customAgentNone": "لا يوجد وكيل مخصص محفوظ.",
-  "error.provider.customAgentsUnavailable": "لا يستطيع هذا الخادم تغيير وكلائه المخصصين. حدّث OpenBot عليه.",
+  "error.provider.customAgentsUnavailable": "لا يستطيع هذا الخادم تغيير وكلائه المخصصين. حدّث OpenBot-NC عليه.",
   "error.provider.customAgentMissing": "هذا الوكيل المخصص لم يعد محفوظًا. اختر نموذجًا آخر.",
   "error.provider.customAgentSignIn": "سجّل الدخول بأمر الوكيل الخاص، ثم أعد المحاولة.",
   "error.provider.customAgentsReadOnly":
-    "كُتب الوكلاء المخصصون المحفوظون بإصدار أحدث من OpenBot، أو تتعذّر قراءة الملف. حدّث OpenBot لتغييرهم.",
+    "كُتب الوكلاء المخصصون المحفوظون بإصدار أحدث من OpenBot-NC، أو تتعذّر قراءة الملف. حدّث OpenBot-NC لتغييرهم.",
   "error.provider.customAgentNoSecureStorage":
     "لا يحتوي هذا الحاسوب على تخزين آمن، لذا لا يمكن حفظ قيم البيئة. أزلها وأعد المحاولة.",
   "error.provider.customAgentNotSaved": "هذا الوكيل المخصص غير محفوظ. حدّث القائمة وأعد المحاولة.",
   "error.provider.customAgentWorkspaceOnly": "{reason}. وضع «مساحة العمل فقط» يحظر هذا. جرّب «الوصول الكامل».",
   "error.provider.customAgentTooMany": "يمكنك حفظ {count} من الوكلاء المخصصين كحد أقصى.",
   "error.provider.customAgentEnvValueMissing": "أدخل قيمة لـ {name}.",
-  "error.provider.off": "{provider} متوقف في OpenBot. شغّله في إعدادات المزوّد أولًا.",
+  "error.provider.off": "{provider} متوقف في OpenBot-NC. شغّله في إعدادات المزوّد أولًا.",
   "error.provider.inUse": "يستخدم وكيل {provider}. غيّر نموذجه قبل إيقاف هذا المزوّد.",
   "error.provider.useBusy": "انتظر حتى ينتهي فحص المزوّد أو تسجيل الدخول، ثم أعد المحاولة.",
-  "error.provider.useSettingsReadOnly": "تتعذّر قراءة إعدادات المزوّد المحفوظة. حدّث OpenBot قبل تغييرها.",
-  "error.provider.useChangeFailed": "تعذّر على OpenBot تغيير إعداد المزوّد.",
+  "error.provider.useSettingsReadOnly": "تتعذّر قراءة إعدادات المزوّد المحفوظة. حدّث OpenBot-NC قبل تغييرها.",
+  "error.provider.useChangeFailed": "تعذّر على OpenBot-NC تغيير إعداد المزوّد.",
   "error.provider.accountsUnsupported": "لا يقبل {provider} إلا حسابًا واحدًا.",
   "error.provider.accountNeedsConnection": "اربط {provider} قبل إضافة حساب آخر.",
   "error.provider.usageResetUnsupported": "لا يستطيع {provider} إعادة تعيين حدود الاستخدام.",
-  "error.provider.signOutUnsupported": "لا يستطيع OpenBot فصل تسجيل الدخول إلى {provider}.",
+  "error.provider.signOutUnsupported": "لا يستطيع OpenBot-NC فصل تسجيل الدخول إلى {provider}.",
   "error.provider.usageResetNotConnected": "سجّل الدخول إلى حساب {provider} هذا مرة أخرى قبل إعادة تعيين استخدامه.",
   "error.provider.accountLimit": "يقبل {provider} {limit} من الحسابات كحد أقصى.",
   "error.provider.accountNotFound": "حساب {provider} هذا غير موجود على هذا الحاسوب. حدّث وأعد المحاولة.",
@@ -512,13 +514,13 @@ export const messages = {
   "error.provider.accountUsesKey":
     "يستخدم حساب {provider} هذا مفتاح API المحفوظ وليس له تسجيل دخول. غيّر المفتاح في إعدادات الخادم ← المزوّدون.",
   "error.provider.accountNeedsKey":
-    "يحتاج حساب {provider} الجديد إلى مفتاح API. حدّث OpenBot على هذا الجهاز، ثم أضف الحساب مرة أخرى.",
+    "يحتاج حساب {provider} الجديد إلى مفتاح API. حدّث OpenBot-NC على هذا الجهاز، ثم أضف الحساب مرة أخرى.",
   "error.provider.accountKeyRefused": "لم يقبل {provider} مفتاح API هذا. تحقّق من المفتاح، ثم أعد المحاولة.",
   "error.provider.accountKeyUnreachable":
-    "تعذّر على OpenBot الوصول إلى {provider} للتحقق من مفتاح API. تحقّق من اتصال الإنترنت، ثم أعد المحاولة.",
+    "تعذّر على OpenBot-NC الوصول إلى {provider} للتحقق من مفتاح API. تحقّق من اتصال الإنترنت، ثم أعد المحاولة.",
   "error.provider.accountKeySignedOut": "لم يعد {provider} يقبل مفتاح API لهذا الحساب. أدخل مفتاحًا جديدًا للحساب.",
   "error.provider.accountInUse": "يعمل وكيل على هذا الحساب. أعد المحاولة عندما يتوقف الوكيل.",
-  "error.provider.accountsReadOnly": "تتعذّر قراءة حسابات المزوّد المحفوظة. حدّث OpenBot قبل تغييرها.",
+  "error.provider.accountsReadOnly": "تتعذّر قراءة حسابات المزوّد المحفوظة. حدّث OpenBot-NC قبل تغييرها.",
   "error.provider.accountSignedOut": "تم تسجيل الخروج من حساب {provider} هذا. سجّل الدخول مرة أخرى.",
   "error.provider.sessionSettingUnavailable": "هذا الإعداد غير متاح في جلسة المزوّد الحالية.",
   "error.provider.sessionSettingInvalid": "هذه القيمة غير متاحة لهذا الإعداد.",
@@ -530,7 +532,7 @@ export const messages = {
   "error.provider.nativeVersionUnreadable": "تعذّرت قراءة إصدار واجهة {provider} CLI.",
   "error.provider.piSessionBusy": "انتظر حتى ينتهي دور Pi الحالي.",
   "error.provider.acpSessionBusy": "لا يزال {provider} ينهي دورًا تم إيقافه. حاول مرة أخرى بعد قليل.",
-  "error.provider.acpSettingsConflict": "غيّر {provider} هذه الدردشة أثناء تطبيق OpenBot لإعداداتها. حاول مرة أخرى.",
+  "error.provider.acpSettingsConflict": "غيّر {provider} هذه الدردشة أثناء تطبيق OpenBot-NC لإعداداتها. حاول مرة أخرى.",
   "error.provider.acpSessionStale": "تعذّر على {provider} تحميل أحدث نسخة من هذه المحادثة. أرسل رسالتك مرة أخرى.",
   "error.provider.acpModelNotOffered":
     "لا يوفّر {provider} النموذج {model} الآن. اختر نموذجًا آخر لهذا الوكيل، ثم حاول مرة أخرى.",
@@ -558,7 +560,7 @@ export const messages = {
   "error.provider.museRequestUnsupported": "طلب خادم Muse غير مدعوم.",
   "error.provider.museConnectionFailed": "فشل اتصال Muse. استأنف المحادثة لاستعادة سجلها المحفوظ.",
   "error.provider.museUnknownSession": "جلسة Muse غير معروفة.",
-  "error.provider.museInvalidToolResult": "نتيجة أداة OpenBot غير صالحة.",
+  "error.provider.museInvalidToolResult": "نتيجة أداة OpenBot-NC غير صالحة.",
   "error.provider.museMcpRequired": "يجب أن يدعم Muse خوادم MCP للجلسة.",
   "error.provider.museSessionMismatch": "أرجع Muse جلسة مختلفة.",
   "error.provider.museCompactRejected": "لم يقبل Muse الضغط.",

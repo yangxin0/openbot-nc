@@ -108,7 +108,7 @@ export const messages = {
     "Los mensajes se eliminan y los miembros los olvidan. La configuración del canal se mantiene.",
   "mobile.channel.deleteHistory.confirmTitle": "¿Eliminar el historial de {name}?",
   "mobile.channel.deleteHistory.confirmBody":
-    "Todos los mensajes y archivos de este canal se eliminan de OpenBot y los miembros los olvidan. No se puede deshacer. Los miembros, las instrucciones, las memorias, las rutinas y las tareas no cambian.",
+    "Todos los mensajes y archivos de este canal se eliminan de OpenBot-NC y los miembros los olvidan. No se puede deshacer. Los miembros, las instrucciones, las memorias, las rutinas y las tareas no cambian.",
   "mobile.channel.deleteHistory.confirm": "Eliminar historial",
   "mobile.channel.deleteHistory.failed": "No se pudo eliminar el historial",
   "mobile.channel.deleteHistory.failedBody": "El host no pudo eliminar el historial.",

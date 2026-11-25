@@ -14,7 +14,8 @@ export const messages = defineMessages("mobile.workspace", {
   "mobile.workspace.error.transportNotReady": "The mobile transport is not ready.",
   "mobile.workspace.error.sectionsUnsupported": "This host does not support folder changes.",
   "mobile.workspace.error.agentNotOnHost": "Agent is not on this host.",
-  "mobile.workspace.error.filesUnsupported": "This host does not support file management. Update OpenBot on the host.",
+  "mobile.workspace.error.filesUnsupported":
+    "This host does not support file management. Update OpenBot-NC on the host.",
   "mobile.workspace.error.agentUnavailableOnHost": "The agent is unavailable on this host.",
   "mobile.workspace.error.agentUnavailable": "The agent is unavailable.",
   "mobile.workspace.error.formUnavailable": "This form is no longer available.",

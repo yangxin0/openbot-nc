@@ -61,10 +61,10 @@ export const messages = {
   "browser.pip.reattach": "إعادة إرفاق المتصفح بالشريط الجانبي الأيمن",
   "browser.pip.reattachTitle": "إعادة إرفاق المتصفح",
   "browser.pip.close": "إغلاق نافذة المتصفح المنبثقة",
-  "browser.pip.reattachFailed": "تعذّر على OpenBot إعادة إرفاق المتصفح.",
-  "browser.pip.closeFailed": "تعذّر على OpenBot إغلاق نافذة المتصفح المنبثقة.",
+  "browser.pip.reattachFailed": "تعذّر على OpenBot-NC إعادة إرفاق المتصفح.",
+  "browser.pip.closeFailed": "تعذّر على OpenBot-NC إغلاق نافذة المتصفح المنبثقة.",
   "browser.window.open": "فتح المتصفح في نافذة جديدة",
-  "browser.window.openFailed": "تعذّر على OpenBot فتح نافذة المتصفح.",
+  "browser.window.openFailed": "تعذّر على OpenBot-NC فتح نافذة المتصفح.",
   "browser.popupBlocked.title": "حُظرت نافذة منبثقة",
   "browser.popupBlocked.dismiss": "تجاهل رسالة النافذة المنبثقة",
   "browser.liveView.label": "عرض مباشر للصفحة على الخادم",
@@ -97,7 +97,7 @@ export const messages = {
   "browser.secret.saveHintLocal": "يمكن بعدها للوكلاء على هذا الحاسوب تسجيل الدخول دون سؤالك.",
   "browser.secret.saveHintRemote": "تُحفظ على {server}. يمكن بعدها لوكلائه تسجيل الدخول دون سؤالك.",
   "browser.secret.saveBlockedRole": "يمكن لمالك {server} أو مسؤوله فقط الحفظ في خزنته.",
-  "browser.secret.saveBlockedVersion": "حدّث OpenBot على {server} لحفظ كلمات المرور في خزنته.",
+  "browser.secret.saveBlockedVersion": "حدّث OpenBot-NC على {server} لحفظ كلمات المرور في خزنته.",
   "browser.secret.signInPage": "صفحة تسجيل الدخول",
   "browser.secret.openSignInPage": "فتح صفحة تسجيل الدخول في المتصفح",
   "browser.secret.openInBrowser": "فتح في المتصفح",
@@ -107,17 +107,17 @@ export const messages = {
   "browser.secret.failed": "تعذّر إكمال الطلب. تحقّق من الاتصال وحاول مرة أخرى.",
   "browser.secret.ended": "انتهى طلب تسجيل الدخول هذا. اطلب من الوكيل المحاولة مرة أخرى.",
   "browser.secret.vaultSkip.agentScript":
-    "لم يستخدم OpenBot بيانات تسجيل الدخول المحفوظة لأن الوكيل شغّل نصًا برمجيًا في هذه الصفحة. لاستخدامها، اطلب من الوكيل إعادة تحميل الصفحة والمحاولة مرة أخرى.",
+    "لم يستخدم OpenBot-NC بيانات تسجيل الدخول المحفوظة لأن الوكيل شغّل نصًا برمجيًا في هذه الصفحة. لاستخدامها، اطلب من الوكيل إعادة تحميل الصفحة والمحاولة مرة أخرى.",
   "browser.secret.vaultSkip.fieldKind":
-    "لم يستخدم OpenBot بيانات تسجيل الدخول المحفوظة لأن الوكيل اختار حقلًا خاطئًا في الصفحة.",
+    "لم يستخدم OpenBot-NC بيانات تسجيل الدخول المحفوظة لأن الوكيل اختار حقلًا خاطئًا في الصفحة.",
   "browser.secret.vaultSkip.loginChoice":
-    "لم يستخدم OpenBot بيانات تسجيل دخول محفوظة لأن الوكيل لم يختر أيًّا من بيانات تسجيل الدخول المحفوظة لهذا الموقع. أخبر الوكيل بالحساب الذي يجب استخدامه.",
+    "لم يستخدم OpenBot-NC بيانات تسجيل دخول محفوظة لأن الوكيل لم يختر أيًّا من بيانات تسجيل الدخول المحفوظة لهذا الموقع. أخبر الوكيل بالحساب الذي يجب استخدامه.",
   "browser.secret.vaultSkip.noPassword":
-    "لم يستخدم OpenBot بيانات تسجيل الدخول المحفوظة لأنها لا تحتوي على كلمة مرور لهذا الموقع.",
+    "لم يستخدم OpenBot-NC بيانات تسجيل الدخول المحفوظة لأنها لا تحتوي على كلمة مرور لهذا الموقع.",
   "browser.secret.vaultSkip.noAuthenticatorKey":
-    "لم يستخدم OpenBot بيانات تسجيل الدخول المحفوظة لأنها لا تحتوي على مفتاح تطبيق المصادقة.",
+    "لم يستخدم OpenBot-NC بيانات تسجيل الدخول المحفوظة لأنها لا تحتوي على مفتاح تطبيق المصادقة.",
   "browser.secret.vaultSkip.vaultUnreadable":
-    "لم يستخدم OpenBot بيانات تسجيل دخول محفوظة لأنه تعذّر عليه قراءة مدير كلمات المرور.",
+    "لم يستخدم OpenBot-NC بيانات تسجيل دخول محفوظة لأنه تعذّر عليه قراءة مدير كلمات المرور.",
   "browser.error.openAddress": "تعذّر فتح العنوان في علامة التبويب هذه.",
   "browser.error.channelNoBrowserMember": "لا يمكن لأي عضو فتح علامة تبويب جديدة في هذه القناة.",
   "browser.error.closeTab": "تعذّر إغلاق علامة تبويب المتصفح.",
@@ -184,19 +184,19 @@ export const messages = {
   "browser.signIn.local": "تسجيل الدخول على هذا الحاسوب",
   "browser.signIn.title": "تسجيل الدخول إلى {site}",
   "browser.signIn.description":
-    "ترفض بعض المواقع تسجيل الدخول من خادم. سجّل الدخول على هذا الحاسوب، وسيرسل OpenBot تسجيل الدخول إلى {site} إلى {server}. يمكن بعدها لكل الوكلاء والأعضاء على {server} استخدامه في المتصفح.",
+    "ترفض بعض المواقع تسجيل الدخول من خادم. سجّل الدخول على هذا الحاسوب، وسيرسل OpenBot-NC تسجيل الدخول إلى {site} إلى {server}. يمكن بعدها لكل الوكلاء والأعضاء على {server} استخدامه في المتصفح.",
   "browser.signIn.windowOpen":
-    "سجّل الدخول في النافذة التي فُتحت. يرسل OpenBot تسجيل الدخول عند اكتماله. إذا بقيت النافذة مفتوحة، فاختر «تم».",
+    "سجّل الدخول في النافذة التي فُتحت. يرسل OpenBot-NC تسجيل الدخول عند اكتماله. إذا بقيت النافذة مفتوحة، فاختر «تم».",
   "browser.signIn.windowClosed": "نافذة تسجيل الدخول مغلقة. اختر «تم» لإرسال تسجيل الدخول، أو افتح النافذة مرة أخرى.",
   "browser.signIn.reopen": "فتح نافذة تسجيل الدخول",
   "browser.signIn.sending": "جارٍ الإرسال إلى {server}…",
   "browser.signIn.sent": "سُجّل الدخول إلى {site} على {server}",
-  "browser.signIn.notFound": "لم يجد OpenBot تسجيل دخول إلى {site}. سجّل الدخول في النافذة، ثم اختر «تم».",
+  "browser.signIn.notFound": "لم يجد OpenBot-NC تسجيل دخول إلى {site}. سجّل الدخول في النافذة، ثم اختر «تم».",
   "browser.signIn.stillSignedOut": "لا يزال {server} يعرض صفحة تسجيل الدخول إلى {site}. أكمل تسجيل الدخول في النافذة.",
-  "browser.signIn.failed": "تعذّر على OpenBot إرسال تسجيل الدخول.",
+  "browser.signIn.failed": "تعذّر على OpenBot-NC إرسال تسجيل الدخول.",
   "browser.profiles.title": "ملفات تعريف المتصفح",
   "browser.profiles.subtitle":
-    "يحتفظ كل ملف تعريف بتسجيلات الدخول وملفات تعريف الارتباط وبيانات المواقع الخاصة به على الحاسوب الذي يشغّل OpenBot.",
+    "يحتفظ كل ملف تعريف بتسجيلات الدخول وملفات تعريف الارتباط وبيانات المواقع الخاصة به على الحاسوب الذي يشغّل OpenBot-NC.",
   "browser.profiles.label": "ملفات تعريف المتصفح",
   "browser.profiles.newName": "اسم ملف التعريف",
   "browser.profiles.create": "إضافة",
@@ -229,8 +229,8 @@ export const messages = {
   "browser.profiles.deleteDescription":
     "يؤدي هذا إلى حذف تسجيلات الدخول وملفات تعريف الارتباط وبيانات المواقع في ملف التعريف. تُغلق علامات التبويب المفتوحة فيه.",
   "browser.profiles.deleteAgents": "ينتقل هؤلاء الوكلاء إلى ملف التعريف المشترك: {agents}.",
-  "browser.profiles.failed": "تعذّر على OpenBot تغيير ملفات تعريف المتصفح.",
-  "browser.profiles.loadFailed": "تعذّر على OpenBot تحميل ملفات تعريف المتصفح.",
+  "browser.profiles.failed": "تعذّر على OpenBot-NC تغيير ملفات تعريف المتصفح.",
+  "browser.profiles.loadFailed": "تعذّر على OpenBot-NC تحميل ملفات تعريف المتصفح.",
   "browser.profiles.tabLabel": "ملف التعريف: {name}",
   "browser.profiles.tabLabelProxy": "ملف التعريف: {name} · البروكسي: {proxy}",
   "browser.profiles.agentTabLabel": "ملف تعريف الوكيل الخاص",
@@ -252,7 +252,7 @@ export const messages = {
   "browser.proxies.addTitle": "إضافة بروكسي",
   "browser.proxies.editTitle": "تعديل {name}",
   "browser.proxies.dialogDescription":
-    "استخدم socks5 أو http أو https. اسم المستخدم وكلمة المرور اختياريان لكل نوع. تبقى كلمة المرور مشفّرة على الحاسوب الذي يشغّل OpenBot.",
+    "استخدم socks5 أو http أو https. اسم المستخدم وكلمة المرور اختياريان لكل نوع. تبقى كلمة المرور مشفّرة على الحاسوب الذي يشغّل OpenBot-NC.",
   "browser.proxies.address": "العنوان",
   "browser.proxies.addressPlaceholder": "socks5://user:password@host:1080",
   "browser.proxies.deleteUsed": {
@@ -266,7 +266,7 @@ export const messages = {
   "browser.proxies.deleteUnused": "لا يستخدم أي ملف تعريف هذا البروكسي.",
   "browser.proxies.failing": "{name} لا يستجيب",
   "browser.proxies.signInRefused": "رفض {name} تسجيل الدخول",
-  "browser.proxies.unsupported": "لا يمكن لهذا الخادم استخدام البروكسي. حدّث OpenBot على هذا الخادم.",
+  "browser.proxies.unsupported": "لا يمكن لهذا الخادم استخدام البروكسي. حدّث OpenBot-NC على هذا الخادم.",
   "browser.proxies.yourComputer": "حاسوبك",
   "browser.proxies.memberComputer": "حاسوب {name}",
   "browser.proxies.unknownComputer": "حاسوب أحد الأعضاء",
@@ -277,7 +277,7 @@ export const messages = {
   "browser.proxies.offlineBadge": "{name} غير متصل",
   "browser.proxies.shareTitle": "هل تريد مشاركة اتصال هذا الحاسوب؟",
   "browser.proxies.shareDescription":
-    "تفتح ملفات التعريف التي تستخدم حاسوبك المواقع العامة عبر اتصال الإنترنت لهذا الحاسوب. يعمل ذلك فقط ما دام OpenBot مفتوحًا هنا. لا يمكن للخادم فتح العناوين على شبكتك المحلية.",
+    "تفتح ملفات التعريف التي تستخدم حاسوبك المواقع العامة عبر اتصال الإنترنت لهذا الحاسوب. يعمل ذلك فقط ما دام OpenBot-NC مفتوحًا هنا. لا يمكن للخادم فتح العناوين على شبكتك المحلية.",
   "browser.proxies.share": "مشاركة",
   "browser.proxies.stopSharing": "إيقاف المشاركة",
   "browser.proxies.closesTabs": {

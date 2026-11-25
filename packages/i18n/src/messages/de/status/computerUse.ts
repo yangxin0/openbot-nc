@@ -8,9 +8,9 @@ export const messages = {
   "status.computerUse.driverNoAnswer": "Der Treiber für die Computersteuerung hat nicht geantwortet. {reason}",
   "status.computerUse.driverStopped": "Der Treiber für die Computersteuerung wurde gestoppt.",
   "status.computerUse.unsupported": "Die Computersteuerung ist unter macOS, Windows und Linux verfügbar.",
-  "status.computerUse.driverMissing": "Diese Version von OpenBot enthält keinen Treiber für die Computersteuerung.",
+  "status.computerUse.driverMissing": "Diese Version von OpenBot-NC enthält keinen Treiber für die Computersteuerung.",
   "status.computerUse.inputRefused":
-    "Auf diesem Desktop kann OpenBot in anderen Apps nicht tippen oder klicken. Bitte den Agenten bei Aufgaben auf Websites, den OpenBot-Browser zu verwenden.",
+    "Auf diesem Desktop kann OpenBot-NC in anderen Apps nicht tippen oder klicken. Bitte den Agenten bei Aufgaben auf Websites, den OpenBot-NC-Browser zu verwenden.",
   "status.computerUse.progressActing": "Eine App auf diesem Computer wird verwendet…",
   "status.computerUse.progressDeciding": "Der nächste Schritt in der App wird bestimmt…",
 } as const satisfies PartialTranslation<typeof source>;

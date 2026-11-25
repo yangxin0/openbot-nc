@@ -10,8 +10,8 @@ export const messages = {
   "error.voice.modelUnavailable": "O modelo de voz está indisponível.",
   "error.voice.transcriptionTimedOut": "O tempo para transcrever a voz esgotou.",
   "error.voice.prepareRequired":
-    "A transcrição de voz local está indisponível. Execute `bun run voice:prepare` e reinicie o OpenBot.",
-  "error.voice.transcriptionFailed": "O OpenBot não conseguiu transcrever esta gravação.",
+    "A transcrição de voz local está indisponível. Execute `bun run voice:prepare` e reinicie o OpenBot-NC.",
+  "error.voice.transcriptionFailed": "O OpenBot-NC não conseguiu transcrever esta gravação.",
   "error.voice.videoModelMissing":
     "Nenhum modelo de reconhecimento de fala para gravações está configurado em Configurações → Voz.",
   "error.voice.videoModelMissingServer":
@@ -27,9 +27,9 @@ export const messages = {
   "error.voice.speech.runtimeUnavailable": "A voz local não está disponível nesta plataforma.",
   "error.voice.speech.modelRequired": "Baixe o modelo de voz em Configurações → Voz.",
   "error.voice.speech.timedOut": "A leitura da resposta em voz alta expirou.",
-  "error.voice.speech.failed": "O OpenBot não conseguiu ler a resposta em voz alta.",
+  "error.voice.speech.failed": "O OpenBot-NC não conseguiu ler a resposta em voz alta.",
   "error.voice.speech.providerRefused": "{provider} recusou-se a criar o áudio: {reason}",
-  "error.voice.recordingNotKept": "O OpenBot não conseguiu guardar a gravação de voz.",
+  "error.voice.recordingNotKept": "O OpenBot-NC não conseguiu guardar a gravação de voz.",
   "error.voice.server.modelUnsupported":
     "{host} não consegue transcrever com {model}. Em Definições → Voz, escolha outro modelo de ditado para o servidor de voz.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -320,7 +320,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "在 {source} 中创建密钥",
   "crm.source.stripeKeyHelp":
-    "Stripe 会打开一个已设好的只读密钥。创建后复制密钥并粘贴到这里。OpenBot 只会从 Stripe 读取数据。",
+    "Stripe 会打开一个已设好的只读密钥。创建后复制密钥并粘贴到这里。OpenBot-NC 只会从 Stripe 读取数据。",
   "crm.source.connect": "连接",
   "crm.source.account": "账户",
   "crm.source.testMode": "测试模式",
@@ -333,8 +333,8 @@ export const messages = {
   "crm.source.errorInvalidKey": "{source} 不接受该密钥。请断开连接，并使用新密钥重新连接。",
   "crm.source.errorPermission": "该密钥无法读取同步所需的全部数据。请在 {source} 中为它授予读取权限。",
   "crm.source.errorRateLimited": "{source} 收到的请求过多。下次同步会重试。",
-  "crm.source.errorNetwork": "OpenBot 无法连接到 {source}。下次同步会重试。",
-  "crm.source.errorFailed": "{source} 返回了 OpenBot 无法读取的响应。下次同步会重试。",
+  "crm.source.errorNetwork": "OpenBot-NC 无法连接到 {source}。下次同步会重试。",
+  "crm.source.errorFailed": "{source} 返回了 OpenBot-NC 无法读取的响应。下次同步会重试。",
   "crm.source.skipped": "未导入",
   "crm.source.skippedCurrency": "其他币种：{rows}",
   "crm.source.skippedInterval": "其他计费周期：{rows}",
@@ -345,5 +345,5 @@ export const messages = {
   "crm.connectors.synced": "{time}已同步",
   "crm.source.disconnect": "断开连接",
   "crm.source.disconnectTitle": "断开 {source}？",
-  "crm.source.disconnectBody": "OpenBot 会停止同步并删除密钥。已导入的行会保留，你可以更改它们。",
+  "crm.source.disconnectBody": "OpenBot-NC 会停止同步并删除密钥。已导入的行会保留，你可以更改它们。",
 } as const satisfies PartialTranslation<typeof source>;

@@ -7,7 +7,7 @@ export const messages = {
   "error.remote.invalidData": "De host gaf ongeldige gegevens terug.",
   "error.remote.unsafeData": "De host gaf gegevens terug die deze app niet veilig kon gebruiken.",
   "error.remote.requestFailedStatus": "Verzoek aan de externe server mislukt ({status}).",
-  "error.remote.appUpdateRequired": "Werk deze OpenBot-app bij voordat je verbinding maakt met de host.",
+  "error.remote.appUpdateRequired": "Werk deze OpenBot-NC-app bij voordat je verbinding maakt met de host.",
   "error.remote.identityNotVerified": "De identiteit van de server kon niet worden geverifieerd.",
   "error.remote.invalidCompatibility": "De host gaf ongeldige compatibiliteitsgegevens terug.",
   "error.remote.serverListUnreadable":
@@ -23,12 +23,13 @@ export const messages = {
   "error.remote.localServerRemove": "De lokale server kan niet worden verwijderd.",
   "error.remote.viewerProxyUnavailable": "De lokale proxy voor de externe viewer is niet beschikbaar.",
   "error.remote.hostKeyMissing":
-    "OpenBot kan deze server niet controleren, omdat de beveiligingssleutel ontbreekt of is gewijzigd. Vraag de eigenaar van de server om de server te controleren.",
+    "OpenBot-NC kan deze server niet controleren, omdat de beveiligingssleutel ontbreekt of is gewijzigd. Vraag de eigenaar van de server om de server te controleren.",
   "error.remote.connectionNotStarted":
-    "OpenBot kon de verbinding met deze server niet starten. Als dit blijft gebeuren, sluit OpenBot af en open het opnieuw.",
+    "OpenBot-NC kon de verbinding met deze server niet starten. Als dit blijft gebeuren, sluit OpenBot-NC af en open het opnieuw.",
   "error.remote.connectionServiceUnreachable":
-    "Deze computer kan de verbindingsdienst van OpenBot niet bereiken. Controleer de internetverbinding. OpenBot verbindt automatisch opnieuw.",
-  "error.remote.serverAnswerTimeout": "De server heeft niet op tijd geantwoord. OpenBot verbindt automatisch opnieuw.",
+    "Deze computer kan de verbindingsdienst van OpenBot-NC niet bereiken. Controleer de internetverbinding. OpenBot-NC verbindt automatisch opnieuw.",
+  "error.remote.serverAnswerTimeout":
+    "De server heeft niet op tijd geantwoord. OpenBot-NC verbindt automatisch opnieuw.",
   "error.remote.connectionCancelled": "De externe verbinding is geannuleerd.",
   "error.remote.fileTransportIsStopped": "Het WebRTC-bestandstransport is gestopt.",
   "error.remote.fileTooLarge": "Het bestand is groter dan 100 MB.",
@@ -89,41 +90,41 @@ export const messages = {
   "error.remote.signalInvalidMessage": "Signal gaf een ongeldig bericht terug.",
   "error.remote.sessionInvalid": "De externe sessie is ongeldig.",
   "error.remote.ticketInvalid": "Het verbindingsticket is ongeldig.",
-  "error.remote.mobileUpdateRequired": "Werk OpenBot Mobile of de desktop-app bij voordat je verbinding maakt.",
+  "error.remote.mobileUpdateRequired": "Werk OpenBot-NC Mobile of de desktop-app bij voordat je verbinding maakt.",
   "error.remote.connectionStepFailed": "Kan deze verbindingsstap niet voltooien.",
   "error.remote.dataChannelFailed": "Kanaal {kind} is mislukt.",
   "error.remote.hostBusy": "De host is bezig met een andere verbinding. Probeer het zo opnieuw.",
   "error.remote.signalPermissionDenied": "Je account heeft geen toegang tot deze host. Vraag de eigenaar om toegang.",
   "error.remote.signalRateLimited":
-    "Te veel verbindingspogingen. OpenBot probeert het over {seconds} seconden opnieuw.",
+    "Te veel verbindingspogingen. OpenBot-NC probeert het over {seconds} seconden opnieuw.",
   "error.remote.signalProtocolError":
-    "Signal en deze app zijn het niet eens over het verbindingsprotocol. Werk OpenBot bij en probeer het opnieuw.",
+    "Signal en deze app zijn het niet eens over het verbindingsprotocol. Werk OpenBot-NC bij en probeer het opnieuw.",
   "error.remote.signalRefused": "Signal heeft de verbinding geweigerd.",
   "error.remote.signalClosed": "De verbinding met Signal is gesloten voordat de host antwoordde.",
   "error.remote.relayUnavailable": "Signal stuurde geen relayservers voor deze verbinding. Probeer het later opnieuw.",
   "error.remote.iceFailed":
     "Er kon geen directe verbinding met de host worden gemaakt. Een firewall, VPN of proxy kan deze blokkeren.",
   "error.remote.iceDisconnected": "De directe verbinding met de host is verbroken.",
-  "error.remote.directoryUnreachable": "OpenBot kan de OpenBot-service niet bereiken. Controleer je verbinding.",
-  "error.remote.directoryTimeout": "De OpenBot-service reageerde niet op tijd. Probeer het opnieuw.",
+  "error.remote.directoryUnreachable": "OpenBot-NC kan de OpenBot-NC-service niet bereiken. Controleer je verbinding.",
+  "error.remote.directoryTimeout": "De OpenBot-NC-service reageerde niet op tijd. Probeer het opnieuw.",
   "error.remote.inviteAlreadyUsed": "Deze uitnodiging is al gebruikt. Vraag om een nieuwe uitnodiging.",
   "error.remote.inviteNotFound": "Deze uitnodiging bestaat niet of is verlopen. Vraag om een nieuwe uitnodiging.",
   "error.remote.licenseUsersFull":
     "De licentie van de eigenaar van de server heeft geen vrije gebruiker. Vraag de eigenaar om een gebruiker aan de licentie toe te voegen.",
   "error.remote.memberLimitReached":
     "Deze host heeft het maximumaantal leden bereikt. Vraag de eigenaar om ruimte te maken.",
-  "error.remote.hostNotRegistered": "Deze host is niet meer geregistreerd bij de OpenBot-service.",
+  "error.remote.hostNotRegistered": "Deze host is niet meer geregistreerd bij de OpenBot-NC-service.",
   "error.remote.membershipEnded": "Je bent geen lid meer van deze host. Vraag de eigenaar om een nieuwe uitnodiging.",
   "error.remote.accountSessionInactive": "Je inlog is niet meer actief. Log opnieuw in.",
   "error.remote.hostOtherAccount": "Deze host hoort bij een ander account.",
-  "error.remote.remoteNotConfigured": "Externe verbindingen zijn niet ingesteld op deze OpenBot-service.",
+  "error.remote.remoteNotConfigured": "Externe verbindingen zijn niet ingesteld op deze OpenBot-NC-service.",
   "error.remote.hostRefused": "De host heeft het verzoek geweigerd ({status}).",
   "error.remote.formUnavailable": "Dit formulier is niet meer beschikbaar.",
   "error.remote.channelsUnsupported": "Werk deze desktopserver bij om kanalen te gebruiken.",
   "error.remote.channelDeleteUnsupported": "Werk deze desktopserver bij om kanalen te verwijderen.",
   "error.remote.historyRefreshFailed": "Het bericht is verstuurd, maar de chatgeschiedenis kon niet worden vernieuwd.",
   "error.remote.taskHistoryRefreshFailed": "De taak is gewijzigd, maar de chatgeschiedenis kon niet worden vernieuwd.",
-  "error.remote.serverNotLoaded": "OpenBot kon de server niet laden. Probeer het opnieuw.",
+  "error.remote.serverNotLoaded": "OpenBot-NC kon de server niet laden. Probeer het opnieuw.",
   "error.remote.localServerNotStarted":
-    "De server op deze computer is niet gestart. Probeer het opnieuw. Start hij niet, start OpenBot dan opnieuw op deze computer.",
+    "De server op deze computer is niet gestart. Probeer het opnieuw. Start hij niet, start OpenBot-NC dan opnieuw op deze computer.",
 } as const satisfies PartialTranslation<typeof source>;

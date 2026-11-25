@@ -2,13 +2,13 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/team";
 
 export const messages = {
-  "error.team.ownerNotLinked": "このホストは OpenBot のオーナーアカウントにリンクされていません。",
-  "error.team.ownerEmailRequired": "このホストを作成した OpenBot のメールアドレスでサインインしてください。",
+  "error.team.ownerNotLinked": "このホストは OpenBot-NC のオーナーアカウントにリンクされていません。",
+  "error.team.ownerEmailRequired": "このホストを作成した OpenBot-NC のメールアドレスでサインインしてください。",
   "error.team.hostNotConfigured": "チームのホストが設定されていません。",
   "error.team.alreadyConfigured": "チームのサーバーはすでに設定されています。",
   "error.team.identityCreateFailed": "チームの ID を作成できませんでした。",
   "error.team.accountChangedDuringCreate": "このサーバーの作成中に、サインイン中のアカウントが変わりました。",
-  "error.team.notConfigured": "この OpenBot はまだ設定されていません。",
+  "error.team.notConfigured": "この OpenBot-NC はまだ設定されていません。",
   "error.team.serverNotActive": "このサーバーは、サインイン中のアカウントの有効なサーバーではなくなりました。",
   "error.team.logoInvalid": "512 KB 以下の有効な PNG、JPEG、または WebP 画像を選択してください。",
   "error.team.permanentInviteEmail": "永続的な招待リンクにはメールアドレスを設定できません。",
@@ -18,7 +18,7 @@ export const messages = {
   "error.team.memberDisabled": "このチームメンバーは無効になっています。",
   "error.team.memberLimit": "1 つのホストのメンバーは最大 {limit} 人です。",
   "error.team.usernameTaken": "このユーザー名はすでに使用されています。",
-  "error.team.inviteRequiresAccount": "この招待には確認済みの OpenBot アカウントが必要です。",
+  "error.team.inviteRequiresAccount": "この招待には確認済みの OpenBot-NC アカウントが必要です。",
   "error.team.loginIncorrect": "ユーザー名またはパスワードが正しくありません。",
   "error.team.currentPasswordIncorrect": "現在のパスワードが正しくありません。",
   "error.team.memberNotFound": "チームメンバーが見つかりません。",
@@ -42,16 +42,16 @@ export const messages = {
   "error.team.routeNotFound": "ルートが見つかりません。",
   "error.team.requestFailed": "リクエストに失敗しました。",
   "error.team.tooManySignInAttempts": "サインインの試行回数が多すぎます。しばらくしてから再試行してください。",
-  "error.team.clientUpdateRequired": "このホストに接続する前に、この OpenBot クライアントを更新してください。",
-  "error.team.hostUpdateRequired": "接続する前に、ホストの OpenBot を更新してください。",
-  "error.team.serverSafeMode": "このサーバーでは OpenBot が起動しないため、セーフモードになっています。",
+  "error.team.clientUpdateRequired": "このホストに接続する前に、この OpenBot-NC クライアントを更新してください。",
+  "error.team.hostUpdateRequired": "接続する前に、ホストの OpenBot-NC を更新してください。",
+  "error.team.serverSafeMode": "このサーバーでは OpenBot-NC が起動しないため、セーフモードになっています。",
   "error.team.serverSafeModeNewerDatabase":
-    "このサーバーの OpenBot {version} はデータを開けません。より新しいバージョンの OpenBot がデータを保存したためです。サーバーに新しい OpenBot リリースを入れると解決します。",
+    "このサーバーの OpenBot-NC {version} はデータを開けません。より新しいバージョンの OpenBot-NC がデータを保存したためです。サーバーに新しい OpenBot-NC リリースを入れると解決します。",
   "error.team.serverSafeModeStartFailed":
-    "このサーバーの OpenBot {version} は、起動に何度も失敗したため停止しました。サーバーに新しい OpenBot リリースを入れると解決します。",
+    "このサーバーの OpenBot-NC {version} は、起動に何度も失敗したため停止しました。サーバーに新しい OpenBot-NC リリースを入れると解決します。",
   "error.team.sidebarLayoutUnavailable": "サイドバーのレイアウトを利用できません。",
   "error.team.providersUnsupported": "この接続ではプロバイダーの設定を利用できません。",
-  "error.team.providerNotManaged": "OpenBot はこのプロバイダーの CLI を管理していません。",
+  "error.team.providerNotManaged": "OpenBot-NC はこのプロバイダーの CLI を管理していません。",
   "error.team.channelsUnsupported": "この接続ではチャンネルのチャットを利用できません。",
   "error.team.channelContextUnsupported": "この接続はチャンネルでの新しい会話と圧縮に対応していません。",
   "error.team.channelPictureUnsupported": "この接続ではチャンネル画像を使用できません。",
@@ -83,9 +83,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "この接続ではライブラリのフォルダーを使用できません。",
   "error.team.workflowFoldersUnsupported": "この接続はワークフローのフォルダーに対応していません。",
   "error.team.agentNotificationLevelsUnsupported":
-    "このサーバーはエージェントごとの通知レベルを保存できません。サーバーを実行しているコンピューターで OpenBot を更新してください。",
+    "このサーバーはエージェントごとの通知レベルを保存できません。サーバーを実行しているコンピューターで OpenBot-NC を更新してください。",
   "error.team.sidebarPinsUnsupported":
-    "このサーバーは、ピン留めしたチャットをすべてのデバイスで共有できません。サーバーを実行しているコンピューターの OpenBot を更新してください。",
+    "このサーバーは、ピン留めしたチャットをすべてのデバイスで共有できません。サーバーを実行しているコンピューターの OpenBot-NC を更新してください。",
   "error.team.agentInstructionsUnsupported": "この接続ではエージェントの指示を編集できません。",
   "error.team.contextResetUnsupported": "この接続では新しいチャットを始められません。",
   "error.team.contextCompactUnsupported": "この接続はコンテキストの圧縮に対応していません。",
@@ -95,7 +95,7 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "この接続ではサイドスレッドを検索できません。",
   "error.team.sideQuestionUnsupported": "この接続ではサイド質問を使えません。",
   "error.team.routineFlowsUnsupported":
-    "このサーバーはルーティンフローに対応していません。サーバーを実行しているコンピューターの OpenBot を更新してください。",
+    "このサーバーはルーティンフローに対応していません。サーバーを実行しているコンピューターの OpenBot-NC を更新してください。",
   "error.team.routineCanvasTooLarge":
     "このルーティンキャンバスは大きすぎるため、このデバイスに送信できません。サーバーを実行しているコンピューターでルーティンの指示を短くしてください。",
   "error.team.conversationPageTooLarge":
@@ -133,9 +133,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "ブラウザービューのセッションが見つかりません。",
   "error.team.mcpUnsupported": "この接続では MCP サーバーを利用できません。",
   "error.team.mcpServerListNeedsUpdate":
-    "このサーバーで {limit} 個を超える MCP サーバーを使うには、このデバイスの OpenBot を更新してください。",
+    "このサーバーで {limit} 個を超える MCP サーバーを使うには、このデバイスの OpenBot-NC を更新してください。",
   "error.team.providerAccountListNeedsUpdate":
-    "このサーバーで 1 つのプロバイダーのアカウントを {limit} 個より多く使うには、このデバイスの OpenBot を更新してください。",
+    "このサーバーで 1 つのプロバイダーのアカウントを {limit} 個より多く使うには、このデバイスの OpenBot-NC を更新してください。",
   "error.team.storageUnsupported": "この接続ではストレージを利用できません。",
   "error.team.machineResourcesUnsupported": "この接続ではマシンの使用状況を利用できません。",
   "error.team.machineAlertMemberInvalid":
@@ -163,9 +163,9 @@ export const messages = {
   "error.team.ownerRequired": "この操作ができるのはこのサーバーのオーナーだけです。",
   "error.team.requestTooLarge": "リクエストの本文が大きすぎます。",
   "error.team.signInRelayUnsupported":
-    "このサーバーはサインインを中継できません。ホストの OpenBot を更新してください。",
+    "このサーバーはサインインを中継できません。ホストの OpenBot-NC を更新してください。",
   "error.team.connectorsUnsupported":
-    "このサーバーの接続はここから管理できません。ホストの OpenBot を更新してください。",
+    "このサーバーの接続はここから管理できません。ホストの OpenBot-NC を更新してください。",
   "error.team.signInRelayUnknown": "このサインインは終了したか、存在しません。",
   "error.team.signInRelayUsed": "このサインインはすでに送信されています。",
   "error.team.signInRelayMismatch": "このアドレスはこのサインインのものではありません。",

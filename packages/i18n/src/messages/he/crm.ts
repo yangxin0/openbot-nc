@@ -344,7 +344,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "יצירת מפתח ב-{source}",
   "crm.source.stripeKeyHelp":
-    "Stripe נפתח עם מפתח לקריאה בלבד שמוכן ליצירה. יש ליצור אותו, להעתיק את המפתח ולהדביק אותו כאן. OpenBot רק קורא מ-Stripe.",
+    "Stripe נפתח עם מפתח לקריאה בלבד שמוכן ליצירה. יש ליצור אותו, להעתיק את המפתח ולהדביק אותו כאן. OpenBot-NC רק קורא מ-Stripe.",
   "crm.source.connect": "חיבור",
   "crm.source.account": "חשבון",
   "crm.source.testMode": "מצב בדיקה",
@@ -357,8 +357,8 @@ export const messages = {
   "crm.source.errorInvalidKey": "{source} לא מקבל את המפתח. יש לנתק ולהתחבר עם מפתח חדש.",
   "crm.source.errorPermission": "המפתח לא יכול לקרוא את כל מה שהסנכרון צריך. יש לתת לו הרשאת Read ב-{source}.",
   "crm.source.errorRateLimited": "{source} קיבל יותר מדי בקשות. הסנכרון הבא ינסה שוב.",
-  "crm.source.errorNetwork": "OpenBot לא מצליח להתחבר ל-{source}. הסנכרון הבא ינסה שוב.",
-  "crm.source.errorFailed": "{source} שלח תשובה ש-OpenBot לא מצליח לקרוא. הסנכרון הבא ינסה שוב.",
+  "crm.source.errorNetwork": "OpenBot-NC לא מצליח להתחבר ל-{source}. הסנכרון הבא ינסה שוב.",
+  "crm.source.errorFailed": "{source} שלח תשובה ש-OpenBot-NC לא מצליח לקרוא. הסנכרון הבא ינסה שוב.",
   "crm.source.skipped": "לא יובא",
   "crm.source.skippedCurrency": "מטבע אחר: {rows}",
   "crm.source.skippedInterval": "מחזור חיוב אחר: {rows}",
@@ -369,5 +369,5 @@ export const messages = {
   "crm.connectors.synced": "סונכרן {time}",
   "crm.source.disconnect": "ניתוק",
   "crm.source.disconnectTitle": "לנתק את {source}?",
-  "crm.source.disconnectBody": "OpenBot מפסיק את הסנכרון ומוחק את המפתח. השורות שיובאו נשארות, ואפשר לשנות אותן.",
+  "crm.source.disconnectBody": "OpenBot-NC מפסיק את הסנכרון ומוחק את המפתח. השורות שיובאו נשארות, ואפשר לשנות אותן.",
 } as const satisfies PartialTranslation<typeof source>;

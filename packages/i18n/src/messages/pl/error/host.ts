@@ -2,11 +2,11 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.nameBeforePublish": "Nadaj nazwę temu OpenBot, zanim go opublikujesz.",
-  "error.host.publishBeforeInvite": "Upublicznij ten OpenBot, zanim utworzysz zaproszenie.",
+  "error.host.nameBeforePublish": "Nadaj nazwę temu OpenBot-NC, zanim go opublikujesz.",
+  "error.host.publishBeforeInvite": "Upublicznij ten OpenBot-NC, zanim utworzysz zaproszenie.",
   "error.host.teamAccessUnavailable": "Twój dostęp do zespołu jest niedostępny.",
   "error.host.ownerIdentityUnavailable": "Tożsamość właściciela hosta jest niedostępna.",
-  "error.host.publishFailed": "Nie udało się opublikować tego OpenBot.",
+  "error.host.publishFailed": "Nie udało się opublikować tego OpenBot-NC.",
   "error.host.noServer": "Ten komputer nie ma serwera do zmiany.",
   "error.host.identityLocalOnly": "Nazwę i logo serwera można zmienić tylko na komputerze, na którym działa.",
   "error.host.timezoneInvalid": "Ta strefa czasowa jest nieznana.",

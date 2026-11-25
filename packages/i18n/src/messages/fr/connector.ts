@@ -17,10 +17,10 @@ export const messages = {
   "connector.github.connectedAs": "Connecté en tant que @{login}",
   "connector.github.repositoriesTitle": "Dépôts",
   "connector.github.repositoriesDescription":
-    "Les agents peuvent utiliser uniquement les dépôts où l’app GitHub OpenBot est installée.",
+    "Les agents peuvent utiliser uniquement les dépôts où l’app GitHub OpenBot-NC est installée.",
   "connector.github.chooseRepositories": "Choisir les dépôts",
   "connector.github.repositoriesLoading": "Lecture des dépôts depuis GitHub",
-  "connector.github.noRepositories": "L’app GitHub OpenBot n’est encore installée sur aucun dépôt.",
+  "connector.github.noRepositories": "L’app GitHub OpenBot-NC n’est encore installée sur aucun dépôt.",
   "connector.github.moreRepositories": { one: "Et {count} autre dépôt", other: "Et {count} autres dépôts" },
   "connector.github.private": "Privé",
   "connector.github.disconnect": "Déconnecter",
@@ -30,7 +30,7 @@ export const messages = {
   "connector.github.expiredTitle": "La connexion GitHub a expiré",
   "connector.github.expiredDescription": "Reconnectez-vous en tant que @{login} pour redonner GitHub aux agents.",
   "connector.github.reconnect": "Reconnecter",
-  "connector.github.actionFailed": "OpenBot n’a pas pu modifier la connexion GitHub.",
+  "connector.github.actionFailed": "OpenBot-NC n’a pas pu modifier la connexion GitHub.",
   "connector.github.statusConnected": "Connecté",
   "connector.github.statusConnecting": "Connexion en cours",
   "connector.github.statusExpired": "Expiré",
@@ -40,7 +40,7 @@ export const messages = {
   "connector.github.noMatch": "Aucun dépôt ne correspond à « {query} ».",
   "connector.github.stepSignIn": "Connexion",
   "connector.github.stepConnected": "Connecté",
-  "connector.github.requestingCode": "OpenBot demande un code à GitHub.",
+  "connector.github.requestingCode": "OpenBot-NC demande un code à GitHub.",
   "connector.github.codeLabel": "Code {code}",
   "connector.github.failedTitle": "GitHub ne s’est pas connecté",
   "connector.github.cancelConnecting": "Annuler la connexion à GitHub",
@@ -54,7 +54,7 @@ export const messages = {
   "connector.github.disconnectConfirmDescription":
     "La déconnexion supprime la connexion de @{login} de cet ordinateur.",
   "connector.github.disconnectEffectTools": "Tous les agents perdent les outils GitHub, gh et git.",
-  "connector.github.disconnectEffectRevoke": "GitHub s’ouvre ensuite, et vous pouvez y révoquer OpenBot.",
+  "connector.github.disconnectEffectRevoke": "GitHub s’ouvre ensuite, et vous pouvez y révoquer OpenBot-NC.",
   "connector.github.disconnectEffectKept":
     "Les discussions, les fichiers et la mémoire des agents restent sur cet ordinateur.",
   "connector.github.descriptionHost":
@@ -70,7 +70,7 @@ export const messages = {
   "connector.github.close": "Fermer",
   "connector.dangerZone": "Zone de danger",
   "connector.statusUnknown": "Inconnu",
-  "connector.readFailed": "OpenBot n'a pas pu lire l'état de cette connexion.",
+  "connector.readFailed": "OpenBot-NC n'a pas pu lire l'état de cette connexion.",
 
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
@@ -98,18 +98,18 @@ export const messages = {
   "connector.whatsapp.numbersTitle": "Numéros",
   "connector.whatsapp.linkNumber": "Associer un numéro",
   "connector.whatsapp.ownNumberNote":
-    "Votre discussion « Message à vous-même » et les personnes que vous autorisez joignent OpenBot.",
+    "Votre discussion « Message à vous-même » et les personnes que vous autorisez joignent OpenBot-NC.",
   "connector.whatsapp.dedicatedNote":
-    "Votre discussion « Message à vous-même » et les personnes que vous autorisez joignent OpenBot. Les autres reçoivent un code à vous transmettre.",
+    "Votre discussion « Message à vous-même » et les personnes que vous autorisez joignent OpenBot-NC. Les autres reçoivent un code à vous transmettre.",
   "connector.whatsapp.helpLoggedOut":
     "WhatsApp a retiré cet ordinateur des appareils connectés. Associez à nouveau le numéro.",
   "connector.whatsapp.helpLoggedOutHost":
     "WhatsApp a retiré ce serveur des appareils connectés. Associez à nouveau le numéro.",
   "connector.whatsapp.helpError":
-    "OpenBot ne peut pas joindre WhatsApp sur ce numéro. Reconnectez-le ou déconnectez-le.",
+    "OpenBot-NC ne peut pas joindre WhatsApp sur ce numéro. Reconnectez-le ou déconnectez-le.",
   "connector.whatsapp.helpKeysUnreadable":
-    "OpenBot ne peut pas lire les clés enregistrées de ce numéro. Associez à nouveau le numéro.",
-  "connector.whatsapp.retryAt": "WhatsApp a demandé à OpenBot de patienter. Nouvel essai à {time}.",
+    "OpenBot-NC ne peut pas lire les clés enregistrées de ce numéro. Associez à nouveau le numéro.",
+  "connector.whatsapp.retryAt": "WhatsApp a demandé à OpenBot-NC de patienter. Nouvel essai à {time}.",
   "connector.whatsapp.pause": "Mettre en pause",
   "connector.whatsapp.resume": "Reprendre",
   "connector.whatsapp.reconnect": "Reconnecter",
@@ -119,20 +119,20 @@ export const messages = {
   "connector.whatsapp.disconnectAllSummary":
     "Tous les numéros sont déconnectés. Personne ne peut plus joindre vos agents via WhatsApp.",
   "connector.whatsapp.disconnectAllSummaryOrchestrator":
-    "Tous les numéros sont déconnectés. Le WhatsApp Orchestrator et ses conversations sont supprimés d’OpenBot.",
+    "Tous les numéros sont déconnectés. Le WhatsApp Orchestrator et ses conversations sont supprimés d’OpenBot-NC.",
   "connector.whatsapp.rowAction": "{action} : {name}",
   "connector.whatsapp.ownNumber": "Numéro personnel",
   "connector.whatsapp.ownNumberDescription":
-    "Seules votre discussion « Message à vous-même » et les personnes que vous autorisez peuvent écrire. Les autres ne reçoivent pas de réponse. Désactivé, OpenBot répond aux inconnus avec un code.",
+    "Seules votre discussion « Message à vous-même » et les personnes que vous autorisez peuvent écrire. Les autres ne reçoivent pas de réponse. Désactivé, OpenBot-NC répond aux inconnus avec un code.",
   "connector.whatsapp.workingMessage": "Message « En cours… »",
   "connector.whatsapp.workingMessageDescription":
-    "OpenBot l’envoie pendant que l’agent travaille, puis le remplace par la réponse. Une demande qui attend une demande précédente reçoit aussi un message d’attente. Avec un numéro personnel, seule votre discussion « Message à vous-même » reçoit ces messages. Désactivez pour n’envoyer que la réponse.",
+    "OpenBot-NC l’envoie pendant que l’agent travaille, puis le remplace par la réponse. Une demande qui attend une demande précédente reçoit aussi un message d’attente. Avec un numéro personnel, seule votre discussion « Message à vous-même » reçoit ces messages. Désactivez pour n’envoyer que la réponse.",
   "connector.whatsapp.statusReactions": "Réactions d’état",
   "connector.whatsapp.statusReactionsDescription":
-    "OpenBot réagit avec 👀 quand un message arrive et avec ✅ quand la réponse est prête. Désactivez pour n’envoyer aucune réaction.",
+    "OpenBot-NC réagit avec 👀 quand un message arrive et avec ✅ quand la réponse est prête. Désactivez pour n’envoyer aucune réaction.",
   "connector.whatsapp.orchestratorTitle": "WhatsApp Orchestrator",
   "connector.whatsapp.orchestratorDescription":
-    "Cet agent reçoit les messages destinés à OpenBot depuis tous vos numéros associés. Il répond lui-même aux messages courts, confie les autres tâches au bon agent et répond dans WhatsApp.",
+    "Cet agent reçoit les messages destinés à OpenBot-NC depuis tous vos numéros associés. Il répond lui-même aux messages courts, confie les autres tâches au bon agent et répond dans WhatsApp.",
   "connector.whatsapp.orchestratorNone": "Aucun agent ne répond encore",
   "connector.whatsapp.orchestratorNoneDescription":
     "Ajoutez le WhatsApp Orchestrator, sinon WhatsApp ne reçoit aucune réponse.",
@@ -148,10 +148,10 @@ export const messages = {
   "connector.whatsapp.kindLabel": "Numéro",
   "connector.whatsapp.kindPersonal": "Mon numéro personnel",
   "connector.whatsapp.kindPersonalDescription":
-    "OpenBot répond uniquement à votre discussion « Message à vous-même » et aux personnes que vous autorisez. Les autres personnes ne reçoivent pas de réponse.",
-  "connector.whatsapp.kindDedicated": "Un numéro réservé à OpenBot",
+    "OpenBot-NC répond uniquement à votre discussion « Message à vous-même » et aux personnes que vous autorisez. Les autres personnes ne reçoivent pas de réponse.",
+  "connector.whatsapp.kindDedicated": "Un numéro réservé à OpenBot-NC",
   "connector.whatsapp.kindDedicatedDescription":
-    "OpenBot répond depuis ce numéro à chaque inconnu avec un code à vous transmettre. Vous les approuvez ici.",
+    "OpenBot-NC répond depuis ce numéro à chaque inconnu avec un code à vous transmettre. Vous les approuvez ici.",
   "connector.whatsapp.methodLabel": "Méthode d’association",
   "connector.whatsapp.methodQr": "Code QR",
   "connector.whatsapp.methodCode": "Code d’association",
@@ -176,26 +176,26 @@ export const messages = {
   "connector.whatsapp.failedTimeout": "Le code a expiré avant que le téléphone l’utilise.",
   "connector.whatsapp.failedRefused": "WhatsApp a refusé l’association. Patientez quelques minutes, puis réessayez.",
   "connector.whatsapp.failedBusy": "Une autre association est en cours. Attendez qu’elle se termine, puis réessayez.",
-  "connector.whatsapp.failedUnavailable": "OpenBot ne peut pas joindre WhatsApp. Vérifiez la connexion Internet.",
+  "connector.whatsapp.failedUnavailable": "OpenBot-NC ne peut pas joindre WhatsApp. Vérifiez la connexion Internet.",
   "connector.whatsapp.tryAgain": "Réessayer",
   "connector.whatsapp.agentStepTitle": "Ajouter le WhatsApp Orchestrator",
   "connector.whatsapp.agentStepDescription":
-    "Ce nouvel agent répond aux messages destinés à OpenBot sur {number} et sur chaque numéro que vous associerez plus tard.",
+    "Ce nouvel agent répond aux messages destinés à OpenBot-NC sur {number} et sur chaque numéro que vous associerez plus tard.",
   "connector.whatsapp.orchestratorName": "WhatsApp Orchestrator",
   "connector.whatsapp.orchestratorRole": "Répond dans WhatsApp et sollicite l’équipe",
-  "connector.whatsapp.orchestratorDoesReceive": "Reçoit en premier chaque message WhatsApp destiné à OpenBot",
+  "connector.whatsapp.orchestratorDoesReceive": "Reçoit en premier chaque message WhatsApp destiné à OpenBot-NC",
   "connector.whatsapp.orchestratorDoesDelegate": "Confie chaque tâche à l’agent le plus adapté",
   "connector.whatsapp.orchestratorDoesAnswer": "Répond dans la discussion WhatsApp",
   "connector.whatsapp.orchestratorModel": "Modèle",
-  "connector.whatsapp.doneTitle": "OpenBot est associé à {number}",
+  "connector.whatsapp.doneTitle": "OpenBot-NC est associé à {number}",
   "connector.whatsapp.done": "Terminé",
   "connector.whatsapp.disconnectTitle": "Déconnecter {number} ?",
   "connector.whatsapp.disconnectDescription":
-    "OpenBot se déconnecte de WhatsApp sur {number}. Si OpenBot était éteint, retirez aussi l’appareil dans WhatsApp > Appareils connectés.",
+    "OpenBot-NC se déconnecte de WhatsApp sur {number}. Si OpenBot-NC était éteint, retirez aussi l’appareil dans WhatsApp > Appareils connectés.",
   "connector.whatsapp.disconnectEffect": "Personne ne peut plus joindre vos agents via {number}.",
-  "connector.whatsapp.removeEffectKept": "Les conversations et le WhatsApp Orchestrator restent dans OpenBot.",
+  "connector.whatsapp.removeEffectKept": "Les conversations et le WhatsApp Orchestrator restent dans OpenBot-NC.",
   "connector.whatsapp.removeEffectDeleted":
-    "C’est le dernier numéro : le WhatsApp Orchestrator et ses conversations sont supprimés d’OpenBot.",
+    "C’est le dernier numéro : le WhatsApp Orchestrator et ses conversations sont supprimés d’OpenBot-NC.",
   "connector.whatsapp.keep": "Rester associé",
   "connector.whatsapp.close": "Fermer",
   "connector.whatsapp.sendersTitle": "Qui peut écrire à {number}",
@@ -219,7 +219,7 @@ export const messages = {
     "Les membres de ce groupe peuvent confier des tâches à vos agents en mentionnant le numéro ou en répondant à ses messages.",
   "connector.whatsapp.groupSearch": "Rechercher des groupes",
   "connector.whatsapp.groupsLoading": "Lecture des groupes…",
-  "connector.whatsapp.groupsLoadFailed": "OpenBot n’a pas pu lire les groupes",
+  "connector.whatsapp.groupsLoadFailed": "OpenBot-NC n’a pas pu lire les groupes",
   "connector.whatsapp.groupsEmpty": "Ce numéro n’est dans aucun groupe.",
   "connector.whatsapp.groupsNoMatch": "Aucun groupe ne porte ce nom.",
   "connector.whatsapp.groupAdded": "Ajouté",
@@ -232,9 +232,9 @@ export const messages = {
   "connector.whatsapp.deny": "Refuser",
   "connector.onePassword.title": "1Password",
   "connector.onePassword.description":
-    "Partagez un coffre 1Password dédié avec OpenBot via un compte de service, pour que les agents puissent se connecter aux sites dans le navigateur d’OpenBot.",
+    "Partagez un coffre 1Password dédié avec OpenBot-NC via un compte de service, pour que les agents puissent se connecter aux sites dans le navigateur d’OpenBot-NC.",
   "connector.onePassword.howItWorks":
-    "La connexion crée un coffre « Shared with OpenBot » dans votre compte 1Password et un compte de service qui peut lire uniquement ce coffre. OpenBot remplit les identifiants enregistrés dans son navigateur sur cet ordinateur : seuls les éléments que vous déplacez dans ce coffre sont partagés. Les agents ne voient jamais de mot de passe.",
+    "La connexion crée un coffre « Shared with OpenBot » dans votre compte 1Password et un compte de service qui peut lire uniquement ce coffre. OpenBot-NC remplit les identifiants enregistrés dans son navigateur sur cet ordinateur : seuls les éléments que vous déplacez dans ce coffre sont partagés. Les agents ne voient jamais de mot de passe.",
   "connector.onePassword.connect": "Connecter 1Password",
   "connector.onePassword.setupTitle": "Configuration",
   "connector.onePassword.stepCliTitle": "Installer la CLI 1Password",
@@ -242,20 +242,20 @@ export const messages = {
   "connector.onePassword.stepCliInstalling": "Téléchargement de la CLI 1Password depuis 1Password",
   "connector.onePassword.stepCliReady": "La version {version} est installée.",
   "connector.onePassword.stepCliMissing":
-    "OpenBot la télécharge depuis 1Password dans son propre dossier. Aucun mot de passe administrateur n’est nécessaire.",
+    "OpenBot-NC la télécharge depuis 1Password dans son propre dossier. Aucun mot de passe administrateur n’est nécessaire.",
   "connector.onePassword.stepCliManual":
-    "OpenBot ne peut pas l’installer sur cet ordinateur. Installez-la depuis 1Password, puis revenez sur cette page.",
+    "OpenBot-NC ne peut pas l’installer sur cet ordinateur. Installez-la depuis 1Password, puis revenez sur cette page.",
   "connector.onePassword.installCli": "Installer",
   "connector.onePassword.stepAppTitle": "Activer l’intégration CLI",
   "connector.onePassword.stepAppDescription":
     "Dans l’app 1Password, ouvrez Réglages > Développeur et activez « Intégrer avec 1Password CLI ».",
   "connector.onePassword.stepAppReady": "L’app 1Password permet à la CLI de créer le coffre partagé.",
   "connector.onePassword.openApp": "Ouvrir 1Password",
-  "connector.onePassword.openAppFailed": "OpenBot n'a pas pu ouvrir 1Password.",
+  "connector.onePassword.openAppFailed": "OpenBot-NC n'a pas pu ouvrir 1Password.",
   "connector.onePassword.checkAgain": "Revérifier",
   "connector.onePassword.stepVaultTitle": "Créer le coffre partagé",
   "connector.onePassword.stepVaultDescription":
-    "OpenBot crée le coffre « Shared with OpenBot » et un compte de service qui peut seulement le lire. 1Password vous demande votre approbation.",
+    "OpenBot-NC crée le coffre « Shared with OpenBot » et un compte de service qui peut seulement le lire. 1Password vous demande votre approbation.",
   "connector.onePassword.useTokenDescription":
     "Au lieu de ces étapes, collez un jeton de compte de service de 1Password.com.",
   "connector.onePassword.useTokenAction": "Utiliser un jeton",
@@ -266,7 +266,7 @@ export const messages = {
   "connector.onePassword.cancel": "Annuler",
   "connector.onePassword.chooseAccountTitle": "Choisir un compte",
   "connector.onePassword.chooseAccountDescription":
-    "OpenBot crée le coffre partagé dans le compte que vous choisissez.",
+    "OpenBot-NC crée le coffre partagé dans le compte que vous choisissez.",
   "connector.onePassword.useAccount": "Utiliser ce compte",
   "connector.onePassword.vaultTitle": "Coffre partagé",
   "connector.onePassword.vaultDescription":
@@ -276,14 +276,14 @@ export const messages = {
   "connector.onePassword.disconnect": "Déconnecter",
   "connector.onePassword.disconnectTitle": "Déconnecter 1Password",
   "connector.onePassword.disconnectSummary":
-    "OpenBot oublie le jeton. Le coffre et le compte de service restent dans 1Password ; supprimez-les là-bas si vous n’en avez plus besoin.",
-  "connector.onePassword.actionFailed": "OpenBot n’a pas pu modifier la connexion 1Password.",
+    "OpenBot-NC oublie le jeton. Le coffre et le compte de service restent dans 1Password ; supprimez-les là-bas si vous n’en avez plus besoin.",
+  "connector.onePassword.actionFailed": "OpenBot-NC n’a pas pu modifier la connexion 1Password.",
   "connector.onePassword.statusConnected": "Connecté",
   "connector.onePassword.statusConnecting": "Connexion en cours",
   "connector.onePassword.descriptionHost":
-    "Partagez un coffre 1Password dédié avec OpenBot sur {host} via un compte de service, pour que les agents de {host} puissent se connecter aux sites dans son navigateur.",
+    "Partagez un coffre 1Password dédié avec OpenBot-NC sur {host} via un compte de service, pour que les agents de {host} puissent se connecter aux sites dans son navigateur.",
   "connector.onePassword.howItWorksHost":
-    "{host} se connecte avec un jeton de compte de service. Sur 1Password.com, créez un compte de service qui ne peut lire que le coffre que vous partagez avec OpenBot, puis collez son jeton ici. {host} vérifie le jeton et le conserve ; cet ordinateur ne le conserve pas. Les agents ne voient jamais de mot de passe.",
+    "{host} se connecte avec un jeton de compte de service. Sur 1Password.com, créez un compte de service qui ne peut lire que le coffre que vous partagez avec OpenBot-NC, puis collez son jeton ici. {host} vérifie le jeton et le conserve ; cet ordinateur ne le conserve pas. Les agents ne voient jamais de mot de passe.",
   "connector.onePassword.disconnectSummaryHost":
     "{host} oublie le jeton. Le coffre et le compte de service restent dans 1Password ; supprimez-les là-bas si vous n’en avez plus besoin.",
   "connector.bitwarden.title": "Bitwarden",
@@ -291,25 +291,25 @@ export const messages = {
   "connector.bitwarden.setup":
     "Installez la CLI Bitwarden et connectez-vous avec bw login. Créez un dossier nommé Shared with OpenBot et placez-y uniquement les identifiants que les agents peuvent utiliser. Exécutez bw unlock --raw et collez la clé de session ci-dessous. Ne collez pas votre mot de passe principal.",
   "connector.bitwarden.scope":
-    "Tous les agents de cet ordinateur peuvent utiliser les identifiants correspondants dans Shared with OpenBot. OpenBot utilise des origines HTTPS exactes. Il n’utilise pas les éléments qui demandent une invite de mot de passe principal ou une règle de correspondance d’URI personnalisée.",
+    "Tous les agents de cet ordinateur peuvent utiliser les identifiants correspondants dans Shared with OpenBot. OpenBot-NC utilise des origines HTTPS exactes. Il n’utilise pas les éléments qui demandent une invite de mot de passe principal ou une règle de correspondance d’URI personnalisée.",
   "connector.bitwarden.session":
-    "La clé de session reste en mémoire. Reconnectez-vous après 8 heures sans utilisation du coffre ou après la fermeture d’OpenBot. La déconnexion arrête l’accès d’OpenBot ; elle ne verrouille pas les autres clients Bitwarden.",
+    "La clé de session reste en mémoire. Reconnectez-vous après 8 heures sans utilisation du coffre ou après la fermeture d’OpenBot-NC. La déconnexion arrête l’accès d’OpenBot-NC ; elle ne verrouille pas les autres clients Bitwarden.",
   "connector.bitwarden.sessionKey": "Clé de session Bitwarden",
   "connector.bitwarden.connect": "Connecter Bitwarden",
   "connector.bitwarden.disconnect": "Déconnecter Bitwarden",
   "connector.bitwarden.disconnectAction": "Déconnecter",
   "connector.bitwarden.disconnectSummary":
-    "OpenBot oublie la clé de session. Les agents ne peuvent plus remplir les identifiants depuis Bitwarden. Les autres clients Bitwarden restent déverrouillés.",
+    "OpenBot-NC oublie la clé de session. Les agents ne peuvent plus remplir les identifiants depuis Bitwarden. Les autres clients Bitwarden restent déverrouillés.",
   "connector.bitwarden.disconnectSummaryHost":
     "{host} supprime la clé d’API et le mot de passe principal. Les agents de {host} ne peuvent plus remplir les identifiants depuis Bitwarden.",
   "connector.bitwarden.connected": "Connecté",
-  "connector.bitwarden.actionFailed": "OpenBot n’a pas pu modifier la connexion Bitwarden.",
+  "connector.bitwarden.actionFailed": "OpenBot-NC n’a pas pu modifier la connexion Bitwarden.",
   "connector.bitwarden.descriptionHost":
     "Remplir les identifiants du navigateur sur {host} depuis Bitwarden ou Vaultwarden.",
   "connector.bitwarden.setupHost":
     "{host} se connecte avec sa propre CLI Bitwarden. Dans votre coffre, créez un dossier nommé « Shared with OpenBot » et placez-y uniquement les identifiants que les agents peuvent utiliser. Dans le coffre web, ouvrez Paramètres › Sécurité › Clés et affichez votre clé d’API. Saisissez ci-dessous l’adresse du serveur, client_id, client_secret et votre mot de passe principal.",
   "connector.bitwarden.scopeHost":
-    "Tous les agents de {host} peuvent utiliser les identifiants correspondants de « Shared with OpenBot ». OpenBot utilise des origines HTTPS exactes. Il n’utilise pas les éléments qui demandent le mot de passe principal ni ceux qui ont une règle de correspondance d’URI personnalisée.",
+    "Tous les agents de {host} peuvent utiliser les identifiants correspondants de « Shared with OpenBot ». OpenBot-NC utilise des origines HTTPS exactes. Il n’utilise pas les éléments qui demandent le mot de passe principal ni ceux qui ont une règle de correspondance d’URI personnalisée.",
   "connector.bitwarden.sessionHost":
     "{host} conserve la clé d’API et le mot de passe principal chiffrés, pour pouvoir déverrouiller à nouveau après un redémarrage. Cet ordinateur ne les conserve pas. Déconnecter les supprime de {host}. {host} doit joindre l’adresse du serveur en HTTPS.",
   "connector.bitwarden.serverUrl": "Adresse du serveur",
@@ -334,19 +334,19 @@ export const messages = {
   "connector.protonPass.keyPlaceholder": "pst_…",
   "connector.protonPass.setupTitle": "Configurer",
   "connector.protonPass.setupDescription":
-    "Connecter ouvre la connexion Proton dans votre navigateur. Ensuite, OpenBot crée le coffre partagé et ne garde qu’une clé en lecture seule.",
+    "Connecter ouvre la connexion Proton dans votre navigateur. Ensuite, OpenBot-NC crée le coffre partagé et ne garde qu’une clé en lecture seule.",
   "connector.protonPass.setupDescriptionHost":
     "Connecter ouvre la connexion Proton dans votre navigateur. Ensuite, {host} crée le coffre partagé et ne garde qu’une clé en lecture seule.",
   "connector.protonPass.vaultName": "Shared with OpenBot",
   "connector.protonPass.vaultSetup":
-    "OpenBot crée ce coffre à la connexion. Déplacez-y des identifiants pour les partager.",
+    "OpenBot-NC crée ce coffre à la connexion. Déplacez-y des identifiants pour les partager.",
   "connector.protonPass.showSteps": "Voir les étapes",
   "connector.protonPass.stepsLabel": "Étapes de connexion",
   "connector.protonPass.stepSignIn": "Connexion",
   "connector.protonPass.stepVault": "Créer le coffre partagé",
   "connector.protonPass.stepDone": "Terminé",
   "connector.protonPass.signInTitle": "Connectez-vous à Proton",
-  "connector.protonPass.signInStarting": "OpenBot lance la connexion. La page Proton s’ouvre dans votre navigateur.",
+  "connector.protonPass.signInStarting": "OpenBot-NC lance la connexion. La page Proton s’ouvre dans votre navigateur.",
   "connector.protonPass.signInDescription":
     "La connexion est ouverte dans votre navigateur. Proton demande votre mot de passe et votre second facteur.",
   "connector.protonPass.signInDescriptionHost":
@@ -357,7 +357,7 @@ export const messages = {
   "connector.protonPass.continue": "Continuer",
   "connector.protonPass.setupStepTitle": "Création du coffre partagé",
   "connector.protonPass.setupStepDescription":
-    "OpenBot crée le coffre « {vault} » et une clé en lecture seule. Ensuite, il ferme votre session Proton.",
+    "OpenBot-NC crée le coffre « {vault} » et une clé en lecture seule. Ensuite, il ferme votre session Proton.",
   "connector.protonPass.doneTitle": "Proton Pass est connecté",
   "connector.protonPass.doneDescription":
     "Déplacez des identifiants dans « {vault} » pour que les agents s’en servent.",
@@ -387,9 +387,9 @@ export const messages = {
   "connector.protonPass.keyNoExpiry": "Lecture seule. N’expire pas.",
   "connector.protonPass.disconnectTitle": "Déconnecter Proton Pass",
   "connector.protonPass.disconnectSummary":
-    "OpenBot supprime sa clé d’accès sur cet ordinateur. Le coffre et ses identifiants restent dans votre compte Proton.",
+    "OpenBot-NC supprime sa clé d’accès sur cet ordinateur. Le coffre et ses identifiants restent dans votre compte Proton.",
   "connector.protonPass.disconnectSummaryHost":
-    "OpenBot supprime sa clé d’accès sur {host}. Le coffre et ses identifiants restent dans votre compte Proton.",
+    "OpenBot-NC supprime sa clé d’accès sur {host}. Le coffre et ses identifiants restent dans votre compte Proton.",
   "connector.protonPass.disconnect": "Déconnecter",
-  "connector.protonPass.actionFailed": "OpenBot n’a pas pu modifier la connexion Proton Pass.",
+  "connector.protonPass.actionFailed": "OpenBot-NC n’a pas pu modifier la connexion Proton Pass.",
 } as const satisfies PartialTranslation<typeof source>;

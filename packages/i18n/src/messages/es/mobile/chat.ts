@@ -4,7 +4,7 @@ import type { messages as source } from "../../en/mobile/chat";
 export const messages = {
   "mobile.chat.dictation.microphoneOffTitle": "El acceso al micrófono está desactivado",
   "mobile.chat.dictation.microphoneOffMessage":
-    "Para dictar un mensaje, permite que OpenBot use el micrófono y el reconocimiento de voz en Ajustes.",
+    "Para dictar un mensaje, permite que OpenBot-NC use el micrófono y el reconocimiento de voz en Ajustes.",
   "mobile.chat.dictation.stopped": "Dictado detenido",
   "mobile.chat.dictation.tryAgain": "Vuelve a intentarlo.",
   "mobile.chat.dictation.unavailable": "El dictado no está disponible",
@@ -149,7 +149,7 @@ export const messages = {
     "La descarga se detuvo. Empezará de nuevo cuando el servidor esté conectado.",
   "mobile.chat.attachment.openFailed": "No se pudo abrir el archivo adjunto",
   "mobile.chat.attachment.photosNeedUpdate": "Para guardar fotos necesitas la versión más reciente de la app.",
-  "mobile.chat.attachment.photosPermission": "Permite que OpenBot añada fotos en Ajustes para guardar esta imagen.",
+  "mobile.chat.attachment.photosPermission": "Permite que OpenBot-NC añada fotos en Ajustes para guardar esta imagen.",
   "mobile.chat.attachment.imageUnavailable": "La imagen no está disponible. Vuelve a intentarlo.",
   "mobile.chat.attachment.saveImageFailed": "No se pudo guardar la imagen",
   "mobile.chat.attachment.copyImageFailed": "No se pudo copiar la imagen",
@@ -183,9 +183,9 @@ export const messages = {
   "mobile.chat.attachment.unsupported":
     "{name}: elige imágenes, audio MP3, vídeo MOV o MP4, archivos ZIP, PDF, documentos de Office, EML, texto, Markdown, datos o archivos de código fuente.",
   "mobile.chat.attachment.hostRejectsType":
-    "{name}: el equipo host no acepta archivos {type}. Actualiza OpenBot en ese equipo para adjuntarlos.",
+    "{name}: el equipo host no acepta archivos {type}. Actualiza OpenBot-NC en ese equipo para adjuntarlos.",
   "mobile.chat.attachment.hostRejects":
-    "{name}: el equipo host no acepta estos archivos. Actualiza OpenBot en ese equipo para adjuntarlos.",
+    "{name}: el equipo host no acepta estos archivos. Actualiza OpenBot-NC en ese equipo para adjuntarlos.",
   "mobile.chat.attachment.nameTooLong": "Elige un archivo con un nombre más corto.",
   "mobile.chat.attachment.damaged": "El archivo adjunto está dañado. Vuelve a seleccionarlo.",
   "mobile.chat.attachment.tooLarge": "{name} ocupa más de {limit}.",
@@ -262,7 +262,7 @@ export const messages = {
     "Sus preguntas y respuestas solo están en este teléfono. No podrás recuperarlas.",
   "mobile.chat.sideQuestion.notFound": "Este agente ya no está en el servidor.",
   "mobile.chat.sideQuestion.unsupported":
-    "Este host no puede responder preguntas aparte. Actualiza OpenBot en el host.",
+    "Este host no puede responder preguntas aparte. Actualiza OpenBot-NC en el host.",
   "mobile.chat.pins.title": "Mensajes fijados",
   "mobile.chat.pins.emptyTitle": "No hay mensajes fijados",
   "mobile.chat.pins.emptyBody": "Mantén pulsado un mensaje y toca Fijar para guardarlo aquí.",
@@ -271,7 +271,7 @@ export const messages = {
   "mobile.chat.pins.unpin": "Desfijar",
   "mobile.chat.pins.failed": "La fijación no cambió.",
   "mobile.chat.pins.loadFailed": "No se pudieron cargar los mensajes fijados.",
-  "mobile.chat.pins.unsupported": "Este host no puede fijar mensajes. Actualiza OpenBot en el host.",
+  "mobile.chat.pins.unsupported": "Este host no puede fijar mensajes. Actualiza OpenBot-NC en el host.",
   "mobile.chat.pins.mainChat": "Chat principal",
   "mobile.chat.pins.thread": "Hilo lateral",
   "mobile.chat.pins.pinnedBy": "Fijado por {name}",
@@ -363,7 +363,7 @@ export const messages = {
   "mobile.chat.imageGallery.saved": "Guardado en Fotos",
   "mobile.chat.imageGallery.shareAll": "Compartir todo",
   "mobile.chat.imageGallery.photosPermission":
-    "Permite que OpenBot añada fotos en Ajustes para guardar estas imágenes.",
+    "Permite que OpenBot-NC añada fotos en Ajustes para guardar estas imágenes.",
   "mobile.chat.imageGallery.saveFailed": "No se pudieron guardar las imágenes",
   "mobile.chat.imageGallery.shareFailed": "No se pudieron compartir las imágenes",
   "mobile.chat.imageGallery.shareNeedsUpdate":
@@ -374,7 +374,7 @@ export const messages = {
   "mobile.chat.video.loading": "Cargando {name}",
   "mobile.chat.video.share": "Compartir {name}",
   "mobile.chat.video.save": "Guardar {name} en Fotos",
-  "mobile.chat.video.photosPermission": "Permite que OpenBot añada fotos en Ajustes para guardar este vídeo.",
+  "mobile.chat.video.photosPermission": "Permite que OpenBot-NC añada fotos en Ajustes para guardar este vídeo.",
   "mobile.chat.video.saveFailed": "No se pudo guardar el vídeo",
   "mobile.chat.audio.play": "Reproducir {name}",
   "mobile.chat.audio.pause": "Pausar {name}",
@@ -390,29 +390,29 @@ export const messages = {
     "Esta solicitud de inicio de sesión terminó. Pide al agente que lo intente de nuevo.",
   "mobile.chat.browserSecret.oneTimeCode": "Código de un solo uso",
   "mobile.chat.browserSecret.takeoverTitle": "Control del navegador",
-  "mobile.chat.browserSecret.takeoverBody": "Completa este paso en el navegador del equipo que ejecuta OpenBot.",
+  "mobile.chat.browserSecret.takeoverBody": "Completa este paso en el navegador del equipo que ejecuta OpenBot-NC.",
   "mobile.chat.browserSecret.signInBlockedTitle": "Inicia sesión en tu ordenador",
   "mobile.chat.browserSecret.signInBlockedBody":
-    "Este sitio no acepta un inicio de sesión desde el servidor. Abre este chat en la aplicación de escritorio de OpenBot en tu ordenador e inicia sesión allí.",
+    "Este sitio no acepta un inicio de sesión desde el servidor. Abre este chat en la aplicación de escritorio de OpenBot-NC en tu ordenador e inicia sesión allí.",
   "mobile.chat.browserSecret.takeoverReload":
-    "OpenBot no pudo terminar de escribir la contraseña o el código. Escribe en la página lo que falta. Después, vuelve a cargar la página antes de elegir «He terminado».",
+    "OpenBot-NC no pudo terminar de escribir la contraseña o el código. Escribe en la página lo que falta. Después, vuelve a cargar la página antes de elegir «He terminado».",
   "mobile.chat.browserSecret.takeoverFailed": "No se pudo completar la solicitud.",
   "mobile.chat.browserSecret.done": "He terminado",
   "mobile.chat.browserSecret.submitOnce": "Enviar una vez a {origin}. Este valor no se añade al chat.",
   "mobile.chat.browserSecret.submitFailed":
     "No se pudo completar la solicitud. Comprueba la conexión y vuelve a intentarlo.",
   "mobile.chat.browserSecret.vaultSkip.agentScript":
-    "OpenBot no usó tu inicio de sesión guardado porque el agente ejecutó un script en esta página. Para usarlo, pide al agente que recargue la página y lo intente de nuevo.",
+    "OpenBot-NC no usó tu inicio de sesión guardado porque el agente ejecutó un script en esta página. Para usarlo, pide al agente que recargue la página y lo intente de nuevo.",
   "mobile.chat.browserSecret.vaultSkip.fieldKind":
-    "OpenBot no usó tu inicio de sesión guardado porque el agente eligió un campo incorrecto en la página.",
+    "OpenBot-NC no usó tu inicio de sesión guardado porque el agente eligió un campo incorrecto en la página.",
   "mobile.chat.browserSecret.vaultSkip.loginChoice":
-    "OpenBot no usó ningún inicio de sesión guardado porque el agente no eligió ninguno de los guardados para este sitio. Dile al agente qué cuenta debe usar.",
+    "OpenBot-NC no usó ningún inicio de sesión guardado porque el agente no eligió ninguno de los guardados para este sitio. Dile al agente qué cuenta debe usar.",
   "mobile.chat.browserSecret.vaultSkip.noPassword":
-    "OpenBot no usó tu inicio de sesión guardado porque no tiene contraseña para este sitio.",
+    "OpenBot-NC no usó tu inicio de sesión guardado porque no tiene contraseña para este sitio.",
   "mobile.chat.browserSecret.vaultSkip.noAuthenticatorKey":
-    "OpenBot no usó tu inicio de sesión guardado porque no tiene clave de autenticador.",
+    "OpenBot-NC no usó tu inicio de sesión guardado porque no tiene clave de autenticador.",
   "mobile.chat.browserSecret.vaultSkip.vaultUnreadable":
-    "OpenBot no usó ningún inicio de sesión guardado porque no pudo leer tu gestor de contraseñas.",
+    "OpenBot-NC no usó ningún inicio de sesión guardado porque no pudo leer tu gestor de contraseñas.",
   "mobile.chat.browserSecret.submit": "Enviar",
   "mobile.chat.browserSecret.takeOver": "Intervenir",
   "mobile.chat.starter.title": "¿En qué trabajamos primero?",
@@ -482,14 +482,14 @@ export const messages = {
   "mobile.chat.approval.effect.permissions":
     "«Permitir» le da a {name} estos permisos en {server}. «Rechazar» mantiene los permisos actuales.",
   "mobile.chat.approval.partial":
-    "{server} envía al teléfono solo el inicio de esta solicitud. Para permitirla, actualiza OpenBot en {server} o abre este chat en la app de escritorio de OpenBot. Puedes rechazarla aquí.",
+    "{server} envía al teléfono solo el inicio de esta solicitud. Para permitirla, actualiza OpenBot-NC en {server} o abre este chat en la app de escritorio de OpenBot-NC. Puedes rechazarla aquí.",
   "mobile.chat.approval.loading": "Cargando la solicitud completa…",
   "mobile.chat.approval.loadFailed": "No se pudo cargar la solicitud completa. Puedes rechazarla aquí.",
   "mobile.chat.approval.retry": "Reintentar",
   "mobile.chat.approval.report.bugHeadline": "¿Encontraste un error? Vamos a corregirlo.",
   "mobile.chat.approval.report.ideaHeadline": "¿Tienes una idea? Vamos a hacerla realidad.",
   "mobile.chat.approval.report.dontSend": "Ahora no",
-  "mobile.chat.approval.report.send": "Enviar al equipo de OpenBot",
+  "mobile.chat.approval.report.send": "Enviar al equipo de OpenBot-NC",
   "mobile.chat.approval.allow": "Permitir",
   "mobile.chat.approval.deny": "Rechazar",
   "mobile.chat.approval.reconnect": "Conéctate a {server} para responder a esta solicitud.",
@@ -578,7 +578,7 @@ export const messages = {
   "mobile.chat.queue.sendNowNeedsTurn": "Enviar ahora necesita un turno en curso.",
   "mobile.chat.queue.stillHoldingTitle": "El mensaje sigue retenido",
   "mobile.chat.queue.stillHoldingMessage":
-    "OpenBot no pudo liberar este mensaje, así que el agente sigue esperándolo. Vuelve a intentarlo cuando el teléfono se vuelva a conectar.",
+    "OpenBot-NC no pudo liberar este mensaje, así que el agente sigue esperándolo. Vuelve a intentarlo cuando el teléfono se vuelva a conectar.",
   "mobile.chat.queue.keepEditing": "Seguir editando",
   "mobile.chat.queue.leaveAnyway": "Salir de todos modos",
   "mobile.chat.queue.discardTitle": "¿Descartar los cambios?",
@@ -588,7 +588,7 @@ export const messages = {
   "mobile.chat.queue.alreadyReceivedKept":
     "El agente ya recibió este mensaje, así que no se puede cambiar. Al cerrar esta pantalla, tu texto pasa al cuadro de mensaje.",
   "mobile.chat.queue.holding": "Reteniendo el mensaje para ti…",
-  "mobile.chat.queue.holdFailed": "OpenBot no pudo retener este mensaje para editarlo.",
+  "mobile.chat.queue.holdFailed": "OpenBot-NC no pudo retener este mensaje para editarlo.",
   "mobile.chat.queue.messageLabel": "Mensaje",
   "mobile.chat.queue.messagePlaceholder": "Texto del mensaje",
   "mobile.chat.queue.save": "Guardar mensaje en cola",
@@ -623,14 +623,14 @@ export const messages = {
   "mobile.chat.threads.renameSave": "Guardar",
   "mobile.chat.threads.name": "Nombre del hilo",
   "mobile.chat.threads.renameUnavailable":
-    "No puedes renombrar este hilo ahora. Conéctate al servidor o actualiza OpenBot en el host.",
+    "No puedes renombrar este hilo ahora. Conéctate al servidor o actualiza OpenBot-NC en el host.",
   "mobile.chat.threads.delete.action": "Eliminar",
   "mobile.chat.threads.delete.title": "¿Eliminar este hilo?",
   "mobile.chat.threads.delete.body":
-    "OpenBot elimina el hilo, sus mensajes y sus archivos para siempre. El chat principal no cambia.",
+    "OpenBot-NC elimina el hilo, sus mensajes y sus archivos para siempre. El chat principal no cambia.",
   "mobile.chat.threads.filesUnsupported":
-    "Este host no puede recibir archivos en un hilo. Actualiza OpenBot en el host.",
-  "mobile.chat.threads.unsupported": "Este host no puede renombrar ni eliminar hilos. Actualiza OpenBot en el host.",
+    "Este host no puede recibir archivos en un hilo. Actualiza OpenBot-NC en el host.",
+  "mobile.chat.threads.unsupported": "Este host no puede renombrar ni eliminar hilos. Actualiza OpenBot-NC en el host.",
   "mobile.chat.threads.error.rename": "No se pudo renombrar el hilo.",
   "mobile.chat.threads.error.delete": "No se pudo eliminar el hilo.",
   "mobile.chat.channelWork.working": "Trabajando en {channel}",
@@ -678,6 +678,6 @@ export const messages = {
   "mobile.chat.locationRequest.declined": "No compartida",
   "mobile.chat.locationRequest.unavailable": "Tu teléfono no pudo encontrar tu ubicación. Inténtalo de nuevo.",
   "mobile.chat.locationRequest.deniedTitle": "El acceso a la ubicación está desactivado",
-  "mobile.chat.locationRequest.denied": "Para compartir tu ubicación, permite que OpenBot la use en Ajustes.",
+  "mobile.chat.locationRequest.denied": "Para compartir tu ubicación, permite que OpenBot-NC la use en Ajustes.",
   "mobile.chat.locationRequest.openSettings": "Abrir Ajustes",
 } as const satisfies PartialTranslation<typeof source>;

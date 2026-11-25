@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/liveActivity";
 
 export const messages = {
-  "mobile.liveActivity.appName": "OpenBot",
+  "mobile.liveActivity.appName": "OpenBot-NC",
   "mobile.liveActivity.badge.working": "בעבודה",
   "mobile.liveActivity.badge.message": "הודעה",
   "mobile.liveActivity.badge.question": "שאלות",
@@ -21,10 +21,10 @@ export const messages = {
   "mobile.liveActivity.button.approve": "אישור",
   "mobile.liveActivity.button.openDetails": "פתיחת הפרטים",
   "mobile.liveActivity.stale.label": "לא עדכני",
-  "mobile.liveActivity.stale.detail": "יש לפתוח את OpenBot כדי לראות את המצב הנוכחי.",
+  "mobile.liveActivity.stale.detail": "יש לפתוח את OpenBot-NC כדי לראות את המצב הנוכחי.",
   "mobile.liveActivity.island.taskWorking": "עובד על הבקשה שלך",
   "mobile.liveActivity.island.questionHeader": "שאלה מהסוכן שלך",
-  "mobile.liveActivity.island.questionText": "יש לפתוח את OpenBot כדי לענות על השאלה הזאת.",
+  "mobile.liveActivity.island.questionText": "יש לפתוח את OpenBot-NC כדי לענות על השאלה הזאת.",
   "mobile.liveActivity.island.optionFallback": "אפשרות {number}",
   "mobile.liveActivity.island.takeoverTitle": "שלב בדפדפן דורש אותך",
   "mobile.liveActivity.island.takeoverDetail": "יש להשלים בדפדפן את ההתחברות, האימות או ההסכמה.",

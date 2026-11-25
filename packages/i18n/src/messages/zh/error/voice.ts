@@ -9,8 +9,8 @@ export const messages = {
   "error.voice.runtimeUnavailable": "该平台不支持本地语音转写。",
   "error.voice.modelUnavailable": "语音模型不可用。",
   "error.voice.transcriptionTimedOut": "语音转写超时。",
-  "error.voice.prepareRequired": "本地语音转写不可用。请运行 `bun run voice:prepare` 并重启 OpenBot。",
-  "error.voice.transcriptionFailed": "OpenBot 无法转写这段录音。",
+  "error.voice.prepareRequired": "本地语音转写不可用。请运行 `bun run voice:prepare` 并重启 OpenBot-NC。",
+  "error.voice.transcriptionFailed": "OpenBot-NC 无法转写这段录音。",
   "error.voice.videoModelMissing": "尚未在“设置 → 语音”中设置用于录音的语音识别模型。",
   "error.voice.videoModelMissingServer":
     "此服务器上尚未设置语音识别模型。所有者或管理员可以在服务器设置的“语音识别”中设置模型。",
@@ -25,9 +25,9 @@ export const messages = {
   "error.voice.speech.runtimeUnavailable": "该平台不支持本地语音。",
   "error.voice.speech.modelRequired": "请在“设置 → 语音”中下载语音模型。",
   "error.voice.speech.timedOut": "朗读回复超时。",
-  "error.voice.speech.failed": "OpenBot 无法朗读该回复。",
+  "error.voice.speech.failed": "OpenBot-NC 无法朗读该回复。",
   "error.voice.speech.providerRefused": "{provider} 拒绝生成音频：{reason}",
-  "error.voice.recordingNotKept": "OpenBot 无法保留该录音。",
+  "error.voice.recordingNotKept": "OpenBot-NC 无法保留该录音。",
   "error.voice.server.modelUnsupported":
     "{host} 无法使用 {model} 转写。请在 设置 → 语音 中为语音服务器选择其他听写模型。",
 } as const satisfies PartialTranslation<typeof source>;

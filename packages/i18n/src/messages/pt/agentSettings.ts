@@ -42,7 +42,7 @@ export const messages = {
   "agentSettings.folders.inShared": "{folder} está na pasta compartilhada, então {agent} já pode alterá-la",
   "agentSettings.folders.inFolder": "{folder} está em {parent}, que já foi adicionada",
   "agentSettings.folders.protected":
-    "Não é possível adicionar {folder}: ela contém dados do OpenBot ou arquivos de outros agentes",
+    "Não é possível adicionar {folder}: ela contém dados do OpenBot-NC ou arquivos de outros agentes",
   "agentSettings.folders.missing": "{folder} não é uma pasta neste computador",
   "agentSettings.folders.limit": {
     one: "Você pode adicionar no máximo {count} pasta",
@@ -153,7 +153,7 @@ export const messages = {
   "agentSettings.runtime.fullAccessNote":
     "O agente tem acesso completo ao computador a partir do seu espaço de trabalho e da pasta compartilhada.",
   "agentSettings.runtime.askNote":
-    "Ele pergunta antes de usar uma ferramenta do OpenBot ou publicar um site, e quando o provedor pede aprovação.",
+    "Ele pergunta antes de usar uma ferramenta do OpenBot-NC ou publicar um site, e quando o provedor pede aprovação.",
   "agentSettings.runtime.fullNote": "Ele age sem perguntar, exceto pelas perguntas que faz a você.",
   "agentSettings.access.workspace": "Espaço de trabalho",
   "agentSettings.access.ask": "Perguntar antes",
@@ -187,7 +187,7 @@ export const messages = {
   "agentSettings.deleteHistory.button": "Excluir",
   "agentSettings.deleteHistory.confirmTitle": "Excluir o histórico do chat com {name}?",
   "agentSettings.deleteHistory.confirmDescription":
-    "Todas as mensagens e arquivos deste chat são excluídos do OpenBot e o agente os esquece. Não é possível desfazer. Threads paralelas, instruções, modelo, ferramentas, memórias, espaço de trabalho e navegador não mudam.",
+    "Todas as mensagens e arquivos deste chat são excluídos do OpenBot-NC e o agente os esquece. Não é possível desfazer. Threads paralelas, instruções, modelo, ferramentas, memórias, espaço de trabalho e navegador não mudam.",
   "agentSettings.deleteHistory.confirm": "Excluir histórico",
   "agentSettings.deleteHistory.failed": "Não foi possível excluir o histórico.",
   "agentSettings.fullAccess.title": "Dar acesso completo a este agente?",
@@ -217,7 +217,7 @@ export const messages = {
   "agentSettings.runtime.workspaceEnforcedClaude":
     "A edição de um arquivo fora desses locais pede sua aprovação. Um comando não pode gravar fora desses locais.",
   "agentSettings.runtime.workspaceUnlimited":
-    "O Uso do computador e o navegador do OpenBot não são limitados; você pode desativar o Uso do computador abaixo.",
+    "O Uso do computador e o navegador do OpenBot-NC não são limitados; você pode desativar o Uso do computador abaixo.",
   "agentSettings.computerUse.title": "Uso do computador",
   "agentSettings.computerUse.description": "Permitir que este agente controle aplicativos neste computador",
   "agentSettings.automation.title": "Scripts locais",
@@ -228,7 +228,7 @@ export const messages = {
     "Permite que o agente inicie um novo chat quando o chat dele ficar longo. Ele salva notas antes.",
   "agentSettings.quickAcknowledgement.title": "Mostrar o plano antes de tarefas longas",
   "agentSettings.quickAcknowledgement.description": "Antes de uma tarefa longa, o agente mostra o plano.",
-  "agentSettings.builtinMemory.title": "Memória do OpenBot",
+  "agentSettings.builtinMemory.title": "Memória do OpenBot-NC",
   "agentSettings.builtinMemory.description":
     "O agente salva e lê as próprias memórias. Desative para usar só um app de memória, como o Mem0. As memórias salvas continuam.",
   "agentSettings.browserProfile.label": "Perfil do navegador",

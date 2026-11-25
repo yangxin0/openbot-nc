@@ -11,7 +11,7 @@ export const messages = {
   "mobile.marketplace.app.bitwardenTagline": "Inicia sesión en sitios con credenciales de una carpeta compartida",
   "mobile.marketplace.app.protonPassTagline": "Inicia sesión en sitios con credenciales de una bóveda compartida",
   "mobile.marketplace.error.signInUnsupported":
-    "Actualiza OpenBot en el servidor para iniciar sesión en apps desde el teléfono.",
+    "Actualiza OpenBot-NC en el servidor para iniciar sesión en apps desde el teléfono.",
   "mobile.marketplace.app.connect": "Conectar",
   "mobile.marketplace.app.signInIntro":
     "Inicia sesión en la página de la app. El servidor guarda la sesión, no este teléfono.",
@@ -19,7 +19,7 @@ export const messages = {
   "mobile.marketplace.app.stepAllow": "Inicia sesión y permite el acceso.",
   "mobile.marketplace.app.stepBlank": "La última página no carga. Es lo correcto.",
   "mobile.marketplace.app.stepCopy": "Toca la barra de direcciones y copia la dirección completa.",
-  "mobile.marketplace.app.stepPaste": "Vuelve a OpenBot y pega la dirección abajo.",
+  "mobile.marketplace.app.stepPaste": "Vuelve a OpenBot-NC y pega la dirección abajo.",
   "mobile.marketplace.app.connected": "Conectada",
   "mobile.marketplace.app.connectFailed": "No se pudo conectar la app.",
   "mobile.marketplace.app.waiting": "Esperando la página de inicio de sesión…",

@@ -8,16 +8,16 @@ export const messages = {
   "mobile.settings.language.system": "Sistem varsayılanı",
   "mobile.settings.language.footer":
     "Sistem varsayılanı, telefon ayarlarınızdaki ilk dili takip eder. Henüz çevrilmemiş metinler İngilizce gösterilir.",
-  "mobile.settings.language.restartTitle": "OpenBot yeniden başlatılsın mı?",
+  "mobile.settings.language.restartTitle": "OpenBot-NC yeniden başlatılsın mı?",
   "mobile.settings.language.restartBody":
-    "Bu dil ters yönde okunur. Ekranlar, OpenBot yeniden başladığında yön değiştirir. Yeniden başlatmadan sonra ekranlar hâlâ yanlış görünüyorsa OpenBot'u uygulama değiştiricide kapatıp yeniden açın.",
+    "Bu dil ters yönde okunur. Ekranlar, OpenBot-NC yeniden başladığında yön değiştirir. Yeniden başlatmadan sonra ekranlar hâlâ yanlış görünüyorsa OpenBot-NC'yi uygulama değiştiricide kapatıp yeniden açın.",
   "mobile.settings.language.restartNow": "Şimdi yeniden başlat",
   "mobile.settings.language.restartFailed":
-    "OpenBot yeniden başlatılamadı. Ekranlar, OpenBot'u bir sonraki açışınızda yön değiştirir.",
+    "OpenBot-NC yeniden başlatılamadı. Ekranlar, OpenBot-NC'yi bir sonraki açışınızda yön değiştirir.",
   "mobile.settings.dictation.language": "Dikte dili",
   "mobile.settings.about.development": "Geliştirme",
   "mobile.settings.home.preferences": "Tercihler",
-  "mobile.settings.home.about": "OpenBot hakkında",
+  "mobile.settings.home.about": "OpenBot-NC hakkında",
   "mobile.settings.support.log": "Destek günlüğü",
   "mobile.settings.support.show": "Günlüğü göster",
   "mobile.settings.support.save": "Günlük dosyasını kaydet",
@@ -201,7 +201,7 @@ export const messages = {
   "mobile.settings.voice.supertonic.male": "Erkek sesi {number}",
   "mobile.settings.voice.elevenLabs.title": "ElevenLabs",
   "mobile.settings.voice.elevenLabs.footer":
-    "OpenBot her yanıtın metnini anahtarınla ElevenLabs'e gönderir ve ElevenLabs hesabından ücret alır. Anahtar bu telefonun anahtar zincirinde kalır.",
+    "OpenBot-NC her yanıtın metnini anahtarınla ElevenLabs'e gönderir ve ElevenLabs hesabından ücret alır. Anahtar bu telefonun anahtar zincirinde kalır.",
   "mobile.settings.voice.elevenLabs.key": "API anahtarı",
   "mobile.settings.voice.elevenLabs.keySaved": "Bu telefona kaydedildi",
   "mobile.settings.voice.elevenLabs.chooseVoice": "Ses seç",
@@ -211,7 +211,7 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.removeBody": "Supertonic 3 yanıtları yeniden okur.",
   "mobile.settings.voice.elevenLabs.saveKey": "Anahtarı kaydet",
   "mobile.settings.voice.elevenLabs.testing": "Anahtar sınanıyor",
-  "mobile.settings.voice.elevenLabs.keyHint": "OpenBot anahtarı kaydetmeden önce ilk iki izni sınar.",
+  "mobile.settings.voice.elevenLabs.keyHint": "OpenBot-NC anahtarı kaydetmeden önce ilk iki izni sınar.",
   "mobile.settings.voice.elevenLabs.testFailed": "ElevenLabs yanıt vermedi. Yeniden dene.",
   "mobile.settings.voice.elevenLabs.refused": "ElevenLabs isteği reddetti: {reason}",
   "mobile.settings.voice.elevenLabs.getKey": "API anahtarı al",
@@ -263,16 +263,16 @@ export const messages = {
   "mobile.settings.voice.pause.title": "Göndermeden önce duraklama",
   "mobile.settings.voice.pause.label": "Yeni kelimeleri bekle",
   "mobile.settings.voice.pause.footer":
-    "Sesli konuşmada, bu kadar süre yeni kelime tanımadığında OpenBot sözlerinizi gönderir. Kelimesiz gürültü dinlemeyi uzatmaz. Yavaş konuşuyorsanız veya düşünmek için duruyorsanız daha uzun bir duraklama seçin.",
+    "Sesli konuşmada, bu kadar süre yeni kelime tanımadığında OpenBot-NC sözlerinizi gönderir. Kelimesiz gürültü dinlemeyi uzatmaz. Yavaş konuşuyorsanız veya düşünmek için duruyorsanız daha uzun bir duraklama seçin.",
   "mobile.settings.voice.pause.seconds": "{seconds} sn",
   "mobile.settings.voice.speed.title": "Yanıt hızı",
-  "mobile.settings.voice.speed.footer": "OpenBot'un sesli okuduğu yanıtların hızı, sesli konuşmada da.",
+  "mobile.settings.voice.speed.footer": "OpenBot-NC'nin sesli okuduğu yanıtların hızı, sesli konuşmada da.",
   "mobile.settings.voice.speed.value": "{speed}×",
   "mobile.settings.voice.server.title": "Ses sunucusu",
   "mobile.settings.voice.server.row": "OpenAI uyumlu sunucu",
   "mobile.settings.voice.server.notSetUp": "Ayarlanmadı",
   "mobile.settings.voice.server.footer":
-    "Masaüstündeki gibi Speaches veya Kokoro-FastAPI gibi OpenAI /v1/audio yollarına sahip kendi sunucunuz. OpenBot kayıtlarınızı ve yanıt metnini yalnızca onun adresine gönderir; telefonun bu adrese, örneğin aynı ağda, erişebilmesi gerekir.",
+    "Masaüstündeki gibi Speaches veya Kokoro-FastAPI gibi OpenAI /v1/audio yollarına sahip kendi sunucunuz. OpenBot-NC kayıtlarınızı ve yanıt metnini yalnızca onun adresine gönderir; telefonun bu adrese, örneğin aynı ağda, erişebilmesi gerekir.",
   "mobile.settings.voice.server.choice": "Ses sunucunuz",
   "mobile.settings.voice.server.dictationReady": "Ses sunucunuzda · {model}",
   "mobile.settings.voice.server.dictationOff": "Ses sunucunuzda dikteyi ayarlayın",
@@ -297,7 +297,7 @@ export const messages = {
     "Sunucunun dinlediği veya konuştuğu yerde telefonun tanıyıcısı ve Supertonic 3 devreye girer; API anahtarı bu telefondan silinir.",
   "mobile.settings.voice.server.removeFailed": "Ses sunucusu kaldırılamadı.",
   "mobile.settings.voice.elevenLabs.recognitionFooter":
-    "OpenBot sesini tek kullanımlık bir belirteçle ElevenLabs'e aktarır ve ElevenLabs bunu hesabından ücretlendirir. Anahtar bu telefonda kalır.",
+    "OpenBot-NC sesini tek kullanımlık bir belirteçle ElevenLabs'e aktarır ve ElevenLabs bunu hesabından ücretlendirir. Anahtar bu telefonda kalır.",
   "mobile.settings.voice.elevenLabs.model.title": "Model",
   "mobile.settings.voice.elevenLabs.model.footer":
     "ElevenLabs'te her modelin kendi fiyatı vardır. Değişiklik bir sonraki yanıttan itibaren geçerlidir.",
@@ -330,9 +330,9 @@ export const messages = {
     "Yeni mesajlar kuyruğa değil, ajanın mevcut işine eklenir. Bunu desteklemeyen ajanlarda kuyrukta bekler.",
   "mobile.settings.agents.planCardFooter": "Uzun bir görevden önce ajan planını gösterir.",
   "mobile.settings.agents.commitSection": "Git commit'leri",
-  "mobile.settings.agents.commitCoAuthor": "Commit'lerde OpenBot'u belirt",
+  "mobile.settings.agents.commitCoAuthor": "Commit'lerde OpenBot-NC'yi belirt",
   "mobile.settings.agents.commitCoAuthorFooter":
-    "Ajanlar yaptıkları commit'lere OpenBot'u ortak yazar olarak ekler. Yazar siz kalırsınız.",
+    "Ajanlar yaptıkları commit'lere OpenBot-NC'yi ortak yazar olarak ekler. Yazar siz kalırsınız.",
   "mobile.settings.agents.planStart.title": "İşi başlat",
   "mobile.settings.agents.planStart.wait": "Başlat'a bastığımda",
   "mobile.settings.agents.planStart.after": "{time} sonra",
@@ -348,7 +348,7 @@ export const messages = {
     "Yerel betiklerin bir saatte her ajana gönderebileceği en fazla mesaj ve rutin çalıştırma sayısı. Bu sunucudaki tüm ajanlar için geçerlidir.",
   "mobile.settings.agents.processes.title": "Arka plan işlemleri",
   "mobile.settings.agents.processes.description":
-    "Ajanların başlatıp çalışır bıraktığı programlar, örneğin geliştirme sunucuları. Sohbet bittiğinde ve OpenBot'tan çıktığınızda da çalışmaya devam ederler.",
+    "Ajanların başlatıp çalışır bıraktığı programlar, örneğin geliştirme sunucuları. Sohbet bittiğinde ve OpenBot-NC'den çıktığınızda da çalışmaya devam ederler.",
   "mobile.settings.agents.processes.empty": "Çalışan ajan programı yok.",
   "mobile.settings.agents.processes.loadFailed": "Arka plan işlemleri okunamadı.",
   "mobile.settings.agents.processes.noAgent": "Ajan yok",
@@ -360,7 +360,7 @@ export const messages = {
   "mobile.settings.agents.processes.stopLabel": "{pid} işlemini durdur",
   "mobile.settings.quickActions.title": "Uygulama simgesi menüsü",
   "mobile.settings.quickActions.footer":
-    "Bu eylemleri görmek için OpenBot simgesine dokunup basılı tut. En fazla {count} tanesini açabilirsin.",
+    "Bu eylemleri görmek için OpenBot-NC simgesine dokunup basılı tut. En fazla {count} tanesini açabilirsin.",
   "mobile.settings.quickActions.latestChat": "Son sohbet",
   "mobile.settings.quickActions.secondChat": "Sondan ikinci sohbet",
 } as const satisfies PartialTranslation<typeof source>;

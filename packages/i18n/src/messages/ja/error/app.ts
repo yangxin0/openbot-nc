@@ -5,7 +5,7 @@ export const messages = {
   "error.app.externalLinkProtocol": "外部ブラウザーで開けるのは HTTP(S) リンクのみです。",
   "error.app.notificationsUnsupported": "このシステムはデスクトップ通知に対応していません。",
   "error.app.notificationSettingsMissing": "このシステムには通知設定のページがありません。",
-  "error.app.notReady": "OpenBot の準備ができていません。",
+  "error.app.notReady": "OpenBot-NC の準備ができていません。",
   "error.app.macSecureStorageUnavailable": "macOS のセキュアストレージを利用できません。",
   "error.app.secretStorageUnavailable": "システムのシークレットストレージを利用できません。",
 } as const satisfies PartialTranslation<typeof source>;

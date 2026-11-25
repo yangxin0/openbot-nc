@@ -1,14 +1,14 @@
 import { defineMessages } from "../../message";
 
 export const messages = defineMessages("webClient", {
-  "webClient.loading": "Loading OpenBot…",
+  "webClient.loading": "Loading OpenBot-NC…",
   "webClient.loadingLine.wake": "Waking up the agents…",
   "webClient.loadingLine.coffee": "Pouring coffee for the agents…",
   "webClient.loadingLine.tokens": "Counting tokens on fingers…",
   "webClient.loadingLine.prompts": "Untangling the prompts…",
   "webClient.loadingLine.sleepy": "Asking the sleepy one nicely…",
   "webClient.loadingLine.almost": "Almost there. Probably.",
-  "webClient.slowLoad.title": "OpenBot is taking longer than usual",
+  "webClient.slowLoad.title": "OpenBot-NC is taking longer than usual",
   "webClient.slowLoad.body": "Check your internet connection, then reload the page.",
   "webClient.slowLoad.reload": "Reload page",
   "webClient.pane.navigation": "Workspace navigation",
@@ -17,7 +17,7 @@ export const messages = defineMessages("webClient", {
   "webClient.notice.connecting": "Connecting to your server",
   "webClient.notice.findingHosts": "Finding your servers",
   "webClient.otherTab.title": "{name} is open in another tab",
-  "webClient.otherTab.description": "OpenBot can use a server in one tab at a time.",
+  "webClient.otherTab.description": "OpenBot-NC can use a server in one tab at a time.",
   "webClient.otherTab.useHere": "Use here",
   "webClient.agent.modelsFailed": "Could not load the server models.",
   "webClient.agent.refreshFailed":
@@ -27,7 +27,7 @@ export const messages = defineMessages("webClient", {
   "webClient.error.usageOffline": "Connect to your server to view usage.",
   "webClient.error.desktopOnly": "This action is available in the desktop app.",
   "webClient.settings.preferences.title": "Preferences",
-  "webClient.settings.preferences.description": "Choose the language and sounds of OpenBot in this browser.",
+  "webClient.settings.preferences.description": "Choose the language and sounds of OpenBot-NC in this browser.",
   "webClient.error.checkConversation": "Check the conversation before sending again.",
   "webClient.error.hostReported": "The server reported an error. Check the conversation and server status.",
   "webClient.error.requestFailed": "The request failed.",
@@ -53,7 +53,7 @@ export const messages = defineMessages("webClient", {
   "webClient.error.identityChanged": "The server identity changed. Connection refused.",
   "webClient.error.connectionUnavailable": "The server connection is not available.",
   "webClient.error.incompatible":
-    "This server is not compatible with OpenBot web. Update the server and reload this page.",
+    "This server is not compatible with OpenBot-NC web. Update the server and reload this page.",
   "webClient.error.sendUnconfirmed": "Message delivery is not confirmed. Refresh before sending it again.",
   "webClient.error.fileType": "Update the server to attach this file type.",
   "webClient.error.uploadCancelled": "The attachment upload was cancelled.",
@@ -66,12 +66,12 @@ export const messages = defineMessages("webClient", {
   "webClient.identity.description":
     "Paste the identity file that the person who runs your central server gave you, or choose the file.",
   "webClient.identity.pasteLabel": "Identity file text",
-  "webClient.identity.privacy": "The private key stays in this browser. OpenBot cannot read it back or send it.",
+  "webClient.identity.privacy": "The private key stays in this browser. OpenBot-NC cannot read it back or send it.",
   "webClient.identity.import": "Import identity",
   "webClient.identity.chooseFile": "Choose file",
   "webClient.identity.empty": "Paste the text of the identity file first.",
   "webClient.identity.error.otherServer":
-    "This identity file is for a different central server. Open OpenBot at the address of that server.",
+    "This identity file is for a different central server. Open OpenBot-NC at the address of that server.",
   "webClient.identity.error.notYetValid":
     "This identity is not valid yet. Make sure that the date and time of this computer are correct.",
   "webClient.identity.error.storage":

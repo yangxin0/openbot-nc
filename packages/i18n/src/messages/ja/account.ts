@@ -4,7 +4,7 @@ import type { messages as source } from "../en/account";
 export const messages = {
   "account.menu.signOut": "サインアウト",
   "account.menu.signingOut": "サインアウト中…",
-  "account.menu.updateFailed": "OpenBot をアップデートできませんでした。",
+  "account.menu.updateFailed": "OpenBot-NC をアップデートできませんでした。",
   "account.menu.signOutFailed": "サインアウトできませんでした。",
   "account.usage.title": "使用量",
   "account.usage.refresh": "更新",
@@ -59,7 +59,7 @@ export const messages = {
   "account.update.progress": "アップデートのダウンロードの進行状況",
   "account.login.email": "メールアドレス",
   "account.login.sendCode": "サインインコードを送信",
-  "account.login.verified": "確認しました。OpenBot を開いています…",
+  "account.login.verified": "確認しました。OpenBot-NC を開いています…",
   "account.login.developmentCode": "開発用コード: {code}",
   "account.otp.incorrect": "コードが正しくありません。もう一度お試しください。",
   "account.otp.verifying": "確認中…",

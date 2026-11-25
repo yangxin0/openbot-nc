@@ -1,14 +1,14 @@
 import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("error.host", {
-  "error.host.relayIdentityMissing": "Import a certificate before you share this OpenBot through a relay server.",
+  "error.host.relayIdentityMissing": "Import a certificate before you share this OpenBot-NC through a relay server.",
   "error.host.relayRefused":
-    "This OpenBot cannot connect to the relay server. Check its certificate and relay address.",
-  "error.host.nameBeforePublish": "Name this OpenBot before publishing it.",
-  "error.host.publishBeforeInvite": "Make this OpenBot public before creating an invite.",
+    "This OpenBot-NC cannot connect to the relay server. Check its certificate and relay address.",
+  "error.host.nameBeforePublish": "Name this OpenBot-NC before publishing it.",
+  "error.host.publishBeforeInvite": "Make this OpenBot-NC public before creating an invite.",
   "error.host.teamAccessUnavailable": "Your team access is unavailable.",
   "error.host.ownerIdentityUnavailable": "The host owner identity is unavailable.",
-  "error.host.publishFailed": "This OpenBot could not be published.",
+  "error.host.publishFailed": "This OpenBot-NC could not be published.",
   "error.host.noServer": "This computer has no server to change.",
   "error.host.identityLocalOnly": "The server name and logo can only be changed on the computer that runs it.",
   "error.host.timezoneInvalid": "This timezone is not known.",

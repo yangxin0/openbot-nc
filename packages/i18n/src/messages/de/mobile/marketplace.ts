@@ -11,7 +11,7 @@ export const messages = {
   "mobile.marketplace.app.bitwardenTagline": "Bei Websites mit Zugangsdaten aus einem geteilten Ordner anmelden",
   "mobile.marketplace.app.protonPassTagline": "Bei Websites mit Zugangsdaten aus einem geteilten Tresor anmelden",
   "mobile.marketplace.error.signInUnsupported":
-    "Aktualisiere OpenBot auf dem Server, um dich vom Telefon aus bei Apps anzumelden.",
+    "Aktualisiere OpenBot-NC auf dem Server, um dich vom Telefon aus bei Apps anzumelden.",
   "mobile.marketplace.app.connect": "Verbinden",
   "mobile.marketplace.app.signInIntro":
     "Melde dich auf der Seite der App an. Die Anmeldung bleibt auf dem Server, nicht auf diesem Telefon.",
@@ -19,7 +19,7 @@ export const messages = {
   "mobile.marketplace.app.stepAllow": "Melde dich an und erlaube den Zugriff.",
   "mobile.marketplace.app.stepBlank": "Die letzte Seite lädt nicht. Das ist richtig.",
   "mobile.marketplace.app.stepCopy": "Tippe auf die Adressleiste und kopiere die ganze Adresse.",
-  "mobile.marketplace.app.stepPaste": "Komm zurück zu OpenBot und füge die Adresse unten ein.",
+  "mobile.marketplace.app.stepPaste": "Komm zurück zu OpenBot-NC und füge die Adresse unten ein.",
   "mobile.marketplace.app.connected": "Verbunden",
   "mobile.marketplace.app.connectFailed": "Die App konnte nicht verbunden werden.",
   "mobile.marketplace.app.waiting": "Warten auf die Anmeldeseite…",

@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "이 서버는 CRM을 지원하지 않아요. 서버를 실행하는 컴퓨터에서 OpenBot을 업데이트하세요.",
+  "error.crm.serverTooOld": "이 서버는 CRM을 지원하지 않아요. 서버를 실행하는 컴퓨터에서 OpenBot-NC를 업데이트하세요.",
   "error.crm.tooLargeToSend": "이 CRM 페이지는 너무 커서 이 클라이언트로 보낼 수 없어요.",
   "error.crm.customerMissing": "이 고객은 더 이상 존재하지 않아요.",
   "error.crm.planMissing": "이 요금제는 더 이상 존재하지 않아요.",
@@ -38,9 +38,9 @@ export const messages = {
   "error.crm.sourcePermission":
     "이 키로는 고객, 인보이스, 구독, 이벤트, 제품을 읽을 수 없어요. 이들에 대한 읽기 권한을 주세요.",
   "error.crm.sourceRateLimited": "Stripe에 요청이 너무 많았어요. 1분 후에 다시 시도하세요.",
-  "error.crm.sourceNetwork": "OpenBot이 Stripe에 연결할 수 없어요. 인터넷 연결을 확인하세요.",
-  "error.crm.sourceFailed": "Stripe에서 OpenBot이 읽을 수 없는 응답을 보냈어요. 나중에 다시 시도하세요.",
-  "error.crm.sourceKeySaveFailed": "OpenBot이 이 컴퓨터에 Stripe 키를 저장할 수 없어요.",
+  "error.crm.sourceNetwork": "OpenBot-NC가 Stripe에 연결할 수 없어요. 인터넷 연결을 확인하세요.",
+  "error.crm.sourceFailed": "Stripe에서 OpenBot-NC가 읽을 수 없는 응답을 보냈어요. 나중에 다시 시도하세요.",
+  "error.crm.sourceKeySaveFailed": "OpenBot-NC가 이 컴퓨터에 Stripe 키를 저장할 수 없어요.",
   "error.crm.off": "CRM이 꺼져 있습니다. 소유자 또는 관리자가 서버 설정 > 실험적 기능에서 켤 수 있습니다.",
-  "error.crm.settingsSaveFailed": "OpenBot이 이 서버에 CRM 설정을 저장할 수 없습니다.",
+  "error.crm.settingsSaveFailed": "OpenBot-NC가 이 서버에 CRM 설정을 저장할 수 없습니다.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/liveActivity";
 
 export const messages = {
-  "mobile.liveActivity.appName": "OpenBot",
+  "mobile.liveActivity.appName": "OpenBot-NC",
   "mobile.liveActivity.badge.working": "Bezig",
   "mobile.liveActivity.badge.message": "Bericht",
   "mobile.liveActivity.badge.question": "Vragen",
@@ -21,10 +21,10 @@ export const messages = {
   "mobile.liveActivity.button.approve": "Goedkeuren",
   "mobile.liveActivity.button.openDetails": "Open details",
   "mobile.liveActivity.stale.label": "Niet actueel",
-  "mobile.liveActivity.stale.detail": "Open OpenBot om de huidige status te zien.",
+  "mobile.liveActivity.stale.detail": "Open OpenBot-NC om de huidige status te zien.",
   "mobile.liveActivity.island.taskWorking": "Bezig met je verzoek",
   "mobile.liveActivity.island.questionHeader": "Vraag van je agent",
-  "mobile.liveActivity.island.questionText": "Open OpenBot om deze vraag te beantwoorden.",
+  "mobile.liveActivity.island.questionText": "Open OpenBot-NC om deze vraag te beantwoorden.",
   "mobile.liveActivity.island.optionFallback": "Optie {number}",
   "mobile.liveActivity.island.takeoverTitle": "Browserstap wacht op jou",
   "mobile.liveActivity.island.takeoverDetail": "Voltooi het inloggen, de verificatie of de toestemming in de browser.",

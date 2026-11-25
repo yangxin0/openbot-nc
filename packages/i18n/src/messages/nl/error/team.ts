@@ -2,13 +2,13 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/team";
 
 export const messages = {
-  "error.team.ownerNotLinked": "Deze host is niet gekoppeld aan een OpenBot-eigenaarsaccount.",
-  "error.team.ownerEmailRequired": "Log in met het OpenBot-e-mailadres waarmee deze host is gemaakt.",
+  "error.team.ownerNotLinked": "Deze host is niet gekoppeld aan een OpenBot-NC-eigenaarsaccount.",
+  "error.team.ownerEmailRequired": "Log in met het OpenBot-NC-e-mailadres waarmee deze host is gemaakt.",
   "error.team.hostNotConfigured": "De teamhost is niet geconfigureerd.",
   "error.team.alreadyConfigured": "De teamserver is al geconfigureerd.",
   "error.team.identityCreateFailed": "De teamidentiteit kon niet worden gemaakt.",
   "error.team.accountChangedDuringCreate": "Het ingelogde account is gewijzigd terwijl deze server werd gemaakt.",
-  "error.team.notConfigured": "Deze OpenBot is niet geconfigureerd.",
+  "error.team.notConfigured": "Deze OpenBot-NC is niet geconfigureerd.",
   "error.team.serverNotActive": "Deze server is niet meer de actieve server voor het ingelogde account.",
   "error.team.logoInvalid": "Kies een geldige PNG-, JPEG- of WebP-afbeelding van maximaal 512 KB.",
   "error.team.permanentInviteEmail": "Een permanente uitnodigingslink kan geen e-mailadres hebben.",
@@ -18,7 +18,7 @@ export const messages = {
   "error.team.memberDisabled": "Dit teamlid is uitgeschakeld.",
   "error.team.memberLimit": "Een host kan maximaal {limit} leden hebben.",
   "error.team.usernameTaken": "Deze gebruikersnaam is al in gebruik.",
-  "error.team.inviteRequiresAccount": "Voor deze uitnodiging is een geverifieerd OpenBot-account nodig.",
+  "error.team.inviteRequiresAccount": "Voor deze uitnodiging is een geverifieerd OpenBot-NC-account nodig.",
   "error.team.loginIncorrect": "De gebruikersnaam of het wachtwoord is onjuist.",
   "error.team.currentPasswordIncorrect": "Het huidige wachtwoord is onjuist.",
   "error.team.memberNotFound": "Teamlid niet gevonden.",
@@ -43,16 +43,16 @@ export const messages = {
   "error.team.routeNotFound": "Route niet gevonden.",
   "error.team.requestFailed": "Verzoek mislukt.",
   "error.team.tooManySignInAttempts": "Te veel inlogpogingen. Probeer het later opnieuw.",
-  "error.team.clientUpdateRequired": "Werk deze OpenBot-client bij voordat je verbinding maakt met deze host.",
-  "error.team.hostUpdateRequired": "Werk OpenBot bij op de host voordat je verbinding maakt.",
-  "error.team.serverSafeMode": "Deze server staat in de veilige modus, omdat OpenBot er niet start.",
+  "error.team.clientUpdateRequired": "Werk deze OpenBot-NC-client bij voordat je verbinding maakt met deze host.",
+  "error.team.hostUpdateRequired": "Werk OpenBot-NC bij op de host voordat je verbinding maakt.",
+  "error.team.serverSafeMode": "Deze server staat in de veilige modus, omdat OpenBot-NC er niet start.",
   "error.team.serverSafeModeNewerDatabase":
-    "OpenBot {version} op deze server kan de gegevens niet openen, omdat een nieuwere OpenBot-versie ze heeft opgeslagen. Een nieuwere OpenBot-release op de server lost dit op.",
+    "OpenBot-NC {version} op deze server kan de gegevens niet openen, omdat een nieuwere OpenBot-NC-versie ze heeft opgeslagen. Een nieuwere OpenBot-NC-release op de server lost dit op.",
   "error.team.serverSafeModeStartFailed":
-    "OpenBot {version} op deze server is gestopt nadat het starten vaak is mislukt. Een nieuwere OpenBot-release op de server lost dit op.",
+    "OpenBot-NC {version} op deze server is gestopt nadat het starten vaak is mislukt. Een nieuwere OpenBot-NC-release op de server lost dit op.",
   "error.team.sidebarLayoutUnavailable": "De indeling van de zijbalk is niet beschikbaar.",
   "error.team.providersUnsupported": "Deze verbinding ondersteunt geen instellingen voor aanbieders.",
-  "error.team.providerNotManaged": "OpenBot beheert de CLI van deze aanbieder niet.",
+  "error.team.providerNotManaged": "OpenBot-NC beheert de CLI van deze aanbieder niet.",
   "error.team.channelsUnsupported": "Deze verbinding ondersteunt geen kanaalchats.",
   "error.team.channelContextUnsupported":
     "Deze verbinding ondersteunt geen nieuw gesprek of comprimeren in een kanaal.",
@@ -87,9 +87,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "Deze verbinding ondersteunt geen bibliotheekmappen.",
   "error.team.workflowFoldersUnsupported": "Deze verbinding ondersteunt geen workflowmappen.",
   "error.team.agentNotificationLevelsUnsupported":
-    "Deze server kan geen eigen meldingsniveau per agent bewaren. Werk OpenBot bij op de computer waarop de server draait.",
+    "Deze server kan geen eigen meldingsniveau per agent bewaren. Werk OpenBot-NC bij op de computer waarop de server draait.",
   "error.team.sidebarPinsUnsupported":
-    "Deze server kan je vastgezette chats niet voor al je apparaten bewaren. Werk OpenBot bij op de computer waarop hij draait.",
+    "Deze server kan je vastgezette chats niet voor al je apparaten bewaren. Werk OpenBot-NC bij op de computer waarop hij draait.",
   "error.team.agentInstructionsUnsupported": "Deze verbinding ondersteunt het bewerken van agentinstructies niet.",
   "error.team.contextResetUnsupported": "Deze verbinding ondersteunt het starten van een nieuwe chat niet.",
   "error.team.contextCompactUnsupported": "Deze verbinding ondersteunt het comprimeren van de context niet.",
@@ -99,7 +99,7 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "Deze verbinding ondersteunt het zoeken in zijthreads niet.",
   "error.team.sideQuestionUnsupported": "Deze verbinding ondersteunt geen zijvragen.",
   "error.team.routineFlowsUnsupported":
-    "Deze server ondersteunt geen routineflows. Werk OpenBot bij op de computer waarop de server draait.",
+    "Deze server ondersteunt geen routineflows. Werk OpenBot-NC bij op de computer waarop de server draait.",
   "error.team.routineCanvasTooLarge":
     "Dit routinecanvas is te groot om naar dit apparaat te sturen. Maak de instructies van de routine korter op de computer waarop de server draait.",
   "error.team.conversationPageTooLarge":
@@ -144,9 +144,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "Sessie van de browserweergave niet gevonden.",
   "error.team.mcpUnsupported": "Deze verbinding ondersteunt geen MCP-servers.",
   "error.team.mcpServerListNeedsUpdate":
-    "Werk OpenBot op dit apparaat bij om meer dan {limit} MCP-servers op deze server te gebruiken.",
+    "Werk OpenBot-NC op dit apparaat bij om meer dan {limit} MCP-servers op deze server te gebruiken.",
   "error.team.providerAccountListNeedsUpdate":
-    "Werk OpenBot op dit apparaat bij om meer dan {limit} accounts van één provider op deze server te gebruiken.",
+    "Werk OpenBot-NC op dit apparaat bij om meer dan {limit} accounts van één provider op deze server te gebruiken.",
   "error.team.storageUnsupported": "Deze verbinding ondersteunt geen opslag.",
   "error.team.machineResourcesUnsupported": "Deze verbinding ondersteunt geen machinegebruik.",
   "error.team.machineAlertMemberInvalid":
@@ -174,10 +174,10 @@ export const messages = {
     "Alleen de persoon die deze MCP-server heeft toegevoegd, of een beheerder, kan hem wijzigen.",
   "error.team.ownerRequired": "Alleen de eigenaar van deze server kan dit doen.",
   "error.team.requestTooLarge": "De inhoud van het verzoek is te groot.",
-  "error.team.signInRelayUnsupported": "Deze server kan geen inlogs doorgeven. Werk OpenBot bij op de host.",
+  "error.team.signInRelayUnsupported": "Deze server kan geen inlogs doorgeven. Werk OpenBot-NC bij op de host.",
   "error.team.connectorsUnsupported":
-    "Deze server kan de verbindingen niet vanaf hier beheren. Werk OpenBot bij op de host.",
-  "error.team.vaultUnsupported": "Deze server kan zijn kluis niet vanaf hier openen. Werk OpenBot bij op de host.",
+    "Deze server kan de verbindingen niet vanaf hier beheren. Werk OpenBot-NC bij op de host.",
+  "error.team.vaultUnsupported": "Deze server kan zijn kluis niet vanaf hier openen. Werk OpenBot-NC bij op de host.",
   "error.team.vaultResetReadable": "De kluis op deze server is leesbaar en is daarom niet gereset.",
   "error.team.signInRelayUnknown": "Deze inlog is afgelopen of bestaat niet.",
   "error.team.signInRelayUsed": "Deze inlog is al verstuurd.",

@@ -41,7 +41,8 @@ export const messages = {
   "agentSettings.folders.inWorkspace": "{folder} è nel workspace, quindi {agent} può già modificarla",
   "agentSettings.folders.inShared": "{folder} è nella cartella condivisa, quindi {agent} può già modificarla",
   "agentSettings.folders.inFolder": "{folder} è in {parent}, che è già aggiunta",
-  "agentSettings.folders.protected": "Non puoi aggiungere {folder}: contiene dati di OpenBot o i file di altri agenti",
+  "agentSettings.folders.protected":
+    "Non puoi aggiungere {folder}: contiene dati di OpenBot-NC o i file di altri agenti",
   "agentSettings.folders.missing": "{folder} non è una cartella di questo computer",
   "agentSettings.folders.limit": {
     one: "Puoi aggiungere al massimo {count} cartella",
@@ -155,7 +156,7 @@ export const messages = {
   "agentSettings.runtime.fullAccessNote":
     "L'agente gira con accesso completo al computer dal suo workspace e dalla cartella condivisa.",
   "agentSettings.runtime.askNote":
-    "Ti chiede prima di usare un tool di OpenBot o pubblicare un sito, e quando il suo provider chiede un'approvazione.",
+    "Ti chiede prima di usare un tool di OpenBot-NC o pubblicare un sito, e quando il suo provider chiede un'approvazione.",
   "agentSettings.runtime.fullNote": "Agisce senza chiedere, tranne per le domande che ti pone.",
 
   "agentSettings.access.workspace": "Solo workspace",
@@ -191,7 +192,7 @@ export const messages = {
   "agentSettings.deleteHistory.button": "Elimina",
   "agentSettings.deleteHistory.confirmTitle": "Eliminare la cronologia della chat con {name}?",
   "agentSettings.deleteHistory.confirmDescription":
-    "Tutti i messaggi e i file di questa chat vengono eliminati da OpenBot e l'agente li dimentica. Non puoi annullare. Thread secondari, istruzioni, modello, strumenti, memorie, spazio di lavoro e browser non cambiano.",
+    "Tutti i messaggi e i file di questa chat vengono eliminati da OpenBot-NC e l'agente li dimentica. Non puoi annullare. Thread secondari, istruzioni, modello, strumenti, memorie, spazio di lavoro e browser non cambiano.",
   "agentSettings.deleteHistory.confirm": "Elimina cronologia",
   "agentSettings.deleteHistory.failed": "Impossibile eliminare la cronologia.",
 
@@ -222,7 +223,7 @@ export const messages = {
   "agentSettings.runtime.workspaceEnforcedClaude":
     "Una modifica a un file all'esterno te la chiede prima. Un comando non può scrivere all'esterno.",
   "agentSettings.runtime.workspaceUnlimited":
-    "Il controllo del computer e il browser di OpenBot non sono limitati; puoi disattivare il controllo del computer qui sotto.",
+    "Il controllo del computer e il browser di OpenBot-NC non sono limitati; puoi disattivare il controllo del computer qui sotto.",
   "agentSettings.computerUse.title": "Controllo del computer",
   "agentSettings.computerUse.description": "Permetti a questo agente di controllare le app su questo computer",
   "agentSettings.automation.title": "Script locali",
@@ -233,7 +234,7 @@ export const messages = {
     "L'agente può avviare una nuova chat quando la sua diventa lunga. Prima salva delle note.",
   "agentSettings.quickAcknowledgement.title": "Mostra il piano prima delle attività lunghe",
   "agentSettings.quickAcknowledgement.description": "Prima di un'attività lunga, l'agente mostra il suo piano.",
-  "agentSettings.builtinMemory.title": "Memoria di OpenBot",
+  "agentSettings.builtinMemory.title": "Memoria di OpenBot-NC",
   "agentSettings.builtinMemory.description":
     "L'agente salva e legge le proprie memorie. Disattiva per usare solo un'app di memoria, come Mem0. Le memorie salvate restano.",
   "agentSettings.browserProfile.label": "Profilo del browser",

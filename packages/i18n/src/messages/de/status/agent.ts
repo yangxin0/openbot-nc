@@ -29,7 +29,7 @@ export const messages = {
   "status.agent.screenCaptureChannel":
     "Das Bild erscheint im Kanal {channel}, und jedes Mitglied dieses Servers, das den Kanal liest, kann es sehen.",
   "status.agent.screenCapturePermissionNext":
-    "macOS kann dich danach bitten, OpenBot die Bildschirmaufnahme zu erlauben.",
+    "macOS kann dich danach bitten, OpenBot-NC die Bildschirmaufnahme zu erlauben.",
   "status.agent.screenCaptureDisplay": "Den Bildschirm {name} aufnehmen und das Bild an das Modell des Agenten senden.",
   "status.agent.screenCaptureWindow": "Das Fenster {name} aufnehmen und das Bild an das Modell des Agenten senden.",
   "status.agent.screenCaptureRegion":
@@ -41,12 +41,12 @@ export const messages = {
   "status.agent.sendIdea": "Daraus wird ein öffentliches GitHub-Issue. Dein Name wird nicht angezeigt.",
   "status.agent.feedbackRecentErrors": "Letzte Fehler im Chat:",
   "status.agent.feedbackSameAs": "Wird zu Issue #{issue} hinzugefügt",
-  "status.agent.feedbackSent": "An das OpenBot-Team gesendet: {title}",
+  "status.agent.feedbackSent": "An das OpenBot-NC-Team gesendet: {title}",
   "status.agent.feedbackWithdrawn": "Von GitHub entfernt: {title}",
   "status.agent.browserProfileNamed":
     "{agents} in das Browser-Profil {profile} verschieben. Sie erhalten seine Anmeldungen und Cookies. Ihre offenen Tabs werden geschlossen.",
-  "status.agent.commitCoAuthorOff": "OpenBot nicht mehr als Mitautor in die Commits aller Agenten eintragen.",
-  "status.agent.commitCoAuthorOn": "OpenBot wieder als Mitautor in die Commits aller Agenten eintragen.",
+  "status.agent.commitCoAuthorOff": "OpenBot-NC nicht mehr als Mitautor in die Commits aller Agenten eintragen.",
+  "status.agent.commitCoAuthorOn": "OpenBot-NC wieder als Mitautor in die Commits aller Agenten eintragen.",
   "status.agent.browserProfileNew":
     "Das neue Browser-Profil {profile} erstellen und {agents} dorthin verschieben. Es hat keine Anmeldungen. Ihre offenen Tabs werden geschlossen.",
   "status.agent.browserProfileShared":

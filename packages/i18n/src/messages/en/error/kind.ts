@@ -4,9 +4,9 @@ export const messages = defineMessages("error.kind", {
   "error.kind.network": "Could not connect. Check your connection and try again.",
   "error.kind.timeout": "The request took too long. Check whether the action completed before you try again.",
   "error.kind.storage":
-    "There is not enough storage space. Free some space on the computer running OpenBot, then try again.",
+    "There is not enough storage space. Free some space on the computer running OpenBot-NC, then try again.",
   "error.kind.filePermission":
-    "OpenBot does not have permission to complete this action. Check the file or folder permissions, then try again.",
+    "OpenBot-NC does not have permission to complete this action. Check the file or folder permissions, then try again.",
   "error.kind.notFound":
     "A required file or folder could not be found. Restore it or choose another one, then try again.",
   "error.kind.readOnly": "This folder is read-only. Choose a folder you can write to, then try again.",
@@ -16,6 +16,6 @@ export const messages = defineMessages("error.kind", {
   "error.kind.rateLimit": "Too many requests. Wait a moment, then try again.",
   "error.kind.service": "The service is unavailable. Wait a moment, then try again.",
   "error.kind.clock":
-    "A secure connection failed because the date or time on the computer running OpenBot is probably wrong. Correct the date and time, then try again.",
+    "A secure connection failed because the date or time on the computer running OpenBot-NC is probably wrong. Correct the date and time, then try again.",
   "error.kind.interrupted": "The connection closed before the answer was finished. Send your message again.",
 });

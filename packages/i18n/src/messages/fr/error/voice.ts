@@ -10,8 +10,8 @@ export const messages = {
   "error.voice.modelUnavailable": "Le modèle vocal est indisponible.",
   "error.voice.transcriptionTimedOut": "La transcription vocale a expiré.",
   "error.voice.prepareRequired":
-    "La transcription vocale locale est indisponible. Exécutez `bun run voice:prepare` et redémarrez OpenBot.",
-  "error.voice.transcriptionFailed": "OpenBot n’a pas pu transcrire cet enregistrement.",
+    "La transcription vocale locale est indisponible. Exécutez `bun run voice:prepare` et redémarrez OpenBot-NC.",
+  "error.voice.transcriptionFailed": "OpenBot-NC n’a pas pu transcrire cet enregistrement.",
   "error.voice.videoModelMissing":
     "Aucun modèle de reconnaissance vocale pour les enregistrements n’est configuré dans Réglages → Voix.",
   "error.voice.videoModelMissingServer":
@@ -28,9 +28,9 @@ export const messages = {
   "error.voice.speech.runtimeUnavailable": "La synthèse vocale locale n’est pas disponible sur cette plateforme.",
   "error.voice.speech.modelRequired": "Téléchargez le modèle de synthèse vocale dans Réglages → Voix.",
   "error.voice.speech.timedOut": "La lecture à voix haute de la réponse a expiré.",
-  "error.voice.speech.failed": "OpenBot n’a pas pu lire la réponse à voix haute.",
+  "error.voice.speech.failed": "OpenBot-NC n’a pas pu lire la réponse à voix haute.",
   "error.voice.speech.providerRefused": "{provider} a refusé de créer l’audio : {reason}",
-  "error.voice.recordingNotKept": "OpenBot n’a pas pu conserver l’enregistrement vocal.",
+  "error.voice.recordingNotKept": "OpenBot-NC n’a pas pu conserver l’enregistrement vocal.",
   "error.voice.server.modelUnsupported":
     "{host} ne peut pas transcrire avec {model}. Dans Réglages → Voix, choisissez un autre modèle de dictée pour le serveur vocal.",
 } as const satisfies PartialTranslation<typeof source>;

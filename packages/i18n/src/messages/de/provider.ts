@@ -40,7 +40,7 @@ export const messages = {
   "provider.status.checking": "Wird geprüft",
   "provider.status.off": "Aus",
   "provider.gemini.hostSignIn":
-    "Um Gemini zu verbinden, öffne OpenBot auf dem Host und wähle „Verbinden“ unter Servereinstellungen > Anbieter. Die Google-Anmeldung benötigt einen Browser auf diesem Host. Eine Remote-Anmeldung wird nicht unterstützt.",
+    "Um Gemini zu verbinden, öffne OpenBot-NC auf dem Host und wähle „Verbinden“ unter Servereinstellungen > Anbieter. Die Google-Anmeldung benötigt einen Browser auf diesem Host. Eine Remote-Anmeldung wird nicht unterstützt.",
   "provider.key.free": "Kostenlos",
   "provider.action.connect": "Verbinden",
   "provider.action.reconnect": "Neu verbinden",
@@ -66,12 +66,12 @@ export const messages = {
   "provider.aria.cancelSignIn": "Anmeldung bei {name} abbrechen",
   "provider.aria.apiKey": "API-Schlüssel für {name}",
   "provider.connecting.browserHint": "Schließe die Anmeldung ab, wenn sich eine Browserseite öffnet.",
-  "provider.connecting.cancelFailed": "OpenBot konnte die Anmeldung bei {name} nicht abbrechen. Versuche es erneut.",
+  "provider.connecting.cancelFailed": "OpenBot-NC konnte die Anmeldung bei {name} nicht abbrechen. Versuche es erneut.",
   "provider.aria.install": "{name} installieren",
   "provider.aria.signIn": "Bei {name} anmelden",
   "provider.aria.codeFallback": "Mit Code bei {name} anmelden",
   "provider.aria.moreActions": "Weitere Aktionen für {name}",
-  "provider.aria.use": "{name} in OpenBot verwenden",
+  "provider.aria.use": "{name} in OpenBot-NC verwenden",
   "provider.use.inUseOne": "{agent} verwendet {name}. Ändere das Modell dieses Agenten und deaktiviere dann {name}.",
   "provider.use.inUse": {
     one: "{count} Agent verwendet {name}. Ändere das Modell dieses Agenten und deaktiviere dann {name}.",
@@ -79,7 +79,7 @@ export const messages = {
   },
   "provider.codeLogin.title": "Mit einem Code bei {name} anmelden",
   "provider.codeLogin.description":
-    "Schließe die Anmeldung auf deinem Telefon oder in einem anderen Browser ab. OpenBot wartet hier.",
+    "Schließe die Anmeldung auf deinem Telefon oder in einem anderen Browser ab. OpenBot-NC wartet hier.",
   "provider.codeLogin.starting": "Code von {name} wird abgerufen…",
   "provider.codeLogin.qrLabel": "QR-Code für die Anmeldeseite von {name}",
   "provider.codeLogin.open": "Öffnen",
@@ -100,12 +100,12 @@ export const messages = {
   "provider.codeLogin.pageDescription": "Diese Seite ist im Browser auf {host} geöffnet. Melde dich hier an.",
   "provider.codeLogin.relayStarting": "Die Anmeldung bei {name} wird auf {host} gestartet…",
   "provider.codeLogin.pageOpening": "Die Anmeldeseite von {name} wird auf {host} geöffnet…",
-  "provider.codeLogin.linkStep": "Melde dich bei {name} an. OpenBot fährt automatisch fort.",
+  "provider.codeLogin.linkStep": "Melde dich bei {name} an. OpenBot-NC fährt automatisch fort.",
   "provider.codeLogin.chatgptDeviceSetting":
     "Öffne ChatGPT auf einem Computer, gehe zu den Sicherheitseinstellungen und aktiviere die Anmeldung per Gerätecode für Codex. Bei einem Arbeitskonto aktiviert sie der Admin deines Workspace.",
-  "provider.useApp.title": "{name} in der OpenBot-App verbinden",
+  "provider.useApp.title": "{name} in der OpenBot-NC-App verbinden",
   "provider.useApp.description":
-    "Die Anmeldung bei {name} kehrt zu dem Computer zurück, der sie gestartet hat, und ein Browser-Tab kann sie nicht empfangen. Verbinde {name} in der OpenBot-App. Die App schließt die Anmeldung selbst ab.",
+    "Die Anmeldung bei {name} kehrt zu dem Computer zurück, der sie gestartet hat, und ein Browser-Tab kann sie nicht empfangen. Verbinde {name} in der OpenBot-NC-App. Die App schließt die Anmeldung selbst ab.",
   "provider.useApp.download": "App herunterladen",
   "provider.picker.noEndpoints": "Noch keine Endpunkte",
   "provider.picker.customCounts": "{endpoints} · {agents}",
@@ -115,7 +115,7 @@ export const messages = {
   "provider.picker.providers": "Modellanbieter",
   "provider.picker.downloading": "Wird heruntergeladen: {percent}",
   "provider.picker.unavailable": "{name} ist nicht verfügbar.",
-  "provider.picker.updateToUse": "Aktualisieren Sie OpenBot, um {name} zu verwenden",
+  "provider.picker.updateToUse": "Aktualisieren Sie OpenBot-NC, um {name} zu verwenden",
   "provider.picker.models": "Modelle von {name}",
   "provider.picker.addProvider": "Anbieter hinzufügen",
   "provider.picker.download": "Download von {name}",
@@ -197,21 +197,21 @@ export const messages = {
   "provider.cursorKey.label": "Cursor-API-Schlüssel",
   "provider.inceptionKey.title": "Inception-API-Schlüssel",
   "provider.inceptionKey.description":
-    "Speichere einen Inception-API-Schlüssel auf diesem Computer, um die Mercury-Modelle zu verwenden. OpenBot führt sie in der Pi-CLI aus, die es herunterlädt.",
+    "Speichere einen Inception-API-Schlüssel auf diesem Computer, um die Mercury-Modelle zu verwenden. OpenBot-NC führt sie in der Pi-CLI aus, die es herunterlädt.",
   "provider.inceptionKey.descriptionHost":
-    "Speichere einen Inception-API-Schlüssel auf dem Host, um die Mercury-Modelle zu verwenden. OpenBot führt sie in der Pi-CLI aus, die es herunterlädt.",
+    "Speichere einen Inception-API-Schlüssel auf dem Host, um die Mercury-Modelle zu verwenden. OpenBot-NC führt sie in der Pi-CLI aus, die es herunterlädt.",
   "provider.inceptionKey.label": "Inception-API-Schlüssel",
   "provider.deepseekKey.title": "DeepSeek-API-Schlüssel",
   "provider.deepseekKey.description":
-    "Speichere einen DeepSeek-API-Schlüssel auf diesem Computer, um die DeepSeek-Modelle zu verwenden. OpenBot führt sie in der Pi-CLI aus, die es herunterlädt.",
+    "Speichere einen DeepSeek-API-Schlüssel auf diesem Computer, um die DeepSeek-Modelle zu verwenden. OpenBot-NC führt sie in der Pi-CLI aus, die es herunterlädt.",
   "provider.deepseekKey.descriptionHost":
-    "Speichere einen DeepSeek-API-Schlüssel auf dem Host, um die DeepSeek-Modelle zu verwenden. OpenBot führt sie in der Pi-CLI aus, die es herunterlädt.",
+    "Speichere einen DeepSeek-API-Schlüssel auf dem Host, um die DeepSeek-Modelle zu verwenden. OpenBot-NC führt sie in der Pi-CLI aus, die es herunterlädt.",
   "provider.deepseekKey.label": "DeepSeek-API-Schlüssel",
   "provider.openrouterKey.title": "OpenRouter-API-Schlüssel",
   "provider.openrouterKey.description":
-    "Speichere einen OpenRouter-API-Schlüssel auf diesem Computer, um die Modelle von OpenRouter zu verwenden. OpenBot führt sie in der Pi-CLI aus, die es herunterlädt.",
+    "Speichere einen OpenRouter-API-Schlüssel auf diesem Computer, um die Modelle von OpenRouter zu verwenden. OpenBot-NC führt sie in der Pi-CLI aus, die es herunterlädt.",
   "provider.openrouterKey.descriptionHost":
-    "Speichere einen OpenRouter-API-Schlüssel auf dem Host, um die Modelle von OpenRouter zu verwenden. OpenBot führt sie in der Pi-CLI aus, die es herunterlädt.",
+    "Speichere einen OpenRouter-API-Schlüssel auf dem Host, um die Modelle von OpenRouter zu verwenden. OpenBot-NC führt sie in der Pi-CLI aus, die es herunterlädt.",
   "provider.openrouterKey.label": "OpenRouter-API-Schlüssel",
   "provider.openCodeKey.title": "Bei OpenCode Go anmelden",
   "provider.openCodeKey.description":
@@ -272,20 +272,20 @@ export const messages = {
   "provider.settings.disconnectTitle": "{name} trennen?",
   "provider.settings.disconnectOthers": "Die anderen {provider}-Konten warten, bis du {provider} wieder verbindest.",
   "provider.settings.disconnectLocal":
-    "OpenBot meldet {provider} auf diesem Computer ab. Die {provider}-CLI in deinem Terminal wird auch abgemeldet.",
-  "provider.settings.disconnectHost": "OpenBot meldet {provider} auf dem Server ab.",
+    "OpenBot-NC meldet {provider} auf diesem Computer ab. Die {provider}-CLI in deinem Terminal wird auch abgemeldet.",
+  "provider.settings.disconnectHost": "OpenBot-NC meldet {provider} auf dem Server ab.",
   "provider.settings.geminiKeyReplacesAccount":
     "Ein gespeicherter Gemini-API-Schlüssel wird statt einer Google-Anmeldung verwendet. Entferne den Schlüssel, um einen Google-Plan und seine Modelle zu nutzen.",
   "provider.settings.museKeyInUse":
     "Muse nutzt diesen Schlüssel, nicht deine Anmeldung. Entferne den Schlüssel, um deine Anmeldung zu nutzen.",
   "provider.settings.versionInstalledByUser": "{version} · von dir installiert",
-  "provider.settings.versionDownloaded": "{version} · von OpenBot geladen",
+  "provider.settings.versionDownloaded": "{version} · von OpenBot-NC geladen",
   "provider.settings.otherVersionInstalledByUser": "Nicht in Gebrauch: {version} · von dir installiert",
-  "provider.settings.otherVersionDownloaded": "Nicht in Gebrauch: {version} · von OpenBot geladen",
+  "provider.settings.otherVersionDownloaded": "Nicht in Gebrauch: {version} · von OpenBot-NC geladen",
   "provider.settings.installedVersionIncomplete":
-    "Einige Modelle brauchen einen Teil, der dieser Version fehlt. Lade die Version von OpenBot, um sie zu nutzen.",
+    "Einige Modelle brauchen einen Teil, der dieser Version fehlt. Lade die Version von OpenBot-NC, um sie zu nutzen.",
   "provider.settings.useInstalledVersion": "Installierte nutzen",
-  "provider.settings.useDownloadedVersion": "OpenBot-Version nutzen",
+  "provider.settings.useDownloadedVersion": "OpenBot-NC-Version nutzen",
   "provider.settings.cache": "Cache",
   "provider.settings.promptCache": "Prompt-Cache",
   "provider.settings.promptCacheDescription":
@@ -349,11 +349,11 @@ export const messages = {
   "provider.settings.modelsLoadFailed": "Die Modelle dieses Servers konnten nicht geladen werden.",
   "provider.settings.deleteTitle": "{name} löschen",
   "provider.settings.deleteOn":
-    "Schaltet {name} aus und löscht die CLI, die OpenBot heruntergeladen hat. Konten, Anmeldungen und Agenten bleiben.",
+    "Schaltet {name} aus und löscht die CLI, die OpenBot-NC heruntergeladen hat. Konten, Anmeldungen und Agenten bleiben.",
   "provider.settings.deleteOff":
-    "Löscht die CLI, die OpenBot für {name} heruntergeladen hat ({size}). Konten, Anmeldungen und Agenten bleiben.",
+    "Löscht die CLI, die OpenBot-NC für {name} heruntergeladen hat ({size}). Konten, Anmeldungen und Agenten bleiben.",
   "provider.settings.removeDownloadFailed": "Der Download konnte nicht entfernt werden.",
   "provider.settings.disconnectLocalOnly":
-    "OpenBot meldet {provider} auf diesem Computer ab. Die {provider}-CLI in deinem Terminal bleibt angemeldet.",
+    "OpenBot-NC meldet {provider} auf diesem Computer ab. Die {provider}-CLI in deinem Terminal bleibt angemeldet.",
   "provider.settings.updateAll": "Alle aktualisieren",
 } as const satisfies PartialTranslation<typeof source>;

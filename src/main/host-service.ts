@@ -1,5 +1,6 @@
 import { EventEmitter } from "node:events";
 import { join } from "node:path";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import { createOpenBotInviteUrl } from "@openbot/contracts/invite-links";
 import type {
   AgentTaskReadState,
@@ -63,7 +64,7 @@ import type { TeamIdentity, TeamStore } from "./team-store";
 export const DEVELOPMENT_REMOTE_CLIENT_USERNAME = "openbot-dev-client";
 
 const UNNAMED_PERSON = "You";
-const RELAY_DEFAULT_SERVER_NAME = "OpenBot";
+const RELAY_DEFAULT_SERVER_NAME = APP_NAME;
 const logger = createOpenBotLogger("host-service");
 
 interface HostEvents {

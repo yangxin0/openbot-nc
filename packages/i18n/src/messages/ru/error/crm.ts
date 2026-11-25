@@ -2,7 +2,8 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "Этот сервер не поддерживает CRM. Обновите OpenBot на компьютере, на котором он работает.",
+  "error.crm.serverTooOld":
+    "Этот сервер не поддерживает CRM. Обновите OpenBot-NC на компьютере, на котором он работает.",
   "error.crm.tooLargeToSend": "Эта страница CRM слишком велика для отправки в это приложение.",
   "error.crm.customerMissing": "Этого клиента больше нет.",
   "error.crm.planMissing": "Этого тарифа больше нет.",
@@ -38,10 +39,10 @@ export const messages = {
   "error.crm.sourcePermission":
     "Этот ключ не может читать клиентов, счета, подписки, события и продукты. Дайте ему доступ на чтение к ним.",
   "error.crm.sourceRateLimited": "Stripe получил слишком много запросов. Повторите попытку через минуту.",
-  "error.crm.sourceNetwork": "OpenBot не может подключиться к Stripe. Проверьте подключение к интернету.",
-  "error.crm.sourceFailed": "Stripe прислал ответ, который OpenBot не может прочитать. Повторите попытку позже.",
-  "error.crm.sourceKeySaveFailed": "OpenBot не может сохранить ключ Stripe на этом компьютере.",
+  "error.crm.sourceNetwork": "OpenBot-NC не может подключиться к Stripe. Проверьте подключение к интернету.",
+  "error.crm.sourceFailed": "Stripe прислал ответ, который OpenBot-NC не может прочитать. Повторите попытку позже.",
+  "error.crm.sourceKeySaveFailed": "OpenBot-NC не может сохранить ключ Stripe на этом компьютере.",
   "error.crm.off":
     "CRM выключена. Владелец или администратор может включить её в разделе «Настройки сервера > Экспериментальные».",
-  "error.crm.settingsSaveFailed": "OpenBot не может сохранить настройку CRM на этом сервере.",
+  "error.crm.settingsSaveFailed": "OpenBot-NC не может сохранить настройку CRM на этом сервере.",
 } as const satisfies PartialTranslation<typeof source>;

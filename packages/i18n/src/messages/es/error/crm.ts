@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "Este servidor no admite el CRM. Actualiza OpenBot en el ordenador que lo ejecuta.",
+  "error.crm.serverTooOld": "Este servidor no admite el CRM. Actualiza OpenBot-NC en el ordenador que lo ejecuta.",
   "error.crm.tooLargeToSend": "Esta página del CRM es demasiado grande para enviarla a esta aplicación.",
   "error.crm.customerMissing": "Este cliente ya no existe.",
   "error.crm.planMissing": "Este plan ya no existe.",
@@ -39,10 +39,10 @@ export const messages = {
   "error.crm.sourcePermission":
     "Esta clave no puede leer clientes, facturas, suscripciones, eventos ni productos. Dale acceso de lectura a todos.",
   "error.crm.sourceRateLimited": "Stripe recibió demasiadas solicitudes. Inténtalo de nuevo en un minuto.",
-  "error.crm.sourceNetwork": "OpenBot no puede conectarse a Stripe. Comprueba la conexión a internet.",
-  "error.crm.sourceFailed": "Stripe envió una respuesta que OpenBot no puede leer. Inténtalo de nuevo más tarde.",
-  "error.crm.sourceKeySaveFailed": "OpenBot no puede guardar la clave de Stripe en este equipo.",
+  "error.crm.sourceNetwork": "OpenBot-NC no puede conectarse a Stripe. Comprueba la conexión a internet.",
+  "error.crm.sourceFailed": "Stripe envió una respuesta que OpenBot-NC no puede leer. Inténtalo de nuevo más tarde.",
+  "error.crm.sourceKeySaveFailed": "OpenBot-NC no puede guardar la clave de Stripe en este equipo.",
   "error.crm.off":
     "El CRM está desactivado. Un propietario o administrador puede activarlo en Ajustes del servidor > Experimental.",
-  "error.crm.settingsSaveFailed": "OpenBot no puede guardar el ajuste del CRM en este servidor.",
+  "error.crm.settingsSaveFailed": "OpenBot-NC no puede guardar el ajuste del CRM en este servidor.",
 } as const satisfies PartialTranslation<typeof source>;

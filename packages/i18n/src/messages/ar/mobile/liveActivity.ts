@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/liveActivity";
 
 export const messages = {
-  "mobile.liveActivity.appName": "OpenBot",
+  "mobile.liveActivity.appName": "OpenBot-NC",
   "mobile.liveActivity.badge.working": "قيد العمل",
   "mobile.liveActivity.badge.message": "رسالة",
   "mobile.liveActivity.badge.question": "أسئلة",
@@ -42,10 +42,10 @@ export const messages = {
   "mobile.liveActivity.button.approve": "موافقة",
   "mobile.liveActivity.button.openDetails": "فتح التفاصيل",
   "mobile.liveActivity.stale.label": "غير محدّث",
-  "mobile.liveActivity.stale.detail": "افتح OpenBot لرؤية الحالة الحالية.",
+  "mobile.liveActivity.stale.detail": "افتح OpenBot-NC لرؤية الحالة الحالية.",
   "mobile.liveActivity.island.taskWorking": "جارٍ العمل على طلبك",
   "mobile.liveActivity.island.questionHeader": "سؤال من وكيلك",
-  "mobile.liveActivity.island.questionText": "افتح OpenBot للإجابة عن هذا السؤال.",
+  "mobile.liveActivity.island.questionText": "افتح OpenBot-NC للإجابة عن هذا السؤال.",
   "mobile.liveActivity.island.optionFallback": "الخيار {number}",
   "mobile.liveActivity.island.takeoverTitle": "خطوة المتصفح تحتاج إليك",
   "mobile.liveActivity.island.takeoverDetail": "أكمل تسجيل الدخول أو التحقق أو الموافقة في المتصفح.",

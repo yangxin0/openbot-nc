@@ -1,3 +1,4 @@
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import {
   type AvatarColor,
   canAdministerServer,
@@ -303,7 +304,7 @@ const FIRST_CONNECTION_WAIT_MS = 5_000;
 const STREAM_FLUSH_MS = 100;
 const EMPTY_SERVER: MobileServer = {
   id: "unavailable",
-  name: "OpenBot",
+  name: APP_NAME,
   logoKey: null,
   kind: "local",
   state: "connecting",

@@ -110,7 +110,7 @@ export const messages = {
   "mobile.channel.deleteHistory.footer": "Сообщения удаляются, и участники их забывают. Настройки канала остаются.",
   "mobile.channel.deleteHistory.confirmTitle": "Удалить историю канала {name}?",
   "mobile.channel.deleteHistory.confirmBody":
-    "Все сообщения и файлы этого канала будут удалены из OpenBot, и участники их забудут. Это нельзя отменить. Участники, инструкции, воспоминания, рутины и задачи не изменятся.",
+    "Все сообщения и файлы этого канала будут удалены из OpenBot-NC, и участники их забудут. Это нельзя отменить. Участники, инструкции, воспоминания, рутины и задачи не изменятся.",
   "mobile.channel.deleteHistory.confirm": "Удалить историю",
   "mobile.channel.deleteHistory.failed": "Не удалось удалить историю",
   "mobile.channel.deleteHistory.failedBody": "Хосту не удалось удалить историю.",

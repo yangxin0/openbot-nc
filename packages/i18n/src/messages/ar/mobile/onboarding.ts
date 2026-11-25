@@ -11,7 +11,7 @@ export const messages = {
   "mobile.onboarding.server.title": "أين سيعمل وكلاؤك؟",
   "mobile.onboarding.server.body": "يعمل الوكلاء على خادم. اختر طريقة لربط خادم.",
   "mobile.onboarding.server.computer": "حاسوبي",
-  "mobile.onboarding.server.computerBody": "استخدم OpenBot على حاسوبك كخادم.",
+  "mobile.onboarding.server.computerBody": "استخدم OpenBot-NC على حاسوبك كخادم.",
   "mobile.onboarding.server.computerTitle": "اربط حاسوبك",
   "mobile.onboarding.server.connecting": "جارٍ الاتصال بـ {name}…",
   "mobile.onboarding.agent.title": "اختر وكيلك الأول",

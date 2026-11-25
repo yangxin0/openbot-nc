@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/webClient";
 
 export const messages = {
-  "webClient.loading": "OpenBot 불러오는 중…",
+  "webClient.loading": "OpenBot-NC 불러오는 중…",
   "webClient.loadingLine.wake": "에이전트들을 깨우는 중…",
   "webClient.loadingLine.coffee": "에이전트들에게 커피를 따르는 중…",
   "webClient.loadingLine.tokens": "손가락으로 토큰을 세는 중…",
   "webClient.loadingLine.prompts": "엉킨 프롬프트를 푸는 중…",
   "webClient.loadingLine.sleepy": "졸린 친구를 살살 달래는 중…",
   "webClient.loadingLine.almost": "거의 다 됐어요. 아마도요.",
-  "webClient.slowLoad.title": "OpenBot 로딩이 평소보다 오래 걸립니다",
+  "webClient.slowLoad.title": "OpenBot-NC 로딩이 평소보다 오래 걸립니다",
   "webClient.slowLoad.body": "인터넷 연결을 확인한 다음 페이지를 새로고침하세요.",
   "webClient.slowLoad.reload": "새로고침",
   "webClient.pane.navigation": "워크스페이스 탐색",
@@ -18,7 +18,7 @@ export const messages = {
   "webClient.notice.connecting": "서버에 연결하는 중",
   "webClient.notice.findingHosts": "서버를 찾는 중",
   "webClient.otherTab.title": "{name}이(가) 다른 탭에서 열려 있습니다",
-  "webClient.otherTab.description": "OpenBot은 한 번에 하나의 탭에서만 서버를 사용할 수 있습니다.",
+  "webClient.otherTab.description": "OpenBot-NC는 한 번에 하나의 탭에서만 서버를 사용할 수 있습니다.",
   "webClient.otherTab.useHere": "여기서 사용",
   "webClient.agent.modelsFailed": "서버 모델을 불러올 수 없었어요.",
   "webClient.agent.refreshFailed":
@@ -27,7 +27,7 @@ export const messages = {
   "webClient.error.usageOffline": "사용량을 보려면 서버에 연결해 주세요.",
   "webClient.error.desktopOnly": "이 작업은 데스크톱 앱에서 할 수 있어요.",
   "webClient.settings.preferences.title": "환경설정",
-  "webClient.settings.preferences.description": "이 브라우저에서 OpenBot의 언어와 소리를 선택하세요.",
+  "webClient.settings.preferences.description": "이 브라우저에서 OpenBot-NC의 언어와 소리를 선택하세요.",
   "webClient.error.checkConversation": "다시 보내기 전에 대화를 확인해 주세요.",
   "webClient.error.hostReported": "서버에서 오류가 발생했어요. 대화와 서버 상태를 확인해 주세요.",
   "webClient.error.requestFailed": "요청에 실패했어요.",
@@ -53,7 +53,7 @@ export const messages = {
   "webClient.error.identityChanged": "서버 ID가 바뀌어 연결을 거부했어요.",
   "webClient.error.connectionUnavailable": "서버 연결을 사용할 수 없어요.",
   "webClient.error.incompatible":
-    "이 서버는 OpenBot 웹과 호환되지 않아요. 서버를 업데이트한 후 이 페이지를 새로 고쳐 주세요.",
+    "이 서버는 OpenBot-NC 웹과 호환되지 않아요. 서버를 업데이트한 후 이 페이지를 새로 고쳐 주세요.",
   "webClient.error.sendUnconfirmed": "메시지 전달을 확인하지 못했어요. 다시 보내기 전에 새로 고쳐 주세요.",
   "webClient.error.fileType": "이 파일 형식을 첨부하려면 서버를 업데이트해 주세요.",
   "webClient.error.uploadCancelled": "첨부 파일 업로드가 취소되었어요.",

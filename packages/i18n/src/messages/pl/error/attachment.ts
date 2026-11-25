@@ -6,21 +6,21 @@ export const messages = {
   "error.attachment.fileTooLarge": "Plik przekracza limit 100 MB.",
   "error.attachment.namedFileTooLarge": "{name} przekracza limit 100 MB.",
   "error.attachment.emptyFile":
-    "Plik {name} jest pusty lub OpenBot nie może go odczytać. Zapisz plik ponownie, a potem dołącz go ponownie.",
+    "Plik {name} jest pusty lub OpenBot-NC nie może go odczytać. Zapisz plik ponownie, a potem dołącz go ponownie.",
   "error.attachment.totalTooLarge": "Załączniki przekraczają łączny limit 250 MB.",
   "error.attachment.unavailable": "Ten plik nie jest już dostępny.",
   "error.attachment.noApp":
     "Żadna aplikacja na tym komputerze nie otworzyła tego pliku. Pobierz go, a potem otwórz w menedżerze plików.",
   "error.attachment.tooMany": "Maksymalna liczba plików: {limit}.",
   "error.attachment.mediaUnsupported":
-    "Ten serwer nie obsługuje załączników MP3 ani MOV. Zaktualizuj OpenBot na hoście i spróbuj ponownie.",
+    "Ten serwer nie obsługuje załączników MP3 ani MOV. Zaktualizuj OpenBot-NC na hoście i spróbuj ponownie.",
   "error.attachment.emlUnsupported":
-    "Ten serwer nie obsługuje załączników EML. Zaktualizuj OpenBot na hoście i spróbuj ponownie.",
+    "Ten serwer nie obsługuje załączników EML. Zaktualizuj OpenBot-NC na hoście i spróbuj ponownie.",
   "error.attachment.zipUnsupported":
-    "Ten serwer nie obsługuje załączników ZIP. Zaktualizuj OpenBot na hoście i spróbuj ponownie.",
+    "Ten serwer nie obsługuje załączników ZIP. Zaktualizuj OpenBot-NC na hoście i spróbuj ponownie.",
   "error.attachment.mp4Unsupported":
-    "Ten serwer nie obsługuje załączników MP4. Zaktualizuj OpenBot na hoście i spróbuj ponownie.",
+    "Ten serwer nie obsługuje załączników MP4. Zaktualizuj OpenBot-NC na hoście i spróbuj ponownie.",
   "error.attachment.svgUnsupported":
-    "Ten serwer nie obsługuje załączników SVG. Zaktualizuj OpenBot na hoście i spróbuj ponownie.",
+    "Ten serwer nie obsługuje załączników SVG. Zaktualizuj OpenBot-NC na hoście i spróbuj ponownie.",
   "error.attachment.previewTooLarge": "Plik przekracza limit 100 MB.",
 } as const satisfies PartialTranslation<typeof source>;

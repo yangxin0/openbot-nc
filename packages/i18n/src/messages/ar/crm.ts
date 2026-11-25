@@ -411,7 +411,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "إنشاء مفتاح في {source}",
   "crm.source.stripeKeyHelp":
-    "يفتح Stripe مفتاحًا للقراءة فقط جاهزًا للإنشاء. أنشئه، ثم انسخ المفتاح والصقه هنا. يقرأ OpenBot من Stripe فقط.",
+    "يفتح Stripe مفتاحًا للقراءة فقط جاهزًا للإنشاء. أنشئه، ثم انسخ المفتاح والصقه هنا. يقرأ OpenBot-NC من Stripe فقط.",
   "crm.source.connect": "ربط",
   "crm.source.account": "الحساب",
   "crm.source.testMode": "وضع الاختبار",
@@ -424,8 +424,8 @@ export const messages = {
   "crm.source.errorInvalidKey": "لا يقبل {source} المفتاح. افصل الربط ثم اربط بمفتاح جديد.",
   "crm.source.errorPermission": "لا يستطيع المفتاح قراءة كل ما تحتاجه المزامنة. امنحه صلاحية Read في {source}.",
   "crm.source.errorRateLimited": "تلقى {source} طلبات كثيرة جدًا. ستعيد المزامنة التالية المحاولة.",
-  "crm.source.errorNetwork": "لا يستطيع OpenBot الاتصال بـ {source}. ستعيد المزامنة التالية المحاولة.",
-  "crm.source.errorFailed": "أرسل {source} ردًا لا يستطيع OpenBot قراءته. ستعيد المزامنة التالية المحاولة.",
+  "crm.source.errorNetwork": "لا يستطيع OpenBot-NC الاتصال بـ {source}. ستعيد المزامنة التالية المحاولة.",
+  "crm.source.errorFailed": "أرسل {source} ردًا لا يستطيع OpenBot-NC قراءته. ستعيد المزامنة التالية المحاولة.",
   "crm.source.skipped": "لم يُستورد",
   "crm.source.skippedCurrency": "عملة أخرى: {rows}",
   "crm.source.skippedInterval": "فترة فوترة أخرى: {rows}",
@@ -436,5 +436,5 @@ export const messages = {
   "crm.connectors.synced": "تمت المزامنة {time}",
   "crm.source.disconnect": "فصل الربط",
   "crm.source.disconnectTitle": "فصل ربط {source}؟",
-  "crm.source.disconnectBody": "يوقف OpenBot المزامنة ويحذف المفتاح. تبقى الصفوف المستوردة ويمكنك تغييرها.",
+  "crm.source.disconnectBody": "يوقف OpenBot-NC المزامنة ويحذف المفتاح. تبقى الصفوف المستوردة ويمكنك تغييرها.",
 } as const satisfies PartialTranslation<typeof source>;

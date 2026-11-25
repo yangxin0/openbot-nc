@@ -12,7 +12,7 @@ export const messages = {
   "mobile.onboarding.server.title": "Ajanlarınız nerede çalışacak?",
   "mobile.onboarding.server.body": "Ajanlar bir sunucuda çalışır. Bir sunucuyu nasıl bağlayacağınızı seçin.",
   "mobile.onboarding.server.computer": "Bilgisayarım",
-  "mobile.onboarding.server.computerBody": "Bilgisayarınızdaki OpenBot'u sunucu olarak kullanın.",
+  "mobile.onboarding.server.computerBody": "Bilgisayarınızdaki OpenBot-NC'yi sunucu olarak kullanın.",
   "mobile.onboarding.server.computerTitle": "Bilgisayarınızı bağlayın",
   "mobile.onboarding.server.connecting": "{name} sunucusuna bağlanılıyor…",
   "mobile.onboarding.agent.title": "İlk ajanınızı seçin",

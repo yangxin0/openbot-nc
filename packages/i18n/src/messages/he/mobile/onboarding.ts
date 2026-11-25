@@ -11,7 +11,7 @@ export const messages = {
   "mobile.onboarding.server.title": "איפה הסוכנים שלך יעבדו?",
   "mobile.onboarding.server.body": "הסוכנים רצים בשרת. יש לבחור איך לחבר שרת.",
   "mobile.onboarding.server.computer": "המחשב שלי",
-  "mobile.onboarding.server.computerBody": "שימוש ב-OpenBot במחשב שלך בתור השרת.",
+  "mobile.onboarding.server.computerBody": "שימוש ב-OpenBot-NC במחשב שלך בתור השרת.",
   "mobile.onboarding.server.computerTitle": "חיבור המחשב שלך",
   "mobile.onboarding.server.connecting": "מתחבר אל {name}…",
   "mobile.onboarding.agent.title": "בחירת הסוכן הראשון",

@@ -12,7 +12,7 @@ export const messages = {
   "server.connection.cachedHint":
     "Geladene Inhalte und Entwürfe bleiben erhalten. Serveraktionen werden nach dem erneuten Verbinden fortgesetzt.",
   "server.connection.computerOffline":
-    "{name} ist offline. Prüfe, ob sein Computer eingeschaltet und OpenBot geöffnet ist und Server veröffentlichen unter Servereinstellungen > Mitglieder aktiviert ist.",
+    "{name} ist offline. Prüfe, ob sein Computer eingeschaltet und OpenBot-NC geöffnet ist und Server veröffentlichen unter Servereinstellungen > Mitglieder aktiviert ist.",
   "server.connection.conversationFailed": "Die Unterhaltung konnte nicht geladen werden. Versuche es erneut.",
   "server.connection.panelsFailed":
     "Einige Bereiche des Arbeitsbereichs konnten nicht geladen werden. Versuche es erneut.",
@@ -22,20 +22,20 @@ export const messages = {
   "server.connection.details": "Details",
 
   "server.status.steps": "Verbindungsschritte",
-  "server.status.updateCause": "{name} startet neu, um OpenBot {version} zu installieren.",
-  "server.status.updateCauseNoVersion": "{name} startet neu, um ein OpenBot-Update zu installieren.",
+  "server.status.updateCause": "{name} startet neu, um OpenBot-NC {version} zu installieren.",
+  "server.status.updateCauseNoVersion": "{name} startet neu, um ein OpenBot-NC-Update zu installieren.",
   "server.status.connectCause": "Diese App verbindet sich mit {name}.",
   "server.status.connectionCause":
     "Diese App hat die Verbindung zu {name} verloren. Sie verbindet sich automatisch erneut.",
   "server.status.stepUpdate": "Update installieren",
-  "server.status.stepUpdateDetail": "OpenBot stoppt, installiert das Update und startet wieder.",
+  "server.status.stepUpdateDetail": "OpenBot-NC stoppt, installiert das Update und startet wieder.",
   "server.status.stepConnect": "Verbinden",
   "server.status.stepConnectDetail": "Diese App öffnet eine Verbindung zum Server.",
   "server.status.stepLoad": "Arbeitsbereich laden",
   "server.status.stepLoadDetail": "Agenten und Chats werden vom Server geladen.",
   "server.status.elapsed": "Vergangen: {time}",
-  "server.compatibility.updateClientTitle": "Diese OpenBot-App aktualisieren",
-  "server.compatibility.updateHostTitle": "OpenBot auf {name} aktualisieren",
+  "server.compatibility.updateClientTitle": "Diese OpenBot-NC-App aktualisieren",
+  "server.compatibility.updateHostTitle": "OpenBot-NC auf {name} aktualisieren",
   "server.compatibility.unsafeDataTitle": "Der Host hat unsichere Daten zurückgegeben",
   "server.compatibility.cannotConnectTitle": "Verbindung mit {name} nicht möglich",
   "server.compatibility.safeModeTitle": "{name} startet nicht",
@@ -44,7 +44,7 @@ export const messages = {
   "server.compatibility.updateHostDescription":
     "Der Host unterstützt nur ältere Protokolle als diese App. Aktualisiere den Host und versuche es erneut.",
   "server.compatibility.unsafeDataDescription":
-    "OpenBot hat diese Verbindung beendet, weil Daten eines bekannten Nachrichtentyps ungültig waren. Deine aktuellen Arbeitsbereichsdaten wurden nicht geändert.",
+    "OpenBot-NC hat diese Verbindung beendet, weil Daten eines bekannten Nachrichtentyps ungültig waren. Deine aktuellen Arbeitsbereichsdaten wurden nicht geändert.",
   "server.compatibility.clientVersion": "Client-Version",
   "server.compatibility.hostVersion": "Host-Version",
   "server.compatibility.negotiatedProtocol": "Ausgehandeltes Protokoll",
@@ -58,12 +58,12 @@ export const messages = {
   "server.local.creating": "Server wird erstellt…",
   "server.local.createFailed": "Der Server konnte nicht erstellt werden.",
   "server.local.createFailedRetry":
-    "Etwas ist schiefgelaufen. Versuche es erneut. Wenn es wieder fehlschlägt, starte OpenBot neu.",
+    "Etwas ist schiefgelaufen. Versuche es erneut. Wenn es wieder fehlschlägt, starte OpenBot-NC neu.",
   "server.local.limitReached":
     "Auf diesem Computer sind höchstens {limit} Server möglich. Löschen Sie einen, um einen neuen zu erstellen.",
   "server.local.deleteConfirmTitle": "{name} löschen?",
   "server.local.deleteConfirmDescription":
-    "OpenBot stoppt den Server und verschiebt seine Agenten, Chats und Dateien in den Papierkorb.",
+    "OpenBot-NC stoppt den Server und verschiebt seine Agenten, Chats und Dateien in den Papierkorb.",
   "server.local.deleting": "Server wird gelöscht…",
   "server.local.deletedTitle": "{name} gelöscht",
   "server.install.title": "Neuer Server auf einem anderen Computer",
@@ -122,13 +122,13 @@ export const messages = {
   "server.settings.identityLocalOnly":
     "Name und Logo dieses Servers können nur auf dem Computer geändert werden, auf dem er läuft.",
   "server.settings.publicationLocalOnly": "Nur der lokale Server kann die Veröffentlichung ändern.",
-  "server.compatibility.versionMismatchTitle": "Unterschiedliche OpenBot-Versionen auf {name}",
+  "server.compatibility.versionMismatchTitle": "Unterschiedliche OpenBot-NC-Versionen auf {name}",
   "server.compatibility.versionMismatchDescription":
     "Die Verbindung verwendet Protokoll {protocol}. Einige neuere Funktionen sind möglicherweise nicht verfügbar. Client {clientVersion}; Host {hostVersion}.",
   "server.compatibility.versionMismatchUpdateHostDescription":
-    "Aktualisiere OpenBot auf {name}, um alle Funktionen zu verwenden. Die Verbindung verwendet Protokoll {protocol}. Client {clientVersion}; Host {hostVersion}.",
+    "Aktualisiere OpenBot-NC auf {name}, um alle Funktionen zu verwenden. Die Verbindung verwendet Protokoll {protocol}. Client {clientVersion}; Host {hostVersion}.",
   "server.compatibility.versionMismatchUpdateClientDescription":
-    "Aktualisiere diese OpenBot-App, um alle Funktionen zu verwenden. Die Verbindung verwendet Protokoll {protocol}. Client {clientVersion}; Host {hostVersion}.",
+    "Aktualisiere diese OpenBot-NC-App, um alle Funktionen zu verwenden. Die Verbindung verwendet Protokoll {protocol}. Client {clientVersion}; Host {hostVersion}.",
   "server.connection.failedTitle": "Die Verbindung ist fehlgeschlagen",
   "server.connection.failedDescription":
     "Die Verbindung mit diesem Server konnte nicht hergestellt werden. Prüfe, ob der Host online ist, und versuche es erneut.",
@@ -146,7 +146,7 @@ export const messages = {
   "server.settings.membersDescription": "Veröffentliche diesen Server, lade Personen ein und verwalte den Zugriff.",
   "server.settings.storageTitle": "Speicher",
   "server.settings.storageDescription":
-    "Sieh nach, was OpenBot auf der Festplatte dieses Servers speichert, und gib Speicherplatz frei.",
+    "Sieh nach, was OpenBot-NC auf der Festplatte dieses Servers speichert, und gib Speicherplatz frei.",
   "server.settings.importTitle": "Importieren",
   "server.settings.importDescription": "Verschiebe deine Agenten von Grok Bot oder Hermes Agent auf diesen Server.",
   "server.settings.transferTitle": "Übertragung",
@@ -181,9 +181,9 @@ export const messages = {
   "server.settings.nameTooLong": "Verwende höchstens {limit} Zeichen.",
   "server.settings.actionFailedTitle": "Serveraktion fehlgeschlagen",
   "server.settings.actionFailed": "Die Serveraktion ist fehlgeschlagen.",
-  "server.settings.imageReadFailed": "OpenBot konnte dieses Bild nicht lesen.",
+  "server.settings.imageReadFailed": "OpenBot-NC konnte dieses Bild nicht lesen.",
   "server.settings.copyFailedTitle": "Kopieren fehlgeschlagen",
-  "server.settings.copyFailed": "OpenBot konnte diesen Wert nicht kopieren.",
+  "server.settings.copyFailed": "OpenBot-NC konnte diesen Wert nicht kopieren.",
   "server.settings.unavailableTitle": "Servereinstellungen nicht verfügbar",
   "server.settings.reset": "Zurücksetzen",
   "server.settings.unsavedChanges": "Nicht gespeicherte Änderungen",
@@ -310,7 +310,8 @@ export const messages = {
   "server.settings.restartTitle": "Neu starten",
   "server.settings.restarting": "Wird neu gestartet…",
   "server.settings.restartedTitle": "{name} startet neu",
-  "server.settings.restartHiddenDescription": "OpenBot verbindet sich automatisch wieder, wenn der Server zurück ist.",
+  "server.settings.restartHiddenDescription":
+    "OpenBot-NC verbindet sich automatisch wieder, wenn der Server zurück ist.",
   "server.settings.restartHide": "Ausblenden",
   "server.settings.restartProgressTitle": "{name} wird neu gestartet",
   "server.settings.restartProgressDescription": "{time} · meist etwa eine Minute. Du kannst dieses Fenster ausblenden.",
@@ -366,7 +367,7 @@ export const messages = {
   "server.invite.permaHint":
     "Läuft nie ab und kann mehrfach verwendet werden. Jeder mit diesem Link kann beitreten. Widerrufe ihn, um ihn zu deaktivieren.",
   "server.invite.qrLabel": "Einladungs-QR-Code",
-  "server.invite.qrDescription": "Scanne diesen Code in OpenBot Mobile, um diesem Server beizutreten.",
+  "server.invite.qrDescription": "Scanne diesen Code in OpenBot-NC Mobile, um diesem Server beizutreten.",
   "server.invite.accepted": "Einladung angenommen",
   "server.invite.expired": "Einladung abgelaufen",
   "server.invite.sent": "Einladung gesendet",
@@ -374,7 +375,7 @@ export const messages = {
   "server.invite.acceptedDescription":
     "Das Mitglied ist diesem Server beigetreten. Erstelle einen neuen Link, um eine weitere Person einzuladen.",
   "server.invite.expiredDescription": "Erstelle einen neuen Link, um jemanden einzuladen.",
-  "server.invite.linkReadyDescription": "Teile den Link oder scanne den QR-Code in OpenBot Mobile.",
+  "server.invite.linkReadyDescription": "Teile den Link oder scanne den QR-Code in OpenBot-NC Mobile.",
   "server.invite.pendingTitle": "Ausstehende Einladungen",
   "server.invite.pendingCount": "{total} ausstehend",
   "server.invite.noPending": "Keine ausstehenden Einladungen.",
@@ -394,9 +395,9 @@ export const messages = {
   "server.settings.providersSwitchNote": "Wechsle zu {name}, um seine KI-Anbieter zu verwalten.",
   "server.settings.providersSwitch": "Zu diesem Server wechseln",
   "server.settings.updatesTitle": "Updates",
-  "server.settings.updatesDescription": "Aktualisiere OpenBot auf dem Computer, auf dem dieser Server läuft.",
-  "server.update.hostTitle": "OpenBot auf {name}",
-  "server.update.version": "OpenBot {version}",
+  "server.settings.updatesDescription": "Aktualisiere OpenBot-NC auf dem Computer, auf dem dieser Server läuft.",
+  "server.update.hostTitle": "OpenBot-NC auf {name}",
+  "server.update.version": "OpenBot-NC {version}",
   "server.update.status.idle": "Suche nach Updates, um die neueste Version zu finden.",
   "server.update.status.checking": "Updates werden gesucht…",
   "server.update.status.available": "{version} ist verfügbar.",
@@ -404,11 +405,11 @@ export const messages = {
   "server.update.status.downloadingUnknown": "{version} wird heruntergeladen…",
   "server.update.status.ready": "{version} wurde heruntergeladen.",
   "server.update.status.installing": "{name} wird neu gestartet, um das Update zu installieren.",
-  "server.update.status.upToDate": "OpenBot ist auf {name} aktuell.",
+  "server.update.status.upToDate": "OpenBot-NC ist auf {name} aktuell.",
   "server.update.status.checkFailed": "{name} konnte nicht nach Updates suchen. Versuche es erneut.",
   "server.update.status.downloadFailed": "{name} konnte das Update nicht herunterladen. Versuche es erneut.",
   "server.update.status.installFailed":
-    "{name} konnte das Update nicht installieren. Stelle sicher, dass kein anderer Benutzer dieses Computers OpenBot ausführt, und versuche es erneut.",
+    "{name} konnte das Update nicht installieren. Stelle sicher, dass kein anderer Benutzer dieses Computers OpenBot-NC ausführt, und versuche es erneut.",
   "server.update.releaseUnavailable":
     "Diese Version kann nicht nach neuen Versionen suchen. Bitte den Host-Administrator, nach einer kompatiblen Version zu suchen.",
   "server.update.check": "Nach Updates suchen",
@@ -420,36 +421,38 @@ export const messages = {
   "server.update.requestedBy": "{member} hat dieses Update angefordert.",
   "server.update.automatic": "{name} installiert Updates automatisch.",
   "server.update.autoDownloadTitle": "Updates automatisch herunterladen",
-  "server.update.autoDownloadDescription": "{name} lädt jede neue OpenBot-Version herunter, sobald sie erscheint.",
+  "server.update.autoDownloadDescription": "{name} lädt jede neue OpenBot-NC-Version herunter, sobald sie erscheint.",
   "server.update.autoInstallTitle": "Updates automatisch installieren",
   "server.update.autoInstallDescription":
     "{name} startet mit einem heruntergeladenen Update neu, sobald seine Agenten inaktiv sind. Mitglieder werden kurz getrennt und automatisch erneut verbunden.",
   "server.update.waitingFor": "Warten auf {reasons}.",
   "server.update.disabledTitle": "Remote-Updates sind deaktiviert",
   "server.update.disabledDescription":
-    "Der Benutzer von {name} hat Updates durch Servermitglieder deaktiviert. Bitte ihn, OpenBot zu aktualisieren oder auf seinem Computer Einstellungen > Updates zu öffnen und „Updates durch Servermitglieder erlauben“ zu aktivieren.",
+    "Der Benutzer von {name} hat Updates durch Servermitglieder deaktiviert. Bitte ihn, OpenBot-NC zu aktualisieren oder auf seinem Computer Einstellungen > Updates zu öffnen und „Updates durch Servermitglieder erlauben“ zu aktivieren.",
   "server.update.managedTitle": "Ein Host Manager steuert Updates",
-  "server.update.managedDescription": "OpenBot Host Manager aktualisiert {name}. Kontaktiere den Host-Administrator.",
+  "server.update.managedDescription":
+    "OpenBot-NC Host Manager aktualisiert {name}. Kontaktiere den Host-Administrator.",
   "server.update.unsupportedTitle": "{name} kann sich nicht selbst aktualisieren",
   "server.update.unsupportedDescription":
-    "Diese OpenBot-Version hat keine Update-Funktion. Installiere eine neue Version auf {name}.",
+    "Diese OpenBot-NC-Version hat keine Update-Funktion. Installiere eine neue Version auf {name}.",
   "server.update.restarting": "Wird neu gestartet…",
   "server.update.loadFailed": "Der Update-Status von {name} wurde nicht geladen.",
   "server.update.hostAction": "Host aktualisieren",
-  "server.update.dialog.offerTitle": "{name} auf OpenBot {version} aktualisieren",
+  "server.update.dialog.offerTitle": "{name} auf OpenBot-NC {version} aktualisieren",
   "server.update.dialog.offerDescription":
-    "{name} nutzt OpenBot {current}. Zuerst wird das Update heruntergeladen, dann startet {name} neu.",
+    "{name} nutzt OpenBot-NC {current}. Zuerst wird das Update heruntergeladen, dann startet {name} neu.",
   "server.update.dialog.offerReadyDescription":
-    "{name} nutzt OpenBot {current}. Das Update ist heruntergeladen. {name} startet neu, um es zu installieren.",
+    "{name} nutzt OpenBot-NC {current}. Das Update ist heruntergeladen. {name} startet neu, um es zu installieren.",
   "server.update.dialog.progressTitle": "{name} wird aktualisiert",
   "server.update.dialog.progressDescription": "{time} · Du kannst dieses Fenster ausblenden.",
-  "server.update.dialog.doneTitle": "{name} nutzt jetzt OpenBot {version}",
+  "server.update.dialog.doneTitle": "{name} nutzt jetzt OpenBot-NC {version}",
   "server.update.dialog.doneDescription": "Das Update hat {time} gedauert.",
   "server.update.dialog.failedTitle": "{name} wurde nicht aktualisiert",
   "server.update.dialog.restartFailed": "{name} ist nicht wieder online. Prüfe den Host und versuche es dann erneut.",
-  "server.update.dialog.notInstalled": "{name} wurde mit OpenBot {current} neu gestartet. Versuche das Update erneut.",
+  "server.update.dialog.notInstalled":
+    "{name} wurde mit OpenBot-NC {current} neu gestartet. Versuche das Update erneut.",
   "server.update.dialog.steps": "Update-Schritte",
-  "server.update.dialog.downloadStep": "OpenBot {version} herunterladen",
+  "server.update.dialog.downloadStep": "OpenBot-NC {version} herunterladen",
   "server.update.dialog.downloadPending": "Agenten arbeiten während des Downloads weiter.",
   "server.update.dialog.downloadPreparing": "Download wird vorbereitet…",
   "server.update.dialog.downloadRunning": "{progress} · Agenten arbeiten weiter.",
@@ -458,10 +461,10 @@ export const messages = {
   "server.update.dialog.restartPending": "Mitglieder verlieren die Verbindung für etwa eine Minute.",
   "server.update.dialog.restartWaiting": "Warten auf {reasons}.",
   "server.update.dialog.restartSoon": "Der Neustart beginnt gleich.",
-  "server.update.dialog.restartRunning": "OpenBot {version} wird gestartet…",
+  "server.update.dialog.restartRunning": "OpenBot-NC {version} wird gestartet…",
   "server.update.dialog.onlineStep": "Wieder online",
   "server.update.dialog.onlinePending": "Mitglieder verbinden sich automatisch erneut.",
-  "server.update.dialog.onlineDone": "Nach {time} auf OpenBot {version}.",
+  "server.update.dialog.onlineDone": "Nach {time} auf OpenBot-NC {version}.",
   "server.update.dialog.waitIdle": "Warten, bis die Agenten inaktiv sind",
   "server.update.dialog.waitIdleDescription":
     "Der Neustart wartet, bis Agentendurchläufe und Routinen-Ausführungen abgeschlossen sind.",
@@ -487,15 +490,15 @@ export const messages = {
   "server.update.reason.fileTransfer": "eine Dateiübertragung",
   "server.update.reason.browserControl": "Browsersteuerung durch einen Agenten",
   "server.update.reason.updateOperation": "einen weiteren Update-Schritt",
-  "server.update.reason.initialization": "den Start von OpenBot",
+  "server.update.reason.initialization": "den Start von OpenBot-NC",
   "server.update.reason.other": "andere Aufgaben",
   "server.restartNotice.waitingTitle": "{name} startet neu, um ein Update zu installieren",
-  "server.restartNotice.waitingVersionTitle": "{name} startet neu, um OpenBot {version} zu installieren",
+  "server.restartNotice.waitingVersionTitle": "{name} startet neu, um OpenBot-NC {version} zu installieren",
   "server.restartNotice.waitingDescription":
-    "Der Neustart wartet, bis seine Agenten inaktiv sind. Du wirst kurz getrennt. Danach verbindet sich OpenBot automatisch erneut.",
+    "Der Neustart wartet, bis seine Agenten inaktiv sind. Du wirst kurz getrennt. Danach verbindet sich OpenBot-NC automatisch erneut.",
   "server.restartNotice.restartingTitle": "{name} wird neu gestartet, um ein Update zu installieren",
   "server.restartNotice.restartingDescription":
-    "OpenBot verbindet sich automatisch erneut, sobald {name} wieder verfügbar ist.",
+    "OpenBot-NC verbindet sich automatisch erneut, sobald {name} wieder verfügbar ist.",
   "server.restartNotice.backTitle": "{name} ist wieder online",
   "server.settings.personalityTitle": "Persönlichkeit",
   "server.settings.personalityDescription": "Lege fest, wie die Agenten auf diesem Server mit dir sprechen.",

@@ -26,7 +26,8 @@ export const messages = {
   "status.agent.screenCaptureScreen": "Ana ekranı yakala ve görüntüyü ajanın modeline gönder.",
   "status.agent.screenCaptureChannel":
     "Görüntü {channel} kanalında görünür ve bu sunucuda kanalı okuyan her üye onu görebilir.",
-  "status.agent.screenCapturePermissionNext": "Ardından macOS, OpenBot için Ekran Kaydı'na izin vermenizi isteyebilir.",
+  "status.agent.screenCapturePermissionNext":
+    "Ardından macOS, OpenBot-NC için Ekran Kaydı'na izin vermenizi isteyebilir.",
   "status.agent.screenCaptureDisplay": "{name} ekranını yakala ve görüntüyü ajanın modeline gönder.",
   "status.agent.screenCaptureWindow": "{name} penceresini yakala ve görüntüyü ajanın modeline gönder.",
   "status.agent.screenCaptureRegion":
@@ -38,12 +39,12 @@ export const messages = {
   "status.agent.sendIdea": "Bu, herkese açık bir GitHub issue'su olur. Adın gösterilmez.",
   "status.agent.feedbackRecentErrors": "Sohbetteki son hatalar:",
   "status.agent.feedbackSameAs": "#{issue} numaralı issue'ya eklenir",
-  "status.agent.feedbackSent": "OpenBot ekibine gönderildi: {title}",
+  "status.agent.feedbackSent": "OpenBot-NC ekibine gönderildi: {title}",
   "status.agent.feedbackWithdrawn": "GitHub'dan kaldırıldı: {title}",
   "status.agent.browserProfileNamed":
     "{agents} ajanlarını {profile} tarayıcı profiline taşı. Onun oturum açma bilgilerini ve çerezlerini alırlar. Açık sekmeleri kapanır.",
-  "status.agent.commitCoAuthorOff": "Tüm ajanların commit'lerine OpenBot'u ortak yazar olarak eklemeyi durdur.",
-  "status.agent.commitCoAuthorOn": "Tüm ajanların commit'lerine OpenBot'u yeniden ortak yazar olarak ekle.",
+  "status.agent.commitCoAuthorOff": "Tüm ajanların commit'lerine OpenBot-NC'yi ortak yazar olarak eklemeyi durdur.",
+  "status.agent.commitCoAuthorOn": "Tüm ajanların commit'lerine OpenBot-NC'yi yeniden ortak yazar olarak ekle.",
   "status.agent.browserProfileNew":
     "Yeni {profile} tarayıcı profilini oluştur ve {agents} ajanlarını oraya taşı. Hiç oturum açma bilgisi yoktur. Açık sekmeleri kapanır.",
   "status.agent.browserProfileShared":

@@ -10,7 +10,7 @@ export const messages = {
   "error.voice.modelUnavailable": "Model głosowy jest niedostępny.",
   "error.voice.transcriptionTimedOut": "Przekroczono limit czasu transkrypcji głosu.",
   "error.voice.prepareRequired":
-    "Lokalna transkrypcja głosu jest niedostępna. Uruchom `bun run voice:prepare` i uruchom ponownie OpenBot.",
+    "Lokalna transkrypcja głosu jest niedostępna. Uruchom `bun run voice:prepare` i uruchom ponownie OpenBot-NC.",
   "error.voice.transcriptionFailed": "Nie udało się przetranskrybować tego nagrania.",
   "error.voice.videoModelMissing":
     "W sekcji Ustawienia → Głos nie skonfigurowano modelu rozpoznawania mowy dla nagrań.",
@@ -27,9 +27,9 @@ export const messages = {
   "error.voice.speech.runtimeUnavailable": "Lokalna synteza mowy nie jest dostępna na tej platformie.",
   "error.voice.speech.modelRequired": "Pobierz model syntezy mowy w Ustawienia → Głos.",
   "error.voice.speech.timedOut": "Czytanie odpowiedzi na głos trwało zbyt długo.",
-  "error.voice.speech.failed": "OpenBot nie mógł przeczytać odpowiedzi na głos.",
+  "error.voice.speech.failed": "OpenBot-NC nie mógł przeczytać odpowiedzi na głos.",
   "error.voice.speech.providerRefused": "{provider} odmówił utworzenia dźwięku: {reason}",
-  "error.voice.recordingNotKept": "OpenBot nie mógł zachować nagrania głosowego.",
+  "error.voice.recordingNotKept": "OpenBot-NC nie mógł zachować nagrania głosowego.",
   "error.voice.server.modelUnsupported":
     "{host} nie może transkrybować za pomocą {model}. W Ustawienia → Głos wybierz inny model dyktowania dla serwera głosowego.",
 } as const satisfies PartialTranslation<typeof source>;

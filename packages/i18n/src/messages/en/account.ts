@@ -3,7 +3,7 @@ import { defineMessages } from "../../message";
 export const messages = defineMessages("account", {
   "account.menu.signOut": "Sign out",
   "account.menu.signingOut": "Signing out…",
-  "account.menu.updateFailed": "Could not update OpenBot.",
+  "account.menu.updateFailed": "Could not update OpenBot-NC.",
   "account.menu.signOutFailed": "Could not sign out.",
   "account.usage.title": "Usage",
   "account.usage.refresh": "Refresh",
@@ -58,7 +58,7 @@ export const messages = defineMessages("account", {
   "account.update.progress": "Update download progress",
   "account.login.email": "Email",
   "account.login.sendCode": "Send sign-in code",
-  "account.login.verified": "Verified. Opening OpenBot…",
+  "account.login.verified": "Verified. Opening OpenBot-NC…",
   "account.login.developmentCode": "Development code: {code}",
   "account.otp.incorrect": "That code is incorrect. Try again.",
   "account.otp.verifying": "Verifying…",

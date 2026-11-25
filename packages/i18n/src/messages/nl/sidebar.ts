@@ -144,7 +144,7 @@ export const messages = {
   "sidebar.delete.pending": "Verwijderen…",
   "sidebar.delete.title": "{name} verwijderen?",
   "sidebar.delete.agentDescription":
-    "Hiermee verwijder je de agent en zijn OpenBot-gesprek uit de app. De wachtrij, herinneringen, routines en werkruimte worden verwijderd. Geschiedenis die de verbonden CLI-aanbieder apart bewaart, wordt niet verwijderd.",
+    "Hiermee verwijder je de agent en zijn OpenBot-NC-gesprek uit de app. De wachtrij, herinneringen, routines en werkruimte worden verwijderd. Geschiedenis die de verbonden CLI-aanbieder apart bewaart, wordt niet verwijderd.",
   "sidebar.delete.channelDescription":
     "Hiermee stop je het kanaal. De geschiedenis blijft alleen ter inzage in Verwijderde kanalen. Je kunt het daar herstellen. Agents die lid zijn blijven bestaan.",
   "sidebar.delete.sectionDescription":

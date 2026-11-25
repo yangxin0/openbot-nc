@@ -21,7 +21,7 @@ export const messages = {
   "error.agent.toolCallUnknownToolSuggest":
     "La herramienta no se ejecutó. tool_call no encontró ninguna herramienta con este nombre. Es posible que el nombre calificado sea {name}. Si lo es, vuelve a enviar la llamada con ese nombre.",
   "error.agent.toolDescribeUnknownNames":
-    "tool_describe no encontró ninguna herramienta de OpenBot llamada {names}. Solo describe las herramientas de OpenBot y del navegador que lista openbot.tool_search, no las herramientas MCP.",
+    "tool_describe no encontró ninguna herramienta de OpenBot-NC llamada {names}. Solo describe las herramientas de OpenBot-NC y del navegador que lista openbot.tool_search, no las herramientas MCP.",
   "error.agent.toolDescribeDiscoveryNames":
     "Llama a {names} directamente. tool_describe no describe las herramientas de búsqueda.",
   "error.agent.routineScheduleArgumentsInvalid":
@@ -40,7 +40,7 @@ export const messages = {
   "error.agent.instructionsTooLarge":
     "El archivo de instrucciones es demasiado grande para abrirlo aquí. Acórtalo en un editor de texto.",
   "error.agent.instructionsOutside":
-    "El archivo de instrucciones enlaza a un lugar fuera del espacio de trabajo del agente, así que OpenBot no lo abre.",
+    "El archivo de instrucciones enlaza a un lugar fuera del espacio de trabajo del agente, así que OpenBot-NC no lo abre.",
   "error.agent.instructionsReadFailed": "No se pudo leer el archivo de instrucciones.",
   "error.agent.instructionsSaveFailed": "No se pudo guardar el archivo de instrucciones.",
   "error.agent.profileGenerationBusy": "La generación de perfiles está ocupada. Inténtalo de nuevo en breve.",
@@ -100,18 +100,18 @@ export const messages = {
   "error.agent.changedWhileDuplicating": "El agente cambió mientras se duplicaba. Inténtalo de nuevo.",
   "error.agent.duplicatedAgentGone": "El agente duplicado ya no existe.",
   "error.agent.stateCorrupt":
-    "El estado del agente está dañado o pertenece a una versión más reciente de OpenBot; no se sobrescribirá.",
+    "El estado del agente está dañado o pertenece a una versión más reciente de OpenBot-NC; no se sobrescribirá.",
   "error.agent.oldRoleField":
-    "Los perfiles de agente guardados usan el antiguo campo role; actualiza los datos antes de iniciar OpenBot.",
+    "Los perfiles de agente guardados usan el antiguo campo role; actualiza los datos antes de iniciar OpenBot-NC.",
   "error.agent.duplicateIds":
     "El estado del agente contiene identificadores de agente duplicados; no se sobrescribirá.",
-  "error.agent.copyNameFailed": "OpenBot no pudo crear un nombre único para la copia del agente.",
+  "error.agent.copyNameFailed": "OpenBot-NC no pudo crear un nombre único para la copia del agente.",
   "error.agent.endpointRemoved": "Se eliminó el endpoint que usaba este agente. Elige otro modelo para él.",
   "error.agent.turnStalled":
-    "{provider} dejó de responder, así que OpenBot terminó este turno. Envía el mensaje de nuevo o elige otro modelo.",
+    "{provider} dejó de responder, así que OpenBot-NC terminó este turno. Envía el mensaje de nuevo o elige otro modelo.",
   "error.agent.promptCancelled": "{provider} canceló este mensaje antes de que empezara. Envía el mensaje de nuevo.",
   "error.agent.toolLoopStopped":
-    "{provider} repitió muchas veces un paso fallido, así que OpenBot detuvo este turno. Envía el mensaje de nuevo o elige otro modelo.",
+    "{provider} repitió muchas veces un paso fallido, así que OpenBot-NC detuvo este turno. Envía el mensaje de nuevo o elige otro modelo.",
   "error.agent.answerCutOff":
     "El agente se detuvo antes de terminar su respuesta, así que la respuesta no está completa. Envía el mensaje de nuevo.",
   "error.agent.compactionConnectionLost":
@@ -119,7 +119,7 @@ export const messages = {
   "error.agent.compactionConnectionLostAddress":
     "La conexión se detuvo mientras el agente compactaba su contexto, así que la tarea se detuvo. Comprueba tu conexión a internet y que {variable}, en Variables de los ajustes de {provider}, sea la dirección API de tu servicio de modelos (suele terminar en /v1). Luego envía un mensaje.",
   "error.agent.compactionLoopStopped":
-    "{provider} compactó el contexto una y otra vez, y cada vez quedó demasiado lleno para continuar, así que OpenBot detuvo este turno. Desactiva los servidores MCP o el uso del ordenador que este agente no necesita y luego envía un mensaje. Si tú o el agente cambiasteis cuándo compacta {provider}, deshaz ese cambio.",
+    "{provider} compactó el contexto una y otra vez, y cada vez quedó demasiado lleno para continuar, así que OpenBot-NC detuvo este turno. Desactiva los servidores MCP o el uso del ordenador que este agente no necesita y luego envía un mensaje. Si tú o el agente cambiasteis cuándo compacta {provider}, deshaz ese cambio.",
   "error.agent.selectedGone": "El agente seleccionado ya no existe.",
   "error.agent.profileEndpointsChanged":
     "Los endpoints personalizados cambiaron durante la generación. Inténtalo de nuevo.",
@@ -136,19 +136,19 @@ export const messages = {
   "error.agent.stopBeforeDelete": "Detén el agente y cancela sus mensajes en cola antes de eliminarlo.",
   "error.agent.deleteIncomplete": "No se pudieron eliminar todos los datos del agente. Intenta eliminarlo de nuevo.",
   "error.agent.deleteFolderInUse":
-    "El trabajo de otro agente todavía usa la carpeta de este agente. Vuelve a eliminarlo cuando ese trabajo termine o después de reiniciar OpenBot.",
+    "El trabajo de otro agente todavía usa la carpeta de este agente. Vuelve a eliminarlo cuando ese trabajo termine o después de reiniciar OpenBot-NC.",
   "error.agent.deleteFolderLocked":
     "Otro programa todavía usa la carpeta de este agente, por ejemplo un programa que inició el agente. Cierra ese programa o reinicia el ordenador en el que funciona este agente y vuelve a eliminar el agente.",
   "error.agent.deleteWhenFolderFree":
-    "El trabajo de otro agente todavía usa la carpeta de este agente. OpenBot elimina este agente cuando ese trabajo termine.",
+    "El trabajo de otro agente todavía usa la carpeta de este agente. OpenBot-NC elimina este agente cuando ese trabajo termine.",
   "error.agent.duplicationBusy": "Este agente ya se está duplicando.",
   "error.agent.waitBeforeDuplicate": "Espera a que el agente termine y vacía su cola antes de duplicarlo.",
   "error.agent.saveOtherAgent": "Este guardado pertenece a otro agente.",
   "error.agent.savedGone": "El agente guardado ya no existe.",
   "error.agent.storedProfileUnreadable":
-    "Un perfil de agente guardado tiene un valor «{field}» ilegible; actualiza los datos antes de iniciar OpenBot.",
+    "Un perfil de agente guardado tiene un valor «{field}» ilegible; actualiza los datos antes de iniciar OpenBot-NC.",
   "error.agent.storedProfileUnreadableId":
-    "El perfil de agente guardado {id} tiene un valor «{field}» ilegible; actualiza los datos antes de iniciar OpenBot.",
+    "El perfil de agente guardado {id} tiene un valor «{field}» ilegible; actualiza los datos antes de iniciar OpenBot-NC.",
   "error.agent.queueEditRejected": "Edición de la cola rechazada: {reason}",
   "error.agent.computerUseLocalOnly": "El uso del equipo solo se puede cambiar en el equipo que ejecuta el agente.",
   "error.agent.automationLocalOnly": "Los scripts locales solo se pueden permitir en el equipo que ejecuta el agente.",
@@ -179,7 +179,7 @@ export const messages = {
   "error.agent.lowMemoryServer":
     "Este servidor tiene poca memoria disponible. Tu mensaje espera en la cola y se iniciará cuando se libere memoria.",
   "error.agent.workspaceOnlyToolMissing":
-    "Solo espacio de trabajo requiere {tool}, que OpenBot no encontró. Instálalo o elige Acceso completo en los ajustes del agente.",
+    "Solo espacio de trabajo requiere {tool}, que OpenBot-NC no encontró. Instálalo o elige Acceso completo en los ajustes del agente.",
   "error.agent.codexSandboxUnavailable":
     "«Solo espacio de trabajo» necesita el sandbox de Codex, que Codex no puede iniciar en este ordenador, así que los comandos del agente fallan. Elige Preguntar antes o Acceso completo en los ajustes del agente.",
   "error.agent.claudeSandboxUnavailable":
@@ -203,9 +203,9 @@ export const messages = {
   "error.agent.screenCaptureRegionOutside":
     "La región no está dentro de una sola pantalla. Usa puntos del escritorio dentro de los límites de una pantalla de list_capture_sources.",
   "error.agent.screenCapturePermissionMissing":
-    "OpenBot no tiene el permiso de grabación de pantalla. Pide al usuario que abra Ajustes del Sistema > Privacidad y seguridad > Grabación de pantalla y audio del sistema, active OpenBot y después cierre OpenBot y vuelva a abrirlo.",
+    "OpenBot-NC no tiene el permiso de grabación de pantalla. Pide al usuario que abra Ajustes del Sistema > Privacidad y seguridad > Grabación de pantalla y audio del sistema, active OpenBot-NC y después cierre OpenBot-NC y vuelva a abrirlo.",
   "error.agent.screenCaptureListPermission":
-    "OpenBot todavía no tiene el permiso de grabación de pantalla, así que no puede listar las ventanas. Para capturar una pantalla, llama a capture_screen con target screen. El usuario aprueba primero la captura y después macOS puede pedirle el permiso.",
+    "OpenBot-NC todavía no tiene el permiso de grabación de pantalla, así que no puede listar las ventanas. Para capturar una pantalla, llama a capture_screen con target screen. El usuario aprueba primero la captura y después macOS puede pedirle el permiso.",
   "error.agent.screenCaptureEmptyWindows":
     "Windows devolvió una imagen vacía. Pide al usuario que desbloquee el equipo y cierre el contenido protegido. Una directiva de la organización también puede impedir la captura de pantalla.",
   "error.agent.screenCaptureFailed": "La captura de pantalla falló. Inténtalo de nuevo.",

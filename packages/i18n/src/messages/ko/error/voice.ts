@@ -10,8 +10,8 @@ export const messages = {
   "error.voice.modelUnavailable": "음성 모델을 사용할 수 없어요.",
   "error.voice.transcriptionTimedOut": "음성 받아쓰기 시간이 초과되었어요.",
   "error.voice.prepareRequired":
-    "로컬 음성 받아쓰기를 사용할 수 없어요. `bun run voice:prepare`를 실행한 후 OpenBot을 다시 시작해 주세요.",
-  "error.voice.transcriptionFailed": "OpenBot이 이 녹음을 받아쓰지 못했어요.",
+    "로컬 음성 받아쓰기를 사용할 수 없어요. `bun run voice:prepare`를 실행한 후 OpenBot-NC를 다시 시작해 주세요.",
+  "error.voice.transcriptionFailed": "OpenBot-NC가 이 녹음을 받아쓰지 못했어요.",
   "error.voice.videoModelMissing": "설정 → 음성에 녹음용 음성 인식 모델이 설정되어 있지 않아요.",
   "error.voice.videoModelMissingServer":
     "이 서버에 음성 인식 모델이 설정되어 있지 않아요. 소유자나 관리자가 서버 설정의 음성 인식에서 모델을 설정할 수 있어요.",
@@ -26,9 +26,9 @@ export const messages = {
   "error.voice.speech.runtimeUnavailable": "이 플랫폼에서는 로컬 음성 읽기를 사용할 수 없어요.",
   "error.voice.speech.modelRequired": "설정 → 음성에서 음성 읽기 모델을 다운로드해 주세요.",
   "error.voice.speech.timedOut": "답변을 소리 내어 읽는 시간이 초과되었어요.",
-  "error.voice.speech.failed": "OpenBot이 답변을 소리 내어 읽지 못했어요.",
+  "error.voice.speech.failed": "OpenBot-NC가 답변을 소리 내어 읽지 못했어요.",
   "error.voice.speech.providerRefused": "{provider}가 오디오 생성을 거부했어요: {reason}",
-  "error.voice.recordingNotKept": "OpenBot이 음성 녹음을 보관하지 못했어요.",
+  "error.voice.recordingNotKept": "OpenBot-NC가 음성 녹음을 보관하지 못했어요.",
   "error.voice.server.modelUnsupported":
     "{host}에서 {model}(으)로 받아쓰기를 할 수 없습니다. 설정 → 음성에서 음성 서버의 다른 받아쓰기 모델을 선택하세요.",
 } as const satisfies PartialTranslation<typeof source>;

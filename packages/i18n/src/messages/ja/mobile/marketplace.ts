@@ -11,7 +11,7 @@ export const messages = {
   "mobile.marketplace.app.bitwardenTagline": "共有フォルダーのログイン情報でサイトにサインイン",
   "mobile.marketplace.app.protonPassTagline": "共有保管庫のログイン情報でサイトにサインイン",
   "mobile.marketplace.error.signInUnsupported":
-    "電話からアプリにサインインするには、サーバーの OpenBot をアップデートしてください。",
+    "電話からアプリにサインインするには、サーバーの OpenBot-NC をアップデートしてください。",
   "mobile.marketplace.app.connect": "接続",
   "mobile.marketplace.app.signInIntro":
     "アプリのページでサインインしてください。サインイン情報はこの電話ではなくサーバーに保存されます。",
@@ -19,7 +19,7 @@ export const messages = {
   "mobile.marketplace.app.stepAllow": "サインインしてアクセスを許可します。",
   "mobile.marketplace.app.stepBlank": "最後のページは読み込まれません。これは正常です。",
   "mobile.marketplace.app.stepCopy": "アドレスバーをタップし、アドレス全体をコピーします。",
-  "mobile.marketplace.app.stepPaste": "OpenBot に戻り、下にアドレスを貼り付けます。",
+  "mobile.marketplace.app.stepPaste": "OpenBot-NC に戻り、下にアドレスを貼り付けます。",
   "mobile.marketplace.app.connected": "接続済み",
   "mobile.marketplace.app.connectFailed": "アプリを接続できませんでした。",
   "mobile.marketplace.app.waiting": "サインインページを待っています…",

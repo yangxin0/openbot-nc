@@ -13,11 +13,11 @@ export const messages = {
   "mobile.server.drawer.hiddenServers": "Ausgeblendete Server",
   "mobile.server.drawer.hideFailed": "{name} konnte nicht ausgeblendet werden",
   "mobile.server.drawer.showFailed": "{name} konnte nicht eingeblendet werden",
-  "mobile.server.drawer.actionFailed": "OpenBot konnte diese Aktion nicht ausführen. Versuche es erneut.",
+  "mobile.server.drawer.actionFailed": "OpenBot-NC konnte diese Aktion nicht ausführen. Versuche es erneut.",
   "mobile.server.drawer.moveUp": "Nach oben verschieben",
   "mobile.server.drawer.moveDown": "Nach unten verschieben",
   "mobile.server.drawer.orderHint":
-    "OpenBot öffnet den ersten Server. Die Reihenfolge wird auf diesem Gerät gespeichert.",
+    "OpenBot-NC öffnet den ersten Server. Die Reihenfolge wird auf diesem Gerät gespeichert.",
   "mobile.server.drawer.title": "Server",
   "mobile.server.drawer.serverSettings": "Servereinstellungen",
   "mobile.server.drawer.serverListHint": "Zeigt oder verbirgt die Server",
@@ -39,7 +39,7 @@ export const messages = {
   "mobile.server.local.optionHint": "Auf dem Computer, auf dem {name} läuft, mit eigenen Agenten, Chats und Dateien.",
   "mobile.server.local.title": "Neuer Server",
   "mobile.server.local.description":
-    "Der Server läuft auf dem Computer, auf dem {name} läuft, mit eigenen Agenten, Chats und Dateien. Er ist verfügbar, solange OpenBot auf diesem Computer läuft.",
+    "Der Server läuft auf dem Computer, auf dem {name} läuft, mit eigenen Agenten, Chats und Dateien. Er ist verfügbar, solange OpenBot-NC auf diesem Computer läuft.",
   "mobile.server.local.nameLabel": "Servername",
   "mobile.server.local.nameTooShort": "Verwende mindestens {limit} Zeichen.",
   "mobile.server.local.create": "Erstellen",
@@ -51,12 +51,12 @@ export const messages = {
   "mobile.server.local.createdOn": "{name} läuft auf demselben Computer wie {computer}.",
   "mobile.server.local.waiting": "Warten, bis {name} online ist…",
   "mobile.server.local.notPublished":
-    "{name} läuft, aber dieses Telefon kann ihn noch nicht öffnen. Stelle sicher, dass OpenBot auf dem Computer, auf dem {computer} läuft, angemeldet und online ist.",
+    "{name} läuft, aber dieses Telefon kann ihn noch nicht öffnen. Stelle sicher, dass OpenBot-NC auf dem Computer, auf dem {computer} läuft, angemeldet und online ist.",
   "mobile.server.local.open": "Server öffnen",
   "mobile.server.local.ownerOnly": "Nur der Eigentümer kann einen Server auf diesem Computer erstellen.",
-  "mobile.server.local.unsupported": "Aktualisiere OpenBot auf diesem Computer, um hier einen Server zu erstellen.",
+  "mobile.server.local.unsupported": "Aktualisiere OpenBot-NC auf diesem Computer, um hier einen Server zu erstellen.",
   "mobile.server.local.deleteOffline":
-    "Nur der Computer dieses Servers kann ihn löschen. Öffne OpenBot auf diesem Computer und versuche es dann erneut.",
+    "Nur der Computer dieses Servers kann ihn löschen. Öffne OpenBot-NC auf diesem Computer und versuche es dann erneut.",
   "mobile.server.role.owner": "Eigentümer",
   "mobile.server.role.admin": "Administrator",
   "mobile.server.role.member": "Mitglied",
@@ -95,7 +95,7 @@ export const messages = {
   "mobile.server.routines.status.paused": "Pausiert",
   "mobile.server.routines.status.failed": "Fehlgeschlagen",
   "mobile.server.routines.status.completed": "Abgeschlossen",
-  "mobile.server.threads.unsupported": "Dieser Host unterstützt keine Threads. Aktualisiere OpenBot auf dem Host.",
+  "mobile.server.threads.unsupported": "Dieser Host unterstützt keine Threads. Aktualisiere OpenBot-NC auf dem Host.",
   "mobile.server.threads.ask": "Was soll erledigt werden?",
   "mobile.server.threads.chooseAgent": "Thread starten mit",
   "mobile.server.threads.agentLabel": "Thread mit {name} starten",
@@ -163,12 +163,12 @@ export const messages = {
     "Der Server stoppt und startet wieder. Das dauert etwa eine Minute. Laufende Agentendurchläufe stoppen, und Mitglieder verlieren die Verbindung, bis der Server zurück ist. Dateien und Chats bleiben erhalten.",
   "mobile.server.settings.restartConfirm": "Neu starten",
   "mobile.server.settings.restarted": "{name} startet neu",
-  "mobile.server.settings.restartUnsupported": "Aktualisiere OpenBot auf diesem Server, um ihn hier neu zu starten.",
+  "mobile.server.settings.restartUnsupported": "Aktualisiere OpenBot-NC auf diesem Server, um ihn hier neu zu starten.",
   "mobile.server.settings.hide": "Server ausblenden",
   "mobile.server.settings.show": "Server einblenden",
   "mobile.server.settings.deleteTitle": "{name} löschen?",
   "mobile.server.settings.deleteBody":
-    "OpenBot stoppt den Server auf seinem Computer und verschiebt seine Agenten, Chats und Dateien in den Papierkorb dieses Computers. Der Server verschwindet aus der Serverliste auf allen deinen Geräten.",
+    "OpenBot-NC stoppt den Server auf seinem Computer und verschiebt seine Agenten, Chats und Dateien in den Papierkorb dieses Computers. Der Server verschwindet aus der Serverliste auf allen deinen Geräten.",
   "mobile.server.settings.delete": "Server löschen",
   "mobile.server.settings.name": "Servername",
   "mobile.server.settings.nameLength": "Verwende {min} bis {max} Zeichen.",
@@ -182,7 +182,7 @@ export const messages = {
   "mobile.server.settings.identityNotAllowed":
     "Nur ein Eigentümer oder Administrator kann den Servernamen und das Logo ändern.",
   "mobile.server.settings.identityUnsupported":
-    "Aktualisiere OpenBot auf diesem Server, um seinen Namen und sein Logo hier zu ändern.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um seinen Namen und sein Logo hier zu ändern.",
   "mobile.server.settings.identityOffline": "Verbinde dich mit diesem Server, um seinen Namen und sein Logo zu ändern.",
   "mobile.server.settings.appearance": "Form und Farbe",
   "mobile.server.settings.appearanceShape": "Form",
@@ -209,7 +209,7 @@ export const messages = {
   "mobile.server.storage.category.caches": "Zwischengespeicherte Serverdateien",
   "mobile.server.storage.category.runtimes": "Anbieter-Laufzeitumgebungen",
   "mobile.server.storage.category.logs": "Protokolle",
-  "mobile.server.storage.total": "OpenBot auf {name}",
+  "mobile.server.storage.total": "OpenBot-NC auf {name}",
   "mobile.server.storage.used": "Belegt",
   "mobile.server.storage.byType": "Speicher nach Typ",
   "mobile.server.storage.free": "{size} auf diesem Datenträger frei",
@@ -231,10 +231,10 @@ export const messages = {
   "mobile.server.storage.clearTitle.caches": "Zwischengespeicherte Serverdateien löschen?",
   "mobile.server.storage.clearTitle.logs": "Protokolle löschen?",
   "mobile.server.storage.clearBody.caches":
-    "Kopien von Serverdateien. OpenBot lädt sie erneut herunter, wenn du sie öffnest.",
+    "Kopien von Serverdateien. OpenBot-NC lädt sie erneut herunter, wenn du sie öffnest.",
   "mobile.server.storage.clearBody.logs": "Diagnoseprotokolle. Neue Protokolle werden sofort begonnen.",
   "mobile.server.storage.clearFailed": "Daten konnten nicht gelöscht werden",
-  "mobile.server.storage.clearFailedBody": "OpenBot konnte diese Daten auf dem Server nicht löschen.",
+  "mobile.server.storage.clearFailedBody": "OpenBot-NC konnte diese Daten auf dem Server nicht löschen.",
   "mobile.server.storage.noFiles": "Auf diesem Server sind keine Dateien gespeichert.",
   "mobile.server.library.type.all": "Alle",
   "mobile.server.library.type.images": "Bilder",
@@ -305,7 +305,7 @@ export const messages = {
   "mobile.server.settings.timezoneUnavailable":
     "Verbinde dich als Eigentümer oder Admin mit diesem Server, um seine Zeitzone zu ändern.",
   "mobile.server.settings.timezoneUnsupported":
-    "Aktualisiere OpenBot auf diesem Server, um seine Zeitzone hier zu ändern.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um seine Zeitzone hier zu ändern.",
   "mobile.server.settings.voiceModelDescription":
     "Agenten auf diesem Server verwenden dieses Modell, um den Ton von Videos ohne Untertitel zu transkribieren.",
   "mobile.server.settings.voiceModelLoading": "Spracherkennung wird geladen …",
@@ -313,7 +313,7 @@ export const messages = {
   "mobile.server.settings.voiceModelSaveFailed":
     "Das Spracherkennungsmodell konnte nicht geändert werden. Versuche es erneut.",
   "mobile.server.settings.voiceModelUnsupported":
-    "Aktualisiere OpenBot auf diesem Server, um seine Spracherkennung hier zu ändern.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um seine Spracherkennung hier zu ändern.",
   "mobile.server.settings.voiceModelReady": "Bereit",
   "mobile.server.settings.voiceModelDownloading": "Wird geladen: {percent}",
   "mobile.server.settings.voiceModelSize": "{size} Download",
@@ -339,7 +339,7 @@ export const messages = {
     "Der Serverschlüssel konnte nicht geändert werden. Versuche es noch einmal.",
   "mobile.server.settings.keyOwnerOnly": "Nur der Eigentümer kann den Serverschlüssel ändern.",
   "mobile.server.settings.keyUnsupported":
-    "Aktualisiere OpenBot auf diesem Server, um seinen Schlüssel hier zu ändern.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um seinen Schlüssel hier zu ändern.",
   "mobile.server.settings.turnLimit": "Threads gleichzeitig",
   "mobile.server.settings.turnLimitDescription":
     "Wie viele Agent-Threads auf diesem Server gleichzeitig laufen können. Mehr Threads brauchen mehr Arbeitsspeicher.",
@@ -350,7 +350,7 @@ export const messages = {
   "mobile.server.settings.turnLimitsSaveFailed":
     "Das Thread-Limit konnte nicht gespeichert werden. Versuche es erneut.",
   "mobile.server.settings.turnLimitsUnsupported":
-    "Aktualisiere OpenBot auf diesem Server, um sein Thread-Limit hier zu ändern.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um sein Thread-Limit hier zu ändern.",
   "mobile.server.settings.agentTaskLimit": "Parallele Threads pro Agent",
   "mobile.server.settings.agentTaskLimitDescription":
     "Wie viele Threads jeder Agent gleichzeitig ausführen kann, wenn er kein eigenes Limit hat.",
@@ -362,7 +362,7 @@ export const messages = {
   "mobile.server.settings.memoryLimitSaveFailed":
     "Das Erinnerungslimit konnte nicht gespeichert werden. Versuche es erneut.",
   "mobile.server.settings.memoryLimitUnsupported":
-    "Aktualisiere OpenBot auf diesem Server, um sein Erinnerungslimit hier zu ändern.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um sein Erinnerungslimit hier zu ändern.",
   "mobile.server.settings.memoryReview": "Erinnerungsprüfung",
   "mobile.server.settings.memoryReviewDescription":
     "Wie oft Agenten auf diesem Server im Hintergrund dauerhafte Fakten aus ihren Chats speichern.",
@@ -383,7 +383,7 @@ export const messages = {
   "mobile.server.settings.browsingMemoryLoadFailed": "Die Browsing-Einstellung konnte nicht geladen werden.",
   "mobile.server.settings.learningSaveFailed": "Die Einstellung konnte nicht gespeichert werden. Versuche es erneut.",
   "mobile.server.settings.learningUnsupported":
-    "Aktualisiere OpenBot auf diesem Server, um diese Einstellung hier zu ändern.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um diese Einstellung hier zu ändern.",
   "mobile.server.settings.responseStyleDescription":
     "Natürlich: Agenten senden während der Arbeit kurze Updates, und der Chat zeigt sie. Klassisch: Agenten antworten einmal, wenn sie fertig sind.",
   "mobile.server.settings.responseStyleNatural": "Natürlich",
@@ -392,17 +392,17 @@ export const messages = {
   "mobile.server.settings.personalitySaveFailed":
     "Der Antwortstil konnte nicht gespeichert werden. Versuche es erneut.",
   "mobile.server.settings.personalityUnsupported":
-    "Aktualisiere OpenBot auf diesem Server, um seinen Antwortstil hier zu ändern.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um seinen Antwortstil hier zu ändern.",
   "mobile.server.settings.agentsUnavailable":
     "Verbinde dich als Eigentümer oder Admin mit diesem Server, um seine Agent-Einstellungen zu ändern.",
   "mobile.server.route.browserProfiles": "Browser-Profile",
   "mobile.server.browserProfiles.unavailable":
     "Nur Besitzer oder Admins eines Online-Servers können seine Browser-Profile verwalten.",
   "mobile.server.browserProfiles.unsupported":
-    "Aktualisiere OpenBot auf diesem Server, um seine Browser-Profile hier zu verwalten.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um seine Browser-Profile hier zu verwalten.",
   "mobile.server.browserProfiles.loading": "Browser-Profile werden geladen…",
-  "mobile.server.browserProfiles.loadFailed": "OpenBot konnte die Browser-Profile nicht laden.",
-  "mobile.server.browserProfiles.saveFailed": "OpenBot konnte das Browser-Profil nicht ändern.",
+  "mobile.server.browserProfiles.loadFailed": "OpenBot-NC konnte die Browser-Profile nicht laden.",
+  "mobile.server.browserProfiles.saveFailed": "OpenBot-NC konnte das Browser-Profil nicht ändern.",
   "mobile.server.browserProfiles.description":
     "Jedes Profil hat eigene Anmeldungen, Cookies und Websitedaten auf dem Computer, auf dem der Server läuft. Agenten mit demselben Profil teilen seine Anmeldungen.",
   "mobile.server.browserProfiles.shared": "Gemeinsam",
@@ -438,13 +438,13 @@ export const messages = {
     "Dies löscht die Anmeldungen, Cookies und Websitedaten des Profils. Seine offenen Tabs werden geschlossen.",
   "mobile.server.browserProfiles.deleteAgents": "Diese Agenten wechseln zum gemeinsamen Profil: {agents}.",
   "mobile.server.browserProxies.unsupported":
-    "Aktualisiere OpenBot auf diesem Server, um seine Proxys hier zu verwalten.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um seine Proxys hier zu verwalten.",
   "mobile.server.browserProxies.loading": "Proxys werden geladen…",
-  "mobile.server.browserProxies.loadFailed": "OpenBot konnte die Proxys nicht laden.",
-  "mobile.server.browserProxies.saveFailed": "OpenBot konnte den Proxy nicht ändern.",
+  "mobile.server.browserProxies.loadFailed": "OpenBot-NC konnte die Proxys nicht laden.",
+  "mobile.server.browserProxies.saveFailed": "OpenBot-NC konnte den Proxy nicht ändern.",
   "mobile.server.browserProxies.title": "Proxys",
   "mobile.server.browserProxies.sectionHint":
-    "Ein Profil mit Proxy öffnet seine Seiten über diesen Proxy. Ein Mitglied teilt einen Computer über die OpenBot-Desktop-App.",
+    "Ein Profil mit Proxy öffnet seine Seiten über diesen Proxy. Ein Mitglied teilt einen Computer über die OpenBot-NC-Desktop-App.",
   "mobile.server.browserProxies.limit": "Ein Server kann höchstens {limit} Proxys haben.",
   "mobile.server.browserProxies.add": "Proxy hinzufügen",
   "mobile.server.browserProxies.new": "Neuer Proxy",
@@ -472,7 +472,7 @@ export const messages = {
   "mobile.server.browserProxies.addressInvalid":
     "Das ist keine Proxy-Adresse. Verwende socks5://host:1080, http://user:password@host:3128 oder host:port:user:password.",
   "mobile.server.browserProxies.computerHint":
-    "Die Seiten der Profile, die diesen Computer verwenden, laufen über seine Internetverbindung, solange sein Mitglied ihn in der OpenBot-Desktop-App teilt. Der Computer öffnet nur öffentliche Internetadressen.",
+    "Die Seiten der Profile, die diesen Computer verwenden, laufen über seine Internetverbindung, solange sein Mitglied ihn in der OpenBot-NC-Desktop-App teilt. Der Computer öffnet nur öffentliche Internetadressen.",
   "mobile.server.browserProxies.profilesTitle": "Profile",
   "mobile.server.browserProxies.delete": "Proxy löschen",
   "mobile.server.browserProxies.deleteHint": "„Löschen“ stellt die Profile dieses Proxys auf „Automatisch“ um.",
@@ -489,12 +489,12 @@ export const messages = {
   "mobile.server.browserProxies.change": "Proxy ändern",
   "mobile.server.browserProxies.choiceHint":
     "„Automatisch“ verwendet die Proxy-Einstellungen des Computers, auf dem der Server läuft. Eine Änderung schließt die offenen Tabs des Profils.",
-  "mobile.server.browserProxies.shareHint": "Teile deinen Computer in der OpenBot-Desktop-App, um ihn zu verwenden.",
+  "mobile.server.browserProxies.shareHint": "Teile deinen Computer in der OpenBot-NC-Desktop-App, um ihn zu verwenden.",
   "mobile.server.route.connectors": "Konnektoren",
   "mobile.server.connectors.unavailable":
     "Verbinde dich als Eigentümer oder Administrator mit diesem Server, um seine Konnektoren zu verwalten.",
   "mobile.server.connectors.unsupported":
-    "Aktualisiere OpenBot auf diesem Server, um seine Konnektoren hier zu verwalten.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um seine Konnektoren hier zu verwalten.",
   "mobile.server.connectors.loading": "Konnektoren werden geladen…",
   "mobile.server.connectors.localOnly": "Nur Desktop-App",
   "mobile.server.connectors.statusConnected": "Verbunden",
@@ -543,7 +543,7 @@ export const messages = {
   "mobile.server.connectors.github.title": "GitHub",
   "mobile.server.connectors.github.description":
     "Alle Agenten auf {host} können deine GitHub-Repositories, Issues und Pull Requests sowie gh und git verwenden.",
-  "mobile.server.connectors.github.unavailable": "OpenBot auf diesem Server kann GitHub nicht verbinden.",
+  "mobile.server.connectors.github.unavailable": "OpenBot-NC auf diesem Server kann GitHub nicht verbinden.",
   "mobile.server.connectors.github.connect": "GitHub verbinden",
   "mobile.server.connectors.github.codeTitle": "Gib diesen Code auf GitHub ein",
   "mobile.server.connectors.github.codeFooter":
@@ -553,11 +553,12 @@ export const messages = {
   "mobile.server.connectors.github.connectedAs": "Verbunden als @{login}",
   "mobile.server.connectors.github.chooseRepositories": "Repositories auswählen",
   "mobile.server.connectors.github.repositoriesFooter":
-    "Agenten können nur Repositories verwenden, in denen die OpenBot GitHub App installiert ist.",
+    "Agenten können nur Repositories verwenden, in denen die OpenBot-NC GitHub App installiert ist.",
   "mobile.server.connectors.github.repositoriesTitle": "Repositories",
   "mobile.server.connectors.github.repositoriesLoading": "Repositories werden von GitHub gelesen",
-  "mobile.server.connectors.github.repositoriesFailed": "OpenBot konnte die Repositories von GitHub nicht lesen.",
-  "mobile.server.connectors.github.noRepositories": "Die OpenBot GitHub App ist noch in keinem Repository installiert.",
+  "mobile.server.connectors.github.repositoriesFailed": "OpenBot-NC konnte die Repositories von GitHub nicht lesen.",
+  "mobile.server.connectors.github.noRepositories":
+    "Die OpenBot-NC GitHub App ist noch in keinem Repository installiert.",
   "mobile.server.connectors.github.moreRepositories": {
     one: "Und {count} weiteres Repository",
     other: "Und {count} weitere Repositories",
@@ -571,12 +572,12 @@ export const messages = {
   "mobile.server.connectors.github.disconnect": "GitHub trennen",
   "mobile.server.connectors.github.disconnectTitle": "GitHub trennen?",
   "mobile.server.connectors.github.disconnectBody":
-    "Dadurch wird die Anmeldung von @{login} von {host} entfernt, und alle Agenten verlieren die GitHub-Werkzeuge, gh und git. Danach öffnet sich GitHub. Dort kannst du den Zugriff von OpenBot widerrufen.",
+    "Dadurch wird die Anmeldung von @{login} von {host} entfernt, und alle Agenten verlieren die GitHub-Werkzeuge, gh und git. Danach öffnet sich GitHub. Dort kannst du den Zugriff von OpenBot-NC widerrufen.",
   "mobile.server.connectors.onePassword.title": "1Password",
   "mobile.server.connectors.onePassword.description":
-    "Teile einen eigenen 1Password-Tresor über ein Dienstkonto mit OpenBot auf {host}, damit Agenten auf {host} sich in seinem Browser bei Websites anmelden können.",
+    "Teile einen eigenen 1Password-Tresor über ein Dienstkonto mit OpenBot-NC auf {host}, damit Agenten auf {host} sich in seinem Browser bei Websites anmelden können.",
   "mobile.server.connectors.onePassword.howItWorks":
-    "Erstelle auf 1Password.com ein Dienstkonto, das nur den Tresor lesen kann, den du mit OpenBot teilst, und füge sein Token hier ein. {host} prüft das Token und speichert es; dieses Telefon speichert es nicht. Agenten sehen nie ein Passwort.",
+    "Erstelle auf 1Password.com ein Dienstkonto, das nur den Tresor lesen kann, den du mit OpenBot-NC teilst, und füge sein Token hier ein. {host} prüft das Token und speichert es; dieses Telefon speichert es nicht. Agenten sehen nie ein Passwort.",
   "mobile.server.connectors.onePassword.token": "Dienstkonto-Token",
   "mobile.server.connectors.onePassword.tokenPlaceholder": "ops_…",
   "mobile.server.connectors.onePassword.connect": "1Password verbinden",
@@ -593,9 +594,9 @@ export const messages = {
     "{host} vergisst das Token. Der Tresor und das Dienstkonto bleiben in 1Password; entferne sie dort, wenn du sie nicht mehr brauchst.",
   "mobile.server.connectors.protonPass.title": "Proton Pass",
   "mobile.server.connectors.protonPass.description":
-    "Teile einen Proton-Pass-Tresor mit OpenBot auf {host}, damit Agenten auf {host} sich in dessen Browser bei Websites anmelden können.",
+    "Teile einen Proton-Pass-Tresor mit OpenBot-NC auf {host}, damit Agenten auf {host} sich in dessen Browser bei Websites anmelden können.",
   "mobile.server.connectors.protonPass.keyHelp":
-    "Erstelle in Proton Pass einen Zugriffsschlüssel, der nur den mit OpenBot geteilten Tresor lesen kann, und füge ihn hier ein. {host} speichert den Schlüssel, dieses Telefon nicht.",
+    "Erstelle in Proton Pass einen Zugriffsschlüssel, der nur den mit OpenBot-NC geteilten Tresor lesen kann, und füge ihn hier ein. {host} speichert den Schlüssel, dieses Telefon nicht.",
   "mobile.server.connectors.protonPass.keyPlaceholder": "pst_…",
   "mobile.server.connectors.protonPass.plan":
     "Dein Proton-Tarif enthält das Befehlszeilentool von Proton Pass nicht. Es braucht einen Proton-Tarif, der Pass Plus enthält. Andere bezahlte Tarife wie Mail Plus enthalten es nicht. Ändere den Tarif deines Kontos und verbinde dann erneut.",
@@ -644,7 +645,7 @@ export const messages = {
   },
   "mobile.server.connectors.slack.connect": "Slack verbinden",
   "mobile.server.connectors.slack.connectFooter":
-    "Slack öffnet sich in einem Browser. Wähle den Arbeitsbereich oben rechts und dann „Zulassen“. OpenBot installiert eine App namens OpenBot. Sie tritt allen öffentlichen Kanälen bei.",
+    "Slack öffnet sich in einem Browser. Wähle den Arbeitsbereich oben rechts und dann „Zulassen“. OpenBot-NC installiert eine App namens OpenBot. Sie tritt allen öffentlichen Kanälen bei.",
   "mobile.server.connectors.slack.add": "Arbeitsbereich hinzufügen",
   "mobile.server.connectors.slack.limit": {
     one: "Du kannst höchstens {count} Arbeitsbereich verbinden.",
@@ -654,15 +655,15 @@ export const messages = {
   "mobile.server.connectors.slack.workspaceDescription":
     "Personen erwähnen @OpenBot oder senden ihm eine Direktnachricht.",
   "mobile.server.connectors.slack.missingScopes":
-    "OpenBot hat diese Berechtigungen in Slack nicht: {scopes}. Trenne den Arbeitsbereich und verbinde ihn erneut.",
+    "OpenBot-NC hat diese Berechtigungen in Slack nicht: {scopes}. Trenne den Arbeitsbereich und verbinde ihn erneut.",
   "mobile.server.connectors.slack.retryAt":
-    "Slack hat OpenBot gebeten zu warten. OpenBot versucht es um {time} erneut.",
+    "Slack hat OpenBot-NC gebeten zu warten. OpenBot-NC versucht es um {time} erneut.",
   "mobile.server.connectors.slack.helpInvalidToken":
-    "Slack akzeptiert OpenBot in diesem Arbeitsbereich nicht mehr. Es wurde möglicherweise deinstalliert. Verbinde den Arbeitsbereich erneut.",
+    "Slack akzeptiert OpenBot-NC in diesem Arbeitsbereich nicht mehr. Es wurde möglicherweise deinstalliert. Verbinde den Arbeitsbereich erneut.",
   "mobile.server.connectors.slack.helpSecretStorage":
-    "OpenBot kann die gespeicherten Tokens auf {host} nicht lesen. Trenne den Arbeitsbereich und verbinde ihn erneut.",
+    "OpenBot-NC kann die gespeicherten Tokens auf {host} nicht lesen. Trenne den Arbeitsbereich und verbinde ihn erneut.",
   "mobile.server.connectors.slack.helpRelay":
-    "OpenBot auf {host} kann keine Slack-Ereignisse empfangen. Melde dich auf {host} an, gib dem Server in den Servereinstellungen einen Namen und lass OpenBot geöffnet.",
+    "OpenBot-NC auf {host} kann keine Slack-Ereignisse empfangen. Melde dich auf {host} an, gib dem Server in den Servereinstellungen einen Namen und lass OpenBot-NC geöffnet.",
   "mobile.server.connectors.slack.helpNotLinked":
     "Dieser Workspace ist nicht mit {host} verknüpft. Tippe auf „Neu verbinden“, um ihn zu verknüpfen.",
   "mobile.server.connectors.slack.orchestratorTitle": "Slack Orchestrator",
@@ -672,14 +673,14 @@ export const messages = {
     "Füge den Slack Orchestrator hinzu, sonst erhält Slack keine Antwort.",
   "mobile.server.connectors.slack.addAgent": "Slack Orchestrator hinzufügen",
   "mobile.server.connectors.slack.note":
-    "OpenBot tritt allen öffentlichen Kanälen und jedem neuen Kanal automatisch bei. Lade ihn in einen privaten Kanal ein: /invite @OpenBot.",
+    "OpenBot-NC tritt allen öffentlichen Kanälen und jedem neuen Kanal automatisch bei. Lade ihn in einen privaten Kanal ein: /invite @OpenBot.",
   "mobile.server.connectors.slack.disconnectTitle": "{workspace} trennen?",
   "mobile.server.connectors.slack.disconnectBody":
-    "OpenBot antwortet nicht mehr in {workspace} und entfernt sein Slack-Token von {host}.",
+    "OpenBot-NC antwortet nicht mehr in {workspace} und entfernt sein Slack-Token von {host}.",
   "mobile.server.connectors.slack.disconnectKept":
-    "Die Unterhaltungen und der Slack Orchestrator bleiben in OpenBot erhalten.",
+    "Die Unterhaltungen und der Slack Orchestrator bleiben in OpenBot-NC erhalten.",
   "mobile.server.connectors.slack.disconnectDeleted":
-    "Der Slack Orchestrator und seine Unterhaltungen werden aus OpenBot gelöscht.",
+    "Der Slack Orchestrator und seine Unterhaltungen werden aus OpenBot-NC gelöscht.",
   "mobile.server.connectors.slack.agentPromptTitle": "Slack Orchestrator hinzufügen?",
   "mobile.server.connectors.slack.agentPromptBody":
     "Dieser neue Agent beantwortet alles, was Personen in {workspace} an @OpenBot senden.",
@@ -693,7 +694,7 @@ export const messages = {
   },
   "mobile.server.connectors.discord.connect": "Discord verbinden",
   "mobile.server.connectors.discord.connectFooter":
-    "Discord öffnet sich in einem Browser. Wähle den Discord-Server und dann „Autorisieren“. OpenBot fügt einen Bot namens OpenBot hinzu.",
+    "Discord öffnet sich in einem Browser. Wähle den Discord-Server und dann „Autorisieren“. OpenBot-NC fügt einen Bot namens OpenBot hinzu.",
   "mobile.server.connectors.discord.add": "Discord-Server hinzufügen",
   "mobile.server.connectors.discord.limit": {
     one: "Du kannst höchstens {count} Discord-Server verbinden.",
@@ -703,15 +704,15 @@ export const messages = {
   "mobile.server.connectors.discord.workspaceDescription":
     "Erwähne @OpenBot in einem Kanal. Antworte OpenBot, um fortzufahren.",
   "mobile.server.connectors.discord.missingScopes":
-    "OpenBot hat diese Berechtigungen in Discord nicht: {scopes}. Trenne den Discord-Server und verbinde ihn erneut.",
+    "OpenBot-NC hat diese Berechtigungen in Discord nicht: {scopes}. Trenne den Discord-Server und verbinde ihn erneut.",
   "mobile.server.connectors.discord.retryAt":
-    "Discord hat OpenBot gebeten zu warten. OpenBot versucht es um {time} erneut.",
+    "Discord hat OpenBot-NC gebeten zu warten. OpenBot-NC versucht es um {time} erneut.",
   "mobile.server.connectors.discord.helpInvalidToken":
-    "Discord akzeptiert OpenBot auf diesem Discord-Server nicht mehr. Es wurde möglicherweise entfernt. Verbinde den Discord-Server erneut.",
+    "Discord akzeptiert OpenBot-NC auf diesem Discord-Server nicht mehr. Es wurde möglicherweise entfernt. Verbinde den Discord-Server erneut.",
   "mobile.server.connectors.discord.helpSecretStorage":
-    "OpenBot kann die gespeicherten Tokens auf {host} nicht lesen. Trenne den Discord-Server und verbinde ihn erneut.",
+    "OpenBot-NC kann die gespeicherten Tokens auf {host} nicht lesen. Trenne den Discord-Server und verbinde ihn erneut.",
   "mobile.server.connectors.discord.helpRelay":
-    "OpenBot auf {host} kann keine Discord-Ereignisse empfangen. Melde dich auf {host} an, gib dem Server in den Servereinstellungen einen Namen und lass OpenBot geöffnet.",
+    "OpenBot-NC auf {host} kann keine Discord-Ereignisse empfangen. Melde dich auf {host} an, gib dem Server in den Servereinstellungen einen Namen und lass OpenBot-NC geöffnet.",
   "mobile.server.connectors.discord.helpNotLinked":
     "Dieser Discord-Server ist nicht mit {host} verknüpft. Tippe auf „Neu verbinden“, um ihn zu verknüpfen.",
   "mobile.server.connectors.discord.orchestratorTitle": "Discord Orchestrator",
@@ -720,14 +721,14 @@ export const messages = {
   "mobile.server.connectors.discord.orchestratorNone":
     "Füge den Discord Orchestrator hinzu, sonst erhält Discord keine Antwort.",
   "mobile.server.connectors.discord.addAgent": "Discord Orchestrator hinzufügen",
-  "mobile.server.connectors.discord.note": "OpenBot sieht die Kanäle, die seine Rolle sehen darf.",
+  "mobile.server.connectors.discord.note": "OpenBot-NC sieht die Kanäle, die seine Rolle sehen darf.",
   "mobile.server.connectors.discord.disconnectTitle": "{workspace} trennen?",
   "mobile.server.connectors.discord.disconnectBody":
-    "OpenBot antwortet nicht mehr in {workspace} und entfernt die Discord-Verbindung von {host}.",
+    "OpenBot-NC antwortet nicht mehr in {workspace} und entfernt die Discord-Verbindung von {host}.",
   "mobile.server.connectors.discord.disconnectKept":
-    "Die Unterhaltungen und der Discord Orchestrator bleiben in OpenBot erhalten.",
+    "Die Unterhaltungen und der Discord Orchestrator bleiben in OpenBot-NC erhalten.",
   "mobile.server.connectors.discord.disconnectDeleted":
-    "Der Discord Orchestrator und seine Unterhaltungen werden aus OpenBot gelöscht.",
+    "Der Discord Orchestrator und seine Unterhaltungen werden aus OpenBot-NC gelöscht.",
   "mobile.server.connectors.discord.agentPromptTitle": "Discord Orchestrator hinzufügen?",
   "mobile.server.connectors.discord.agentPromptBody":
     "Dieser neue Agent beantwortet alles, was Personen in {workspace} an @OpenBot senden.",
@@ -735,7 +736,7 @@ export const messages = {
     "Discord hat die Autorisierung nicht abgeschlossen. Versuche es erneut.",
   "mobile.server.connectors.telegram.title": "Telegram",
   "mobile.server.connectors.telegram.description":
-    "Füge den OpenBot-Bot zu einer Telegram-Gruppe hinzu oder öffne einen direkten Chat mit ihm. Der Telegram-Orchestrator fragt den passenden Agenten und antwortet.",
+    "Füge den OpenBot-NC-Bot zu einer Telegram-Gruppe hinzu oder öffne einen direkten Chat mit ihm. Der Telegram-Orchestrator fragt den passenden Agenten und antwortet.",
   "mobile.server.connectors.telegram.attention": {
     one: "{count} Chat erfordert Aufmerksamkeit",
     other: "{count} Chats erfordern Aufmerksamkeit",
@@ -747,14 +748,14 @@ export const messages = {
   "mobile.server.connectors.telegram.directDescription":
     "Jede Nachricht in diesem Chat geht an den Telegram-Orchestrator.",
   "mobile.server.connectors.telegram.helpRemoved":
-    "Der OpenBot-Bot ist nicht mehr in diesem Chat. Trenne den Chat und füge den Bot dann erneut hinzu.",
+    "Der OpenBot-NC-Bot ist nicht mehr in diesem Chat. Trenne den Chat und füge den Bot dann erneut hinzu.",
   "mobile.server.connectors.telegram.helpRelay":
-    "OpenBot auf {host} kann keine Telegram-Nachrichten empfangen. Melde dich auf {host} an, gib dem Server in den Servereinstellungen einen Namen und lass OpenBot geöffnet.",
+    "OpenBot-NC auf {host} kann keine Telegram-Nachrichten empfangen. Melde dich auf {host} an, gib dem Server in den Servereinstellungen einen Namen und lass OpenBot-NC geöffnet.",
   "mobile.server.connectors.telegram.helpError":
-    "OpenBot kann diesen Chat nicht erreichen. Verbinde ihn erneut oder trenne den Chat.",
+    "OpenBot-NC kann diesen Chat nicht erreichen. Verbinde ihn erneut oder trenne den Chat.",
   "mobile.server.connectors.telegram.helpNotLinked":
     "Dieser Chat ist nicht mit {host} verknüpft. Tippe auf „Neu verbinden“, um ihn zu verknüpfen.",
-  "mobile.server.connectors.telegram.retryAt": "Telegram hat OpenBot gebeten zu warten. Neuer Versuch um {time}.",
+  "mobile.server.connectors.telegram.retryAt": "Telegram hat OpenBot-NC gebeten zu warten. Neuer Versuch um {time}.",
   "mobile.server.connectors.telegram.linkTitle": "Chat verknüpfen",
   "mobile.server.connectors.telegram.linkAnother": "Weiteren Chat verknüpfen",
   "mobile.server.connectors.telegram.linkFooter":
@@ -767,17 +768,17 @@ export const messages = {
   "mobile.server.connectors.telegram.openDirectChat": "Direkten Chat öffnen",
   "mobile.server.connectors.telegram.orchestratorTitle": "Telegram-Orchestrator",
   "mobile.server.connectors.telegram.orchestratorDescription":
-    "Dieser Agent empfängt die Nachrichten für OpenBot aus all deinen Telegram-Chats. Kurze beantwortet er selbst, andere Aufgaben gibt er an den passenden Agenten weiter und postet die Antwort im Chat.",
+    "Dieser Agent empfängt die Nachrichten für OpenBot-NC aus all deinen Telegram-Chats. Kurze beantwortet er selbst, andere Aufgaben gibt er an den passenden Agenten weiter und postet die Antwort im Chat.",
   "mobile.server.connectors.telegram.orchestratorNone":
     "Füge den Telegram-Orchestrator hinzu, sonst bekommt Telegram keine Antwort.",
   "mobile.server.connectors.telegram.addAgent": "Telegram-Orchestrator hinzufügen",
   "mobile.server.connectors.telegram.disconnectTitle": "{chat} trennen?",
   "mobile.server.connectors.telegram.disconnectBody":
-    "Der OpenBot-Bot verlässt {chat}, und OpenBot antwortet dort nicht mehr.",
+    "Der OpenBot-NC-Bot verlässt {chat}, und OpenBot-NC antwortet dort nicht mehr.",
   "mobile.server.connectors.telegram.disconnectKept":
-    "Die Unterhaltungen und der Telegram-Orchestrator bleiben in OpenBot.",
+    "Die Unterhaltungen und der Telegram-Orchestrator bleiben in OpenBot-NC.",
   "mobile.server.connectors.telegram.disconnectDeleted":
-    "Das ist der letzte Chat, daher werden der Telegram-Orchestrator und seine Unterhaltungen aus OpenBot gelöscht.",
+    "Das ist der letzte Chat, daher werden der Telegram-Orchestrator und seine Unterhaltungen aus OpenBot-NC gelöscht.",
   "mobile.server.connectors.whatsapp.title": "WhatsApp",
   "mobile.server.connectors.whatsapp.description":
     "Verknüpfe eine WhatsApp-Nummer mit diesem Server. Der WhatsApp-Orchestrator fragt den passenden Agenten und antwortet.",
@@ -788,29 +789,29 @@ export const messages = {
   "mobile.server.connectors.whatsapp.numbersTitle": "Nummern",
   "mobile.server.connectors.whatsapp.linkNumber": "Nummer verknüpfen",
   "mobile.server.connectors.whatsapp.ownNumberNote":
-    "Dein Chat „Nachricht an dich selbst“ und die Personen, die du zulässt, erreichen OpenBot.",
+    "Dein Chat „Nachricht an dich selbst“ und die Personen, die du zulässt, erreichen OpenBot-NC.",
   "mobile.server.connectors.whatsapp.dedicatedNote":
-    "Dein Chat „Nachricht an dich selbst“ und die Personen, die du zulässt, erreichen OpenBot. Andere Personen bekommen einen Code, den sie dir geben.",
+    "Dein Chat „Nachricht an dich selbst“ und die Personen, die du zulässt, erreichen OpenBot-NC. Andere Personen bekommen einen Code, den sie dir geben.",
   "mobile.server.connectors.whatsapp.helpLoggedOut":
     "WhatsApp hat diesen Server aus den verknüpften Geräten entfernt. Verknüpfe die Nummer erneut.",
   "mobile.server.connectors.whatsapp.helpError":
-    "OpenBot kann WhatsApp unter dieser Nummer nicht erreichen. Verbinde sie erneut oder trenne die Nummer.",
+    "OpenBot-NC kann WhatsApp unter dieser Nummer nicht erreichen. Verbinde sie erneut oder trenne die Nummer.",
   "mobile.server.connectors.whatsapp.helpKeysUnreadable":
-    "OpenBot kann die gespeicherten Schlüssel dieser Nummer nicht lesen. Verknüpfe die Nummer erneut.",
-  "mobile.server.connectors.whatsapp.retryAt": "WhatsApp hat OpenBot gebeten zu warten. Neuer Versuch um {time}.",
+    "OpenBot-NC kann die gespeicherten Schlüssel dieser Nummer nicht lesen. Verknüpfe die Nummer erneut.",
+  "mobile.server.connectors.whatsapp.retryAt": "WhatsApp hat OpenBot-NC gebeten zu warten. Neuer Versuch um {time}.",
   "mobile.server.connectors.whatsapp.linkAgain": "Neu verknüpfen",
   "mobile.server.connectors.whatsapp.ownNumber": "Private Nummer",
   "mobile.server.connectors.whatsapp.ownNumberDescription":
-    "Nur dein Chat „Nachricht an dich selbst“ und die Personen, die du zulässt, können schreiben. Andere bekommen keine Antwort. Wenn es aus ist, antwortet OpenBot unbekannten Personen mit einem Code.",
+    "Nur dein Chat „Nachricht an dich selbst“ und die Personen, die du zulässt, können schreiben. Andere bekommen keine Antwort. Wenn es aus ist, antwortet OpenBot-NC unbekannten Personen mit einem Code.",
   "mobile.server.connectors.whatsapp.workingMessage": "Nachricht „Wird bearbeitet…“",
   "mobile.server.connectors.whatsapp.workingMessageDescription":
-    "OpenBot sendet sie, während der Agent arbeitet, und ersetzt sie dann durch die Antwort. Eine Anfrage, die auf eine frühere wartet, bekommt auch eine Wartemeldung. Bei einer privaten Nummer bekommt nur dein Chat „Nachricht an dich selbst“ diese Meldungen. Schalte sie aus, um nur die Antwort zu senden.",
+    "OpenBot-NC sendet sie, während der Agent arbeitet, und ersetzt sie dann durch die Antwort. Eine Anfrage, die auf eine frühere wartet, bekommt auch eine Wartemeldung. Bei einer privaten Nummer bekommt nur dein Chat „Nachricht an dich selbst“ diese Meldungen. Schalte sie aus, um nur die Antwort zu senden.",
   "mobile.server.connectors.whatsapp.statusReactions": "Status-Reaktionen",
   "mobile.server.connectors.whatsapp.statusReactionsDescription":
-    "OpenBot reagiert mit 👀, wenn eine Nachricht ankommt, und mit ✅, wenn die Antwort fertig ist. Schalte sie aus, um keine Reaktionen zu senden.",
+    "OpenBot-NC reagiert mit 👀, wenn eine Nachricht ankommt, und mit ✅, wenn die Antwort fertig ist. Schalte sie aus, um keine Reaktionen zu senden.",
   "mobile.server.connectors.whatsapp.orchestratorTitle": "WhatsApp-Orchestrator",
   "mobile.server.connectors.whatsapp.orchestratorDescription":
-    "Dieser Agent empfängt die Nachrichten für OpenBot von all deinen verknüpften Nummern. Kurze beantwortet er selbst, andere Aufgaben gibt er an den passenden Agenten weiter und antwortet in WhatsApp.",
+    "Dieser Agent empfängt die Nachrichten für OpenBot-NC von all deinen verknüpften Nummern. Kurze beantwortet er selbst, andere Aufgaben gibt er an den passenden Agenten weiter und antwortet in WhatsApp.",
   "mobile.server.connectors.whatsapp.orchestratorNone":
     "Füge den WhatsApp-Orchestrator hinzu, sonst bekommt WhatsApp keine Antwort.",
   "mobile.server.connectors.whatsapp.addAgent": "WhatsApp-Orchestrator hinzufügen",
@@ -820,14 +821,14 @@ export const messages = {
   "mobile.server.connectors.whatsapp.linkDescription":
     "Wähle die Nummer und verknüpfe dann diesen Server über WhatsApp auf deinem Telefon.",
   "mobile.server.connectors.whatsapp.codeOnly":
-    "Auf dem Telefon verknüpfst du mit einem Kopplungscode. Um stattdessen einen QR-Code zu scannen, verwende OpenBot auf einem Computer.",
+    "Auf dem Telefon verknüpfst du mit einem Kopplungscode. Um stattdessen einen QR-Code zu scannen, verwende OpenBot-NC auf einem Computer.",
   "mobile.server.connectors.whatsapp.kindLabel": "Nummer",
   "mobile.server.connectors.whatsapp.kindPersonal": "Meine private Nummer",
   "mobile.server.connectors.whatsapp.kindPersonalDescription":
-    "OpenBot antwortet nur dir in „Nachricht an dich selbst“ und den Personen, die du zulässt. Andere Personen bekommen keine Antwort.",
-  "mobile.server.connectors.whatsapp.kindDedicated": "Eine Nummer nur für OpenBot",
+    "OpenBot-NC antwortet nur dir in „Nachricht an dich selbst“ und den Personen, die du zulässt. Andere Personen bekommen keine Antwort.",
+  "mobile.server.connectors.whatsapp.kindDedicated": "Eine Nummer nur für OpenBot-NC",
   "mobile.server.connectors.whatsapp.kindDedicatedDescription":
-    "OpenBot antwortet von dieser Nummer jeder unbekannten Person mit einem Code, den sie dir gibt. Du genehmigst sie hier.",
+    "OpenBot-NC antwortet von dieser Nummer jeder unbekannten Person mit einem Code, den sie dir gibt. Du genehmigst sie hier.",
   "mobile.server.connectors.whatsapp.phoneLabel": "Telefonnummer",
   "mobile.server.connectors.whatsapp.phoneDescription": "Mit Ländervorwahl, z. B. +49 151 23456789.",
   "mobile.server.connectors.whatsapp.phoneInvalid": "Gib die Telefonnummer mit Ländervorwahl ein.",
@@ -847,21 +848,21 @@ export const messages = {
   "mobile.server.connectors.whatsapp.failedBusy":
     "Eine andere Verknüpfung läuft. Warte, bis sie endet, und versuche es dann erneut.",
   "mobile.server.connectors.whatsapp.failedUnavailable":
-    "OpenBot kann WhatsApp nicht erreichen. Prüfe die Internetverbindung.",
+    "OpenBot-NC kann WhatsApp nicht erreichen. Prüfe die Internetverbindung.",
   "mobile.server.connectors.whatsapp.tryAgain": "Wiederholen",
   "mobile.server.connectors.whatsapp.agentStepDescription":
-    "Dieser neue Agent beantwortet die Nachrichten für OpenBot unter {number} und unter jeder Nummer, die du später verknüpfst.",
-  "mobile.server.connectors.whatsapp.doneTitle": "OpenBot ist mit {number} verknüpft",
+    "Dieser neue Agent beantwortet die Nachrichten für OpenBot-NC unter {number} und unter jeder Nummer, die du später verknüpfst.",
+  "mobile.server.connectors.whatsapp.doneTitle": "OpenBot-NC ist mit {number} verknüpft",
   "mobile.server.connectors.whatsapp.done": "Fertig",
   "mobile.server.connectors.whatsapp.disconnectTitle": "{number} trennen?",
   "mobile.server.connectors.whatsapp.disconnectBody":
-    "OpenBot meldet sich unter {number} von WhatsApp ab. War OpenBot aus, entferne das Gerät auch in WhatsApp > Verknüpfte Geräte.",
+    "OpenBot-NC meldet sich unter {number} von WhatsApp ab. War OpenBot-NC aus, entferne das Gerät auch in WhatsApp > Verknüpfte Geräte.",
   "mobile.server.connectors.whatsapp.disconnectEffect":
     "Personen können deine Agenten nicht mehr über {number} erreichen.",
   "mobile.server.connectors.whatsapp.removeEffectKept":
-    "Die Unterhaltungen und der WhatsApp-Orchestrator bleiben in OpenBot.",
+    "Die Unterhaltungen und der WhatsApp-Orchestrator bleiben in OpenBot-NC.",
   "mobile.server.connectors.whatsapp.removeEffectDeleted":
-    "Das ist die letzte Nummer, daher werden der WhatsApp-Orchestrator und seine Unterhaltungen aus OpenBot gelöscht.",
+    "Das ist die letzte Nummer, daher werden der WhatsApp-Orchestrator und seine Unterhaltungen aus OpenBot-NC gelöscht.",
   "mobile.server.connectors.whatsapp.keep": "Verknüpft lassen",
   "mobile.server.connectors.whatsapp.sendersTitle": "Wer an {number} schreiben kann",
   "mobile.server.connectors.whatsapp.sendersDescription":
@@ -875,7 +876,7 @@ export const messages = {
   "mobile.server.connectors.whatsapp.makeReadOnly": "Auf Nur lesen setzen",
   "mobile.server.connectors.whatsapp.allowWork": "Aufgaben erlauben",
   "mobile.server.connectors.whatsapp.readOnlyDetail":
-    "Nur lesen: Agenten können diesen Chat lesen, und OpenBot schreibt nie darin.",
+    "Nur lesen: Agenten können diesen Chat lesen, und OpenBot-NC schreibt nie darin.",
   "mobile.server.connectors.whatsapp.addContact": "Kontakt hinzufügen",
   "mobile.server.connectors.whatsapp.addGroup": "Gruppe hinzufügen",
   "mobile.server.connectors.whatsapp.contactTitle": "Kontakt hinzufügen",
@@ -889,7 +890,7 @@ export const messages = {
     "Personen in dieser Gruppe können deinen Agenten Aufgaben geben, wenn sie die Nummer erwähnen oder auf ihre Nachrichten antworten.",
   "mobile.server.connectors.whatsapp.groupSearch": "Gruppen suchen",
   "mobile.server.connectors.whatsapp.groupsLoading": "Gruppen werden gelesen…",
-  "mobile.server.connectors.whatsapp.groupsLoadFailed": "OpenBot konnte die Gruppen nicht lesen",
+  "mobile.server.connectors.whatsapp.groupsLoadFailed": "OpenBot-NC konnte die Gruppen nicht lesen",
   "mobile.server.connectors.whatsapp.groupsEmpty": "Diese Nummer ist in keiner Gruppe.",
   "mobile.server.connectors.whatsapp.groupsNoMatch": "Keine Gruppe hat diesen Namen.",
   "mobile.server.connectors.whatsapp.groupAdded": "Hinzugefügt",
@@ -913,9 +914,10 @@ export const messages = {
   "mobile.server.providers.runtimesFailed": "Die Downloads dieses Servers konnten nicht geladen werden.",
   "mobile.server.providers.unavailable":
     "Verbinde dich als Eigentümer oder Administrator, um die Anbieter dieses Servers zu verwalten.",
-  "mobile.server.providers.unsupported": "Aktualisiere OpenBot auf diesem Server, um seine Anbieter hier zu verwalten.",
+  "mobile.server.providers.unsupported":
+    "Aktualisiere OpenBot-NC auf diesem Server, um seine Anbieter hier zu verwalten.",
   "mobile.server.providers.signInUnsupported": "Dieser Server kann diesen Anbieter nicht über das Telefon anmelden.",
-  "mobile.server.providers.actionFailed": "OpenBot konnte diese Aktion nicht abschließen. Versuche es erneut.",
+  "mobile.server.providers.actionFailed": "OpenBot-NC konnte diese Aktion nicht abschließen. Versuche es erneut.",
   "mobile.server.providers.openFailed": "Die Anmeldeseite konnte nicht geöffnet werden.",
   "mobile.server.providers.copyFailed": "Der Code konnte nicht kopiert werden.",
   "mobile.server.providers.statusLabel": "Status",
@@ -924,10 +926,10 @@ export const messages = {
   "mobile.server.providers.connect": "Verbinden",
   "mobile.server.providers.reconnect": "Neu verbinden",
   "mobile.server.providers.connectHint":
-    "Der Server startet die Anmeldung. OpenBot zeigt dann die Schritte, und du schließt sie auf diesem Telefon ab.",
+    "Der Server startet die Anmeldung. OpenBot-NC zeigt dann die Schritte, und du schließt sie auf diesem Telefon ab.",
   "mobile.server.providers.relayHint":
-    "OpenBot öffnet die Anmeldeseite des Anbieters auf diesem Telefon. Wenn du etwas zurückkopieren musst, zeigt OpenBot zuerst die Schritte.",
-  "mobile.server.providers.connectOnComputer": "Verbinde diesen Anbieter in OpenBot auf einem Computer.",
+    "OpenBot-NC öffnet die Anmeldeseite des Anbieters auf diesem Telefon. Wenn du etwas zurückkopieren musst, zeigt OpenBot-NC zuerst die Schritte.",
+  "mobile.server.providers.connectOnComputer": "Verbinde diesen Anbieter in OpenBot-NC auf einem Computer.",
   "mobile.server.providers.signInTo": "Bei {name} anmelden",
   "mobile.server.providers.starting": "Anmeldung wird auf dem Server gestartet…",
   "mobile.server.providers.openPage": "Anmeldeseite öffnen",
@@ -938,15 +940,15 @@ export const messages = {
     "Öffne ChatGPT auf einem Computer, gehe zu den Sicherheitseinstellungen und aktiviere die Anmeldung per Gerätecode für Codex. Bei einem Arbeitskonto aktiviert sie der Admin deines Workspace.",
   "mobile.server.providers.codeStepCopy": "Kopiere den Code.",
   "mobile.server.providers.codeStepEnter": "Öffne die Anmeldeseite und gib den Code ein.",
-  "mobile.server.providers.codeStepReturn": "Komm zurück zu OpenBot. Die Anmeldung wird allein abgeschlossen.",
+  "mobile.server.providers.codeStepReturn": "Komm zurück zu OpenBot-NC. Die Anmeldung wird allein abgeschlossen.",
   "mobile.server.providers.pasteStepSignIn": "Öffne die Anmeldeseite und melde dich an.",
   "mobile.server.providers.pasteStepCopy": "Kopiere den Code, den die Seite zeigt.",
-  "mobile.server.providers.pasteStepReturn": "Komm zurück zu OpenBot und füge den Code unten ein.",
+  "mobile.server.providers.pasteStepReturn": "Komm zurück zu OpenBot-NC und füge den Code unten ein.",
   "mobile.server.providers.relayStepSignIn": "Öffne die Anmeldeseite und melde dich an.",
   "mobile.server.providers.relayStepBlank": "Die letzte Seite lädt nicht. Das ist richtig.",
   "mobile.server.providers.relayStepCopy": "Tippe auf die Adressleiste und kopiere die ganze Adresse.",
-  "mobile.server.providers.relayStepReturn": "Komm zurück zu OpenBot und füge die Adresse unten ein.",
-  "mobile.server.providers.linkHint": "Melde dich auf der Seite an. OpenBot macht dann allein weiter.",
+  "mobile.server.providers.relayStepReturn": "Komm zurück zu OpenBot-NC und füge die Adresse unten ein.",
+  "mobile.server.providers.linkHint": "Melde dich auf der Seite an. OpenBot-NC macht dann allein weiter.",
   "mobile.server.providers.relayWaiting": "Warte auf die Anmeldeseite vom Server…",
   "mobile.server.providers.code": "Code von der Seite",
   "mobile.server.providers.codePlaceholder": "Code hier einfügen",
@@ -1013,7 +1015,7 @@ export const messages = {
   "mobile.server.providers.accountsPooledHint":
     "Agenten teilen sich diese Konten. Ein neues Konto meldet sich auf seiner Seite auf diesem Telefon an.",
   "mobile.server.providers.accountsPooledOnComputer":
-    "Agenten teilen sich diese Konten. Füge ein Konto in OpenBot auf einem Computer hinzu.",
+    "Agenten teilen sich diese Konten. Füge ein Konto in OpenBot-NC auf einem Computer hinzu.",
   "mobile.server.providers.inUse": "Aktiv",
   "mobile.server.providers.notInPool": "Nicht im Pool",
   "mobile.server.providers.leaveOutOfPool": "Aus Pool nehmen",
@@ -1073,7 +1075,7 @@ export const messages = {
   "mobile.server.providers.disconnect": "Trennen",
   "mobile.server.providers.disconnectTitle": "{name} trennen?",
   "mobile.server.providers.disconnectBody":
-    "OpenBot meldet {provider} auf dem Server ab. Die Agenten warten, bis du {provider} wieder verbindest.",
+    "OpenBot-NC meldet {provider} auf dem Server ab. Die Agenten warten, bis du {provider} wieder verbindest.",
   "mobile.server.providers.resetUsage": "Nutzung zurücksetzen",
   "mobile.server.providers.resettingUsage": "Wird zurückgesetzt…",
   "mobile.server.providers.resetUsageTitle": "Nutzung von {name} zurücksetzen?",
@@ -1092,7 +1094,7 @@ export const messages = {
   "mobile.server.providers.sectionRuntime": "Laufzeit",
   "mobile.server.providers.updateTo": "Auf {version} aktualisieren",
   "mobile.server.providers.versionInstalledByUser": "{version} · von dir installiert",
-  "mobile.server.providers.versionDownloaded": "{version} · von OpenBot geladen",
+  "mobile.server.providers.versionDownloaded": "{version} · von OpenBot-NC geladen",
   "mobile.server.providers.keyFree": "Kostenlos",
   "mobile.server.providers.keyOptional": "Optional. Ein Schlüssel fügt kostenpflichtige Modelle hinzu.",
   "mobile.server.providers.geminiKeyInUse":
@@ -1111,18 +1113,18 @@ export const messages = {
   "mobile.server.providers.defaultForNew": "Standard für neue Agenten",
   "mobile.server.providers.startsWith": "Neue Agenten starten mit {name}.",
   "mobile.server.providers.connectFirst": "Verbinde zuerst {name}.",
-  "mobile.server.mcp.unsupported": "Aktualisiere OpenBot auf diesem Server, um seine MCP-Server hier zu verwalten.",
+  "mobile.server.mcp.unsupported": "Aktualisiere OpenBot-NC auf diesem Server, um seine MCP-Server hier zu verwalten.",
   "mobile.server.mcp.unavailable":
     "Verbinde dich als Inhaber oder Admin mit diesem Server, um seine MCP-Server zu verwalten.",
   "mobile.server.mcp.accessUnsupported":
-    "Aktualisiere OpenBot auf diesem Server, um festzulegen, wer seine MCP-Server erhält.",
+    "Aktualisiere OpenBot-NC auf diesem Server, um festzulegen, wer seine MCP-Server erhält.",
   "mobile.server.mcp.loading": "MCP-Server werden geladen…",
   "mobile.server.mcp.gone": "Dieser MCP-Server ist nicht mehr auf diesem Server.",
   "mobile.server.mcp.addTitle": "MCP-Server hinzufügen",
   "mobile.server.mcp.addConfirm": "Hinzufügen",
   "mobile.server.mcp.name": "Name",
   "mobile.server.mcp.namePlaceholder": "Name des MCP-Servers",
-  "mobile.server.mcp.nameReserved": "OpenBot verwendet den Namen {name} bereits.",
+  "mobile.server.mcp.nameReserved": "OpenBot-NC verwendet den Namen {name} bereits.",
   "mobile.server.mcp.transport": "Transport",
   "mobile.server.mcp.stdio": "Befehl (STDIO)",
   "mobile.server.mcp.http": "URL (HTTP)",
@@ -1133,12 +1135,12 @@ export const messages = {
   "mobile.server.mcp.command": "Befehl",
   "mobile.server.mcp.commandHint": "Nur das Programm. Schreibe jedes Wort danach in Argumente.",
   "mobile.server.mcp.arguments": "Argumente",
-  "mobile.server.mcp.argumentsHint": "OpenBot gibt jedes Argument als ein Wort an das Programm.",
+  "mobile.server.mcp.argumentsHint": "OpenBot-NC gibt jedes Argument als ein Wort an das Programm.",
   "mobile.server.mcp.addArgument": "Argument hinzufügen",
   "mobile.server.mcp.argument": "Argument {position}",
   "mobile.server.mcp.removeArgument": "Argument {position} entfernen",
   "mobile.server.mcp.environment": "Umgebungsvariablen",
-  "mobile.server.mcp.environmentHint": "OpenBot gibt diese Variablen an den MCP-Server, wenn er startet.",
+  "mobile.server.mcp.environmentHint": "OpenBot-NC gibt diese Variablen an den MCP-Server, wenn er startet.",
   "mobile.server.mcp.addVariable": "Variable hinzufügen",
   "mobile.server.mcp.variableKey": "Name der Variable {position}",
   "mobile.server.mcp.variableValue": "Wert der Variable {position}",
@@ -1153,7 +1155,7 @@ export const messages = {
   "mobile.server.mcp.url": "Server-URL",
   "mobile.server.mcp.urlInvalid": "Gib eine http- oder https-Adresse ein.",
   "mobile.server.mcp.headers": "Header",
-  "mobile.server.mcp.headersHint": "OpenBot sendet diese Header mit jeder Anfrage.",
+  "mobile.server.mcp.headersHint": "OpenBot-NC sendet diese Header mit jeder Anfrage.",
   "mobile.server.mcp.addHeader": "Header hinzufügen",
   "mobile.server.mcp.headerName": "Name des Headers {position}",
   "mobile.server.mcp.headerValue": "Wert des Headers {position}",
@@ -1170,7 +1172,7 @@ export const messages = {
   "mobile.server.mcp.testFailed": "Der MCP-Server hat nicht geantwortet.",
   "mobile.server.mcp.connected": { one: "Verbunden · {count} Werkzeug", other: "Verbunden · {count} Werkzeuge" },
   "mobile.server.mcp.signInOnComputer":
-    "Dieser MCP-Server verlangt eine Anmeldung. Melde dich in OpenBot auf einem Computer an und teste dann erneut.",
+    "Dieser MCP-Server verlangt eine Anmeldung. Melde dich in OpenBot-NC auf einem Computer an und teste dann erneut.",
   "mobile.server.mcp.signIn": "Anmelden",
   "mobile.server.mcp.signInHere":
     "Dieser MCP-Server verlangt eine Anmeldung. Tippe auf Anmelden und teste dann erneut.",
@@ -1229,8 +1231,8 @@ export const messages = {
   "mobile.server.settings.updates": "Updates",
   "mobile.server.settings.updateAvailable": "Update verfügbar",
   "mobile.server.route.updates": "Updates",
-  "mobile.server.update.hostTitle": "OpenBot auf {name}",
-  "mobile.server.update.version": "OpenBot {version}",
+  "mobile.server.update.hostTitle": "OpenBot-NC auf {name}",
+  "mobile.server.update.version": "OpenBot-NC {version}",
   "mobile.server.update.status.idle": "Suche nach Updates, um die neueste Version zu finden.",
   "mobile.server.update.status.checking": "Updates werden gesucht…",
   "mobile.server.update.status.available": "{version} ist verfügbar.",
@@ -1238,28 +1240,28 @@ export const messages = {
   "mobile.server.update.status.downloadingUnknown": "{version} wird heruntergeladen…",
   "mobile.server.update.status.ready": "{version} wurde heruntergeladen.",
   "mobile.server.update.status.installing": "{name} wird neu gestartet, um das Update zu installieren.",
-  "mobile.server.update.status.upToDate": "OpenBot ist auf {name} aktuell.",
+  "mobile.server.update.status.upToDate": "OpenBot-NC ist auf {name} aktuell.",
   "mobile.server.update.status.checkFailed": "{name} konnte nicht nach Updates suchen. Versuche es erneut.",
   "mobile.server.update.status.downloadFailed": "{name} konnte das Update nicht herunterladen. Versuche es erneut.",
   "mobile.server.update.status.installFailed":
-    "{name} konnte das Update nicht installieren. Stelle sicher, dass kein anderer Benutzer dieses Computers OpenBot ausführt, und versuche es erneut.",
+    "{name} konnte das Update nicht installieren. Stelle sicher, dass kein anderer Benutzer dieses Computers OpenBot-NC ausführt, und versuche es erneut.",
   "mobile.server.update.releaseCheckFailed":
     "{name} konnte den Versions-Feed nicht lesen. Prüfe die Netzwerkverbindung des Hosts und versuche es erneut.",
   "mobile.server.update.releaseUnavailable":
     "Diese Version kann nicht nach neuen Versionen suchen. Bitte den Host-Administrator, nach einer kompatiblen Version zu suchen.",
   "mobile.server.update.externalTitle": "Der Host steuert die Installation",
   "mobile.server.update.path.hostManager":
-    "OpenBot Host Manager installiert Updates, wenn alle Benutzer inaktiv sind. Bitte den Host-Administrator, den Status von Host Manager zu prüfen, wenn ein Update nicht startet.",
+    "OpenBot-NC Host Manager installiert Updates, wenn alle Benutzer inaktiv sind. Bitte den Host-Administrator, den Status von Host Manager zu prüfen, wenn ein Update nicht startet.",
   "mobile.server.update.path.hosted":
     "Der gehostete Dienst lädt Updates im Hintergrund herunter. Ein heruntergeladenes Update startet beim nächsten Serverstart. Warte, bis aktive Aufgaben beendet sind, bevor du den Server stoppst und fortsetzt. Bleibt er bei einer alten Version, kontaktiere den Host-Administrator.",
   "mobile.server.update.path.system":
-    "Führe auf dem Host sudo openbot update aus, um die neueste Version zu installieren. Dieser Befehl beendet OpenBot. Warte zuerst, bis aktive Aufgaben beendet sind. Automatische Downloads werden beim nächsten Systemstart installiert.",
+    "Führe auf dem Host sudo openbot update aus, um die neueste Version zu installieren. Dieser Befehl beendet OpenBot-NC. Warte zuerst, bis aktive Aufgaben beendet sind. Automatische Downloads werden beim nächsten Systemstart installiert.",
   "mobile.server.update.path.container":
-    "Lade auf dem Docker-Host das neue OpenBot-Image herunter und erstelle den Container mit denselben Datenvolumes neu. Warte zuerst, bis aktive Aufgaben beendet sind. Behalte die vorhandenen Volumes, um deine Daten zu erhalten.",
+    "Lade auf dem Docker-Host das neue OpenBot-NC-Image herunter und erstelle den Container mit denselben Datenvolumes neu. Warte zuerst, bis aktive Aufgaben beendet sind. Behalte die vorhandenen Volumes, um deine Daten zu erhalten.",
   "mobile.server.update.path.manual":
-    "Diese Installation kann sich nicht selbst ersetzen. Bitte den Host-Administrator, die kompatible Version von github.com/nightly-labs/openbot/releases zu installieren. Behalte die vorhandenen OpenBot-Daten.",
+    "Diese Installation kann sich nicht selbst ersetzen. Bitte den Host-Administrator, die kompatible Version von github.com/nightly-labs/openbot/releases zu installieren. Behalte die vorhandenen OpenBot-NC-Daten.",
   "mobile.server.update.path.unavailable":
-    "Dies ist eine Entwicklungsversion. Verwende eine installierte OpenBot-Version, um nach Updates zu suchen.",
+    "Dies ist eine Entwicklungsversion. Verwende eine installierte OpenBot-NC-Version, um nach Updates zu suchen.",
   "mobile.server.update.check": "Nach Updates suchen",
   "mobile.server.update.start": "Im Leerlauf aktualisieren",
   "mobile.server.update.restartNow": "Jetzt neu starten",
@@ -1270,27 +1272,27 @@ export const messages = {
   "mobile.server.update.automatic": "{name} installiert Updates automatisch.",
   "mobile.server.update.autoDownloadTitle": "Updates automatisch herunterladen",
   "mobile.server.update.autoDownloadDescription":
-    "{name} lädt jede neue OpenBot-Version herunter, sobald sie erscheint.",
+    "{name} lädt jede neue OpenBot-NC-Version herunter, sobald sie erscheint.",
   "mobile.server.update.autoInstallTitle": "Updates automatisch installieren",
   "mobile.server.update.autoInstallDescription":
     "{name} startet mit einem heruntergeladenen Update neu, sobald seine Agenten inaktiv sind. Mitglieder werden kurz getrennt und automatisch erneut verbunden.",
   "mobile.server.update.waitingFor": "Warten auf {reasons}.",
   "mobile.server.update.disabledTitle": "Remote-Updates sind deaktiviert",
   "mobile.server.update.disabledDescription":
-    "Der Benutzer von {name} hat Updates durch Servermitglieder deaktiviert. Bitte ihn, OpenBot zu aktualisieren oder auf seinem Computer Einstellungen > Updates zu öffnen und „Updates durch Servermitglieder erlauben“ zu aktivieren.",
+    "Der Benutzer von {name} hat Updates durch Servermitglieder deaktiviert. Bitte ihn, OpenBot-NC zu aktualisieren oder auf seinem Computer Einstellungen > Updates zu öffnen und „Updates durch Servermitglieder erlauben“ zu aktivieren.",
   "mobile.server.update.managedTitle": "Ein Host Manager steuert Updates",
   "mobile.server.update.managedDescription":
-    "OpenBot Host Manager aktualisiert {name}. Kontaktiere den Host-Administrator.",
+    "OpenBot-NC Host Manager aktualisiert {name}. Kontaktiere den Host-Administrator.",
   "mobile.server.update.unsupportedTitle": "{name} kann sich nicht selbst aktualisieren",
   "mobile.server.update.unsupportedDescription":
-    "Diese OpenBot-Version hat keine Update-Funktion. Installiere eine neue Version auf {name}.",
+    "Diese OpenBot-NC-Version hat keine Update-Funktion. Installiere eine neue Version auf {name}.",
   "mobile.server.update.restarting": "Wird neu gestartet…",
   "mobile.server.update.loadFailed": "Der Update-Status von {name} wurde nicht geladen.",
-  "mobile.server.update.dialog.offerTitle": "{name} auf OpenBot {version} aktualisieren",
+  "mobile.server.update.dialog.offerTitle": "{name} auf OpenBot-NC {version} aktualisieren",
   "mobile.server.update.dialog.offerDescription":
-    "{name} nutzt OpenBot {current}. Zuerst wird das Update heruntergeladen, dann startet {name} neu.",
+    "{name} nutzt OpenBot-NC {current}. Zuerst wird das Update heruntergeladen, dann startet {name} neu.",
   "mobile.server.update.dialog.offerReadyDescription":
-    "{name} nutzt OpenBot {current}. Das Update ist heruntergeladen. {name} startet neu, um es zu installieren.",
+    "{name} nutzt OpenBot-NC {current}. Das Update ist heruntergeladen. {name} startet neu, um es zu installieren.",
   "mobile.server.update.dialog.waitIdleDescription":
     "Der Neustart wartet, bis Agentendurchläufe und Routinen-Ausführungen abgeschlossen sind.",
   "mobile.server.update.dialog.updateNow": "Jetzt aktualisieren",
@@ -1306,10 +1308,10 @@ export const messages = {
   "mobile.server.update.reason.fileTransfer": "eine Dateiübertragung",
   "mobile.server.update.reason.browserControl": "Browsersteuerung durch einen Agenten",
   "mobile.server.update.reason.updateOperation": "einen weiteren Update-Schritt",
-  "mobile.server.update.reason.initialization": "den Start von OpenBot",
+  "mobile.server.update.reason.initialization": "den Start von OpenBot-NC",
   "mobile.server.update.reason.other": "andere Aufgaben",
   "mobile.server.update.actionFailed": "Die Serveraktion ist fehlgeschlagen.",
-  "mobile.server.update.unavailable": "Verbinde dich mit diesem Server, um seine OpenBot-Updates zu sehen.",
+  "mobile.server.update.unavailable": "Verbinde dich mit diesem Server, um seine OpenBot-NC-Updates zu sehen.",
   "mobile.server.update.loading": "Updates werden geladen…",
   "mobile.server.route.sites": "Websites",
   "mobile.server.settings.sites": "Websites",
@@ -1332,13 +1334,13 @@ export const messages = {
   "mobile.server.sites.deleteDescription": "Diese Adresse gibt sofort 410 Gone zurück.",
   "mobile.server.sites.deleteFailed": "Die Website konnte nicht gelöscht werden.",
   "mobile.server.sites.openFailed": "Die Website konnte nicht geöffnet werden.",
-  "mobile.server.sites.unsupported": "Aktualisiere OpenBot auf diesem Server, um seine Websites hier zu sehen.",
+  "mobile.server.sites.unsupported": "Aktualisiere OpenBot-NC auf diesem Server, um seine Websites hier zu sehen.",
   "mobile.server.sites.offline": "Verbinde dich mit diesem Server, um seine Websites zu sehen.",
   "mobile.server.route.roles": "Berechtigungen",
   "mobile.server.route.role": "Rolle",
   "mobile.server.roles.description":
     "Wähle die Agenten, die Mitglieder nutzen können. Inhaber und Admins können alle Agenten nutzen.",
-  "mobile.server.roles.unsupported": "Aktualisiere OpenBot auf diesem Server, um Rollen zu verwalten.",
+  "mobile.server.roles.unsupported": "Aktualisiere OpenBot-NC auf diesem Server, um Rollen zu verwalten.",
   "mobile.server.roles.unavailable": "Nur ein Inhaber oder Admin eines Online-Servers kann Rollen verwalten.",
   "mobile.server.roles.loading": "Rollen werden geladen…",
   "mobile.server.roles.loadFailed": "Die Rollen dieses Servers konnten nicht geladen werden.",
@@ -1373,7 +1375,7 @@ export const messages = {
   "mobile.server.route.audit": "Audit-Log",
   "mobile.server.audit.description":
     "Änderungen an Mitgliedern, Rollen und Agentenzugriff dieses Servers, neueste zuerst. Der Host behält die neuesten 500 Änderungen.",
-  "mobile.server.audit.unsupported": "Aktualisiere OpenBot auf diesem Server, um sein Audit-Log zu sehen.",
+  "mobile.server.audit.unsupported": "Aktualisiere OpenBot-NC auf diesem Server, um sein Audit-Log zu sehen.",
   "mobile.server.audit.unavailable":
     "Nur ein Eigentümer oder Administrator eines Online-Servers kann das Audit-Log sehen.",
   "mobile.server.audit.loading": "Änderungen werden geladen…",
@@ -1401,7 +1403,7 @@ export const messages = {
   "mobile.server.audit.agentLevel": "{agent} für {role}: {change}",
   "mobile.server.settings.importAgents": "Agenten importieren",
   "mobile.server.route.import": "Agenten importieren",
-  "mobile.server.import.unsupported": "Aktualisiere OpenBot auf diesem Server, um hier Agenten zu importieren.",
+  "mobile.server.import.unsupported": "Aktualisiere OpenBot-NC auf diesem Server, um hier Agenten zu importieren.",
   "mobile.server.import.unavailable": "Verbinde dich mit diesem Server, um Agenten zu importieren.",
   "mobile.server.import.count.agent": { one: "{count} Agent", other: "{count} Agenten" },
   "mobile.server.import.count.channel": { one: "{count} Kanal", other: "{count} Kanäle" },
@@ -1411,10 +1413,10 @@ export const messages = {
   "mobile.server.import.count.file": { one: "{count} Datei", other: "{count} Dateien" },
   "mobile.server.import.sourceTitle": "Wo sind deine Agenten jetzt?",
   "mobile.server.import.sourceLede":
-    "OpenBot kopiert sie auf diesen Server. Du siehst jedes Element, bevor sich etwas ändert.",
+    "OpenBot-NC kopiert sie auf diesen Server. Du siehst jedes Element, bevor sich etwas ändert.",
   "mobile.server.import.hermesNote": "Exportiere eine .zip-Datei aus Hermes.",
   "mobile.server.import.grokNote": "In der Cloud. Ein Exportagent dort erstellt eine .zip-Datei.",
-  "mobile.server.import.transfer": "Ein anderer OpenBot-Server",
+  "mobile.server.import.transfer": "Ein anderer OpenBot-NC-Server",
   "mobile.server.import.transferNote": "Verwende Übertragung, um Agenten und Einstellungen zusammen zu verschieben.",
   "mobile.server.import.grokLede":
     "Ein Exportagent in Grok Bot packt Namen, Anweisungen, Avatare, Fähigkeiten, Routinen, Erinnerungen und die von dir eingeschlossenen Dateien in eine .zip-Datei.",
@@ -1477,7 +1479,7 @@ export const messages = {
   "mobile.server.route.transferExport": "Exportieren",
   "mobile.server.route.transferImport": "Importieren",
   "mobile.server.route.transferCopy": "Auf einen anderen Server kopieren",
-  "mobile.server.transfer.unsupported": "Aktualisiere OpenBot auf diesem Server, um ihn hierher zu übertragen.",
+  "mobile.server.transfer.unsupported": "Aktualisiere OpenBot-NC auf diesem Server, um ihn hierher zu übertragen.",
   "mobile.server.transfer.unavailable":
     "Verbinde dich als Eigentümer oder Admin mit diesem Server, um ihn zu übertragen.",
   "mobile.server.transfer.title": "Diesen Server auf einen anderen Computer umziehen",
@@ -1522,8 +1524,8 @@ export const messages = {
   "mobile.server.transfer.reading": "Datei wird gelesen…",
   "mobile.server.transfer.sending": "Datei wird gesendet… {percent} %",
   "mobile.server.transfer.openFailed": "Die Datei konnte nicht geöffnet werden.",
-  "mobile.server.transfer.source": "OpenBot {version} · exportiert am {date}",
-  "mobile.server.transfer.sourceNoDate": "OpenBot {version}",
+  "mobile.server.transfer.source": "OpenBot-NC {version} · exportiert am {date}",
+  "mobile.server.transfer.sourceNoDate": "OpenBot-NC {version}",
   "mobile.server.transfer.importWarnings": "Vor dem Import",
   "mobile.server.transfer.importAgents": "Agenten in der Datei",
   "mobile.server.transfer.nameExists": "Name schon vergeben",

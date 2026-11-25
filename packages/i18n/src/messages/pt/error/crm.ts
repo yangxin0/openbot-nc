@@ -2,7 +2,8 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "Este servidor não oferece suporte ao CRM. Atualize o OpenBot no computador que o executa.",
+  "error.crm.serverTooOld":
+    "Este servidor não oferece suporte ao CRM. Atualize o OpenBot-NC no computador que o executa.",
   "error.crm.tooLargeToSend": "Esta página do CRM é grande demais para enviar a este aplicativo.",
   "error.crm.customerMissing": "Este cliente não existe mais.",
   "error.crm.planMissing": "Este plano não existe mais.",
@@ -38,10 +39,10 @@ export const messages = {
   "error.crm.sourcePermission":
     "Esta chave não consegue ler clientes, faturas, assinaturas, eventos e produtos. Dê a ela acesso de leitura a eles.",
   "error.crm.sourceRateLimited": "O Stripe recebeu solicitações demais. Tente de novo em um minuto.",
-  "error.crm.sourceNetwork": "O OpenBot não consegue se conectar ao Stripe. Verifique a conexão com a internet.",
-  "error.crm.sourceFailed": "O Stripe enviou uma resposta que o OpenBot não consegue ler. Tente de novo mais tarde.",
-  "error.crm.sourceKeySaveFailed": "O OpenBot não consegue salvar a chave do Stripe neste computador.",
+  "error.crm.sourceNetwork": "O OpenBot-NC não consegue se conectar ao Stripe. Verifique a conexão com a internet.",
+  "error.crm.sourceFailed": "O Stripe enviou uma resposta que o OpenBot-NC não consegue ler. Tente de novo mais tarde.",
+  "error.crm.sourceKeySaveFailed": "O OpenBot-NC não consegue salvar a chave do Stripe neste computador.",
   "error.crm.off":
     "O CRM está desativado. Um proprietário ou administrador pode ativá-lo em Configurações do servidor > Experimental.",
-  "error.crm.settingsSaveFailed": "O OpenBot não consegue salvar a configuração do CRM neste servidor.",
+  "error.crm.settingsSaveFailed": "O OpenBot-NC não consegue salvar a configuração do CRM neste servidor.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -141,7 +141,7 @@ export const messages = {
   "sidebar.delete.pending": "Siliniyor…",
   "sidebar.delete.title": "{name} silinsin mi?",
   "sidebar.delete.agentDescription":
-    "Bu işlem ajanı ve OpenBot konuşmasını uygulamadan kaldırır. Kuyruğu, bellekleri, rutinleri ve çalışma alanı silinir. Bağlı CLI sağlayıcısı tarafından ayrı depolanan geçmiş silinmez.",
+    "Bu işlem ajanı ve OpenBot-NC konuşmasını uygulamadan kaldırır. Kuyruğu, bellekleri, rutinleri ve çalışma alanı silinir. Bağlı CLI sağlayıcısı tarafından ayrı depolanan geçmiş silinmez.",
   "sidebar.delete.channelDescription":
     "Bu işlem kanalı durdurur. Geçmişi yalnızca önizleme amacıyla Silinen kanallar bölümünde kalır. Oradan geri yükleyebilirsiniz. Üye ajanlar korunur.",
   "sidebar.delete.sectionDescription":

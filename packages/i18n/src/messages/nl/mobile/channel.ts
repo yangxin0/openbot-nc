@@ -108,7 +108,7 @@ export const messages = {
     "De berichten worden gewist en de leden vergeten ze. De kanaalinstellingen blijven.",
   "mobile.channel.deleteHistory.confirmTitle": "Geschiedenis van {name} wissen?",
   "mobile.channel.deleteHistory.confirmBody":
-    "Alle berichten en bestanden van dit kanaal worden uit OpenBot gewist en de leden vergeten ze. Dit kun je niet ongedaan maken. Leden, instructies, herinneringen, routines en taken veranderen niet.",
+    "Alle berichten en bestanden van dit kanaal worden uit OpenBot-NC gewist en de leden vergeten ze. Dit kun je niet ongedaan maken. Leden, instructies, herinneringen, routines en taken veranderen niet.",
   "mobile.channel.deleteHistory.confirm": "Geschiedenis wissen",
   "mobile.channel.deleteHistory.failed": "Kan de geschiedenis niet wissen",
   "mobile.channel.deleteHistory.failedBody": "De host kan de geschiedenis niet verwijderen.",

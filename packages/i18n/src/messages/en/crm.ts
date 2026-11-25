@@ -328,7 +328,7 @@ export const messages = defineMessages("crm", {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "Create key in {source}",
   "crm.source.stripeKeyHelp":
-    "Stripe opens a read-only key, ready to create. Create it, then copy the key and paste it here. OpenBot only reads from Stripe.",
+    "Stripe opens a read-only key, ready to create. Create it, then copy the key and paste it here. OpenBot-NC only reads from Stripe.",
   "crm.source.connect": "Connect",
   "crm.source.account": "Account",
   "crm.source.testMode": "Test mode",
@@ -341,8 +341,8 @@ export const messages = defineMessages("crm", {
   "crm.source.errorInvalidKey": "{source} does not accept the key. Disconnect and connect with a new key.",
   "crm.source.errorPermission": "The key cannot read all that the sync needs. Give it Read access in {source}.",
   "crm.source.errorRateLimited": "{source} got too many requests. The next sync tries again.",
-  "crm.source.errorNetwork": "OpenBot cannot connect to {source}. The next sync tries again.",
-  "crm.source.errorFailed": "{source} sent an answer that OpenBot cannot read. The next sync tries again.",
+  "crm.source.errorNetwork": "OpenBot-NC cannot connect to {source}. The next sync tries again.",
+  "crm.source.errorFailed": "{source} sent an answer that OpenBot-NC cannot read. The next sync tries again.",
   "crm.source.skipped": "Not imported",
   "crm.source.skippedCurrency": "Other currency: {rows}",
   "crm.source.skippedInterval": "Other billing interval: {rows}",
@@ -354,5 +354,5 @@ export const messages = defineMessages("crm", {
   "crm.source.disconnect": "Disconnect",
   "crm.source.disconnectTitle": "Disconnect {source}?",
   "crm.source.disconnectBody":
-    "OpenBot stops the sync and deletes the key. The imported rows stay, and you can change them.",
+    "OpenBot-NC stops the sync and deletes the key. The imported rows stay, and you can change them.",
 });

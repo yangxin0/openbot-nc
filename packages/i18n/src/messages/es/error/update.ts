@@ -4,41 +4,41 @@ import type { messages as source } from "../../en/error/update";
 export const messages = {
   "error.update.unsupported": "Las actualizaciones están disponibles en las versiones de escritorio instaladas.",
   "error.update.noSelfUpdate":
-    "Esta versión no se actualiza sola. Para actualizar OpenBot, instala una versión más reciente a mano.",
+    "Esta versión no se actualiza sola. Para actualizar OpenBot-NC, instala una versión más reciente a mano.",
   "error.update.notReady": "No hay ninguna actualización lista para instalar.",
-  "error.update.restartFailed": "OpenBot no pudo reiniciarse para instalar la actualización.",
+  "error.update.restartFailed": "OpenBot-NC no pudo reiniciarse para instalar la actualización.",
   "error.update.downloadStalled": "La descarga de la actualización dejó de responder. Inténtalo de nuevo.",
   "error.update.installFailed":
-    "No se pudo instalar la actualización. Cierra y vuelve a abrir OpenBot e inténtalo de nuevo.",
+    "No se pudo instalar la actualización. Cierra y vuelve a abrir OpenBot-NC e inténtalo de nuevo.",
   "error.update.notInstalled": "El último reinicio no instaló la actualización. Reinicia para intentarlo de nuevo.",
   "error.update.downloadFailed": "No se pudo descargar la actualización. Inténtalo de nuevo.",
   "error.update.signatureNotConfirmed":
-    "OpenBot no pudo verificar la actualización. Inténtalo de nuevo. Si el error continúa, vuelve a instalar OpenBot desde donde lo obtuviste.",
+    "OpenBot-NC no pudo verificar la actualización. Inténtalo de nuevo. Si el error continúa, vuelve a instalar OpenBot-NC desde donde lo obtuviste.",
   "error.update.checkFailed": "No se pudieron buscar actualizaciones. Inténtalo de nuevo.",
   "error.update.checkStalled": "La búsqueda de actualizaciones dejó de responder. Inténtalo de nuevo.",
   "error.update.checkOffline":
     "No se pudo acceder al servicio de actualizaciones. Comprueba tu conexión a Internet e inténtalo de nuevo.",
   "error.update.checkUnavailable":
-    "El servicio de actualizaciones no respondió. OpenBot lo volverá a intentar automáticamente en unos minutos.",
+    "El servicio de actualizaciones no respondió. OpenBot-NC lo volverá a intentar automáticamente en unos minutos.",
   "error.update.checkNoRelease":
-    "No se encontró ninguna actualización publicada para esta plataforma. OpenBot lo volverá a intentar automáticamente en unos minutos.",
-  "error.update.managedByNix": "Nix instala las actualizaciones de esta copia de OpenBot. Actualízala con Nix.",
+    "No se encontró ninguna actualización publicada para esta plataforma. OpenBot-NC lo volverá a intentar automáticamente en unos minutos.",
+  "error.update.managedByNix": "Nix instala las actualizaciones de esta copia de OpenBot-NC. Actualízala con Nix.",
   "error.update.managedByHost":
     "El host instala las actualizaciones en este Mac. La actualización permanecerá lista hasta que se ejecute el mantenimiento del host.",
   "error.update.siblingSession":
-    "Otra sesión de OpenBot sigue ejecutándose desde esta aplicación. Primero detén OpenBot en todas las demás cuentas de usuario de macOS y vuelve a instalar la actualización.",
+    "Otra sesión de OpenBot-NC sigue ejecutándose desde esta aplicación. Primero detén OpenBot-NC en todas las demás cuentas de usuario de macOS y vuelve a instalar la actualización.",
   "error.update.siblingSessionSameAccount":
-    "Otro proceso de OpenBot sigue ejecutándose en esta cuenta de usuario. Ciérralo y vuelve a instalar la actualización.",
+    "Otro proceso de OpenBot-NC sigue ejecutándose en esta cuenta de usuario. Ciérralo y vuelve a instalar la actualización.",
   "error.update.siblingCheckFailed":
-    "No se pudieron verificar otras sesiones de OpenBot. Inténtalo de nuevo antes de instalar.",
+    "No se pudieron verificar otras sesiones de OpenBot-NC. Inténtalo de nuevo antes de instalar.",
   "error.update.readOnlyLocation":
-    "OpenBot no puede instalar actualizaciones desde esta ubicación. Cierra OpenBot. En Finder, arrastra OpenBot a la carpeta Aplicaciones (si ya está allí, sácalo y vuelve a ponerlo). Después abre OpenBot e instala la actualización de nuevo.",
+    "OpenBot-NC no puede instalar actualizaciones desde esta ubicación. Cierra OpenBot-NC. En Finder, arrastra OpenBot-NC a la carpeta Aplicaciones (si ya está allí, sácalo y vuelve a ponerlo). Después abre OpenBot-NC e instala la actualización de nuevo.",
   "error.update.appImageMissing":
-    "OpenBot no puede instalar la actualización porque su archivo AppImage se movió, se renombró o se reemplazó. Cierra OpenBot y vuelve a abrir el archivo AppImage.",
+    "OpenBot-NC no puede instalar la actualización porque su archivo AppImage se movió, se renombró o se reemplazó. Cierra OpenBot-NC y vuelve a abrir el archivo AppImage.",
   "error.update.appImageReadOnly":
-    "OpenBot no puede instalar actualizaciones en la carpeta de su archivo AppImage. Cierra OpenBot, mueve el archivo AppImage a una carpeta de tu carpeta personal, ábrelo e instala la actualización de nuevo.",
+    "OpenBot-NC no puede instalar actualizaciones en la carpeta de su archivo AppImage. Cierra OpenBot-NC, mueve el archivo AppImage a una carpeta de tu carpeta personal, ábrelo e instala la actualización de nuevo.",
   "error.update.remoteDisabled":
     "Las actualizaciones por parte de administradores del servidor están desactivadas en este equipo.",
-  "error.update.restartStarted": "OpenBot ya se está reiniciando para instalar la actualización.",
-  "error.update.alreadyRestarting": "OpenBot ya se está reiniciando.",
+  "error.update.restartStarted": "OpenBot-NC ya se está reiniciando para instalar la actualización.",
+  "error.update.alreadyRestarting": "OpenBot-NC ya se está reiniciando.",
 } as const satisfies PartialTranslation<typeof source>;

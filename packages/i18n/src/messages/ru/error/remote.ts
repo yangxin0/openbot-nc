@@ -7,7 +7,7 @@ export const messages = {
   "error.remote.invalidData": "Хост вернул некорректные данные.",
   "error.remote.unsafeData": "Хост вернул данные, которые приложение не смогло безопасно использовать.",
   "error.remote.requestFailedStatus": "Запрос к удалённому серверу не удался ({status}).",
-  "error.remote.appUpdateRequired": "Обновите это приложение OpenBot, прежде чем подключаться к хосту.",
+  "error.remote.appUpdateRequired": "Обновите это приложение OpenBot-NC, прежде чем подключаться к хосту.",
   "error.remote.identityNotVerified": "Не удалось проверить идентификатор сервера.",
   "error.remote.invalidCompatibility": "Хост вернул некорректные сведения о совместимости.",
   "error.remote.serverListUnreadable": "Список удалённых серверов в формате, который эта версия не может прочитать.",
@@ -22,12 +22,12 @@ export const messages = {
   "error.remote.localServerRemove": "Локальный сервер нельзя удалить.",
   "error.remote.viewerProxyUnavailable": "Локальный прокси просмотра удалённого рабочего стола недоступен.",
   "error.remote.hostKeyMissing":
-    "OpenBot не может проверить этот сервер: его ключ безопасности отсутствует или изменился. Попросите владельца сервера проверить сервер.",
+    "OpenBot-NC не может проверить этот сервер: его ключ безопасности отсутствует или изменился. Попросите владельца сервера проверить сервер.",
   "error.remote.connectionNotStarted":
-    "OpenBot не удалось начать подключение к этому серверу. Если проблема повторяется, закройте OpenBot и откройте его снова.",
+    "OpenBot-NC не удалось начать подключение к этому серверу. Если проблема повторяется, закройте OpenBot-NC и откройте его снова.",
   "error.remote.connectionServiceUnreachable":
-    "Этот компьютер не может подключиться к сервису соединений OpenBot. Проверьте его подключение к интернету. OpenBot подключится снова автоматически.",
-  "error.remote.serverAnswerTimeout": "Сервер не ответил вовремя. OpenBot подключится снова автоматически.",
+    "Этот компьютер не может подключиться к сервису соединений OpenBot-NC. Проверьте его подключение к интернету. OpenBot-NC подключится снова автоматически.",
+  "error.remote.serverAnswerTimeout": "Сервер не ответил вовремя. OpenBot-NC подключится снова автоматически.",
   "error.remote.connectionCancelled": "Удалённое подключение отменено.",
   "error.remote.fileTransportIsStopped": "Файловый транспорт WebRTC остановлен.",
   "error.remote.fileTooLarge": "Файл больше 100 МБ.",
@@ -89,14 +89,14 @@ export const messages = {
   "error.remote.sessionInvalid": "Удалённая сессия некорректна.",
   "error.remote.ticketInvalid": "Билет подключения некорректен.",
   "error.remote.mobileUpdateRequired":
-    "Обновите OpenBot Mobile или приложение для компьютера, прежде чем подключаться.",
+    "Обновите OpenBot-NC Mobile или приложение для компьютера, прежде чем подключаться.",
   "error.remote.connectionStepFailed": "Не удалось выполнить этот шаг подключения.",
   "error.remote.dataChannelFailed": "Сбой канала {kind}.",
   "error.remote.hostBusy": "Хост занят другим подключением. Повторите попытку чуть позже.",
   "error.remote.signalPermissionDenied": "У вашего аккаунта нет доступа к этому хосту. Попросите доступ у владельца.",
-  "error.remote.signalRateLimited": "Слишком много попыток подключения. OpenBot повторит попытку через {seconds} с.",
+  "error.remote.signalRateLimited": "Слишком много попыток подключения. OpenBot-NC повторит попытку через {seconds} с.",
   "error.remote.signalProtocolError":
-    "Signal и это приложение используют несовместимые протоколы подключения. Обновите OpenBot и повторите попытку.",
+    "Signal и это приложение используют несовместимые протоколы подключения. Обновите OpenBot-NC и повторите попытку.",
   "error.remote.signalRefused": "Signal отклонил подключение.",
   "error.remote.signalClosed": "Подключение к Signal закрылось до ответа хоста.",
   "error.remote.relayUnavailable":
@@ -104,18 +104,18 @@ export const messages = {
   "error.remote.iceFailed":
     "Не удалось установить прямое подключение к хосту. Его может блокировать брандмауэр, VPN или прокси.",
   "error.remote.iceDisconnected": "Прямое подключение к хосту потеряно.",
-  "error.remote.directoryUnreachable": "OpenBot не смог связаться со службой OpenBot. Проверьте подключение.",
-  "error.remote.directoryTimeout": "Служба OpenBot не ответила вовремя. Повторите попытку.",
+  "error.remote.directoryUnreachable": "OpenBot-NC не смог связаться со службой OpenBot-NC. Проверьте подключение.",
+  "error.remote.directoryTimeout": "Служба OpenBot-NC не ответила вовремя. Повторите попытку.",
   "error.remote.inviteAlreadyUsed": "Это приглашение уже использовано. Попросите новое приглашение.",
   "error.remote.inviteNotFound": "Это приглашение не существует или истекло. Попросите новое приглашение.",
   "error.remote.licenseUsersFull":
     "В лицензии владельца сервера нет свободных пользователей. Попросите владельца добавить пользователя в лицензию.",
   "error.remote.memberLimitReached": "На этом хосте достигнут лимит участников. Попросите владельца освободить место.",
-  "error.remote.hostNotRegistered": "Этот хост больше не зарегистрирован в службе OpenBot.",
+  "error.remote.hostNotRegistered": "Этот хост больше не зарегистрирован в службе OpenBot-NC.",
   "error.remote.membershipEnded": "Вы больше не участник этого хоста. Попросите у владельца новое приглашение.",
   "error.remote.accountSessionInactive": "Ваш вход больше не активен. Войдите снова.",
   "error.remote.hostOtherAccount": "Этот хост принадлежит другому аккаунту.",
-  "error.remote.remoteNotConfigured": "Удалённые подключения не настроены в этой службе OpenBot.",
+  "error.remote.remoteNotConfigured": "Удалённые подключения не настроены в этой службе OpenBot-NC.",
   "error.remote.hostRefused": "Хост отклонил запрос ({status}).",
   "error.remote.formUnavailable": "Эта форма больше недоступна.",
   "error.remote.channelsUnsupported": "Обновите этот сервер на компьютере, чтобы использовать каналы.",
@@ -124,5 +124,5 @@ export const messages = {
   "error.remote.taskHistoryRefreshFailed": "Задача изменена, но историю чата обновить не удалось.",
   "error.remote.serverNotLoaded": "Не удалось загрузить сервер. Повторите попытку.",
   "error.remote.localServerNotStarted":
-    "Сервер на этом компьютере не запустился. Повторите попытку. Если он не запустится, перезапустите OpenBot на этом компьютере.",
+    "Сервер на этом компьютере не запустился. Повторите попытку. Если он не запустится, перезапустите OpenBot-NC на этом компьютере.",
 } as const satisfies PartialTranslation<typeof source>;

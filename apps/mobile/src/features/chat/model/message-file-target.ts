@@ -1,4 +1,5 @@
 import { fileReferenceName, isFileReference } from "@openbot/brand/file-reference";
+import { APP_HOME_FOLDER } from "@openbot/contracts/app-identity";
 import { parseFinishedChatMarkdown, walkChatMarkdown } from "./chat-markdown-parser";
 
 export type MessageFileTarget = { kind: "shared"; path: string } | { kind: "workspace"; agentId: string; path: string };
@@ -17,12 +18,15 @@ export function webLink(href: string): string | null {
   }
 }
 
+const SHARED_HOME_FOLDERS = [APP_HOME_FOLDER, "OpenBot"];
+
 function isSharedPath(path: string): boolean {
   const normalized = path.replaceAll("\\", "/");
-  return (
-    normalized.startsWith("~/OpenBot/Shared/") ||
-    normalized.startsWith("OpenBot/Shared/") ||
-    normalized.includes("/OpenBot/Shared/")
+  return SHARED_HOME_FOLDERS.some(
+    (folder) =>
+      normalized.startsWith(`~/${folder}/Shared/`) ||
+      normalized.startsWith(`${folder}/Shared/`) ||
+      normalized.includes(`/${folder}/Shared/`),
   );
 }
 

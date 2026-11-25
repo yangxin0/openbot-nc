@@ -338,7 +338,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "Schlüssel in {source} erstellen",
   "crm.source.stripeKeyHelp":
-    "Stripe öffnet einen Schlüssel nur mit Lesezugriff, bereit zum Erstellen. Erstelle ihn, kopiere dann den Schlüssel und füge ihn hier ein. OpenBot liest nur aus Stripe.",
+    "Stripe öffnet einen Schlüssel nur mit Lesezugriff, bereit zum Erstellen. Erstelle ihn, kopiere dann den Schlüssel und füge ihn hier ein. OpenBot-NC liest nur aus Stripe.",
   "crm.source.connect": "Verbinden",
   "crm.source.account": "Konto",
   "crm.source.testMode": "Testmodus",
@@ -355,9 +355,9 @@ export const messages = {
   "crm.source.errorRateLimited":
     "{source} hat zu viele Anfragen erhalten. Die nächste Synchronisierung versucht es erneut.",
   "crm.source.errorNetwork":
-    "OpenBot kann keine Verbindung zu {source} herstellen. Die nächste Synchronisierung versucht es erneut.",
+    "OpenBot-NC kann keine Verbindung zu {source} herstellen. Die nächste Synchronisierung versucht es erneut.",
   "crm.source.errorFailed":
-    "{source} hat eine Antwort gesendet, die OpenBot nicht lesen kann. Die nächste Synchronisierung versucht es erneut.",
+    "{source} hat eine Antwort gesendet, die OpenBot-NC nicht lesen kann. Die nächste Synchronisierung versucht es erneut.",
   "crm.source.skipped": "Nicht importiert",
   "crm.source.skippedCurrency": "Andere Währung: {rows}",
   "crm.source.skippedInterval": "Anderes Abrechnungsintervall: {rows}",
@@ -369,5 +369,5 @@ export const messages = {
   "crm.source.disconnect": "Trennen",
   "crm.source.disconnectTitle": "{source} trennen?",
   "crm.source.disconnectBody":
-    "OpenBot beendet die Synchronisierung und löscht den Schlüssel. Die importierten Zeilen bleiben, und du kannst sie ändern.",
+    "OpenBot-NC beendet die Synchronisierung und löscht den Schlüssel. Die importierten Zeilen bleiben, und du kannst sie ändern.",
 } as const satisfies PartialTranslation<typeof source>;

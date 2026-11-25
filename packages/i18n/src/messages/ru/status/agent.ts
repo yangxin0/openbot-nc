@@ -26,7 +26,7 @@ export const messages = {
   "status.agent.screenCaptureScreen": "Сделать снимок главного экрана и отправить изображение модели агента.",
   "status.agent.screenCaptureChannel":
     "Изображение появится в канале {channel}, и его увидит каждый участник этого сервера, который читает канал.",
-  "status.agent.screenCapturePermissionNext": "Затем macOS может попросить вас разрешить OpenBot запись экрана.",
+  "status.agent.screenCapturePermissionNext": "Затем macOS может попросить вас разрешить OpenBot-NC запись экрана.",
   "status.agent.screenCaptureDisplay": "Сделать снимок дисплея {name} и отправить изображение модели агента.",
   "status.agent.screenCaptureWindow": "Сделать снимок окна {name} и отправить изображение модели агента.",
   "status.agent.screenCaptureRegion":
@@ -38,12 +38,12 @@ export const messages = {
   "status.agent.sendIdea": "Это станет публичным issue на GitHub. Ваше имя не показывается.",
   "status.agent.feedbackRecentErrors": "Последние ошибки в чате:",
   "status.agent.feedbackSameAs": "Добавляется к issue #{issue}",
-  "status.agent.feedbackSent": "Отправлено команде OpenBot: {title}",
+  "status.agent.feedbackSent": "Отправлено команде OpenBot-NC: {title}",
   "status.agent.feedbackWithdrawn": "Удалено с GitHub: {title}",
   "status.agent.browserProfileNamed":
     "Перенести {agents} в профиль браузера {profile}. Они получат его входы в аккаунты и файлы cookie. Их открытые вкладки закроются.",
-  "status.agent.commitCoAuthorOff": "Больше не добавлять OpenBot как соавтора в коммиты всех агентов.",
-  "status.agent.commitCoAuthorOn": "Снова добавлять OpenBot как соавтора в коммиты всех агентов.",
+  "status.agent.commitCoAuthorOff": "Больше не добавлять OpenBot-NC как соавтора в коммиты всех агентов.",
+  "status.agent.commitCoAuthorOn": "Снова добавлять OpenBot-NC как соавтора в коммиты всех агентов.",
   "status.agent.browserProfileNew":
     "Создать новый профиль браузера {profile} и перенести в него {agents}. В нём нет входов в аккаунты. Их открытые вкладки закроются.",
   "status.agent.browserProfileShared":

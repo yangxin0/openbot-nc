@@ -2,11 +2,11 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.nameBeforePublish": "Yayımlamadan önce bu OpenBot'a bir ad verin.",
-  "error.host.publishBeforeInvite": "Davet oluşturmadan önce bu OpenBot'u herkese açık hale getirin.",
+  "error.host.nameBeforePublish": "Yayımlamadan önce bu OpenBot-NC'ye bir ad verin.",
+  "error.host.publishBeforeInvite": "Davet oluşturmadan önce bu OpenBot-NC'yi herkese açık hale getirin.",
   "error.host.teamAccessUnavailable": "Ekip erişiminiz kullanılamıyor.",
   "error.host.ownerIdentityUnavailable": "Ana makine sahibi kimliği kullanılamıyor.",
-  "error.host.publishFailed": "Bu OpenBot yayımlanamadı.",
+  "error.host.publishFailed": "Bu OpenBot-NC yayımlanamadı.",
   "error.host.noServer": "Bu bilgisayarda değiştirilecek bir sunucu yok.",
   "error.host.identityLocalOnly": "Sunucu adı ve logosu yalnızca onu çalıştıran bilgisayarda değiştirilebilir.",
   "error.host.timezoneInvalid": "Bu saat dilimi bilinmiyor.",

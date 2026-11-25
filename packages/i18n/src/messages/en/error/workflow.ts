@@ -5,16 +5,18 @@ export const messages = defineMessages("error.workflow", {
   "error.workflow.versionMissing": "This version of the workflow no longer exists.",
   "error.workflow.annotation": "Text, notes and shapes cannot have connections.",
   "error.workflow.port": "A step cannot take this type of input.",
-  "error.workflow.unknownValue": "This OpenBot does not know a setting of a step. Update OpenBot, then try again.",
+  "error.workflow.unknownValue":
+    "This OpenBot-NC does not know a setting of a step. Update OpenBot-NC, then try again.",
   "error.workflow.branch": "Only a condition can have yes and no connections.",
   "error.workflow.conditionBranch": "Each connection from a condition must be yes or no.",
   "error.workflow.duplicateEdge": "These two steps already have this connection.",
-  "error.workflow.serverTooOld": "This server does not support workflows. Update OpenBot on the computer that runs it.",
-  "error.workflow.newerSteps": "This workflow has steps from a newer OpenBot. Update OpenBot to change it.",
-  "error.workflow.nodeUnsupported": "This version of OpenBot cannot run image, file and message steps yet.",
-  "error.workflow.interrupted": "OpenBot stopped while this step ran. Run it again.",
+  "error.workflow.serverTooOld":
+    "This server does not support workflows. Update OpenBot-NC on the computer that runs it.",
+  "error.workflow.newerSteps": "This workflow has steps from a newer OpenBot-NC. Update OpenBot-NC to change it.",
+  "error.workflow.nodeUnsupported": "This version of OpenBot-NC cannot run image, file and message steps yet.",
+  "error.workflow.interrupted": "OpenBot-NC stopped while this step ran. Run it again.",
   "error.workflow.agentMissing": "Choose an agent for this step.",
-  "error.workflow.handoffFailed": "OpenBot could not send this step to its agent.",
+  "error.workflow.handoffFailed": "OpenBot-NC could not send this step to its agent.",
   "error.workflow.agentStepEnded": "The agent's message for this step was removed before it answered.",
   "error.workflow.agentStepStopped": "The agent stopped before it answered this step. Run the step again.",
   "error.workflow.conditionUnclear": "The model did not answer yes or no.",
@@ -41,7 +43,7 @@ export const messages = defineMessages("error.workflow", {
   "error.workflow.modelUnavailable": "The model of this step is not available. Choose a different model for this step.",
   "error.workflow.providerBusy": "The provider is busy. Wait a few minutes, then run the step again.",
   "error.workflow.providerOffline":
-    "OpenBot could not reach the provider. Check the internet connection, then run the step again.",
+    "OpenBot-NC could not reach the provider. Check the internet connection, then run the step again.",
   "error.workflow.modelBusy": "Another model request is running. Run the step again soon.",
   "error.workflow.mediaFailed": "The model could not make the image or video. Run the step again.",
   "error.workflow.mediaNotMade": "The model did not make the image or video. It said: {answer}",
@@ -61,7 +63,7 @@ export const messages = defineMessages("error.workflow", {
   "error.workflow.noDecision": "This step does not wait for a decision.",
   "error.workflow.outputPlaceMissing": "Choose a messaging place for this output.",
   "error.workflow.outputChannelMissing": "Choose a channel for this output.",
-  "error.workflow.outputChannelFailed": "OpenBot could not post the result in the channel. Run the step again.",
+  "error.workflow.outputChannelFailed": "OpenBot-NC could not post the result in the channel. Run the step again.",
   "error.workflow.discordNoMessage":
     "This output acts on the Discord message that started the run. Start the run from a Discord mention, or choose Post in channel.",
   "error.workflow.slackNoMessage":
@@ -71,7 +73,7 @@ export const messages = defineMessages("error.workflow", {
   "error.workflow.outputConnectionOff":
     "The messaging connection of this output is off or removed. Choose a place again.",
   "error.workflow.outputNotRunning": "The messaging connection does not run now. Try again when it runs.",
-  "error.workflow.outputRefused": "The place refused the post. Make sure that OpenBot can post there.",
+  "error.workflow.outputRefused": "The place refused the post. Make sure that OpenBot-NC can post there.",
   "error.workflow.outputUncertain":
     "The post stopped on its way. Part of it can be in the place. Look there before you try again.",
   "error.workflow.tooLarge": "This workflow is too large to save. Remove some drawings or long texts, then try again.",
@@ -100,7 +102,7 @@ export const messages = defineMessages("error.workflow", {
     "Sunra uses input pictures only with a Personal account. Select your Personal account in Sunra, or remove the picture connections.",
   "error.workflow.sunraFailed": "Sunra could not make the file: {reason}",
   "error.workflow.sunraTimeout":
-    "Sunra did not finish the file in time. Look in the OpenBot project on sunra.ai before you run the step again.",
+    "Sunra did not finish the file in time. Look in the OpenBot-NC project on sunra.ai before you run the step again.",
   "error.workflow.higgsfieldSignIn": "Sign in to Higgsfield in Apps to use Higgsfield models.",
   "error.workflow.higgsfieldNoCredits":
     "Your Higgsfield account does not have sufficient credits. Add credits at higgsfield.ai/pricing, then run the step again.",

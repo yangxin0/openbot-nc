@@ -2,11 +2,11 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.nameBeforePublish": "Pon un nombre a este OpenBot antes de publicarlo.",
-  "error.host.publishBeforeInvite": "Haz público este OpenBot antes de crear una invitación.",
+  "error.host.nameBeforePublish": "Pon un nombre a este OpenBot-NC antes de publicarlo.",
+  "error.host.publishBeforeInvite": "Haz público este OpenBot-NC antes de crear una invitación.",
   "error.host.teamAccessUnavailable": "Tu acceso al equipo no está disponible.",
   "error.host.ownerIdentityUnavailable": "La identidad del propietario del host no está disponible.",
-  "error.host.publishFailed": "No se pudo publicar este OpenBot.",
+  "error.host.publishFailed": "No se pudo publicar este OpenBot-NC.",
   "error.host.noServer": "Este equipo no tiene ningún servidor que se pueda cambiar.",
   "error.host.identityLocalOnly":
     "El nombre y el logotipo del servidor solo se pueden cambiar en el equipo que lo ejecuta.",

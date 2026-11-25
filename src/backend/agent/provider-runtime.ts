@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { statSync } from "node:fs";
 import { basename } from "node:path";
 import { RequestError } from "@agentclientprotocol/sdk";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import type {
   AccountUsage,
   AccountUsageLimit,
@@ -3423,7 +3424,7 @@ export class ProviderRuntime implements ProviderPort {
     keepsReleased = false,
   ): void {
     const hasActiveClient = this.#clients.has(provider) || (keepsReleased && this.#released.has(provider));
-    const fallbackMessage = `OpenBot could not connect ${providerLabel(provider)}. Try again.`;
+    const fallbackMessage = `${APP_NAME} could not connect ${providerLabel(provider)}. Try again.`;
     const rawMessage = error instanceof Error ? error.message : String(error);
     const readable =
       matchingSourceKeys(rawMessage).length > 0 ||

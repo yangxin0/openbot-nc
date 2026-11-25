@@ -39,7 +39,7 @@ export const messages = {
   "error.skill.installPathSymlink": "I percorsi di installazione delle skill non possono contenere link simbolici.",
   "error.skill.tooManySkills": "Un agente può avere fino a {limit} skill.",
   "error.skill.unmanagedExists": "Esiste già una skill non gestita in {path}.",
-  "error.skill.managedSlug": "OpenBot dà a ogni agente la propria skill {slug}. Dai un altro nome a questa skill.",
+  "error.skill.managedSlug": "OpenBot-NC dà a ogni agente la propria skill {slug}. Dai un altro nome a questa skill.",
   "error.skill.localNoRevisions": "La skill locale non ha revisioni pubblicate.",
   "error.skill.localNotFound": "Questa skill locale non esiste. Controlla il suo ID nell’elenco delle skill locali.",
   "error.skill.localRevisionNotFound":
@@ -55,11 +55,12 @@ export const messages = {
   "error.skill.pathSymlink": "I percorsi delle skill non possono contenere link simbolici.",
   "error.skill.folderNotRead": "{provider} non legge {folder}. Copia questa cartella in {target}.",
   "error.skill.githubLinkInvalid": "Incolla un link a un repository o a una cartella di GitHub.",
-  "error.skill.githubNotFound": "OpenBot non può aprire {repository}. Il repository è privato o non esiste.",
+  "error.skill.githubNotFound": "OpenBot-NC non può aprire {repository}. Il repository è privato o non esiste.",
   "error.skill.githubNoSkills": "Non c'è nessun SKILL.md in {folder}.",
-  "error.skill.githubUnavailable": "OpenBot non può leggere GitHub ora. Riprova più tardi.",
+  "error.skill.githubUnavailable": "OpenBot-NC non può leggere GitHub ora. Riprova più tardi.",
   "error.skill.githubRateLimited":
-    "GitHub limita quanto spesso OpenBot può leggerlo senza un account. Riprova tra un'ora.",
-  "error.skill.githubTooLarge": "OpenBot non può leggere tutti i file di {repository}. Il repository è troppo grande.",
+    "GitHub limita quanto spesso OpenBot-NC può leggerlo senza un account. Riprova tra un'ora.",
+  "error.skill.githubTooLarge":
+    "OpenBot-NC non può leggere tutti i file di {repository}. Il repository è troppo grande.",
   "error.skill.githubHostTooOld": "Aggiorna questo server per aggiungere skill da GitHub.",
 } as const satisfies PartialTranslation<typeof source>;

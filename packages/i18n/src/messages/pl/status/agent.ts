@@ -28,7 +28,7 @@ export const messages = {
   "status.agent.screenCaptureChannel":
     "Obraz pojawi się na kanale {channel} i każdy członek tego serwera, który czyta kanał, może go zobaczyć.",
   "status.agent.screenCapturePermissionNext":
-    "Potem macOS może poprosić cię o zezwolenie OpenBot na nagrywanie ekranu.",
+    "Potem macOS może poprosić cię o zezwolenie OpenBot-NC na nagrywanie ekranu.",
   "status.agent.screenCaptureDisplay": "Przechwyć wyświetlacz {name} i wyślij obraz do modelu agenta.",
   "status.agent.screenCaptureWindow": "Przechwyć okno {name} i wyślij obraz do modelu agenta.",
   "status.agent.screenCaptureRegion":
@@ -40,12 +40,12 @@ export const messages = {
   "status.agent.sendIdea": "To będzie publiczne zgłoszenie na GitHubie. Twoje imię nie będzie widoczne.",
   "status.agent.feedbackRecentErrors": "Ostatnie błędy w czacie:",
   "status.agent.feedbackSameAs": "Dodaje do zgłoszenia #{issue}",
-  "status.agent.feedbackSent": "Wysłano do zespołu OpenBot: {title}",
+  "status.agent.feedbackSent": "Wysłano do zespołu OpenBot-NC: {title}",
   "status.agent.feedbackWithdrawn": "Usunięto z GitHuba: {title}",
   "status.agent.browserProfileNamed":
     "Przenieś {agents} do profilu przeglądarki {profile}. Otrzymają jego logowania i pliki cookie. Ich otwarte karty zostaną zamknięte.",
-  "status.agent.commitCoAuthorOff": "Przestań dodawać OpenBot jako współautora commitów wszystkich agentów.",
-  "status.agent.commitCoAuthorOn": "Znowu dodawaj OpenBot jako współautora commitów wszystkich agentów.",
+  "status.agent.commitCoAuthorOff": "Przestań dodawać OpenBot-NC jako współautora commitów wszystkich agentów.",
+  "status.agent.commitCoAuthorOn": "Znowu dodawaj OpenBot-NC jako współautora commitów wszystkich agentów.",
   "status.agent.browserProfileNew":
     "Utwórz nowy profil przeglądarki {profile} i przenieś do niego {agents}. Nie ma w nim logowań. Ich otwarte karty zostaną zamknięte.",
   "status.agent.browserProfileShared":

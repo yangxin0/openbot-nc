@@ -182,7 +182,7 @@ export const DialogBusy: Story = {
 };
 
 export const DialogSubmitError: Story = {
-  args: { draft: localEndpoint, submitError: "OpenBot could not reach http://127.0.0.1:11434/v1." },
+  args: { draft: localEndpoint, submitError: "OpenBot-NC could not reach http://127.0.0.1:11434/v1." },
 };
 
 export const DialogScrolls: Story = {
@@ -267,6 +267,6 @@ export const DiscoveryFailed: Story = {
   args: {
     draft: ollama,
     onDiscoverModels: fn(),
-    discovery: { status: "failed", message: "OpenBot could not reach http://127.0.0.1:11434/v1/models." },
+    discovery: { status: "failed", message: "OpenBot-NC could not reach http://127.0.0.1:11434/v1/models." },
   },
 };

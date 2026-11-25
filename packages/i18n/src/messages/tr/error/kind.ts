@@ -5,9 +5,9 @@ export const messages = {
   "error.kind.network": "Bağlanılamadı. Bağlantınızı kontrol edin ve tekrar deneyin.",
   "error.kind.timeout": "İstek çok uzun sürdü. Tekrar denemeden önce eylemin tamamlanıp tamamlanmadığını kontrol edin.",
   "error.kind.storage":
-    "Yeterli depolama alanı yok. OpenBot'u çalıştıran bilgisayarda biraz yer açın, ardından tekrar deneyin.",
+    "Yeterli depolama alanı yok. OpenBot-NC'yi çalıştıran bilgisayarda biraz yer açın, ardından tekrar deneyin.",
   "error.kind.filePermission":
-    "OpenBot'un bu eylemi tamamlamak için izni yok. Dosya veya klasör izinlerini kontrol edin, ardından tekrar deneyin.",
+    "OpenBot-NC'nin bu eylemi tamamlamak için izni yok. Dosya veya klasör izinlerini kontrol edin, ardından tekrar deneyin.",
   "error.kind.notFound":
     "Gerekli bir dosya veya klasör bulunamadı. Geri yükleyin veya başka bir tane seçin, ardından tekrar deneyin.",
   "error.kind.readOnly": "Bu klasör salt okunur. Yazabileceğiniz bir klasör seçin, ardından tekrar deneyin.",
@@ -18,6 +18,6 @@ export const messages = {
   "error.kind.rateLimit": "Çok fazla istek. Bir süre bekleyin, ardından tekrar deneyin.",
   "error.kind.service": "Hizmet kullanılamıyor. Bir süre bekleyin, ardından tekrar deneyin.",
   "error.kind.clock":
-    "OpenBot'u çalıştıran bilgisayarın tarihi veya saati muhtemelen yanlış olduğu için güvenli bağlantı kurulamadı. Tarihi ve saati düzeltin, ardından tekrar deneyin.",
+    "OpenBot-NC'yi çalıştıran bilgisayarın tarihi veya saati muhtemelen yanlış olduğu için güvenli bağlantı kurulamadı. Tarihi ve saati düzeltin, ardından tekrar deneyin.",
   "error.kind.interrupted": "Yanıt bitmeden bağlantı kapandı. Mesajınızı yeniden gönderin.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -338,7 +338,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "Crear clave en {source}",
   "crm.source.stripeKeyHelp":
-    "Stripe abre una clave de solo lectura, lista para crear. Créala, copia la clave y pégala aquí. OpenBot solo lee de Stripe.",
+    "Stripe abre una clave de solo lectura, lista para crear. Créala, copia la clave y pégala aquí. OpenBot-NC solo lee de Stripe.",
   "crm.source.connect": "Conectar",
   "crm.source.account": "Cuenta",
   "crm.source.testMode": "Modo de prueba",
@@ -353,9 +353,10 @@ export const messages = {
     "La clave no puede leer todo lo que necesita la sincronización. Dale acceso de lectura en {source}.",
   "crm.source.errorRateLimited":
     "{source} recibió demasiadas solicitudes. La próxima sincronización lo intentará de nuevo.",
-  "crm.source.errorNetwork": "OpenBot no puede conectarse a {source}. La próxima sincronización lo intentará de nuevo.",
+  "crm.source.errorNetwork":
+    "OpenBot-NC no puede conectarse a {source}. La próxima sincronización lo intentará de nuevo.",
   "crm.source.errorFailed":
-    "{source} envió una respuesta que OpenBot no puede leer. La próxima sincronización lo intentará de nuevo.",
+    "{source} envió una respuesta que OpenBot-NC no puede leer. La próxima sincronización lo intentará de nuevo.",
   "crm.source.skipped": "No importado",
   "crm.source.skippedCurrency": "Otra moneda: {rows}",
   "crm.source.skippedInterval": "Otro intervalo de facturación: {rows}",
@@ -367,5 +368,5 @@ export const messages = {
   "crm.source.disconnect": "Desconectar",
   "crm.source.disconnectTitle": "¿Desconectar {source}?",
   "crm.source.disconnectBody":
-    "OpenBot detiene la sincronización y elimina la clave. Las filas importadas se quedan y puedes cambiarlas.",
+    "OpenBot-NC detiene la sincronización y elimina la clave. Las filas importadas se quedan y puedes cambiarlas.",
 } as const satisfies PartialTranslation<typeof source>;

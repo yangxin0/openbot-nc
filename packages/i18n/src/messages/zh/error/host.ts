@@ -2,11 +2,11 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.nameBeforePublish": "发布前请先为该 OpenBot 命名。",
-  "error.host.publishBeforeInvite": "创建邀请前请先将该 OpenBot 设为公开。",
+  "error.host.nameBeforePublish": "发布前请先为该 OpenBot-NC 命名。",
+  "error.host.publishBeforeInvite": "创建邀请前请先将该 OpenBot-NC 设为公开。",
   "error.host.teamAccessUnavailable": "你的团队访问权限不可用。",
   "error.host.ownerIdentityUnavailable": "主机所有者身份不可用。",
-  "error.host.publishFailed": "无法发布该 OpenBot。",
+  "error.host.publishFailed": "无法发布该 OpenBot-NC。",
   "error.host.noServer": "这台电脑没有可更改的服务器。",
   "error.host.identityLocalOnly": "服务器名称和标志只能在运行它的电脑上更改。",
   "error.host.timezoneInvalid": "未知的时区。",

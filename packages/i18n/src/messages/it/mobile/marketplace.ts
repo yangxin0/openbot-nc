@@ -10,7 +10,7 @@ export const messages = {
   "mobile.marketplace.app.onePasswordTagline": "Accedi ai siti con le credenziali che condividi",
   "mobile.marketplace.app.bitwardenTagline": "Accedi ai siti con le credenziali di una cartella condivisa",
   "mobile.marketplace.app.protonPassTagline": "Accedi ai siti con le credenziali di una cassaforte condivisa",
-  "mobile.marketplace.error.signInUnsupported": "Aggiorna OpenBot sul server per accedere alle app dal telefono.",
+  "mobile.marketplace.error.signInUnsupported": "Aggiorna OpenBot-NC sul server per accedere alle app dal telefono.",
   "mobile.marketplace.app.connect": "Connetti",
   "mobile.marketplace.app.signInIntro":
     "Accedi nella pagina dell’app. Il server conserva l’accesso, non questo telefono.",
@@ -18,7 +18,7 @@ export const messages = {
   "mobile.marketplace.app.stepAllow": "Accedi e consenti l’accesso.",
   "mobile.marketplace.app.stepBlank": "L'ultima pagina non si carica. È corretto.",
   "mobile.marketplace.app.stepCopy": "Tocca la barra degli indirizzi e copia l'indirizzo completo.",
-  "mobile.marketplace.app.stepPaste": "Torna su OpenBot e incolla l'indirizzo qui sotto.",
+  "mobile.marketplace.app.stepPaste": "Torna su OpenBot-NC e incolla l'indirizzo qui sotto.",
   "mobile.marketplace.app.connected": "Connessa",
   "mobile.marketplace.app.connectFailed": "Impossibile connettere l’app.",
   "mobile.marketplace.app.waiting": "In attesa della pagina di accesso…",

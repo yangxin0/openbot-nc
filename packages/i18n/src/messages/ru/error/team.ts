@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/team";
 
 export const messages = {
-  "error.team.ownerNotLinked": "Этот хост не связан с аккаунтом владельца OpenBot.",
-  "error.team.ownerEmailRequired": "Войдите с адресом электронной почты OpenBot, который создал этот хост.",
+  "error.team.ownerNotLinked": "Этот хост не связан с аккаунтом владельца OpenBot-NC.",
+  "error.team.ownerEmailRequired": "Войдите с адресом электронной почты OpenBot-NC, который создал этот хост.",
   "error.team.hostNotConfigured": "Хост команды не настроен.",
   "error.team.alreadyConfigured": "Сервер команды уже настроен.",
   "error.team.identityCreateFailed": "Не удалось создать идентификатор команды.",
   "error.team.accountChangedDuringCreate":
     "Аккаунт, в который выполнен вход, изменился во время создания этого сервера.",
-  "error.team.notConfigured": "Этот OpenBot не настроен.",
+  "error.team.notConfigured": "Этот OpenBot-NC не настроен.",
   "error.team.serverNotActive": "Этот сервер больше не является активным для аккаунта, в который выполнен вход.",
   "error.team.logoInvalid": "Выберите корректное изображение PNG, JPEG или WebP размером до 512 КБ.",
   "error.team.permanentInviteEmail": "У постоянной ссылки-приглашения не может быть адреса электронной почты.",
@@ -19,7 +19,7 @@ export const messages = {
   "error.team.memberDisabled": "Этот участник команды отключён.",
   "error.team.memberLimit": "У хоста может быть не более {limit} участников.",
   "error.team.usernameTaken": "Это имя пользователя уже занято.",
-  "error.team.inviteRequiresAccount": "Для этого приглашения нужен подтверждённый аккаунт OpenBot.",
+  "error.team.inviteRequiresAccount": "Для этого приглашения нужен подтверждённый аккаунт OpenBot-NC.",
   "error.team.loginIncorrect": "Неверное имя пользователя или пароль.",
   "error.team.currentPasswordIncorrect": "Текущий пароль неверен.",
   "error.team.memberNotFound": "Участник команды не найден.",
@@ -44,16 +44,17 @@ export const messages = {
   "error.team.routeNotFound": "Маршрут не найден.",
   "error.team.requestFailed": "Запрос не удался.",
   "error.team.tooManySignInAttempts": "Слишком много попыток входа. Повторите попытку позже.",
-  "error.team.clientUpdateRequired": "Обновите этот клиент OpenBot, прежде чем подключаться к этому хосту.",
-  "error.team.hostUpdateRequired": "Обновите OpenBot на хосте, прежде чем подключаться.",
-  "error.team.serverSafeMode": "Этот сервер находится в безопасном режиме, потому что OpenBot на нём не запускается.",
+  "error.team.clientUpdateRequired": "Обновите этот клиент OpenBot-NC, прежде чем подключаться к этому хосту.",
+  "error.team.hostUpdateRequired": "Обновите OpenBot-NC на хосте, прежде чем подключаться.",
+  "error.team.serverSafeMode":
+    "Этот сервер находится в безопасном режиме, потому что OpenBot-NC на нём не запускается.",
   "error.team.serverSafeModeNewerDatabase":
-    "OpenBot {version} на этом сервере не может открыть свои данные, потому что их сохранила более новая версия OpenBot. Более новый выпуск OpenBot на сервере устранит проблему.",
+    "OpenBot-NC {version} на этом сервере не может открыть свои данные, потому что их сохранила более новая версия OpenBot-NC. Более новый выпуск OpenBot-NC на сервере устранит проблему.",
   "error.team.serverSafeModeStartFailed":
-    "OpenBot {version} на этом сервере остановлен после многих неудачных запусков. Более новый выпуск OpenBot на сервере устранит проблему.",
+    "OpenBot-NC {version} на этом сервере остановлен после многих неудачных запусков. Более новый выпуск OpenBot-NC на сервере устранит проблему.",
   "error.team.sidebarLayoutUnavailable": "Структура боковой панели недоступна.",
   "error.team.providersUnsupported": "Это подключение не поддерживает настройки провайдеров.",
-  "error.team.providerNotManaged": "OpenBot не управляет CLI этого провайдера.",
+  "error.team.providerNotManaged": "OpenBot-NC не управляет CLI этого провайдера.",
   "error.team.channelsUnsupported": "Это подключение не поддерживает чаты каналов.",
   "error.team.channelContextUnsupported": "Это подключение не поддерживает новый разговор и сжатие в канале.",
   "error.team.channelPictureUnsupported": "Это подключение не поддерживает изображения каналов.",
@@ -86,9 +87,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "Это подключение не поддерживает папки Библиотеки.",
   "error.team.workflowFoldersUnsupported": "Это подключение не поддерживает папки рабочих процессов.",
   "error.team.agentNotificationLevelsUnsupported":
-    "Этот сервер не может хранить ваш уровень уведомлений для каждого агента. Обновите OpenBot на компьютере, где он работает.",
+    "Этот сервер не может хранить ваш уровень уведомлений для каждого агента. Обновите OpenBot-NC на компьютере, где он работает.",
   "error.team.sidebarPinsUnsupported":
-    "Этот сервер не может хранить закреплённые чаты для всех ваших устройств. Обновите OpenBot на компьютере, на котором он работает.",
+    "Этот сервер не может хранить закреплённые чаты для всех ваших устройств. Обновите OpenBot-NC на компьютере, на котором он работает.",
   "error.team.agentInstructionsUnsupported": "Это подключение не поддерживает редактирование инструкций агентов.",
   "error.team.contextResetUnsupported": "Это подключение не поддерживает начало нового чата.",
   "error.team.contextCompactUnsupported": "Это подключение не поддерживает сжатие контекста.",
@@ -98,7 +99,7 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "Это подключение не поддерживает поиск в побочных ветках.",
   "error.team.sideQuestionUnsupported": "Это подключение не поддерживает побочные вопросы.",
   "error.team.routineFlowsUnsupported":
-    "Этот сервер не поддерживает цепочки регулярных задач. Обновите OpenBot на компьютере, где он работает.",
+    "Этот сервер не поддерживает цепочки регулярных задач. Обновите OpenBot-NC на компьютере, где он работает.",
   "error.team.routineCanvasTooLarge":
     "Эта схема регулярных задач слишком велика для отправки на это устройство. Сократите инструкции регулярных задач на компьютере, где работает сервер.",
   "error.team.conversationPageTooLarge":
@@ -136,9 +137,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "Сессия вида браузера не найдена.",
   "error.team.mcpUnsupported": "Это подключение не поддерживает серверы MCP.",
   "error.team.mcpServerListNeedsUpdate":
-    "Обновите OpenBot на этом устройстве, чтобы использовать на этом сервере больше {limit} серверов MCP.",
+    "Обновите OpenBot-NC на этом устройстве, чтобы использовать на этом сервере больше {limit} серверов MCP.",
   "error.team.providerAccountListNeedsUpdate":
-    "Обновите OpenBot на этом устройстве, чтобы использовать на этом сервере больше {limit} аккаунтов одного провайдера.",
+    "Обновите OpenBot-NC на этом устройстве, чтобы использовать на этом сервере больше {limit} аккаунтов одного провайдера.",
   "error.team.storageUnsupported": "Это подключение не поддерживает хранилище.",
   "error.team.machineResourcesUnsupported": "Это подключение не поддерживает данные о машине.",
   "error.team.machineAlertMemberInvalid":
@@ -165,8 +166,9 @@ export const messages = {
   "error.team.mcpServerNotYours": "Изменить этот MCP-сервер может только тот, кто его добавил, или администратор.",
   "error.team.ownerRequired": "Это может сделать только владелец сервера.",
   "error.team.requestTooLarge": "Тело запроса слишком большое.",
-  "error.team.signInRelayUnsupported": "Этот сервер не может передавать входы. Обновите OpenBot на хосте.",
-  "error.team.connectorsUnsupported": "Подключениями этого сервера нельзя управлять отсюда. Обновите OpenBot на хосте.",
+  "error.team.signInRelayUnsupported": "Этот сервер не может передавать входы. Обновите OpenBot-NC на хосте.",
+  "error.team.connectorsUnsupported":
+    "Подключениями этого сервера нельзя управлять отсюда. Обновите OpenBot-NC на хосте.",
   "error.team.signInRelayUnknown": "Этот вход завершён или не существует.",
   "error.team.signInRelayUsed": "Этот вход уже отправлен.",
   "error.team.signInRelayMismatch": "Этот адрес не относится к этому входу.",

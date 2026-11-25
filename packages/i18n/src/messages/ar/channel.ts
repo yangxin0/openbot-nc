@@ -55,7 +55,7 @@ export const messages = {
   "channel.settings.deleteHistory.button": "حذف",
   "channel.settings.deleteHistory.confirmTitle": "هل تريد حذف سجل {name}؟",
   "channel.settings.deleteHistory.confirmDescription":
-    "تُحذف كل رسائل هذه القناة وملفاتها من OpenBot وينساها الأعضاء. لا يمكن التراجع عن ذلك. لا يتغير الأعضاء والتعليمات والذكريات والروتينات والمهام.",
+    "تُحذف كل رسائل هذه القناة وملفاتها من OpenBot-NC وينساها الأعضاء. لا يمكن التراجع عن ذلك. لا يتغير الأعضاء والتعليمات والذكريات والروتينات والمهام.",
   "channel.settings.deleteHistory.confirm": "حذف السجل",
   "channel.settings.deleteHistory.failed": "تعذّر حذف السجل.",
   "channel.settings.routines": "المهام الدورية",

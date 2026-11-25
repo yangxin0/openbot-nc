@@ -103,7 +103,7 @@ export const messages = {
   "mobile.channel.deleteHistory.footer": "消息会被删除，成员也会忘记它们。频道设置保持不变。",
   "mobile.channel.deleteHistory.confirmTitle": "删除 {name} 的历史记录？",
   "mobile.channel.deleteHistory.confirmBody":
-    "此频道的所有消息和文件都会从 OpenBot 中删除，成员也会忘记它们。此操作无法撤销。成员、指令、记忆、例行任务和任务不会改变。",
+    "此频道的所有消息和文件都会从 OpenBot-NC 中删除，成员也会忘记它们。此操作无法撤销。成员、指令、记忆、例行任务和任务不会改变。",
   "mobile.channel.deleteHistory.confirm": "删除历史记录",
   "mobile.channel.deleteHistory.failed": "无法删除历史记录",
   "mobile.channel.deleteHistory.failedBody": "主机无法删除历史记录。",

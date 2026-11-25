@@ -15,7 +15,7 @@ export const messages = {
   "mobile.workspace.error.transportNotReady": "وسيلة النقل في الهاتف غير جاهزة.",
   "mobile.workspace.error.sectionsUnsupported": "لا يدعم هذا المضيف تغييرات المجلدات.",
   "mobile.workspace.error.agentNotOnHost": "الوكيل غير موجود على هذا المضيف.",
-  "mobile.workspace.error.filesUnsupported": "لا يدعم هذا المضيف إدارة الملفات. حدّث OpenBot على المضيف.",
+  "mobile.workspace.error.filesUnsupported": "لا يدعم هذا المضيف إدارة الملفات. حدّث OpenBot-NC على المضيف.",
   "mobile.workspace.error.agentUnavailableOnHost": "الوكيل غير متاح على هذا المضيف.",
   "mobile.workspace.error.agentUnavailable": "الوكيل غير متاح.",
   "mobile.workspace.error.formUnavailable": "هذا النموذج لم يعد متاحًا.",

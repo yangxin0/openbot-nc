@@ -26,13 +26,13 @@ export const messages = {
   "prompt.approval.alwaysAllow": "Zawsze zezwalaj",
   "prompt.approval.deny": "Odrzuć",
   "prompt.approval.cut":
-    "Ta karta pokazuje tylko początek żądania, więc można je tylko odrzucić. Jeśli przycisk Zezwól nie pojawi się wkrótce, zaktualizuj OpenBot na serwerze.",
+    "Ta karta pokazuje tylko początek żądania, więc można je tylko odrzucić. Jeśli przycisk Zezwól nie pojawi się wkrótce, zaktualizuj OpenBot-NC na serwerze.",
   "prompt.approval.report.bugHeadline": "Znalazłeś błąd? Naprawmy go.",
   "prompt.approval.report.ideaHeadline": "Masz pomysł? Zróbmy to.",
   "prompt.approval.report.dontSend": "Nie teraz",
-  "prompt.approval.report.send": "Wyślij do zespołu OpenBot",
+  "prompt.approval.report.send": "Wyślij do zespołu OpenBot-NC",
   "prompt.approval.report.phoneOnly":
-    "Otwórz ten czat w aplikacji OpenBot na telefonie i wyślij zgłoszenie stamtąd. Telefon dodaje swoją wersję, system i dziennik pomocy. Jeśli telefon nie może się połączyć, otwórz Ustawienia > Pomoc w aplikacji na telefonie i zgłoś problem na GitHubie.",
+    "Otwórz ten czat w aplikacji OpenBot-NC na telefonie i wyślij zgłoszenie stamtąd. Telefon dodaje swoją wersję, system i dziennik pomocy. Jeśli telefon nie może się połączyć, otwórz Ustawienia > Pomoc w aplikacji na telefonie i zgłoś problem na GitHubie.",
   "prompt.approval.title.command": "Uruchom polecenie",
   "prompt.approval.title.fileChange": "Zmień pliki",
   "prompt.approval.title.permissions": "Przyznaj uprawnienia",
@@ -45,7 +45,7 @@ export const messages = {
   "prompt.browser.title.pending": "Wykonaj krok: {host}",
   "prompt.browser.cancelled": "Anulowano",
   "prompt.browser.reload":
-    "OpenBot nie mógł dokończyć wpisywania hasła ani kodu. Sprawdź stronę i wpisz to, czego brakuje. Dokończ logowanie, a potem przeładuj stronę w przeglądarce, zanim wybierzesz „Gotowe”. Sprawdzanie strony pozostaje zablokowane do jej przeładowania.",
+    "OpenBot-NC nie mógł dokończyć wpisywania hasła ani kodu. Sprawdź stronę i wpisz to, czego brakuje. Dokończ logowanie, a potem przeładuj stronę w przeglądarce, zanim wybierzesz „Gotowe”. Sprawdzanie strony pozostaje zablokowane do jej przeładowania.",
   "prompt.browser.continuing": "{name} kontynuuje.",
   "prompt.browser.cancelledBody": "Krok w przeglądarce został anulowany.",
   "prompt.browser.pendingBody":
@@ -58,9 +58,9 @@ export const messages = {
   "prompt.browser.signInBlocked.title": "Strona {host} zablokowała logowanie z {server}",
   "prompt.browser.signInBlocked.cancelledTitle": "Logowanie do {host} anulowane",
   "prompt.browser.signInBlocked.body":
-    "Zaloguj się na tym komputerze. OpenBot wyśle do {server} tylko logowanie do {host}, a {name} będzie kontynuować.",
+    "Zaloguj się na tym komputerze. OpenBot-NC wyśle do {server} tylko logowanie do {host}, a {name} będzie kontynuować.",
   "prompt.browser.signInBlocked.desktopBody":
-    "{host} nie akceptuje logowania z serwera. Otwórz ten czat w aplikacji OpenBot na komputer i zaloguj się tam. Potem {name} będzie kontynuować.",
+    "{host} nie akceptuje logowania z serwera. Otwórz ten czat w aplikacji OpenBot-NC na komputer i zaloguj się tam. Potem {name} będzie kontynuować.",
   "prompt.browser.signInBlocked.cancelledBody": "Logowanie zostało anulowane.",
   "prompt.browser.signInBlocked.waiting": "Czekam na logowanie",
   "prompt.browser.signInBlocked.waitingButton": "Czekam na logowanie…",

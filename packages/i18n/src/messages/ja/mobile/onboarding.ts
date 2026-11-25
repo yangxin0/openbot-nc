@@ -12,7 +12,7 @@ export const messages = {
   "mobile.onboarding.server.title": "エージェントはどこで作業しますか？",
   "mobile.onboarding.server.body": "エージェントはサーバーで動作します。接続方法を選んでください。",
   "mobile.onboarding.server.computer": "自分のコンピューター",
-  "mobile.onboarding.server.computerBody": "コンピューターの OpenBot をサーバーとして使います。",
+  "mobile.onboarding.server.computerBody": "コンピューターの OpenBot-NC をサーバーとして使います。",
   "mobile.onboarding.server.computerTitle": "コンピューターを接続",
   "mobile.onboarding.server.connecting": "{name} に接続しています…",
   "mobile.onboarding.agent.title": "最初のエージェントを選びましょう",

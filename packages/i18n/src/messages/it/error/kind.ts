@@ -6,9 +6,9 @@ export const messages = {
   "error.kind.timeout":
     "La richiesta ha richiesto troppo tempo. Controlla se l'azione è stata completata prima di riprovare.",
   "error.kind.storage":
-    "Lo spazio di archiviazione non è sufficiente. Libera spazio sul computer su cui gira OpenBot, poi riprova.",
+    "Lo spazio di archiviazione non è sufficiente. Libera spazio sul computer su cui gira OpenBot-NC, poi riprova.",
   "error.kind.filePermission":
-    "OpenBot non ha il permesso di completare questa azione. Controlla i permessi del file o della cartella, poi riprova.",
+    "OpenBot-NC non ha il permesso di completare questa azione. Controlla i permessi del file o della cartella, poi riprova.",
   "error.kind.notFound":
     "Non è stato possibile trovare un file o una cartella necessari. Ripristinali o scegline un altro, poi riprova.",
   "error.kind.readOnly": "Questa cartella è di sola lettura. Scegli una cartella in cui puoi scrivere, poi riprova.",
@@ -18,7 +18,7 @@ export const messages = {
   "error.kind.rateLimit": "Troppe richieste. Attendi un momento, poi riprova.",
   "error.kind.service": "Il servizio non è disponibile. Attendi un momento, poi riprova.",
   "error.kind.clock":
-    "La connessione sicura non è riuscita perché la data o l’ora del computer su cui gira OpenBot è probabilmente sbagliata. Correggi data e ora, poi riprova.",
+    "La connessione sicura non è riuscita perché la data o l’ora del computer su cui gira OpenBot-NC è probabilmente sbagliata. Correggi data e ora, poi riprova.",
   "error.kind.interrupted":
     "La connessione si è chiusa prima che la risposta fosse terminata. Invia di nuovo il messaggio.",
 } as const satisfies PartialTranslation<typeof source>;

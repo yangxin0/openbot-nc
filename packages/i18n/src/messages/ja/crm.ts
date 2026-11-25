@@ -320,7 +320,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "{source} でキーを作成",
   "crm.source.stripeKeyHelp":
-    "Stripe が読み取り専用キーの作成画面を開きます。キーを作成し、コピーしてここに貼り付けてください。OpenBot は Stripe から読み取るだけです。",
+    "Stripe が読み取り専用キーの作成画面を開きます。キーを作成し、コピーしてここに貼り付けてください。OpenBot-NC は Stripe から読み取るだけです。",
   "crm.source.connect": "接続",
   "crm.source.account": "アカウント",
   "crm.source.testMode": "テストモード",
@@ -334,8 +334,8 @@ export const messages = {
   "crm.source.errorPermission":
     "このキーは同期に必要なすべてのデータを読み取れません。{source} で読み取りアクセスを付与してください。",
   "crm.source.errorRateLimited": "{source} へのリクエストが多すぎます。次の同期で再試行します。",
-  "crm.source.errorNetwork": "OpenBot は {source} に接続できません。次の同期で再試行します。",
-  "crm.source.errorFailed": "{source} が OpenBot で読み取れない応答を返しました。次の同期で再試行します。",
+  "crm.source.errorNetwork": "OpenBot-NC は {source} に接続できません。次の同期で再試行します。",
+  "crm.source.errorFailed": "{source} が OpenBot-NC で読み取れない応答を返しました。次の同期で再試行します。",
   "crm.source.skipped": "未インポート",
   "crm.source.skippedCurrency": "別の通貨: {rows}",
   "crm.source.skippedInterval": "別の請求間隔: {rows}",
@@ -346,5 +346,5 @@ export const messages = {
   "crm.connectors.synced": "{time}に同期",
   "crm.source.disconnect": "接続を解除",
   "crm.source.disconnectTitle": "{source} の接続を解除しますか？",
-  "crm.source.disconnectBody": "OpenBot は同期を停止し、キーを削除します。インポート済みの行は残り、変更できます。",
+  "crm.source.disconnectBody": "OpenBot-NC は同期を停止し、キーを削除します。インポート済みの行は残り、変更できます。",
 } as const satisfies PartialTranslation<typeof source>;

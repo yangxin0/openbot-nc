@@ -6,21 +6,21 @@ export const messages = {
   "error.attachment.fileTooLarge": "Un archivo supera el límite de 100 MB.",
   "error.attachment.namedFileTooLarge": "{name} supera el límite de 100 MB.",
   "error.attachment.emptyFile":
-    "{name} está vacío o OpenBot no puede leerlo. Guarda el archivo de nuevo y vuelve a adjuntarlo.",
+    "{name} está vacío o OpenBot-NC no puede leerlo. Guarda el archivo de nuevo y vuelve a adjuntarlo.",
   "error.attachment.totalTooLarge": "Los archivos adjuntos superan el límite total de 250 MB.",
   "error.attachment.unavailable": "Este archivo ya no está disponible.",
   "error.attachment.noApp":
     "Ninguna app de este ordenador abrió este archivo. Descárgalo y ábrelo desde tu gestor de archivos.",
   "error.attachment.tooMany": "Elige un máximo de {limit} archivos.",
   "error.attachment.mediaUnsupported":
-    "Este servidor no admite archivos adjuntos MP3 o MOV. Actualiza OpenBot en el host e inténtalo de nuevo.",
+    "Este servidor no admite archivos adjuntos MP3 o MOV. Actualiza OpenBot-NC en el host e inténtalo de nuevo.",
   "error.attachment.emlUnsupported":
-    "Este servidor no admite archivos adjuntos EML. Actualiza OpenBot en el host e inténtalo de nuevo.",
+    "Este servidor no admite archivos adjuntos EML. Actualiza OpenBot-NC en el host e inténtalo de nuevo.",
   "error.attachment.zipUnsupported":
-    "Este servidor no admite archivos adjuntos ZIP. Actualiza OpenBot en el host e inténtalo de nuevo.",
+    "Este servidor no admite archivos adjuntos ZIP. Actualiza OpenBot-NC en el host e inténtalo de nuevo.",
   "error.attachment.mp4Unsupported":
-    "Este servidor no admite archivos adjuntos MP4. Actualiza OpenBot en el host e inténtalo de nuevo.",
+    "Este servidor no admite archivos adjuntos MP4. Actualiza OpenBot-NC en el host e inténtalo de nuevo.",
   "error.attachment.svgUnsupported":
-    "Este servidor no admite archivos adjuntos SVG. Actualiza OpenBot en el host e inténtalo de nuevo.",
+    "Este servidor no admite archivos adjuntos SVG. Actualiza OpenBot-NC en el host e inténtalo de nuevo.",
   "error.attachment.previewTooLarge": "El archivo supera el límite de 100 MB.",
 } as const satisfies PartialTranslation<typeof source>;

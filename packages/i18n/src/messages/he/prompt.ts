@@ -26,13 +26,13 @@ export const messages = {
   "prompt.approval.alwaysAllow": "אישור תמיד",
   "prompt.approval.deny": "דחייה",
   "prompt.approval.cut":
-    "הכרטיס מציג רק את תחילת הבקשה, ולכן אפשר רק לדחות. אם כפתור האישור לא יופיע בקרוב, יש לעדכן את OpenBot בשרת.",
+    "הכרטיס מציג רק את תחילת הבקשה, ולכן אפשר רק לדחות. אם כפתור האישור לא יופיע בקרוב, יש לעדכן את OpenBot-NC בשרת.",
   "prompt.approval.report.bugHeadline": "מצאת באג? בוא נתקן אותו.",
   "prompt.approval.report.ideaHeadline": "יש לך רעיון? בוא נגשים אותו.",
   "prompt.approval.report.dontSend": "לא עכשיו",
-  "prompt.approval.report.send": "שליחה לצוות OpenBot",
+  "prompt.approval.report.send": "שליחה לצוות OpenBot-NC",
   "prompt.approval.report.phoneOnly":
-    "יש לפתוח את הצ'אט הזה באפליקציית OpenBot בטלפון ולשלוח את הדיווח משם. הטלפון מוסיף את הגרסה, המערכת ויומן התמיכה שלו. אם הטלפון לא מצליח להתחבר, יש לפתוח הגדרות > תמיכה באפליקציית הטלפון ולדווח על הבעיה ב-GitHub.",
+    "יש לפתוח את הצ'אט הזה באפליקציית OpenBot-NC בטלפון ולשלוח את הדיווח משם. הטלפון מוסיף את הגרסה, המערכת ויומן התמיכה שלו. אם הטלפון לא מצליח להתחבר, יש לפתוח הגדרות > תמיכה באפליקציית הטלפון ולדווח על הבעיה ב-GitHub.",
   "prompt.approval.title.command": "הרצת פקודה",
   "prompt.approval.title.fileChange": "שינוי קבצים",
   "prompt.approval.title.permissions": "מתן הרשאות",
@@ -45,7 +45,7 @@ export const messages = {
   "prompt.browser.title.pending": "יש להשלים את השלב ב-{host}",
   "prompt.browser.cancelled": "בוטל",
   "prompt.browser.reload":
-    "OpenBot לא הצליח להשלים את הזנת הסיסמה או הקוד. יש לבדוק את הדף ולהזין את מה שחסר. יש להשלים את ההתחברות ואז לטעון מחדש את דף הדפדפן לפני שבוחרים ב-״סיימתי״. בדיקת הדף נשארת חסומה עד שהדף נטען מחדש.",
+    "OpenBot-NC לא הצליח להשלים את הזנת הסיסמה או הקוד. יש לבדוק את הדף ולהזין את מה שחסר. יש להשלים את ההתחברות ואז לטעון מחדש את דף הדפדפן לפני שבוחרים ב-״סיימתי״. בדיקת הדף נשארת חסומה עד שהדף נטען מחדש.",
   "prompt.browser.continuing": "{name} ממשיך.",
   "prompt.browser.cancelledBody": "שלב הדפדפן בוטל.",
   "prompt.browser.pendingBody":
@@ -58,9 +58,9 @@ export const messages = {
   "prompt.browser.signInBlocked.title": "{host} חסם את ההתחברות מ-{server}",
   "prompt.browser.signInBlocked.cancelledTitle": "ההתחברות אל {host} בוטלה",
   "prompt.browser.signInBlocked.body":
-    "יש להתחבר במחשב הזה. OpenBot שולח אל {server} רק את ההתחברות אל {host}, ו-{name} ממשיך.",
+    "יש להתחבר במחשב הזה. OpenBot-NC שולח אל {server} רק את ההתחברות אל {host}, ו-{name} ממשיך.",
   "prompt.browser.signInBlocked.desktopBody":
-    "{host} לא מקבל התחברות מהשרת. יש לפתוח את הצ׳אט הזה באפליקציית OpenBot למחשב, ולהתחבר שם. לאחר מכן {name} ממשיך.",
+    "{host} לא מקבל התחברות מהשרת. יש לפתוח את הצ׳אט הזה באפליקציית OpenBot-NC למחשב, ולהתחבר שם. לאחר מכן {name} ממשיך.",
   "prompt.browser.signInBlocked.cancelledBody": "ההתחברות בוטלה.",
   "prompt.browser.signInBlocked.waiting": "ממתין להתחברות",
   "prompt.browser.signInBlocked.waitingButton": "ממתין להתחברות…",

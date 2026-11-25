@@ -3,8 +3,8 @@ import type { messages as source } from "../../en/status/host";
 
 export const messages = {
   "status.host.identityUpdated": "服务器身份信息已更新。",
-  "status.host.signalLost": "其他设备目前无法连接到本 OpenBot。正在重新连接。",
-  "status.host.stopping": "正在将本 OpenBot 设为私有…",
-  "status.host.private": "本 OpenBot 已设为私有。",
-  "status.host.removed": "本 OpenBot 已从你的账户中移除。如需共享，请重新发布。",
+  "status.host.signalLost": "其他设备目前无法连接到本 OpenBot-NC。正在重新连接。",
+  "status.host.stopping": "正在将本 OpenBot-NC 设为私有…",
+  "status.host.private": "本 OpenBot-NC 已设为私有。",
+  "status.host.removed": "本 OpenBot-NC 已从你的账户中移除。如需共享，请重新发布。",
 } as const satisfies PartialTranslation<typeof source>;

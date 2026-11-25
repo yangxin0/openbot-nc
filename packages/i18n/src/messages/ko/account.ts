@@ -4,7 +4,7 @@ import type { messages as source } from "../en/account";
 export const messages = {
   "account.menu.signOut": "로그아웃",
   "account.menu.signingOut": "로그아웃 중…",
-  "account.menu.updateFailed": "OpenBot을 업데이트할 수 없어요.",
+  "account.menu.updateFailed": "OpenBot-NC를 업데이트할 수 없어요.",
   "account.menu.signOutFailed": "로그아웃할 수 없어요.",
   "account.usage.title": "사용량",
   "account.usage.refresh": "새로 고침",
@@ -59,7 +59,7 @@ export const messages = {
   "account.update.progress": "업데이트 다운로드 진행률",
   "account.login.email": "이메일",
   "account.login.sendCode": "로그인 코드 보내기",
-  "account.login.verified": "확인됐어요. OpenBot을 여는 중…",
+  "account.login.verified": "확인됐어요. OpenBot-NC를 여는 중…",
   "account.login.developmentCode": "개발용 코드: {code}",
   "account.otp.incorrect": "코드가 올바르지 않아요. 다시 시도해 주세요.",
   "account.otp.verifying": "확인 중…",

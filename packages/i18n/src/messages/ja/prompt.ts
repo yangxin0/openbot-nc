@@ -26,13 +26,13 @@ export const messages = {
   "prompt.approval.alwaysAllow": "常に許可",
   "prompt.approval.deny": "拒否",
   "prompt.approval.cut":
-    "このカードにはリクエストの冒頭だけが表示されているため、拒否のみ選べます。「許可」がすぐに表示されない場合は、サーバーの OpenBot を更新してください。",
+    "このカードにはリクエストの冒頭だけが表示されているため、拒否のみ選べます。「許可」がすぐに表示されない場合は、サーバーの OpenBot-NC を更新してください。",
   "prompt.approval.report.bugHeadline": "バグを見つけましたか？直しましょう。",
   "prompt.approval.report.ideaHeadline": "アイデアがありますか？形にしましょう。",
   "prompt.approval.report.dontSend": "今はしない",
-  "prompt.approval.report.send": "OpenBot チームに送信",
+  "prompt.approval.report.send": "OpenBot-NC チームに送信",
   "prompt.approval.report.phoneOnly":
-    "OpenBot のスマートフォンアプリでこのチャットを開き、そこからレポートを送信してください。スマートフォンがバージョン、システム情報、サポートログを追加します。スマートフォンが接続できない場合は、スマートフォンアプリの「設定」>「サポート」を開き、GitHub で問題を報告してください。",
+    "OpenBot-NC のスマートフォンアプリでこのチャットを開き、そこからレポートを送信してください。スマートフォンがバージョン、システム情報、サポートログを追加します。スマートフォンが接続できない場合は、スマートフォンアプリの「設定」>「サポート」を開き、GitHub で問題を報告してください。",
   "prompt.approval.title.command": "コマンドを実行",
   "prompt.approval.title.fileChange": "ファイルを変更",
   "prompt.approval.title.permissions": "権限を付与",
@@ -45,7 +45,7 @@ export const messages = {
   "prompt.browser.title.pending": "{host} で手順を完了してください",
   "prompt.browser.cancelled": "キャンセル済み",
   "prompt.browser.reload":
-    "OpenBot はパスワードまたはコードの入力を完了できませんでした。ページを確認し、足りない部分を入力してください。サインインを完了し、ブラウザーのページを再読み込みしてから「完了しました」を選んでください。ページが再読み込みされるまで、ページの検査はブロックされます。",
+    "OpenBot-NC はパスワードまたはコードの入力を完了できませんでした。ページを確認し、足りない部分を入力してください。サインインを完了し、ブラウザーのページを再読み込みしてから「完了しました」を選んでください。ページが再読み込みされるまで、ページの検査はブロックされます。",
   "prompt.browser.continuing": "{name} が続行しています。",
   "prompt.browser.cancelledBody": "ブラウザーの手順はキャンセルされました。",
   "prompt.browser.pendingBody":
@@ -58,9 +58,9 @@ export const messages = {
   "prompt.browser.signInBlocked.title": "{host} が {server} からのサインインをブロックしました",
   "prompt.browser.signInBlocked.cancelledTitle": "{host} へのサインインはキャンセルされました",
   "prompt.browser.signInBlocked.body":
-    "このコンピュータでサインインしてください。OpenBot は {host} のサインインだけを {server} に送信し、{name} が続行します。",
+    "このコンピュータでサインインしてください。OpenBot-NC は {host} のサインインだけを {server} に送信し、{name} が続行します。",
   "prompt.browser.signInBlocked.desktopBody":
-    "{host} はサーバーからのサインインを受け付けません。お使いのコンピューターの OpenBot デスクトップアプリでこのチャットを開き、そこでサインインしてください。その後、{name} が続行します。",
+    "{host} はサーバーからのサインインを受け付けません。お使いのコンピューターの OpenBot-NC デスクトップアプリでこのチャットを開き、そこでサインインしてください。その後、{name} が続行します。",
   "prompt.browser.signInBlocked.cancelledBody": "サインインはキャンセルされました。",
   "prompt.browser.signInBlocked.waiting": "サインインを待っています",
   "prompt.browser.signInBlocked.waitingButton": "サインインを待っています…",

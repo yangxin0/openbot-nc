@@ -14,7 +14,7 @@ const meta = {
     name: "example",
     address: "https://example.com/mcp",
     state: "sign-in",
-    unavailableText: "Sign in to example in OpenBot on your computer, in Marketplace, Apps, example.",
+    unavailableText: "Sign in to example in OpenBot-NC on your computer, in Marketplace, Apps, example.",
     notNeededText: "example works now without a sign-in.",
     onSignIn: fn(),
     onContinue: fn(),

@@ -2,8 +2,8 @@ import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("error.import", {
   "error.import.manifestNotJson": "{manifest} is not valid JSON.",
-  "error.import.notAgentExport": "{manifest} is not an OpenBot agent export.",
-  "error.import.newerExportSkill": "This export was made by a newer export skill. Update OpenBot and try again.",
+  "error.import.notAgentExport": "{manifest} is not an OpenBot-NC agent export.",
+  "error.import.newerExportSkill": "This export was made by a newer export skill. Update OpenBot-NC and try again.",
   "error.import.noAgents": "The export contains no agents.",
   "error.import.tooManyAgents": "The export contains more than {limit} agents.",
   "error.import.tooManyChannels": "The export contains more than {limit} channels.",
@@ -46,7 +46,7 @@ export const messages = defineMessages("error.import", {
   "error.import.uploadDiskSpace":
     "The export needs {size} GB of free disk space on the server, and {free} GB is free. Free up space on the server, then choose the export again.",
   "error.import.remoteZipTooLargeOldHost":
-    "This server accepts an export of up to 100 MB. Update OpenBot on the server to import a larger export.",
+    "This server accepts an export of up to 100 MB. Update OpenBot-NC on the server to import a larger export.",
   "error.import.skillKept":
     '{name}: the server already has the skill "{skill}", so the agent uses that skill. Ask an admin to update it.',
   "error.import.skillRenamed":
@@ -61,11 +61,11 @@ export const messages = defineMessages("error.import", {
   "error.import.hermesSkillCodeAdded":
     "It has code that it did not have when the profiles were read. Read them again to allow it.",
   "error.import.hermesLinkNotSaved":
-    "{name}: OpenBot could not save which agent came from this profile, so the next import adds it as a new agent.",
+    "{name}: OpenBot-NC could not save which agent came from this profile, so the next import adds it as a new agent.",
   "error.import.transferRemoteTooLarge":
     "A transfer file for a joined server must be under 100 MB. Turn off workspace files, or export fewer agents.",
-  "error.import.transferNotFile": "This file is not an OpenBot transfer file.",
-  "error.import.transferNewer": "A newer version of OpenBot made this file. Update OpenBot and try again.",
+  "error.import.transferNotFile": "This file is not an OpenBot-NC transfer file.",
+  "error.import.transferNewer": "A newer version of OpenBot-NC made this file. Update OpenBot-NC and try again.",
   "error.import.transferEmpty": "The file contains no agents and no settings.",
   "error.import.transferTooLarge":
     "A transfer file must be under 2 GB and 50,000 files. Turn off workspace files, or export fewer agents.",
@@ -115,9 +115,9 @@ export const messages = defineMessages("error.import", {
   "error.import.transferWorkflowConnection":
     "{name}: choose the Slack, Discord, or Telegram connection of the workflow again after you connect it here.",
   "error.import.transferWorkflowNewer":
-    "{name}: some steps need a newer version of OpenBot. They are kept as locked notes.",
+    "{name}: some steps need a newer version of OpenBot-NC. They are kept as locked notes.",
   "error.import.transferWorkflowNewerSettings":
-    "{name}: some settings need a newer version of OpenBot. Open the workflow and examine its steps.",
+    "{name}: some settings need a newer version of OpenBot-NC. Open the workflow and examine its steps.",
   "error.import.transferWorkflowPaused": "The imported workflows are paused. Examine each workflow, then resume it.",
   "error.import.transferHistorySkipped": "{name}: the chat history in the file is invalid, so it is not imported.",
   "error.import.transferChatsSkipped": {

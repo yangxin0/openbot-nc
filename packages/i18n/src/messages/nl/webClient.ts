@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/webClient";
 
 export const messages = {
-  "webClient.loading": "OpenBot laden…",
+  "webClient.loading": "OpenBot-NC laden…",
   "webClient.loadingLine.wake": "De agents wakker maken…",
   "webClient.loadingLine.coffee": "Koffie inschenken voor de agents…",
   "webClient.loadingLine.tokens": "Tokens tellen op de vingers…",
   "webClient.loadingLine.prompts": "De prompts ontwarren…",
   "webClient.loadingLine.sleepy": "De slaapkop vriendelijk vragen…",
   "webClient.loadingLine.almost": "Bijna klaar. Waarschijnlijk.",
-  "webClient.slowLoad.title": "OpenBot laadt langzamer dan normaal",
+  "webClient.slowLoad.title": "OpenBot-NC laadt langzamer dan normaal",
   "webClient.slowLoad.body": "Controleer je internetverbinding en laad de pagina daarna opnieuw.",
   "webClient.slowLoad.reload": "Opnieuw laden",
   "webClient.pane.navigation": "Navigatie in werkruimte",
@@ -18,7 +18,7 @@ export const messages = {
   "webClient.notice.connecting": "Verbinden met je server",
   "webClient.notice.findingHosts": "Je servers zoeken",
   "webClient.otherTab.title": "{name} is geopend in een ander tabblad",
-  "webClient.otherTab.description": "OpenBot kan een server in één tabblad tegelijk gebruiken.",
+  "webClient.otherTab.description": "OpenBot-NC kan een server in één tabblad tegelijk gebruiken.",
   "webClient.otherTab.useHere": "Hier gebruiken",
   "webClient.agent.modelsFailed": "Kan de modellen van de server niet laden.",
   "webClient.agent.refreshFailed":
@@ -28,7 +28,7 @@ export const messages = {
   "webClient.error.usageOffline": "Maak verbinding met je server om het gebruik te bekijken.",
   "webClient.error.desktopOnly": "Deze actie is beschikbaar in de desktop-app.",
   "webClient.settings.preferences.title": "Voorkeuren",
-  "webClient.settings.preferences.description": "Kies de taal en geluiden van OpenBot in deze browser.",
+  "webClient.settings.preferences.description": "Kies de taal en geluiden van OpenBot-NC in deze browser.",
   "webClient.error.checkConversation": "Controleer het gesprek voordat je opnieuw verstuurt.",
   "webClient.error.hostReported": "De server meldde een fout. Controleer het gesprek en de serverstatus.",
   "webClient.error.requestFailed": "Het verzoek is mislukt.",
@@ -57,7 +57,7 @@ export const messages = {
   "webClient.error.identityChanged": "De identiteit van de server is gewijzigd. Verbinding geweigerd.",
   "webClient.error.connectionUnavailable": "De serververbinding is niet beschikbaar.",
   "webClient.error.incompatible":
-    "Deze server is niet compatibel met OpenBot web. Werk de server bij en laad deze pagina opnieuw.",
+    "Deze server is niet compatibel met OpenBot-NC web. Werk de server bij en laad deze pagina opnieuw.",
   "webClient.error.sendUnconfirmed":
     "De bezorging van het bericht is niet bevestigd. Vernieuw voordat je het opnieuw verstuurt.",
   "webClient.error.fileType": "Werk de server bij om dit bestandstype bij te voegen.",

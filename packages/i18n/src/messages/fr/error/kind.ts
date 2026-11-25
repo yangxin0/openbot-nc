@@ -5,9 +5,9 @@ export const messages = {
   "error.kind.network": "Connexion impossible. Vérifiez votre connexion, puis réessayez.",
   "error.kind.timeout": "La requête a pris trop de temps. Vérifiez si l’action a abouti avant de réessayer.",
   "error.kind.storage":
-    "L’espace de stockage est insuffisant. Libérez de l’espace sur l’ordinateur qui exécute OpenBot, puis réessayez.",
+    "L’espace de stockage est insuffisant. Libérez de l’espace sur l’ordinateur qui exécute OpenBot-NC, puis réessayez.",
   "error.kind.filePermission":
-    "OpenBot n’a pas l’autorisation d’effectuer cette action. Vérifiez les autorisations du fichier ou du dossier, puis réessayez.",
+    "OpenBot-NC n’a pas l’autorisation d’effectuer cette action. Vérifiez les autorisations du fichier ou du dossier, puis réessayez.",
   "error.kind.notFound":
     "Un fichier ou un dossier nécessaire est introuvable. Restaurez-le ou choisissez-en un autre, puis réessayez.",
   "error.kind.readOnly":
@@ -18,6 +18,6 @@ export const messages = {
   "error.kind.rateLimit": "Trop de requêtes. Patientez un instant, puis réessayez.",
   "error.kind.service": "Le service est indisponible. Patientez un instant, puis réessayez.",
   "error.kind.clock":
-    "La connexion sécurisée a échoué, car la date ou l’heure de l’ordinateur qui exécute OpenBot est probablement incorrecte. Corrigez la date et l’heure, puis réessayez.",
+    "La connexion sécurisée a échoué, car la date ou l’heure de l’ordinateur qui exécute OpenBot-NC est probablement incorrecte. Corrigez la date et l’heure, puis réessayez.",
   "error.kind.interrupted": "La connexion s’est fermée avant la fin de la réponse. Renvoyez votre message.",
 } as const satisfies PartialTranslation<typeof source>;

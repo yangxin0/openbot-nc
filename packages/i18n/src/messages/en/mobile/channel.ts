@@ -103,7 +103,7 @@ export const messages = defineMessages("mobile.channel", {
   "mobile.channel.deleteHistory.footer": "The messages go, and the members forget them. The channel setup stays.",
   "mobile.channel.deleteHistory.confirmTitle": "Delete the history of {name}?",
   "mobile.channel.deleteHistory.confirmBody":
-    "All messages and files of this channel go from OpenBot, and the members forget them. You cannot undo this. The members, instructions, memories, routines, and tasks do not change.",
+    "All messages and files of this channel go from OpenBot-NC, and the members forget them. You cannot undo this. The members, instructions, memories, routines, and tasks do not change.",
   "mobile.channel.deleteHistory.confirm": "Delete history",
   "mobile.channel.deleteHistory.failed": "Could not delete the history",
   "mobile.channel.deleteHistory.failedBody": "The host could not delete the history.",

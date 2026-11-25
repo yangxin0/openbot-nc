@@ -339,7 +339,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "{source} içinde anahtar oluştur",
   "crm.source.stripeKeyHelp":
-    "Stripe, oluşturulmaya hazır salt okunur bir anahtar açar. Anahtarı oluşturun, kopyalayın ve buraya yapıştırın. OpenBot Stripe'tan yalnızca okur.",
+    "Stripe, oluşturulmaya hazır salt okunur bir anahtar açar. Anahtarı oluşturun, kopyalayın ve buraya yapıştırın. OpenBot-NC Stripe'tan yalnızca okur.",
   "crm.source.connect": "Bağla",
   "crm.source.account": "Hesap",
   "crm.source.testMode": "Test modu",
@@ -353,8 +353,9 @@ export const messages = {
   "crm.source.errorPermission":
     "Anahtar, senkronizasyonun ihtiyaç duyduğu her şeyi okuyamıyor. {source} içinde ona okuma erişimi verin.",
   "crm.source.errorRateLimited": "{source} çok fazla istek aldı. Sonraki senkronizasyon yeniden dener.",
-  "crm.source.errorNetwork": "OpenBot {source} ile bağlantı kuramıyor. Sonraki senkronizasyon yeniden dener.",
-  "crm.source.errorFailed": "{source} OpenBot'un okuyamadığı bir yanıt gönderdi. Sonraki senkronizasyon yeniden dener.",
+  "crm.source.errorNetwork": "OpenBot-NC {source} ile bağlantı kuramıyor. Sonraki senkronizasyon yeniden dener.",
+  "crm.source.errorFailed":
+    "{source} OpenBot-NC'nin okuyamadığı bir yanıt gönderdi. Sonraki senkronizasyon yeniden dener.",
   "crm.source.skipped": "İçe aktarılmadı",
   "crm.source.skippedCurrency": "Başka para birimi: {rows}",
   "crm.source.skippedInterval": "Başka faturalama aralığı: {rows}",
@@ -366,5 +367,5 @@ export const messages = {
   "crm.source.disconnect": "Bağlantıyı kes",
   "crm.source.disconnectTitle": "{source} bağlantısı kesilsin mi?",
   "crm.source.disconnectBody":
-    "OpenBot senkronizasyonu durdurur ve anahtarı siler. İçe aktarılan satırlar kalır ve bunları değiştirebilirsiniz.",
+    "OpenBot-NC senkronizasyonu durdurur ve anahtarı siler. İçe aktarılan satırlar kalır ve bunları değiştirebilirsiniz.",
 } as const satisfies PartialTranslation<typeof source>;

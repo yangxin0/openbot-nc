@@ -57,10 +57,10 @@ export const messages = {
   "browser.pip.reattach": "Tarayıcıyı sağ kenar çubuğuna yeniden ekle",
   "browser.pip.reattachTitle": "Tarayıcıyı yeniden ekle",
   "browser.pip.close": "Tarayıcı açılır penceresini kapat",
-  "browser.pip.reattachFailed": "OpenBot tarayıcıyı kenar çubuğuna geri ekleyemedi.",
-  "browser.pip.closeFailed": "OpenBot tarayıcı açılır penceresini kapatamadı.",
+  "browser.pip.reattachFailed": "OpenBot-NC tarayıcıyı kenar çubuğuna geri ekleyemedi.",
+  "browser.pip.closeFailed": "OpenBot-NC tarayıcı açılır penceresini kapatamadı.",
   "browser.window.open": "Tarayıcıyı yeni pencerede aç",
-  "browser.window.openFailed": "OpenBot tarayıcı penceresini açamadı.",
+  "browser.window.openFailed": "OpenBot-NC tarayıcı penceresini açamadı.",
   "browser.popupBlocked.title": "Açılır pencere engellendi",
   "browser.popupBlocked.dismiss": "Açılır pencere mesajını kapat",
   "browser.liveView.label": "Sunucudaki sayfanın canlı görünümü",
@@ -97,17 +97,17 @@ export const messages = {
   "browser.secret.failed": "İstek tamamlanamadı. Bağlantıyı kontrol edin ve tekrar deneyin.",
   "browser.secret.ended": "Bu oturum açma isteği sona erdi. Ajandan tekrar denemesini isteyin.",
   "browser.secret.vaultSkip.agentScript":
-    "Ajan bu sayfada bir betik çalıştırdığı için OpenBot kayıtlı oturum bilgilerinizi kullanmadı. Kullanmak için ajandan sayfayı yeniden yüklemesini ve tekrar denemesini isteyin.",
+    "Ajan bu sayfada bir betik çalıştırdığı için OpenBot-NC kayıtlı oturum bilgilerinizi kullanmadı. Kullanmak için ajandan sayfayı yeniden yüklemesini ve tekrar denemesini isteyin.",
   "browser.secret.vaultSkip.fieldKind":
-    "Ajan sayfada yanlış alanı seçtiği için OpenBot kayıtlı oturum bilgilerinizi kullanmadı.",
+    "Ajan sayfada yanlış alanı seçtiği için OpenBot-NC kayıtlı oturum bilgilerinizi kullanmadı.",
   "browser.secret.vaultSkip.loginChoice":
-    "Ajan bu site için kayıtlı oturum bilgilerinden birini seçmediği için OpenBot kayıtlı bir oturum bilgisi kullanmadı. Ajana hangi hesabı kullanacağını söyleyin.",
+    "Ajan bu site için kayıtlı oturum bilgilerinden birini seçmediği için OpenBot-NC kayıtlı bir oturum bilgisi kullanmadı. Ajana hangi hesabı kullanacağını söyleyin.",
   "browser.secret.vaultSkip.noPassword":
-    "Kayıtlı oturum bilgilerinizde bu site için şifre olmadığı için OpenBot bunları kullanmadı.",
+    "Kayıtlı oturum bilgilerinizde bu site için şifre olmadığı için OpenBot-NC bunları kullanmadı.",
   "browser.secret.vaultSkip.noAuthenticatorKey":
-    "Kayıtlı oturum bilgilerinizde kimlik doğrulayıcı anahtarı olmadığı için OpenBot bunları kullanmadı.",
+    "Kayıtlı oturum bilgilerinizde kimlik doğrulayıcı anahtarı olmadığı için OpenBot-NC bunları kullanmadı.",
   "browser.secret.vaultSkip.vaultUnreadable":
-    "Şifre yöneticiniz okunamadığı için OpenBot kayıtlı bir oturum bilgisi kullanmadı.",
+    "Şifre yöneticiniz okunamadığı için OpenBot-NC kayıtlı bir oturum bilgisi kullanmadı.",
   "browser.error.openAddress": "Adres bu sekmede açılamadı.",
   "browser.error.channelNoBrowserMember": "Bu kanalda hiçbir üye yeni sekme açamaz.",
   "browser.error.closeTab": "Tarayıcı sekmesi kapatılamadı.",
@@ -167,21 +167,21 @@ export const messages = {
   "browser.signIn.local": "Bu bilgisayarda oturum aç",
   "browser.signIn.title": "{site} sitesinde oturum aç",
   "browser.signIn.description":
-    "Bazı siteler bir sunucudan oturum açmayı reddeder. Bu bilgisayarda oturum açın; OpenBot {site} oturumunu {server} sunucusuna gönderir. {server} üzerindeki tüm ajanlar ve üyeler bunu tarayıcıda kullanabilir.",
+    "Bazı siteler bir sunucudan oturum açmayı reddeder. Bu bilgisayarda oturum açın; OpenBot-NC {site} oturumunu {server} sunucusuna gönderir. {server} üzerindeki tüm ajanlar ve üyeler bunu tarayıcıda kullanabilir.",
   "browser.signIn.windowOpen":
-    "Açılan pencerede oturum açın. Oturum açma tamamlanınca OpenBot onu gönderir. Pencere açık kalırsa Bitti'yi seçin.",
+    "Açılan pencerede oturum açın. Oturum açma tamamlanınca OpenBot-NC onu gönderir. Pencere açık kalırsa Bitti'yi seçin.",
   "browser.signIn.windowClosed":
     "Oturum açma penceresi kapalı. Oturumu göndermek için Bitti'yi seçin veya pencereyi yeniden açın.",
   "browser.signIn.reopen": "Oturum açma penceresini aç",
   "browser.signIn.sending": "{server} sunucusuna gönderiliyor…",
   "browser.signIn.sent": "{server} üzerinde {site} oturumu açıldı",
-  "browser.signIn.notFound": "OpenBot {site} için oturum bulamadı. Pencerede oturum açın, sonra Bitti'yi seçin.",
+  "browser.signIn.notFound": "OpenBot-NC {site} için oturum bulamadı. Pencerede oturum açın, sonra Bitti'yi seçin.",
   "browser.signIn.stillSignedOut":
     "{server} hâlâ {site} için bir oturum açma sayfası gösteriyor. Oturum açmayı pencerede tamamlayın.",
-  "browser.signIn.failed": "OpenBot oturumu gönderemedi.",
+  "browser.signIn.failed": "OpenBot-NC oturumu gönderemedi.",
   "browser.profiles.title": "Tarayıcı profilleri",
   "browser.profiles.subtitle":
-    "Her profil kendi oturum açma bilgilerini, çerezlerini ve site verilerini OpenBot'u çalıştıran bilgisayarda tutar.",
+    "Her profil kendi oturum açma bilgilerini, çerezlerini ve site verilerini OpenBot-NC'yi çalıştıran bilgisayarda tutar.",
   "browser.profiles.label": "Tarayıcı profilleri",
   "browser.profiles.newName": "Profil adı",
   "browser.profiles.create": "Ekle",
@@ -200,8 +200,8 @@ export const messages = {
   "browser.profiles.deleteDescription":
     "Bu işlem profilin oturum açma bilgilerini, çerezlerini ve site verilerini siler. Açık sekmeleri kapanır.",
   "browser.profiles.deleteAgents": "Bu ajanlar paylaşılan profile geçer: {agents}.",
-  "browser.profiles.failed": "OpenBot tarayıcı profillerini değiştiremedi.",
-  "browser.profiles.loadFailed": "OpenBot tarayıcı profillerini yükleyemedi.",
+  "browser.profiles.failed": "OpenBot-NC tarayıcı profillerini değiştiremedi.",
+  "browser.profiles.loadFailed": "OpenBot-NC tarayıcı profillerini yükleyemedi.",
   "browser.profiles.tabLabel": "Profil: {name}",
   "browser.profiles.tabLabelProxy": "Profil: {name} · Proxy: {proxy}",
   "browser.profiles.agentTabLabel": "Ajanın kendi profili",
@@ -216,7 +216,7 @@ export const messages = {
   "browser.proxies.addTitle": "Proxy ekle",
   "browser.proxies.editTitle": "{name} proxy'sini düzenle",
   "browser.proxies.dialogDescription":
-    "socks5, http veya https kullanın. Kullanıcı adı ve parola her türde isteğe bağlıdır. Parola, OpenBot'u çalıştıran bilgisayarda şifreli olarak kalır.",
+    "socks5, http veya https kullanın. Kullanıcı adı ve parola her türde isteğe bağlıdır. Parola, OpenBot-NC'yi çalıştıran bilgisayarda şifreli olarak kalır.",
   "browser.proxies.address": "Adres",
   "browser.proxies.addressPlaceholder": "socks5://user:password@host:1080",
   "browser.proxies.deleteUsed": {
@@ -226,7 +226,7 @@ export const messages = {
   "browser.proxies.deleteUnused": "Bu proxy'yi kullanan profil yok.",
   "browser.proxies.failing": "{name} yanıt vermiyor",
   "browser.proxies.signInRefused": "{name} oturum açmayı reddetti",
-  "browser.proxies.unsupported": "Bu sunucu proxy kullanamaz. Sunucudaki OpenBot'u güncelleyin.",
+  "browser.proxies.unsupported": "Bu sunucu proxy kullanamaz. Sunucudaki OpenBot-NC'yi güncelleyin.",
   "browser.proxies.yourComputer": "Bilgisayarınız",
   "browser.proxies.memberComputer": "{name} üyesinin bilgisayarı",
   "browser.proxies.unknownComputer": "Bir üyenin bilgisayarı",
@@ -237,7 +237,7 @@ export const messages = {
   "browser.proxies.offlineBadge": "{name} çevrim dışı",
   "browser.proxies.shareTitle": "Bu bilgisayarın bağlantısı paylaşılsın mı?",
   "browser.proxies.shareDescription":
-    "Bilgisayarınızı kullanan profiller, herkese açık siteleri bu bilgisayarın internet bağlantısı üzerinden açar. Bu yalnızca OpenBot burada açıkken çalışır. Sunucu, yerel ağınızdaki adresleri açamaz.",
+    "Bilgisayarınızı kullanan profiller, herkese açık siteleri bu bilgisayarın internet bağlantısı üzerinden açar. Bu yalnızca OpenBot-NC burada açıkken çalışır. Sunucu, yerel ağınızdaki adresleri açamaz.",
   "browser.proxies.share": "Paylaş",
   "browser.proxies.stopSharing": "Paylaşmayı durdur",
   "browser.proxies.closesTabs": {

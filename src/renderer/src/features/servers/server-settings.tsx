@@ -1,3 +1,4 @@
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import { parseHostedServerName } from "@openbot/contracts/hosted-servers";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type {
@@ -17,7 +18,7 @@ import { serverCanAdminister, serverRoleCanAdminister, serverSupportsCapability 
 import { useServers } from "./servers-context";
 import { serverMemberPort, serversPort } from "./servers-port";
 
-const FALLBACK_SERVER_NAME = "OpenBot";
+const FALLBACK_SERVER_NAME = APP_NAME;
 
 function generatedServerName(user: UserProfile | null): string {
   const person = (user?.name?.trim() || "").split(/\s+/u)[0] ?? "";

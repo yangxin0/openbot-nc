@@ -19,10 +19,10 @@ export const messages = {
   "marketplace.tab.skills": "Habilidades",
   "marketplace.description.apps": "Conecta las herramientas y los servicios con los que trabajan tus agentes.",
   "marketplace.description.skills": "Instrucciones que enseñan a un agente una tarea o una herramienta.",
-  "marketplace.plugins.missing": "Este plugin no está en el catálogo de OpenBot.",
+  "marketplace.plugins.missing": "Este plugin no está en el catálogo de OpenBot-NC.",
   "marketplace.agents.all": "Todos los agentes",
   "marketplace.skill.loading": "Cargando habilidad",
-  "marketplace.try.readFailed": "OpenBot no pudo leer las habilidades de este agente. Inténtalo de nuevo.",
+  "marketplace.try.readFailed": "OpenBot-NC no pudo leer las habilidades de este agente. Inténtalo de nuevo.",
   "marketplace.try.enable": "Activa esta habilidad en los ajustes del agente para probarla.",
   "marketplace.try.repair": "Repara esta habilidad en los ajustes del agente para probarla.",
   "marketplace.try.update": "Actualiza esta habilidad para probar esta versión.",
@@ -89,25 +89,25 @@ export const messages = {
   "marketplace.app.setup.account": "Inicia sesión con tu cuenta de {name} en el navegador.",
   "marketplace.app.setup.key": "Necesita una clave de API de tu cuenta de {name}.",
   "marketplace.app.setup.keySaved": "{field} se guarda en {host}.",
-  "marketplace.app.account.removeDescription": "OpenBot elimina el inicio de sesión de esta cuenta en {host}.",
+  "marketplace.app.account.removeDescription": "OpenBot-NC elimina el inicio de sesión de esta cuenta en {host}.",
   "marketplace.app.setup.desktop": "Se ejecuta en la app de escritorio de {name} en {address}.",
   "marketplace.app.setup.desktopConnected": "Conectada a {address}.",
   "marketplace.app.setup.open": "No necesita inicio de sesión ni clave.",
   "marketplace.app.blocked.update":
-    "{host} usa una versión antigua de OpenBot que no puede conectar apps. Actualiza OpenBot en {host} o pide a su propietario que lo actualice.",
+    "{host} usa una versión antigua de OpenBot-NC que no puede conectar apps. Actualiza OpenBot-NC en {host} o pide a su propietario que lo actualice.",
   "marketplace.app.blocked.member":
-    "Solo un propietario o administrador de {host} puede conectar apps allí. Pide a uno de ellos que conecte {name} o que actualice OpenBot en {host} para que los miembros puedan conectar apps.",
-  "marketplace.app.blocked.mac": "{name} solo funciona en un Mac que ejecuta OpenBot.",
+    "Solo un propietario o administrador de {host} puede conectar apps allí. Pide a uno de ellos que conecte {name} o que actualice OpenBot-NC en {host} para que los miembros puedan conectar apps.",
+  "marketplace.app.blocked.mac": "{name} solo funciona en un Mac que ejecuta OpenBot-NC.",
   "marketplace.app.connectAgain": "Volver a conectar",
   "marketplace.app.automation.askOnInstall": "Pedir acceso a macOS al instalar",
   "marketplace.app.automation.title": "Acceso a las apps de Apple",
   "marketplace.app.automation.description":
     "macOS muestra un aviso por cada app. Una app cerrada se abre un momento y luego se cierra.",
   "marketplace.app.automation.request": "Pedir acceso",
-  "marketplace.app.automation.allowed": "OpenBot ya puede controlar todas las apps de Apple.",
+  "marketplace.app.automation.allowed": "OpenBot-NC ya puede controlar todas las apps de Apple.",
   "marketplace.app.automation.refused":
-    "macOS no dio acceso a {apps}. Permite OpenBot en Ajustes del Sistema › Privacidad y seguridad › Automatización.",
-  "marketplace.app.automation.failed": "OpenBot no pudo preguntar a macOS por {apps}. Inténtalo de nuevo.",
+    "macOS no dio acceso a {apps}. Permite OpenBot-NC en Ajustes del Sistema › Privacidad y seguridad › Automatización.",
+  "marketplace.app.automation.failed": "OpenBot-NC no pudo preguntar a macOS por {apps}. Inténtalo de nuevo.",
   "marketplace.app.automation.app.calendar": "Calendario",
   "marketplace.app.automation.app.contacts": "Contactos",
   "marketplace.app.automation.app.mail": "Mail",
@@ -169,7 +169,7 @@ export const messages = {
   "marketplace.plugin.cobrain.prompt.saveNote": "Guarda una nota en Cobrain con lo que hicimos hoy y lo que falta.",
   "marketplace.plugin.honcho.tagline": "Tu memoria en todas las herramientas de IA",
   "marketplace.plugin.honcho.description":
-    "Honcho, de Plastic Labs, da a los agentes una memoria a largo plazo sobre ti que otras herramientas de IA que conectes pueden compartir. Los agentes guardan lo que aprenden, y Honcho razona sobre ello para crear un modelo de tus preferencias, objetivos y formas de trabajar. Los agentes le hacen preguntas antes de empezar. Los agentes de OpenBot también tienen su propia memoria; Honcho es la memoria que te sigue a otras herramientas. Los mensajes que guardan los agentes van a tu cuenta de Honcho.",
+    "Honcho, de Plastic Labs, da a los agentes una memoria a largo plazo sobre ti que otras herramientas de IA que conectes pueden compartir. Los agentes guardan lo que aprenden, y Honcho razona sobre ello para crear un modelo de tus preferencias, objetivos y formas de trabajar. Los agentes le hacen preguntas antes de empezar. Los agentes de OpenBot-NC también tienen su propia memoria; Honcho es la memoria que te sigue a otras herramientas. Los mensajes que guardan los agentes van a tu cuenta de Honcho.",
   "marketplace.plugin.honcho.app":
     "Guarda y consulta memoria a largo plazo en tus espacios de trabajo de Honcho con un solo servidor MCP.",
   "marketplace.plugin.honcho.prompt.recall":
@@ -180,7 +180,7 @@ export const messages = {
   "marketplace.plugin.honcho.hint.apiKey": "Crea una clave en app.honcho.dev.",
   "marketplace.plugin.hindsight.tagline": "Memoria que aprende con el tiempo",
   "marketplace.plugin.hindsight.description":
-    "Hindsight, de Vectorize, da a los agentes una memoria a largo plazo en Hindsight Cloud. Los agentes retienen hechos y eventos, los recuerdan por significado, tiempo y entidad, y reflexionan sobre ellos para formar modelos mentales. Los recuerdos se guardan en bancos, y los agentes pueden crear un banco para cada proyecto o persona. Los agentes de OpenBot también tienen su propia memoria; Hindsight es la memoria que otras herramientas de IA que conectes pueden compartir. Lo que retienen los agentes va a tu cuenta de Hindsight Cloud.",
+    "Hindsight, de Vectorize, da a los agentes una memoria a largo plazo en Hindsight Cloud. Los agentes retienen hechos y eventos, los recuerdan por significado, tiempo y entidad, y reflexionan sobre ellos para formar modelos mentales. Los recuerdos se guardan en bancos, y los agentes pueden crear un banco para cada proyecto o persona. Los agentes de OpenBot-NC también tienen su propia memoria; Hindsight es la memoria que otras herramientas de IA que conectes pueden compartir. Lo que retienen los agentes va a tu cuenta de Hindsight Cloud.",
   "marketplace.plugin.hindsight.app":
     "Retén, recuerda y reflexiona sobre recuerdos en tus bancos de Hindsight Cloud con un solo servidor MCP.",
   "marketplace.plugin.hindsight.prompt.recall":
@@ -200,7 +200,7 @@ export const messages = {
   "marketplace.plugin.figma.prompt.assets": "Extrae los iconos de marketing a 2x para el paquete de la aplicación.",
   "marketplace.plugin.paper.tagline": "Lienzo de diseño basado en HTML y CSS",
   "marketplace.plugin.paper.description":
-    "Paper permite a los agentes leer y escribir el archivo de diseño abierto en Paper Desktop: inspeccionar mesas de trabajo, selecciones, estilos calculados, JSX y tokens, y crear o cambiar marcos, texto y estilos. Instala Paper Desktop, ábrelo una vez y abre un archivo antes de empezar. OpenBot inicia la CLI de Paper que instala Paper Desktop. Paper no necesita clave. Las herramientas de escritura cambian el archivo abierto, así que revisa cada escritura antes de aprobarla.",
+    "Paper permite a los agentes leer y escribir el archivo de diseño abierto en Paper Desktop: inspeccionar mesas de trabajo, selecciones, estilos calculados, JSX y tokens, y crear o cambiar marcos, texto y estilos. Instala Paper Desktop, ábrelo una vez y abre un archivo antes de empezar. OpenBot-NC inicia la CLI de Paper que instala Paper Desktop. Paper no necesita clave. Las herramientas de escritura cambian el archivo abierto, así que revisa cada escritura antes de aprobarla.",
   "marketplace.plugin.paper.app":
     "Lee y escribe el archivo abierto de Paper Desktop, mediante el servidor MCP local que retransmite la CLI de Paper. Necesita Paper Desktop con un archivo abierto.",
   "marketplace.plugin.paper.prompt.implement":
@@ -240,7 +240,7 @@ export const messages = {
     "Resume las últimas diez conversaciones de mi agente de voz de soporte.",
   "marketplace.plugin.appleApps.tagline": "Mail, Calendario y más en tu Mac",
   "marketplace.plugin.appleApps.description":
-    "Apple apps permite a los agentes usar Mail, Calendario, Contactos, Recordatorios, Notas, Mensajes y Safari en este Mac. Solo funciona en macOS. OpenBot inicia mcp-icloud, un servidor de la comunidad que no es de Apple ni de OpenBot. El servidor controla las apps con AppleScript, en este equipo, y no necesita cuenta ni clave. Al instalarla, OpenBot puede pedir a macOS acceso a todas estas apps a la vez, con un aviso por app. Si no lo haces, macOS pregunta la primera vez que un agente usa una app. Para cambiarlo después, abre Ajustes del Sistema › Privacidad y seguridad › Automatización. Los agentes pueden enviar correos e iMessages, y cambiar o eliminar eventos, contactos y recordatorios, así que revisa cada escritura antes de aprobarla. Lo que leen las herramientas, como el texto de los correos, va al proveedor del modelo del agente.",
+    "Apple apps permite a los agentes usar Mail, Calendario, Contactos, Recordatorios, Notas, Mensajes y Safari en este Mac. Solo funciona en macOS. OpenBot-NC inicia mcp-icloud, un servidor de la comunidad que no es de Apple ni de OpenBot-NC. El servidor controla las apps con AppleScript, en este equipo, y no necesita cuenta ni clave. Al instalarla, OpenBot-NC puede pedir a macOS acceso a todas estas apps a la vez, con un aviso por app. Si no lo haces, macOS pregunta la primera vez que un agente usa una app. Para cambiarlo después, abre Ajustes del Sistema › Privacidad y seguridad › Automatización. Los agentes pueden enviar correos e iMessages, y cambiar o eliminar eventos, contactos y recordatorios, así que revisa cada escritura antes de aprobarla. Lo que leen las herramientas, como el texto de los correos, va al proveedor del modelo del agente.",
   "marketplace.plugin.appleApps.app":
     "Mail, Calendario, Contactos, Recordatorios, Notas, Mensajes y Safari, mediante el servidor local mcp-icloud. Necesita macOS y acceso de Automatización.",
   "marketplace.plugin.appleApps.prompt.unread": "Resume mis correos no leídos de hoy en Apple Mail.",
@@ -550,7 +550,7 @@ export const messages = {
   "marketplace.skills.github.search": "Busca o pega un enlace de GitHub",
   "marketplace.skills.github.reading": "Buscando habilidades en el repositorio",
   "marketplace.skills.github.trust":
-    "OpenBot no revisó las habilidades de GitHub. Lee una habilidad antes de añadirla.",
+    "OpenBot-NC no revisó las habilidades de GitHub. Lee una habilidad antes de añadirla.",
   "marketplace.skills.github.source": "GitHub · {repository} en {commit}",
   "marketplace.skills.github.open": "GitHub",
   "marketplace.skills.github.openName": "Abrir {repository} en GitHub",

@@ -20,11 +20,11 @@ export const messages = {
   "marketplace.description.apps": "エージェントが使うツールやサービスに接続します。",
   "marketplace.description.skills": "エージェントにタスクやツールの使い方を教える指示。",
 
-  "marketplace.plugins.missing": "このプラグインは OpenBot のカタログにありません。",
+  "marketplace.plugins.missing": "このプラグインは OpenBot-NC のカタログにありません。",
 
   "marketplace.agents.all": "すべてのエージェント",
   "marketplace.skill.loading": "スキルを読み込んでいます",
-  "marketplace.try.readFailed": "OpenBot はこのエージェントのスキルを読み取れませんでした。もう一度お試しください。",
+  "marketplace.try.readFailed": "OpenBot-NC はこのエージェントのスキルを読み取れませんでした。もう一度お試しください。",
   "marketplace.try.enable": "試すには、エージェントの設定でこのスキルを有効にしてください。",
   "marketplace.try.repair": "試すには、エージェントの設定でこのスキルを修復してください。",
   "marketplace.try.update": "このバージョンを試すには、スキルをアップデートしてください。",
@@ -86,26 +86,27 @@ export const messages = {
   "marketplace.app.setup.account": "ブラウザーで {name} アカウントにサインインします。",
   "marketplace.app.setup.key": "{name} アカウントの API キーが必要です。",
   "marketplace.app.setup.keySaved": "{field} は {host} に保存されています。",
-  "marketplace.app.account.removeDescription": "OpenBot は {host} にあるこのアカウントのサインイン情報を削除します。",
+  "marketplace.app.account.removeDescription":
+    "OpenBot-NC は {host} にあるこのアカウントのサインイン情報を削除します。",
   "marketplace.app.setup.desktop": "{name} デスクトップアプリの {address} で動作します。",
   "marketplace.app.setup.desktopConnected": "{address} に接続済みです。",
   "marketplace.app.setup.open": "サインインもキーも不要です。",
   "marketplace.app.blocked.update":
-    "{host} の OpenBot は古いバージョンのため、アプリを接続できません。{host} の OpenBot をアップデートするか、オーナーにアップデートを依頼してください。",
+    "{host} の OpenBot-NC は古いバージョンのため、アプリを接続できません。{host} の OpenBot-NC をアップデートするか、オーナーにアップデートを依頼してください。",
   "marketplace.app.blocked.member":
-    "{host} でアプリを接続できるのはオーナーまたは管理者だけです。{name} の接続か、メンバーもアプリを接続できるよう {host} の OpenBot のアップデートを依頼してください。",
-  "marketplace.app.blocked.mac": "{name} は OpenBot を実行している Mac でのみ動作します。",
+    "{host} でアプリを接続できるのはオーナーまたは管理者だけです。{name} の接続か、メンバーもアプリを接続できるよう {host} の OpenBot-NC のアップデートを依頼してください。",
+  "marketplace.app.blocked.mac": "{name} は OpenBot-NC を実行している Mac でのみ動作します。",
   "marketplace.app.connectAgain": "もう一度接続",
   "marketplace.app.automation.askOnInstall": "インストール時に macOS にアクセスを求める",
   "marketplace.app.automation.title": "Apple アプリへのアクセス",
   "marketplace.app.automation.description":
     "macOS はアプリごとに確認を表示します。閉じているアプリは一時的に開き、その後終了します。",
   "marketplace.app.automation.request": "アクセスを求める",
-  "marketplace.app.automation.allowed": "OpenBot はすべての Apple アプリを操作できるようになりました。",
+  "marketplace.app.automation.allowed": "OpenBot-NC はすべての Apple アプリを操作できるようになりました。",
   "marketplace.app.automation.refused":
-    "macOS は {apps} へのアクセスを許可しませんでした。システム設定 › プライバシーとセキュリティ › オートメーション で OpenBot を許可してください。",
+    "macOS は {apps} へのアクセスを許可しませんでした。システム設定 › プライバシーとセキュリティ › オートメーション で OpenBot-NC を許可してください。",
   "marketplace.app.automation.failed":
-    "OpenBot は {apps} について macOS に確認できませんでした。もう一度お試しください。",
+    "OpenBot-NC は {apps} について macOS に確認できませんでした。もう一度お試しください。",
   "marketplace.app.automation.app.calendar": "カレンダー",
   "marketplace.app.automation.app.contacts": "連絡先",
   "marketplace.app.automation.app.mail": "メール",
@@ -166,7 +167,7 @@ export const messages = {
     "今日やったことと残っていることを Cobrain にメモとして保存してください。",
   "marketplace.plugin.honcho.tagline": "AI ツールをまたぐあなたの記憶",
   "marketplace.plugin.honcho.description":
-    "Plastic Labs の Honcho は、接続した他の AI ツールとも共有できる、あなたについての長期記憶をエージェントに与えます。エージェントは学んだことを保存し、Honcho はそれをもとに推論して、あなたの好み、目標、仕事の進め方のモデルを作ります。エージェントは作業を始める前に Honcho に質問します。OpenBot のエージェントにも独自の記憶があります。Honcho は他のツールでもあなたについていく記憶です。エージェントが保存したメッセージはあなたの Honcho アカウントに送られます。",
+    "Plastic Labs の Honcho は、接続した他の AI ツールとも共有できる、あなたについての長期記憶をエージェントに与えます。エージェントは学んだことを保存し、Honcho はそれをもとに推論して、あなたの好み、目標、仕事の進め方のモデルを作ります。エージェントは作業を始める前に Honcho に質問します。OpenBot-NC のエージェントにも独自の記憶があります。Honcho は他のツールでもあなたについていく記憶です。エージェントが保存したメッセージはあなたの Honcho アカウントに送られます。",
   "marketplace.plugin.honcho.app": "1 つの MCP サーバーで、Honcho のワークスペースに長期記憶を保存して照会します。",
   "marketplace.plugin.honcho.prompt.recall":
     "始める前に、私の好きな仕事の進め方について Honcho が何を知っているか聞いてください。",
@@ -176,7 +177,7 @@ export const messages = {
   "marketplace.plugin.honcho.hint.apiKey": "app.honcho.dev でキーを作成してください。",
   "marketplace.plugin.hindsight.tagline": "時間とともに学ぶ記憶",
   "marketplace.plugin.hindsight.description":
-    "Vectorize の Hindsight は、Hindsight Cloud にある長期記憶をエージェントに与えます。エージェントは事実や出来事を保持し、意味、時間、エンティティで呼び出し、それを振り返ってメンタルモデルを作ります。記憶はバンクに保管され、エージェントはプロジェクトや人ごとにバンクを作れます。OpenBot のエージェントにも独自の記憶があります。Hindsight は接続した他の AI ツールと共有できる記憶です。エージェントが保持した内容はあなたの Hindsight Cloud アカウントに送られます。",
+    "Vectorize の Hindsight は、Hindsight Cloud にある長期記憶をエージェントに与えます。エージェントは事実や出来事を保持し、意味、時間、エンティティで呼び出し、それを振り返ってメンタルモデルを作ります。記憶はバンクに保管され、エージェントはプロジェクトや人ごとにバンクを作れます。OpenBot-NC のエージェントにも独自の記憶があります。Hindsight は接続した他の AI ツールと共有できる記憶です。エージェントが保持した内容はあなたの Hindsight Cloud アカウントに送られます。",
   "marketplace.plugin.hindsight.app":
     "1 つの MCP サーバーで、Hindsight Cloud のバンクにある記憶を保持、呼び出し、振り返ります。",
   "marketplace.plugin.hindsight.prompt.recall":
@@ -196,7 +197,7 @@ export const messages = {
   "marketplace.plugin.figma.prompt.assets": "アプリバンドル用に、マーケティングアイコンを 2x で書き出してください。",
   "marketplace.plugin.paper.tagline": "HTML と CSS で作られたデザインキャンバス",
   "marketplace.plugin.paper.description":
-    "Paper を使うと、エージェントは Paper Desktop で開いているデザインファイルを読み書きできます。アートボード、選択範囲、計算済みのスタイル、JSX、トークンを調べ、フレーム、テキスト、スタイルを作成・変更できます。Paper Desktop をインストールして一度開き、始める前にファイルを開いてください。OpenBot は Paper Desktop がインストールする Paper CLI を起動します。Paper にキーは不要です。書き込みツールは開いているファイルを変更するので、承認する前に各書き込みを確認してください。",
+    "Paper を使うと、エージェントは Paper Desktop で開いているデザインファイルを読み書きできます。アートボード、選択範囲、計算済みのスタイル、JSX、トークンを調べ、フレーム、テキスト、スタイルを作成・変更できます。Paper Desktop をインストールして一度開き、始める前にファイルを開いてください。OpenBot-NC は Paper Desktop がインストールする Paper CLI を起動します。Paper にキーは不要です。書き込みツールは開いているファイルを変更するので、承認する前に各書き込みを確認してください。",
   "marketplace.plugin.paper.app":
     "開いている Paper Desktop のファイルを、Paper CLI が中継するローカルの MCP サーバーで読み書きします。ファイルを開いた Paper Desktop が必要です。",
   "marketplace.plugin.paper.prompt.implement":
@@ -236,7 +237,7 @@ export const messages = {
     "サポート用音声エージェントの直近 10 件の会話を要約してください。",
   "marketplace.plugin.appleApps.tagline": "Mac のメール、カレンダーなど",
   "marketplace.plugin.appleApps.description":
-    "Apple apps を使うと、エージェントはこの Mac のメール、カレンダー、連絡先、リマインダー、メモ、メッセージ、Safari を使えます。macOS でのみ動作します。OpenBot は mcp-icloud を起動します。これは Apple や OpenBot が作ったものではない、コミュニティのサーバーです。サーバーはこのコンピューター上で AppleScript を使ってアプリを操作し、アカウントもキーも不要です。インストール時に、OpenBot はこれらすべてのアプリへのアクセスを macOS にまとめて求めることができます。確認はアプリごとに 1 回表示されます。求めない場合は、エージェントが初めてアプリを使うときに macOS が確認します。後で変更するには、システム設定 › プライバシーとセキュリティ › オートメーション を開いてください。エージェントはメールや iMessage を送信し、イベント、連絡先、リマインダーを変更・削除できるので、承認する前に各書き込みを確認してください。ツールが読んだ内容（メールの本文など）は、エージェントのモデルプロバイダーに送られます。",
+    "Apple apps を使うと、エージェントはこの Mac のメール、カレンダー、連絡先、リマインダー、メモ、メッセージ、Safari を使えます。macOS でのみ動作します。OpenBot-NC は mcp-icloud を起動します。これは Apple や OpenBot-NC が作ったものではない、コミュニティのサーバーです。サーバーはこのコンピューター上で AppleScript を使ってアプリを操作し、アカウントもキーも不要です。インストール時に、OpenBot-NC はこれらすべてのアプリへのアクセスを macOS にまとめて求めることができます。確認はアプリごとに 1 回表示されます。求めない場合は、エージェントが初めてアプリを使うときに macOS が確認します。後で変更するには、システム設定 › プライバシーとセキュリティ › オートメーション を開いてください。エージェントはメールや iMessage を送信し、イベント、連絡先、リマインダーを変更・削除できるので、承認する前に各書き込みを確認してください。ツールが読んだ内容（メールの本文など）は、エージェントのモデルプロバイダーに送られます。",
   "marketplace.plugin.appleApps.app":
     "メール、カレンダー、連絡先、リマインダー、メモ、メッセージ、Safari を、ローカルの mcp-icloud サーバーで操作します。macOS とオートメーションの許可が必要です。",
   "marketplace.plugin.appleApps.prompt.unread": "Apple のメールで、今日の未読メールを要約してください。",
@@ -547,7 +548,7 @@ export const messages = {
   "marketplace.skills.github.search": "検索、または GitHub のリンクを貼り付け",
   "marketplace.skills.github.reading": "リポジトリ内のスキルを探しています",
   "marketplace.skills.github.trust":
-    "GitHub のスキルは OpenBot が確認したものではありません。追加する前にスキルの内容を読んでください。",
+    "GitHub のスキルは OpenBot-NC が確認したものではありません。追加する前にスキルの内容を読んでください。",
   "marketplace.skills.github.source": "GitHub · {repository}（コミット {commit}）",
   "marketplace.skills.github.open": "GitHub",
   "marketplace.skills.github.openName": "GitHub で {repository} を開く",

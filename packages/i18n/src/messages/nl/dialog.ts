@@ -18,9 +18,9 @@ export const messages = {
   "dialog.saveExportSkill": "Exportvaardigheid opslaan",
   "dialog.saveTransfer": "Overdrachtsbestand opslaan",
   "dialog.chooseTransfer": "Kies een overdrachtsbestand",
-  "dialog.filter.transfer": "OpenBot-overdrachtsbestanden",
+  "dialog.filter.transfer": "OpenBot-NC-overdrachtsbestanden",
   "dialog.saveWorkflow": "Workflowbestand opslaan",
-  "dialog.filter.workflow": "OpenBot-workflowbestanden",
+  "dialog.filter.workflow": "OpenBot-NC-workflowbestanden",
   "dialog.chooseExternalLinkApp": "Kies een browser",
   "dialog.filter.applications": "Apps",
 } as const satisfies PartialTranslation<typeof source>;

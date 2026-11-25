@@ -40,7 +40,7 @@ export const messages = {
   "error.skill.tooManySkills": "Um agente pode ter até {limit} habilidades.",
   "error.skill.unmanagedExists": "Uma habilidade não gerenciada já existe em {path}.",
   "error.skill.managedSlug":
-    "O OpenBot dá a cada agente sua própria habilidade {slug}. Dê outro nome a esta habilidade.",
+    "O OpenBot-NC dá a cada agente sua própria habilidade {slug}. Dê outro nome a esta habilidade.",
   "error.skill.localNoRevisions": "A habilidade local não tem revisões publicadas.",
   "error.skill.localNotFound": "Esta habilidade local não existe. Confira o ID dela na lista de habilidades locais.",
   "error.skill.localRevisionNotFound":
@@ -57,12 +57,12 @@ export const messages = {
   "error.skill.pathSymlink": "Os caminhos de habilidades não podem conter links simbólicos.",
   "error.skill.folderNotRead": "{provider} não lê {folder}. Copie esta pasta para {target}.",
   "error.skill.githubLinkInvalid": "Cole um link para um repositório ou pasta do GitHub.",
-  "error.skill.githubNotFound": "O OpenBot não consegue abrir {repository}. O repositório é privado ou não existe.",
+  "error.skill.githubNotFound": "O OpenBot-NC não consegue abrir {repository}. O repositório é privado ou não existe.",
   "error.skill.githubNoSkills": "Não há SKILL.md em {folder}.",
-  "error.skill.githubUnavailable": "O OpenBot não consegue ler o GitHub agora. Tente novamente mais tarde.",
+  "error.skill.githubUnavailable": "O OpenBot-NC não consegue ler o GitHub agora. Tente novamente mais tarde.",
   "error.skill.githubRateLimited":
-    "O GitHub limita a frequência com que o OpenBot pode lê-lo sem uma conta. Tente novamente em uma hora.",
+    "O GitHub limita a frequência com que o OpenBot-NC pode lê-lo sem uma conta. Tente novamente em uma hora.",
   "error.skill.githubTooLarge":
-    "O OpenBot não consegue ler todos os arquivos de {repository}. O repositório é grande demais.",
+    "O OpenBot-NC não consegue ler todos os arquivos de {repository}. O repositório é grande demais.",
   "error.skill.githubHostTooOld": "Atualize este servidor para adicionar habilidades do GitHub.",
 } as const satisfies PartialTranslation<typeof source>;

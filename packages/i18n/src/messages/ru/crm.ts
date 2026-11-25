@@ -385,7 +385,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "Создать ключ в {source}",
   "crm.source.stripeKeyHelp":
-    "Stripe открывает ключ только для чтения, готовый к созданию. Создайте его, скопируйте ключ и вставьте сюда. OpenBot только читает данные из Stripe.",
+    "Stripe открывает ключ только для чтения, готовый к созданию. Создайте его, скопируйте ключ и вставьте сюда. OpenBot-NC только читает данные из Stripe.",
   "crm.source.connect": "Подключить",
   "crm.source.account": "Аккаунт",
   "crm.source.testMode": "Тестовый режим",
@@ -399,9 +399,9 @@ export const messages = {
   "crm.source.errorPermission":
     "Ключ не может прочитать всё, что нужно для синхронизации. Дайте ему доступ на чтение в {source}.",
   "crm.source.errorRateLimited": "{source} получил слишком много запросов. Следующая синхронизация повторит попытку.",
-  "crm.source.errorNetwork": "OpenBot не может подключиться к {source}. Следующая синхронизация повторит попытку.",
+  "crm.source.errorNetwork": "OpenBot-NC не может подключиться к {source}. Следующая синхронизация повторит попытку.",
   "crm.source.errorFailed":
-    "{source} прислал ответ, который OpenBot не может прочитать. Следующая синхронизация повторит попытку.",
+    "{source} прислал ответ, который OpenBot-NC не может прочитать. Следующая синхронизация повторит попытку.",
   "crm.source.skipped": "Не импортировано",
   "crm.source.skippedCurrency": "Другая валюта: {rows}",
   "crm.source.skippedInterval": "Другой период оплаты: {rows}",
@@ -413,5 +413,5 @@ export const messages = {
   "crm.source.disconnect": "Отключить",
   "crm.source.disconnectTitle": "Отключить {source}?",
   "crm.source.disconnectBody":
-    "OpenBot остановит синхронизацию и удалит ключ. Импортированные строки останутся, и вы сможете их менять.",
+    "OpenBot-NC остановит синхронизацию и удалит ключ. Импортированные строки останутся, и вы сможете их менять.",
 } as const satisfies PartialTranslation<typeof source>;

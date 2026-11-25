@@ -1,4 +1,5 @@
 import { AppLogo } from "@openbot/brand";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import type { AppVariant } from "@openbot/contracts/ipc";
 import { TRANSLATED_LOCALES, type TranslatedLocale } from "@openbot/i18n";
 import { APP_LANGUAGE_OPTIONS, type AppLanguageOption } from "@openbot/i18n/languages";
@@ -19,7 +20,7 @@ interface WheelEntry {
   option: AppLanguageOption;
 }
 
-const PRODUCT_NAME = "OpenBot";
+const PRODUCT_NAME = APP_NAME;
 const TITLE_ID = "language-wheel-title";
 
 const WHEEL: readonly WheelEntry[] = APP_LANGUAGE_OPTIONS.flatMap((option) => {

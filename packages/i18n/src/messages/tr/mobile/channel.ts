@@ -108,7 +108,7 @@ export const messages = {
   "mobile.channel.deleteHistory.footer": "Mesajlar silinir ve üyeler onları unutur. Kanal kurulumu kalır.",
   "mobile.channel.deleteHistory.confirmTitle": "{name} geçmişi silinsin mi?",
   "mobile.channel.deleteHistory.confirmBody":
-    "Bu kanalın tüm mesajları ve dosyaları OpenBot'tan silinir ve üyeler onları unutur. Bu işlem geri alınamaz. Üyeler, talimatlar, anılar, rutinler ve görevler değişmez.",
+    "Bu kanalın tüm mesajları ve dosyaları OpenBot-NC'den silinir ve üyeler onları unutur. Bu işlem geri alınamaz. Üyeler, talimatlar, anılar, rutinler ve görevler değişmez.",
   "mobile.channel.deleteHistory.confirm": "Geçmişi sil",
   "mobile.channel.deleteHistory.failed": "Geçmiş silinemedi",
   "mobile.channel.deleteHistory.failedBody": "Ana makine geçmişi silemedi.",

@@ -4,7 +4,7 @@ import type { messages as source } from "../../en/mobile/chat";
 export const messages = {
   "mobile.chat.dictation.microphoneOffTitle": "마이크 접근이 꺼져 있어요",
   "mobile.chat.dictation.microphoneOffMessage":
-    "메시지를 음성으로 입력하려면 설정에서 OpenBot이 마이크와 음성 인식을 사용하도록 허용해 주세요.",
+    "메시지를 음성으로 입력하려면 설정에서 OpenBot-NC가 마이크와 음성 인식을 사용하도록 허용해 주세요.",
   "mobile.chat.dictation.stopped": "음성 입력이 중지됐어요",
   "mobile.chat.dictation.tryAgain": "다시 시도해 주세요.",
   "mobile.chat.dictation.unavailable": "음성 입력을 사용할 수 없어요",
@@ -146,7 +146,7 @@ export const messages = {
   "mobile.chat.attachment.openFailed": "첨부 파일을 열 수 없어요",
   "mobile.chat.attachment.photosNeedUpdate": "사진을 저장하려면 앱을 최신 버전으로 업데이트해야 해요.",
   "mobile.chat.attachment.photosPermission":
-    "이 이미지를 저장하려면 설정에서 OpenBot이 사진을 추가하도록 허용해 주세요.",
+    "이 이미지를 저장하려면 설정에서 OpenBot-NC가 사진을 추가하도록 허용해 주세요.",
   "mobile.chat.attachment.imageUnavailable": "이미지를 사용할 수 없어요. 다시 시도해 주세요.",
   "mobile.chat.attachment.saveImageFailed": "이미지를 저장할 수 없어요",
   "mobile.chat.attachment.copyImageFailed": "이미지를 복사할 수 없습니다",
@@ -179,9 +179,9 @@ export const messages = {
   "mobile.chat.attachment.unsupported":
     "{name}: 이미지, MP3 오디오, MOV 또는 MP4 동영상, ZIP 압축 파일, PDF, Office 문서, EML, 텍스트, Markdown, 데이터 또는 소스 파일을 선택해 주세요.",
   "mobile.chat.attachment.hostRejectsType":
-    "{name}: 호스트 컴퓨터가 {type} 파일을 받지 않아요. 첨부하려면 호스트의 OpenBot을 업데이트해 주세요.",
+    "{name}: 호스트 컴퓨터가 {type} 파일을 받지 않아요. 첨부하려면 호스트의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.chat.attachment.hostRejects":
-    "{name}: 호스트 컴퓨터가 이 파일을 받지 않아요. 첨부하려면 호스트의 OpenBot을 업데이트해 주세요.",
+    "{name}: 호스트 컴퓨터가 이 파일을 받지 않아요. 첨부하려면 호스트의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.chat.attachment.nameTooLong": "이름이 더 짧은 파일을 선택해 주세요.",
   "mobile.chat.attachment.damaged": "첨부 파일이 손상됐어요. 다시 선택해 주세요.",
   "mobile.chat.attachment.tooLarge": "{name} 파일이 {limit}보다 커요.",
@@ -257,7 +257,7 @@ export const messages = {
   "mobile.chat.sideQuestion.deleteBody": "질문과 답변은 이 휴대폰에만 있어요. 되돌릴 수 없어요.",
   "mobile.chat.sideQuestion.notFound": "이 에이전트는 더 이상 서버에 없어요.",
   "mobile.chat.sideQuestion.unsupported":
-    "이 호스트는 곁다리 질문에 답할 수 없어요. 호스트의 OpenBot을 업데이트하세요.",
+    "이 호스트는 곁다리 질문에 답할 수 없어요. 호스트의 OpenBot-NC를 업데이트하세요.",
   "mobile.chat.pins.title": "고정된 메시지",
   "mobile.chat.pins.emptyTitle": "고정된 메시지 없음",
   "mobile.chat.pins.emptyBody": "메시지를 길게 누르고 고정을 탭하면 여기에 표시됩니다.",
@@ -266,7 +266,7 @@ export const messages = {
   "mobile.chat.pins.unpin": "고정 해제",
   "mobile.chat.pins.failed": "고정 상태가 변경되지 않았습니다.",
   "mobile.chat.pins.loadFailed": "고정된 메시지를 불러올 수 없습니다.",
-  "mobile.chat.pins.unsupported": "이 호스트는 메시지를 고정할 수 없습니다. 호스트의 OpenBot을 업데이트하세요.",
+  "mobile.chat.pins.unsupported": "이 호스트는 메시지를 고정할 수 없습니다. 호스트의 OpenBot-NC를 업데이트하세요.",
   "mobile.chat.pins.mainChat": "메인 채팅",
   "mobile.chat.pins.thread": "사이드 스레드",
   "mobile.chat.pins.pinnedBy": "{name}님이 고정함",
@@ -355,7 +355,7 @@ export const messages = {
   "mobile.chat.imageGallery.saved": "사진에 저장했어요",
   "mobile.chat.imageGallery.shareAll": "모두 공유",
   "mobile.chat.imageGallery.photosPermission":
-    "이 이미지를 저장하려면 설정에서 OpenBot이 사진을 추가하도록 허용하세요.",
+    "이 이미지를 저장하려면 설정에서 OpenBot-NC가 사진을 추가하도록 허용하세요.",
   "mobile.chat.imageGallery.saveFailed": "이미지를 저장할 수 없어요",
   "mobile.chat.imageGallery.shareFailed": "이미지를 공유할 수 없어요",
   "mobile.chat.imageGallery.shareNeedsUpdate": "여러 이미지를 공유하려면 앱을 최신 버전으로 업데이트해야 해요.",
@@ -365,7 +365,7 @@ export const messages = {
   "mobile.chat.video.loading": "{name} 불러오는 중",
   "mobile.chat.video.share": "{name} 공유",
   "mobile.chat.video.save": "{name}을(를) 사진에 저장",
-  "mobile.chat.video.photosPermission": "이 동영상을 저장하려면 설정에서 OpenBot이 사진을 추가하도록 허용해 주세요.",
+  "mobile.chat.video.photosPermission": "이 동영상을 저장하려면 설정에서 OpenBot-NC가 사진을 추가하도록 허용해 주세요.",
   "mobile.chat.video.saveFailed": "동영상을 저장할 수 없어요",
   "mobile.chat.audio.play": "{name} 재생",
   "mobile.chat.audio.pause": "{name} 일시 정지",
@@ -380,28 +380,28 @@ export const messages = {
   "mobile.chat.browserSecret.ended": "이 로그인 요청은 종료되었어요. 에이전트에게 다시 시도해 달라고 요청해 주세요.",
   "mobile.chat.browserSecret.oneTimeCode": "일회용 코드",
   "mobile.chat.browserSecret.takeoverTitle": "브라우저 직접 제어",
-  "mobile.chat.browserSecret.takeoverBody": "OpenBot을 실행하는 컴퓨터의 브라우저에서 이 단계를 완료해 주세요.",
+  "mobile.chat.browserSecret.takeoverBody": "OpenBot-NC를 실행하는 컴퓨터의 브라우저에서 이 단계를 완료해 주세요.",
   "mobile.chat.browserSecret.signInBlockedTitle": "내 컴퓨터에서 로그인해 주세요",
   "mobile.chat.browserSecret.signInBlockedBody":
-    "이 사이트는 서버에서의 로그인을 받지 않아요. 내 컴퓨터의 OpenBot 데스크톱 앱에서 이 채팅을 열고 그곳에서 로그인해 주세요.",
+    "이 사이트는 서버에서의 로그인을 받지 않아요. 내 컴퓨터의 OpenBot-NC 데스크톱 앱에서 이 채팅을 열고 그곳에서 로그인해 주세요.",
   "mobile.chat.browserSecret.takeoverReload":
-    "OpenBot이 비밀번호 또는 코드를 끝까지 입력하지 못했어요. 페이지에서 빠진 부분을 입력해 주세요. 그런 다음 ‘완료’를 누르기 전에 페이지를 새로 고쳐 주세요.",
+    "OpenBot-NC가 비밀번호 또는 코드를 끝까지 입력하지 못했어요. 페이지에서 빠진 부분을 입력해 주세요. 그런 다음 ‘완료’를 누르기 전에 페이지를 새로 고쳐 주세요.",
   "mobile.chat.browserSecret.takeoverFailed": "요청을 완료할 수 없어요.",
   "mobile.chat.browserSecret.done": "완료",
   "mobile.chat.browserSecret.submitOnce": "{origin}에 한 번만 제출해요. 이 값은 채팅에 추가되지 않아요.",
   "mobile.chat.browserSecret.submitFailed": "요청을 완료할 수 없어요. 연결을 확인한 후 다시 시도해 주세요.",
   "mobile.chat.browserSecret.vaultSkip.agentScript":
-    "에이전트가 이 페이지에서 스크립트를 실행해서 OpenBot이 저장된 로그인 정보를 사용하지 않았어요. 사용하려면 에이전트에게 페이지를 새로고침하고 다시 시도해 달라고 요청하세요.",
+    "에이전트가 이 페이지에서 스크립트를 실행해서 OpenBot-NC가 저장된 로그인 정보를 사용하지 않았어요. 사용하려면 에이전트에게 페이지를 새로고침하고 다시 시도해 달라고 요청하세요.",
   "mobile.chat.browserSecret.vaultSkip.fieldKind":
-    "에이전트가 페이지에서 잘못된 입력란을 선택해서 OpenBot이 저장된 로그인 정보를 사용하지 않았어요.",
+    "에이전트가 페이지에서 잘못된 입력란을 선택해서 OpenBot-NC가 저장된 로그인 정보를 사용하지 않았어요.",
   "mobile.chat.browserSecret.vaultSkip.loginChoice":
-    "에이전트가 이 사이트에 저장된 로그인 정보 중 하나를 선택하지 않아서 OpenBot이 저장된 로그인 정보를 사용하지 않았어요. 어떤 계정을 사용할지 에이전트에게 알려 주세요.",
+    "에이전트가 이 사이트에 저장된 로그인 정보 중 하나를 선택하지 않아서 OpenBot-NC가 저장된 로그인 정보를 사용하지 않았어요. 어떤 계정을 사용할지 에이전트에게 알려 주세요.",
   "mobile.chat.browserSecret.vaultSkip.noPassword":
-    "저장된 로그인 정보에 이 사이트의 비밀번호가 없어서 OpenBot이 사용하지 않았어요.",
+    "저장된 로그인 정보에 이 사이트의 비밀번호가 없어서 OpenBot-NC가 사용하지 않았어요.",
   "mobile.chat.browserSecret.vaultSkip.noAuthenticatorKey":
-    "저장된 로그인 정보에 인증 앱 키가 없어서 OpenBot이 사용하지 않았어요.",
+    "저장된 로그인 정보에 인증 앱 키가 없어서 OpenBot-NC가 사용하지 않았어요.",
   "mobile.chat.browserSecret.vaultSkip.vaultUnreadable":
-    "비밀번호 관리자를 읽을 수 없어서 OpenBot이 저장된 로그인 정보를 사용하지 않았어요.",
+    "비밀번호 관리자를 읽을 수 없어서 OpenBot-NC가 저장된 로그인 정보를 사용하지 않았어요.",
   "mobile.chat.browserSecret.submit": "제출",
   "mobile.chat.browserSecret.takeOver": "직접 제어",
   "mobile.chat.starter.title": "무엇부터 시작할까요?",
@@ -467,14 +467,14 @@ export const messages = {
   "mobile.chat.approval.effect.permissions":
     "허용하면 {name}에게 {server}에서 이 권한을 부여해요. 거부하면 현재 권한이 유지돼요.",
   "mobile.chat.approval.partial":
-    "{server}는 이 요청의 앞부분만 휴대폰으로 보내요. 허용하려면 {server}의 OpenBot을 업데이트하거나 OpenBot 데스크톱 앱에서 이 채팅을 열어 주세요. 여기서는 거부할 수 있어요.",
+    "{server}는 이 요청의 앞부분만 휴대폰으로 보내요. 허용하려면 {server}의 OpenBot-NC를 업데이트하거나 OpenBot-NC 데스크톱 앱에서 이 채팅을 열어 주세요. 여기서는 거부할 수 있어요.",
   "mobile.chat.approval.loading": "전체 요청을 불러오는 중…",
   "mobile.chat.approval.loadFailed": "전체 요청을 불러오지 못했어요. 여기서는 거부할 수 있어요.",
   "mobile.chat.approval.retry": "다시 시도",
   "mobile.chat.approval.report.bugHeadline": "버그를 찾으셨나요? 고쳐 봅시다.",
   "mobile.chat.approval.report.ideaHeadline": "아이디어가 있나요? 실현해 봅시다.",
   "mobile.chat.approval.report.dontSend": "나중에",
-  "mobile.chat.approval.report.send": "OpenBot 팀에 보내기",
+  "mobile.chat.approval.report.send": "OpenBot-NC 팀에 보내기",
   "mobile.chat.approval.allow": "허용",
   "mobile.chat.approval.deny": "거부",
   "mobile.chat.approval.reconnect": "이 요청에 응답하려면 {server}에 연결해 주세요.",
@@ -562,7 +562,7 @@ export const messages = {
   "mobile.chat.queue.sendNowNeedsTurn": "지금 보내기는 실행 중인 턴이 있어야 해요.",
   "mobile.chat.queue.stillHoldingTitle": "메시지를 아직 보류 중이에요",
   "mobile.chat.queue.stillHoldingMessage":
-    "OpenBot이 이 메시지를 해제하지 못해서 에이전트가 계속 기다리고 있어요. 휴대폰이 다시 연결된 후 시도해 주세요.",
+    "OpenBot-NC가 이 메시지를 해제하지 못해서 에이전트가 계속 기다리고 있어요. 휴대폰이 다시 연결된 후 시도해 주세요.",
   "mobile.chat.queue.keepEditing": "계속 편집",
   "mobile.chat.queue.leaveAnyway": "그래도 나가기",
   "mobile.chat.queue.discardTitle": "변경 사항을 버릴까요?",
@@ -572,7 +572,7 @@ export const messages = {
   "mobile.chat.queue.alreadyReceivedKept":
     "에이전트가 이미 이 메시지를 받아서 변경할 수 없습니다. 이 화면을 닫으면 입력한 텍스트가 메시지 입력란으로 이동합니다.",
   "mobile.chat.queue.holding": "메시지를 보류하는 중…",
-  "mobile.chat.queue.holdFailed": "OpenBot이 편집을 위해 이 메시지를 보류하지 못했어요.",
+  "mobile.chat.queue.holdFailed": "OpenBot-NC가 편집을 위해 이 메시지를 보류하지 못했어요.",
   "mobile.chat.queue.messageLabel": "메시지",
   "mobile.chat.queue.messagePlaceholder": "메시지 텍스트",
   "mobile.chat.queue.save": "대기 중인 메시지 저장",
@@ -603,15 +603,15 @@ export const messages = {
   "mobile.chat.threads.renameSave": "저장",
   "mobile.chat.threads.name": "스레드 이름",
   "mobile.chat.threads.renameUnavailable":
-    "지금은 이 스레드의 이름을 바꿀 수 없습니다. 서버에 연결하거나 호스트의 OpenBot을 업데이트하세요.",
+    "지금은 이 스레드의 이름을 바꿀 수 없습니다. 서버에 연결하거나 호스트의 OpenBot-NC를 업데이트하세요.",
   "mobile.chat.threads.delete.action": "삭제",
   "mobile.chat.threads.delete.title": "이 스레드를 삭제할까요?",
   "mobile.chat.threads.delete.body":
-    "OpenBot이 스레드와 메시지, 파일을 영구히 삭제합니다. 메인 채팅은 바뀌지 않습니다.",
+    "OpenBot-NC가 스레드와 메시지, 파일을 영구히 삭제합니다. 메인 채팅은 바뀌지 않습니다.",
   "mobile.chat.threads.filesUnsupported":
-    "이 호스트는 스레드에서 파일을 받을 수 없어요. 호스트의 OpenBot을 업데이트해 주세요.",
+    "이 호스트는 스레드에서 파일을 받을 수 없어요. 호스트의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.chat.threads.unsupported":
-    "이 호스트는 스레드 이름을 바꾸거나 삭제할 수 없습니다. 호스트의 OpenBot을 업데이트하세요.",
+    "이 호스트는 스레드 이름을 바꾸거나 삭제할 수 없습니다. 호스트의 OpenBot-NC를 업데이트하세요.",
   "mobile.chat.threads.error.rename": "스레드 이름을 바꾸지 못했습니다.",
   "mobile.chat.threads.error.delete": "스레드를 삭제하지 못했습니다.",
   "mobile.chat.channelWork.working": "{channel}에서 작업 중",
@@ -659,6 +659,6 @@ export const messages = {
   "mobile.chat.locationRequest.declined": "공유하지 않았어요",
   "mobile.chat.locationRequest.unavailable": "휴대폰이 위치를 찾지 못했어요. 다시 시도하세요.",
   "mobile.chat.locationRequest.deniedTitle": "위치 접근이 꺼져 있어요",
-  "mobile.chat.locationRequest.denied": "위치를 공유하려면 설정에서 OpenBot의 위치 접근을 허용하세요.",
+  "mobile.chat.locationRequest.denied": "위치를 공유하려면 설정에서 OpenBot-NC의 위치 접근을 허용하세요.",
   "mobile.chat.locationRequest.openSettings": "설정 열기",
 } as const satisfies PartialTranslation<typeof source>;

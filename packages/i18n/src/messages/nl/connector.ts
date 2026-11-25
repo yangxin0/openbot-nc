@@ -16,10 +16,10 @@ export const messages = {
   "connector.github.connectedAs": "Verbonden als @{login}",
   "connector.github.repositoriesTitle": "Repository’s",
   "connector.github.repositoriesDescription":
-    "Agents kunnen alleen de repository’s gebruiken waarop de OpenBot GitHub App is geïnstalleerd.",
+    "Agents kunnen alleen de repository’s gebruiken waarop de OpenBot-NC GitHub App is geïnstalleerd.",
   "connector.github.chooseRepositories": "Kies repository’s",
   "connector.github.repositoriesLoading": "Repository’s van GitHub lezen",
-  "connector.github.noRepositories": "De OpenBot GitHub App is nog op geen enkele repository geïnstalleerd.",
+  "connector.github.noRepositories": "De OpenBot-NC GitHub App is nog op geen enkele repository geïnstalleerd.",
   "connector.github.moreRepositories": { one: "En nog {count} repository", other: "En nog {count} repository’s" },
   "connector.github.private": "Privé",
   "connector.github.disconnect": "Verbreken",
@@ -28,7 +28,7 @@ export const messages = {
   "connector.github.expiredTitle": "De GitHub-verbinding is verlopen",
   "connector.github.expiredDescription": "Verbind opnieuw als @{login} om agents weer GitHub te geven.",
   "connector.github.reconnect": "Opnieuw verbinden",
-  "connector.github.actionFailed": "OpenBot kan de GitHub-verbinding niet wijzigen.",
+  "connector.github.actionFailed": "OpenBot-NC kan de GitHub-verbinding niet wijzigen.",
   "connector.github.statusConnected": "Verbonden",
   "connector.github.statusConnecting": "Verbinden",
   "connector.github.statusExpired": "Verlopen",
@@ -38,7 +38,7 @@ export const messages = {
   "connector.github.noMatch": "Geen repository komt overeen met “{query}”.",
   "connector.github.stepSignIn": "Inloggen",
   "connector.github.stepConnected": "Verbonden",
-  "connector.github.requestingCode": "OpenBot vraagt GitHub om een code.",
+  "connector.github.requestingCode": "OpenBot-NC vraagt GitHub om een code.",
   "connector.github.codeLabel": "Code {code}",
   "connector.github.failedTitle": "GitHub is niet verbonden",
   "connector.github.cancelConnecting": "Verbinden met GitHub annuleren",
@@ -52,7 +52,7 @@ export const messages = {
   "connector.github.disconnectConfirmDescription":
     "Loskoppelen verwijdert de aanmelding van @{login} van deze computer.",
   "connector.github.disconnectEffectTools": "Elke agent verliest de GitHub-tools, gh en git.",
-  "connector.github.disconnectEffectRevoke": "Daarna opent GitHub, waar je OpenBot kunt intrekken.",
+  "connector.github.disconnectEffectRevoke": "Daarna opent GitHub, waar je OpenBot-NC kunt intrekken.",
   "connector.github.disconnectEffectKept": "Chats, bestanden en het geheugen van agents blijven op deze computer.",
   "connector.github.descriptionHost":
     "Elke agent op {host} kan je GitHub-repository’s, issues en pull requests gebruiken, en gh en git.",
@@ -66,7 +66,7 @@ export const messages = {
   "connector.github.close": "Sluiten",
   "connector.dangerZone": "Gevarenzone",
   "connector.statusUnknown": "Onbekend",
-  "connector.readFailed": "OpenBot kan de status van deze verbinding niet lezen.",
+  "connector.readFailed": "OpenBot-NC kan de status van deze verbinding niet lezen.",
 
   "connector.whatsapp.title": "WhatsApp",
   "connector.whatsapp.description":
@@ -93,18 +93,18 @@ export const messages = {
   "connector.whatsapp.actionFailed": "WhatsApp heeft de wijziging niet geaccepteerd",
   "connector.whatsapp.numbersTitle": "Nummers",
   "connector.whatsapp.linkNumber": "Koppel een nummer",
-  "connector.whatsapp.ownNumberNote": "Je chat “Bericht aan jezelf” en de mensen die je toestaat bereiken OpenBot.",
+  "connector.whatsapp.ownNumberNote": "Je chat “Bericht aan jezelf” en de mensen die je toestaat bereiken OpenBot-NC.",
   "connector.whatsapp.dedicatedNote":
-    "Je chat “Bericht aan jezelf” en de mensen die je toestaat bereiken OpenBot. Anderen krijgen een code om aan jou te geven.",
+    "Je chat “Bericht aan jezelf” en de mensen die je toestaat bereiken OpenBot-NC. Anderen krijgen een code om aan jou te geven.",
   "connector.whatsapp.helpLoggedOut":
     "WhatsApp heeft deze computer uit de gekoppelde apparaten verwijderd. Koppel het nummer opnieuw.",
   "connector.whatsapp.helpLoggedOutHost":
     "WhatsApp heeft deze server uit de gekoppelde apparaten verwijderd. Koppel het nummer opnieuw.",
   "connector.whatsapp.helpError":
-    "OpenBot kan WhatsApp op dit nummer niet bereiken. Verbind opnieuw of koppel het nummer los.",
+    "OpenBot-NC kan WhatsApp op dit nummer niet bereiken. Verbind opnieuw of koppel het nummer los.",
   "connector.whatsapp.helpKeysUnreadable":
-    "OpenBot kan de opgeslagen sleutels van dit nummer niet lezen. Koppel het nummer opnieuw.",
-  "connector.whatsapp.retryAt": "WhatsApp vroeg OpenBot te wachten. Het probeert het opnieuw om {time}.",
+    "OpenBot-NC kan de opgeslagen sleutels van dit nummer niet lezen. Koppel het nummer opnieuw.",
+  "connector.whatsapp.retryAt": "WhatsApp vroeg OpenBot-NC te wachten. Het probeert het opnieuw om {time}.",
   "connector.whatsapp.pause": "Pauzeren",
   "connector.whatsapp.resume": "Hervatten",
   "connector.whatsapp.reconnect": "Opnieuw verbinden",
@@ -114,20 +114,20 @@ export const messages = {
   "connector.whatsapp.disconnectAllSummary":
     "Elk nummer wordt losgekoppeld. Mensen kunnen je agents niet meer bereiken via WhatsApp.",
   "connector.whatsapp.disconnectAllSummaryOrchestrator":
-    "Elk nummer wordt losgekoppeld. De WhatsApp Orchestrator en zijn gesprekken worden uit OpenBot verwijderd.",
+    "Elk nummer wordt losgekoppeld. De WhatsApp Orchestrator en zijn gesprekken worden uit OpenBot-NC verwijderd.",
   "connector.whatsapp.rowAction": "{action}: {name}",
   "connector.whatsapp.ownNumber": "Persoonlijk nummer",
   "connector.whatsapp.ownNumberDescription":
-    "Alleen je chat “Bericht aan jezelf” en de mensen die je toestaat kunnen schrijven. Andere mensen krijgen geen antwoord. Als dit uit staat, antwoordt OpenBot onbekende mensen met een code.",
+    "Alleen je chat “Bericht aan jezelf” en de mensen die je toestaat kunnen schrijven. Andere mensen krijgen geen antwoord. Als dit uit staat, antwoordt OpenBot-NC onbekende mensen met een code.",
   "connector.whatsapp.workingMessage": "Bericht “Mee bezig…”",
   "connector.whatsapp.workingMessageDescription":
-    "OpenBot stuurt het terwijl de agent werkt en vervangt het daarna door het antwoord. Een verzoek dat op een eerder verzoek wacht, krijgt ook een wachtbericht. Bij een persoonlijk nummer krijgt alleen je chat “Bericht aan jezelf” deze berichten. Zet dit uit om alleen het antwoord te sturen.",
+    "OpenBot-NC stuurt het terwijl de agent werkt en vervangt het daarna door het antwoord. Een verzoek dat op een eerder verzoek wacht, krijgt ook een wachtbericht. Bij een persoonlijk nummer krijgt alleen je chat “Bericht aan jezelf” deze berichten. Zet dit uit om alleen het antwoord te sturen.",
   "connector.whatsapp.statusReactions": "Statusreacties",
   "connector.whatsapp.statusReactionsDescription":
-    "OpenBot reageert met 👀 als er een bericht binnenkomt en met ✅ als het antwoord klaar is. Zet dit uit om geen reacties te sturen.",
+    "OpenBot-NC reageert met 👀 als er een bericht binnenkomt en met ✅ als het antwoord klaar is. Zet dit uit om geen reacties te sturen.",
   "connector.whatsapp.orchestratorTitle": "WhatsApp Orchestrator",
   "connector.whatsapp.orchestratorDescription":
-    "Deze agent ontvangt de berichten voor OpenBot van al je gekoppelde nummers. Korte berichten beantwoordt hij zelf, ander werk geeft hij aan de juiste agent, en hij antwoordt in WhatsApp.",
+    "Deze agent ontvangt de berichten voor OpenBot-NC van al je gekoppelde nummers. Korte berichten beantwoordt hij zelf, ander werk geeft hij aan de juiste agent, en hij antwoordt in WhatsApp.",
   "connector.whatsapp.orchestratorNone": "Nog geen agent antwoordt",
   "connector.whatsapp.orchestratorNoneDescription":
     "Voeg de WhatsApp Orchestrator toe, anders krijgt WhatsApp geen antwoord.",
@@ -143,10 +143,10 @@ export const messages = {
   "connector.whatsapp.kindLabel": "Nummer",
   "connector.whatsapp.kindPersonal": "Mijn persoonlijke nummer",
   "connector.whatsapp.kindPersonalDescription":
-    "OpenBot antwoordt alleen in je chat “Bericht aan jezelf” en aan de mensen die je toestaat. Andere mensen krijgen geen antwoord.",
-  "connector.whatsapp.kindDedicated": "Een nummer alleen voor OpenBot",
+    "OpenBot-NC antwoordt alleen in je chat “Bericht aan jezelf” en aan de mensen die je toestaat. Andere mensen krijgen geen antwoord.",
+  "connector.whatsapp.kindDedicated": "Een nummer alleen voor OpenBot-NC",
   "connector.whatsapp.kindDedicatedDescription":
-    "OpenBot antwoordt vanaf dit nummer elke onbekende persoon met een code om aan jou te geven. Je keurt ze hier goed.",
+    "OpenBot-NC antwoordt vanaf dit nummer elke onbekende persoon met een code om aan jou te geven. Je keurt ze hier goed.",
   "connector.whatsapp.methodLabel": "Koppelmethode",
   "connector.whatsapp.methodQr": "QR-code",
   "connector.whatsapp.methodCode": "Koppelcode",
@@ -173,26 +173,26 @@ export const messages = {
     "WhatsApp weigerde de koppeling. Wacht een paar minuten en probeer het dan opnieuw.",
   "connector.whatsapp.failedBusy":
     "Er loopt al een andere koppeling. Wacht tot die klaar is en probeer het dan opnieuw.",
-  "connector.whatsapp.failedUnavailable": "OpenBot kan WhatsApp niet bereiken. Controleer de internetverbinding.",
+  "connector.whatsapp.failedUnavailable": "OpenBot-NC kan WhatsApp niet bereiken. Controleer de internetverbinding.",
   "connector.whatsapp.tryAgain": "Probeer opnieuw",
   "connector.whatsapp.agentStepTitle": "Voeg de WhatsApp Orchestrator toe",
   "connector.whatsapp.agentStepDescription":
-    "Deze nieuwe agent beantwoordt de berichten voor OpenBot op {number} en op elk nummer dat je later koppelt.",
+    "Deze nieuwe agent beantwoordt de berichten voor OpenBot-NC op {number} en op elk nummer dat je later koppelt.",
   "connector.whatsapp.orchestratorName": "WhatsApp Orchestrator",
   "connector.whatsapp.orchestratorRole": "Antwoordt in WhatsApp en vraagt het team",
-  "connector.whatsapp.orchestratorDoesReceive": "Ontvangt elk WhatsApp-bericht voor OpenBot als eerste",
+  "connector.whatsapp.orchestratorDoesReceive": "Ontvangt elk WhatsApp-bericht voor OpenBot-NC als eerste",
   "connector.whatsapp.orchestratorDoesDelegate": "Geeft elke taak aan de agent die het best past",
   "connector.whatsapp.orchestratorDoesAnswer": "Antwoordt in de WhatsApp-chat",
   "connector.whatsapp.orchestratorModel": "Model",
-  "connector.whatsapp.doneTitle": "OpenBot is gekoppeld aan {number}",
+  "connector.whatsapp.doneTitle": "OpenBot-NC is gekoppeld aan {number}",
   "connector.whatsapp.done": "Klaar",
   "connector.whatsapp.disconnectTitle": "{number} loskoppelen?",
   "connector.whatsapp.disconnectDescription":
-    "OpenBot logt uit bij WhatsApp op {number}. Als OpenBot uit stond, verwijder het apparaat dan ook in WhatsApp > Gekoppelde apparaten.",
+    "OpenBot-NC logt uit bij WhatsApp op {number}. Als OpenBot-NC uit stond, verwijder het apparaat dan ook in WhatsApp > Gekoppelde apparaten.",
   "connector.whatsapp.disconnectEffect": "Mensen kunnen je agents niet meer bereiken via {number}.",
-  "connector.whatsapp.removeEffectKept": "De gesprekken en de WhatsApp Orchestrator blijven in OpenBot.",
+  "connector.whatsapp.removeEffectKept": "De gesprekken en de WhatsApp Orchestrator blijven in OpenBot-NC.",
   "connector.whatsapp.removeEffectDeleted":
-    "Dit is het laatste nummer, dus de WhatsApp Orchestrator en zijn gesprekken worden uit OpenBot verwijderd.",
+    "Dit is het laatste nummer, dus de WhatsApp Orchestrator en zijn gesprekken worden uit OpenBot-NC verwijderd.",
   "connector.whatsapp.keep": "Gekoppeld houden",
   "connector.whatsapp.close": "Sluiten",
   "connector.whatsapp.sendersTitle": "Wie naar {number} kan schrijven",
@@ -216,7 +216,7 @@ export const messages = {
     "Mensen in deze groep kunnen werk geven aan je agents als ze het nummer vermelden of op de berichten ervan reageren.",
   "connector.whatsapp.groupSearch": "Zoek groepen",
   "connector.whatsapp.groupsLoading": "Groepen lezen…",
-  "connector.whatsapp.groupsLoadFailed": "OpenBot kon de groepen niet lezen",
+  "connector.whatsapp.groupsLoadFailed": "OpenBot-NC kon de groepen niet lezen",
   "connector.whatsapp.groupsEmpty": "Dit nummer zit in geen enkele groep.",
   "connector.whatsapp.groupsNoMatch": "Geen groep heeft deze naam.",
   "connector.whatsapp.groupAdded": "Toegevoegd",
@@ -229,9 +229,9 @@ export const messages = {
   "connector.whatsapp.deny": "Weigeren",
   "connector.onePassword.title": "1Password",
   "connector.onePassword.description":
-    "Deel een aparte 1Password-kluis met OpenBot via een serviceaccount, zodat agents kunnen inloggen op sites in de OpenBot-browser.",
+    "Deel een aparte 1Password-kluis met OpenBot-NC via een serviceaccount, zodat agents kunnen inloggen op sites in de OpenBot-NC-browser.",
   "connector.onePassword.howItWorks":
-    "Bij het verbinden worden in je 1Password-account een kluis “Shared with OpenBot” en een serviceaccount gemaakt dat alleen die kluis kan lezen. OpenBot vult opgeslagen logins in zijn browser op deze computer in, dus alleen de items die je naar die kluis verplaatst, worden ooit gedeeld. Agents zien nooit een wachtwoord.",
+    "Bij het verbinden worden in je 1Password-account een kluis “Shared with OpenBot” en een serviceaccount gemaakt dat alleen die kluis kan lezen. OpenBot-NC vult opgeslagen logins in zijn browser op deze computer in, dus alleen de items die je naar die kluis verplaatst, worden ooit gedeeld. Agents zien nooit een wachtwoord.",
   "connector.onePassword.connect": "Verbind 1Password",
   "connector.onePassword.setupTitle": "Instellen",
   "connector.onePassword.stepCliTitle": "Installeer de 1Password CLI",
@@ -239,20 +239,20 @@ export const messages = {
   "connector.onePassword.stepCliInstalling": "De 1Password CLI downloaden van 1Password",
   "connector.onePassword.stepCliReady": "Versie {version} is geïnstalleerd.",
   "connector.onePassword.stepCliMissing":
-    "OpenBot downloadt hem van 1Password naar een eigen map. Er is geen beheerderswachtwoord nodig.",
+    "OpenBot-NC downloadt hem van 1Password naar een eigen map. Er is geen beheerderswachtwoord nodig.",
   "connector.onePassword.stepCliManual":
-    "OpenBot kan hem niet op deze computer installeren. Installeer hem via 1Password en kom dan terug naar deze pagina.",
+    "OpenBot-NC kan hem niet op deze computer installeren. Installeer hem via 1Password en kom dan terug naar deze pagina.",
   "connector.onePassword.installCli": "Installeren",
   "connector.onePassword.stepAppTitle": "Zet de CLI-integratie aan",
   "connector.onePassword.stepAppDescription":
     "Open in de 1Password-app Instellingen > Ontwikkelaar en zet “Integreren met 1Password CLI” aan.",
   "connector.onePassword.stepAppReady": "De 1Password-app laat de CLI de gedeelde kluis maken.",
   "connector.onePassword.openApp": "Open 1Password",
-  "connector.onePassword.openAppFailed": "OpenBot kan 1Password niet openen.",
+  "connector.onePassword.openAppFailed": "OpenBot-NC kan 1Password niet openen.",
   "connector.onePassword.checkAgain": "Opnieuw controleren",
   "connector.onePassword.stepVaultTitle": "Maak de gedeelde kluis",
   "connector.onePassword.stepVaultDescription":
-    "OpenBot maakt de kluis “Shared with OpenBot” en een serviceaccount dat hem alleen kan lezen. 1Password vraagt je om goedkeuring.",
+    "OpenBot-NC maakt de kluis “Shared with OpenBot” en een serviceaccount dat hem alleen kan lezen. 1Password vraagt je om goedkeuring.",
   "connector.onePassword.useTokenDescription":
     "Plak in plaats van deze stappen een serviceaccounttoken van 1Password.com.",
   "connector.onePassword.useTokenAction": "Gebruik token",
@@ -262,7 +262,7 @@ export const messages = {
   "connector.onePassword.approveInApp": "Keur het verzoek goed in de 1Password-app",
   "connector.onePassword.cancel": "Annuleren",
   "connector.onePassword.chooseAccountTitle": "Kies een account",
-  "connector.onePassword.chooseAccountDescription": "OpenBot maakt de gedeelde kluis in het account dat je kiest.",
+  "connector.onePassword.chooseAccountDescription": "OpenBot-NC maakt de gedeelde kluis in het account dat je kiest.",
   "connector.onePassword.useAccount": "Gebruik dit account",
   "connector.onePassword.vaultTitle": "Gedeelde kluis",
   "connector.onePassword.vaultDescription":
@@ -272,14 +272,14 @@ export const messages = {
   "connector.onePassword.disconnect": "Verbreken",
   "connector.onePassword.disconnectTitle": "1Password loskoppelen",
   "connector.onePassword.disconnectSummary":
-    "OpenBot vergeet het token. De kluis en het serviceaccount blijven in 1Password; verwijder ze daar als je ze niet meer nodig hebt.",
-  "connector.onePassword.actionFailed": "OpenBot kan de 1Password-verbinding niet wijzigen.",
+    "OpenBot-NC vergeet het token. De kluis en het serviceaccount blijven in 1Password; verwijder ze daar als je ze niet meer nodig hebt.",
+  "connector.onePassword.actionFailed": "OpenBot-NC kan de 1Password-verbinding niet wijzigen.",
   "connector.onePassword.statusConnected": "Verbonden",
   "connector.onePassword.statusConnecting": "Verbinden",
   "connector.onePassword.descriptionHost":
-    "Deel een aparte 1Password-kluis met OpenBot op {host} via een serviceaccount, zodat agents op {host} kunnen inloggen op sites in de browser ervan.",
+    "Deel een aparte 1Password-kluis met OpenBot-NC op {host} via een serviceaccount, zodat agents op {host} kunnen inloggen op sites in de browser ervan.",
   "connector.onePassword.howItWorksHost":
-    "{host} verbindt met een serviceaccounttoken. Maak op 1Password.com een serviceaccount dat alleen de kluis kan lezen die je met OpenBot deelt, en plak het token ervan hier. {host} controleert het token en bewaart het; deze computer niet. Agents zien nooit een wachtwoord.",
+    "{host} verbindt met een serviceaccounttoken. Maak op 1Password.com een serviceaccount dat alleen de kluis kan lezen die je met OpenBot-NC deelt, en plak het token ervan hier. {host} controleert het token en bewaart het; deze computer niet. Agents zien nooit een wachtwoord.",
   "connector.onePassword.disconnectSummaryHost":
     "{host} vergeet het token. De kluis en het serviceaccount blijven in 1Password; verwijder ze daar als je ze niet meer nodig hebt.",
   "connector.bitwarden.title": "Bitwarden",
@@ -287,24 +287,24 @@ export const messages = {
   "connector.bitwarden.setup":
     "Installeer de Bitwarden CLI en log in met bw login. Maak een map met de naam Shared with OpenBot en zet daar alleen de logins in die agents mogen gebruiken. Voer bw unlock --raw uit en plak de sessiesleutel hieronder. Plak niet je hoofdwachtwoord.",
   "connector.bitwarden.scope":
-    "Alle agents op deze computer kunnen passende logins in Shared with OpenBot gebruiken. OpenBot gebruikt exacte HTTPS-origins. Het gebruikt geen items die om het hoofdwachtwoord vragen of een aangepaste URI-matchregel hebben.",
+    "Alle agents op deze computer kunnen passende logins in Shared with OpenBot gebruiken. OpenBot-NC gebruikt exacte HTTPS-origins. Het gebruikt geen items die om het hoofdwachtwoord vragen of een aangepaste URI-matchregel hebben.",
   "connector.bitwarden.session":
-    "De sessiesleutel blijft in het geheugen. Verbind opnieuw na 8 uur zonder kluisgebruik of nadat OpenBot is afgesloten. Loskoppelen stopt de toegang van OpenBot; andere Bitwarden-clients worden niet vergrendeld.",
+    "De sessiesleutel blijft in het geheugen. Verbind opnieuw na 8 uur zonder kluisgebruik of nadat OpenBot-NC is afgesloten. Loskoppelen stopt de toegang van OpenBot-NC; andere Bitwarden-clients worden niet vergrendeld.",
   "connector.bitwarden.sessionKey": "Bitwarden-sessiesleutel",
   "connector.bitwarden.connect": "Verbind Bitwarden",
   "connector.bitwarden.disconnect": "Bitwarden loskoppelen",
   "connector.bitwarden.disconnectAction": "Verbreken",
   "connector.bitwarden.disconnectSummary":
-    "OpenBot vergeet de sessiesleutel. Agents kunnen geen logins uit Bitwarden meer invullen. Andere Bitwarden-clients blijven ontgrendeld.",
+    "OpenBot-NC vergeet de sessiesleutel. Agents kunnen geen logins uit Bitwarden meer invullen. Andere Bitwarden-clients blijven ontgrendeld.",
   "connector.bitwarden.disconnectSummaryHost":
     "{host} verwijdert de API-sleutel en het hoofdwachtwoord. Agents op {host} kunnen geen logins uit Bitwarden meer invullen.",
   "connector.bitwarden.connected": "Verbonden",
-  "connector.bitwarden.actionFailed": "OpenBot kan de Bitwarden-verbinding niet wijzigen.",
+  "connector.bitwarden.actionFailed": "OpenBot-NC kan de Bitwarden-verbinding niet wijzigen.",
   "connector.bitwarden.descriptionHost": "Vul browserlogins op {host} in vanuit Bitwarden of Vaultwarden.",
   "connector.bitwarden.setupHost":
     "{host} logt in met een eigen Bitwarden CLI. Maak in je kluis een map met de naam Shared with OpenBot en zet daar alleen de logins in die agents mogen gebruiken. Open in de webkluis Instellingen › Beveiliging › Sleutels en bekijk je API-sleutel. Voer hieronder het serveradres, client_id, client_secret en je hoofdwachtwoord in.",
   "connector.bitwarden.scopeHost":
-    "Alle agents op {host} kunnen passende logins in Shared with OpenBot gebruiken. OpenBot gebruikt exacte HTTPS-origins. Het gebruikt geen items die om het hoofdwachtwoord vragen of een aangepaste URI-matchregel hebben.",
+    "Alle agents op {host} kunnen passende logins in Shared with OpenBot gebruiken. OpenBot-NC gebruikt exacte HTTPS-origins. Het gebruikt geen items die om het hoofdwachtwoord vragen of een aangepaste URI-matchregel hebben.",
   "connector.bitwarden.sessionHost":
     "{host} bewaart de API-sleutel en het hoofdwachtwoord versleuteld, zodat hij na een herstart weer kan ontgrendelen. Deze computer bewaart ze niet. Loskoppelen verwijdert ze van {host}. {host} moet het serveradres via HTTPS kunnen bereiken.",
   "connector.bitwarden.serverUrl": "Serveradres",
@@ -328,19 +328,19 @@ export const messages = {
   "connector.protonPass.keyPlaceholder": "pst_…",
   "connector.protonPass.setupTitle": "Instellen",
   "connector.protonPass.setupDescription":
-    "Verbinden opent de Proton-aanmelding in je browser. Daarna maakt OpenBot de gedeelde kluis en bewaart het alleen een sleutel met leestoegang.",
+    "Verbinden opent de Proton-aanmelding in je browser. Daarna maakt OpenBot-NC de gedeelde kluis en bewaart het alleen een sleutel met leestoegang.",
   "connector.protonPass.setupDescriptionHost":
     "Verbinden opent de Proton-aanmelding in je browser. Daarna maakt {host} de gedeelde kluis en bewaart het alleen een sleutel met leestoegang.",
   "connector.protonPass.vaultName": "Shared with OpenBot",
   "connector.protonPass.vaultSetup":
-    "OpenBot maakt deze kluis wanneer je verbindt. Verplaats logins erheen om ze te delen.",
+    "OpenBot-NC maakt deze kluis wanneer je verbindt. Verplaats logins erheen om ze te delen.",
   "connector.protonPass.showSteps": "Stappen tonen",
   "connector.protonPass.stepsLabel": "Verbindingsstappen",
   "connector.protonPass.stepSignIn": "Aanmelden",
   "connector.protonPass.stepVault": "Gedeelde kluis maken",
   "connector.protonPass.stepDone": "Klaar",
   "connector.protonPass.signInTitle": "Aanmelden bij Proton",
-  "connector.protonPass.signInStarting": "OpenBot start de aanmelding. De Proton-pagina opent in je browser.",
+  "connector.protonPass.signInStarting": "OpenBot-NC start de aanmelding. De Proton-pagina opent in je browser.",
   "connector.protonPass.signInDescription":
     "De aanmelding is open in je browser. Proton vraagt om je wachtwoord en je tweede factor.",
   "connector.protonPass.signInDescriptionHost":
@@ -351,7 +351,7 @@ export const messages = {
   "connector.protonPass.continue": "Doorgaan",
   "connector.protonPass.setupStepTitle": "Gedeelde kluis maken",
   "connector.protonPass.setupStepDescription":
-    "OpenBot maakt de kluis ‘{vault}’ en een sleutel met leestoegang. Daarna meldt het je Proton-sessie af.",
+    "OpenBot-NC maakt de kluis ‘{vault}’ en een sleutel met leestoegang. Daarna meldt het je Proton-sessie af.",
   "connector.protonPass.doneTitle": "Proton Pass is verbonden",
   "connector.protonPass.doneDescription": "Verplaats logins naar ‘{vault}’ zodat agents ermee kunnen inloggen.",
   "connector.protonPass.failedTitle": "Proton Pass is niet verbonden",
@@ -380,9 +380,9 @@ export const messages = {
   "connector.protonPass.keyNoExpiry": "Alleen lezen. Verloopt niet.",
   "connector.protonPass.disconnectTitle": "Proton Pass loskoppelen",
   "connector.protonPass.disconnectSummary":
-    "OpenBot verwijdert zijn toegangssleutel op deze computer. De kluis en de logins erin blijven in je Proton-account.",
+    "OpenBot-NC verwijdert zijn toegangssleutel op deze computer. De kluis en de logins erin blijven in je Proton-account.",
   "connector.protonPass.disconnectSummaryHost":
-    "OpenBot verwijdert zijn toegangssleutel op {host}. De kluis en de logins erin blijven in je Proton-account.",
+    "OpenBot-NC verwijdert zijn toegangssleutel op {host}. De kluis en de logins erin blijven in je Proton-account.",
   "connector.protonPass.disconnect": "Loskoppelen",
-  "connector.protonPass.actionFailed": "OpenBot kon de Proton Pass-verbinding niet wijzigen.",
+  "connector.protonPass.actionFailed": "OpenBot-NC kon de Proton Pass-verbinding niet wijzigen.",
 } as const satisfies PartialTranslation<typeof source>;

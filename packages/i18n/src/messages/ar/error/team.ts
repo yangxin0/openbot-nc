@@ -2,13 +2,13 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/team";
 
 export const messages = {
-  "error.team.ownerNotLinked": "هذا المضيف غير مرتبط بحساب مالك في OpenBot.",
-  "error.team.ownerEmailRequired": "سجّل الدخول بالبريد الإلكتروني في OpenBot الذي أنشأ هذا المضيف.",
+  "error.team.ownerNotLinked": "هذا المضيف غير مرتبط بحساب مالك في OpenBot-NC.",
+  "error.team.ownerEmailRequired": "سجّل الدخول بالبريد الإلكتروني في OpenBot-NC الذي أنشأ هذا المضيف.",
   "error.team.hostNotConfigured": "مضيف الفريق غير مُعَدّ.",
   "error.team.alreadyConfigured": "خادم الفريق مُعَدّ بالفعل.",
   "error.team.identityCreateFailed": "تعذّر إنشاء هوية الفريق.",
   "error.team.accountChangedDuringCreate": "تغيّر الحساب المسجّل أثناء إنشاء هذا الخادم.",
-  "error.team.notConfigured": "لم يُعَدّ OpenBot هذا بعد.",
+  "error.team.notConfigured": "لم يُعَدّ OpenBot-NC هذا بعد.",
   "error.team.serverNotActive": "لم يعد هذا الخادم هو النشط للحساب المسجّل.",
   "error.team.logoInvalid": "اختر صورة PNG أو JPEG أو WebP صالحة بحجم 512 KB كحد أقصى.",
   "error.team.permanentInviteEmail": "لا يمكن أن يحتوي رابط الدعوة الدائم على عنوان بريد إلكتروني.",
@@ -18,7 +18,7 @@ export const messages = {
   "error.team.memberDisabled": "عضو الفريق هذا معطّل.",
   "error.team.memberLimit": "يمكن أن يملك المضيف حتى {limit} من الأعضاء.",
   "error.team.usernameTaken": "اسم المستخدم هذا مستخدم بالفعل.",
-  "error.team.inviteRequiresAccount": "تتطلب هذه الدعوة حساب OpenBot موثّقًا.",
+  "error.team.inviteRequiresAccount": "تتطلب هذه الدعوة حساب OpenBot-NC موثّقًا.",
   "error.team.loginIncorrect": "اسم المستخدم أو كلمة المرور غير صحيحة.",
   "error.team.currentPasswordIncorrect": "كلمة المرور الحالية غير صحيحة.",
   "error.team.memberNotFound": "لم يُعثر على عضو الفريق.",
@@ -43,16 +43,16 @@ export const messages = {
   "error.team.routeNotFound": "لم يُعثر على المسار.",
   "error.team.requestFailed": "فشل الطلب.",
   "error.team.tooManySignInAttempts": "محاولات تسجيل دخول كثيرة جدًا. أعد المحاولة لاحقًا.",
-  "error.team.clientUpdateRequired": "حدّث عميل OpenBot هذا قبل الاتصال بهذا المضيف.",
-  "error.team.hostUpdateRequired": "حدّث OpenBot على المضيف قبل الاتصال.",
-  "error.team.serverSafeMode": "هذا الخادم في الوضع الآمن لأن OpenBot لا يبدأ عليه.",
+  "error.team.clientUpdateRequired": "حدّث عميل OpenBot-NC هذا قبل الاتصال بهذا المضيف.",
+  "error.team.hostUpdateRequired": "حدّث OpenBot-NC على المضيف قبل الاتصال.",
+  "error.team.serverSafeMode": "هذا الخادم في الوضع الآمن لأن OpenBot-NC لا يبدأ عليه.",
   "error.team.serverSafeModeNewerDatabase":
-    "لا يستطيع OpenBot {version} على هذا الخادم فتح بياناته، لأن إصدارًا أحدث من OpenBot حفظها. يحل إصدار أحدث من OpenBot على الخادم هذه المشكلة.",
+    "لا يستطيع OpenBot-NC {version} على هذا الخادم فتح بياناته، لأن إصدارًا أحدث من OpenBot-NC حفظها. يحل إصدار أحدث من OpenBot-NC على الخادم هذه المشكلة.",
   "error.team.serverSafeModeStartFailed":
-    "توقف OpenBot {version} على هذا الخادم بعد فشل بدئه مرات عديدة. يحل إصدار أحدث من OpenBot على الخادم هذه المشكلة.",
+    "توقف OpenBot-NC {version} على هذا الخادم بعد فشل بدئه مرات عديدة. يحل إصدار أحدث من OpenBot-NC على الخادم هذه المشكلة.",
   "error.team.sidebarLayoutUnavailable": "تخطيط الشريط الجانبي غير متاح.",
   "error.team.providersUnsupported": "إعدادات المزوّد غير مدعومة في هذا الاتصال.",
-  "error.team.providerNotManaged": "لا يدير OpenBot واجهة CLI لهذا المزوّد.",
+  "error.team.providerNotManaged": "لا يدير OpenBot-NC واجهة CLI لهذا المزوّد.",
   "error.team.channelsUnsupported": "دردشات القنوات غير مدعومة في هذا الاتصال.",
   "error.team.channelContextUnsupported": "هذا الاتصال لا يدعم محادثة جديدة أو الضغط في قناة.",
   "error.team.channelPictureUnsupported": "صور القنوات غير مدعومة في هذا الاتصال.",
@@ -84,9 +84,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "مجلدات المكتبة غير مدعومة في هذا الاتصال.",
   "error.team.workflowFoldersUnsupported": "لا يدعم هذا الاتصال مجلدات مسارات العمل.",
   "error.team.agentNotificationLevelsUnsupported":
-    "لا يمكن لهذا الخادم حفظ مستوى الإشعارات الخاص بك لكل وكيل. حدّث OpenBot على الحاسوب الذي يشغّله.",
+    "لا يمكن لهذا الخادم حفظ مستوى الإشعارات الخاص بك لكل وكيل. حدّث OpenBot-NC على الحاسوب الذي يشغّله.",
   "error.team.sidebarPinsUnsupported":
-    "لا يمكن لهذا الخادم حفظ دردشاتك المثبّتة لكل أجهزتك. حدّث OpenBot على الحاسوب الذي يشغّله.",
+    "لا يمكن لهذا الخادم حفظ دردشاتك المثبّتة لكل أجهزتك. حدّث OpenBot-NC على الحاسوب الذي يشغّله.",
   "error.team.agentInstructionsUnsupported": "تعديل تعليمات الوكيل غير مدعوم في هذا الاتصال.",
   "error.team.contextResetUnsupported": "بدء دردشة جديدة غير مدعوم في هذا الاتصال.",
   "error.team.contextCompactUnsupported": "ضغط السياق غير مدعوم في هذا الاتصال.",
@@ -95,7 +95,8 @@ export const messages = {
   "error.team.conversationFileSearchUnsupported": "البحث في الملفات غير مدعوم في هذا الاتصال.",
   "error.team.threadMessageSearchUnsupported": "البحث في المحادثات الجانبية غير مدعوم في هذا الاتصال.",
   "error.team.sideQuestionUnsupported": "الأسئلة الجانبية غير مدعومة في هذا الاتصال.",
-  "error.team.routineFlowsUnsupported": "لا يدعم هذا الخادم تدفقات المهام الدورية. حدّث OpenBot على الحاسوب الذي يشغّله.",
+  "error.team.routineFlowsUnsupported":
+    "لا يدعم هذا الخادم تدفقات المهام الدورية. حدّث OpenBot-NC على الحاسوب الذي يشغّله.",
   "error.team.routineCanvasTooLarge":
     "لوحة هذه المهمة الدورية كبيرة جدًا لإرسالها إلى هذا الجهاز. اختصر تعليمات المهمة الدورية على الحاسوب الذي يشغّل الخادم.",
   "error.team.conversationPageTooLarge":
@@ -138,9 +139,9 @@ export const messages = {
   "error.team.browserSessionNotFound": "لم يُعثر على جلسة عرض المتصفح.",
   "error.team.mcpUnsupported": "خوادم MCP غير مدعومة في هذا الاتصال.",
   "error.team.mcpServerListNeedsUpdate":
-    "حدّث OpenBot على هذا الجهاز لاستخدام أكثر من {limit} من خوادم MCP على هذا الخادم.",
+    "حدّث OpenBot-NC على هذا الجهاز لاستخدام أكثر من {limit} من خوادم MCP على هذا الخادم.",
   "error.team.providerAccountListNeedsUpdate":
-    "حدّث OpenBot على هذا الجهاز لاستخدام أكثر من {limit} من الحسابات لمزوّد واحد على هذا الخادم.",
+    "حدّث OpenBot-NC على هذا الجهاز لاستخدام أكثر من {limit} من الحسابات لمزوّد واحد على هذا الخادم.",
   "error.team.storageUnsupported": "التخزين غير مدعوم في هذا الاتصال.",
   "error.team.machineResourcesUnsupported": "استخدام الجهاز غير مدعوم في هذا الاتصال.",
   "error.team.machineAlertMemberInvalid": "يمكن فقط لمالك هذا الخادم أو مسؤوله تلقي تنبيهات الجهاز.",
@@ -166,9 +167,9 @@ export const messages = {
   "error.team.mcpServerNotYours": "لا يمكن تغيير خادم MCP هذا إلا للشخص الذي أضافه أو لمسؤول.",
   "error.team.ownerRequired": "لا يمكن إلا لمالك هذا الخادم فعل ذلك.",
   "error.team.requestTooLarge": "نص الطلب كبير جدًا.",
-  "error.team.signInRelayUnsupported": "لا يمكن لهذا الخادم تمرير عمليات تسجيل الدخول. حدّث OpenBot على المضيف.",
-  "error.team.connectorsUnsupported": "لا يمكن لهذا الخادم إدارة اتصالاته من هنا. حدّث OpenBot على المضيف.",
-  "error.team.vaultUnsupported": "لا يمكن لهذا الخادم فتح الخزنة من هنا. حدّث OpenBot على المضيف.",
+  "error.team.signInRelayUnsupported": "لا يمكن لهذا الخادم تمرير عمليات تسجيل الدخول. حدّث OpenBot-NC على المضيف.",
+  "error.team.connectorsUnsupported": "لا يمكن لهذا الخادم إدارة اتصالاته من هنا. حدّث OpenBot-NC على المضيف.",
+  "error.team.vaultUnsupported": "لا يمكن لهذا الخادم فتح الخزنة من هنا. حدّث OpenBot-NC على المضيف.",
   "error.team.vaultResetReadable": "الخزنة على هذا الخادم قابلة للقراءة، لذا لم يُعَد تعيينها.",
   "error.team.signInRelayUnknown": "انتهى تسجيل الدخول هذا أو غير موجود.",
   "error.team.signInRelayUsed": "أُرسل تسجيل الدخول هذا بالفعل.",

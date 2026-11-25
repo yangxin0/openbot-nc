@@ -56,7 +56,8 @@ function readMockGithub(link: string): GithubSkillSource {
   const match = /^(?:https?:\/\/)?(?:www\.)?github\.com\/anthropics\/skills(?:\/(?:tree|blob)\/[^/]+\/?(.*))?$/iu.exec(
     link.trim(),
   );
-  if (!match) throw new Error("OpenBot cannot open this repository. The repository is private, or it does not exist.");
+  if (!match)
+    throw new Error("OpenBot-NC cannot open this repository. The repository is private, or it does not exist.");
   const folder = (match[1] ?? "").replace(/\/?SKILL\.md$/iu, "").replace(/\/$/u, "");
   const source = mockGithubSource();
   const skills = source.skills.filter(

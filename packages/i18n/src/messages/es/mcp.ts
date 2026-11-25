@@ -10,10 +10,10 @@ export const messages = {
   "mcp.connect.useKey": "Usar una clave de API en su lugar",
   "mcp.connect.useSignIn": "Iniciar sesión en su lugar",
   "mcp.connect.keyDescription":
-    "Pega una credencial de tu cuenta de {name}. OpenBot se conecta con ella y la guarda en {host}.",
+    "Pega una credencial de tu cuenta de {name}. OpenBot-NC se conecta con ella y la guarda en {host}.",
   "mcp.connect.thisComputer": "este equipo",
   "mcp.connect.noCredentialDescription":
-    "{name} no solicita credenciales. OpenBot se conecta una vez para ver qué herramientas ofrece.",
+    "{name} no solicita credenciales. OpenBot-NC se conecta una vez para ver qué herramientas ofrece.",
   "mcp.connect.connect": "Conectar",
   "mcp.connect.required": "Obligatorio.",
   "mcp.connect.keptOn": "Se guarda en {host}.",
@@ -24,7 +24,7 @@ export const messages = {
   "mcp.local.address": "Dirección",
   "mcp.local.docs": "Guía de configuración",
   "mcp.signIn.description":
-    "Inicia sesión en tu cuenta de {name}. OpenBot obtiene las herramientas a las que puede acceder esa cuenta, pero no la contraseña.",
+    "Inicia sesión en tu cuenta de {name}. OpenBot-NC obtiene las herramientas a las que puede acceder esa cuenta, pero no la contraseña.",
   "mcp.signIn.waiting": "Esperando al navegador…",
   "mcp.signIn.continue": "Continuar en {name}",
   "mcp.signIn.pageDescription": "Esta página está abierta en el navegador de {host}. Inicia sesión aquí.",
@@ -62,7 +62,7 @@ export const messages = {
   "mcp.panel.editTitle": "Editar servidor MCP",
   "mcp.panel.enable": "Activar {name}",
   "mcp.panel.detailsTitle": "Detalles",
-  "mcp.panel.detailsDescription": "Asigna un nombre a este servidor y elige cómo accede OpenBot a él.",
+  "mcp.panel.detailsDescription": "Asigna un nombre a este servidor y elige cómo accede OpenBot-NC a él.",
   "mcp.panel.transport": "Transporte",
   "mcp.panel.name": "Nombre",
   "mcp.panel.namePlaceholder": "Nombre del servidor MCP",
@@ -107,16 +107,16 @@ export const messages = {
   "mcp.panel.useAddress": "Usar esta dirección",
   "mcp.panel.signInTo": "Iniciar sesión en {name}",
   "mcp.panel.signInWaiting": {
-    one: "Completa el inicio de sesión en tu navegador. OpenBot deja de esperar después de {count} minuto.",
-    other: "Completa el inicio de sesión en tu navegador. OpenBot deja de esperar después de {count} minutos.",
+    one: "Completa el inicio de sesión en tu navegador. OpenBot-NC deja de esperar después de {count} minuto.",
+    other: "Completa el inicio de sesión en tu navegador. OpenBot-NC deja de esperar después de {count} minutos.",
   },
   "mcp.panel.signInWaitingOn": {
-    one: "Abriendo la página de inicio de sesión en {host}. OpenBot deja de esperar después de {count} minuto.",
-    other: "Abriendo la página de inicio de sesión en {host}. OpenBot deja de esperar después de {count} minutos.",
+    one: "Abriendo la página de inicio de sesión en {host}. OpenBot-NC deja de esperar después de {count} minuto.",
+    other: "Abriendo la página de inicio de sesión en {host}. OpenBot-NC deja de esperar después de {count} minutos.",
   },
   "mcp.panel.appTitle": "App de inicio de sesión",
   "mcp.panel.appDescription":
-    "Usa una app OAuth que registraste con el proveedor del servidor. OpenBot la usa cuando el servidor no puede registrar OpenBot por sí mismo. Déjala vacía para que OpenBot se registre.",
+    "Usa una app OAuth que registraste con el proveedor del servidor. OpenBot-NC la usa cuando el servidor no puede registrar OpenBot-NC por sí mismo. Déjala vacía para que OpenBot-NC se registre.",
   "mcp.panel.appSaveFirst": "Primero guarda este servidor. Después puedes añadir una app de inicio de sesión.",
   "mcp.panel.appUrlChanged":
     "Primero guarda la nueva URL del servidor. La app de inicio de sesión pertenece a la URL guardada.",
@@ -140,18 +140,18 @@ export const messages = {
   "mcp.panel.appSaved": "App guardada. Inicia sesión para usarla.",
   "mcp.panel.appRemoved": "App eliminada.",
   "mcp.signIn.relayDescription":
-    "Inicia sesión en {page} en tu navegador. Al terminar, OpenBot envía el inicio de sesión a {host}.",
+    "Inicia sesión en {page} en tu navegador. Al terminar, OpenBot-NC envía el inicio de sesión a {host}.",
   "mcp.signIn.relayOpenDescription":
-    "Inicia sesión en {page} en tu navegador. Al terminar, pega aquí la dirección que muestra el navegador. Después, OpenBot envía el inicio de sesión a {host}.",
+    "Inicia sesión en {page} en tu navegador. Al terminar, pega aquí la dirección que muestra el navegador. Después, OpenBot-NC envía el inicio de sesión a {host}.",
   "mcp.signIn.relayDeviceDescription":
     "Inicia sesión en {page} en tu navegador y termina allí. {host} detecta el inicio de sesión por sí mismo.",
   "mcp.signIn.relayOpen": "Abrir inicio de sesión",
   "mcp.signIn.relayCopy": "Copiar enlace",
-  "mcp.signIn.relayPasteHint": "Si el navegador no vuelve a OpenBot, copia la dirección que muestra y pégala aquí.",
+  "mcp.signIn.relayPasteHint": "Si el navegador no vuelve a OpenBot-NC, copia la dirección que muestra y pégala aquí.",
   "mcp.signIn.relayPasteRequired":
-    "OpenBot no puede obtener por sí solo el inicio de sesión del navegador. Al terminar, copia la dirección que muestra el navegador y pégala aquí.",
+    "OpenBot-NC no puede obtener por sí solo el inicio de sesión del navegador. Al terminar, copia la dirección que muestra el navegador y pégala aquí.",
   "mcp.signIn.relayAddress": "Dirección del navegador",
   "mcp.signIn.relaySend": "Enviar",
   "mcp.panel.callbackUrlRelayed":
-    "La página de inicio de sesión se abre en tu navegador y OpenBot en tu equipo envía el inicio de sesión a {host}. Añade exactamente esta URL a las URL de redirección permitidas de la app.",
+    "La página de inicio de sesión se abre en tu navegador y OpenBot-NC en tu equipo envía el inicio de sesión a {host}. Añade exactamente esta URL a las URL de redirección permitidas de la app.",
 } as const satisfies PartialTranslation<typeof source>;

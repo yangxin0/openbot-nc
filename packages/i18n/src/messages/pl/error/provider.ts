@@ -3,28 +3,28 @@ import type { messages as source } from "../../en/error/provider";
 
 export const messages = {
   "error.provider.mcpConfig":
-    "Nie udało się zarejestrować serwerów MCP w konfiguracji Codex. Sprawdź, czy plik config.toml Codex jest poprawny i zapisywalny, a potem uruchom ponownie OpenBot.",
+    "Nie udało się zarejestrować serwerów MCP w konfiguracji Codex. Sprawdź, czy plik config.toml Codex jest poprawny i zapisywalny, a potem uruchom ponownie OpenBot-NC.",
   "error.provider.computerUseConfig":
-    "Nie udało się zarejestrować Sterowania komputerem w konfiguracji Codex. Sprawdź, czy plik config.toml Codex jest poprawny i zapisywalny, a potem uruchom ponownie OpenBot. Aby kontynuować bez tej funkcji, wyłącz Sterowanie komputerem w ustawieniach członka zespołu.",
-  "error.provider.codexUnresponsive": "Codex przestał odpowiadać, więc OpenBot zakończył jego proces.",
-  "error.provider.acpUnresponsive": "{provider} nie odpowiedział na czas, więc OpenBot zakończył jego proces.",
+    "Nie udało się zarejestrować Sterowania komputerem w konfiguracji Codex. Sprawdź, czy plik config.toml Codex jest poprawny i zapisywalny, a potem uruchom ponownie OpenBot-NC. Aby kontynuować bez tej funkcji, wyłącz Sterowanie komputerem w ustawieniach członka zespołu.",
+  "error.provider.codexUnresponsive": "Codex przestał odpowiadać, więc OpenBot-NC zakończył jego proces.",
+  "error.provider.acpUnresponsive": "{provider} nie odpowiedział na czas, więc OpenBot-NC zakończył jego proces.",
   "error.provider.acpSignInLost":
-    "{provider} utracił logowanie, więc OpenBot zakończył jego proces. Wyślij wiadomość ponownie.",
+    "{provider} utracił logowanie, więc OpenBot-NC zakończył jego proces. Wyślij wiadomość ponownie.",
   "error.provider.acpRefusedUntilRestart":
-    "{provider} odrzucił wiadomość, więc OpenBot zakończył jego proces. Wyślij wiadomość ponownie.",
+    "{provider} odrzucił wiadomość, więc OpenBot-NC zakończył jego proces. Wyślij wiadomość ponownie.",
   "error.provider.acpServerLost": "{provider} utracił połączenie. Wyślij wiadomość ponownie.",
-  "error.provider.acpServerLostEnded": "{provider} utracił połączenie, więc OpenBot zakończył jego proces.",
+  "error.provider.acpServerLostEnded": "{provider} utracił połączenie, więc OpenBot-NC zakończył jego proces.",
   "error.provider.acpSettingsTimedOut": "{provider} nie odpowiedział na czas. Spróbuj ponownie za chwilę.",
   "error.provider.acpPlanUsedUp":
     "{provider} zgłasza, że limit Twojego planu się wyczerpał. Wybierz inny model lub przejdź na wyższy plan {provider}.",
   "error.provider.acpMcpNotLoaded":
-    "{provider} nie załadował narzędzi OpenBot, więc ten agent nie może ich używać ani kontaktować się z członkami zespołu. Zasady zespołu {provider} mogą blokować lokalne serwery MCP. Poproś administratora zespołu o ich dopuszczenie, a potem spróbuj ponownie.",
+    "{provider} nie załadował narzędzi OpenBot-NC, więc ten agent nie może ich używać ani kontaktować się z członkami zespołu. Zasady zespołu {provider} mogą blokować lokalne serwery MCP. Poproś administratora zespołu o ich dopuszczenie, a potem spróbuj ponownie.",
   "error.provider.acpToolsNotLoaded":
-    "{provider} wykonał tę wiadomość bez narzędzi OpenBot, więc agent nie mógł skontaktować się z członkami zespołu, użyć przeglądarki ani załączyć plików. Spróbuj ponownie.",
+    "{provider} wykonał tę wiadomość bez narzędzi OpenBot-NC, więc agent nie mógł skontaktować się z członkami zespołu, użyć przeglądarki ani załączyć plików. Spróbuj ponownie.",
   "error.provider.acpOwnMcpServerFailed":
-    "{provider} nie mógł uruchomić serwera MCP {name}, więc odpowiedź została przerwana. Ten serwer jest w Twoich ustawieniach {provider}, a nie w OpenBot. Usuń go tam lub napraw, a potem rozpocznij nowy czat.",
+    "{provider} nie mógł uruchomić serwera MCP {name}, więc odpowiedź została przerwana. Ten serwer jest w Twoich ustawieniach {provider}, a nie w OpenBot-NC. Usuń go tam lub napraw, a potem rozpocznij nowy czat.",
   "error.provider.endpointsReadOnly":
-    "Zapisane endpointy zapisała nowsza wersja OpenBot albo nie można odczytać pliku. Zaktualizuj OpenBot, aby je zmienić.",
+    "Zapisane endpointy zapisała nowsza wersja OpenBot-NC albo nie można odczytać pliku. Zaktualizuj OpenBot-NC, aby je zmienić.",
   "error.provider.endpointNoSecureStorage":
     "Ten komputer nie ma bezpiecznego magazynu, więc nie można zapisać klucza API ani nagłówka. Usuń je albo użyj endpointu, który nie wymaga danych logowania.",
   "error.provider.endpointDuplicate":
@@ -42,7 +42,7 @@ export const messages = {
   "error.provider.discoveryTooLarge": "Lista modeli z {host} jest za duża.",
   "error.provider.discoveryInvalid": "{host} nie wysłał listy modeli zgodnej z OpenAI.",
   "error.provider.detectionSettingsReadOnly":
-    "Ustawienia wykrywania zapisała nowsza wersja OpenBot albo nie można odczytać pliku. Zaktualizuj OpenBot, aby je zmienić.",
+    "Ustawienia wykrywania zapisała nowsza wersja OpenBot-NC albo nie można odczytać pliku. Zaktualizuj OpenBot-NC, aby je zmienić.",
   "error.provider.detectionEntryInvalid":
     "Adres musi być URL-em http:// lub https:// bez hasła, a folder musi być ścieżką bezwzględną.",
   "error.provider.detectionEntriesTooMany": "Jest za dużo adresów lub folderów.",
@@ -50,7 +50,7 @@ export const messages = {
   "error.provider.credentialFileTooLarge": "Plik danych logowania dostawcy jest za duży.",
   "error.provider.environmentNameInvalid":
     "{name} nie jest poprawną nazwą zmiennej. Użyj liter, cyfr i _ i nie zaczynaj od cyfry.",
-  "error.provider.environmentNameReserved": "OpenBot ustawia {name} dla tego dostawcy. Usuń tę zmienną.",
+  "error.provider.environmentNameReserved": "OpenBot-NC ustawia {name} dla tego dostawcy. Usuń tę zmienną.",
   "error.provider.environmentNameDuplicate": "{name} występuje na liście więcej niż raz.",
   "error.provider.environmentValueTooLong": "Wartość {name} jest za długa.",
   "error.provider.environmentTooMany": "Dostawca może mieć najwyżej {limit} zmiennych.",
@@ -80,12 +80,12 @@ export const messages = {
   "error.provider.releaseSourcesUnreachable":
     "Nie udało się połączyć ze źródłami wydań dostawców. Sprawdź połączenie i spróbuj ponownie.",
   "error.provider.runtimesUnsupported": "Środowiska uruchomieniowe dostawców nie są dostępne na tej platformie.",
-  "error.provider.closing": "OpenBot się zamyka.",
+  "error.provider.closing": "OpenBot-NC się zamyka.",
   "error.provider.removeWhileOn": "Wyłącz dostawcę, zanim usuniesz jego pobrane pliki.",
   "error.provider.removeWhileDownloading": "Poczekaj na koniec pobierania, a potem je usuń.",
   "error.provider.removeIncomplete": "Program używa plików tego CLI. Zamknij go i spróbuj ponownie.",
   "error.provider.removeDownloadsFailed": "Nie udało się usunąć pobranych CLI: {providers}.",
-  "error.provider.cliOverride": "Usuń jawnie ustawioną ścieżkę CLI, zanim zaktualizujesz CLI w OpenBot.",
+  "error.provider.cliOverride": "Usuń jawnie ustawioną ścieżkę CLI, zanim zaktualizujesz CLI w OpenBot-NC.",
   "error.provider.runtimeUpdateIncomplete": "Aktualizacja środowiska uruchomieniowego nie została ukończona.",
   "error.provider.downloadHttp": "Pobieranie środowiska uruchomieniowego nie powiodło się (HTTP {status}).",
   "error.provider.downloadNoData": "Pobieranie środowiska uruchomieniowego nie zwróciło danych.",
@@ -143,29 +143,29 @@ export const messages = {
   "error.provider.noModel": "Wybrany dostawca nie ma dostępnego modelu.",
   "error.provider.noModelNamed": "Dostawca {provider} nie ma dostępnego modelu.",
   "error.provider.acpModelsNotLoaded": "{provider} nie wczytał swoich modeli. Wyślij wiadomość ponownie.",
-  "error.provider.acpNoModels": "ACP CLI nie udostępnił żadnych modeli ACP. OpenBot nie zgaduje modelu zastępczego.",
+  "error.provider.acpNoModels": "ACP CLI nie udostępnił żadnych modeli ACP. OpenBot-NC nie zgaduje modelu zastępczego.",
   "error.provider.endpointRemoveBusy": "Zaczekaj na zakończenie aktywnej tury i kolejki, zanim usuniesz ten endpoint.",
-  "error.provider.codexOutdated": "Codex CLI {version} jest za stary. OpenBot wymaga wersji 0.156.0 lub nowszej.",
+  "error.provider.codexOutdated": "Codex CLI {version} jest za stary. OpenBot-NC wymaga wersji 0.156.0 lub nowszej.",
   "error.provider.codexNotStarted": "Znaleziono Codex CLI, ale nie udało się go uruchomić.",
   "error.provider.codexNotStartedHint":
     "Znaleziono Codex CLI, ale nie udało się go uruchomić. Uruchom `codex --version` w nowym terminalu.",
   "error.provider.codexManagedNotStarted":
-    "ChatGPT został pobrany, ale nie udało się go uruchomić. Pobierz go ponownie w OpenBot.",
-  "error.provider.codexMissing": "ChatGPT nie jest pobrany. Pobierz go w OpenBot, aby kontynuować.",
-  "error.provider.claudeOutdated": "Claude Code {version} jest za stary. OpenBot wymaga wersji 2.1.232 lub nowszej.",
+    "ChatGPT został pobrany, ale nie udało się go uruchomić. Pobierz go ponownie w OpenBot-NC.",
+  "error.provider.codexMissing": "ChatGPT nie jest pobrany. Pobierz go w OpenBot-NC, aby kontynuować.",
+  "error.provider.claudeOutdated": "Claude Code {version} jest za stary. OpenBot-NC wymaga wersji 2.1.232 lub nowszej.",
   "error.provider.claudeNotStarted": "Znaleziono Claude CLI, ale nie udało się go uruchomić.",
   "error.provider.claudeNotStartedHint":
     "Znaleziono Claude CLI, ale nie udało się go uruchomić. Uruchom `claude --version` w nowym terminalu.",
   "error.provider.claudeManagedNotStarted":
-    "Claude został pobrany, ale nie udało się go uruchomić. Pobierz go ponownie w OpenBot.",
-  "error.provider.claudeMissing": "Claude nie jest pobrany. Pobierz go w OpenBot, aby kontynuować.",
-  "error.provider.grokOutdated": "Grok CLI {version} jest za stary. OpenBot wymaga wersji 1.0.5 lub nowszej.",
+    "Claude został pobrany, ale nie udało się go uruchomić. Pobierz go ponownie w OpenBot-NC.",
+  "error.provider.claudeMissing": "Claude nie jest pobrany. Pobierz go w OpenBot-NC, aby kontynuować.",
+  "error.provider.grokOutdated": "Grok CLI {version} jest za stary. OpenBot-NC wymaga wersji 1.0.5 lub nowszej.",
   "error.provider.grokNotStarted": "Znaleziono Grok CLI, ale nie udało się go uruchomić.",
   "error.provider.grokNotStartedHint":
     "Znaleziono Grok CLI, ale nie udało się go uruchomić. Uruchom `grok --version` w nowym terminalu.",
-  "error.provider.grokMissing": "Grok nie jest pobrany. Pobierz go w OpenBot, aby kontynuować.",
+  "error.provider.grokMissing": "Grok nie jest pobrany. Pobierz go w OpenBot-NC, aby kontynuować.",
   "error.provider.opencodeNotStarted": "Nie udało się uruchomić OpenCode. Uruchom `opencode --version` w terminalu.",
-  "error.provider.opencodeMissing": "OpenCode nie jest pobrany. Pobierz go w OpenBot, aby kontynuować.",
+  "error.provider.opencodeMissing": "OpenCode nie jest pobrany. Pobierz go w OpenBot-NC, aby kontynuować.",
   "error.provider.codexVersionUnreadable": "Nie można odczytać wersji Codex CLI.",
   "error.provider.claudeVersionUnreadable": "Nie można odczytać wersji Claude CLI.",
   "error.provider.grokVersionUnreadable": "Nie można odczytać wersji Grok CLI.",
@@ -174,17 +174,17 @@ export const messages = {
   "error.provider.connectBeforeProfile": "Połącz wybranego dostawcę, zanim wygenerujesz profil.",
   "error.provider.cliNotReady": "{provider} CLI nie jest gotowy ani zalogowany.",
   "error.provider.cliTimedOut":
-    "{provider} nie odpowiedział na czas. Komputer może być zajęty. OpenBot spróbuje ponownie.",
+    "{provider} nie odpowiedział na czas. Komputer może być zajęty. OpenBot-NC spróbuje ponownie.",
   "error.provider.cliTimedOutRefresh":
     "{provider} nie odpowiedział na czas. Komputer może być zajęty. Odśwież dostawców, aby spróbować ponownie.",
   "error.provider.stoppedBeforeStart":
     "{provider} zatrzymał się, zanim ta wiadomość się rozpoczęła. Wyślij wiadomość ponownie.",
   "error.provider.sessionStartTimedOut":
-    "{provider} nie otworzył nowego czatu na czas, więc ta wiadomość się nie rozpoczęła. Na komputerze, na którym działa OpenBot, otwórz Dostawcy, wybierz {provider} i kliknij Uruchom ponownie. Potem spróbuj jeszcze raz.",
+    "{provider} nie otworzył nowego czatu na czas, więc ta wiadomość się nie rozpoczęła. Na komputerze, na którym działa OpenBot-NC, otwórz Dostawcy, wybierz {provider} i kliknij Uruchom ponownie. Potem spróbuj jeszcze raz.",
   "error.provider.sessionResumeTimedOut":
-    "{provider} nie otworzył tego czatu na czas, więc ta wiadomość się nie rozpoczęła. Na komputerze, na którym działa OpenBot, otwórz Dostawcy, wybierz {provider} i kliknij Uruchom ponownie. Potem spróbuj jeszcze raz.",
+    "{provider} nie otworzył tego czatu na czas, więc ta wiadomość się nie rozpoczęła. Na komputerze, na którym działa OpenBot-NC, otwórz Dostawcy, wybierz {provider} i kliknij Uruchom ponownie. Potem spróbuj jeszcze raz.",
   "error.provider.serviceUnreachable":
-    "{provider} nie może połączyć się ze swoją usługą. Sprawdź połączenie z internetem. OpenBot spróbuje ponownie.",
+    "{provider} nie może połączyć się ze swoją usługą. Sprawdź połączenie z internetem. OpenBot-NC spróbuje ponownie.",
   "error.provider.serviceUnreachableRefresh":
     "{provider} nie może połączyć się ze swoją usługą. Sprawdź połączenie z internetem, a potem odśwież dostawców.",
   "error.provider.acpStartTimedOut":
@@ -192,9 +192,9 @@ export const messages = {
   "error.provider.acpModelsTimedOut":
     "{provider} nie podał listy modeli w ciągu {seconds} s. Komputer może być zajęty.",
   "error.provider.startStopped":
-    "{provider} kilka razy z rzędu się nie uruchomił, więc OpenBot przestał próbować. Odśwież dostawców, aby spróbować ponownie.",
+    "{provider} kilka razy z rzędu się nie uruchomił, więc OpenBot-NC przestał próbować. Odśwież dostawców, aby spróbować ponownie.",
   "error.provider.startPaused":
-    "{provider} kilka razy z rzędu się nie uruchomił. OpenBot spróbuje ponownie przy następnej wiadomości lub rutynie. Aby spróbować teraz, odśwież dostawców.",
+    "{provider} kilka razy z rzędu się nie uruchomił. OpenBot-NC spróbuje ponownie przy następnej wiadomości lub rutynie. Aby spróbować teraz, odśwież dostawców.",
   "error.provider.tempDiskSpace":
     "{provider} potrzebuje do uruchomienia co najmniej 1 GB wolnego miejsca na dysku. Zwolnij miejsce, a potem odśwież dostawców.",
   "error.provider.noCodeSignIn": "Dostawca {provider} nie obsługuje logowania kodem.",
@@ -206,7 +206,7 @@ export const messages = {
   "error.provider.codeLoginUnsupported":
     "Ten serwer nie obsługuje logowania wklejonym kodem. Zaloguj się na komputerze serwera, w jego przeglądarce.",
   "error.provider.claudeLoginNotSaved":
-    "Claude nie mógł zapisać logowania na Macu. Uruchom ponownie Maca, na którym działa OpenBot, a potem połącz Claude jeszcze raz.",
+    "Claude nie mógł zapisać logowania na Macu. Uruchom ponownie Maca, na którym działa OpenBot-NC, a potem połącz Claude jeszcze raz.",
   "error.provider.cliBusyRetry": "{provider} CLI pracuje nad turą. Zaczekaj, aż skończy, i spróbuj ponownie.",
   "error.provider.cliSigningIn": "{provider} CLI się loguje. Dokończ lub anuluj logowanie, a potem zaktualizuj.",
   "error.provider.cliBusyUpdate": "{provider} CLI pracuje nad turą. Zaczekaj, aż skończy, a potem zaktualizuj.",
@@ -245,7 +245,7 @@ export const messages = {
     "OpenCode Go odrzucił żądanie. Nowy klucz API tego nie naprawi. Twój plan OpenCode Go może być nieaktywny albo OpenCode Go może blokować Twoją sieć: niektóre usługi blokują VPN, serwery proxy lub niektóre kraje. Sprawdź w OpenCode Console, czy plan jest aktywny, albo wyłącz VPN, a potem spróbuj ponownie. Możesz też wybrać inny model.",
   "error.provider.opencodeServiceFailure":
     "OpenCode nie ukończył tej tury, ponieważ jego lokalna usługa uległa awarii. Spróbuj ponownie. Jeśli błąd się powtarza, połącz ponownie OpenCode w Ustawieniach.",
-  "error.provider.opencodeStillStarting": "OpenCode nie zakończył ładowania na czas. OpenBot spróbuje ponownie.",
+  "error.provider.opencodeStillStarting": "OpenCode nie zakończył ładowania na czas. OpenBot-NC spróbuje ponownie.",
   "error.provider.opencodeRateLimited":
     "Dostawca modelu odrzucił żądanie z powodu limitu zapytań. Zaczekaj kilka minut lub wybierz inny model, a potem spróbuj ponownie.\n{detail}",
   "error.provider.opencodeBilling":
@@ -253,11 +253,11 @@ export const messages = {
   "error.provider.opencodeInvalidUpload":
     "Dostawca modelu OpenCode zgłosił nieprawidłowe żądanie przesłania. Wybierz inny model i kontynuuj. Sprawdź zapisane rutyny, zanim utworzysz je ponownie.\n{detail}",
   "error.provider.opencodeUnreadableContent":
-    "Ten model nie może odczytać pliku lub obrazu w tym czacie. OpenBot rozpoczął nową sesję OpenCode z historią czatu. Wyślij wiadomość ponownie bez pliku albo wybierz model, który odczytuje pliki. Jeśli ten model dodano do własnego dostawcy, odznacz „Obrazy” przy „Przyjmuje” w jego ustawieniach.",
+    "Ten model nie może odczytać pliku lub obrazu w tym czacie. OpenBot-NC rozpoczął nową sesję OpenCode z historią czatu. Wyślij wiadomość ponownie bez pliku albo wybierz model, który odczytuje pliki. Jeśli ten model dodano do własnego dostawcy, odznacz „Obrazy” przy „Przyjmuje” w jego ustawieniach.",
   "error.provider.opencodeOutOfMemory":
-    "Serwerowi modelu zabrakło pamięci na ten czat. Zacznij nowy czat albo wczytaj model z mniejszą długością kontekstu i wpisz to samo okno w ustawieniach jego dostawcy w OpenBot.",
+    "Serwerowi modelu zabrakło pamięci na ten czat. Zacznij nowy czat albo wczytaj model z mniejszą długością kontekstu i wpisz to samo okno w ustawieniach jego dostawcy w OpenBot-NC.",
   "error.provider.opencodeContextTooSmall":
-    "Ten czat nie mieści się w oknie kontekstu modelu. W Ollama lub LM Studio wczytaj model z większą długością kontekstu i wpisz to samo okno w ustawieniach jego dostawcy w OpenBot. Możesz też wybrać większy model.",
+    "Ten czat nie mieści się w oknie kontekstu modelu. W Ollama lub LM Studio wczytaj model z większą długością kontekstu i wpisz to samo okno w ustawieniach jego dostawcy w OpenBot-NC. Możesz też wybrać większy model.",
   "error.provider.opencodeFreeLimit":
     "Darmowe modele OpenCode osiągnęły limit użycia. Wszystkie darmowe modele mają wspólny limit. Aby kontynuować, wklej klucz OpenCode Go w ustawieniach OpenCode albo wybierz model innego dostawcy.",
   "error.provider.opencodeProviderFailed":
@@ -277,13 +277,13 @@ export const messages = {
   "error.provider.opencodeSafetyBlocked":
     "Dostawca modelu zablokował tę wiadomość z powodu swoich zasad bezpieczeństwa. Wyślij prośbę ponownie innymi słowami. Jeśli zablokuje też kolejne wiadomości, rozpocznij nowy czat lub wybierz inny model.",
   "error.provider.opencodeNetwork":
-    "OpenCode nie połączył się z dostawcą modelu. Sprawdź połączenie sieciowe komputera, na którym działa OpenBot, a potem spróbuj ponownie.\n{detail}",
+    "OpenCode nie połączył się z dostawcą modelu. Sprawdź połączenie sieciowe komputera, na którym działa OpenBot-NC, a potem spróbuj ponownie.\n{detail}",
   "error.provider.codexStateBusy":
     "ChatGPT nadal przygotowuje swoją lokalną historię po wcześniejszym uruchomieniu. Poczekaj kilka minut, a potem spróbuj ponownie.",
   "error.provider.codexThreadInUse":
     "Inna aplikacja Codex ma otwarty ten czat, na przykład aplikacja Codex na komputer, Codex CLI lub rozszerzenie IDE. Tylko jedna aplikacja naraz może pisać do czatu Codex. Zamknij czat w tamtej aplikacji, a potem wyślij wiadomość ponownie.",
   "error.provider.realtimeLimitZero":
-    "Linux zatrzymał dostawcę, ponieważ OpenBot ma limit czasu procesora w czasie rzeczywistym równy 0. Ten limit pochodzi z Twojego systemu. Zainstaluj i uruchom rtkit (`rtkit-daemon`), uruchom `systemctl --user restart xdg-desktop-portal`, a potem uruchom ponownie OpenBot. Sam restart xdg-desktop-portal nie pomoże, dopóki brakuje rtkit.",
+    "Linux zatrzymał dostawcę, ponieważ OpenBot-NC ma limit czasu procesora w czasie rzeczywistym równy 0. Ten limit pochodzi z Twojego systemu. Zainstaluj i uruchom rtkit (`rtkit-daemon`), uruchom `systemctl --user restart xdg-desktop-portal`, a potem uruchom ponownie OpenBot-NC. Sam restart xdg-desktop-portal nie pomoże, dopóki brakuje rtkit.",
   "error.provider.cpuUnsupported": "Procesor tego komputera nie może uruchomić tego dostawcy. Użyj innego dostawcy.",
   "error.provider.largeMemoryPages":
     "Ten dostawca nie może działać na tym jądrze Linux, bo jądro używa stron pamięci większych niż 4 KiB, jak na Raspberry Pi 5 lub w Asahi Linux. Użyj jądra ze stronami 4 KiB albo innego dostawcy.",
@@ -319,10 +319,10 @@ export const messages = {
   "error.provider.stoppedBeforeAgentProcess": "{provider} zatrzymał się przed uruchomieniem procesu agenta.",
   "error.provider.archiveUnreadable":
     "Nie można odczytać archiwum środowiska uruchomieniowego lub ma ono nieobsługiwany format.",
-  "error.provider.antigravityMissing": "Gemini nie jest pobrany. Pobierz go w OpenBot, aby kontynuować.",
+  "error.provider.antigravityMissing": "Gemini nie jest pobrany. Pobierz go w OpenBot-NC, aby kontynuować.",
   "error.provider.antigravityNotStarted": "Znaleziono serwer Gemini, ale nie można odczytać jego wersji.",
   "error.provider.antigravityOverrideInvalid":
-    "Serwer Gemini z OPENBOT_ANTIGRAVITY_PATH nie istnieje lub nie jest wykonywalny. Popraw ścieżkę lub usuń zmienną, a potem uruchom ponownie OpenBot.",
+    "Serwer Gemini z OPENBOT_ANTIGRAVITY_PATH nie istnieje lub nie jest wykonywalny. Popraw ścieżkę lub usuń zmienną, a potem uruchom ponownie OpenBot-NC.",
   "error.provider.antigravityVersionUnreadable": "Nie można odczytać wersji serwera Gemini.",
   "error.provider.antigravitySignIn": "Zaloguj się przez Google, aby używać Gemini.",
   "error.provider.antigravityModelAtCapacity":
@@ -341,11 +341,11 @@ export const messages = {
     "Gemini odrzucił to żądanie. Wybierz inny model i wyślij wiadomość ponownie. Jeśli znów się nie uda, rozpocznij nowy czat.\n{detail}",
   "error.provider.antigravityNetwork": "Gemini utracił połączenie z Google. Wyślij wiadomość ponownie. ({cause})",
   "error.provider.antigravitySessionRejected":
-    "Gemini odrzucił to żądanie i nie podał przyczyny. Może to powodować element historii czatu, na przykład obraz otwarty przez agenta. OpenBot rozpoczął nową sesję Gemini z historią czatu. Spróbuj ponownie. Jeśli błąd się powtarza, wybierz inny model.",
+    "Gemini odrzucił to żądanie i nie podał przyczyny. Może to powodować element historii czatu, na przykład obraz otwarty przez agenta. OpenBot-NC rozpoczął nową sesję Gemini z historią czatu. Spróbuj ponownie. Jeśli błąd się powtarza, wybierz inny model.",
   "error.provider.antigravityHistoryUnreadable":
-    "Gemini nie mógł odczytać zapisanej historii tego czatu. OpenBot uruchomił nową sesję Gemini z historią czatu. Wyślij wiadomość ponownie.",
+    "Gemini nie mógł odczytać zapisanej historii tego czatu. OpenBot-NC uruchomił nową sesję Gemini z historią czatu. Wyślij wiadomość ponownie.",
   "error.provider.acpTurnStuck":
-    "{provider} nie zakończył poprzedniej tury, więc nie przyjął tej wiadomości. OpenBot rozpoczął nową sesję {provider} z historią czatu. Wyślij wiadomość ponownie.",
+    "{provider} nie zakończył poprzedniej tury, więc nie przyjął tej wiadomości. OpenBot-NC rozpoczął nową sesję {provider} z historią czatu. Wyślij wiadomość ponownie.",
   "error.provider.antigravityLocationUnsupported":
     "Google nie pozwala Gemini działać z lokalizacji sieciowej komputera, na którym działa ten agent. Użyj Gemini na innym komputerze albo wybierz innego dostawcę dla tego agenta.\n{detail}",
   "error.provider.antigravityTurnStopped":
@@ -361,7 +361,7 @@ export const messages = {
   "error.provider.cursorArchivePath": "Archiwum Cursor zawiera nieoczekiwany plik.",
   "error.provider.cursorChecksum": "Niezgodna suma kontrolna środowiska uruchomieniowego Cursor.",
   "error.provider.cursorReleaseShape": "Wydanie Cursor ma nieoczekiwaną strukturę.",
-  "error.provider.cursorMissing": "Cursor nie jest pobrany. Pobierz go w OpenBot, aby kontynuować.",
+  "error.provider.cursorMissing": "Cursor nie jest pobrany. Pobierz go w OpenBot-NC, aby kontynuować.",
   "error.provider.cursorNotStarted": "Znaleziono agenta Cursor, ale nie można odczytać jego wersji.",
   "error.provider.cursorVersionUnreadable": "Nie można odczytać wersji agenta Cursor.",
   "error.provider.cursorSignIn": "Zaloguj się przez Cursor lub ustaw CURSOR_API_KEY, aby używać Cursor.",
@@ -371,16 +371,16 @@ export const messages = {
   "error.provider.clinePackageMismatch": "Pakiet Cline nie pasuje do katalogu środowisk uruchomieniowych.",
   "error.provider.clineChecksum": "Niezgodna suma kontrolna środowiska uruchomieniowego Cline.",
   "error.provider.clineLicenseChecksum": "Niezgodna suma kontrolna licencji Cline.",
-  "error.provider.clineMissing": "Cline nie jest pobrany. Pobierz go w OpenBot, aby kontynuować.",
-  "error.provider.clineOutdated": "Cline CLI {version} jest za stary. OpenBot wymaga wersji 3.0.68 lub nowszej.",
+  "error.provider.clineMissing": "Cline nie jest pobrany. Pobierz go w OpenBot-NC, aby kontynuować.",
+  "error.provider.clineOutdated": "Cline CLI {version} jest za stary. OpenBot-NC wymaga wersji 3.0.68 lub nowszej.",
   "error.provider.clineNotStarted": "Nie udało się uruchomić Cline. Uruchom `cline --version` w terminalu.",
   "error.provider.clineVersionUnreadable": "Nie można odczytać wersji Cline CLI.",
   "error.provider.clineSignIn": "Zaloguj się przez Cline lub ustaw CLINE_API_KEY, aby używać Cline.",
   "error.provider.kimiArchivePath": "Archiwum Kimi ma nieoczekiwaną ścieżkę.",
   "error.provider.kimiChecksum": "Niezgodna suma kontrolna środowiska uruchomieniowego Kimi.",
   "error.provider.kimiLicenseChecksum": "Niezgodna suma kontrolna licencji Kimi.",
-  "error.provider.kimiMissing": "Kimi nie jest pobrany. Pobierz go w OpenBot, aby kontynuować.",
-  "error.provider.kimiOutdated": "Kimi CLI {version} jest za stary. OpenBot wymaga wersji 1.52.0 lub nowszej.",
+  "error.provider.kimiMissing": "Kimi nie jest pobrany. Pobierz go w OpenBot-NC, aby kontynuować.",
+  "error.provider.kimiOutdated": "Kimi CLI {version} jest za stary. OpenBot-NC wymaga wersji 1.52.0 lub nowszej.",
   "error.provider.kimiNotStarted": "Nie udało się uruchomić Kimi. Uruchom `kimi --version` w terminalu.",
   "error.provider.kimiVersionUnreadable": "Nie można odczytać wersji Kimi CLI.",
   "error.provider.kimiSignIn": "Zaloguj się przez Kimi Code, aby używać Kimi.",
@@ -395,7 +395,7 @@ export const messages = {
   "error.provider.hermesTurnFailed":
     "Hermes nie mógł dokończyć tej tury. Jeśli odpowiedź podaje powód, postępuj zgodnie z nią. Jeśli nie, serwer MCP tego agenta może być niedostępny: sprawdź go w Marketplace, Aplikacje, a potem wyślij wiadomość ponownie.",
   "error.provider.hermesRefused":
-    "Hermes odrzucił tę wiadomość, zanim się zaczęła. Wyślij ją ponownie. Jeśli Hermes odrzuca każdą wiadomość, uruchom ponownie OpenBot na komputerze, na którym działa ten agent.",
+    "Hermes odrzucił tę wiadomość, zanim się zaczęła. Wyślij ją ponownie. Jeśli Hermes odrzuca każdą wiadomość, uruchom ponownie OpenBot-NC na komputerze, na którym działa ten agent.",
   "error.provider.hermesConnectionLost":
     "Hermes utracił połączenie podczas tej wiadomości, więc nie wie, czy praca się zakończyła. Sprawdź, co zrobił agent, zanim wyślesz wiadomość ponownie.",
   "error.provider.copilotThinkingRejected":
@@ -404,7 +404,7 @@ export const messages = {
     "Model zatrzymał się, zanim skończył odpowiedź. Wyślij wiadomość ponownie lub wybierz inny model dla tego agenta.",
   "error.provider.usageLimitReached": "Konto osiągnęło limit użycia.",
   "error.provider.claudeContextFull":
-    "Ten czat stał się za długi dla Claude. OpenBot rozpoczął nową sesję Claude Code z historią czatu. Spróbuj ponownie.",
+    "Ten czat stał się za długi dla Claude. OpenBot-NC rozpoczął nową sesję Claude Code z historią czatu. Spróbuj ponownie.",
   "error.provider.claudeApiKeyNoCredit":
     "Klucz API Anthropic nie ma środków API. Plan Claude nie płaci za zapytania z kluczem API. Doładuj środki w Anthropic Console albo zaloguj się do Claude w Ustawieniach i wybierz konto Claude w menu modeli agenta.",
   "error.provider.claudeAccountNoCredit":
@@ -412,44 +412,44 @@ export const messages = {
   "error.provider.claudeServiceBlocked":
     "Usługa Claude zablokowała to zapytanie. Zwykle to krótki problem po stronie Claude, a nie problem z Twoim kontem. Wyślij wiadomość ponownie za kilka minut.",
   "error.provider.foreignReasoning":
-    "Dostawca {provider} nie przyjął wcześniejszego rozumowania z tego czatu, ponieważ otrzymało je inne konto lub inny klucz API. OpenBot rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
+    "Dostawca {provider} nie przyjął wcześniejszego rozumowania z tego czatu, ponieważ otrzymało je inne konto lub inny klucz API. OpenBot-NC rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
   "error.provider.blankHistoryText":
-    "Model nie przyjął tego czatu, ponieważ jego zapisana historia zawiera pustą wiadomość. OpenBot rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
+    "Model nie przyjął tego czatu, ponieważ jego zapisana historia zawiera pustą wiadomość. OpenBot-NC rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
   "error.provider.codexHistoryItemMissing":
-    "Codex nie mógł kontynuować tego czatu, ponieważ w jego zapisanej historii brakuje elementu. OpenBot rozpoczął nową sesję Codex z historią czatu. Spróbuj ponownie.",
+    "Codex nie mógł kontynuować tego czatu, ponieważ w jego zapisanej historii brakuje elementu. OpenBot-NC rozpoczął nową sesję Codex z historią czatu. Spróbuj ponownie.",
   "error.provider.codexRequestRefused":
-    "{provider} odrzucił żądanie tego czatu i nie podał przyczyny. Może się to zdarzyć w długim czacie z wieloma obrazami. OpenBot rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
+    "{provider} odrzucił żądanie tego czatu i nie podał przyczyny. Może się to zdarzyć w długim czacie z wieloma obrazami. OpenBot-NC rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
   "error.provider.codexSafetyBlocked":
     "{provider} zablokował tę wiadomość z powodu swoich zasad bezpieczeństwa: {reason} Agent już nie widzi tej wiadomości, więc nie zatrzyma ona twoich kolejnych wiadomości. Wyślij prośbę ponownie innymi słowami.",
   "error.provider.codexSafetyBlockedKept":
     "{provider} zablokował tę wiadomość z powodu swoich zasad bezpieczeństwa: {reason} Jeśli {provider} zablokuje także twoje kolejne wiadomości, rozpocznij nowy czat.",
   "error.provider.codexAudioRefused":
-    "Ten model nie może słuchać dźwięku, więc nie przyjął dźwięku z tego czatu. OpenBot rozpoczął nową sesję Codex z historią czatu. Aby kontynuować, wyślij prośbę ponownie i poproś agenta, aby pracował bez dźwięku. Aby sprawdzić dźwięk, wybierz w menu modeli agenta model, który może słuchać dźwięku.",
+    "Ten model nie może słuchać dźwięku, więc nie przyjął dźwięku z tego czatu. OpenBot-NC rozpoczął nową sesję Codex z historią czatu. Aby kontynuować, wyślij prośbę ponownie i poproś agenta, aby pracował bez dźwięku. Aby sprawdzić dźwięk, wybierz w menu modeli agenta model, który może słuchać dźwięku.",
   "error.provider.codexAccountSettingsUnreadable":
     "Codex nie mógł wczytać ustawień Twojego konta ChatGPT, więc agent się zatrzymał. Spróbuj ponownie. Jeśli znów się zatrzyma, wybierz Połącz ponownie dla ChatGPT w Ustawieniach serwera → Dostawcy.",
   "error.provider.imageTooSmall":
-    "Model nie przyjął obrazu z tego czatu, ponieważ obraz jest za mały. OpenBot rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
+    "Model nie przyjął obrazu z tego czatu, ponieważ obraz jest za mały. OpenBot-NC rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
   "error.provider.imageTooLarge":
-    "Model nie przyjął obrazu z tego czatu, ponieważ obraz jest za duży. OpenBot rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
+    "Model nie przyjął obrazu z tego czatu, ponieważ obraz jest za duży. OpenBot-NC rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
   "error.provider.imageCountLimit":
-    "Model nie przyjął tego czatu, ponieważ czat zawiera za dużo obrazów. OpenBot rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
+    "Model nie przyjął tego czatu, ponieważ czat zawiera za dużo obrazów. OpenBot-NC rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
   "error.provider.imageUnreadable":
-    "Model nie mógł odczytać obrazu w tym czacie. OpenBot rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie. Jeśli wysłano obraz, wyślij inny.",
+    "Model nie mógł odczytać obrazu w tym czacie. OpenBot-NC rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie. Jeśli wysłano obraz, wyślij inny.",
   "error.provider.requestTooLarge":
-    "Ten czat stał się za duży, aby wysłać go do modelu. Często powodują to obrazy w czacie. OpenBot rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
+    "Ten czat stał się za duży, aby wysłać go do modelu. Często powodują to obrazy w czacie. OpenBot-NC rozpoczął nową sesję {provider} z historią czatu. Spróbuj ponownie.",
   "error.provider.opencodeSessionRejected":
-    "OpenCode odrzucił żądanie i nie podał przyczyny. Może się to zdarzyć w długim czacie lub po zmianie modelu. OpenBot rozpoczął nową sesję OpenCode z historią czatu. Spróbuj ponownie. Jeśli błąd się powtarza, wybierz inny model lub niższy wysiłek.",
+    "OpenCode odrzucił żądanie i nie podał przyczyny. Może się to zdarzyć w długim czacie lub po zmianie modelu. OpenBot-NC rozpoczął nową sesję OpenCode z historią czatu. Spróbuj ponownie. Jeśli błąd się powtarza, wybierz inny model lub niższy wysiłek.",
   "error.provider.opencodeInputRefused":
-    "Model odrzucił treść tego czatu i nie podał przyczyny. Może to powodować plik w czacie, na przykład PDF lub obraz. OpenBot rozpoczął nową sesję OpenCode z historią czatu. Wyślij wiadomość ponownie bez pliku lub wybierz inny model.",
+    "Model odrzucił treść tego czatu i nie podał przyczyny. Może to powodować plik w czacie, na przykład PDF lub obraz. OpenBot-NC rozpoczął nową sesję OpenCode z historią czatu. Wyślij wiadomość ponownie bez pliku lub wybierz inny model.",
   "error.provider.opencodeCompactionFailed":
-    "Model nie zdołał streścić tego długiego czatu, aby zwolnić miejsce w oknie kontekstu. OpenBot rozpoczął nową sesję OpenCode z historią czatu. Spróbuj ponownie. Jeśli błąd się powtarza, wybierz mocniejszy model.",
+    "Model nie zdołał streścić tego długiego czatu, aby zwolnić miejsce w oknie kontekstu. OpenBot-NC rozpoczął nową sesję OpenCode z historią czatu. Spróbuj ponownie. Jeśli błąd się powtarza, wybierz mocniejszy model.",
   "error.provider.museMcpStartupFault":
-    "Muse nie mógł uruchomić serwera MCP i zablokował MCP w tej sesji. OpenBot rozpoczął nową sesję Muse z historią czatu. Spróbuj ponownie. Jeśli błąd się powtarza, wyłącz Sterowanie komputerem lub serwer MCP, który zawiódł, dla tego agenta.",
+    "Muse nie mógł uruchomić serwera MCP i zablokował MCP w tej sesji. OpenBot-NC rozpoczął nową sesję Muse z historią czatu. Spróbuj ponownie. Jeśli błąd się powtarza, wyłącz Sterowanie komputerem lub serwer MCP, który zawiódł, dla tego agenta.",
   "error.provider.claudeSessionMissing":
-    "Claude Code nie znalazł zapisanej sesji tego czatu. OpenBot rozpoczął nową sesję Claude Code z historią czatu. Spróbuj ponownie.",
+    "Claude Code nie znalazł zapisanej sesji tego czatu. OpenBot-NC rozpoczął nową sesję Claude Code z historią czatu. Spróbuj ponownie.",
   "error.provider.grokSignIn": "Uruchom `grok login` lub ustaw XAI_API_KEY, aby używać Grok.",
   "error.provider.acpSignInNoStart":
-    "Dostawca się nie uruchomił, więc logowanie nie mogło się zacząć. Spróbuj ponownie lub uruchom ponownie OpenBot.",
+    "Dostawca się nie uruchomił, więc logowanie nie mogło się zacząć. Spróbuj ponownie lub uruchom ponownie OpenBot-NC.",
   "error.provider.acpSignInTimedOut": "Upłynął limit czasu logowania.",
   "error.provider.acpSignInStopped": "Logowanie zatrzymało się przed zakończeniem.",
   "error.provider.geminiNoBrowserUseCode":
@@ -461,7 +461,7 @@ export const messages = {
   "error.provider.acpSignInFailed": "Logowanie nie zostało ukończone.",
   "error.provider.acpSignInFailedReason": "Logowanie nie zostało ukończone: {reason}",
   "error.provider.acpSignInNetwork":
-    "Logowanie nie mogło połączyć się z serwerem dostawcy. Sprawdź połączenie sieciowe i ustawienia DNS komputera, na którym działa OpenBot, a następnie spróbuj ponownie.",
+    "Logowanie nie mogło połączyć się z serwerem dostawcy. Sprawdź połączenie sieciowe i ustawienia DNS komputera, na którym działa OpenBot-NC, a następnie spróbuj ponownie.",
   "error.provider.acpSignOutFailed": "Wylogowanie nie zostało ukończone.",
   "error.provider.acpSignOutFailedReason": "Wylogowanie nie zostało ukończone: {reason}",
   "error.provider.acpSignInMethodMissing":
@@ -476,7 +476,7 @@ export const messages = {
   "error.provider.geminiAccountSettingsUnreadable":
     "Gemini nie może otworzyć pliku ustawień tego konta, więc nie może się zalogować. Usuń to konto i dodaj je ponownie.",
   "error.provider.geminiSettingsUnreadable":
-    "Gemini nie może otworzyć swojego pliku ustawień na tym komputerze, więc nie może się zalogować. Zamknij inne aplikacje, które używają Gemini, a następnie zamknij i otwórz ponownie OpenBot.",
+    "Gemini nie może otworzyć swojego pliku ustawień na tym komputerze, więc nie może się zalogować. Zamknij inne aplikacje, które używają Gemini, a następnie zamknij i otwórz ponownie OpenBot-NC.",
   "error.provider.geminiVerificationRequired":
     "Google musi zweryfikować twoje konto, zanim Gemini będzie mógł odpowiedzieć. Zweryfikuj konto Google w przeglądarce, a następnie wyślij wiadomość ponownie.",
   "error.provider.keyProviderRefused":
@@ -490,7 +490,7 @@ export const messages = {
   "error.provider.modelServiceRefusedReason":
     "Usługa modelu odrzuciła żądanie: {reason}. Wybierz inny model albo sprawdź swój dostęp do tego modelu w usłudze.",
   "error.provider.messageTooLarge":
-    "OpenBot zatrzymał {provider}, ponieważ wysłał on wiadomość większą niż {limit} MB.",
+    "OpenBot-NC zatrzymał {provider}, ponieważ wysłał on wiadomość większą niż {limit} MB.",
   "error.provider.customAgentIdInvalid":
     "ID agenta może zawierać tylko małe litery, cyfry lub `-` i nie może być ID wbudowanego dostawcy.",
   "error.provider.customAgentEnvInvalid":
@@ -503,10 +503,10 @@ export const messages = {
     "Argument nie może zawierać podziału wiersza. Użyj maksymalnie 32 argumentów.",
   "error.provider.customAgentWindowsScript":
     "Polecenie .cmd lub .bat może mieć w argumentach tylko litery, cyfry i - _ . , : = @ + / \\.",
-  "error.provider.customAgentNotFound": "OpenBot nie może znaleźć {command}. Wpisz pełną ścieżkę polecenia.",
+  "error.provider.customAgentNotFound": "OpenBot-NC nie może znaleźć {command}. Wpisz pełną ścieżkę polecenia.",
   "error.provider.customAgentCheckTimedOut": "Agent nie odpowiedział w ciągu 20 sekund.",
   "error.provider.customAgentCheckStopped": "Agent zatrzymał się, zanim odpowiedział.",
-  "error.provider.customAgentProtocolVersion": "Agent używa ACP w wersji {version}. OpenBot używa wersji 1.",
+  "error.provider.customAgentProtocolVersion": "Agent używa ACP w wersji {version}. OpenBot-NC używa wersji 1.",
   "error.provider.customAgentCheckFailed": "Agent nie odpowiedział jak agent ACP.",
   "error.provider.customAgentRemoveBusy":
     "Zaczekaj na zakończenie aktywnej tury i kolejki, zanim usuniesz tego własnego agenta.",
@@ -514,7 +514,7 @@ export const messages = {
   "error.provider.customAgentMissing": "Ten własny agent nie jest już zapisany. Wybierz inny model.",
   "error.provider.customAgentSignIn": "Zaloguj się własnym poleceniem agenta, a potem spróbuj ponownie.",
   "error.provider.customAgentsReadOnly":
-    "Zapisanych własnych agentów zapisała nowsza wersja OpenBot albo nie można odczytać pliku. Zaktualizuj OpenBot, aby ich zmienić.",
+    "Zapisanych własnych agentów zapisała nowsza wersja OpenBot-NC albo nie można odczytać pliku. Zaktualizuj OpenBot-NC, aby ich zmienić.",
   "error.provider.customAgentNoSecureStorage":
     "Ten komputer nie ma bezpiecznego magazynu, więc nie można zapisać wartości środowiskowych. Usuń je i spróbuj ponownie.",
   "error.provider.customAgentNotSaved": "Ten własny agent nie jest zapisany. Odśwież listę i spróbuj ponownie.",
@@ -522,16 +522,16 @@ export const messages = {
     "{reason}. Blokuje to tryb „Tylko obszar roboczy”. Wybierz „Pełny dostęp”.",
   "error.provider.customAgentTooMany": "Możesz zapisać maksymalnie {count} własnych agentów.",
   "error.provider.customAgentEnvValueMissing": "Wpisz wartość dla {name}.",
-  "error.provider.off": "Dostawca {provider} jest wyłączony w OpenBot. Najpierw włącz go w ustawieniach dostawców.",
+  "error.provider.off": "Dostawca {provider} jest wyłączony w OpenBot-NC. Najpierw włącz go w ustawieniach dostawców.",
   "error.provider.inUse": "Agent używa dostawcy {provider}. Zmień jego model, zanim wyłączysz tego dostawcę.",
   "error.provider.useBusy": "Zaczekaj na zakończenie sprawdzania dostawcy lub logowania, a potem spróbuj ponownie.",
   "error.provider.useSettingsReadOnly":
-    "Nie można odczytać zapisanych ustawień dostawców. Zaktualizuj OpenBot, zanim je zmienisz.",
+    "Nie można odczytać zapisanych ustawień dostawców. Zaktualizuj OpenBot-NC, zanim je zmienisz.",
   "error.provider.useChangeFailed": "Nie udało się zmienić ustawienia dostawcy.",
   "error.provider.accountsUnsupported": "{provider} obsługuje tylko jedno konto.",
   "error.provider.accountNeedsConnection": "Połącz {provider}, zanim dodasz kolejne konto.",
   "error.provider.usageResetUnsupported": "{provider} nie może resetować limitów użycia.",
-  "error.provider.signOutUnsupported": "OpenBot nie może odłączyć logowania {provider}.",
+  "error.provider.signOutUnsupported": "OpenBot-NC nie może odłączyć logowania {provider}.",
   "error.provider.usageResetNotConnected":
     "Zaloguj się ponownie do tego konta {provider}, zanim zresetujesz jego użycie.",
   "error.provider.accountLimit": "Maksymalna liczba kont dla {provider} to {limit}.",
@@ -541,15 +541,15 @@ export const messages = {
   "error.provider.accountUsesKey":
     "To konto {provider} używa zapisanego klucza API i nie ma logowania. Zmień klucz w Ustawienia serwera → Dostawcy.",
   "error.provider.accountNeedsKey":
-    "Nowe konto {provider} wymaga klucza API. Zaktualizuj OpenBot na tym urządzeniu, a potem dodaj konto ponownie.",
+    "Nowe konto {provider} wymaga klucza API. Zaktualizuj OpenBot-NC na tym urządzeniu, a potem dodaj konto ponownie.",
   "error.provider.accountKeyRefused": "{provider} nie przyjął tego klucza API. Sprawdź klucz i spróbuj ponownie.",
   "error.provider.accountKeyUnreachable":
-    "OpenBot nie mógł połączyć się z {provider}, aby sprawdzić klucz API. Sprawdź połączenie z internetem i spróbuj ponownie.",
+    "OpenBot-NC nie mógł połączyć się z {provider}, aby sprawdzić klucz API. Sprawdź połączenie z internetem i spróbuj ponownie.",
   "error.provider.accountKeySignedOut":
     "{provider} nie przyjmuje już klucza API tego konta. Podaj nowy klucz dla konta.",
   "error.provider.accountInUse": "Agent korzystający z tego konta pracuje. Spróbuj ponownie, gdy agent się zatrzyma.",
   "error.provider.accountsReadOnly":
-    "Nie można odczytać zapisanych kont dostawców. Zaktualizuj OpenBot, zanim je zmienisz.",
+    "Nie można odczytać zapisanych kont dostawców. Zaktualizuj OpenBot-NC, zanim je zmienisz.",
   "error.provider.accountSignedOut": "To konto {provider} jest wylogowane. Zaloguj się ponownie.",
   "error.provider.sessionSettingUnavailable": "To ustawienie nie jest dostępne w bieżącej sesji dostawcy.",
   "error.provider.sessionSettingInvalid": "Ta wartość nie jest dostępna dla tego ustawienia.",
@@ -563,7 +563,7 @@ export const messages = {
   "error.provider.piSessionBusy": "Zaczekaj na zakończenie bieżącej tury Pi.",
   "error.provider.acpSessionBusy": "{provider} wciąż kończy zatrzymaną turę. Spróbuj ponownie za chwilę.",
   "error.provider.acpSettingsConflict":
-    "{provider} zmienił ten czat, gdy OpenBot stosował jego ustawienia. Spróbuj ponownie.",
+    "{provider} zmienił ten czat, gdy OpenBot-NC stosował jego ustawienia. Spróbuj ponownie.",
   "error.provider.acpSessionStale":
     "{provider} nie może wczytać najnowszej wersji tego czatu. Wyślij wiadomość ponownie.",
   "error.provider.acpModelNotOffered":
@@ -594,7 +594,7 @@ export const messages = {
   "error.provider.museConnectionFailed":
     "Połączenie z Muse nie powiodło się. Wznów rozmowę, aby odzyskać jej zapisaną historię.",
   "error.provider.museUnknownSession": "Nieznana sesja Muse.",
-  "error.provider.museInvalidToolResult": "Nieprawidłowy wynik narzędzia OpenBot.",
+  "error.provider.museInvalidToolResult": "Nieprawidłowy wynik narzędzia OpenBot-NC.",
   "error.provider.museMcpRequired": "Muse musi obsługiwać serwery MCP sesji.",
   "error.provider.museSessionMismatch": "Muse zwrócił inną sesję.",
   "error.provider.museCompactRejected": "Muse nie przyjął kompaktowania.",

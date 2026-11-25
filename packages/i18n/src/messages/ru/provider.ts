@@ -47,7 +47,7 @@ export const messages = {
   "provider.status.checking": "Проверка",
   "provider.status.off": "Выключено",
   "provider.gemini.hostSignIn":
-    "Чтобы подключить Gemini, откройте OpenBot на хосте и нажмите «Подключить» в разделе «Настройки сервера» > «Провайдеры». Для входа в Google на этом хосте нужен браузер. Удалённый вход не поддерживается.",
+    "Чтобы подключить Gemini, откройте OpenBot-NC на хосте и нажмите «Подключить» в разделе «Настройки сервера» > «Провайдеры». Для входа в Google на этом хосте нужен браузер. Удалённый вход не поддерживается.",
 
   "provider.key.free": "Бесплатно",
 
@@ -75,13 +75,13 @@ export const messages = {
   "provider.aria.cancelSignIn": "Отменить вход в {name}",
   "provider.aria.apiKey": "Ключ API {name}",
   "provider.connecting.browserHint": "Завершите вход, если откроется страница в браузере.",
-  "provider.connecting.cancelFailed": "OpenBot не удалось отменить вход в {name}. Повторите попытку.",
+  "provider.connecting.cancelFailed": "OpenBot-NC не удалось отменить вход в {name}. Повторите попытку.",
   "provider.aria.install": "Установить: {name}",
   "provider.aria.signIn": "Войти в {name}",
   "provider.aria.codeFallback": "Войти в {name} по коду",
   "provider.aria.moreActions": "Другие действия для {name}",
 
-  "provider.aria.use": "Использовать {name} в OpenBot",
+  "provider.aria.use": "Использовать {name} в OpenBot-NC",
   "provider.use.inUseOne": "{agent} использует {name}. Смените модель этого агента, затем выключите {name}.",
   "provider.use.inUse": {
     one: "{count} агент использует {name}. Смените модель этих агентов, затем выключите {name}.",
@@ -91,7 +91,7 @@ export const messages = {
   },
 
   "provider.codeLogin.title": "Вход в {name} по коду",
-  "provider.codeLogin.description": "Завершите вход на телефоне или в другом браузере. OpenBot ждёт здесь.",
+  "provider.codeLogin.description": "Завершите вход на телефоне или в другом браузере. OpenBot-NC ждёт здесь.",
   "provider.codeLogin.starting": "Получаем код от {name}…",
   "provider.codeLogin.qrLabel": "QR-код страницы входа в {name}",
   "provider.codeLogin.open": "Открыть",
@@ -112,12 +112,12 @@ export const messages = {
   "provider.codeLogin.pageDescription": "Эта страница открыта в браузере на {host}. Войдите здесь.",
   "provider.codeLogin.relayStarting": "Запуск входа в {name} на {host}…",
   "provider.codeLogin.pageOpening": "Открываем страницу входа {name} на {host}…",
-  "provider.codeLogin.linkStep": "Войдите в {name}. OpenBot продолжит сам.",
+  "provider.codeLogin.linkStep": "Войдите в {name}. OpenBot-NC продолжит сам.",
   "provider.codeLogin.chatgptDeviceSetting":
     "В ChatGPT на компьютере откройте настройки безопасности и включите вход по коду устройства для Codex. Для рабочего аккаунта его включает администратор рабочего пространства.",
-  "provider.useApp.title": "Подключите {name} в приложении OpenBot",
+  "provider.useApp.title": "Подключите {name} в приложении OpenBot-NC",
   "provider.useApp.description":
-    "Вход в {name} возвращается на компьютер, который его начал, а вкладка браузера не может его принять. Подключите {name} в приложении OpenBot. Приложение завершит вход само.",
+    "Вход в {name} возвращается на компьютер, который его начал, а вкладка браузера не может его принять. Подключите {name} в приложении OpenBot-NC. Приложение завершит вход само.",
   "provider.useApp.download": "Скачать приложение",
 
   "provider.picker.noEndpoints": "Эндпоинтов пока нет",
@@ -128,7 +128,7 @@ export const messages = {
   "provider.picker.providers": "Провайдеры моделей",
   "provider.picker.downloading": "Загрузка {percent}",
   "provider.picker.unavailable": "{name} недоступен.",
-  "provider.picker.updateToUse": "Обновите OpenBot, чтобы использовать {name}",
+  "provider.picker.updateToUse": "Обновите OpenBot-NC, чтобы использовать {name}",
   "provider.picker.models": "Модели {name}",
   "provider.picker.addProvider": "Добавить провайдера",
   "provider.picker.download": "Загрузка {name}",
@@ -207,21 +207,21 @@ export const messages = {
   "provider.cursorKey.label": "Ключ API Cursor",
   "provider.inceptionKey.title": "Ключ API Inception",
   "provider.inceptionKey.description":
-    "Сохраните ключ API Inception на этом компьютере, чтобы использовать модели Mercury. OpenBot запускает их в загруженном Pi CLI.",
+    "Сохраните ключ API Inception на этом компьютере, чтобы использовать модели Mercury. OpenBot-NC запускает их в загруженном Pi CLI.",
   "provider.inceptionKey.descriptionHost":
-    "Сохраните ключ API Inception на хосте, чтобы использовать модели Mercury. OpenBot запускает их в загруженном Pi CLI.",
+    "Сохраните ключ API Inception на хосте, чтобы использовать модели Mercury. OpenBot-NC запускает их в загруженном Pi CLI.",
   "provider.inceptionKey.label": "Ключ API Inception",
   "provider.deepseekKey.title": "Ключ API DeepSeek",
   "provider.deepseekKey.description":
-    "Сохраните ключ API DeepSeek на этом компьютере, чтобы использовать модели DeepSeek. OpenBot запускает их в загруженном Pi CLI.",
+    "Сохраните ключ API DeepSeek на этом компьютере, чтобы использовать модели DeepSeek. OpenBot-NC запускает их в загруженном Pi CLI.",
   "provider.deepseekKey.descriptionHost":
-    "Сохраните ключ API DeepSeek на хосте, чтобы использовать модели DeepSeek. OpenBot запускает их в загруженном Pi CLI.",
+    "Сохраните ключ API DeepSeek на хосте, чтобы использовать модели DeepSeek. OpenBot-NC запускает их в загруженном Pi CLI.",
   "provider.deepseekKey.label": "Ключ API DeepSeek",
   "provider.openrouterKey.title": "Ключ API OpenRouter",
   "provider.openrouterKey.description":
-    "Сохраните ключ API OpenRouter на этом компьютере, чтобы использовать модели OpenRouter. OpenBot запускает их в загруженном Pi CLI.",
+    "Сохраните ключ API OpenRouter на этом компьютере, чтобы использовать модели OpenRouter. OpenBot-NC запускает их в загруженном Pi CLI.",
   "provider.openrouterKey.descriptionHost":
-    "Сохраните ключ API OpenRouter на хосте, чтобы использовать модели OpenRouter. OpenBot запускает их в загруженном Pi CLI.",
+    "Сохраните ключ API OpenRouter на хосте, чтобы использовать модели OpenRouter. OpenBot-NC запускает их в загруженном Pi CLI.",
   "provider.openrouterKey.label": "Ключ API OpenRouter",
 
   "provider.openCodeKey.title": "Вход в OpenCode Go",
@@ -287,19 +287,19 @@ export const messages = {
   "provider.settings.disconnectTitle": "Отключить {name}?",
   "provider.settings.disconnectOthers": "Другие аккаунты {provider} ждут, пока вы снова не подключите {provider}.",
   "provider.settings.disconnectLocal":
-    "OpenBot выйдет из {provider} на этом компьютере. CLI {provider} в терминале тоже выйдет из аккаунта.",
-  "provider.settings.disconnectHost": "OpenBot выйдет из {provider} на сервере.",
+    "OpenBot-NC выйдет из {provider} на этом компьютере. CLI {provider} в терминале тоже выйдет из аккаунта.",
+  "provider.settings.disconnectHost": "OpenBot-NC выйдет из {provider} на сервере.",
   "provider.settings.geminiKeyReplacesAccount":
     "Вместо входа через Google используется сохранённый ключ Gemini API. Чтобы использовать тариф Google и его модели, удалите ключ.",
   "provider.settings.museKeyInUse": "Muse использует этот ключ, а не ваш вход. Чтобы использовать вход, удалите ключ.",
   "provider.settings.versionInstalledByUser": "{version} · установлена вами",
-  "provider.settings.versionDownloaded": "{version} · загружена OpenBot",
+  "provider.settings.versionDownloaded": "{version} · загружена OpenBot-NC",
   "provider.settings.otherVersionInstalledByUser": "Не используется: {version} · установлена вами",
-  "provider.settings.otherVersionDownloaded": "Не используется: {version} · загружена OpenBot",
+  "provider.settings.otherVersionDownloaded": "Не используется: {version} · загружена OpenBot-NC",
   "provider.settings.installedVersionIncomplete":
-    "Некоторым моделям нужен компонент, которого нет в этой версии. Загрузите версию OpenBot, чтобы использовать их.",
+    "Некоторым моделям нужен компонент, которого нет в этой версии. Загрузите версию OpenBot-NC, чтобы использовать их.",
   "provider.settings.useInstalledVersion": "Использовать свою",
-  "provider.settings.useDownloadedVersion": "Использовать от OpenBot",
+  "provider.settings.useDownloadedVersion": "Использовать от OpenBot-NC",
   "provider.settings.cache": "Кэш",
   "provider.settings.promptCache": "Кэш промптов",
   "provider.settings.promptCacheDescription": "Как долго Claude и Pi хранят контекст агента в кэше между ходами.",
@@ -363,11 +363,11 @@ export const messages = {
   "provider.settings.modelsLoadFailed": "Не удалось загрузить модели этого сервера.",
   "provider.settings.deleteTitle": "Удалить {name}",
   "provider.settings.deleteOn":
-    "Выключает {name} и удаляет CLI, загруженный OpenBot. Аккаунты, входы и агенты останутся.",
+    "Выключает {name} и удаляет CLI, загруженный OpenBot-NC. Аккаунты, входы и агенты останутся.",
   "provider.settings.deleteOff":
-    "Удаляет CLI, который OpenBot загрузил для {name} ({size}). Аккаунты, входы и агенты останутся.",
+    "Удаляет CLI, который OpenBot-NC загрузил для {name} ({size}). Аккаунты, входы и агенты останутся.",
   "provider.settings.removeDownloadFailed": "Не удалось удалить загрузку.",
   "provider.settings.disconnectLocalOnly":
-    "OpenBot выходит из {provider} на этом компьютере. {provider} CLI в терминале остаётся в своём аккаунте.",
+    "OpenBot-NC выходит из {provider} на этом компьютере. {provider} CLI в терминале остаётся в своём аккаунте.",
   "provider.settings.updateAll": "Обновить все",
 } as const satisfies PartialTranslation<typeof source>;

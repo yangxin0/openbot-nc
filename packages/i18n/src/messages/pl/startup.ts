@@ -2,38 +2,38 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/startup";
 
 export const messages = {
-  "startup.failedTitle": "Nie udało się uruchomić OpenBot",
+  "startup.failedTitle": "Nie udało się uruchomić OpenBot-NC",
   "startup.failedBody":
     "{message}\n\nTwoje lokalne dane nie zostały zresetowane ani nadpisane. Kroki przywracania znajdziesz w przewodniku rozwiązywania problemów.",
-  "startup.archiveChangedTitle": "Pliki OpenBot zostały zmienione",
+  "startup.archiveChangedTitle": "Pliki OpenBot-NC zostały zmienione",
   "startup.archiveChangedBody":
-    "Inny program zmienił plik app.asar OpenBot. OpenBot działa teraz, ale nie uruchomi się po zamknięciu.\n\nAby naprawić OpenBot, zainstaluj go ponownie. Twoje lokalne dane zostaną zachowane.",
+    "Inny program zmienił plik app.asar OpenBot-NC. OpenBot-NC działa teraz, ale nie uruchomi się po zamknięciu.\n\nAby naprawić OpenBot-NC, zainstaluj go ponownie. Twoje lokalne dane zostaną zachowane.",
   "startup.filesDamagedBody":
-    "Niektóre pliki OpenBot są uszkodzone lub ich brakuje.\n\nAby naprawić OpenBot, zainstaluj go ponownie. Twoje lokalne dane zostaną zachowane.",
-  "startup.newerDataTitle": "Zainstaluj najnowszy OpenBot",
+    "Niektóre pliki OpenBot-NC są uszkodzone lub ich brakuje.\n\nAby naprawić OpenBot-NC, zainstaluj go ponownie. Twoje lokalne dane zostaną zachowane.",
+  "startup.newerDataTitle": "Zainstaluj najnowszy OpenBot-NC",
   "startup.newerDataBody":
-    "Nowsza wersja OpenBot zapisała Twoje dane, a ta wersja ({version}) nie może ich otworzyć. Zainstaluj najnowszą wersję, aby otworzyć swoje dane.\n\nTwoje lokalne dane nie zostały zresetowane ani nadpisane.",
+    "Nowsza wersja OpenBot-NC zapisała Twoje dane, a ta wersja ({version}) nie może ich otworzyć. Zainstaluj najnowszą wersję, aby otworzyć swoje dane.\n\nTwoje lokalne dane nie zostały zresetowane ani nadpisane.",
   "startup.newerDataQuit": "Zakończ",
-  "startup.newerDataLoopTitle": "Najnowszy OpenBot się nie otworzył",
+  "startup.newerDataLoopTitle": "Najnowszy OpenBot-NC się nie otworzył",
   "startup.newerDataLoopBody":
-    "Nowsza wersja OpenBot zapisała Twoje dane, a ta wersja ({version}) nie może ich otworzyć. OpenBot {loopVersion} kilka razy z rzędu zatrzymał się przed otwarciem, więc nie zostanie zainstalowany ponownie.\n\nZainstaluj wersję nowszą niż {loopVersion}, gdy będzie dostępna. Aby uzyskać pomoc, otwórz przewodnik.\n\nTwoje lokalne dane nie zostały zresetowane ani nadpisane.",
-  "startup.recoveryWindowTitle": "Odzyskiwanie OpenBot",
-  "startup.recoveryTitle": "OpenBot się nie otworzył",
+    "Nowsza wersja OpenBot-NC zapisała Twoje dane, a ta wersja ({version}) nie może ich otworzyć. OpenBot-NC {loopVersion} kilka razy z rzędu zatrzymał się przed otwarciem, więc nie zostanie zainstalowany ponownie.\n\nZainstaluj wersję nowszą niż {loopVersion}, gdy będzie dostępna. Aby uzyskać pomoc, otwórz przewodnik.\n\nTwoje lokalne dane nie zostały zresetowane ani nadpisane.",
+  "startup.recoveryWindowTitle": "Odzyskiwanie OpenBot-NC",
+  "startup.recoveryTitle": "OpenBot-NC się nie otworzył",
   "startup.recoveryBody": {
-    one: "OpenBot {version} zatrzymał się przed otwarciem {count} raz z rzędu. Twoje lokalne dane nie zostały zresetowane ani nadpisane.",
-    few: "OpenBot {version} zatrzymał się przed otwarciem {count} razy z rzędu. Twoje lokalne dane nie zostały zresetowane ani nadpisane.",
-    many: "OpenBot {version} zatrzymał się przed otwarciem {count} razy z rzędu. Twoje lokalne dane nie zostały zresetowane ani nadpisane.",
+    one: "OpenBot-NC {version} zatrzymał się przed otwarciem {count} raz z rzędu. Twoje lokalne dane nie zostały zresetowane ani nadpisane.",
+    few: "OpenBot-NC {version} zatrzymał się przed otwarciem {count} razy z rzędu. Twoje lokalne dane nie zostały zresetowane ani nadpisane.",
+    many: "OpenBot-NC {version} zatrzymał się przed otwarciem {count} razy z rzędu. Twoje lokalne dane nie zostały zresetowane ani nadpisane.",
     other:
-      "OpenBot {version} zatrzymał się przed otwarciem {count} razy z rzędu. Twoje lokalne dane nie zostały zresetowane ani nadpisane.",
+      "OpenBot-NC {version} zatrzymał się przed otwarciem {count} razy z rzędu. Twoje lokalne dane nie zostały zresetowane ani nadpisane.",
   },
   "startup.recoveryHint":
     "Spróbuj ponownie albo zainstaluj ostatnią wersję, która się otwierała. Aby uzyskać pomoc, wyeksportuj diagnostykę i wyślij plik ze zgłoszeniem.",
   "startup.recoveryHintLatest":
-    "OpenBot nie znalazł wcześniejszej wersji, która może otworzyć Twoje dane. Spróbuj ponownie albo zainstaluj najnowszą wersję. Aby uzyskać pomoc, wyeksportuj diagnostykę i wyślij plik ze zgłoszeniem.",
+    "OpenBot-NC nie znalazł wcześniejszej wersji, która może otworzyć Twoje dane. Spróbuj ponownie albo zainstaluj najnowszą wersję. Aby uzyskać pomoc, wyeksportuj diagnostykę i wyślij plik ze zgłoszeniem.",
   "startup.recoveryRetry": "Spróbuj ponownie",
   "startup.recoveryExportDiagnostics": "Eksportuj diagnostykę",
   "startup.recoveryOpenDataFolder": "Otwórz folder danych",
   "startup.recoveryQuit": "Zakończ",
   "startup.recoveryDiagnosticsSaved": "Plik diagnostyki został zapisany.",
-  "startup.recoveryActionFailed": "OpenBot nie mógł wykonać tej czynności.",
+  "startup.recoveryActionFailed": "OpenBot-NC nie mógł wykonać tej czynności.",
 } as const satisfies PartialTranslation<typeof source>;

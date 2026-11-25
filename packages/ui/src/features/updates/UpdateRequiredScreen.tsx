@@ -1,4 +1,5 @@
 import { AppLogo, type AppLogoVariant } from "@openbot/brand";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import type { UpdateStatus } from "@openbot/contracts/ipc";
 import { createSignal, Show } from "solid-js";
 import { Button } from "../../button";
@@ -8,7 +9,7 @@ import { useText } from "../../text";
 import { restartReasonKey } from "./restart-reasons";
 import { presentUpdateStatus } from "./update-status";
 
-const PRODUCT_NAME = "OpenBot";
+const PRODUCT_NAME = APP_NAME;
 
 export interface UpdateRequiredScreenProps {
   status: UpdateStatus;

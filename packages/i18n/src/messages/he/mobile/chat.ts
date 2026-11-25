@@ -4,7 +4,7 @@ import type { messages as source } from "../../en/mobile/chat";
 export const messages = {
   "mobile.chat.dictation.microphoneOffTitle": "הגישה למיקרופון כבויה",
   "mobile.chat.dictation.microphoneOffMessage":
-    "כדי להכתיב הודעה, יש לאפשר ל-OpenBot להשתמש במיקרופון ובזיהוי דיבור בהגדרות.",
+    "כדי להכתיב הודעה, יש לאפשר ל-OpenBot-NC להשתמש במיקרופון ובזיהוי דיבור בהגדרות.",
   "mobile.chat.dictation.stopped": "ההכתבה נעצרה",
   "mobile.chat.dictation.tryAgain": "יש לנסות שוב.",
   "mobile.chat.dictation.unavailable": "ההכתבה אינה זמינה",
@@ -151,7 +151,7 @@ export const messages = {
   "mobile.chat.attachment.downloadStopped": "ההורדה נעצרה. היא תתחיל שוב כשהשרת יתחבר.",
   "mobile.chat.attachment.openFailed": "לא ניתן לפתוח את הקובץ המצורף",
   "mobile.chat.attachment.photosNeedUpdate": "שמירת תמונות דורשת את הגרסה האחרונה של האפליקציה.",
-  "mobile.chat.attachment.photosPermission": "יש לאפשר ל-OpenBot להוסיף תמונות בהגדרות כדי לשמור את התמונה הזו.",
+  "mobile.chat.attachment.photosPermission": "יש לאפשר ל-OpenBot-NC להוסיף תמונות בהגדרות כדי לשמור את התמונה הזו.",
   "mobile.chat.attachment.imageUnavailable": "התמונה אינה זמינה. יש לנסות שוב.",
   "mobile.chat.attachment.saveImageFailed": "לא ניתן לשמור את התמונה",
   "mobile.chat.attachment.copyImageFailed": "לא ניתן להעתיק את התמונה",
@@ -184,9 +184,9 @@ export const messages = {
   "mobile.chat.attachment.unsupported":
     "{name}: יש לבחור תמונות, שמע MP3, וידאו MOV או MP4, ארכיוני ZIP, PDF, מסמכי Office, EML, טקסט, Markdown, נתונים או קובצי מקור.",
   "mobile.chat.attachment.hostRejectsType":
-    "{name}: המחשב המארח לא מקבל קבצי {type}. יש לעדכן שם את OpenBot כדי לצרף אותם.",
+    "{name}: המחשב המארח לא מקבל קבצי {type}. יש לעדכן שם את OpenBot-NC כדי לצרף אותם.",
   "mobile.chat.attachment.hostRejects":
-    "{name}: המחשב המארח לא מקבל את הקבצים האלה. יש לעדכן שם את OpenBot כדי לצרף אותם.",
+    "{name}: המחשב המארח לא מקבל את הקבצים האלה. יש לעדכן שם את OpenBot-NC כדי לצרף אותם.",
   "mobile.chat.attachment.nameTooLong": "יש לבחור קובץ עם שם קצר יותר.",
   "mobile.chat.attachment.damaged": "הקובץ המצורף פגום. יש לבחור אותו שוב.",
   "mobile.chat.attachment.tooLarge": "{name} גדול מ-{limit}.",
@@ -259,7 +259,7 @@ export const messages = {
   "mobile.chat.sideQuestion.deleteTitle": "למחוק את שאלת הצד הזו?",
   "mobile.chat.sideQuestion.deleteBody": "השאלות והתשובות שלה נמצאות רק בטלפון הזה. אי אפשר לשחזר אותן.",
   "mobile.chat.sideQuestion.notFound": "הסוכן הזה כבר לא בשרת.",
-  "mobile.chat.sideQuestion.unsupported": "המארח הזה לא יכול לענות על שאלות צד. יש לעדכן את OpenBot במארח.",
+  "mobile.chat.sideQuestion.unsupported": "המארח הזה לא יכול לענות על שאלות צד. יש לעדכן את OpenBot-NC במארח.",
   "mobile.chat.pins.title": "הודעות מוצמדות",
   "mobile.chat.pins.emptyTitle": "אין הודעות מוצמדות",
   "mobile.chat.pins.emptyBody": "יש לגעת בהודעה ממושכות ולהקיש על הצמדה כדי לשמור אותה כאן.",
@@ -268,7 +268,7 @@ export const messages = {
   "mobile.chat.pins.unpin": "ביטול הצמדה",
   "mobile.chat.pins.failed": "ההצמדה לא השתנתה.",
   "mobile.chat.pins.loadFailed": "לא ניתן לטעון את ההודעות המוצמדות.",
-  "mobile.chat.pins.unsupported": "המארח הזה לא יכול להצמיד הודעות. יש לעדכן את OpenBot במארח.",
+  "mobile.chat.pins.unsupported": "המארח הזה לא יכול להצמיד הודעות. יש לעדכן את OpenBot-NC במארח.",
   "mobile.chat.pins.mainChat": "הצ׳אט הראשי",
   "mobile.chat.pins.thread": "שרשור צדדי",
   "mobile.chat.pins.pinnedBy": "הוצמד על ידי {name}",
@@ -360,7 +360,7 @@ export const messages = {
   "mobile.chat.imageGallery.saveAll": "שמירת הכול",
   "mobile.chat.imageGallery.saved": "נשמר בתמונות",
   "mobile.chat.imageGallery.shareAll": "שיתוף הכול",
-  "mobile.chat.imageGallery.photosPermission": "יש לאפשר ל-OpenBot להוסיף תמונות בהגדרות כדי לשמור את התמונות האלה.",
+  "mobile.chat.imageGallery.photosPermission": "יש לאפשר ל-OpenBot-NC להוסיף תמונות בהגדרות כדי לשמור את התמונות האלה.",
   "mobile.chat.imageGallery.saveFailed": "לא ניתן לשמור את התמונות",
   "mobile.chat.imageGallery.shareFailed": "לא ניתן לשתף את התמונות",
   "mobile.chat.imageGallery.shareNeedsUpdate": "שיתוף של תמונות רבות דורש את הגרסה האחרונה של האפליקציה.",
@@ -370,7 +370,7 @@ export const messages = {
   "mobile.chat.video.loading": "טוען את {name}",
   "mobile.chat.video.share": "שיתוף {name}",
   "mobile.chat.video.save": "שמירת {name} בתמונות",
-  "mobile.chat.video.photosPermission": "יש לאפשר ל-OpenBot להוסיף תמונות בהגדרות כדי לשמור את הסרטון הזה.",
+  "mobile.chat.video.photosPermission": "יש לאפשר ל-OpenBot-NC להוסיף תמונות בהגדרות כדי לשמור את הסרטון הזה.",
   "mobile.chat.video.saveFailed": "לא ניתן לשמור את הסרטון",
   "mobile.chat.audio.play": "הפעלת {name}",
   "mobile.chat.audio.pause": "השהיית {name}",
@@ -385,27 +385,28 @@ export const messages = {
   "mobile.chat.browserSecret.ended": "בקשת ההתחברות הזו הסתיימה. צריך לבקש מהסוכן לנסות שוב.",
   "mobile.chat.browserSecret.oneTimeCode": "קוד חד-פעמי",
   "mobile.chat.browserSecret.takeoverTitle": "השתלטות על הדפדפן",
-  "mobile.chat.browserSecret.takeoverBody": "יש להשלים את השלב הזה בדפדפן במחשב שמריץ את OpenBot.",
+  "mobile.chat.browserSecret.takeoverBody": "יש להשלים את השלב הזה בדפדפן במחשב שמריץ את OpenBot-NC.",
   "mobile.chat.browserSecret.signInBlockedTitle": "יש להתחבר במחשב שלך",
   "mobile.chat.browserSecret.signInBlockedBody":
-    "האתר הזה לא מקבל התחברות מהשרת. יש לפתוח את הצ׳אט הזה באפליקציית OpenBot למחשב, ולהתחבר שם.",
+    "האתר הזה לא מקבל התחברות מהשרת. יש לפתוח את הצ׳אט הזה באפליקציית OpenBot-NC למחשב, ולהתחבר שם.",
   "mobile.chat.browserSecret.takeoverReload":
-    "OpenBot לא הצליח להשלים את הזנת הסיסמה או הקוד. יש להזין בדף את מה שחסר. לאחר מכן יש לטעון את הדף מחדש לפני שבוחרים ב״סיימתי״.",
+    "OpenBot-NC לא הצליח להשלים את הזנת הסיסמה או הקוד. יש להזין בדף את מה שחסר. לאחר מכן יש לטעון את הדף מחדש לפני שבוחרים ב״סיימתי״.",
   "mobile.chat.browserSecret.takeoverFailed": "לא ניתן להשלים את הבקשה.",
   "mobile.chat.browserSecret.done": "סיימתי",
   "mobile.chat.browserSecret.submitOnce": "שליחה חד-פעמית אל {origin}. הערך הזה לא מתווסף לצ'אט.",
   "mobile.chat.browserSecret.submitFailed": "לא ניתן להשלים את הבקשה. יש לבדוק את החיבור ולנסות שוב.",
   "mobile.chat.browserSecret.vaultSkip.agentScript":
-    "OpenBot לא השתמש בפרטי ההתחברות השמורים כי הסוכן הריץ סקריפט בדף הזה. כדי להשתמש בהם, צריך לבקש מהסוכן לטעון מחדש את הדף ולנסות שוב.",
-  "mobile.chat.browserSecret.vaultSkip.fieldKind": "OpenBot לא השתמש בפרטי ההתחברות השמורים כי הסוכן בחר שדה שגוי בדף.",
+    "OpenBot-NC לא השתמש בפרטי ההתחברות השמורים כי הסוכן הריץ סקריפט בדף הזה. כדי להשתמש בהם, צריך לבקש מהסוכן לטעון מחדש את הדף ולנסות שוב.",
+  "mobile.chat.browserSecret.vaultSkip.fieldKind":
+    "OpenBot-NC לא השתמש בפרטי ההתחברות השמורים כי הסוכן בחר שדה שגוי בדף.",
   "mobile.chat.browserSecret.vaultSkip.loginChoice":
-    "OpenBot לא השתמש בפרטי התחברות שמורים כי הסוכן לא בחר אף אחד מפרטי ההתחברות השמורים לאתר הזה. צריך לומר לסוכן באיזה חשבון להשתמש.",
+    "OpenBot-NC לא השתמש בפרטי התחברות שמורים כי הסוכן לא בחר אף אחד מפרטי ההתחברות השמורים לאתר הזה. צריך לומר לסוכן באיזה חשבון להשתמש.",
   "mobile.chat.browserSecret.vaultSkip.noPassword":
-    "OpenBot לא השתמש בפרטי ההתחברות השמורים כי אין בהם סיסמה לאתר הזה.",
+    "OpenBot-NC לא השתמש בפרטי ההתחברות השמורים כי אין בהם סיסמה לאתר הזה.",
   "mobile.chat.browserSecret.vaultSkip.noAuthenticatorKey":
-    "OpenBot לא השתמש בפרטי ההתחברות השמורים כי אין בהם מפתח של אפליקציית אימות.",
+    "OpenBot-NC לא השתמש בפרטי ההתחברות השמורים כי אין בהם מפתח של אפליקציית אימות.",
   "mobile.chat.browserSecret.vaultSkip.vaultUnreadable":
-    "OpenBot לא השתמש בפרטי התחברות שמורים כי לא הצליח לקרוא את מנהל הסיסמאות.",
+    "OpenBot-NC לא השתמש בפרטי התחברות שמורים כי לא הצליח לקרוא את מנהל הסיסמאות.",
   "mobile.chat.browserSecret.submit": "שליחה",
   "mobile.chat.browserSecret.takeOver": "השתלטות",
   "mobile.chat.starter.title": "על מה נעבוד קודם?",
@@ -474,14 +475,14 @@ export const messages = {
   "mobile.chat.approval.effect.permissions":
     "אישור נותן ל-{name} את ההרשאות האלה ב-{server}. דחייה משאירה את ההרשאות הנוכחיות.",
   "mobile.chat.approval.partial":
-    "{server} שולח לטלפון רק את תחילת הבקשה. כדי לאשר אותה, יש לעדכן את OpenBot ב-{server}, או לפתוח את הצ׳אט הזה באפליקציית OpenBot למחשב. אפשר לדחות אותה כאן.",
+    "{server} שולח לטלפון רק את תחילת הבקשה. כדי לאשר אותה, יש לעדכן את OpenBot-NC ב-{server}, או לפתוח את הצ׳אט הזה באפליקציית OpenBot-NC למחשב. אפשר לדחות אותה כאן.",
   "mobile.chat.approval.loading": "טוען את הבקשה המלאה…",
   "mobile.chat.approval.loadFailed": "לא ניתן לטעון את הבקשה המלאה. אפשר לדחות אותה כאן.",
   "mobile.chat.approval.retry": "ניסיון חוזר",
   "mobile.chat.approval.report.bugHeadline": "מצאת באג? בוא נתקן אותו.",
   "mobile.chat.approval.report.ideaHeadline": "יש לך רעיון? בוא נגשים אותו.",
   "mobile.chat.approval.report.dontSend": "לא עכשיו",
-  "mobile.chat.approval.report.send": "שליחה לצוות OpenBot",
+  "mobile.chat.approval.report.send": "שליחה לצוות OpenBot-NC",
   "mobile.chat.approval.allow": "אישור",
   "mobile.chat.approval.deny": "דחייה",
   "mobile.chat.approval.reconnect": "יש להתחבר אל {server} כדי להשיב לבקשה הזו.",
@@ -571,7 +572,7 @@ export const messages = {
   "mobile.chat.queue.sendNowNeedsTurn": "שליחה עכשיו דורשת שהסוכן יעבוד כרגע.",
   "mobile.chat.queue.stillHoldingTitle": "ההודעה עדיין מוחזקת",
   "mobile.chat.queue.stillHoldingMessage":
-    "OpenBot לא הצליח לשחרר את ההודעה הזו, ולכן הסוכן ממשיך להמתין לה. יש לנסות שוב אחרי שהטלפון יתחבר מחדש.",
+    "OpenBot-NC לא הצליח לשחרר את ההודעה הזו, ולכן הסוכן ממשיך להמתין לה. יש לנסות שוב אחרי שהטלפון יתחבר מחדש.",
   "mobile.chat.queue.keepEditing": "המשך עריכה",
   "mobile.chat.queue.leaveAnyway": "יציאה בכל זאת",
   "mobile.chat.queue.discardTitle": "לבטל את השינויים?",
@@ -581,7 +582,7 @@ export const messages = {
   "mobile.chat.queue.alreadyReceivedKept":
     "הסוכן כבר קיבל את ההודעה הזו, ולכן אי אפשר לשנות אותה. כשתסגרו את המסך הזה, הטקסט שלכם יעבור לתיבת ההודעה.",
   "mobile.chat.queue.holding": "מחזיק את ההודעה עבורך…",
-  "mobile.chat.queue.holdFailed": "OpenBot לא הצליח להחזיק את ההודעה הזו לעריכה.",
+  "mobile.chat.queue.holdFailed": "OpenBot-NC לא הצליח להחזיק את ההודעה הזו לעריכה.",
   "mobile.chat.queue.messageLabel": "הודעה",
   "mobile.chat.queue.messagePlaceholder": "טקסט ההודעה",
   "mobile.chat.queue.save": "שמירת ההודעה בתור",
@@ -620,13 +621,14 @@ export const messages = {
   "mobile.chat.threads.renameSave": "שמירה",
   "mobile.chat.threads.name": "שם השרשור",
   "mobile.chat.threads.renameUnavailable":
-    "אי אפשר לשנות את שם השרשור הזה כעת. יש להתחבר לשרת, או לעדכן את OpenBot במארח.",
+    "אי אפשר לשנות את שם השרשור הזה כעת. יש להתחבר לשרת, או לעדכן את OpenBot-NC במארח.",
   "mobile.chat.threads.delete.action": "מחיקה",
   "mobile.chat.threads.delete.title": "למחוק את השרשור הזה?",
   "mobile.chat.threads.delete.body":
-    "OpenBot מוחק את השרשור, את ההודעות שלו ואת הקבצים שלו לצמיתות. הצ'אט הראשי לא משתנה.",
-  "mobile.chat.threads.filesUnsupported": "המארח הזה לא יכול לקבל קבצים בשרשור. יש לעדכן את OpenBot במארח.",
-  "mobile.chat.threads.unsupported": "המארח הזה לא יכול לשנות שם של שרשורים או למחוק אותם. יש לעדכן את OpenBot במארח.",
+    "OpenBot-NC מוחק את השרשור, את ההודעות שלו ואת הקבצים שלו לצמיתות. הצ'אט הראשי לא משתנה.",
+  "mobile.chat.threads.filesUnsupported": "המארח הזה לא יכול לקבל קבצים בשרשור. יש לעדכן את OpenBot-NC במארח.",
+  "mobile.chat.threads.unsupported":
+    "המארח הזה לא יכול לשנות שם של שרשורים או למחוק אותם. יש לעדכן את OpenBot-NC במארח.",
   "mobile.chat.threads.error.rename": "לא ניתן לשנות את שם השרשור.",
   "mobile.chat.threads.error.delete": "לא ניתן למחוק את השרשור.",
   "mobile.chat.channelWork.working": "עובד ב-{channel}",
@@ -683,6 +685,6 @@ export const messages = {
   "mobile.chat.locationRequest.declined": "לא שותף",
   "mobile.chat.locationRequest.unavailable": "הטלפון לא הצליח למצוא את המיקום שלך. יש לנסות שוב.",
   "mobile.chat.locationRequest.deniedTitle": "הגישה למיקום כבויה",
-  "mobile.chat.locationRequest.denied": "כדי לשתף את המיקום, יש לאפשר ל-OpenBot להשתמש בו בהגדרות.",
+  "mobile.chat.locationRequest.denied": "כדי לשתף את המיקום, יש לאפשר ל-OpenBot-NC להשתמש בו בהגדרות.",
   "mobile.chat.locationRequest.openSettings": "פתיחת ההגדרות",
 } as const satisfies PartialTranslation<typeof source>;

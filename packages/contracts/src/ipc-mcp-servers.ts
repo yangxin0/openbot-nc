@@ -1,3 +1,4 @@
+import { APP_NAME } from "./app-identity";
 import { INPUT_LIMITS } from "./input-limits";
 import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "./runtime-values";
 
@@ -131,7 +132,7 @@ export function mcpConfigErrors(config: McpServerConfig): McpConfigErrors {
   else if (name.length > INPUT_LIMITS.mcpServerName)
     errors.name = `Use ${INPUT_LIMITS.mcpServerName} characters or fewer for the name.`;
   else if (isReservedMcpServerName(name) || name.toLowerCase() === COMPUTER_USE_MCP_SERVER_NAME)
-    errors.name = `OpenBot already uses the name ${name}.`;
+    errors.name = `${APP_NAME} already uses the name ${name}.`;
   if (config.transport === "stdio") {
     if (!config.command.trim()) errors.command = "Enter the command that launches this server.";
     return errors;

@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import { Effect, Result } from "effect";
 import { z } from "zod";
 import { developmentRemoteConnectionPath } from "./development-runtime-directory";
@@ -42,7 +43,7 @@ export const applyDevelopmentRemoteProfile = Effect.fn("DevelopmentRemote.applyP
 }: DevelopmentRemoteProfileOptions) {
   yield* teamStore.activateOwner(profile);
   if (role === "host" && !teamStore.configured) {
-    yield* teamStore.configureForOwner("OpenBot Local Dev Host", profile);
+    yield* teamStore.configureForOwner(`${APP_NAME} Local Dev Host`, profile);
   }
   if (role === "client" && !setupCompleted) {
     yield* writeSetupState(setupFile, { preferredProvider: "codex", preferredModel: null }).pipe(toRemoteWorkflowError);

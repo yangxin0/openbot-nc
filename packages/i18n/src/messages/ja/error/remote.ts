@@ -7,7 +7,7 @@ export const messages = {
   "error.remote.invalidData": "ホストが無効なデータを返しました。",
   "error.remote.unsafeData": "ホストが、このアプリで安全に使用できないデータを返しました。",
   "error.remote.requestFailedStatus": "リモートサーバーへのリクエストに失敗しました ({status})。",
-  "error.remote.appUpdateRequired": "ホストに接続する前に、この OpenBot アプリを更新してください。",
+  "error.remote.appUpdateRequired": "ホストに接続する前に、この OpenBot-NC アプリを更新してください。",
   "error.remote.identityNotVerified": "サーバーの ID を確認できませんでした。",
   "error.remote.invalidCompatibility": "ホストが無効な互換性情報を返しました。",
   "error.remote.serverListUnreadable": "リモートサーバーの一覧は、このバージョンで読み取れない形式です。",
@@ -22,12 +22,12 @@ export const messages = {
   "error.remote.localServerRemove": "ローカルサーバーは削除できません。",
   "error.remote.viewerProxyUnavailable": "リモートビューアーのローカルプロキシを利用できません。",
   "error.remote.hostKeyMissing":
-    "セキュリティキーがないか変更されたため、OpenBot はこのサーバーを確認できません。サーバーの所有者にサーバーの確認を依頼してください。",
+    "セキュリティキーがないか変更されたため、OpenBot-NC はこのサーバーを確認できません。サーバーの所有者にサーバーの確認を依頼してください。",
   "error.remote.connectionNotStarted":
-    "OpenBot はこのサーバーへの接続を開始できませんでした。問題が続く場合は、OpenBot を終了してもう一度開いてください。",
+    "OpenBot-NC はこのサーバーへの接続を開始できませんでした。問題が続く場合は、OpenBot-NC を終了してもう一度開いてください。",
   "error.remote.connectionServiceUnreachable":
-    "このコンピューターから OpenBot の接続サービスに接続できません。インターネット接続を確認してください。OpenBot は自動で再接続します。",
-  "error.remote.serverAnswerTimeout": "サーバーが時間内に応答しませんでした。OpenBot は自動で再接続します。",
+    "このコンピューターから OpenBot-NC の接続サービスに接続できません。インターネット接続を確認してください。OpenBot-NC は自動で再接続します。",
+  "error.remote.serverAnswerTimeout": "サーバーが時間内に応答しませんでした。OpenBot-NC は自動で再接続します。",
   "error.remote.connectionCancelled": "リモート接続がキャンセルされました。",
   "error.remote.fileTransportIsStopped": "WebRTC ファイル転送は停止しています。",
   "error.remote.fileTooLarge": "ファイルが 100 MB を超えています。",
@@ -88,42 +88,43 @@ export const messages = {
   "error.remote.signalInvalidMessage": "Signal が無効なメッセージを返しました。",
   "error.remote.sessionInvalid": "リモートセッションが無効です。",
   "error.remote.ticketInvalid": "接続チケットが無効です。",
-  "error.remote.mobileUpdateRequired": "接続する前に、OpenBot Mobile またはデスクトップアプリを更新してください。",
+  "error.remote.mobileUpdateRequired": "接続する前に、OpenBot-NC Mobile またはデスクトップアプリを更新してください。",
   "error.remote.connectionStepFailed": "この接続ステップを完了できませんでした。",
   "error.remote.dataChannelFailed": "{kind} チャネルに失敗しました。",
   "error.remote.hostBusy": "ホストは別の接続を処理中です。しばらくしてからもう一度お試しください。",
   "error.remote.signalPermissionDenied":
     "あなたのアカウントにはこのホストへのアクセス権がありません。オーナーにアクセスを依頼してください。",
-  "error.remote.signalRateLimited": "接続の試行が多すぎます。OpenBot は {seconds} 秒後にもう一度試します。",
+  "error.remote.signalRateLimited": "接続の試行が多すぎます。OpenBot-NC は {seconds} 秒後にもう一度試します。",
   "error.remote.signalProtocolError":
-    "Signal とこのアプリの接続プロトコルが一致しません。OpenBot を更新してから、もう一度お試しください。",
+    "Signal とこのアプリの接続プロトコルが一致しません。OpenBot-NC を更新してから、もう一度お試しください。",
   "error.remote.signalRefused": "Signal が接続を拒否しました。",
   "error.remote.signalClosed": "ホストが応答する前に Signal への接続が閉じました。",
   "error.remote.relayUnavailable": "Signal はこの接続にリレーサーバーを送りませんでした。後でもう一度お試しください。",
   "error.remote.iceFailed":
     "ホストに直接接続できませんでした。ファイアウォール、VPN、プロキシが接続をブロックしている可能性があります。",
   "error.remote.iceDisconnected": "ホストへの直接接続が切れました。",
-  "error.remote.directoryUnreachable": "OpenBot は OpenBot サービスに接続できませんでした。接続を確認してください。",
-  "error.remote.directoryTimeout": "OpenBot サービスが時間内に応答しませんでした。もう一度お試しください。",
+  "error.remote.directoryUnreachable":
+    "OpenBot-NC は OpenBot-NC サービスに接続できませんでした。接続を確認してください。",
+  "error.remote.directoryTimeout": "OpenBot-NC サービスが時間内に応答しませんでした。もう一度お試しください。",
   "error.remote.inviteAlreadyUsed": "この招待はすでに使用されています。新しい招待を依頼してください。",
   "error.remote.inviteNotFound": "この招待は存在しないか、期限が切れています。新しい招待を依頼してください。",
   "error.remote.licenseUsersFull":
     "サーバー所有者のライセンスに空きユーザーがありません。所有者にライセンスへのユーザー追加を依頼してください。",
   "error.remote.memberLimitReached":
     "このホストはメンバーの上限に達しました。オーナーに空きを作るよう依頼してください。",
-  "error.remote.hostNotRegistered": "このホストは OpenBot サービスに登録されなくなりました。",
+  "error.remote.hostNotRegistered": "このホストは OpenBot-NC サービスに登録されなくなりました。",
   "error.remote.membershipEnded":
     "あなたはこのホストのメンバーではなくなりました。オーナーに新しい招待を依頼してください。",
   "error.remote.accountSessionInactive": "サインインが無効になりました。もう一度サインインしてください。",
   "error.remote.hostOtherAccount": "このホストは別のアカウントのものです。",
-  "error.remote.remoteNotConfigured": "この OpenBot サービスではリモート接続が設定されていません。",
+  "error.remote.remoteNotConfigured": "この OpenBot-NC サービスではリモート接続が設定されていません。",
   "error.remote.hostRefused": "ホストがリクエストを拒否しました ({status})。",
   "error.remote.formUnavailable": "このフォームは利用できなくなりました。",
   "error.remote.channelsUnsupported": "チャンネルを使うには、このデスクトップサーバーを更新してください。",
   "error.remote.channelDeleteUnsupported": "チャンネルを削除するには、このデスクトップサーバーを更新してください。",
   "error.remote.historyRefreshFailed": "メッセージは送信されましたが、チャット履歴を更新できませんでした。",
   "error.remote.taskHistoryRefreshFailed": "タスクは変更されましたが、チャット履歴を更新できませんでした。",
-  "error.remote.serverNotLoaded": "OpenBot はサーバーを読み込めませんでした。もう一度お試しください。",
+  "error.remote.serverNotLoaded": "OpenBot-NC はサーバーを読み込めませんでした。もう一度お試しください。",
   "error.remote.localServerNotStarted":
-    "このコンピューターのサーバーが起動しませんでした。もう一度お試しください。起動しない場合は、このコンピューターで OpenBot を再起動してください。",
+    "このコンピューターのサーバーが起動しませんでした。もう一度お試しください。起動しない場合は、このコンピューターで OpenBot-NC を再起動してください。",
 } as const satisfies PartialTranslation<typeof source>;

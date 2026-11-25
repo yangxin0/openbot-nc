@@ -13,10 +13,10 @@ export const messages = {
   "mobile.server.drawer.hiddenServers": "숨긴 서버",
   "mobile.server.drawer.hideFailed": "{name}을(를) 숨길 수 없습니다",
   "mobile.server.drawer.showFailed": "{name}을(를) 표시할 수 없습니다",
-  "mobile.server.drawer.actionFailed": "OpenBot에서 이 작업을 완료하지 못했어요. 다시 시도해 주세요.",
+  "mobile.server.drawer.actionFailed": "OpenBot-NC에서 이 작업을 완료하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.drawer.moveUp": "위로 이동",
   "mobile.server.drawer.moveDown": "아래로 이동",
-  "mobile.server.drawer.orderHint": "OpenBot은 첫 번째 서버에서 열려요. 순서는 이 기기에 저장돼요.",
+  "mobile.server.drawer.orderHint": "OpenBot-NC는 첫 번째 서버에서 열려요. 순서는 이 기기에 저장돼요.",
   "mobile.server.drawer.title": "서버",
   "mobile.server.drawer.serverSettings": "서버 설정",
   "mobile.server.drawer.serverListHint": "서버를 표시하거나 숨겨요",
@@ -38,7 +38,7 @@ export const messages = {
   "mobile.server.local.optionHint": "{name}을(를) 실행하는 컴퓨터에서 자체 에이전트, 채팅, 파일을 사용합니다.",
   "mobile.server.local.title": "새 서버",
   "mobile.server.local.description":
-    "서버는 {name}을(를) 실행하는 컴퓨터에서 실행되며 자체 에이전트, 채팅, 파일을 가집니다. 해당 컴퓨터에서 OpenBot이 실행되는 동안 사용할 수 있습니다.",
+    "서버는 {name}을(를) 실행하는 컴퓨터에서 실행되며 자체 에이전트, 채팅, 파일을 가집니다. 해당 컴퓨터에서 OpenBot-NC가 실행되는 동안 사용할 수 있습니다.",
   "mobile.server.local.nameLabel": "서버 이름",
   "mobile.server.local.nameTooShort": "{limit}자 이상 입력하세요.",
   "mobile.server.local.create": "만들기",
@@ -50,12 +50,12 @@ export const messages = {
   "mobile.server.local.createdOn": "{name}이(가) {computer}과(와) 같은 컴퓨터에서 실행 중입니다.",
   "mobile.server.local.waiting": "{name}이(가) 온라인 상태가 되기를 기다리는 중…",
   "mobile.server.local.notPublished":
-    "{name}이(가) 실행 중이지만 이 휴대폰에서 아직 열 수 없습니다. {computer}을(를) 실행하는 컴퓨터의 OpenBot이 로그인되어 있고 온라인인지 확인하세요.",
+    "{name}이(가) 실행 중이지만 이 휴대폰에서 아직 열 수 없습니다. {computer}을(를) 실행하는 컴퓨터의 OpenBot-NC가 로그인되어 있고 온라인인지 확인하세요.",
   "mobile.server.local.open": "서버 열기",
   "mobile.server.local.ownerOnly": "이 컴퓨터에 서버를 만들 수 있는 사람은 소유자뿐입니다.",
-  "mobile.server.local.unsupported": "여기에서 서버를 만들려면 이 컴퓨터의 OpenBot을 업데이트하세요.",
+  "mobile.server.local.unsupported": "여기에서 서버를 만들려면 이 컴퓨터의 OpenBot-NC를 업데이트하세요.",
   "mobile.server.local.deleteOffline":
-    "이 서버는 해당 컴퓨터에서만 삭제할 수 있습니다. 그 컴퓨터에서 OpenBot을 연 다음 다시 시도하세요.",
+    "이 서버는 해당 컴퓨터에서만 삭제할 수 있습니다. 그 컴퓨터에서 OpenBot-NC를 연 다음 다시 시도하세요.",
   "mobile.server.role.owner": "소유자",
   "mobile.server.role.admin": "관리자",
   "mobile.server.role.member": "멤버",
@@ -91,7 +91,7 @@ export const messages = {
   "mobile.server.routines.status.paused": "일시 정지됨",
   "mobile.server.routines.status.failed": "실패",
   "mobile.server.routines.status.completed": "완료",
-  "mobile.server.threads.unsupported": "이 호스트는 스레드를 지원하지 않아요. 호스트의 OpenBot을 업데이트하세요.",
+  "mobile.server.threads.unsupported": "이 호스트는 스레드를 지원하지 않아요. 호스트의 OpenBot-NC를 업데이트하세요.",
   "mobile.server.threads.ask": "무엇을 할까요?",
   "mobile.server.threads.chooseAgent": "스레드를 시작할 상대",
   "mobile.server.threads.agentLabel": "{name}와 스레드 시작",
@@ -156,12 +156,12 @@ export const messages = {
     "서버가 중지된 후 다시 시작돼요. 약 1분 정도 걸려요. 실행 중인 에이전트 턴이 중지되고, 서버가 돌아올 때까지 멤버의 연결이 끊겨요. 파일과 채팅은 그대로 유지돼요.",
   "mobile.server.settings.restartConfirm": "다시 시작",
   "mobile.server.settings.restarted": "{name}을(를) 다시 시작하는 중이에요",
-  "mobile.server.settings.restartUnsupported": "여기에서 다시 시작하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+  "mobile.server.settings.restartUnsupported": "여기에서 다시 시작하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.settings.hide": "서버 숨기기",
   "mobile.server.settings.show": "서버 표시",
   "mobile.server.settings.deleteTitle": "{name}을(를) 삭제할까요?",
   "mobile.server.settings.deleteBody":
-    "OpenBot이 해당 컴퓨터에서 서버를 중지하고 에이전트, 채팅, 파일을 그 컴퓨터의 휴지통으로 옮깁니다. 서버는 모든 기기의 서버 목록에서 사라집니다.",
+    "OpenBot-NC가 해당 컴퓨터에서 서버를 중지하고 에이전트, 채팅, 파일을 그 컴퓨터의 휴지통으로 옮깁니다. 서버는 모든 기기의 서버 목록에서 사라집니다.",
   "mobile.server.settings.delete": "서버 삭제",
   "mobile.server.settings.name": "서버 이름",
   "mobile.server.settings.nameLength": "{min}~{max}자로 입력해 주세요.",
@@ -173,7 +173,7 @@ export const messages = {
   "mobile.server.settings.identitySaveFailed": "서버 이름과 로고를 저장하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.settings.identityNotAllowed": "서버 이름과 로고는 소유자나 관리자만 변경할 수 있어요.",
   "mobile.server.settings.identityUnsupported":
-    "여기에서 이름과 로고를 변경하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+    "여기에서 이름과 로고를 변경하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.settings.identityOffline": "서버 이름과 로고를 변경하려면 이 서버에 연결하세요.",
   "mobile.server.settings.appearance": "모양과 색상",
   "mobile.server.settings.appearanceShape": "모양",
@@ -199,7 +199,7 @@ export const messages = {
   "mobile.server.storage.category.caches": "서버 파일 캐시",
   "mobile.server.storage.category.runtimes": "제공자 런타임",
   "mobile.server.storage.category.logs": "로그",
-  "mobile.server.storage.total": "{name}의 OpenBot",
+  "mobile.server.storage.total": "{name}의 OpenBot-NC",
   "mobile.server.storage.used": "사용 중",
   "mobile.server.storage.byType": "유형별 저장 공간",
   "mobile.server.storage.free": "이 디스크에 {size} 남음",
@@ -220,10 +220,10 @@ export const messages = {
   "mobile.server.storage.clearCategory": "{category} 비우기",
   "mobile.server.storage.clearTitle.caches": "서버 파일 캐시를 비울까요?",
   "mobile.server.storage.clearTitle.logs": "로그를 비울까요?",
-  "mobile.server.storage.clearBody.caches": "서버 파일의 사본이에요. 파일을 열면 OpenBot이 다시 다운로드해요.",
+  "mobile.server.storage.clearBody.caches": "서버 파일의 사본이에요. 파일을 열면 OpenBot-NC가 다시 다운로드해요.",
   "mobile.server.storage.clearBody.logs": "진단 로그예요. 새 로그는 바로 기록되기 시작해요.",
   "mobile.server.storage.clearFailed": "데이터를 비우지 못했어요",
-  "mobile.server.storage.clearFailedBody": "OpenBot에서 서버의 이 데이터를 비우지 못했어요.",
+  "mobile.server.storage.clearFailedBody": "OpenBot-NC에서 서버의 이 데이터를 비우지 못했어요.",
   "mobile.server.storage.noFiles": "이 서버에 저장된 파일이 없어요.",
   "mobile.server.library.type.all": "전체",
   "mobile.server.library.type.images": "이미지",
@@ -290,14 +290,15 @@ export const messages = {
   "mobile.server.settings.timezoneLoadFailed": "서버 시간대를 불러오지 못했어요.",
   "mobile.server.settings.timezoneSaveFailed": "시간대를 저장하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.settings.timezoneUnavailable": "시간대를 변경하려면 소유자나 관리자로 이 서버에 연결하세요.",
-  "mobile.server.settings.timezoneUnsupported": "여기에서 시간대를 변경하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+  "mobile.server.settings.timezoneUnsupported":
+    "여기에서 시간대를 변경하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.settings.voiceModelDescription":
     "이 서버의 에이전트는 자막이 없는 동영상의 소리를 이 모델로 받아 적어요.",
   "mobile.server.settings.voiceModelLoading": "음성 인식을 불러오는 중…",
   "mobile.server.settings.voiceModelLoadFailed": "서버의 음성 인식 모델을 불러오지 못했어요.",
   "mobile.server.settings.voiceModelSaveFailed": "음성 인식 모델을 변경하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.settings.voiceModelUnsupported":
-    "여기에서 음성 인식을 변경하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+    "여기에서 음성 인식을 변경하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.settings.voiceModelReady": "준비됨",
   "mobile.server.settings.voiceModelDownloading": "다운로드 중: {percent}",
   "mobile.server.settings.voiceModelSize": "{size} 다운로드",
@@ -319,7 +320,7 @@ export const messages = {
   "mobile.server.settings.keyFollowing": "서버가 새 키를 사용해요. 서버 목록을 다시 불러오면 이 앱도 새 키로 바뀌어요.",
   "mobile.server.settings.keyChangeFailed": "서버 키를 변경하지 못했어요. 다시 시도하세요.",
   "mobile.server.settings.keyOwnerOnly": "서버 키는 소유자만 변경할 수 있어요.",
-  "mobile.server.settings.keyUnsupported": "여기에서 키를 변경하려면 이 서버의 OpenBot을 업데이트하세요.",
+  "mobile.server.settings.keyUnsupported": "여기에서 키를 변경하려면 이 서버의 OpenBot-NC를 업데이트하세요.",
   "mobile.server.settings.turnLimit": "동시 실행 스레드",
   "mobile.server.settings.turnLimitDescription":
     "이 서버에서 동시에 실행할 수 있는 에이전트 스레드 수입니다. 스레드가 많을수록 메모리를 더 사용합니다.",
@@ -329,7 +330,7 @@ export const messages = {
   "mobile.server.settings.turnLimitsLoadFailed": "이 서버의 스레드 제한을 불러올 수 없습니다.",
   "mobile.server.settings.turnLimitsSaveFailed": "스레드 제한을 저장하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.settings.turnLimitsUnsupported":
-    "여기에서 스레드 제한을 변경하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+    "여기에서 스레드 제한을 변경하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.settings.agentTaskLimit": "에이전트별 병렬 스레드",
   "mobile.server.settings.agentTaskLimitDescription":
     "자체 제한이 없는 각 에이전트가 동시에 실행할 수 있는 스레드 수입니다.",
@@ -339,7 +340,7 @@ export const messages = {
   "mobile.server.settings.memoryLimitLoadFailed": "이 서버의 메모리 한도를 불러오지 못했어요.",
   "mobile.server.settings.memoryLimitSaveFailed": "메모리 한도를 저장하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.settings.memoryLimitUnsupported":
-    "여기에서 메모리 한도를 변경하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+    "여기에서 메모리 한도를 변경하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.settings.memoryReview": "메모리 검토",
   "mobile.server.settings.memoryReviewDescription":
     "이 서버의 에이전트가 채팅에서 오래 쓸 사실을 백그라운드에서 저장하는 빈도예요.",
@@ -357,7 +358,8 @@ export const messages = {
     "에이전트의 브라우저를 조작하면 에이전트가 사용한 페이지와 버튼에서 사이트 사용법을 학습합니다. 입력한 텍스트는 저장되지 않습니다.",
   "mobile.server.settings.browsingMemoryLoadFailed": "브라우징 설정을 불러올 수 없습니다.",
   "mobile.server.settings.learningSaveFailed": "이 설정을 저장하지 못했어요. 다시 시도해 주세요.",
-  "mobile.server.settings.learningUnsupported": "여기에서 이 설정을 변경하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+  "mobile.server.settings.learningUnsupported":
+    "여기에서 이 설정을 변경하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.settings.responseStyleDescription":
     "자연형: 에이전트가 작업 중에 짧은 업데이트를 보내고 채팅에 표시돼요. 클래식: 에이전트가 끝나면 한 번만 답해요.",
   "mobile.server.settings.responseStyleNatural": "자연형",
@@ -365,15 +367,15 @@ export const messages = {
   "mobile.server.settings.personalityLoadFailed": "서버 성격을 불러올 수 없었어요.",
   "mobile.server.settings.personalitySaveFailed": "응답 스타일을 저장하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.settings.personalityUnsupported":
-    "여기에서 응답 스타일을 변경하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+    "여기에서 응답 스타일을 변경하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.settings.agentsUnavailable": "에이전트 설정을 변경하려면 소유자나 관리자로 이 서버에 연결하세요.",
   "mobile.server.route.browserProfiles": "브라우저 프로필",
   "mobile.server.browserProfiles.unavailable": "온라인 서버의 소유자나 관리자만 브라우저 프로필을 관리할 수 있습니다.",
   "mobile.server.browserProfiles.unsupported":
-    "여기서 브라우저 프로필을 관리하려면 이 서버의 OpenBot을 업데이트하세요.",
+    "여기서 브라우저 프로필을 관리하려면 이 서버의 OpenBot-NC를 업데이트하세요.",
   "mobile.server.browserProfiles.loading": "브라우저 프로필을 불러오는 중…",
-  "mobile.server.browserProfiles.loadFailed": "OpenBot이 브라우저 프로필을 불러오지 못했습니다.",
-  "mobile.server.browserProfiles.saveFailed": "OpenBot이 브라우저 프로필을 변경하지 못했습니다.",
+  "mobile.server.browserProfiles.loadFailed": "OpenBot-NC가 브라우저 프로필을 불러오지 못했습니다.",
+  "mobile.server.browserProfiles.saveFailed": "OpenBot-NC가 브라우저 프로필을 변경하지 못했습니다.",
   "mobile.server.browserProfiles.description":
     "각 프로필은 서버를 실행하는 컴퓨터에 자체 로그인, 쿠키, 사이트 데이터를 보관합니다. 같은 프로필을 쓰는 에이전트는 로그인을 공유합니다.",
   "mobile.server.browserProfiles.shared": "공유",
@@ -406,13 +408,13 @@ export const messages = {
   "mobile.server.browserProfiles.deleteTitle": "{name}을(를) 삭제할까요?",
   "mobile.server.browserProfiles.deleteBody": "프로필의 로그인, 쿠키, 사이트 데이터를 삭제합니다. 열린 탭은 닫힙니다.",
   "mobile.server.browserProfiles.deleteAgents": "다음 에이전트는 공유 프로필로 바뀝니다: {agents}.",
-  "mobile.server.browserProxies.unsupported": "여기서 프록시를 관리하려면 이 서버의 OpenBot을 업데이트하세요.",
+  "mobile.server.browserProxies.unsupported": "여기서 프록시를 관리하려면 이 서버의 OpenBot-NC를 업데이트하세요.",
   "mobile.server.browserProxies.loading": "프록시를 불러오는 중…",
-  "mobile.server.browserProxies.loadFailed": "OpenBot이 프록시를 불러오지 못했어요.",
-  "mobile.server.browserProxies.saveFailed": "OpenBot이 프록시를 바꾸지 못했어요.",
+  "mobile.server.browserProxies.loadFailed": "OpenBot-NC가 프록시를 불러오지 못했어요.",
+  "mobile.server.browserProxies.saveFailed": "OpenBot-NC가 프록시를 바꾸지 못했어요.",
   "mobile.server.browserProxies.title": "프록시",
   "mobile.server.browserProxies.sectionHint":
-    "프록시가 있는 프로필은 그 프록시를 통해 페이지를 열어요. 멤버는 OpenBot 데스크톱 앱에서 컴퓨터를 공유해요.",
+    "프록시가 있는 프로필은 그 프록시를 통해 페이지를 열어요. 멤버는 OpenBot-NC 데스크톱 앱에서 컴퓨터를 공유해요.",
   "mobile.server.browserProxies.limit": "서버 하나에 프록시는 최대 {limit}개예요.",
   "mobile.server.browserProxies.add": "프록시 추가",
   "mobile.server.browserProxies.new": "새 프록시",
@@ -439,7 +441,7 @@ export const messages = {
   "mobile.server.browserProxies.addressInvalid":
     "프록시 주소가 아니에요. socks5://host:1080, http://user:password@host:3128 또는 host:port:user:password를 사용하세요.",
   "mobile.server.browserProxies.computerHint":
-    "이 컴퓨터를 사용하는 프로필의 페이지는 멤버가 OpenBot 데스크톱 앱에서 이 컴퓨터를 공유하는 동안 이 컴퓨터의 인터넷 연결을 통해 나가요. 이 컴퓨터는 공개 인터넷 주소만 열어요.",
+    "이 컴퓨터를 사용하는 프로필의 페이지는 멤버가 OpenBot-NC 데스크톱 앱에서 이 컴퓨터를 공유하는 동안 이 컴퓨터의 인터넷 연결을 통해 나가요. 이 컴퓨터는 공개 인터넷 주소만 열어요.",
   "mobile.server.browserProxies.profilesTitle": "프로필",
   "mobile.server.browserProxies.delete": "프록시 삭제",
   "mobile.server.browserProxies.deleteHint": "삭제하면 이 프록시의 프로필이 ‘자동’으로 바뀌어요.",
@@ -452,10 +454,10 @@ export const messages = {
   "mobile.server.browserProxies.change": "프록시 바꾸기",
   "mobile.server.browserProxies.choiceHint":
     "‘자동’은 서버를 실행하는 컴퓨터의 프록시 설정을 사용해요. 변경하면 프로필의 열린 탭이 닫혀요.",
-  "mobile.server.browserProxies.shareHint": "내 컴퓨터를 사용하려면 OpenBot 데스크톱 앱에서 공유하세요.",
+  "mobile.server.browserProxies.shareHint": "내 컴퓨터를 사용하려면 OpenBot-NC 데스크톱 앱에서 공유하세요.",
   "mobile.server.route.connectors": "커넥터",
   "mobile.server.connectors.unavailable": "커넥터를 관리하려면 소유자나 관리자로 이 서버에 연결하세요.",
-  "mobile.server.connectors.unsupported": "여기에서 커넥터를 관리하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+  "mobile.server.connectors.unsupported": "여기에서 커넥터를 관리하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.connectors.loading": "커넥터 불러오는 중…",
   "mobile.server.connectors.localOnly": "데스크톱 앱 전용",
   "mobile.server.connectors.statusConnected": "연결됨",
@@ -504,7 +506,7 @@ export const messages = {
   "mobile.server.connectors.github.title": "GitHub",
   "mobile.server.connectors.github.description":
     "{host}의 모든 에이전트가 GitHub 저장소, 이슈, 풀 리퀘스트와 gh, git을 사용할 수 있어요.",
-  "mobile.server.connectors.github.unavailable": "이 서버의 OpenBot은 GitHub에 연결할 수 없어요.",
+  "mobile.server.connectors.github.unavailable": "이 서버의 OpenBot-NC는 GitHub에 연결할 수 없어요.",
   "mobile.server.connectors.github.connect": "GitHub 연결",
   "mobile.server.connectors.github.codeTitle": "GitHub에 이 코드를 입력하세요",
   "mobile.server.connectors.github.codeFooter":
@@ -514,11 +516,11 @@ export const messages = {
   "mobile.server.connectors.github.connectedAs": "@{login}(으)로 연결됨",
   "mobile.server.connectors.github.chooseRepositories": "저장소 선택",
   "mobile.server.connectors.github.repositoriesFooter":
-    "에이전트는 OpenBot GitHub 앱이 설치된 저장소만 사용할 수 있어요.",
+    "에이전트는 OpenBot-NC GitHub 앱이 설치된 저장소만 사용할 수 있어요.",
   "mobile.server.connectors.github.repositoriesTitle": "저장소",
   "mobile.server.connectors.github.repositoriesLoading": "GitHub에서 저장소를 읽는 중",
-  "mobile.server.connectors.github.repositoriesFailed": "OpenBot에서 GitHub의 저장소를 읽지 못했어요.",
-  "mobile.server.connectors.github.noRepositories": "OpenBot GitHub 앱이 설치된 저장소가 아직 없어요.",
+  "mobile.server.connectors.github.repositoriesFailed": "OpenBot-NC에서 GitHub의 저장소를 읽지 못했어요.",
+  "mobile.server.connectors.github.noRepositories": "OpenBot-NC GitHub 앱이 설치된 저장소가 아직 없어요.",
   "mobile.server.connectors.github.moreRepositories": {
     other: "저장소 {count}개 더 있음",
   },
@@ -531,12 +533,12 @@ export const messages = {
   "mobile.server.connectors.github.disconnect": "GitHub 연결 해제",
   "mobile.server.connectors.github.disconnectTitle": "GitHub 연결을 해제할까요?",
   "mobile.server.connectors.github.disconnectBody":
-    "{host}에서 @{login}의 로그인 정보가 삭제되고, 모든 에이전트가 GitHub 도구, gh, git을 사용할 수 없게 돼요. 이후 GitHub가 열리면 OpenBot 접근 권한을 취소할 수 있어요.",
+    "{host}에서 @{login}의 로그인 정보가 삭제되고, 모든 에이전트가 GitHub 도구, gh, git을 사용할 수 없게 돼요. 이후 GitHub가 열리면 OpenBot-NC 접근 권한을 취소할 수 있어요.",
   "mobile.server.connectors.onePassword.title": "1Password",
   "mobile.server.connectors.onePassword.description":
-    "서비스 계정을 통해 {host}의 OpenBot과 전용 1Password 보관함을 공유하면, {host}의 에이전트가 브라우저에서 사이트에 로그인할 수 있어요.",
+    "서비스 계정을 통해 {host}의 OpenBot-NC와 전용 1Password 보관함을 공유하면, {host}의 에이전트가 브라우저에서 사이트에 로그인할 수 있어요.",
   "mobile.server.connectors.onePassword.howItWorks":
-    "1Password.com에서 OpenBot과 공유할 보관함만 읽을 수 있는 서비스 계정을 만든 다음, 해당 토큰을 여기에 붙여넣으세요. {host}가 토큰을 확인하고 보관하며, 이 휴대폰에는 저장되지 않아요. 에이전트는 비밀번호를 볼 수 없어요.",
+    "1Password.com에서 OpenBot-NC와 공유할 보관함만 읽을 수 있는 서비스 계정을 만든 다음, 해당 토큰을 여기에 붙여넣으세요. {host}가 토큰을 확인하고 보관하며, 이 휴대폰에는 저장되지 않아요. 에이전트는 비밀번호를 볼 수 없어요.",
   "mobile.server.connectors.onePassword.token": "서비스 계정 토큰",
   "mobile.server.connectors.onePassword.tokenPlaceholder": "ops_…",
   "mobile.server.connectors.onePassword.connect": "1Password 연결",
@@ -553,9 +555,9 @@ export const messages = {
     "{host}에서 토큰이 삭제돼요. 보관함과 서비스 계정은 1Password에 남아 있으니, 필요 없으면 1Password에서 삭제하세요.",
   "mobile.server.connectors.protonPass.title": "Proton Pass",
   "mobile.server.connectors.protonPass.description":
-    "Proton Pass 보관함 하나를 {host}의 OpenBot과 공유하면 {host}의 에이전트가 브라우저에서 사이트에 로그인할 수 있어요.",
+    "Proton Pass 보관함 하나를 {host}의 OpenBot-NC와 공유하면 {host}의 에이전트가 브라우저에서 사이트에 로그인할 수 있어요.",
   "mobile.server.connectors.protonPass.keyHelp":
-    "Proton Pass에서 OpenBot과 공유하는 보관함만 읽을 수 있는 액세스 키를 만든 다음 여기에 붙여 넣으세요. 키는 {host}에 보관되고 이 휴대폰에는 저장되지 않아요.",
+    "Proton Pass에서 OpenBot-NC와 공유하는 보관함만 읽을 수 있는 액세스 키를 만든 다음 여기에 붙여 넣으세요. 키는 {host}에 보관되고 이 휴대폰에는 저장되지 않아요.",
   "mobile.server.connectors.protonPass.keyPlaceholder": "pst_…",
   "mobile.server.connectors.protonPass.plan":
     "사용 중인 Proton 플랜에는 Proton Pass 명령줄 도구가 포함되지 않아요. Pass Plus가 포함된 Proton 플랜이 필요해요. Mail Plus 같은 다른 유료 플랜에는 포함되지 않아요. 계정의 플랜을 변경한 다음 다시 연결하세요.",
@@ -602,7 +604,7 @@ export const messages = {
   },
   "mobile.server.connectors.slack.connect": "Slack 연결",
   "mobile.server.connectors.slack.connectFooter":
-    "Slack이 브라우저에서 열려요. 오른쪽 위에서 워크스페이스를 선택한 다음 허용을 누르세요. OpenBot은 OpenBot이라는 앱 하나를 설치하고 모든 공개 채널에 참여해요.",
+    "Slack이 브라우저에서 열려요. 오른쪽 위에서 워크스페이스를 선택한 다음 허용을 누르세요. OpenBot-NC는 OpenBot이라는 앱 하나를 설치하고 모든 공개 채널에 참여해요.",
   "mobile.server.connectors.slack.add": "워크스페이스 추가",
   "mobile.server.connectors.slack.limit": {
     other: "워크스페이스는 최대 {count}개까지 연결할 수 있어요.",
@@ -610,14 +612,14 @@ export const messages = {
   "mobile.server.connectors.slack.workspaceTitle": "워크스페이스",
   "mobile.server.connectors.slack.workspaceDescription": "@OpenBot을 멘션하거나 다이렉트 메시지를 보내세요.",
   "mobile.server.connectors.slack.missingScopes":
-    "OpenBot에 Slack에서 다음 권한이 없어요: {scopes}. 워크스페이스 연결을 해제한 다음 다시 연결해 주세요.",
-  "mobile.server.connectors.slack.retryAt": "Slack이 OpenBot에 대기를 요청했어요. {time}에 다시 시도해요.",
+    "OpenBot-NC에 Slack에서 다음 권한이 없어요: {scopes}. 워크스페이스 연결을 해제한 다음 다시 연결해 주세요.",
+  "mobile.server.connectors.slack.retryAt": "Slack이 OpenBot-NC에 대기를 요청했어요. {time}에 다시 시도해요.",
   "mobile.server.connectors.slack.helpInvalidToken":
-    "Slack이 이 워크스페이스에서 OpenBot을 더 이상 허용하지 않아요. 앱이 삭제되었을 수 있어요. 워크스페이스를 다시 연결해 주세요.",
+    "Slack이 이 워크스페이스에서 OpenBot-NC를 더 이상 허용하지 않아요. 앱이 삭제되었을 수 있어요. 워크스페이스를 다시 연결해 주세요.",
   "mobile.server.connectors.slack.helpSecretStorage":
-    "OpenBot이 {host}에 저장된 토큰을 읽을 수 없어요. 워크스페이스 연결을 해제한 다음 다시 연결해 주세요.",
+    "OpenBot-NC가 {host}에 저장된 토큰을 읽을 수 없어요. 워크스페이스 연결을 해제한 다음 다시 연결해 주세요.",
   "mobile.server.connectors.slack.helpRelay":
-    "{host}의 OpenBot이 Slack 이벤트를 받을 수 없어요. {host}에서 로그인하고, 서버 설정에서 서버 이름을 지정한 다음 OpenBot을 계속 실행해 두세요.",
+    "{host}의 OpenBot-NC가 Slack 이벤트를 받을 수 없어요. {host}에서 로그인하고, 서버 설정에서 서버 이름을 지정한 다음 OpenBot-NC를 계속 실행해 두세요.",
   "mobile.server.connectors.slack.helpNotLinked":
     "이 워크스페이스는 {host}에 연결되어 있지 않습니다. 연결하려면 다시 연결을 누르세요.",
   "mobile.server.connectors.slack.orchestratorTitle": "Slack Orchestrator",
@@ -627,12 +629,12 @@ export const messages = {
     "Slack Orchestrator를 추가하지 않으면 Slack에서 답변을 받을 수 없어요.",
   "mobile.server.connectors.slack.addAgent": "Slack Orchestrator 추가",
   "mobile.server.connectors.slack.note":
-    "OpenBot은 모든 공개 채널과 새로 생기는 채널에 자동으로 참여해요. 비공개 채널에는 /invite @OpenBot으로 초대하세요.",
+    "OpenBot-NC는 모든 공개 채널과 새로 생기는 채널에 자동으로 참여해요. 비공개 채널에는 /invite @OpenBot으로 초대하세요.",
   "mobile.server.connectors.slack.disconnectTitle": "{workspace} 연결을 해제할까요?",
   "mobile.server.connectors.slack.disconnectBody":
-    "OpenBot이 {workspace}에서 답변을 중지하고 {host}에서 Slack 토큰을 삭제해요.",
-  "mobile.server.connectors.slack.disconnectKept": "대화와 Slack Orchestrator는 OpenBot에 그대로 남아 있어요.",
-  "mobile.server.connectors.slack.disconnectDeleted": "Slack Orchestrator와 해당 대화가 OpenBot에서 삭제돼요.",
+    "OpenBot-NC가 {workspace}에서 답변을 중지하고 {host}에서 Slack 토큰을 삭제해요.",
+  "mobile.server.connectors.slack.disconnectKept": "대화와 Slack Orchestrator는 OpenBot-NC에 그대로 남아 있어요.",
+  "mobile.server.connectors.slack.disconnectDeleted": "Slack Orchestrator와 해당 대화가 OpenBot-NC에서 삭제돼요.",
   "mobile.server.connectors.slack.agentPromptTitle": "Slack Orchestrator를 추가할까요?",
   "mobile.server.connectors.slack.agentPromptBody":
     "이 새 에이전트가 {workspace}에서 @OpenBot에게 보내는 모든 요청에 답변해요.",
@@ -645,7 +647,7 @@ export const messages = {
   },
   "mobile.server.connectors.discord.connect": "Discord 연결",
   "mobile.server.connectors.discord.connectFooter":
-    "Discord가 브라우저에서 열려요. Discord 서버를 선택한 다음 승인을 누르세요. OpenBot은 OpenBot이라는 봇 하나를 추가해요.",
+    "Discord가 브라우저에서 열려요. Discord 서버를 선택한 다음 승인을 누르세요. OpenBot-NC는 OpenBot이라는 봇 하나를 추가해요.",
   "mobile.server.connectors.discord.add": "Discord 서버 추가",
   "mobile.server.connectors.discord.limit": {
     other: "Discord 서버는 최대 {count}개까지 연결할 수 있어요.",
@@ -654,14 +656,14 @@ export const messages = {
   "mobile.server.connectors.discord.workspaceDescription":
     "채널에서 @OpenBot을 멘션하세요. 이어가려면 OpenBot의 메시지에 답장하세요.",
   "mobile.server.connectors.discord.missingScopes":
-    "OpenBot에 Discord에서 다음 권한이 없어요: {scopes}. Discord 서버 연결을 해제한 다음 다시 연결해 주세요.",
-  "mobile.server.connectors.discord.retryAt": "Discord가 OpenBot에 대기를 요청했어요. {time}에 다시 시도해요.",
+    "OpenBot-NC에 Discord에서 다음 권한이 없어요: {scopes}. Discord 서버 연결을 해제한 다음 다시 연결해 주세요.",
+  "mobile.server.connectors.discord.retryAt": "Discord가 OpenBot-NC에 대기를 요청했어요. {time}에 다시 시도해요.",
   "mobile.server.connectors.discord.helpInvalidToken":
-    "Discord가 이 Discord 서버에서 OpenBot을 더 이상 허용하지 않아요. 봇이 삭제되었을 수 있어요. Discord 서버를 다시 연결해 주세요.",
+    "Discord가 이 Discord 서버에서 OpenBot-NC를 더 이상 허용하지 않아요. 봇이 삭제되었을 수 있어요. Discord 서버를 다시 연결해 주세요.",
   "mobile.server.connectors.discord.helpSecretStorage":
-    "OpenBot이 {host}에 저장된 토큰을 읽을 수 없어요. Discord 서버 연결을 해제한 다음 다시 연결해 주세요.",
+    "OpenBot-NC가 {host}에 저장된 토큰을 읽을 수 없어요. Discord 서버 연결을 해제한 다음 다시 연결해 주세요.",
   "mobile.server.connectors.discord.helpRelay":
-    "{host}의 OpenBot이 Discord 이벤트를 받을 수 없어요. {host}에서 로그인하고, 서버 설정에서 서버 이름을 지정한 다음 OpenBot을 계속 실행해 두세요.",
+    "{host}의 OpenBot-NC가 Discord 이벤트를 받을 수 없어요. {host}에서 로그인하고, 서버 설정에서 서버 이름을 지정한 다음 OpenBot-NC를 계속 실행해 두세요.",
   "mobile.server.connectors.discord.helpNotLinked":
     "이 Discord 서버는 {host}에 연결되어 있지 않습니다. 연결하려면 다시 연결을 누르세요.",
   "mobile.server.connectors.discord.orchestratorTitle": "Discord Orchestrator",
@@ -670,19 +672,19 @@ export const messages = {
   "mobile.server.connectors.discord.orchestratorNone":
     "Discord Orchestrator를 추가하지 않으면 Discord에서 답변을 받을 수 없어요.",
   "mobile.server.connectors.discord.addAgent": "Discord Orchestrator 추가",
-  "mobile.server.connectors.discord.note": "OpenBot은 자신의 역할로 볼 수 있는 채널을 확인해요.",
+  "mobile.server.connectors.discord.note": "OpenBot-NC는 자신의 역할로 볼 수 있는 채널을 확인해요.",
   "mobile.server.connectors.discord.disconnectTitle": "{workspace} 연결을 해제할까요?",
   "mobile.server.connectors.discord.disconnectBody":
-    "OpenBot이 {workspace}에서 답변을 중지하고 {host}에서 Discord 연결을 삭제해요.",
-  "mobile.server.connectors.discord.disconnectKept": "대화와 Discord Orchestrator는 OpenBot에 그대로 남아 있어요.",
-  "mobile.server.connectors.discord.disconnectDeleted": "Discord Orchestrator와 해당 대화가 OpenBot에서 삭제돼요.",
+    "OpenBot-NC가 {workspace}에서 답변을 중지하고 {host}에서 Discord 연결을 삭제해요.",
+  "mobile.server.connectors.discord.disconnectKept": "대화와 Discord Orchestrator는 OpenBot-NC에 그대로 남아 있어요.",
+  "mobile.server.connectors.discord.disconnectDeleted": "Discord Orchestrator와 해당 대화가 OpenBot-NC에서 삭제돼요.",
   "mobile.server.connectors.discord.agentPromptTitle": "Discord Orchestrator를 추가할까요?",
   "mobile.server.connectors.discord.agentPromptBody":
     "이 새 에이전트가 {workspace}에서 @OpenBot에게 보내는 모든 요청에 답변해요.",
   "mobile.server.connectors.discord.installFailed": "Discord 승인이 완료되지 않았어요. 다시 시도해 주세요.",
   "mobile.server.connectors.telegram.title": "Telegram",
   "mobile.server.connectors.telegram.description":
-    "Telegram 그룹에 OpenBot 봇을 추가하거나 봇과 1:1 채팅을 시작하세요. Telegram Orchestrator가 알맞은 에이전트에게 물어보고 답변해요.",
+    "Telegram 그룹에 OpenBot-NC 봇을 추가하거나 봇과 1:1 채팅을 시작하세요. Telegram Orchestrator가 알맞은 에이전트에게 물어보고 답변해요.",
   "mobile.server.connectors.telegram.attention": {
     other: "채팅 {count}개 확인 필요",
   },
@@ -691,14 +693,14 @@ export const messages = {
   "mobile.server.connectors.telegram.groupDescription": "봇을 멘션하거나 봇의 메시지에 답장하세요.",
   "mobile.server.connectors.telegram.directDescription": "이 채팅의 모든 메시지는 Telegram Orchestrator로 전달돼요.",
   "mobile.server.connectors.telegram.helpRemoved":
-    "OpenBot 봇이 더 이상 이 채팅에 없어요. 채팅 연결을 해제한 다음 봇을 다시 추가해 주세요.",
+    "OpenBot-NC 봇이 더 이상 이 채팅에 없어요. 채팅 연결을 해제한 다음 봇을 다시 추가해 주세요.",
   "mobile.server.connectors.telegram.helpRelay":
-    "{host}의 OpenBot이 Telegram 메시지를 받을 수 없어요. {host}에서 로그인하고, 서버 설정에서 서버 이름을 지정한 다음 OpenBot을 계속 실행해 두세요.",
+    "{host}의 OpenBot-NC가 Telegram 메시지를 받을 수 없어요. {host}에서 로그인하고, 서버 설정에서 서버 이름을 지정한 다음 OpenBot-NC를 계속 실행해 두세요.",
   "mobile.server.connectors.telegram.helpError":
-    "OpenBot이 이 채팅에 접근할 수 없어요. 다시 연결하거나 채팅 연결을 해제하세요.",
+    "OpenBot-NC가 이 채팅에 접근할 수 없어요. 다시 연결하거나 채팅 연결을 해제하세요.",
   "mobile.server.connectors.telegram.helpNotLinked":
     "이 채팅은 {host}에 연결되어 있지 않습니다. 연결하려면 다시 연결을 누르세요.",
-  "mobile.server.connectors.telegram.retryAt": "Telegram이 OpenBot에 대기를 요청했어요. {time}에 다시 시도해요.",
+  "mobile.server.connectors.telegram.retryAt": "Telegram이 OpenBot-NC에 대기를 요청했어요. {time}에 다시 시도해요.",
   "mobile.server.connectors.telegram.linkTitle": "채팅 연결",
   "mobile.server.connectors.telegram.linkAnother": "다른 채팅 연결",
   "mobile.server.connectors.telegram.linkFooter":
@@ -710,16 +712,16 @@ export const messages = {
   "mobile.server.connectors.telegram.openDirectChat": "1:1 채팅 열기",
   "mobile.server.connectors.telegram.orchestratorTitle": "Telegram Orchestrator",
   "mobile.server.connectors.telegram.orchestratorDescription":
-    "이 에이전트가 모든 Telegram 채팅에서 OpenBot으로 오는 메시지를 받아요. 짧은 요청은 직접 답변하고, 다른 작업은 알맞은 에이전트에게 맡긴 다음 채팅에 답변을 게시해요.",
+    "이 에이전트가 모든 Telegram 채팅에서 OpenBot-NC로 오는 메시지를 받아요. 짧은 요청은 직접 답변하고, 다른 작업은 알맞은 에이전트에게 맡긴 다음 채팅에 답변을 게시해요.",
   "mobile.server.connectors.telegram.orchestratorNone":
     "Telegram Orchestrator를 추가하지 않으면 Telegram에서 답변을 받을 수 없어요.",
   "mobile.server.connectors.telegram.addAgent": "Telegram Orchestrator 추가",
   "mobile.server.connectors.telegram.disconnectTitle": "{chat} 연결을 해제할까요?",
   "mobile.server.connectors.telegram.disconnectBody":
-    "OpenBot 봇이 {chat}에서 나가고, OpenBot이 그곳에서 답변을 중지해요.",
-  "mobile.server.connectors.telegram.disconnectKept": "대화와 Telegram Orchestrator는 OpenBot에 그대로 남아 있어요.",
+    "OpenBot-NC 봇이 {chat}에서 나가고, OpenBot-NC가 그곳에서 답변을 중지해요.",
+  "mobile.server.connectors.telegram.disconnectKept": "대화와 Telegram Orchestrator는 OpenBot-NC에 그대로 남아 있어요.",
   "mobile.server.connectors.telegram.disconnectDeleted":
-    "마지막 채팅이므로 Telegram Orchestrator와 해당 대화가 OpenBot에서 삭제돼요.",
+    "마지막 채팅이므로 Telegram Orchestrator와 해당 대화가 OpenBot-NC에서 삭제돼요.",
   "mobile.server.connectors.whatsapp.title": "WhatsApp",
   "mobile.server.connectors.whatsapp.description":
     "WhatsApp 번호를 이 서버에 연결하세요. WhatsApp 오케스트레이터가 알맞은 에이전트에게 물어보고 답해요.",
@@ -727,29 +729,29 @@ export const messages = {
   "mobile.server.connectors.whatsapp.numbersTitle": "번호",
   "mobile.server.connectors.whatsapp.linkNumber": "번호 연결",
   "mobile.server.connectors.whatsapp.ownNumberNote":
-    "“나에게 메시지 보내기” 채팅과 허용한 사람들이 OpenBot에 연락할 수 있어요.",
+    "“나에게 메시지 보내기” 채팅과 허용한 사람들이 OpenBot-NC에 연락할 수 있어요.",
   "mobile.server.connectors.whatsapp.dedicatedNote":
-    "“나에게 메시지 보내기” 채팅과 허용한 사람들이 OpenBot에 연락할 수 있어요. 다른 사람은 나에게 알려 줄 코드를 받아요.",
+    "“나에게 메시지 보내기” 채팅과 허용한 사람들이 OpenBot-NC에 연락할 수 있어요. 다른 사람은 나에게 알려 줄 코드를 받아요.",
   "mobile.server.connectors.whatsapp.helpLoggedOut":
     "WhatsApp이 연결된 기기에서 이 서버를 삭제했어요. 번호를 다시 연결해 주세요.",
   "mobile.server.connectors.whatsapp.helpError":
-    "OpenBot이 이 번호로 WhatsApp에 접근할 수 없어요. 다시 연결하거나 번호 연결을 해제해 주세요.",
+    "OpenBot-NC가 이 번호로 WhatsApp에 접근할 수 없어요. 다시 연결하거나 번호 연결을 해제해 주세요.",
   "mobile.server.connectors.whatsapp.helpKeysUnreadable":
-    "OpenBot이 이 번호에 저장된 키를 읽을 수 없어요. 번호를 다시 연결해 주세요.",
-  "mobile.server.connectors.whatsapp.retryAt": "WhatsApp이 OpenBot에 기다리라고 요청했어요. {time}에 다시 시도해요.",
+    "OpenBot-NC가 이 번호에 저장된 키를 읽을 수 없어요. 번호를 다시 연결해 주세요.",
+  "mobile.server.connectors.whatsapp.retryAt": "WhatsApp이 OpenBot-NC에 기다리라고 요청했어요. {time}에 다시 시도해요.",
   "mobile.server.connectors.whatsapp.linkAgain": "다시 연결",
   "mobile.server.connectors.whatsapp.ownNumber": "개인 번호",
   "mobile.server.connectors.whatsapp.ownNumberDescription":
-    "“나에게 메시지 보내기” 채팅과 허용한 사람들만 메시지를 보낼 수 있어요. 다른 사람에게는 답장하지 않아요. 끄면 OpenBot이 모르는 사람에게 코드를 답장해요.",
+    "“나에게 메시지 보내기” 채팅과 허용한 사람들만 메시지를 보낼 수 있어요. 다른 사람에게는 답장하지 않아요. 끄면 OpenBot-NC가 모르는 사람에게 코드를 답장해요.",
   "mobile.server.connectors.whatsapp.workingMessage": "“작업 중이에요…” 메시지",
   "mobile.server.connectors.whatsapp.workingMessageDescription":
-    "에이전트가 작업하는 동안 OpenBot이 보내고, 이후 답변으로 바꿔요. 이전 요청을 기다리는 요청에는 대기 메시지도 보내요. 개인 번호에서는 “나에게 메시지 보내기” 채팅에만 이 메시지를 보내요. 답변만 보내려면 끄세요.",
+    "에이전트가 작업하는 동안 OpenBot-NC가 보내고, 이후 답변으로 바꿔요. 이전 요청을 기다리는 요청에는 대기 메시지도 보내요. 개인 번호에서는 “나에게 메시지 보내기” 채팅에만 이 메시지를 보내요. 답변만 보내려면 끄세요.",
   "mobile.server.connectors.whatsapp.statusReactions": "상태 반응",
   "mobile.server.connectors.whatsapp.statusReactionsDescription":
-    "메시지가 도착하면 OpenBot이 👀로, 답변이 준비되면 ✅로 반응해요. 반응을 보내지 않으려면 끄세요.",
+    "메시지가 도착하면 OpenBot-NC가 👀로, 답변이 준비되면 ✅로 반응해요. 반응을 보내지 않으려면 끄세요.",
   "mobile.server.connectors.whatsapp.orchestratorTitle": "WhatsApp 오케스트레이터",
   "mobile.server.connectors.whatsapp.orchestratorDescription":
-    "이 에이전트가 연결된 모든 번호에서 OpenBot에게 오는 메시지를 받아요. 짧은 요청은 직접 답하고, 나머지는 알맞은 에이전트에게 맡긴 뒤 WhatsApp에서 답해요.",
+    "이 에이전트가 연결된 모든 번호에서 OpenBot-NC에게 오는 메시지를 받아요. 짧은 요청은 직접 답하고, 나머지는 알맞은 에이전트에게 맡긴 뒤 WhatsApp에서 답해요.",
   "mobile.server.connectors.whatsapp.orchestratorNone":
     "WhatsApp 오케스트레이터를 추가하지 않으면 WhatsApp에는 답변이 가지 않아요.",
   "mobile.server.connectors.whatsapp.addAgent": "WhatsApp 오케스트레이터 추가",
@@ -758,14 +760,14 @@ export const messages = {
   "mobile.server.connectors.whatsapp.linkTitle": "WhatsApp 연결",
   "mobile.server.connectors.whatsapp.linkDescription": "번호를 선택한 다음 휴대폰의 WhatsApp에서 이 서버를 연결하세요.",
   "mobile.server.connectors.whatsapp.codeOnly":
-    "휴대폰에서는 페어링 코드로 연결합니다. QR 코드를 스캔하려면 컴퓨터의 OpenBot을 사용하세요.",
+    "휴대폰에서는 페어링 코드로 연결합니다. QR 코드를 스캔하려면 컴퓨터의 OpenBot-NC를 사용하세요.",
   "mobile.server.connectors.whatsapp.kindLabel": "번호",
   "mobile.server.connectors.whatsapp.kindPersonal": "내 개인 번호",
   "mobile.server.connectors.whatsapp.kindPersonalDescription":
-    "OpenBot은 “나에게 메시지 보내기” 채팅과 허용한 사람들에게만 답해요. 다른 사람에게는 답장하지 않아요.",
-  "mobile.server.connectors.whatsapp.kindDedicated": "OpenBot 전용 번호",
+    "OpenBot-NC는 “나에게 메시지 보내기” 채팅과 허용한 사람들에게만 답해요. 다른 사람에게는 답장하지 않아요.",
+  "mobile.server.connectors.whatsapp.kindDedicated": "OpenBot-NC 전용 번호",
   "mobile.server.connectors.whatsapp.kindDedicatedDescription":
-    "OpenBot이 이 번호로 모르는 사람마다 나에게 알려 줄 코드를 답장해요. 여기에서 승인하세요.",
+    "OpenBot-NC가 이 번호로 모르는 사람마다 나에게 알려 줄 코드를 답장해요. 여기에서 승인하세요.",
   "mobile.server.connectors.whatsapp.phoneLabel": "전화번호",
   "mobile.server.connectors.whatsapp.phoneDescription": "+44 7700 900123처럼 국가 코드를 포함해 주세요.",
   "mobile.server.connectors.whatsapp.phoneInvalid": "국가 코드를 포함한 전화번호를 입력하세요.",
@@ -784,19 +786,19 @@ export const messages = {
   "mobile.server.connectors.whatsapp.failedBusy":
     "다른 연결이 진행 중이에요. 끝날 때까지 기다린 다음 다시 시도해 주세요.",
   "mobile.server.connectors.whatsapp.failedUnavailable":
-    "OpenBot이 WhatsApp에 연결할 수 없어요. 인터넷 연결을 확인하세요.",
+    "OpenBot-NC가 WhatsApp에 연결할 수 없어요. 인터넷 연결을 확인하세요.",
   "mobile.server.connectors.whatsapp.tryAgain": "다시 시도",
   "mobile.server.connectors.whatsapp.agentStepDescription":
-    "이 새 에이전트가 {number} 및 이후에 연결하는 모든 번호에서 OpenBot에게 오는 메시지에 답해요.",
-  "mobile.server.connectors.whatsapp.doneTitle": "OpenBot이 {number}에 연결되었어요",
+    "이 새 에이전트가 {number} 및 이후에 연결하는 모든 번호에서 OpenBot-NC에게 오는 메시지에 답해요.",
+  "mobile.server.connectors.whatsapp.doneTitle": "OpenBot-NC가 {number}에 연결되었어요",
   "mobile.server.connectors.whatsapp.done": "완료",
   "mobile.server.connectors.whatsapp.disconnectTitle": "{number} 연결을 해제할까요?",
   "mobile.server.connectors.whatsapp.disconnectBody":
-    "OpenBot이 {number}의 WhatsApp에서 로그아웃해요. OpenBot이 꺼져 있었다면 WhatsApp > 연결된 기기에서도 기기를 삭제하세요.",
+    "OpenBot-NC가 {number}의 WhatsApp에서 로그아웃해요. OpenBot-NC가 꺼져 있었다면 WhatsApp > 연결된 기기에서도 기기를 삭제하세요.",
   "mobile.server.connectors.whatsapp.disconnectEffect": "더 이상 {number}을(를) 통해 내 에이전트에게 연락할 수 없어요.",
-  "mobile.server.connectors.whatsapp.removeEffectKept": "대화와 WhatsApp 오케스트레이터는 OpenBot에 그대로 남아요.",
+  "mobile.server.connectors.whatsapp.removeEffectKept": "대화와 WhatsApp 오케스트레이터는 OpenBot-NC에 그대로 남아요.",
   "mobile.server.connectors.whatsapp.removeEffectDeleted":
-    "마지막 번호라서 WhatsApp 오케스트레이터와 대화가 OpenBot에서 삭제돼요.",
+    "마지막 번호라서 WhatsApp 오케스트레이터와 대화가 OpenBot-NC에서 삭제돼요.",
   "mobile.server.connectors.whatsapp.keep": "연결 유지",
   "mobile.server.connectors.whatsapp.sendersTitle": "{number}에 메시지를 보낼 수 있는 사람",
   "mobile.server.connectors.whatsapp.sendersDescription": "이 연락처와 그룹은 내 에이전트에게 작업을 맡길 수 있어요.",
@@ -808,7 +810,7 @@ export const messages = {
   "mobile.server.connectors.whatsapp.makeReadOnly": "읽기 전용으로 설정",
   "mobile.server.connectors.whatsapp.allowWork": "작업 요청 허용",
   "mobile.server.connectors.whatsapp.readOnlyDetail":
-    "읽기 전용: 에이전트는 이 채팅을 읽을 수 있지만 OpenBot은 여기에 절대 쓰지 않습니다.",
+    "읽기 전용: 에이전트는 이 채팅을 읽을 수 있지만 OpenBot-NC는 여기에 절대 쓰지 않습니다.",
   "mobile.server.connectors.whatsapp.addContact": "연락처 추가",
   "mobile.server.connectors.whatsapp.addGroup": "그룹 추가",
   "mobile.server.connectors.whatsapp.contactTitle": "연락처 추가",
@@ -822,7 +824,7 @@ export const messages = {
     "이 그룹의 사람들은 이 번호를 멘션하거나 이 번호의 메시지에 답장하면 내 에이전트에게 작업을 맡길 수 있어요.",
   "mobile.server.connectors.whatsapp.groupSearch": "그룹 검색",
   "mobile.server.connectors.whatsapp.groupsLoading": "그룹을 읽는 중이에요…",
-  "mobile.server.connectors.whatsapp.groupsLoadFailed": "OpenBot이 그룹을 읽지 못했어요",
+  "mobile.server.connectors.whatsapp.groupsLoadFailed": "OpenBot-NC가 그룹을 읽지 못했어요",
   "mobile.server.connectors.whatsapp.groupsEmpty": "이 번호가 속한 그룹이 없어요.",
   "mobile.server.connectors.whatsapp.groupsNoMatch": "이 이름의 그룹이 없어요.",
   "mobile.server.connectors.whatsapp.groupAdded": "추가됨",
@@ -845,9 +847,9 @@ export const messages = {
   "mobile.server.providers.loadFailed": "이 서버의 제공자를 불러오지 못했어요.",
   "mobile.server.providers.runtimesFailed": "이 서버의 다운로드 목록을 불러오지 못했어요.",
   "mobile.server.providers.unavailable": "제공자를 관리하려면 소유자나 관리자로 이 서버에 연결하세요.",
-  "mobile.server.providers.unsupported": "여기에서 제공자를 관리하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+  "mobile.server.providers.unsupported": "여기에서 제공자를 관리하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.providers.signInUnsupported": "이 서버는 휴대폰에서 이 제공자에 로그인할 수 없어요.",
-  "mobile.server.providers.actionFailed": "OpenBot에서 이 작업을 완료하지 못했어요. 다시 시도해 주세요.",
+  "mobile.server.providers.actionFailed": "OpenBot-NC에서 이 작업을 완료하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.providers.openFailed": "로그인 페이지를 열지 못했어요.",
   "mobile.server.providers.copyFailed": "코드를 복사하지 못했어요.",
   "mobile.server.providers.statusLabel": "상태",
@@ -856,10 +858,10 @@ export const messages = {
   "mobile.server.providers.connect": "연결",
   "mobile.server.providers.reconnect": "다시 연결",
   "mobile.server.providers.connectHint":
-    "서버가 로그인을 시작합니다. 그다음 OpenBot이 단계를 보여 주며, 이 휴대폰에서 완료합니다.",
+    "서버가 로그인을 시작합니다. 그다음 OpenBot-NC가 단계를 보여 주며, 이 휴대폰에서 완료합니다.",
   "mobile.server.providers.relayHint":
-    "OpenBot이 이 휴대폰에서 제공업체의 로그인 페이지를 엽니다. 무언가를 복사해 와야 하면 OpenBot이 먼저 단계를 보여 줍니다.",
-  "mobile.server.providers.connectOnComputer": "컴퓨터의 OpenBot에서 이 제공자를 연결하세요.",
+    "OpenBot-NC가 이 휴대폰에서 제공업체의 로그인 페이지를 엽니다. 무언가를 복사해 와야 하면 OpenBot-NC가 먼저 단계를 보여 줍니다.",
+  "mobile.server.providers.connectOnComputer": "컴퓨터의 OpenBot-NC에서 이 제공자를 연결하세요.",
   "mobile.server.providers.signInTo": "{name}에 로그인",
   "mobile.server.providers.starting": "서버에서 로그인을 시작하는 중…",
   "mobile.server.providers.openPage": "로그인 페이지 열기",
@@ -870,15 +872,15 @@ export const messages = {
     "컴퓨터의 ChatGPT에서 보안 설정을 열고 Codex용 기기 코드 로그인을 켜세요. 회사 계정은 워크스페이스 관리자가 켜요.",
   "mobile.server.providers.codeStepCopy": "코드를 복사합니다.",
   "mobile.server.providers.codeStepEnter": "로그인 페이지를 열고 코드를 입력합니다.",
-  "mobile.server.providers.codeStepReturn": "OpenBot으로 돌아옵니다. 로그인은 자동으로 완료됩니다.",
+  "mobile.server.providers.codeStepReturn": "OpenBot-NC로 돌아옵니다. 로그인은 자동으로 완료됩니다.",
   "mobile.server.providers.pasteStepSignIn": "로그인 페이지를 열고 로그인합니다.",
   "mobile.server.providers.pasteStepCopy": "페이지에 표시된 코드를 복사합니다.",
-  "mobile.server.providers.pasteStepReturn": "OpenBot으로 돌아와 아래에 코드를 붙여 넣습니다.",
+  "mobile.server.providers.pasteStepReturn": "OpenBot-NC로 돌아와 아래에 코드를 붙여 넣습니다.",
   "mobile.server.providers.relayStepSignIn": "로그인 페이지를 열고 로그인합니다.",
   "mobile.server.providers.relayStepBlank": "마지막 페이지는 로드되지 않습니다. 정상입니다.",
   "mobile.server.providers.relayStepCopy": "주소 표시줄을 탭하고 전체 주소를 복사합니다.",
-  "mobile.server.providers.relayStepReturn": "OpenBot으로 돌아와 아래에 주소를 붙여 넣습니다.",
-  "mobile.server.providers.linkHint": "페이지에서 로그인하세요. 이후에는 OpenBot이 자동으로 이어가요.",
+  "mobile.server.providers.relayStepReturn": "OpenBot-NC로 돌아와 아래에 주소를 붙여 넣습니다.",
+  "mobile.server.providers.linkHint": "페이지에서 로그인하세요. 이후에는 OpenBot-NC가 자동으로 이어가요.",
   "mobile.server.providers.relayWaiting": "서버의 로그인 페이지를 기다리는 중…",
   "mobile.server.providers.code": "페이지의 코드",
   "mobile.server.providers.codePlaceholder": "여기에 코드 붙여 넣기",
@@ -943,7 +945,7 @@ export const messages = {
   "mobile.server.providers.accountsPooledHint":
     "에이전트가 이 계정들을 함께 써요. 새 계정은 이 휴대폰에서 계정 페이지로 로그인해요.",
   "mobile.server.providers.accountsPooledOnComputer":
-    "에이전트가 이 계정들을 함께 써요. 계정은 컴퓨터의 OpenBot에서 추가하세요.",
+    "에이전트가 이 계정들을 함께 써요. 계정은 컴퓨터의 OpenBot-NC에서 추가하세요.",
   "mobile.server.providers.inUse": "사용 중",
   "mobile.server.providers.notInPool": "풀 제외",
   "mobile.server.providers.leaveOutOfPool": "풀에서 제외",
@@ -1001,7 +1003,7 @@ export const messages = {
   "mobile.server.providers.disconnect": "연결 해제",
   "mobile.server.providers.disconnectTitle": "{name} 연결을 해제할까요?",
   "mobile.server.providers.disconnectBody":
-    "OpenBot이 서버에서 {provider} 로그아웃을 합니다. 에이전트는 {provider}에 다시 연결할 때까지 기다립니다.",
+    "OpenBot-NC가 서버에서 {provider} 로그아웃을 합니다. 에이전트는 {provider}에 다시 연결할 때까지 기다립니다.",
   "mobile.server.providers.resetUsage": "사용량 재설정",
   "mobile.server.providers.resettingUsage": "재설정 중…",
   "mobile.server.providers.resetUsageTitle": "{name}의 사용량을 재설정할까요?",
@@ -1019,7 +1021,7 @@ export const messages = {
   "mobile.server.providers.sectionRuntime": "런타임",
   "mobile.server.providers.updateTo": "{version}(으)로 업데이트",
   "mobile.server.providers.versionInstalledByUser": "{version} · 직접 설치함",
-  "mobile.server.providers.versionDownloaded": "{version} · OpenBot이 다운로드함",
+  "mobile.server.providers.versionDownloaded": "{version} · OpenBot-NC가 다운로드함",
   "mobile.server.providers.keyFree": "무료",
   "mobile.server.providers.keyOptional": "선택 사항이에요. 키를 추가하면 유료 모델을 사용할 수 있어요.",
   "mobile.server.providers.geminiKeyInUse":
@@ -1037,16 +1039,16 @@ export const messages = {
   "mobile.server.providers.defaultForNew": "새 에이전트 기본값",
   "mobile.server.providers.startsWith": "새 에이전트는 {name}(으)로 시작해요.",
   "mobile.server.providers.connectFirst": "먼저 {name}을(를) 연결하세요.",
-  "mobile.server.mcp.unsupported": "여기에서 MCP 서버를 관리하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+  "mobile.server.mcp.unsupported": "여기에서 MCP 서버를 관리하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.mcp.unavailable": "MCP 서버를 관리하려면 소유자나 관리자로 이 서버에 연결하세요.",
-  "mobile.server.mcp.accessUnsupported": "MCP 서버를 받을 대상을 선택하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+  "mobile.server.mcp.accessUnsupported": "MCP 서버를 받을 대상을 선택하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.mcp.loading": "MCP 서버 불러오는 중…",
   "mobile.server.mcp.gone": "이 MCP 서버는 더 이상 이 서버에 없어요.",
   "mobile.server.mcp.addTitle": "MCP 서버 추가",
   "mobile.server.mcp.addConfirm": "추가",
   "mobile.server.mcp.name": "이름",
   "mobile.server.mcp.namePlaceholder": "MCP 서버 이름",
-  "mobile.server.mcp.nameReserved": "OpenBot에서 이미 {name} 이름을 사용하고 있어요.",
+  "mobile.server.mcp.nameReserved": "OpenBot-NC에서 이미 {name} 이름을 사용하고 있어요.",
   "mobile.server.mcp.transport": "전송 방식",
   "mobile.server.mcp.stdio": "명령 (STDIO)",
   "mobile.server.mcp.http": "URL (HTTP)",
@@ -1057,12 +1059,12 @@ export const messages = {
   "mobile.server.mcp.command": "명령",
   "mobile.server.mcp.commandHint": "프로그램만 입력하세요. 뒤에 오는 각 단어는 인수에 넣으세요.",
   "mobile.server.mcp.arguments": "인수",
-  "mobile.server.mcp.argumentsHint": "OpenBot은 각 인수를 프로그램에 하나의 단어로 전달해요.",
+  "mobile.server.mcp.argumentsHint": "OpenBot-NC는 각 인수를 프로그램에 하나의 단어로 전달해요.",
   "mobile.server.mcp.addArgument": "인수 추가",
   "mobile.server.mcp.argument": "인수 {position}",
   "mobile.server.mcp.removeArgument": "인수 {position} 삭제",
   "mobile.server.mcp.environment": "환경 변수",
-  "mobile.server.mcp.environmentHint": "OpenBot은 MCP 서버를 시작할 때 이 변수들을 전달해요.",
+  "mobile.server.mcp.environmentHint": "OpenBot-NC는 MCP 서버를 시작할 때 이 변수들을 전달해요.",
   "mobile.server.mcp.addVariable": "변수 추가",
   "mobile.server.mcp.variableKey": "변수 {position} 이름",
   "mobile.server.mcp.variableValue": "변수 {position} 값",
@@ -1077,7 +1079,7 @@ export const messages = {
   "mobile.server.mcp.url": "서버 URL",
   "mobile.server.mcp.urlInvalid": "http 또는 https 주소를 입력해 주세요.",
   "mobile.server.mcp.headers": "헤더",
-  "mobile.server.mcp.headersHint": "OpenBot은 모든 요청에 이 헤더를 함께 보내요.",
+  "mobile.server.mcp.headersHint": "OpenBot-NC는 모든 요청에 이 헤더를 함께 보내요.",
   "mobile.server.mcp.addHeader": "헤더 추가",
   "mobile.server.mcp.headerName": "헤더 {position} 이름",
   "mobile.server.mcp.headerValue": "헤더 {position} 값",
@@ -1092,7 +1094,7 @@ export const messages = {
   "mobile.server.mcp.testFailed": "MCP 서버가 응답하지 않았어요.",
   "mobile.server.mcp.connected": { other: "연결됨 · 도구 {count}개" },
   "mobile.server.mcp.signInOnComputer":
-    "이 MCP 서버는 로그인이 필요해요. 컴퓨터의 OpenBot에서 로그인한 다음 다시 테스트하세요.",
+    "이 MCP 서버는 로그인이 필요해요. 컴퓨터의 OpenBot-NC에서 로그인한 다음 다시 테스트하세요.",
   "mobile.server.mcp.signIn": "로그인",
   "mobile.server.mcp.signInHere": "이 MCP 서버는 로그인을 요청합니다. 로그인을 탭한 다음 다시 테스트하세요.",
   "mobile.server.mcp.signedInDescription": "{server}이(가) 이 MCP 서버에 로그인되어 있어요.",
@@ -1149,8 +1151,8 @@ export const messages = {
   "mobile.server.settings.updates": "업데이트",
   "mobile.server.settings.updateAvailable": "업데이트 가능",
   "mobile.server.route.updates": "업데이트",
-  "mobile.server.update.hostTitle": "{name}의 OpenBot",
-  "mobile.server.update.version": "OpenBot {version}",
+  "mobile.server.update.hostTitle": "{name}의 OpenBot-NC",
+  "mobile.server.update.version": "OpenBot-NC {version}",
   "mobile.server.update.status.idle": "업데이트를 확인해 최신 릴리스를 찾아보세요.",
   "mobile.server.update.status.checking": "업데이트 확인 중…",
   "mobile.server.update.status.available": "{version}을(를) 사용할 수 있어요.",
@@ -1158,27 +1160,28 @@ export const messages = {
   "mobile.server.update.status.downloadingUnknown": "{version} 다운로드 중…",
   "mobile.server.update.status.ready": "{version} 다운로드가 완료되었어요.",
   "mobile.server.update.status.installing": "{name}이(가) 업데이트를 설치하기 위해 다시 시작하는 중이에요.",
-  "mobile.server.update.status.upToDate": "{name}의 OpenBot은 최신 상태예요.",
+  "mobile.server.update.status.upToDate": "{name}의 OpenBot-NC는 최신 상태예요.",
   "mobile.server.update.status.checkFailed": "{name}에서 업데이트를 확인하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.update.status.downloadFailed": "{name}에서 업데이트를 다운로드하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.update.status.installFailed":
-    "{name}에서 업데이트를 설치하지 못했어요. 해당 컴퓨터의 다른 사용자가 OpenBot을 실행하고 있지 않은지 확인한 다음 다시 시도해 주세요.",
+    "{name}에서 업데이트를 설치하지 못했어요. 해당 컴퓨터의 다른 사용자가 OpenBot-NC를 실행하고 있지 않은지 확인한 다음 다시 시도해 주세요.",
   "mobile.server.update.releaseCheckFailed":
     "{name}에서 릴리스 피드를 읽지 못했어요. 호스트의 네트워크 연결을 확인한 다음 다시 시도해 주세요.",
   "mobile.server.update.releaseUnavailable":
     "이 빌드에서는 릴리스를 확인할 수 없어요. 호스트 관리자에게 호환되는 릴리스를 확인해 달라고 요청하세요.",
   "mobile.server.update.externalTitle": "호스트에서 설치를 관리해요",
   "mobile.server.update.path.hostManager":
-    "모든 사용자가 대기 상태일 때 OpenBot Host Manager가 업데이트를 설치해요. 업데이트가 시작되지 않으면 호스트 관리자에게 Host Manager 상태를 확인해 달라고 요청하세요.",
+    "모든 사용자가 대기 상태일 때 OpenBot-NC Host Manager가 업데이트를 설치해요. 업데이트가 시작되지 않으면 호스트 관리자에게 Host Manager 상태를 확인해 달라고 요청하세요.",
   "mobile.server.update.path.hosted":
     "호스팅 서비스가 백그라운드에서 업데이트를 다운로드해요. 다운로드된 업데이트는 서버가 다음에 시작될 때 적용돼요. 서버를 중지했다가 재개하기 전에 진행 중인 작업이 끝나기를 기다리세요. 이전 버전에서 바뀌지 않으면 호스트 관리자에게 문의하세요.",
   "mobile.server.update.path.system":
-    "호스트에서 sudo openbot update를 실행해 최신 릴리스를 설치하세요. 이 명령은 OpenBot을 중지해요. 먼저 진행 중인 작업이 끝나기를 기다리세요. 자동 다운로드는 다음 부팅 때 설치돼요.",
+    "호스트에서 sudo openbot update를 실행해 최신 릴리스를 설치하세요. 이 명령은 OpenBot-NC를 중지해요. 먼저 진행 중인 작업이 끝나기를 기다리세요. 자동 다운로드는 다음 부팅 때 설치돼요.",
   "mobile.server.update.path.container":
-    "Docker 호스트에서 새 OpenBot 이미지를 가져오고 같은 데이터 볼륨으로 컨테이너를 다시 만드세요. 먼저 진행 중인 작업이 끝나기를 기다리세요. 데이터를 보존하려면 기존 볼륨을 유지하세요.",
+    "Docker 호스트에서 새 OpenBot-NC 이미지를 가져오고 같은 데이터 볼륨으로 컨테이너를 다시 만드세요. 먼저 진행 중인 작업이 끝나기를 기다리세요. 데이터를 보존하려면 기존 볼륨을 유지하세요.",
   "mobile.server.update.path.manual":
-    "이 설치본은 스스로 교체할 수 없어요. 호스트 관리자에게 github.com/nightly-labs/openbot/releases에서 호환되는 릴리스를 설치해 달라고 요청하세요. 기존 OpenBot 데이터는 유지하세요.",
-  "mobile.server.update.path.unavailable": "개발 빌드예요. 업데이트를 확인하려면 설치된 OpenBot 릴리스를 사용하세요.",
+    "이 설치본은 스스로 교체할 수 없어요. 호스트 관리자에게 github.com/nightly-labs/openbot/releases에서 호환되는 릴리스를 설치해 달라고 요청하세요. 기존 OpenBot-NC 데이터는 유지하세요.",
+  "mobile.server.update.path.unavailable":
+    "개발 빌드예요. 업데이트를 확인하려면 설치된 OpenBot-NC 릴리스를 사용하세요.",
   "mobile.server.update.check": "업데이트 확인",
   "mobile.server.update.start": "대기 상태일 때 업데이트",
   "mobile.server.update.restartNow": "지금 다시 시작",
@@ -1188,27 +1191,27 @@ export const messages = {
   "mobile.server.update.requestedBy": "{member} 님이 이 업데이트를 요청했어요.",
   "mobile.server.update.automatic": "{name}이(가) 업데이트를 자동으로 설치해요.",
   "mobile.server.update.autoDownloadTitle": "업데이트 자동 다운로드",
-  "mobile.server.update.autoDownloadDescription": "{name}이(가) OpenBot의 새 버전이 나오면 자동으로 다운로드해요.",
+  "mobile.server.update.autoDownloadDescription": "{name}이(가) OpenBot-NC의 새 버전이 나오면 자동으로 다운로드해요.",
   "mobile.server.update.autoInstallTitle": "업데이트 자동 설치",
   "mobile.server.update.autoInstallDescription":
     "에이전트가 대기 상태가 되면 {name}이(가) 다시 시작해 다운로드된 업데이트를 설치해요. 멤버는 잠시 연결이 끊겼다가 자동으로 다시 연결돼요.",
   "mobile.server.update.waitingFor": "{reasons}을(를) 기다리는 중이에요.",
   "mobile.server.update.disabledTitle": "원격 업데이트가 꺼져 있어요",
   "mobile.server.update.disabledDescription":
-    "{name} 사용자가 서버 멤버의 업데이트를 껐어요. OpenBot을 업데이트하거나, 그 컴퓨터에서 설정 > 업데이트를 열고 ‘서버 멤버의 업데이트 허용’을 켜 달라고 요청하세요.",
+    "{name} 사용자가 서버 멤버의 업데이트를 껐어요. OpenBot-NC를 업데이트하거나, 그 컴퓨터에서 설정 > 업데이트를 열고 ‘서버 멤버의 업데이트 허용’을 켜 달라고 요청하세요.",
   "mobile.server.update.managedTitle": "Host Manager가 업데이트를 관리해요",
   "mobile.server.update.managedDescription":
-    "OpenBot Host Manager가 {name}을(를) 업데이트해요. 호스트 관리자에게 문의하세요.",
+    "OpenBot-NC Host Manager가 {name}을(를) 업데이트해요. 호스트 관리자에게 문의하세요.",
   "mobile.server.update.unsupportedTitle": "{name}은(는) 스스로 업데이트할 수 없어요",
   "mobile.server.update.unsupportedDescription":
-    "이 OpenBot 빌드에는 업데이터가 없어요. {name}에 새 버전을 설치하세요.",
+    "이 OpenBot-NC 빌드에는 업데이터가 없어요. {name}에 새 버전을 설치하세요.",
   "mobile.server.update.restarting": "다시 시작 중…",
   "mobile.server.update.loadFailed": "{name}의 업데이트 상태를 불러오지 못했어요.",
-  "mobile.server.update.dialog.offerTitle": "{name}을(를) OpenBot {version}(으)로 업데이트",
+  "mobile.server.update.dialog.offerTitle": "{name}을(를) OpenBot-NC {version}(으)로 업데이트",
   "mobile.server.update.dialog.offerDescription":
-    "{name}은(는) OpenBot {current}을(를) 사용 중이에요. 먼저 업데이트를 다운로드한 다음 다시 시작해요.",
+    "{name}은(는) OpenBot-NC {current}을(를) 사용 중이에요. 먼저 업데이트를 다운로드한 다음 다시 시작해요.",
   "mobile.server.update.dialog.offerReadyDescription":
-    "{name}은(는) OpenBot {current}을(를) 사용 중이에요. 업데이트가 다운로드되었어요. 설치하려면 {name}이(가) 다시 시작돼요.",
+    "{name}은(는) OpenBot-NC {current}을(를) 사용 중이에요. 업데이트가 다운로드되었어요. 설치하려면 {name}이(가) 다시 시작돼요.",
   "mobile.server.update.dialog.waitIdleDescription": "에이전트 턴과 루틴 실행이 끝날 때까지 다시 시작을 기다려요.",
   "mobile.server.update.dialog.updateNow": "지금 업데이트",
   "mobile.server.update.dialog.restartWhenIdle": "대기 상태일 때 다시 시작",
@@ -1223,10 +1226,10 @@ export const messages = {
   "mobile.server.update.reason.fileTransfer": "파일 전송",
   "mobile.server.update.reason.browserControl": "에이전트의 브라우저 제어",
   "mobile.server.update.reason.updateOperation": "다른 업데이트 단계",
-  "mobile.server.update.reason.initialization": "OpenBot 시작",
+  "mobile.server.update.reason.initialization": "OpenBot-NC 시작",
   "mobile.server.update.reason.other": "기타 작업",
   "mobile.server.update.actionFailed": "서버 작업에 실패했어요.",
-  "mobile.server.update.unavailable": "OpenBot 업데이트를 보려면 이 서버에 연결하세요.",
+  "mobile.server.update.unavailable": "OpenBot-NC 업데이트를 보려면 이 서버에 연결하세요.",
   "mobile.server.update.loading": "업데이트 불러오는 중…",
   "mobile.server.route.sites": "사이트",
   "mobile.server.settings.sites": "사이트",
@@ -1246,13 +1249,13 @@ export const messages = {
   "mobile.server.sites.deleteDescription": "이 주소는 즉시 410 Gone을 반환해요.",
   "mobile.server.sites.deleteFailed": "사이트를 삭제하지 못했어요.",
   "mobile.server.sites.openFailed": "사이트를 열지 못했어요.",
-  "mobile.server.sites.unsupported": "여기에서 사이트를 보려면 이 서버의 OpenBot을 업데이트해 주세요.",
+  "mobile.server.sites.unsupported": "여기에서 사이트를 보려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.sites.offline": "사이트를 보려면 이 서버에 연결하세요.",
   "mobile.server.route.roles": "권한",
   "mobile.server.route.role": "역할",
   "mobile.server.roles.description":
     "멤버가 사용할 수 있는 에이전트를 선택하세요. 소유자와 관리자는 모든 에이전트를 사용할 수 있어요.",
-  "mobile.server.roles.unsupported": "역할을 관리하려면 이 서버의 OpenBot을 업데이트해 주세요.",
+  "mobile.server.roles.unsupported": "역할을 관리하려면 이 서버의 OpenBot-NC를 업데이트해 주세요.",
   "mobile.server.roles.unavailable": "온라인 서버의 소유자나 관리자만 역할을 관리할 수 있어요.",
   "mobile.server.roles.loading": "역할 불러오는 중…",
   "mobile.server.roles.loadFailed": "이 서버의 역할을 불러오지 못했어요.",
@@ -1287,7 +1290,7 @@ export const messages = {
   "mobile.server.route.audit": "감사 로그",
   "mobile.server.audit.description":
     "이 서버의 멤버, 역할, 에이전트 접근 변경 내역을 최신순으로 보여줘요. 호스트는 최근 500개의 변경 내역을 보관해요.",
-  "mobile.server.audit.unsupported": "감사 로그를 보려면 이 서버의 OpenBot을 업데이트하세요.",
+  "mobile.server.audit.unsupported": "감사 로그를 보려면 이 서버의 OpenBot-NC를 업데이트하세요.",
   "mobile.server.audit.unavailable": "온라인 서버의 소유자나 관리자만 감사 로그를 볼 수 있어요.",
   "mobile.server.audit.loading": "변경 내역을 불러오는 중…",
   "mobile.server.audit.loadFailed": "이 서버의 감사 로그를 불러올 수 없었어요.",
@@ -1314,7 +1317,7 @@ export const messages = {
   "mobile.server.audit.agentLevel": "{role}의 {agent}: {change}",
   "mobile.server.settings.importAgents": "에이전트 가져오기",
   "mobile.server.route.import": "에이전트 가져오기",
-  "mobile.server.import.unsupported": "여기서 에이전트를 가져오려면 이 서버의 OpenBot을 업데이트하세요.",
+  "mobile.server.import.unsupported": "여기서 에이전트를 가져오려면 이 서버의 OpenBot-NC를 업데이트하세요.",
   "mobile.server.import.unavailable": "에이전트를 가져오려면 이 서버에 연결하세요.",
   "mobile.server.import.count.agent": { other: "에이전트 {count}개" },
   "mobile.server.import.count.channel": { other: "채널 {count}개" },
@@ -1323,10 +1326,10 @@ export const messages = {
   "mobile.server.import.count.memory": { other: "메모리 {count}개" },
   "mobile.server.import.count.file": { other: "파일 {count}개" },
   "mobile.server.import.sourceTitle": "에이전트가 지금 어디에 있나요?",
-  "mobile.server.import.sourceLede": "OpenBot이 이 서버로 복사해요. 변경하기 전에 모든 항목을 확인할 수 있어요.",
+  "mobile.server.import.sourceLede": "OpenBot-NC가 이 서버로 복사해요. 변경하기 전에 모든 항목을 확인할 수 있어요.",
   "mobile.server.import.hermesNote": "Hermes에서 .zip 파일을 내보내세요.",
   "mobile.server.import.grokNote": "클라우드에 있어요. 그곳의 내보내기 에이전트가 .zip 파일을 만들어요.",
-  "mobile.server.import.transfer": "다른 OpenBot 서버",
+  "mobile.server.import.transfer": "다른 OpenBot-NC 서버",
   "mobile.server.import.transferNote": "에이전트와 설정을 함께 옮기려면 이전을 사용하세요.",
   "mobile.server.import.grokLede":
     "Grok Bot의 내보내기 에이전트가 이름, 지침, 아바타, 스킬, 루틴, 메모리와 포함하기로 한 파일을 .zip 파일 하나로 묶어요.",
@@ -1388,7 +1391,7 @@ export const messages = {
   "mobile.server.route.transferExport": "내보내기",
   "mobile.server.route.transferImport": "가져오기",
   "mobile.server.route.transferCopy": "다른 서버로 복사",
-  "mobile.server.transfer.unsupported": "여기서 이전하려면 이 서버의 OpenBot을 업데이트하세요.",
+  "mobile.server.transfer.unsupported": "여기서 이전하려면 이 서버의 OpenBot-NC를 업데이트하세요.",
   "mobile.server.transfer.unavailable": "이전하려면 소유자나 관리자로 이 서버에 연결하세요.",
   "mobile.server.transfer.title": "이 서버를 다른 컴퓨터로 옮기기",
   "mobile.server.transfer.lede": "이 서버의 에이전트와 스킬, 루틴, 메모리, 파일이 하나의 파일에 담겨요.",
@@ -1429,8 +1432,8 @@ export const messages = {
   "mobile.server.transfer.reading": "파일을 읽는 중…",
   "mobile.server.transfer.sending": "파일을 보내는 중… {percent}%",
   "mobile.server.transfer.openFailed": "파일을 열 수 없어요.",
-  "mobile.server.transfer.source": "OpenBot {version} · {date}에 내보냄",
-  "mobile.server.transfer.sourceNoDate": "OpenBot {version}",
+  "mobile.server.transfer.source": "OpenBot-NC {version} · {date}에 내보냄",
+  "mobile.server.transfer.sourceNoDate": "OpenBot-NC {version}",
   "mobile.server.transfer.importWarnings": "가져오기를 시작하기 전에",
   "mobile.server.transfer.importAgents": "파일 속 에이전트",
   "mobile.server.transfer.nameExists": "이미 사용 중인 이름",

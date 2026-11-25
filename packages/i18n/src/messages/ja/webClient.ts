@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/webClient";
 
 export const messages = {
-  "webClient.loading": "OpenBot を読み込んでいます…",
+  "webClient.loading": "OpenBot-NC を読み込んでいます…",
   "webClient.loadingLine.wake": "エージェントを起こしています…",
   "webClient.loadingLine.coffee": "エージェントにコーヒーを淹れています…",
   "webClient.loadingLine.tokens": "トークンを指で数えています…",
   "webClient.loadingLine.prompts": "プロンプトのもつれをほどいています…",
   "webClient.loadingLine.sleepy": "寝ている子にやさしくお願いしています…",
   "webClient.loadingLine.almost": "もうすぐです。たぶん。",
-  "webClient.slowLoad.title": "OpenBot の読み込みにいつもより時間がかかっています",
+  "webClient.slowLoad.title": "OpenBot-NC の読み込みにいつもより時間がかかっています",
   "webClient.slowLoad.body": "インターネット接続を確認してから、ページを再読み込みしてください。",
   "webClient.slowLoad.reload": "再読み込み",
   "webClient.pane.navigation": "ワークスペースのナビゲーション",
@@ -18,7 +18,7 @@ export const messages = {
   "webClient.notice.connecting": "サーバーに接続しています",
   "webClient.notice.findingHosts": "サーバーを探しています",
   "webClient.otherTab.title": "{name} は別のタブで開かれています",
-  "webClient.otherTab.description": "OpenBot は一度に 1 つのタブでのみサーバーを使用できます。",
+  "webClient.otherTab.description": "OpenBot-NC は一度に 1 つのタブでのみサーバーを使用できます。",
   "webClient.otherTab.useHere": "ここで使用",
   "webClient.agent.modelsFailed": "サーバーのモデルを読み込めませんでした。",
   "webClient.agent.refreshFailed":
@@ -28,7 +28,7 @@ export const messages = {
   "webClient.error.usageOffline": "使用量を表示するには、サーバーに接続してください。",
   "webClient.error.desktopOnly": "この操作はデスクトップアプリで使えます。",
   "webClient.settings.preferences.title": "環境設定",
-  "webClient.settings.preferences.description": "このブラウザーでの OpenBot の言語とサウンドを選びます。",
+  "webClient.settings.preferences.description": "このブラウザーでの OpenBot-NC の言語とサウンドを選びます。",
   "webClient.error.checkConversation": "もう一度送信する前に会話を確認してください。",
   "webClient.error.hostReported": "サーバーがエラーを報告しました。会話とサーバーの状態を確認してください。",
   "webClient.error.requestFailed": "リクエストに失敗しました。",
@@ -56,7 +56,7 @@ export const messages = {
   "webClient.error.identityChanged": "サーバーの ID が変わりました。接続を拒否しました。",
   "webClient.error.connectionUnavailable": "サーバーへの接続を利用できません。",
   "webClient.error.incompatible":
-    "このサーバーは OpenBot web に対応していません。サーバーをアップデートして、このページを再読み込みしてください。",
+    "このサーバーは OpenBot-NC web に対応していません。サーバーをアップデートして、このページを再読み込みしてください。",
   "webClient.error.sendUnconfirmed": "メッセージの配信が確認できません。もう一度送信する前に更新してください。",
   "webClient.error.fileType": "この種類のファイルを添付するには、サーバーをアップデートしてください。",
   "webClient.error.uploadCancelled": "添付ファイルのアップロードはキャンセルされました。",

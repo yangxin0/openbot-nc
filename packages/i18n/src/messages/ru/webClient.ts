@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/webClient";
 
 export const messages = {
-  "webClient.loading": "Загрузка OpenBot…",
+  "webClient.loading": "Загрузка OpenBot-NC…",
   "webClient.loadingLine.wake": "Будим агентов…",
   "webClient.loadingLine.coffee": "Наливаем агентам кофе…",
   "webClient.loadingLine.tokens": "Считаем токены на пальцах…",
   "webClient.loadingLine.prompts": "Распутываем промпты…",
   "webClient.loadingLine.sleepy": "Вежливо просим самого сонного…",
   "webClient.loadingLine.almost": "Почти готово. Наверное.",
-  "webClient.slowLoad.title": "OpenBot загружается дольше обычного",
+  "webClient.slowLoad.title": "OpenBot-NC загружается дольше обычного",
   "webClient.slowLoad.body": "Проверьте подключение к интернету, затем перезагрузите страницу.",
   "webClient.slowLoad.reload": "Перезагрузить",
   "webClient.pane.navigation": "Навигация по рабочему пространству",
@@ -18,7 +18,7 @@ export const messages = {
   "webClient.notice.connecting": "Подключение к вашему серверу",
   "webClient.notice.findingHosts": "Поиск ваших серверов",
   "webClient.otherTab.title": "{name} открыт в другой вкладке",
-  "webClient.otherTab.description": "OpenBot может использовать сервер только в одной вкладке одновременно.",
+  "webClient.otherTab.description": "OpenBot-NC может использовать сервер только в одной вкладке одновременно.",
   "webClient.otherTab.useHere": "Использовать здесь",
   "webClient.agent.modelsFailed": "Не удалось загрузить модели сервера.",
   "webClient.agent.refreshFailed":
@@ -28,7 +28,7 @@ export const messages = {
   "webClient.error.usageOffline": "Подключитесь к серверу, чтобы посмотреть использование.",
   "webClient.error.desktopOnly": "Это действие доступно в приложении для компьютера.",
   "webClient.settings.preferences.title": "Настройки",
-  "webClient.settings.preferences.description": "Выберите язык и звуки OpenBot в этом браузере.",
+  "webClient.settings.preferences.description": "Выберите язык и звуки OpenBot-NC в этом браузере.",
   "webClient.error.checkConversation": "Проверьте диалог, прежде чем отправлять снова.",
   "webClient.error.hostReported": "Сервер сообщил об ошибке. Проверьте диалог и состояние сервера.",
   "webClient.error.requestFailed": "Запрос не удался.",
@@ -55,7 +55,7 @@ export const messages = {
   "webClient.error.identityChanged": "Идентификатор сервера изменился. Подключение отклонено.",
   "webClient.error.connectionUnavailable": "Подключение к серверу недоступно.",
   "webClient.error.incompatible":
-    "Этот сервер несовместим с веб-версией OpenBot. Обновите сервер и перезагрузите страницу.",
+    "Этот сервер несовместим с веб-версией OpenBot-NC. Обновите сервер и перезагрузите страницу.",
   "webClient.error.sendUnconfirmed":
     "Доставка сообщения не подтверждена. Обновите страницу, прежде чем отправлять снова.",
   "webClient.error.fileType": "Обновите сервер, чтобы прикреплять файлы этого типа.",

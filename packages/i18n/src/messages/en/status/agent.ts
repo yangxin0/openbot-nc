@@ -36,7 +36,7 @@ export const messages = defineMessages("status.agent", {
   "status.agent.screenCaptureScreen": "Capture the main screen and send the image to the agent's model.",
   "status.agent.screenCaptureChannel":
     "The image shows in the channel {channel}, and each member of this server who reads the channel can see it.",
-  "status.agent.screenCapturePermissionNext": "macOS can then ask you to allow Screen Recording for OpenBot.",
+  "status.agent.screenCapturePermissionNext": "macOS can then ask you to allow Screen Recording for OpenBot-NC.",
   "status.agent.screenCaptureDisplay": "Capture the display {name} and send the image to the agent's model.",
   "status.agent.screenCaptureWindow": "Capture the window {name} and send the image to the agent's model.",
   "status.agent.screenCaptureRegion":
@@ -50,12 +50,12 @@ export const messages = defineMessages("status.agent", {
   "status.agent.sendIdea": "This becomes a public GitHub issue. Your name is not shown.",
   "status.agent.feedbackRecentErrors": "Recent errors in the chat:",
   "status.agent.feedbackSameAs": "Adds to issue #{issue}",
-  "status.agent.feedbackSent": "Sent to the OpenBot team: {title}",
+  "status.agent.feedbackSent": "Sent to the OpenBot-NC team: {title}",
   "status.agent.feedbackWithdrawn": "Removed from GitHub: {title}",
   "status.agent.browserProfileNamed":
     "Move {agents} to the browser profile {profile}. They get its sign-ins and cookies. Their open tabs close.",
-  "status.agent.commitCoAuthorOff": "Stop adding OpenBot as a co-author to the commits of all agents.",
-  "status.agent.commitCoAuthorOn": "Add OpenBot as a co-author to the commits of all agents again.",
+  "status.agent.commitCoAuthorOff": "Stop adding OpenBot-NC as a co-author to the commits of all agents.",
+  "status.agent.commitCoAuthorOn": "Add OpenBot-NC as a co-author to the commits of all agents again.",
   "status.agent.browserProfileNew":
     "Make the new browser profile {profile} and move {agents} to it. It has no sign-ins. Their open tabs close.",
   "status.agent.browserProfileShared":
@@ -115,9 +115,9 @@ export const messages = defineMessages("status.agent", {
   "status.agent.memoryChangesWithConflicts":
     "Memory: {saved} saved, {updated} updated, {forgotten} forgotten, {notChanged} not changed because another thread changed it first.",
   "status.agent.mcpServerAdd":
-    "Add the MCP server {name}: {target}. Every agent on this server gets its tools. OpenBot connects to it to test it.",
+    "Add the MCP server {name}: {target}. Every agent on this server gets its tools. OpenBot-NC connects to it to test it.",
   "status.agent.mcpServerChange":
-    "Change the MCP server {name} to {target}. Every agent on this server gets its tools. OpenBot connects to it to test it.",
+    "Change the MCP server {name} to {target}. Every agent on this server gets its tools. OpenBot-NC connects to it to test it.",
   "status.agent.mcpServerHeaders": "It also changes these headers: {names}.",
   "status.agent.mcpServerEnable": "Turn on the MCP server {name} for every agent on this server.",
   "status.agent.mcpServerDisable": "Turn off the MCP server {name} for every agent on this server.",

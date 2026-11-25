@@ -26,13 +26,13 @@ export const messages = {
   "prompt.approval.alwaysAllow": "Consenti sempre",
   "prompt.approval.deny": "Nega",
   "prompt.approval.cut":
-    "Questa scheda mostra solo l’inizio della richiesta, quindi offre solo Rifiuta. Se Consenti non appare a breve, aggiorna OpenBot sul server.",
+    "Questa scheda mostra solo l’inizio della richiesta, quindi offre solo Rifiuta. Se Consenti non appare a breve, aggiorna OpenBot-NC sul server.",
   "prompt.approval.report.bugHeadline": "Hai trovato un bug? Risolviamolo.",
   "prompt.approval.report.ideaHeadline": "Hai un'idea? Realizziamola.",
   "prompt.approval.report.dontSend": "Non ora",
-  "prompt.approval.report.send": "Invia al team di OpenBot",
+  "prompt.approval.report.send": "Invia al team di OpenBot-NC",
   "prompt.approval.report.phoneOnly":
-    "Apri questa chat nell'app OpenBot del telefono e invia la segnalazione da lì. Il telefono aggiunge la sua versione, il suo sistema e il suo log di assistenza. Se il telefono non riesce a connettersi, apri Impostazioni > Assistenza nell'app del telefono e segnala il problema su GitHub.",
+    "Apri questa chat nell'app OpenBot-NC del telefono e invia la segnalazione da lì. Il telefono aggiunge la sua versione, il suo sistema e il suo log di assistenza. Se il telefono non riesce a connettersi, apri Impostazioni > Assistenza nell'app del telefono e segnala il problema su GitHub.",
   "prompt.approval.title.command": "Esegui un comando",
   "prompt.approval.title.fileChange": "Modifica file",
   "prompt.approval.title.permissions": "Concedi permessi",
@@ -45,7 +45,7 @@ export const messages = {
   "prompt.browser.title.pending": "Completa il passaggio su {host}",
   "prompt.browser.cancelled": "Annullato",
   "prompt.browser.reload":
-    "OpenBot non è riuscito a finire di inserire la password o il codice. Controlla la pagina e inserisci ciò che manca. Completa l'accesso, poi ricarica la pagina del browser prima di scegliere «Ho finito». L'ispezione della pagina resta bloccata finché non viene ricaricata.",
+    "OpenBot-NC non è riuscito a finire di inserire la password o il codice. Controlla la pagina e inserisci ciò che manca. Completa l'accesso, poi ricarica la pagina del browser prima di scegliere «Ho finito». L'ispezione della pagina resta bloccata finché non viene ricaricata.",
   "prompt.browser.continuing": "{name} sta continuando.",
   "prompt.browser.cancelledBody": "Il passaggio nel browser è stato annullato.",
   "prompt.browser.pendingBody":
@@ -58,9 +58,9 @@ export const messages = {
   "prompt.browser.signInBlocked.title": "{host} ha bloccato l’accesso da {server}",
   "prompt.browser.signInBlocked.cancelledTitle": "Accesso a {host} annullato",
   "prompt.browser.signInBlocked.body":
-    "Accedi su questo computer. OpenBot invia solo l’accesso a {host} a {server}, e {name} continua.",
+    "Accedi su questo computer. OpenBot-NC invia solo l’accesso a {host} a {server}, e {name} continua.",
   "prompt.browser.signInBlocked.desktopBody":
-    "{host} non accetta un accesso dal server. Apri questa chat nell’app desktop di OpenBot sul tuo computer e accedi da lì. Poi {name} continua.",
+    "{host} non accetta un accesso dal server. Apri questa chat nell’app desktop di OpenBot-NC sul tuo computer e accedi da lì. Poi {name} continua.",
   "prompt.browser.signInBlocked.cancelledBody": "L’accesso è stato annullato.",
   "prompt.browser.signInBlocked.waiting": "In attesa dell’accesso",
   "prompt.browser.signInBlocked.waitingButton": "In attesa dell’accesso…",

@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "Ten serwer nie obsługuje CRM. Zaktualizuj OpenBot na komputerze, na którym działa.",
+  "error.crm.serverTooOld": "Ten serwer nie obsługuje CRM. Zaktualizuj OpenBot-NC na komputerze, na którym działa.",
   "error.crm.tooLargeToSend": "Ta strona CRM jest za duża, aby wysłać ją do tej aplikacji.",
   "error.crm.customerMissing": "Ten klient już nie istnieje.",
   "error.crm.planMissing": "Ten plan już nie istnieje.",
@@ -38,10 +38,10 @@ export const messages = {
   "error.crm.sourcePermission":
     "Ten klucz nie może odczytać klientów, faktur, subskrypcji, zdarzeń i produktów. Nadaj mu do nich dostęp do odczytu.",
   "error.crm.sourceRateLimited": "Stripe dostał zbyt wiele żądań. Spróbuj ponownie za minutę.",
-  "error.crm.sourceNetwork": "OpenBot nie może połączyć się ze Stripe. Sprawdź połączenie z internetem.",
-  "error.crm.sourceFailed": "Stripe wysłał odpowiedź, której OpenBot nie może odczytać. Spróbuj ponownie później.",
-  "error.crm.sourceKeySaveFailed": "OpenBot nie może zapisać klucza Stripe na tym komputerze.",
+  "error.crm.sourceNetwork": "OpenBot-NC nie może połączyć się ze Stripe. Sprawdź połączenie z internetem.",
+  "error.crm.sourceFailed": "Stripe wysłał odpowiedź, której OpenBot-NC nie może odczytać. Spróbuj ponownie później.",
+  "error.crm.sourceKeySaveFailed": "OpenBot-NC nie może zapisać klucza Stripe na tym komputerze.",
   "error.crm.off":
     "CRM jest wyłączony. Właściciel lub administrator może go włączyć w Ustawieniach serwera > Eksperymentalne.",
-  "error.crm.settingsSaveFailed": "OpenBot nie może zapisać ustawienia CRM na tym serwerze.",
+  "error.crm.settingsSaveFailed": "OpenBot-NC nie może zapisać ustawienia CRM na tym serwerze.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -4,7 +4,7 @@ import type { messages as source } from "../en/account";
 export const messages = {
   "account.menu.signOut": "Oturumu kapat",
   "account.menu.signingOut": "Oturum kapatılıyor…",
-  "account.menu.updateFailed": "OpenBot güncellenemedi.",
+  "account.menu.updateFailed": "OpenBot-NC güncellenemedi.",
   "account.menu.signOutFailed": "Oturum kapatılamadı.",
   "account.usage.title": "Kullanım",
   "account.usage.refresh": "Yenile",
@@ -59,7 +59,7 @@ export const messages = {
   "account.update.progress": "Güncelleme indirme ilerlemesi",
   "account.login.email": "E-posta",
   "account.login.sendCode": "Giriş kodunu gönder",
-  "account.login.verified": "Doğrulandı. OpenBot açılıyor…",
+  "account.login.verified": "Doğrulandı. OpenBot-NC açılıyor…",
   "account.login.developmentCode": "Geliştirme kodu: {code}",
   "account.otp.incorrect": "Bu kod yanlış. Tekrar deneyin.",
   "account.otp.verifying": "Doğrulanıyor…",

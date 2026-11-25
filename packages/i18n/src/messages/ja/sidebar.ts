@@ -138,7 +138,7 @@ export const messages = {
   "sidebar.delete.pending": "削除中…",
   "sidebar.delete.title": "{name} を削除しますか？",
   "sidebar.delete.agentDescription":
-    "エージェントとその OpenBot の会話をアプリから削除します。キュー、メモリー、ルーティン、ワークスペースも削除されます。接続した CLI プロバイダーが別に保存している履歴は削除されません。",
+    "エージェントとその OpenBot-NC の会話をアプリから削除します。キュー、メモリー、ルーティン、ワークスペースも削除されます。接続した CLI プロバイダーが別に保存している履歴は削除されません。",
   "sidebar.delete.channelDescription":
     "チャンネルを停止します。履歴は「削除済みのチャンネル」にプレビュー専用で残ります。そこから復元できます。メンバーのエージェントは残ります。",
   "sidebar.delete.sectionDescription":

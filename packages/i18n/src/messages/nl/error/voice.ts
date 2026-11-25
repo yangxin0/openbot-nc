@@ -10,8 +10,8 @@ export const messages = {
   "error.voice.modelUnavailable": "Het spraakmodel is niet beschikbaar.",
   "error.voice.transcriptionTimedOut": "De spraaktranscriptie duurde te lang.",
   "error.voice.prepareRequired":
-    "Lokale spraaktranscriptie is niet beschikbaar. Voer `bun run voice:prepare` uit en start OpenBot opnieuw.",
-  "error.voice.transcriptionFailed": "OpenBot kon deze opname niet transcriberen.",
+    "Lokale spraaktranscriptie is niet beschikbaar. Voer `bun run voice:prepare` uit en start OpenBot-NC opnieuw.",
+  "error.voice.transcriptionFailed": "OpenBot-NC kon deze opname niet transcriberen.",
   "error.voice.videoModelMissing": "Er is geen spraakherkenningsmodel voor opnamen ingesteld in Instellingen → Spraak.",
   "error.voice.videoModelMissingServer":
     "Er is geen spraakherkenningsmodel ingesteld op deze server. Een eigenaar of beheerder kan een model instellen in de serverinstellingen, bij Spraakherkenning.",
@@ -28,9 +28,9 @@ export const messages = {
   "error.voice.speech.runtimeUnavailable": "Lokale spraakuitvoer is niet beschikbaar op dit platform.",
   "error.voice.speech.modelRequired": "Download het spraakuitvoermodel in Instellingen → Spraak.",
   "error.voice.speech.timedOut": "Het voorlezen van het antwoord duurde te lang.",
-  "error.voice.speech.failed": "OpenBot kon het antwoord niet voorlezen.",
+  "error.voice.speech.failed": "OpenBot-NC kon het antwoord niet voorlezen.",
   "error.voice.speech.providerRefused": "{provider} weigerde de audio te maken: {reason}",
-  "error.voice.recordingNotKept": "OpenBot kon de spraakopname niet bewaren.",
+  "error.voice.recordingNotKept": "OpenBot-NC kon de spraakopname niet bewaren.",
   "error.voice.server.modelUnsupported":
     "{host} kan niet transcriberen met {model}. Kies in Instellingen een ander dicteermodel voor de spraakserver.",
 } as const satisfies PartialTranslation<typeof source>;

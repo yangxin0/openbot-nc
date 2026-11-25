@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/liveActivity";
 
 export const messages = {
-  "mobile.liveActivity.appName": "OpenBot",
+  "mobile.liveActivity.appName": "OpenBot-NC",
   "mobile.liveActivity.badge.working": "In Arbeit",
   "mobile.liveActivity.badge.message": "Nachricht",
   "mobile.liveActivity.badge.question": "Fragen",
@@ -28,10 +28,10 @@ export const messages = {
   "mobile.liveActivity.button.approve": "Genehmigen",
   "mobile.liveActivity.button.openDetails": "Details öffnen",
   "mobile.liveActivity.stale.label": "Nicht aktuell",
-  "mobile.liveActivity.stale.detail": "Öffne OpenBot, um den aktuellen Status zu sehen.",
+  "mobile.liveActivity.stale.detail": "Öffne OpenBot-NC, um den aktuellen Status zu sehen.",
   "mobile.liveActivity.island.taskWorking": "Deine Anfrage wird bearbeitet",
   "mobile.liveActivity.island.questionHeader": "Frage von deinem Agenten",
-  "mobile.liveActivity.island.questionText": "Öffne OpenBot, um diese Frage zu beantworten.",
+  "mobile.liveActivity.island.questionText": "Öffne OpenBot-NC, um diese Frage zu beantworten.",
   "mobile.liveActivity.island.optionFallback": "Option {number}",
   "mobile.liveActivity.island.takeoverTitle": "Browserschritt braucht dich",
   "mobile.liveActivity.island.takeoverDetail": "Schließe die Anmeldung, Verifizierung oder Zustimmung im Browser ab.",

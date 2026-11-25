@@ -6,21 +6,21 @@ export const messages = {
   "error.attachment.fileTooLarge": "Bir dosya 100 MB sınırını aşıyor.",
   "error.attachment.namedFileTooLarge": "{name} 100 MB sınırını aşıyor.",
   "error.attachment.emptyFile":
-    "{name} boş veya OpenBot onu okuyamıyor. Dosyayı yeniden kaydedin, sonra yeniden ekleyin.",
+    "{name} boş veya OpenBot-NC onu okuyamıyor. Dosyayı yeniden kaydedin, sonra yeniden ekleyin.",
   "error.attachment.totalTooLarge": "Ekler 250 MB toplam sınırını aşıyor.",
   "error.attachment.unavailable": "Bu dosya artık kullanılamıyor.",
   "error.attachment.noApp":
     "Bu bilgisayardaki hiçbir uygulama bu dosyayı açmadı. Dosyayı indirin, ardından dosya yöneticinizden açın.",
   "error.attachment.tooMany": "En fazla {limit} dosya seçin.",
   "error.attachment.mediaUnsupported":
-    "Bu sunucu MP3 veya MOV eklerini desteklemiyor. Ana makinedeki OpenBot'u güncelleyin ve tekrar deneyin.",
+    "Bu sunucu MP3 veya MOV eklerini desteklemiyor. Ana makinedeki OpenBot-NC'yi güncelleyin ve tekrar deneyin.",
   "error.attachment.emlUnsupported":
-    "Bu sunucu EML eklerini desteklemiyor. Ana makinedeki OpenBot'u güncelleyin ve tekrar deneyin.",
+    "Bu sunucu EML eklerini desteklemiyor. Ana makinedeki OpenBot-NC'yi güncelleyin ve tekrar deneyin.",
   "error.attachment.zipUnsupported":
-    "Bu sunucu ZIP eklerini desteklemiyor. Ana makinedeki OpenBot'u güncelleyin ve tekrar deneyin.",
+    "Bu sunucu ZIP eklerini desteklemiyor. Ana makinedeki OpenBot-NC'yi güncelleyin ve tekrar deneyin.",
   "error.attachment.mp4Unsupported":
-    "Bu sunucu MP4 eklerini desteklemiyor. Ana makinedeki OpenBot'u güncelleyin ve tekrar deneyin.",
+    "Bu sunucu MP4 eklerini desteklemiyor. Ana makinedeki OpenBot-NC'yi güncelleyin ve tekrar deneyin.",
   "error.attachment.svgUnsupported":
-    "Bu sunucu SVG eklerini desteklemiyor. Ana makinedeki OpenBot'u güncelleyin ve tekrar deneyin.",
+    "Bu sunucu SVG eklerini desteklemiyor. Ana makinedeki OpenBot-NC'yi güncelleyin ve tekrar deneyin.",
   "error.attachment.previewTooLarge": "Dosya 100 MB sınırını aşıyor.",
 } as const satisfies PartialTranslation<typeof source>;

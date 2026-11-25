@@ -1,12 +1,13 @@
 import { AppLogo } from "@openbot/brand";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import type { AppVariant } from "@openbot/contracts/ipc";
 import { useText } from "@openbot/ui/text";
 import type { JSX } from "@solidjs/web";
 import { createEffect, createStore, onCleanup, onSettled, Show } from "solid-js";
 import { type SetupAnswer, setupStatus, text } from "./server-setup-port";
 
-const PRODUCT_NAME = "OpenBot";
-const DEFAULT_SERVER_NAME = "OpenBot";
+const PRODUCT_NAME = APP_NAME;
+const DEFAULT_SERVER_NAME = APP_NAME;
 const IMPORT_COMMAND = "openbot import-identity <file>";
 const HOSTING_COMMAND = "openbot hosting on";
 const STATUS_POLL_MS = 2_000;

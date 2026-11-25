@@ -16,7 +16,7 @@ export const messages = {
   "mobile.workspace.error.sectionsUnsupported": "Ten host nie obsługuje zmian folderów.",
   "mobile.workspace.error.agentNotOnHost": "Agenta nie ma na tym hoście.",
   "mobile.workspace.error.filesUnsupported":
-    "Ten host nie obsługuje zarządzania plikami. Zaktualizuj OpenBot na hoście.",
+    "Ten host nie obsługuje zarządzania plikami. Zaktualizuj OpenBot-NC na hoście.",
   "mobile.workspace.error.agentUnavailableOnHost": "Agent jest niedostępny na tym hoście.",
   "mobile.workspace.error.agentUnavailable": "Agent jest niedostępny.",
   "mobile.workspace.error.formUnavailable": "Ten formularz nie jest już dostępny.",

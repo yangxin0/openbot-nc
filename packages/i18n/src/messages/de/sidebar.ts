@@ -159,7 +159,7 @@ export const messages = {
   "sidebar.delete.pending": "Wird gelöscht…",
   "sidebar.delete.title": "{name} löschen?",
   "sidebar.delete.agentDescription":
-    "Dies entfernt den Agenten und seine OpenBot-Unterhaltung aus der App. Seine Warteschlange, Erinnerungen, Routinen und sein Arbeitsbereich werden gelöscht. Der separat vom verbundenen CLI-Anbieter gespeicherte Verlauf wird nicht gelöscht.",
+    "Dies entfernt den Agenten und seine OpenBot-NC-Unterhaltung aus der App. Seine Warteschlange, Erinnerungen, Routinen und sein Arbeitsbereich werden gelöscht. Der separat vom verbundenen CLI-Anbieter gespeicherte Verlauf wird nicht gelöscht.",
   "sidebar.delete.channelDescription":
     "Dies stoppt den Kanal. Sein Verlauf bleibt unter „Gelöschte Kanäle“ nur zur Ansicht erhalten. Dort kannst du ihn wiederherstellen. Die zugehörigen Agenten bleiben erhalten.",
   "sidebar.delete.sectionDescription":

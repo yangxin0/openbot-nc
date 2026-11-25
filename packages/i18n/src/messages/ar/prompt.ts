@@ -26,13 +26,13 @@ export const messages = {
   "prompt.approval.alwaysAllow": "السماح دائمًا",
   "prompt.approval.deny": "رفض",
   "prompt.approval.cut":
-    "تعرض هذه البطاقة بداية الطلب فقط، لذلك تقدّم الرفض فقط. إذا لم يظهر زر السماح قريبًا، فحدّث OpenBot على الخادم.",
+    "تعرض هذه البطاقة بداية الطلب فقط، لذلك تقدّم الرفض فقط. إذا لم يظهر زر السماح قريبًا، فحدّث OpenBot-NC على الخادم.",
   "prompt.approval.report.bugHeadline": "وجدت خطأً؟ لنُصلحه.",
   "prompt.approval.report.ideaHeadline": "لديك فكرة؟ لنحققها.",
   "prompt.approval.report.dontSend": "ليس الآن",
-  "prompt.approval.report.send": "إرسال إلى فريق OpenBot",
+  "prompt.approval.report.send": "إرسال إلى فريق OpenBot-NC",
   "prompt.approval.report.phoneOnly":
-    "افتح هذه المحادثة في تطبيق OpenBot على الهاتف وأرسل البلاغ من هناك. يضيف الهاتف إصداره ونظامه وسجل الدعم. إذا تعذّر اتصال الهاتف، فافتح الإعدادات > الدعم في تطبيق الهاتف وأبلغ عن المشكلة على GitHub.",
+    "افتح هذه المحادثة في تطبيق OpenBot-NC على الهاتف وأرسل البلاغ من هناك. يضيف الهاتف إصداره ونظامه وسجل الدعم. إذا تعذّر اتصال الهاتف، فافتح الإعدادات > الدعم في تطبيق الهاتف وأبلغ عن المشكلة على GitHub.",
   "prompt.approval.title.command": "تشغيل أمر",
   "prompt.approval.title.fileChange": "تغيير ملفات",
   "prompt.approval.title.permissions": "منح الأذونات",
@@ -45,7 +45,7 @@ export const messages = {
   "prompt.browser.title.pending": "أكمل الخطوة على {host}",
   "prompt.browser.cancelled": "أُلغي",
   "prompt.browser.reload":
-    "تعذّر على OpenBot إكمال إدخال كلمة المرور أو الرمز. تحقّق من الصفحة وأدخل ما ينقص. أكمل تسجيل الدخول، ثم أعد تحميل صفحة المتصفح قبل اختيار «انتهيت». يبقى فحص الصفحة محظورًا حتى تُعاد تحميلها.",
+    "تعذّر على OpenBot-NC إكمال إدخال كلمة المرور أو الرمز. تحقّق من الصفحة وأدخل ما ينقص. أكمل تسجيل الدخول، ثم أعد تحميل صفحة المتصفح قبل اختيار «انتهيت». يبقى فحص الصفحة محظورًا حتى تُعاد تحميلها.",
   "prompt.browser.continuing": "يتابع {name}.",
   "prompt.browser.cancelledBody": "أُلغيت خطوة المتصفح.",
   "prompt.browser.pendingBody": "افتح الصفحة لإكمال تسجيل الدخول أو التحقق أو الموافقة. ثم دع {name} يتابع.",
@@ -57,9 +57,9 @@ export const messages = {
   "prompt.browser.signInBlocked.title": "حظر {host} تسجيل الدخول من {server}",
   "prompt.browser.signInBlocked.cancelledTitle": "أُلغي تسجيل الدخول إلى {host}",
   "prompt.browser.signInBlocked.body":
-    "سجّل الدخول على هذا الحاسوب. يرسل OpenBot تسجيل الدخول إلى {host} فقط إلى {server}، ويتابع {name}.",
+    "سجّل الدخول على هذا الحاسوب. يرسل OpenBot-NC تسجيل الدخول إلى {host} فقط إلى {server}، ويتابع {name}.",
   "prompt.browser.signInBlocked.desktopBody":
-    "لا يقبل {host} تسجيل الدخول من الخادم. افتح هذه المحادثة في تطبيق OpenBot لسطح المكتب على حاسوبك، وسجّل الدخول هناك. بعد ذلك يتابع {name}.",
+    "لا يقبل {host} تسجيل الدخول من الخادم. افتح هذه المحادثة في تطبيق OpenBot-NC لسطح المكتب على حاسوبك، وسجّل الدخول هناك. بعد ذلك يتابع {name}.",
   "prompt.browser.signInBlocked.cancelledBody": "أُلغي تسجيل الدخول.",
   "prompt.browser.signInBlocked.waiting": "جارٍ انتظار تسجيل الدخول",
   "prompt.browser.signInBlocked.waitingButton": "جارٍ انتظار تسجيل الدخول…",

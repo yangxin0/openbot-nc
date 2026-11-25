@@ -42,7 +42,7 @@ export const messages = {
   "error.skill.tooManySkills": "Ein Agent kann bis zu {limit} Fähigkeiten haben.",
   "error.skill.unmanagedExists": "Unter {path} existiert bereits eine nicht verwaltete Fähigkeit.",
   "error.skill.managedSlug":
-    "OpenBot gibt jedem Agenten eine eigene Fähigkeit {slug}. Gib dieser Fähigkeit einen anderen Namen.",
+    "OpenBot-NC gibt jedem Agenten eine eigene Fähigkeit {slug}. Gib dieser Fähigkeit einen anderen Namen.",
   "error.skill.localNoRevisions": "Die lokale Fähigkeit hat keine veröffentlichten Überarbeitungen.",
   "error.skill.localNotFound":
     "Diese lokale Fähigkeit gibt es nicht. Prüfe ihre ID in der Liste der lokalen Fähigkeiten.",
@@ -62,11 +62,12 @@ export const messages = {
   "error.skill.folderNotRead": "{provider} liest {folder} nicht. Kopiere diesen Ordner nach {target}.",
   "error.skill.githubLinkInvalid": "Füge einen Link zu einem GitHub-Repository oder -Ordner ein.",
   "error.skill.githubNotFound":
-    "OpenBot kann {repository} nicht öffnen. Das Repository ist privat oder existiert nicht.",
+    "OpenBot-NC kann {repository} nicht öffnen. Das Repository ist privat oder existiert nicht.",
   "error.skill.githubNoSkills": "In {folder} gibt es keine SKILL.md.",
-  "error.skill.githubUnavailable": "OpenBot kann GitHub gerade nicht lesen. Versuche es später erneut.",
+  "error.skill.githubUnavailable": "OpenBot-NC kann GitHub gerade nicht lesen. Versuche es später erneut.",
   "error.skill.githubRateLimited":
-    "GitHub begrenzt, wie oft OpenBot es ohne Konto lesen kann. Versuche es in einer Stunde erneut.",
-  "error.skill.githubTooLarge": "OpenBot kann nicht alle Dateien von {repository} lesen. Das Repository ist zu groß.",
+    "GitHub begrenzt, wie oft OpenBot-NC es ohne Konto lesen kann. Versuche es in einer Stunde erneut.",
+  "error.skill.githubTooLarge":
+    "OpenBot-NC kann nicht alle Dateien von {repository} lesen. Das Repository ist zu groß.",
   "error.skill.githubHostTooOld": "Aktualisiere diesen Server, um Fähigkeiten von GitHub hinzuzufügen.",
 } as const satisfies PartialTranslation<typeof source>;

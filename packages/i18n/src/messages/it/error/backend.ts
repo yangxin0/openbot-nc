@@ -3,8 +3,8 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "Gli eventi non sono disponibili su questo host.",
-  "error.backend.webhooksRemoved": "I trigger webhook non sono disponibili in questa versione di OpenBot.",
-  "error.backend.databaseIntegrity": "Il database di OpenBot non ha superato il controllo di integrità.",
+  "error.backend.webhooksRemoved": "I trigger webhook non sono disponibili in questa versione di OpenBot-NC.",
+  "error.backend.databaseIntegrity": "Il database di OpenBot-NC non ha superato il controllo di integrità.",
   "error.backend.webhookSettingsInvalid": "Controlla le impostazioni del webhook e riprova.",
   "error.backend.webhookSenderSecretInvalid":
     "Incolla il segreto di firma completo del mittente. Ha da 16 a 1024 caratteri e nessuno spazio.",
@@ -13,8 +13,8 @@ export const messages = {
   "error.backend.browserViewLimit": "Su questo host ci sono troppe viste del browser aperte.",
   "error.backend.browserViewEnded": "La vista in diretta di questa pagina è terminata.",
   "error.backend.browserViewFailed": "La vista in diretta di questa pagina non è riuscita.",
-  "error.backend.windowTemporarilyUnavailable": "La finestra di OpenBot non è al momento disponibile.",
-  "error.backend.windowUnavailable": "La finestra di OpenBot non è disponibile.",
+  "error.backend.windowTemporarilyUnavailable": "La finestra di OpenBot-NC non è al momento disponibile.",
+  "error.backend.windowUnavailable": "La finestra di OpenBot-NC non è disponibile.",
   "error.backend.channelDeleteUnsupported": "Questo server non supporta l'eliminazione dei canali.",
   "error.backend.browserNavigateUnsupported":
     "Questo host remoto non supporta la navigazione dalla barra degli indirizzi in una scheda esistente.",
@@ -26,26 +26,26 @@ export const messages = {
   "error.backend.browserUserControlUnsupported":
     "Questo host remoto non supporta il controllo di una scheda del browser.",
   "error.backend.browserSignInUnsupported": "Questo host remoto non può ricevere un accesso da questo computer.",
-  "error.backend.browserSignInOpenFailed": "OpenBot non è riuscito ad aprire la finestra di accesso.",
+  "error.backend.browserSignInOpenFailed": "OpenBot-NC non è riuscito ad aprire la finestra di accesso.",
   "error.backend.browserSignInLoadFailed":
-    "OpenBot non è riuscito a caricare la pagina nella finestra di accesso. Controlla la connessione a internet, poi apri di nuovo la finestra di accesso.",
-  "error.backend.browserSignInReadFailed": "OpenBot non è riuscito a leggere l’accesso dalla finestra.",
+    "OpenBot-NC non è riuscito a caricare la pagina nella finestra di accesso. Controlla la connessione a internet, poi apri di nuovo la finestra di accesso.",
+  "error.backend.browserSignInReadFailed": "OpenBot-NC non è riuscito a leggere l’accesso dalla finestra.",
   "error.backend.browserStopUnsupported": "Questo host remoto non può interrompere il caricamento di una pagina.",
   "error.backend.sharedDataLocalOnly": "I dati condivisi sono gestiti sul computer su cui girano questi agenti.",
   "error.backend.browserUrlProtocol": "Sono consentiti solo URL del browser HTTP(S).",
   "error.backend.channelLeadModelUnavailable": "Il modello del responsabile del canale non è disponibile.",
   "error.backend.contextCompactionIneffective":
-    "La compattazione non riduce questa chat: dopo due compattazioni usa ancora il {percent}% della finestra di contesto del modello, quindi OpenBot smette di compattarla. Strumenti e istruzioni usano la maggior parte della finestra. Disattiva i server MCP o l'uso del computer che questo agente non usa, oppure scegli un modello con una finestra più grande. Poi avvia una nuova chat.",
+    "La compattazione non riduce questa chat: dopo due compattazioni usa ancora il {percent}% della finestra di contesto del modello, quindi OpenBot-NC smette di compattarla. Strumenti e istruzioni usano la maggior parte della finestra. Disattiva i server MCP o l'uso del computer che questo agente non usa, oppure scegli un modello con una finestra più grande. Poi avvia una nuova chat.",
   "error.backend.contextCompactionStopped":
-    "Due compattazioni di fila di questa chat non sono riuscite, quindi OpenBot smette di compattarla automaticamente. Ogni tentativo invia l'intera chat al modello e consuma il limite del tuo piano. Seleziona «Compatta ora» per riprovare, oppure avvia una nuova chat.",
+    "Due compattazioni di fila di questa chat non sono riuscite, quindi OpenBot-NC smette di compattarla automaticamente. Ogni tentativo invia l'intera chat al modello e consuma il limite del tuo piano. Seleziona «Compatta ora» per riprovare, oppure avvia una nuova chat.",
   "error.backend.providerModelAtCapacity":
     "Il modello è al limite della capacità. Il provider riproverà tra qualche minuto. Per continuare ora, interrompi il turno e scegli un altro modello.",
   "error.backend.providerRetrying":
     "Il provider non è riuscito a completare questa richiesta {attempts} volte e riprova. Se l'agente non continua, interrompi il turno.",
   "error.backend.providerRetryingLargeContext":
-    "Il provider non è riuscito a completare questa richiesta {attempts} volte e riprova. Questa chat usa il {percent}% della finestra di contesto del modello. Se l'agente non continua, interrompi il turno: OpenBot compatterà la chat prima del prossimo messaggio.",
+    "Il provider non è riuscito a completare questa richiesta {attempts} volte e riprova. Questa chat usa il {percent}% della finestra di contesto del modello. Se l'agente non continua, interrompi il turno: OpenBot-NC compatterà la chat prima del prossimo messaggio.",
   "error.backend.sharedDataUnavailable": "I dati condivisi non sono disponibili.",
-  "error.backend.shuttingDown": "OpenBot si sta chiudendo.",
+  "error.backend.shuttingDown": "OpenBot-NC si sta chiudendo.",
   "error.backend.channelUnconfirmedStart":
     "Il canale ha un avvio di assegnazione non confermato. Controlla il risultato prima di eliminarlo.",
   "error.backend.channelNotFound": "Canale non trovato.",
@@ -107,7 +107,7 @@ export const messages = {
     "L’esecuzione si è fermata con un errore, ma senza un motivo. Apri l’esecuzione per vedere cosa ha fatto l’agente.",
   "error.backend.turnNotStarted": "Il provider non ha avviato questo turno.",
   "error.backend.turnStartUnconfirmed":
-    "{provider} non ha confermato in tempo di aver avviato questo messaggio. OpenBot non lo invia di nuovo, così il lavoro non viene eseguito due volte. OpenBot attende fino a 5 minuti che l’agente inizi.",
+    "{provider} non ha confermato in tempo di aver avviato questo messaggio. OpenBot-NC non lo invia di nuovo, così il lavoro non viene eseguito due volte. OpenBot-NC attende fino a 5 minuti che l’agente inizi.",
   "error.backend.turnStartAbandoned":
     "L’agente non ha avviato questo messaggio entro 5 minuti. Invia di nuovo il messaggio.",
   "error.backend.routineResultConnectionOff":
@@ -148,7 +148,7 @@ export const messages = {
   "error.backend.fileGone": "Il file non esiste o è già stato eliminato.",
   "error.backend.managedAttachmentChanged": "L'allegato gestito manca o è cambiato: {name}",
   "error.backend.mailboxStateCorrupt":
-    "Lo stato della casella è danneggiato o proviene da una versione più recente di OpenBot; non viene sovrascritto.",
+    "Lo stato della casella è danneggiato o proviene da una versione più recente di OpenBot-NC; non viene sovrascritto.",
   "error.backend.recipientDeleting": "Il destinatario è in fase di eliminazione. Riprova al termine dell'eliminazione.",
   "error.backend.recipientHidden": "Questo agente è nascosto. Ripristinalo per inviare messaggi.",
   "error.backend.agentIdUnknown": "Nessun agente ha l'ID {id}. Ottieni gli ID con openbot.list_agents, poi riprova.",
@@ -162,7 +162,7 @@ export const messages = {
   "error.backend.videoGenerationNoVideo": "La generazione del video non ha restituito alcun video.",
   "error.backend.videoGenerationInterrupted": "La generazione del video è stata interrotta.",
   "error.backend.attachmentNotRegularFile": "Si possono allegare solo file normali: {name}",
-  "error.backend.attachmentCopyFailed": "OpenBot non è riuscito a copiare {name}.",
+  "error.backend.attachmentCopyFailed": "OpenBot-NC non è riuscito a copiare {name}.",
   "error.backend.routineNameRequired": "Il nome della routine è obbligatorio.",
   "error.backend.routineNameTooLong": "Il nome della routine è troppo lungo.",
   "error.backend.routineInstructionRequired": "L'istruzione della routine è obbligatoria.",
@@ -187,7 +187,7 @@ export const messages = {
   "error.backend.routineRunStarting":
     "Questa esecuzione della routine si sta ancora avviando. Riprova dopo l'avvio del turno.",
   "error.backend.routineRunNoSession":
-    "OpenBot non può interrompere l'esecuzione attiva della routine perché la sessione del provider non è disponibile.",
+    "OpenBot-NC non può interrompere l'esecuzione attiva della routine perché la sessione del provider non è disponibile.",
   "error.backend.interruptSelf": "Un agente non può interrompere se stesso.",
   "error.backend.interruptOtherWork":
     "Questo agente sta lavorando a un'attività che il tuo messaggio non ha avviato. Solo l'utente o chi ha inviato quell'attività può fermarla.",
@@ -195,7 +195,7 @@ export const messages = {
     "Il turno di questo agente lavora sul tuo messaggio e anche su un messaggio dell'utente o di un altro agente. Solo l'utente può fermarlo, con Ferma l'agente nella chat di quell'agente.",
   "error.backend.interruptStarting": "Questo agente sta ancora avviando un turno. Riprova dopo l'avvio del turno.",
   "error.backend.interruptNoSession":
-    "OpenBot non può interrompere questo agente perché la sua sessione del provider non è disponibile.",
+    "OpenBot-NC non può interrompere questo agente perché la sua sessione del provider non è disponibile.",
   "error.backend.memoryTextRequired": "Il testo della memoria è obbligatorio.",
   "error.backend.memoryTextTooLong": "Il testo della memoria è troppo lungo.",
   "error.backend.mcpServerGone": "Questo server MCP non esiste più.",
@@ -229,9 +229,9 @@ export const messages = {
   "error.backend.messagePinNotFound": "Questo messaggio non è nella chat.",
   "error.backend.messagePinLimit": "Questa chat ha 50 messaggi fissati. Rimuovine uno prima di fissarne un altro.",
   "error.backend.routineFlowHandoffFailed": "La routine non è riuscita a passare il lavoro a questo agente.",
-  "error.backend.mcpServerLimit": "OpenBot conserva fino a {limit} server MCP.",
+  "error.backend.mcpServerLimit": "OpenBot-NC conserva fino a {limit} server MCP.",
   "error.backend.mcpServerNameTaken": "Esiste già un server MCP chiamato {name}.",
-  "error.backend.mcpServerInvalid": "OpenBot non può salvare questa configurazione del server MCP.",
+  "error.backend.mcpServerInvalid": "OpenBot-NC non può salvare questa configurazione del server MCP.",
   "error.backend.mcpHeaderNameInvalid":
     "I nomi delle intestazioni non possono contenere spazi o simboli come : ( ) /. Usa un nome come Authorization e inserisci la chiave o il token in Valore.",
   "error.backend.mcpServerNoAnswer": "Il server non ha risposto entro {seconds} secondi.",
@@ -241,18 +241,18 @@ export const messages = {
   "error.backend.mcpSignInAccountRefused":
     "Il server ha rifiutato l'account con cui hai effettuato l'accesso. Verifica che questo account possa usare il servizio. Per usare un altro account, esci e poi accedi di nuovo.",
   "error.backend.mcpSignInClientRefused":
-    "Il server di accesso non ha accettato OpenBot al completamento dell'accesso. Accedi di nuovo: OpenBot si registra di nuovo sul server.",
+    "Il server di accesso non ha accettato OpenBot-NC al completamento dell'accesso. Accedi di nuovo: OpenBot-NC si registra di nuovo sul server.",
   "error.backend.mcpSignInAppRefused":
     "Il server di accesso non ha accettato l'app di accesso di questo server. Controlla l'ID client e il secret del client dell'app di accesso, poi accedi di nuovo.",
   "error.backend.mcpCommandNotFound": "Comando non trovato: {command}",
   "error.backend.mcpProviderLimit":
     "Questo agente può usare solo un numero limitato di server MCP. Per usare questo server, disattiva un server MCP che non serve all’agente.",
   "error.backend.mcpRegistrationRefused":
-    "Il server di accesso non accetta ancora OpenBot come app. La causa non è il tuo account. Usa un altro modo per connetterti, ad esempio un server MCP locale.",
+    "Il server di accesso non accetta ancora OpenBot-NC come app. La causa non è il tuo account. Usa un altro modo per connetterti, ad esempio un server MCP locale.",
   "error.backend.mcpRegistrationUnavailable":
-    "Il server di accesso non può registrare OpenBot come app. La causa non è il tuo account. Per connetterti, salva questo server in Marketplace, App, poi aggiungi un’app di accesso.",
+    "Il server di accesso non può registrare OpenBot-NC come app. La causa non è il tuo account. Per connetterti, salva questo server in Marketplace, App, poi aggiungi un’app di accesso.",
   "error.backend.mcpSignInNeedsClientDocument":
-    "Questo server di accesso accetta solo app che pubblicano un documento di ID client, e questa versione di OpenBot non ne pubblica uno. Se hai una tua app di accesso per questo server, salva il server in Marketplace, App, poi aggiungi l’app di accesso.",
+    "Questo server di accesso accetta solo app che pubblicano un documento di ID client, e questa versione di OpenBot-NC non ne pubblica uno. Se hai una tua app di accesso per questo server, salva il server in Marketplace, App, poi aggiungi l’app di accesso.",
   "error.backend.mcpSignInAbandonedGeneric": "L'accesso è stato abbandonato.",
   "error.backend.mcpSignInForgotten": "L'accesso MCP è stato dimenticato mentre era in corso.",
   "error.backend.mcpSignInAbandoned": "L'accesso MCP è stato abbandonato.",
@@ -260,9 +260,9 @@ export const messages = {
   "error.backend.mcpSignInNotWebPage": "L'indirizzo di accesso non è una pagina web.",
   "error.backend.mcpSignInRequired": "Questo server richiede l'accesso. Scegli «Accedi» per continuare nel browser.",
   "error.backend.mcpSignInOnHost":
-    "Questo server richiede l'accesso. Accedi a questo server in OpenBot sul computer host.",
+    "Questo server richiede l'accesso. Accedi a questo server in OpenBot-NC sul computer host.",
   "error.backend.mcpSignInNeedsHttps":
-    "Questo server richiede l'accesso e OpenBot accede solo tramite https. Cambia l'URL in {url}.",
+    "Questo server richiede l'accesso e OpenBot-NC accede solo tramite https. Cambia l'URL in {url}.",
   "error.backend.mcpSignInOtherAddress":
     "Questo server accetta l’accesso solo su {url}. Cambia l’URL con questo indirizzo, poi accedi di nuovo.",
   "error.backend.mcpSignInCancelled": "L'accesso è stato annullato.",
@@ -270,9 +270,9 @@ export const messages = {
   "error.backend.mcpSignInRefused": "La pagina di accesso ha rifiutato l'accesso. Accedi di nuovo.",
   "error.backend.mcpSignInResponseTimedOut": "La risposta dell'accesso non è arrivata in tempo.",
   "error.backend.mcpSignInMetadataUnreadable":
-    "OpenBot non ha potuto leggere le informazioni di accesso di questo server. Controlla l’indirizzo del server e riprova.",
+    "OpenBot-NC non ha potuto leggere le informazioni di accesso di questo server. Controlla l’indirizzo del server e riprova.",
   "error.backend.mcpSignInAnswerUnreadable":
-    "Il server di accesso ha inviato una risposta che OpenBot non può leggere. Se il servizio ti fornisce una chiave API o un token, aggiungilo nelle impostazioni di questo server, poi verifica di nuovo la connessione.",
+    "Il server di accesso ha inviato una risposta che OpenBot-NC non può leggere. Se il servizio ti fornisce una chiave API o un token, aggiungilo nelle impostazioni di questo server, poi verifica di nuovo la connessione.",
   "error.backend.mcpServerExited":
     "Il server si è fermato prima di rispondere. Esegui il comando in un terminale per vedere l'errore.",
   "error.backend.mcpServerExitedWithOutput": "Il server si è fermato prima di rispondere. Ha scritto: {detail}",
@@ -289,7 +289,7 @@ export const messages = {
   "error.backend.mcpServerFailedForProvider":
     "{provider} non è riuscito ad avviare il server MCP {name}. Apri {name} in Marketplace, App, e scegli Prova la connessione per vedere la causa.",
   "error.backend.mcpServerFailedInProvider":
-    "{provider} non è riuscito ad avviare il server MCP {name}. I suoi strumenti non sono disponibili per {provider}. {provider} avvia il server da solo, quindi la prova di connessione in OpenBot può riuscire. Avvia una nuova chat per riprovare.",
+    "{provider} non è riuscito ad avviare il server MCP {name}. I suoi strumenti non sono disponibili per {provider}. {provider} avvia il server da solo, quindi la prova di connessione in OpenBot-NC può riuscire. Avvia una nuova chat per riprovare.",
   "error.backend.mcpServerTimedOutInProvider":
     "{provider} non è riuscito ad avviare il server MCP {name}, perché il server non ha risposto in tempo. Avvia una nuova chat per riprovare.",
   "error.backend.mcpServerUnavailableInProvider":
@@ -299,12 +299,12 @@ export const messages = {
   "error.backend.githubToolsNotStarted":
     "{provider} non è riuscito a ottenere gli strumenti di GitHub, perché GitHub non ha risposto. Apri GitHub in Marketplace, App, e collegalo di nuovo se te lo chiede. Poi avvia una nuova chat per riprovare.",
   "error.backend.mcpOAuthProxyUnavailable":
-    "OpenBot non è riuscito ad avviare la connessione di accesso locale per questo server. Riavvia OpenBot e riprova.",
+    "OpenBot-NC non è riuscito ad avviare la connessione di accesso locale per questo server. Riavvia OpenBot-NC e riprova.",
   "error.backend.mcpOAuthSignInNeeded":
-    "L'accesso a questo server MCP è terminato. L'utente deve accedere di nuovo in OpenBot.",
+    "L'accesso a questo server MCP è terminato. L'utente deve accedere di nuovo in OpenBot-NC.",
   "error.backend.mcpOAuthRenewalFailed":
-    "OpenBot non è riuscito a rinnovare ora l'accesso a questo server MCP. L'accesso resta salvato e la prossima richiesta riproverà. Se l'errore continua, l'utente può disconnettersi dal server in OpenBot e accedere di nuovo.",
-  "error.backend.mcpServerUnreachable": "OpenBot non è riuscito a raggiungere il server. Controlla l'URL e la rete.",
+    "OpenBot-NC non è riuscito a rinnovare ora l'accesso a questo server MCP. L'accesso resta salvato e la prossima richiesta riproverà. Se l'errore continua, l'utente può disconnettersi dal server in OpenBot-NC e accedere di nuovo.",
+  "error.backend.mcpServerUnreachable": "OpenBot-NC non è riuscito a raggiungere il server. Controlla l'URL e la rete.",
   "error.backend.mcpLocalServerOff":
     "Nessun server risponde all'indirizzo {address} su questo computer. Avvia il server, o attivalo nell'app che lo esegue, poi riprova.",
   "error.backend.mcpServerBlocked":
@@ -312,7 +312,7 @@ export const messages = {
   "error.backend.mcpServerIncompatible":
     "A questo indirizzo qualcosa ha risposto, ma non come server MCP via Streamable HTTP. Controlla l'URL e aggiorna l'app che esegue il server.",
   "error.backend.mcpRemoteBridge":
-    "{reason} Questo comando esegue il bridge mcp-remote. Scegli invece Streamable HTTP con l'URL {url} e OpenBot ti fa accedere.",
+    "{reason} Questo comando esegue il bridge mcp-remote. Scegli invece Streamable HTTP con l'URL {url} e OpenBot-NC ti fa accedere.",
   "error.backend.oauthNotHttps":
     "L'endpoint OAuth {origin} non usa https, quindi le credenziali non sono state inviate.",
   "error.backend.oauthTooManyRedirects": "L'endpoint OAuth ha reindirizzato troppe volte.",
@@ -366,14 +366,14 @@ export const messages = {
   "error.backend.promptAnswerMismatch": "La risposta al prompt non corrisponde a una domanda attiva.",
   "error.backend.approvalInactive": "Questa approvazione non è più attiva.",
   "error.backend.feedbackNeedsPhone":
-    "Solo l'app OpenBot del telefono può inviare questa segnalazione, perché aggiunge la versione e il log di assistenza del telefono. Apri questa chat sul telefono. Se vedi questo messaggio lì, aggiorna l'app del telefono.",
+    "Solo l'app OpenBot-NC del telefono può inviare questa segnalazione, perché aggiunge la versione e il log di assistenza del telefono. Apri questa chat sul telefono. Se vedi questo messaggio lì, aggiorna l'app del telefono.",
   "error.backend.takeoverInactive": "Questo intervento nel browser non è più attivo.",
   "error.backend.authSubmitting": "L'invio dell'autenticazione è già in corso.",
-  "error.backend.apiKeyListFailed": "OpenBot non è riuscito a leggere le chiavi API salvate.",
-  "error.backend.apiKeySaveFailed": "OpenBot non è riuscito a salvare la chiave API. Riprova.",
+  "error.backend.apiKeyListFailed": "OpenBot-NC non è riuscito a leggere le chiavi API salvate.",
+  "error.backend.apiKeySaveFailed": "OpenBot-NC non è riuscito a salvare la chiave API. Riprova.",
   "error.backend.apiKeySaving": "La chiave API è già in fase di salvataggio.",
   "error.backend.apiKeyAnswerUnreadable":
-    "OpenBot non è riuscito a leggere la chiave API. Inserisci una chiave di massimo 8.000 caratteri e scegli chi può usarla.",
+    "OpenBot-NC non è riuscito a leggere la chiave API. Inserisci una chiave di massimo 8.000 caratteri e scegli chi può usarla.",
   "error.backend.authRequestInactive": "Questa richiesta di autenticazione sicura non è più attiva.",
   "error.backend.secureAuthUnavailable": "L'autenticazione sicura non è disponibile.",
   "error.backend.browserUrlRequired": "L'URL del browser è obbligatorio.",
@@ -396,7 +396,7 @@ export const messages = {
   "error.backend.browserProxySignInRefused":
     "Il proxy {name} ha rifiutato l’accesso, quindi la pagina non si è aperta.",
   "error.backend.browserSystemProxyFailed":
-    "Il proxy nelle impostazioni del computer che esegue OpenBot non risponde o ha rifiutato la connessione, quindi la pagina non si è aperta. Controlla le impostazioni proxy di quel computer.",
+    "Il proxy nelle impostazioni del computer che esegue OpenBot-NC non risponde o ha rifiutato la connessione, quindi la pagina non si è aperta. Controlla le impostazioni proxy di quel computer.",
   "error.backend.browserProxyComputerUnreachable":
     "Il computer di questo profilo non risponde, quindi la pagina non si è aperta.",
   "error.backend.browserProxyComputerLocalAddress":
@@ -435,7 +435,7 @@ export const messages = {
   "error.backend.mcpSignInAppUrl": "L'app di accesso richiede un URL del server valido.",
   "error.backend.mcpSignInAppClientId": "Inserisci l'ID client dell'app di accesso.",
   "error.backend.mcpSignInAppIssuerChanged":
-    "Il server di accesso di questo server MCP è cambiato, quindi OpenBot non gli ha inviato l'app di accesso. Se la modifica è corretta, rimuovi l'app di accesso e aggiungila di nuovo.",
+    "Il server di accesso di questo server MCP è cambiato, quindi OpenBot-NC non gli ha inviato l'app di accesso. Se la modifica è corretta, rimuovi l'app di accesso e aggiungila di nuovo.",
   "error.backend.mcpSignInAppNoServer":
     "Salva questo server MCP come server con URL prima di aggiungere un'app di accesso.",
   "error.backend.mcpSignInAppUnavailable": "Questo computer non può conservare un'app di accesso.",
@@ -468,7 +468,8 @@ export const messages = {
   "error.backend.taskOpenLimitReached":
     "Questo agente ha {count} attività aperte. Chiudi un'attività, poi avviane o aprine un'altra.",
   "error.backend.taskRemoteUnsupported": "Le attività sono disponibili solo per gli agenti su questo computer.",
-  "error.backend.taskMessageFailed": "OpenBot non è riuscito a inviare il messaggio all’attività. Riprova più tardi.",
+  "error.backend.taskMessageFailed":
+    "OpenBot-NC non è riuscito a inviare il messaggio all’attività. Riprova più tardi.",
   "error.backend.taskStartFailed":
-    "OpenBot non è riuscito ad avviare l'attività. Esegui invece il lavoro in questo turno.",
+    "OpenBot-NC non è riuscito ad avviare l'attività. Esegui invece il lavoro in questo turno.",
 } as const satisfies PartialTranslation<typeof source>;

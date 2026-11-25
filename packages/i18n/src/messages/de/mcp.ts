@@ -10,10 +10,10 @@ export const messages = {
   "mcp.connect.useKey": "Stattdessen API-Schlüssel nutzen",
   "mcp.connect.useSignIn": "Stattdessen anmelden",
   "mcp.connect.keyDescription":
-    "Füge Zugangsdaten aus deinem {name}-Konto ein. OpenBot stellt damit eine Verbindung her und speichert sie auf {host}.",
+    "Füge Zugangsdaten aus deinem {name}-Konto ein. OpenBot-NC stellt damit eine Verbindung her und speichert sie auf {host}.",
   "mcp.connect.thisComputer": "diesem Computer",
   "mcp.connect.noCredentialDescription":
-    "{name} benötigt keine Zugangsdaten. OpenBot verbindet sich einmal, um die verfügbaren Werkzeuge zu ermitteln.",
+    "{name} benötigt keine Zugangsdaten. OpenBot-NC verbindet sich einmal, um die verfügbaren Werkzeuge zu ermitteln.",
   "mcp.connect.connect": "Verbinden",
   "mcp.connect.required": "Erforderlich.",
   "mcp.connect.keptOn": "Wird auf {host} gespeichert.",
@@ -24,7 +24,7 @@ export const messages = {
   "mcp.local.address": "Adresse",
   "mcp.local.docs": "Einrichtungsanleitung",
   "mcp.signIn.description":
-    "Melde dich bei deinem {name}-Konto an. OpenBot erhält die Werkzeuge, auf die dieses Konto zugreifen kann, aber kein Passwort.",
+    "Melde dich bei deinem {name}-Konto an. OpenBot-NC erhält die Werkzeuge, auf die dieses Konto zugreifen kann, aber kein Passwort.",
   "mcp.signIn.waiting": "Warten auf den Browser…",
   "mcp.signIn.continue": "Weiter zu {name}",
   "mcp.signIn.pageDescription": "Diese Seite ist im Browser auf {host} geöffnet. Melde dich hier an.",
@@ -62,7 +62,7 @@ export const messages = {
   "mcp.panel.editTitle": "MCP-Server bearbeiten",
   "mcp.panel.enable": "{name} aktivieren",
   "mcp.panel.detailsTitle": "Details",
-  "mcp.panel.detailsDescription": "Benenne diesen Server und wähle, wie OpenBot ihn erreicht.",
+  "mcp.panel.detailsDescription": "Benenne diesen Server und wähle, wie OpenBot-NC ihn erreicht.",
   "mcp.panel.transport": "Transport",
   "mcp.panel.name": "Name",
   "mcp.panel.namePlaceholder": "Name des MCP-Servers",
@@ -107,16 +107,16 @@ export const messages = {
   "mcp.panel.useAddress": "Diese Adresse nutzen",
   "mcp.panel.signInTo": "Bei {name} anmelden",
   "mcp.panel.signInWaiting": {
-    one: "Schließe die Anmeldung im Browser ab. OpenBot wartet höchstens {count} Minute.",
-    other: "Schließe die Anmeldung im Browser ab. OpenBot wartet höchstens {count} Minuten.",
+    one: "Schließe die Anmeldung im Browser ab. OpenBot-NC wartet höchstens {count} Minute.",
+    other: "Schließe die Anmeldung im Browser ab. OpenBot-NC wartet höchstens {count} Minuten.",
   },
   "mcp.panel.signInWaitingOn": {
-    one: "Die Anmeldeseite wird auf {host} geöffnet. OpenBot wartet höchstens {count} Minute.",
-    other: "Die Anmeldeseite wird auf {host} geöffnet. OpenBot wartet höchstens {count} Minuten.",
+    one: "Die Anmeldeseite wird auf {host} geöffnet. OpenBot-NC wartet höchstens {count} Minute.",
+    other: "Die Anmeldeseite wird auf {host} geöffnet. OpenBot-NC wartet höchstens {count} Minuten.",
   },
   "mcp.panel.appTitle": "Anmelde-App",
   "mcp.panel.appDescription":
-    "Verwende eine OAuth-App, die du beim Anbieter des Servers registriert hast. OpenBot verwendet sie, wenn der Server OpenBot nicht selbst registrieren kann. Lass das Feld leer, damit OpenBot sich selbst registriert.",
+    "Verwende eine OAuth-App, die du beim Anbieter des Servers registriert hast. OpenBot-NC verwendet sie, wenn der Server OpenBot-NC nicht selbst registrieren kann. Lass das Feld leer, damit OpenBot-NC sich selbst registriert.",
   "mcp.panel.appSaveFirst": "Speichere zuerst diesen Server. Danach kannst du eine Anmelde-App hinzufügen.",
   "mcp.panel.appUrlChanged": "Speichere zuerst die neue Server-URL. Die Anmelde-App gehört zur gespeicherten URL.",
   "mcp.panel.appLoadFailed": "Die Anmelde-App konnte nicht gelesen werden.",
@@ -139,19 +139,19 @@ export const messages = {
   "mcp.panel.appSaved": "App gespeichert. Melde dich an, um sie zu verwenden.",
   "mcp.panel.appRemoved": "App entfernt.",
   "mcp.signIn.relayDescription":
-    "Melde dich in deinem Browser auf {page} an. Wenn du fertig bist, sendet OpenBot die Anmeldung an {host}.",
+    "Melde dich in deinem Browser auf {page} an. Wenn du fertig bist, sendet OpenBot-NC die Anmeldung an {host}.",
   "mcp.signIn.relayOpenDescription":
-    "Melde dich in deinem Browser auf {page} an. Wenn du fertig bist, füge die angezeigte Adresse hier ein. OpenBot sendet die Anmeldung dann an {host}.",
+    "Melde dich in deinem Browser auf {page} an. Wenn du fertig bist, füge die angezeigte Adresse hier ein. OpenBot-NC sendet die Anmeldung dann an {host}.",
   "mcp.signIn.relayDeviceDescription":
     "Melde dich in deinem Browser auf {page} an und schließe die Anmeldung dort ab. {host} erkennt die Anmeldung selbst.",
   "mcp.signIn.relayOpen": "Anmeldeseite öffnen",
   "mcp.signIn.relayCopy": "Link kopieren",
   "mcp.signIn.relayPasteHint":
-    "Wenn der Browser nicht zu OpenBot zurückkehrt, kopiere die angezeigte Adresse und füge sie hier ein.",
+    "Wenn der Browser nicht zu OpenBot-NC zurückkehrt, kopiere die angezeigte Adresse und füge sie hier ein.",
   "mcp.signIn.relayPasteRequired":
-    "OpenBot kann die Anmeldung nicht selbst aus dem Browser holen. Wenn du fertig bist, kopiere die angezeigte Adresse und füge sie hier ein.",
+    "OpenBot-NC kann die Anmeldung nicht selbst aus dem Browser holen. Wenn du fertig bist, kopiere die angezeigte Adresse und füge sie hier ein.",
   "mcp.signIn.relayAddress": "Browser-Adresse",
   "mcp.signIn.relaySend": "Senden",
   "mcp.panel.callbackUrlRelayed":
-    "Die Anmeldeseite öffnet sich in deinem Browser, und OpenBot auf deinem Computer sendet die Anmeldung an {host}. Füge genau diese URL zu den erlaubten Weiterleitungs-URLs der App hinzu.",
+    "Die Anmeldeseite öffnet sich in deinem Browser, und OpenBot-NC auf deinem Computer sendet die Anmeldung an {host}. Füge genau diese URL zu den erlaubten Weiterleitungs-URLs der App hinzu.",
 } as const satisfies PartialTranslation<typeof source>;

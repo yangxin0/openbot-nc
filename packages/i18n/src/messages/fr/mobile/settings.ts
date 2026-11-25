@@ -8,16 +8,16 @@ export const messages = {
   "mobile.settings.language.system": "Langue du système",
   "mobile.settings.language.footer":
     "« Langue du système » suit la première langue des réglages du téléphone. Le texte pas encore traduit s’affiche en anglais.",
-  "mobile.settings.language.restartTitle": "Redémarrer OpenBot ?",
+  "mobile.settings.language.restartTitle": "Redémarrer OpenBot-NC ?",
   "mobile.settings.language.restartBody":
-    "Cette langue se lit dans l’autre sens. Les écrans changent de sens au prochain démarrage d’OpenBot. Si les écrans restent incorrects après le redémarrage, fermez OpenBot dans le sélecteur d’apps et rouvrez-le.",
+    "Cette langue se lit dans l’autre sens. Les écrans changent de sens au prochain démarrage d’OpenBot-NC. Si les écrans restent incorrects après le redémarrage, fermez OpenBot-NC dans le sélecteur d’apps et rouvrez-le.",
   "mobile.settings.language.restartNow": "Redémarrer maintenant",
   "mobile.settings.language.restartFailed":
-    "OpenBot n’a pas pu redémarrer. Les écrans changeront de sens à la prochaine ouverture d’OpenBot.",
+    "OpenBot-NC n’a pas pu redémarrer. Les écrans changeront de sens à la prochaine ouverture d’OpenBot-NC.",
   "mobile.settings.dictation.language": "Langue de dictée",
   "mobile.settings.about.development": "Développement",
   "mobile.settings.home.preferences": "Préférences",
-  "mobile.settings.home.about": "À propos d’OpenBot",
+  "mobile.settings.home.about": "À propos d’OpenBot-NC",
   "mobile.settings.support.log": "Journal d’assistance",
   "mobile.settings.support.show": "Afficher le journal",
   "mobile.settings.support.save": "Enregistrer le fichier du journal",
@@ -205,7 +205,7 @@ export const messages = {
   "mobile.settings.voice.supertonic.male": "Voix masculine {number}",
   "mobile.settings.voice.elevenLabs.title": "ElevenLabs",
   "mobile.settings.voice.elevenLabs.footer":
-    "OpenBot envoie le texte de chaque réponse à ElevenLabs avec votre clé, et ElevenLabs facture votre compte. La clé reste dans le trousseau de ce téléphone.",
+    "OpenBot-NC envoie le texte de chaque réponse à ElevenLabs avec votre clé, et ElevenLabs facture votre compte. La clé reste dans le trousseau de ce téléphone.",
   "mobile.settings.voice.elevenLabs.key": "Clé d’API",
   "mobile.settings.voice.elevenLabs.keySaved": "Enregistrée sur ce téléphone",
   "mobile.settings.voice.elevenLabs.chooseVoice": "Choisir une voix",
@@ -216,7 +216,7 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.saveKey": "Enregistrer la clé",
   "mobile.settings.voice.elevenLabs.testing": "Test de la clé",
   "mobile.settings.voice.elevenLabs.keyHint":
-    "OpenBot teste les deux premières autorisations avant d’enregistrer la clé.",
+    "OpenBot-NC teste les deux premières autorisations avant d’enregistrer la clé.",
   "mobile.settings.voice.elevenLabs.testFailed": "ElevenLabs n’a pas répondu. Réessayez.",
   "mobile.settings.voice.elevenLabs.refused": "ElevenLabs a refusé la demande : {reason}",
   "mobile.settings.voice.elevenLabs.getKey": "Obtenir une clé d’API",
@@ -271,17 +271,17 @@ export const messages = {
   "mobile.settings.voice.pause.title": "Pause avant l’envoi",
   "mobile.settings.voice.pause.label": "Attendre de nouveaux mots",
   "mobile.settings.voice.pause.footer":
-    "Dans une conversation vocale, OpenBot envoie vos mots quand il ne reconnaît aucun nouveau mot pendant cette durée. Le bruit sans mots ne le fait pas continuer à écouter. Choisissez une pause plus longue si vous parlez lentement ou vous arrêtez pour réfléchir.",
+    "Dans une conversation vocale, OpenBot-NC envoie vos mots quand il ne reconnaît aucun nouveau mot pendant cette durée. Le bruit sans mots ne le fait pas continuer à écouter. Choisissez une pause plus longue si vous parlez lentement ou vous arrêtez pour réfléchir.",
   "mobile.settings.voice.pause.seconds": "{seconds} s",
   "mobile.settings.voice.speed.title": "Vitesse des réponses",
   "mobile.settings.voice.speed.footer":
-    "La vitesse des réponses qu’OpenBot lit à voix haute, aussi dans une conversation vocale.",
+    "La vitesse des réponses qu’OpenBot-NC lit à voix haute, aussi dans une conversation vocale.",
   "mobile.settings.voice.speed.value": "{speed}×",
   "mobile.settings.voice.server.title": "Serveur vocal",
   "mobile.settings.voice.server.row": "Serveur compatible OpenAI",
   "mobile.settings.voice.server.notSetUp": "Non configuré",
   "mobile.settings.voice.server.footer":
-    "Votre propre serveur avec les routes /v1/audio d’OpenAI, comme Speaches ou Kokoro-FastAPI, comme sur l’ordinateur. OpenBot envoie vos enregistrements et le texte des réponses uniquement à son adresse, et le téléphone doit pouvoir la joindre, par exemple sur le même réseau.",
+    "Votre propre serveur avec les routes /v1/audio d’OpenAI, comme Speaches ou Kokoro-FastAPI, comme sur l’ordinateur. OpenBot-NC envoie vos enregistrements et le texte des réponses uniquement à son adresse, et le téléphone doit pouvoir la joindre, par exemple sur le même réseau.",
   "mobile.settings.voice.server.choice": "Votre serveur vocal",
   "mobile.settings.voice.server.dictationReady": "Sur votre serveur vocal · {model}",
   "mobile.settings.voice.server.dictationOff": "Configurez la dictée sur votre serveur vocal",
@@ -307,7 +307,7 @@ export const messages = {
     "La reconnaissance du téléphone et Supertonic 3 prennent le relais là où le serveur écoutait ou parlait, et sa clé API est supprimée de ce téléphone.",
   "mobile.settings.voice.server.removeFailed": "Impossible de retirer le serveur vocal.",
   "mobile.settings.voice.elevenLabs.recognitionFooter":
-    "OpenBot envoie votre voix en continu à ElevenLabs avec un jeton à usage unique, et ElevenLabs le facture sur votre compte. La clé reste sur ce téléphone.",
+    "OpenBot-NC envoie votre voix en continu à ElevenLabs avec un jeton à usage unique, et ElevenLabs le facture sur votre compte. La clé reste sur ce téléphone.",
   "mobile.settings.voice.elevenLabs.model.title": "Modèle",
   "mobile.settings.voice.elevenLabs.model.footer":
     "Chaque modèle a son propre prix chez ElevenLabs. Le changement s’applique à la prochaine réponse.",
@@ -340,9 +340,9 @@ export const messages = {
     "Les nouveaux messages rejoignent le travail en cours de l’agent, pas la file. Avec les agents qui ne le permettent pas, ils attendent dans la file.",
   "mobile.settings.agents.planCardFooter": "Avant une longue tâche, l’agent montre son plan.",
   "mobile.settings.agents.commitSection": "Commits Git",
-  "mobile.settings.agents.commitCoAuthor": "Créditer OpenBot dans les commits",
+  "mobile.settings.agents.commitCoAuthor": "Créditer OpenBot-NC dans les commits",
   "mobile.settings.agents.commitCoAuthorFooter":
-    "Les agents ajoutent OpenBot comme coauteur de leurs commits. Vous restez l’auteur.",
+    "Les agents ajoutent OpenBot-NC comme coauteur de leurs commits. Vous restez l’auteur.",
   "mobile.settings.agents.planStart.title": "Démarrer le travail",
   "mobile.settings.agents.planStart.wait": "Quand j’appuie sur Démarrer",
   "mobile.settings.agents.planStart.after": "Après {time}",
@@ -359,7 +359,7 @@ export const messages = {
     "Le nombre maximal de messages et d’exécutions de routines que les scripts locaux peuvent envoyer à chaque agent en une heure. Elle s’applique à tous les agents de ce serveur.",
   "mobile.settings.agents.processes.title": "Processus en arrière-plan",
   "mobile.settings.agents.processes.description":
-    "Programmes que les agents ont lancés et laissés en marche, comme des serveurs de développement. Ils continuent après la fin du chat et quand vous quittez OpenBot.",
+    "Programmes que les agents ont lancés et laissés en marche, comme des serveurs de développement. Ils continuent après la fin du chat et quand vous quittez OpenBot-NC.",
   "mobile.settings.agents.processes.empty": "Aucun programme d’agent n’est en marche.",
   "mobile.settings.agents.processes.loadFailed": "Impossible de lire les processus en arrière-plan.",
   "mobile.settings.agents.processes.noAgent": "Aucun agent",
@@ -371,7 +371,7 @@ export const messages = {
   "mobile.settings.agents.processes.stopLabel": "Arrêter le processus {pid}",
   "mobile.settings.quickActions.title": "Menu de l’icône",
   "mobile.settings.quickActions.footer":
-    "Touchez longuement l’icône OpenBot pour voir ces actions. Vous pouvez en activer {count} au maximum.",
+    "Touchez longuement l’icône OpenBot-NC pour voir ces actions. Vous pouvez en activer {count} au maximum.",
   "mobile.settings.quickActions.latestChat": "Dernier chat",
   "mobile.settings.quickActions.secondChat": "Avant-dernier chat",
 } as const satisfies PartialTranslation<typeof source>;

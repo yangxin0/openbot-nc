@@ -109,7 +109,7 @@ export const messages = {
     "I messaggi vengono eliminati e i membri li dimenticano. La configurazione del canale resta.",
   "mobile.channel.deleteHistory.confirmTitle": "Eliminare la cronologia di {name}?",
   "mobile.channel.deleteHistory.confirmBody":
-    "Tutti i messaggi e i file di questo canale vengono eliminati da OpenBot e i membri li dimenticano. Non puoi annullare. Membri, istruzioni, memorie, routine e attività non cambiano.",
+    "Tutti i messaggi e i file di questo canale vengono eliminati da OpenBot-NC e i membri li dimenticano. Non puoi annullare. Membri, istruzioni, memorie, routine e attività non cambiano.",
   "mobile.channel.deleteHistory.confirm": "Elimina cronologia",
   "mobile.channel.deleteHistory.failed": "Impossibile eliminare la cronologia",
   "mobile.channel.deleteHistory.failedBody": "L'host non ha potuto eliminare la cronologia.",

@@ -26,13 +26,13 @@ export const messages = {
   "prompt.approval.alwaysAllow": "Altijd toestaan",
   "prompt.approval.deny": "Weigeren",
   "prompt.approval.cut":
-    "Deze kaart toont alleen het begin van het verzoek en biedt daarom alleen Weigeren. Verschijnt Toestaan niet snel, werk OpenBot dan bij op de server.",
+    "Deze kaart toont alleen het begin van het verzoek en biedt daarom alleen Weigeren. Verschijnt Toestaan niet snel, werk OpenBot-NC dan bij op de server.",
   "prompt.approval.report.bugHeadline": "Een bug gevonden? Laten we hem oplossen.",
   "prompt.approval.report.ideaHeadline": "Een idee? Laten we het waarmaken.",
   "prompt.approval.report.dontSend": "Niet nu",
-  "prompt.approval.report.send": "Naar het OpenBot-team sturen",
+  "prompt.approval.report.send": "Naar het OpenBot-NC-team sturen",
   "prompt.approval.report.phoneOnly":
-    "Open deze chat in de OpenBot-app op de telefoon en stuur het rapport daar. De telefoon voegt zijn versie, zijn systeem en zijn ondersteuningslog toe. Kan de telefoon geen verbinding maken, open dan Instellingen > Ondersteuning in de telefoon-app en meld het probleem op GitHub.",
+    "Open deze chat in de OpenBot-NC-app op de telefoon en stuur het rapport daar. De telefoon voegt zijn versie, zijn systeem en zijn ondersteuningslog toe. Kan de telefoon geen verbinding maken, open dan Instellingen > Ondersteuning in de telefoon-app en meld het probleem op GitHub.",
   "prompt.approval.title.command": "Een commando uitvoeren",
   "prompt.approval.title.fileChange": "Bestanden wijzigen",
   "prompt.approval.title.permissions": "Machtigingen verlenen",
@@ -45,7 +45,7 @@ export const messages = {
   "prompt.browser.title.pending": "Voltooi de stap op {host}",
   "prompt.browser.cancelled": "Geannuleerd",
   "prompt.browser.reload":
-    "OpenBot kon het wachtwoord of de code niet helemaal invullen. Controleer de pagina en vul in wat ontbreekt. Rond het inloggen af en laad daarna de browserpagina opnieuw voordat je “Ik ben klaar” kiest. De pagina kan pas weer worden geïnspecteerd nadat ze opnieuw is geladen.",
+    "OpenBot-NC kon het wachtwoord of de code niet helemaal invullen. Controleer de pagina en vul in wat ontbreekt. Rond het inloggen af en laad daarna de browserpagina opnieuw voordat je “Ik ben klaar” kiest. De pagina kan pas weer worden geïnspecteerd nadat ze opnieuw is geladen.",
   "prompt.browser.continuing": "{name} gaat verder.",
   "prompt.browser.cancelledBody": "De browserstap is geannuleerd.",
   "prompt.browser.pendingBody":
@@ -58,9 +58,9 @@ export const messages = {
   "prompt.browser.signInBlocked.title": "{host} heeft het inloggen vanaf {server} geblokkeerd",
   "prompt.browser.signInBlocked.cancelledTitle": "Inloggen bij {host} geannuleerd",
   "prompt.browser.signInBlocked.body":
-    "Log in op deze computer. OpenBot stuurt alleen de inloggegevens van {host} naar {server}, en {name} gaat verder.",
+    "Log in op deze computer. OpenBot-NC stuurt alleen de inloggegevens van {host} naar {server}, en {name} gaat verder.",
   "prompt.browser.signInBlocked.desktopBody":
-    "{host} accepteert geen aanmelding vanaf de server. Open deze chat in de OpenBot-desktopapp op je computer en log daar in. Daarna gaat {name} verder.",
+    "{host} accepteert geen aanmelding vanaf de server. Open deze chat in de OpenBot-NC-desktopapp op je computer en log daar in. Daarna gaat {name} verder.",
   "prompt.browser.signInBlocked.cancelledBody": "Het inloggen is geannuleerd.",
   "prompt.browser.signInBlocked.waiting": "Wachten op inloggen",
   "prompt.browser.signInBlocked.waitingButton": "Wachten op inloggen…",

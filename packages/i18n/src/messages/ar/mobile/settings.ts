@@ -8,16 +8,16 @@ export const messages = {
   "mobile.settings.language.system": "الافتراضي للنظام",
   "mobile.settings.language.footer":
     "يتبع الافتراضي للنظام اللغة الأولى في إعدادات هاتفك. يظهر النص غير المترجم بعد باللغة الإنجليزية.",
-  "mobile.settings.language.restartTitle": "إعادة تشغيل OpenBot؟",
+  "mobile.settings.language.restartTitle": "إعادة تشغيل OpenBot-NC؟",
   "mobile.settings.language.restartBody":
-    "تُقرأ هذه اللغة في الاتجاه الآخر. تغيّر الشاشات اتجاهها عند تشغيل OpenBot مرة أخرى. إذا بقيت الشاشات غير صحيحة بعد إعادة التشغيل، فأغلق OpenBot من مبدّل التطبيقات وافتحه مرة أخرى.",
+    "تُقرأ هذه اللغة في الاتجاه الآخر. تغيّر الشاشات اتجاهها عند تشغيل OpenBot-NC مرة أخرى. إذا بقيت الشاشات غير صحيحة بعد إعادة التشغيل، فأغلق OpenBot-NC من مبدّل التطبيقات وافتحه مرة أخرى.",
   "mobile.settings.language.restartNow": "إعادة التشغيل الآن",
   "mobile.settings.language.restartFailed":
-    "تعذّرت إعادة تشغيل OpenBot. تغيّر الشاشات اتجاهها في المرة التالية التي تفتح فيها OpenBot.",
+    "تعذّرت إعادة تشغيل OpenBot-NC. تغيّر الشاشات اتجاهها في المرة التالية التي تفتح فيها OpenBot-NC.",
   "mobile.settings.dictation.language": "لغة الإملاء",
   "mobile.settings.about.development": "التطوير",
   "mobile.settings.home.preferences": "التفضيلات",
-  "mobile.settings.home.about": "حول OpenBot",
+  "mobile.settings.home.about": "حول OpenBot-NC",
   "mobile.settings.support.log": "سجل الدعم",
   "mobile.settings.support.show": "عرض السجل",
   "mobile.settings.support.save": "حفظ ملف السجل",
@@ -205,7 +205,7 @@ export const messages = {
   "mobile.settings.voice.supertonic.male": "صوت ذكوري {number}",
   "mobile.settings.voice.elevenLabs.title": "ElevenLabs",
   "mobile.settings.voice.elevenLabs.footer":
-    "يرسل OpenBot نص كل رد إلى ElevenLabs باستخدام مفتاحك، وتُصدر ElevenLabs الفاتورة على حسابك. يبقى المفتاح في سلسلة مفاتيح هذا الهاتف.",
+    "يرسل OpenBot-NC نص كل رد إلى ElevenLabs باستخدام مفتاحك، وتُصدر ElevenLabs الفاتورة على حسابك. يبقى المفتاح في سلسلة مفاتيح هذا الهاتف.",
   "mobile.settings.voice.elevenLabs.key": "مفتاح API",
   "mobile.settings.voice.elevenLabs.keySaved": "محفوظ على هذا الهاتف",
   "mobile.settings.voice.elevenLabs.chooseVoice": "اختر صوتًا",
@@ -215,7 +215,7 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.removeBody": "سيقرأ Supertonic 3 الردود مجددًا.",
   "mobile.settings.voice.elevenLabs.saveKey": "حفظ المفتاح",
   "mobile.settings.voice.elevenLabs.testing": "جارٍ اختبار المفتاح",
-  "mobile.settings.voice.elevenLabs.keyHint": "يختبر OpenBot أول إذنين قبل حفظ المفتاح.",
+  "mobile.settings.voice.elevenLabs.keyHint": "يختبر OpenBot-NC أول إذنين قبل حفظ المفتاح.",
   "mobile.settings.voice.elevenLabs.testFailed": "لم تستجب ElevenLabs. أعد المحاولة.",
   "mobile.settings.voice.elevenLabs.refused": "رفضت ElevenLabs الطلب: {reason}",
   "mobile.settings.voice.elevenLabs.getKey": "الحصول على مفتاح API",
@@ -267,16 +267,16 @@ export const messages = {
   "mobile.settings.voice.pause.title": "التوقف قبل الإرسال",
   "mobile.settings.voice.pause.label": "انتظار كلمات جديدة",
   "mobile.settings.voice.pause.footer":
-    "في المحادثة الصوتية، يرسل OpenBot كلماتك عندما لا يتعرّف على كلمات جديدة لهذه المدة. الضجيج بلا كلمات لا يبقيه في وضع الاستماع. اختر توقفًا أطول إذا كنت تتكلم ببطء أو تتوقف للتفكير.",
+    "في المحادثة الصوتية، يرسل OpenBot-NC كلماتك عندما لا يتعرّف على كلمات جديدة لهذه المدة. الضجيج بلا كلمات لا يبقيه في وضع الاستماع. اختر توقفًا أطول إذا كنت تتكلم ببطء أو تتوقف للتفكير.",
   "mobile.settings.voice.pause.seconds": "{seconds} ث",
   "mobile.settings.voice.speed.title": "سرعة الردود",
-  "mobile.settings.voice.speed.footer": "سرعة الردود التي يقرؤها OpenBot بصوت عالٍ، وكذلك في المحادثة الصوتية.",
+  "mobile.settings.voice.speed.footer": "سرعة الردود التي يقرؤها OpenBot-NC بصوت عالٍ، وكذلك في المحادثة الصوتية.",
   "mobile.settings.voice.speed.value": "{speed}×",
   "mobile.settings.voice.server.title": "خادم الصوت",
   "mobile.settings.voice.server.row": "خادم متوافق مع OpenAI",
   "mobile.settings.voice.server.notSetUp": "غير معدّ",
   "mobile.settings.voice.server.footer":
-    "خادمك الخاص بمسارات /v1/audio من OpenAI، مثل Speaches أو Kokoro-FastAPI، كما على سطح المكتب. يرسل OpenBot تسجيلاتك ونص الردود إلى عنوانه فقط، ويجب أن يصل الهاتف إليه، على سبيل المثال على الشبكة نفسها.",
+    "خادمك الخاص بمسارات /v1/audio من OpenAI، مثل Speaches أو Kokoro-FastAPI، كما على سطح المكتب. يرسل OpenBot-NC تسجيلاتك ونص الردود إلى عنوانه فقط، ويجب أن يصل الهاتف إليه، على سبيل المثال على الشبكة نفسها.",
   "mobile.settings.voice.server.choice": "خادم الصوت الخاص بك",
   "mobile.settings.voice.server.dictationReady": "على خادم الصوت الخاص بك · {model}",
   "mobile.settings.voice.server.dictationOff": "أعدّ الإملاء على خادم الصوت الخاص بك",
@@ -300,7 +300,7 @@ export const messages = {
     "تتولى أداة التعرّف في الهاتف وSupertonic 3 ما كان الخادم يستمع إليه أو ينطقه، ويُحذف مفتاح API الخاص به من هذا الهاتف.",
   "mobile.settings.voice.server.removeFailed": "تعذّرت إزالة خادم الصوت.",
   "mobile.settings.voice.elevenLabs.recognitionFooter":
-    "يبث OpenBot كلامك إلى ElevenLabs باستخدام رمز مميز للاستخدام مرة واحدة، وتُصدر ElevenLabs الفاتورة على حسابك. يبقى المفتاح على هذا الهاتف.",
+    "يبث OpenBot-NC كلامك إلى ElevenLabs باستخدام رمز مميز للاستخدام مرة واحدة، وتُصدر ElevenLabs الفاتورة على حسابك. يبقى المفتاح على هذا الهاتف.",
   "mobile.settings.voice.elevenLabs.model.title": "النموذج",
   "mobile.settings.voice.elevenLabs.model.footer": "لكل نموذج سعره الخاص في ElevenLabs. ينطبق التغيير على الرد التالي.",
   "mobile.settings.voice.elevenLabs.model.flash": "الأسرع",
@@ -330,9 +330,9 @@ export const messages = {
     "تنضم الرسائل الجديدة إلى العمل الحالي للوكيل، لا إلى قائمة الانتظار. مع الوكلاء الذين لا يدعمون ذلك، تنتظر الرسائل في قائمة الانتظار.",
   "mobile.settings.agents.planCardFooter": "قبل مهمة طويلة، يعرض الوكيل خطته.",
   "mobile.settings.agents.commitSection": "إيداعات Git",
-  "mobile.settings.agents.commitCoAuthor": "ذكر OpenBot في الإيداعات",
+  "mobile.settings.agents.commitCoAuthor": "ذكر OpenBot-NC في الإيداعات",
   "mobile.settings.agents.commitCoAuthorFooter":
-    "يضيف الوكلاء OpenBot كمؤلف مشارك في الإيداعات التي يُنشئونها. وتبقى أنت المؤلف.",
+    "يضيف الوكلاء OpenBot-NC كمؤلف مشارك في الإيداعات التي يُنشئونها. وتبقى أنت المؤلف.",
   "mobile.settings.agents.planStart.title": "بدء العمل",
   "mobile.settings.agents.planStart.wait": "عند الضغط على «بدء»",
   "mobile.settings.agents.planStart.after": "بعد {time}",
@@ -348,7 +348,7 @@ export const messages = {
     "أقصى عدد من الرسائل وتشغيلات المهام الدورية التي يمكن للبرامج النصية المحلية إرسالها إلى كل وكيل في ساعة واحدة. ينطبق على كل الوكلاء على هذا الخادم.",
   "mobile.settings.agents.processes.title": "العمليات في الخلفية",
   "mobile.settings.agents.processes.description":
-    "برامج بدأها الوكلاء وتركوها تعمل، مثل خوادم التطوير. تستمر في العمل بعد انتهاء الدردشة وبعد إنهاء OpenBot.",
+    "برامج بدأها الوكلاء وتركوها تعمل، مثل خوادم التطوير. تستمر في العمل بعد انتهاء الدردشة وبعد إنهاء OpenBot-NC.",
   "mobile.settings.agents.processes.empty": "لا توجد برامج من الوكلاء قيد التشغيل.",
   "mobile.settings.agents.processes.loadFailed": "تعذّرت قراءة العمليات في الخلفية.",
   "mobile.settings.agents.processes.noAgent": "لا وكيل",
@@ -366,7 +366,8 @@ export const messages = {
   "mobile.settings.agents.processes.stopTitle": "هل تريد إيقاف هذا البرنامج؟",
   "mobile.settings.agents.processes.stopLabel": "إيقاف العملية {pid}",
   "mobile.settings.quickActions.title": "قائمة أيقونة التطبيق",
-  "mobile.settings.quickActions.footer": "المس أيقونة OpenBot مطولًا لرؤية هذه الإجراءات. يمكنك تشغيل {count} كحد أقصى.",
+  "mobile.settings.quickActions.footer":
+    "المس أيقونة OpenBot-NC مطولًا لرؤية هذه الإجراءات. يمكنك تشغيل {count} كحد أقصى.",
   "mobile.settings.quickActions.latestChat": "آخر محادثة",
   "mobile.settings.quickActions.secondChat": "المحادثة قبل الأخيرة",
 } as const satisfies PartialTranslation<typeof source>;

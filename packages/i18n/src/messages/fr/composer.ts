@@ -73,12 +73,12 @@ export const messages = {
   "composer.voice.transcribing": "Transcription de la demande vocale",
   "composer.voice.start": "Créer une demande à la voix",
   "composer.voice.blocked":
-    "L’accès au microphone est bloqué. Autorisez OpenBot à utiliser le microphone dans les réglages du système.",
+    "L’accès au microphone est bloqué. Autorisez OpenBot-NC à utiliser le microphone dans les réglages du système.",
   "composer.voice.noMicrophone": "Aucun microphone n’est disponible.",
-  "composer.voice.startFailed": "OpenBot n’a pas pu démarrer l’enregistrement vocal.",
+  "composer.voice.startFailed": "OpenBot-NC n’a pas pu démarrer l’enregistrement vocal.",
   "composer.voice.microphoneUnavailable":
-    "OpenBot n’a pas pu ouvrir le microphone. Fermez les autres apps qui l’utilisent, vérifiez qu’il est branché et autorisé dans les réglages du système, puis réessayez.",
-  "composer.voice.transcribeFailed": "OpenBot n’a pas pu transcrire cet enregistrement.",
+    "OpenBot-NC n’a pas pu ouvrir le microphone. Fermez les autres apps qui l’utilisent, vérifiez qu’il est branché et autorisé dans les réglages du système, puis réessayez.",
+  "composer.voice.transcribeFailed": "OpenBot-NC n’a pas pu transcrire cet enregistrement.",
   "composer.reply.toYou": "Réponse à votre message",
   "composer.reply.toAgent": "Réponse à l’agent",
   "composer.reply.attachment": "Pièce jointe",

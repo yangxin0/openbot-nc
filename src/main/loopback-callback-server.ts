@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type Server } from "node:http";
 import type { Socket } from "node:net";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import type { AppTextKey } from "@openbot/i18n";
 import { createOpenBotLogger } from "@openbot/logging";
 import type { LanguageService } from "./language-service";
@@ -145,5 +146,5 @@ function isLoopbackHost(host: string | undefined): boolean {
 }
 
 function callbackPage(locale: string, message: string): string {
-  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>OpenBot</title></head><body style="font-family:system-ui;padding:2rem"><p>${message}</p></body></html>`;
+  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${APP_NAME}</title></head><body style="font-family:system-ui;padding:2rem"><p>${message}</p></body></html>`;
 }

@@ -39,7 +39,8 @@ export const messages = {
   "error.skill.installPathSymlink": "Las rutas de instalación de habilidades no pueden contener enlaces simbólicos.",
   "error.skill.tooManySkills": "Un agente puede tener hasta {limit} habilidades.",
   "error.skill.unmanagedExists": "Ya existe una habilidad no gestionada en {path}.",
-  "error.skill.managedSlug": "OpenBot da a cada agente su propia habilidad {slug}. Ponle otro nombre a esta habilidad.",
+  "error.skill.managedSlug":
+    "OpenBot-NC da a cada agente su propia habilidad {slug}. Ponle otro nombre a esta habilidad.",
   "error.skill.localNoRevisions": "La habilidad local no tiene revisiones publicadas.",
   "error.skill.localNotFound": "Esta habilidad local no existe. Comprueba su ID en la lista de habilidades locales.",
   "error.skill.localRevisionNotFound":
@@ -56,12 +57,12 @@ export const messages = {
   "error.skill.pathSymlink": "Las rutas de habilidades no pueden contener enlaces simbólicos.",
   "error.skill.folderNotRead": "{provider} no lee {folder}. Copia esta carpeta a {target}.",
   "error.skill.githubLinkInvalid": "Pega un enlace a un repositorio o carpeta de GitHub.",
-  "error.skill.githubNotFound": "OpenBot no puede abrir {repository}. El repositorio es privado o no existe.",
+  "error.skill.githubNotFound": "OpenBot-NC no puede abrir {repository}. El repositorio es privado o no existe.",
   "error.skill.githubNoSkills": "No hay ningún SKILL.md en {folder}.",
-  "error.skill.githubUnavailable": "OpenBot no puede leer GitHub ahora. Inténtalo de nuevo más tarde.",
+  "error.skill.githubUnavailable": "OpenBot-NC no puede leer GitHub ahora. Inténtalo de nuevo más tarde.",
   "error.skill.githubRateLimited":
-    "GitHub limita la frecuencia con la que OpenBot puede leerlo sin una cuenta. Inténtalo de nuevo en una hora.",
+    "GitHub limita la frecuencia con la que OpenBot-NC puede leerlo sin una cuenta. Inténtalo de nuevo en una hora.",
   "error.skill.githubTooLarge":
-    "OpenBot no puede leer todos los archivos de {repository}. El repositorio es demasiado grande.",
+    "OpenBot-NC no puede leer todos los archivos de {repository}. El repositorio es demasiado grande.",
   "error.skill.githubHostTooOld": "Actualiza este servidor para añadir habilidades desde GitHub.",
 } as const satisfies PartialTranslation<typeof source>;

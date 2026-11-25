@@ -107,7 +107,7 @@ export const messages = {
   "mobile.channel.deleteHistory.footer": "ההודעות נמחקות והחברים שוכחים אותן. הגדרות הערוץ נשארות.",
   "mobile.channel.deleteHistory.confirmTitle": "למחוק את ההיסטוריה של {name}?",
   "mobile.channel.deleteHistory.confirmBody":
-    "כל ההודעות והקבצים של הערוץ הזה יימחקו מ-OpenBot, והחברים ישכחו אותם. אי אפשר לבטל את הפעולה. חברים, הוראות, זיכרונות, שגרות ומשימות לא משתנים.",
+    "כל ההודעות והקבצים של הערוץ הזה יימחקו מ-OpenBot-NC, והחברים ישכחו אותם. אי אפשר לבטל את הפעולה. חברים, הוראות, זיכרונות, שגרות ומשימות לא משתנים.",
   "mobile.channel.deleteHistory.confirm": "מחיקת היסטוריה",
   "mobile.channel.deleteHistory.failed": "לא ניתן למחוק את ההיסטוריה",
   "mobile.channel.deleteHistory.failedBody": "המארח לא הצליח למחוק את ההיסטוריה.",

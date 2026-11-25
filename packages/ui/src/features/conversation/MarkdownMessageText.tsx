@@ -1,4 +1,5 @@
 import { fileReferenceName, isFileReference } from "@openbot/brand/file-reference";
+import { APP_HOME_FOLDER } from "@openbot/contracts/app-identity";
 import { attachmentReferenceAt } from "@openbot/contracts/attachment-references";
 import {
   blockChatMath,
@@ -1139,13 +1140,18 @@ function LocalFileLink(props: {
   );
 }
 
+const SHARED_HOME_FOLDERS = [APP_HOME_FOLDER, "OpenBot"];
+
 function sharedFileTarget(value: string): string | null {
   const path = value.trim();
   if (!path || /[\0\r\n]/u.test(path)) return null;
   const normalized = path.replaceAll("\\", "/");
-  return normalized.startsWith("~/OpenBot/Shared/") ||
-    normalized.startsWith("OpenBot/Shared/") ||
-    normalized.includes("/OpenBot/Shared/")
+  return SHARED_HOME_FOLDERS.some(
+    (folder) =>
+      normalized.startsWith(`~/${folder}/Shared/`) ||
+      normalized.startsWith(`${folder}/Shared/`) ||
+      normalized.includes(`/${folder}/Shared/`),
+  )
     ? path
     : null;
 }

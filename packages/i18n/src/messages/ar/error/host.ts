@@ -2,11 +2,11 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.nameBeforePublish": "سمِّ OpenBot هذا قبل نشره.",
-  "error.host.publishBeforeInvite": "اجعل OpenBot هذا عامًا قبل إنشاء دعوة.",
+  "error.host.nameBeforePublish": "سمِّ OpenBot-NC هذا قبل نشره.",
+  "error.host.publishBeforeInvite": "اجعل OpenBot-NC هذا عامًا قبل إنشاء دعوة.",
   "error.host.teamAccessUnavailable": "وصولك إلى الفريق غير متاح.",
   "error.host.ownerIdentityUnavailable": "هوية مالك المضيف غير متاحة.",
-  "error.host.publishFailed": "تعذّر نشر OpenBot هذا.",
+  "error.host.publishFailed": "تعذّر نشر OpenBot-NC هذا.",
   "error.host.noServer": "لا يوجد على هذا الحاسوب خادم لتغييره.",
   "error.host.identityLocalOnly": "لا يمكن تغيير اسم الخادم وشعاره إلا على الحاسوب الذي يشغّله.",
   "error.host.timezoneInvalid": "هذه المنطقة الزمنية غير معروفة.",

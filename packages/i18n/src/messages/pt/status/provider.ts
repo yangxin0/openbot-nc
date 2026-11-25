@@ -32,5 +32,5 @@ export const messages = {
   "status.provider.claudeFastModeUnavailable":
     "O Claude respondeu na velocidade padrão. O Claude Code não pôde usar o modo rápido neste turno.",
   "status.provider.claudeOwnApiKey":
-    "O Claude Code está configurado para usar uma chave de API da Anthropic. A Anthropic cobra cada solicitação no crédito de API da chave, não no seu plano do Claude. Para usar o seu plano, remova a chave das configurações do Claude Code ou das variáveis de ambiente e reinicie o OpenBot.",
+    "O Claude Code está configurado para usar uma chave de API da Anthropic. A Anthropic cobra cada solicitação no crédito de API da chave, não no seu plano do Claude. Para usar o seu plano, remova a chave das configurações do Claude Code ou das variáveis de ambiente e reinicie o OpenBot-NC.",
 } as const satisfies PartialTranslation<typeof source>;

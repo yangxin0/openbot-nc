@@ -11,7 +11,7 @@ export const messages = defineMessages("mobile.onboarding", {
   "mobile.onboarding.server.title": "Where will your agents work?",
   "mobile.onboarding.server.body": "Agents run on a server. Choose how to connect one.",
   "mobile.onboarding.server.computer": "My computer",
-  "mobile.onboarding.server.computerBody": "Use OpenBot on your computer as the server.",
+  "mobile.onboarding.server.computerBody": "Use OpenBot-NC on your computer as the server.",
   "mobile.onboarding.server.computerTitle": "Connect your computer",
   "mobile.onboarding.server.relaySteps":
     "On your computer, open OpenBot-NC with an identity of the same team and turn on relay hosting. The computer shows here when it is online.",

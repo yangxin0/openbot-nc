@@ -4,7 +4,7 @@ import type { messages as source } from "../en/account";
 export const messages = {
   "account.menu.signOut": "退出登录",
   "account.menu.signingOut": "正在退出…",
-  "account.menu.updateFailed": "无法更新 OpenBot。",
+  "account.menu.updateFailed": "无法更新 OpenBot-NC。",
   "account.menu.signOutFailed": "无法退出登录。",
   "account.usage.title": "用量",
   "account.usage.refresh": "刷新",
@@ -59,7 +59,7 @@ export const messages = {
   "account.update.progress": "更新下载进度",
   "account.login.email": "邮箱",
   "account.login.sendCode": "发送登录验证码",
-  "account.login.verified": "已验证，正在打开 OpenBot…",
+  "account.login.verified": "已验证，正在打开 OpenBot-NC…",
   "account.login.developmentCode": "开发用验证码：{code}",
   "account.otp.incorrect": "验证码不正确，请重试。",
   "account.otp.verifying": "正在验证…",

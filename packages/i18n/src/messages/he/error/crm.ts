@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "השרת הזה אינו תומך ב-CRM. יש לעדכן את OpenBot במחשב שמפעיל אותו.",
+  "error.crm.serverTooOld": "השרת הזה אינו תומך ב-CRM. יש לעדכן את OpenBot-NC במחשב שמפעיל אותו.",
   "error.crm.tooLargeToSend": "דף ה-CRM הזה גדול מדי לשליחה לאפליקציה הזו.",
   "error.crm.customerMissing": "הלקוח הזה כבר לא קיים.",
   "error.crm.planMissing": "התוכנית הזו כבר לא קיימת.",
@@ -37,9 +37,9 @@ export const messages = {
   "error.crm.sourcePermission":
     "המפתח הזה לא יכול לקרוא לקוחות, חשבוניות, מנויים, אירועים ומוצרים. יש לתת לו הרשאת קריאה אליהם.",
   "error.crm.sourceRateLimited": "Stripe קיבל יותר מדי בקשות. יש לנסות שוב בעוד דקה.",
-  "error.crm.sourceNetwork": "OpenBot לא מצליח להתחבר ל-Stripe. יש לבדוק את החיבור לאינטרנט.",
-  "error.crm.sourceFailed": "Stripe שלח תשובה ש-OpenBot לא מצליח לקרוא. יש לנסות שוב מאוחר יותר.",
-  "error.crm.sourceKeySaveFailed": "OpenBot לא מצליח לשמור את מפתח ה-Stripe במחשב הזה.",
+  "error.crm.sourceNetwork": "OpenBot-NC לא מצליח להתחבר ל-Stripe. יש לבדוק את החיבור לאינטרנט.",
+  "error.crm.sourceFailed": "Stripe שלח תשובה ש-OpenBot-NC לא מצליח לקרוא. יש לנסות שוב מאוחר יותר.",
+  "error.crm.sourceKeySaveFailed": "OpenBot-NC לא מצליח לשמור את מפתח ה-Stripe במחשב הזה.",
   "error.crm.off": "ה-CRM כבוי. בעלים או מנהל יכולים להפעיל אותו בהגדרות השרת > ניסיוני.",
-  "error.crm.settingsSaveFailed": "OpenBot לא יכול לשמור את הגדרת ה-CRM בשרת הזה.",
+  "error.crm.settingsSaveFailed": "OpenBot-NC לא יכול לשמור את הגדרת ה-CRM בשרת הזה.",
 } as const satisfies PartialTranslation<typeof source>;

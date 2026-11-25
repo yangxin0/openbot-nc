@@ -8,9 +8,9 @@ export const messages = {
   "status.computerUse.driverNoAnswer": "Sterownik Sterowania komputerem nie odpowiedział. {reason}",
   "status.computerUse.driverStopped": "Sterownik Sterowania komputerem się zatrzymał.",
   "status.computerUse.unsupported": "Sterowanie komputerem jest dostępne w systemach macOS, Windows i Linux.",
-  "status.computerUse.driverMissing": "Ta wersja OpenBot nie zawiera sterownika Sterowania komputerem.",
+  "status.computerUse.driverMissing": "Ta wersja OpenBot-NC nie zawiera sterownika Sterowania komputerem.",
   "status.computerUse.inputRefused":
-    "Na tym pulpicie OpenBot nie może pisać ani klikać w innych aplikacjach. Przy zadaniach na stronach internetowych poproś agenta, aby użył przeglądarki OpenBot.",
+    "Na tym pulpicie OpenBot-NC nie może pisać ani klikać w innych aplikacjach. Przy zadaniach na stronach internetowych poproś agenta, aby użył przeglądarki OpenBot-NC.",
   "status.computerUse.progressActing": "Korzysta z aplikacji na tym komputerze…",
   "status.computerUse.progressDeciding": "Wybiera następny krok w aplikacji…",
 } as const satisfies PartialTranslation<typeof source>;

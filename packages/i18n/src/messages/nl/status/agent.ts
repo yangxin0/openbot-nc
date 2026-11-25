@@ -27,7 +27,8 @@ export const messages = {
   "status.agent.screenCaptureScreen": "Het hoofdscherm vastleggen en de afbeelding naar het model van de agent sturen.",
   "status.agent.screenCaptureChannel":
     "De afbeelding verschijnt in het kanaal {channel}, en elk lid van deze server dat het kanaal leest, kan haar zien.",
-  "status.agent.screenCapturePermissionNext": "macOS kan je daarna vragen om schermopname toe te staan voor OpenBot.",
+  "status.agent.screenCapturePermissionNext":
+    "macOS kan je daarna vragen om schermopname toe te staan voor OpenBot-NC.",
   "status.agent.screenCaptureDisplay":
     "Het beeldscherm {name} vastleggen en de afbeelding naar het model van de agent sturen.",
   "status.agent.screenCaptureWindow":
@@ -43,12 +44,12 @@ export const messages = {
   "status.agent.sendIdea": "Dit wordt een openbaar GitHub-issue. Je naam wordt niet getoond.",
   "status.agent.feedbackRecentErrors": "Recente fouten in de chat:",
   "status.agent.feedbackSameAs": "Wordt toegevoegd aan issue #{issue}",
-  "status.agent.feedbackSent": "Naar het OpenBot-team gestuurd: {title}",
+  "status.agent.feedbackSent": "Naar het OpenBot-NC-team gestuurd: {title}",
   "status.agent.feedbackWithdrawn": "Verwijderd van GitHub: {title}",
   "status.agent.browserProfileNamed":
     "Verplaats {agents} naar het browserprofiel {profile}. Ze krijgen de aanmeldingen en cookies ervan. Hun open tabbladen sluiten.",
-  "status.agent.commitCoAuthorOff": "Stop met OpenBot als co-auteur toevoegen aan de commits van alle agenten.",
-  "status.agent.commitCoAuthorOn": "Voeg OpenBot weer als co-auteur toe aan de commits van alle agenten.",
+  "status.agent.commitCoAuthorOff": "Stop met OpenBot-NC als co-auteur toevoegen aan de commits van alle agenten.",
+  "status.agent.commitCoAuthorOn": "Voeg OpenBot-NC weer als co-auteur toe aan de commits van alle agenten.",
   "status.agent.browserProfileNew":
     "Maak het nieuwe browserprofiel {profile} en verplaats {agents} ernaartoe. Het heeft geen aanmeldingen. Hun open tabbladen sluiten.",
   "status.agent.browserProfileShared":
@@ -107,9 +108,9 @@ export const messages = {
   "status.agent.memoryChangesWithConflicts":
     "Geheugen: {saved} opgeslagen, {updated} bijgewerkt, {forgotten} vergeten, {notChanged} niet gewijzigd omdat een andere thread ze eerst heeft gewijzigd.",
   "status.agent.mcpServerAdd":
-    "De MCP-server {name} toevoegen: {target}. Elke agent op deze server krijgt de tools ervan. OpenBot maakt verbinding om hem te testen.",
+    "De MCP-server {name} toevoegen: {target}. Elke agent op deze server krijgt de tools ervan. OpenBot-NC maakt verbinding om hem te testen.",
   "status.agent.mcpServerChange":
-    "De MCP-server {name} wijzigen naar {target}. Elke agent op deze server krijgt de tools ervan. OpenBot maakt verbinding om hem te testen.",
+    "De MCP-server {name} wijzigen naar {target}. Elke agent op deze server krijgt de tools ervan. OpenBot-NC maakt verbinding om hem te testen.",
   "status.agent.mcpServerHeaders": "Het wijzigt ook deze headers: {names}.",
   "status.agent.mcpServerEnable": "De MCP-server {name} aanzetten voor elke agent op deze server.",
   "status.agent.mcpServerDisable": "De MCP-server {name} uitzetten voor elke agent op deze server.",

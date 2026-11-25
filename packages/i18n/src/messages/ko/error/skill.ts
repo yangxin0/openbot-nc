@@ -40,7 +40,7 @@ export const messages = {
   "error.skill.tooManySkills": "에이전트에는 스킬을 최대 {limit}개까지 둘 수 있어요.",
   "error.skill.unmanagedExists": "{path}에 관리되지 않는 스킬이 이미 있어요.",
   "error.skill.managedSlug":
-    "OpenBot은 모든 에이전트에 자체 {slug} 스킬을 제공해요. 이 스킬에는 다른 이름을 지정해 주세요.",
+    "OpenBot-NC는 모든 에이전트에 자체 {slug} 스킬을 제공해요. 이 스킬에는 다른 이름을 지정해 주세요.",
   "error.skill.localNoRevisions": "로컬 스킬에 게시된 수정본이 없어요.",
   "error.skill.localNotFound": "이 로컬 스킬은 없어요. 로컬 스킬 목록에서 ID를 확인해 주세요.",
   "error.skill.localRevisionNotFound": "이 로컬 스킬에는 수정본 {revision}이(가) 없어요. 최신 수정본은 {latest}이에요.",
@@ -55,11 +55,11 @@ export const messages = {
   "error.skill.pathSymlink": "스킬 경로에는 심볼릭 링크를 포함할 수 없어요.",
   "error.skill.folderNotRead": "{provider}은(는) {folder}을(를) 읽지 않아요. 이 폴더를 {target}(으)로 복사해 주세요.",
   "error.skill.githubLinkInvalid": "GitHub 저장소나 폴더 링크를 붙여 넣어 주세요.",
-  "error.skill.githubNotFound": "OpenBot이 {repository}을(를) 열 수 없어요. 비공개 저장소이거나 존재하지 않아요.",
+  "error.skill.githubNotFound": "OpenBot-NC가 {repository}을(를) 열 수 없어요. 비공개 저장소이거나 존재하지 않아요.",
   "error.skill.githubNoSkills": "{folder}에 SKILL.md가 없어요.",
-  "error.skill.githubUnavailable": "지금은 OpenBot이 GitHub를 읽을 수 없어요. 나중에 다시 시도해 주세요.",
+  "error.skill.githubUnavailable": "지금은 OpenBot-NC가 GitHub를 읽을 수 없어요. 나중에 다시 시도해 주세요.",
   "error.skill.githubRateLimited":
-    "GitHub는 계정 없이 OpenBot이 읽을 수 있는 횟수를 제한해요. 1시간 후에 다시 시도해 주세요.",
-  "error.skill.githubTooLarge": "OpenBot이 {repository}의 모든 파일을 읽을 수 없습니다. 저장소가 너무 큽니다.",
+    "GitHub는 계정 없이 OpenBot-NC가 읽을 수 있는 횟수를 제한해요. 1시간 후에 다시 시도해 주세요.",
+  "error.skill.githubTooLarge": "OpenBot-NC가 {repository}의 모든 파일을 읽을 수 없습니다. 저장소가 너무 큽니다.",
   "error.skill.githubHostTooOld": "GitHub에서 스킬을 추가하려면 이 서버를 업데이트해 주세요.",
 } as const satisfies PartialTranslation<typeof source>;

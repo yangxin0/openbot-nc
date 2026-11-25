@@ -2,11 +2,11 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.nameBeforePublish": "Дайте этому OpenBot имя, прежде чем публиковать его.",
-  "error.host.publishBeforeInvite": "Сделайте этот OpenBot публичным, прежде чем создавать приглашение.",
+  "error.host.nameBeforePublish": "Дайте этому OpenBot-NC имя, прежде чем публиковать его.",
+  "error.host.publishBeforeInvite": "Сделайте этот OpenBot-NC публичным, прежде чем создавать приглашение.",
   "error.host.teamAccessUnavailable": "Доступ вашей команды недоступен.",
   "error.host.ownerIdentityUnavailable": "Идентификатор владельца хоста недоступен.",
-  "error.host.publishFailed": "Не удалось опубликовать этот OpenBot.",
+  "error.host.publishFailed": "Не удалось опубликовать этот OpenBot-NC.",
   "error.host.noServer": "На этом компьютере нет сервера, который можно изменить.",
   "error.host.identityLocalOnly": "Название и логотип сервера можно изменить только на компьютере, где он работает.",
   "error.host.timezoneInvalid": "Этот часовой пояс неизвестен.",

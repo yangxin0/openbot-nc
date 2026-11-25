@@ -11,7 +11,7 @@ export const messages = {
   "mobile.marketplace.app.bitwardenTagline": "Log in op sites met logins uit een gedeelde map",
   "mobile.marketplace.app.protonPassTagline": "Log in op sites met logins uit een gedeelde kluis",
   "mobile.marketplace.error.signInUnsupported":
-    "Werk OpenBot bij op de server om vanaf je telefoon in te loggen bij apps.",
+    "Werk OpenBot-NC bij op de server om vanaf je telefoon in te loggen bij apps.",
   "mobile.marketplace.app.connect": "Verbinden",
   "mobile.marketplace.app.signInIntro":
     "Log in op de pagina van de app. De server bewaart de inlog, niet deze telefoon.",
@@ -19,7 +19,7 @@ export const messages = {
   "mobile.marketplace.app.stepAllow": "Log in en sta toegang toe.",
   "mobile.marketplace.app.stepBlank": "De laatste pagina laadt niet. Dat is juist.",
   "mobile.marketplace.app.stepCopy": "Tik op de adresbalk en kopieer het volledige adres.",
-  "mobile.marketplace.app.stepPaste": "Ga terug naar OpenBot en plak het adres hieronder.",
+  "mobile.marketplace.app.stepPaste": "Ga terug naar OpenBot-NC en plak het adres hieronder.",
   "mobile.marketplace.app.connected": "Verbonden",
   "mobile.marketplace.app.connectFailed": "De app is niet verbonden.",
   "mobile.marketplace.app.waiting": "Wachten op de inlogpagina…",
