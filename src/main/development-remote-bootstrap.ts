@@ -11,11 +11,6 @@ import { writeSetupState } from "./setup-store";
 import type { TeamStore } from "./team-store";
 
 export type DevelopmentRemoteRole = "host" | "client";
-export type DevelopmentClientTransport = "http" | "webrtc";
-
-export function readDevelopmentClientTransport(value: string | undefined): DevelopmentClientTransport {
-  return value === "webrtc" ? "webrtc" : "http";
-}
 
 const developmentRemoteServerConnectionSchema: z.ZodType<DevelopmentRemoteServerConnection> = z.object({
   serverId: z.string().min(1),
@@ -65,7 +60,6 @@ export const applyDevelopmentRemoteProfile = Effect.fn("DevelopmentRemote.applyP
 export interface DevelopmentRemoteRoleOptions {
   role: DevelopmentRemoteRole;
   testClientEnabled: boolean;
-  clientTransport: DevelopmentClientTransport;
   host: HostService;
   remoteServers: RemoteServerManager;
 }
@@ -73,7 +67,6 @@ export interface DevelopmentRemoteRoleOptions {
 export const startDevelopmentRemoteRole = Effect.fn("DevelopmentRemote.startRole")(function* ({
   role,
   testClientEnabled,
-  clientTransport,
   host,
   remoteServers,
 }: DevelopmentRemoteRoleOptions) {
@@ -83,7 +76,6 @@ export const startDevelopmentRemoteRole = Effect.fn("DevelopmentRemote.startRole
     if (testClientEnabled) yield* writeDevelopmentRemoteConnection(yield* host.createDevelopmentConnection());
     return;
   }
-  if (clientTransport === "webrtc") return;
   yield* connectDevelopmentRemoteServer(remoteServers);
 });
 

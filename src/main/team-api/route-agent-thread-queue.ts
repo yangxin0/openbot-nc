@@ -14,7 +14,7 @@ import {
   requireListedAgent,
   stringArray,
   stringField,
-  WEBRTC_FRAME_BODY_BUDGET,
+  TEAM_V2_FRAME_BODY_BUDGET,
 } from "./request-helpers";
 
 export async function routeAgentThreadQueue(
@@ -78,11 +78,11 @@ function inFrame<Delivery>(
   const kept: { taskId: string; deliveries: Delivery[] }[] = [];
   for (const thread of threads) {
     bytes += Buffer.byteLength(JSON.stringify({ taskId: thread.taskId, deliveries: [] })) + 1;
-    if (bytes > WEBRTC_FRAME_BODY_BUDGET) break;
+    if (bytes > TEAM_V2_FRAME_BODY_BUDGET) break;
     const deliveries: Delivery[] = [];
     for (const delivery of thread.deliveries) {
       const next = bytes + Buffer.byteLength(JSON.stringify(delivery)) + 1;
-      if (next > WEBRTC_FRAME_BODY_BUDGET) break;
+      if (next > TEAM_V2_FRAME_BODY_BUDGET) break;
       bytes = next;
       deliveries.push(delivery);
     }

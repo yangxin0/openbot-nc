@@ -90,11 +90,7 @@ function testClient(): DevInstanceRecord {
   const instances = readDevInstanceRecords().filter(
     (record) => record.service === "test-client" && resolve(record.projectRoot) === ROOT,
   );
-  assert.equal(
-    instances.length,
-    1,
-    "Start `OPENBOT_DEV_CLIENT_TRANSPORT=webrtc OPENBOT_DEV_RTT_MS=600 bun run dev:test-client` in this worktree first.",
-  );
+  assert.equal(instances.length, 1, "Start `OPENBOT_DEV_RTT_MS=600 bun run dev:test-client` in this worktree first.");
   const [instance] = instances;
   assert.ok(instance);
   return instance;

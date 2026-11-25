@@ -1,6 +1,5 @@
 import {
   type AgentBrowserProfile,
-  type BrowserComputerSharing,
   type BrowserProfileList,
   type BrowserProfileSummary,
   type BrowserProxyList,
@@ -20,12 +19,6 @@ interface BrowserProxyCalls {
   save(input: SaveBrowserProxyInput): Promise<BrowserProxySummary>;
   remove(input: DeleteBrowserProxyInput): Promise<void>;
   setProfileProxy(input: SetBrowserProfileProxyInput): Promise<void>;
-  computerSharing?: BrowserComputerSharingCalls;
-}
-
-interface BrowserComputerSharingCalls {
-  read(): Promise<BrowserComputerSharing | null>;
-  set(sharing: boolean): Promise<void>;
 }
 
 export interface BrowserProfileCalls {
@@ -58,14 +51,6 @@ export function desktopBrowserProfileCalls(serverId?: string): BrowserProfileCal
       save: (input) => agent().saveBrowserProxy(input, serverId),
       remove: (input) => agent().deleteBrowserProxy(input, serverId),
       setProfileProxy: (input) => agent().setBrowserProfileProxy(input, serverId),
-      ...(serverId === undefined || serverId === LOCAL_SERVER_ID
-        ? {}
-        : {
-            computerSharing: {
-              read: () => agent().getBrowserComputerSharing(serverId),
-              set: (sharing) => agent().setBrowserComputerSharing({ sharing }, serverId),
-            },
-          }),
     },
     onChanged: (listener) =>
       agent().onScopedEvent((scoped) => {

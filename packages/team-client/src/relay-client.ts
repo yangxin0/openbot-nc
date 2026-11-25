@@ -34,7 +34,7 @@ export { createIndexedDbRelayIdentityKeyStore };
 
 const RELAY_HOST_ID_PREFIX = "relay:";
 
-export type RelayTeamPeerActions = Omit<RemoteTeamPeerActions, "getBootstrap" | "endSession">;
+export type RelayTeamPeerActions = RemoteTeamPeerActions;
 
 export interface RelayTeamPeerOptions {
   hostProtocols?: RemoteHostProtocols;
@@ -103,12 +103,7 @@ export function createRelayTeamPeer(
   actions: { current: RelayTeamPeerActions },
   options: RelayTeamPeerOptions = {},
 ) {
-  const peerActions = {
-    get current(): RemoteTeamPeerActions {
-      return { ...actions.current, getBootstrap: relayBootstrapUnavailable, endSession: relaySessionEnded };
-    },
-  };
-  return createRemoteTeamPeer(peerActions, {
+  return createRemoteTeamPeer(actions, {
     ...(options.hostProtocols ? { hostProtocols: options.hostProtocols } : {}),
     ...(options.clientProtocol ? { clientProtocol: options.clientProtocol } : {}),
     ...(options.crypto ? { randomBytes: options.crypto.randomBytes } : {}),
@@ -117,12 +112,4 @@ export function createRelayTeamPeer(
       ...(options.crypto ? { crypto: options.crypto } : {}),
     }),
   });
-}
-
-function relayBootstrapUnavailable(): Promise<never> {
-  return Promise.reject(new Error("A relay connection does not use an account bootstrap."));
-}
-
-function relaySessionEnded(): Promise<void> {
-  return Promise.resolve();
 }

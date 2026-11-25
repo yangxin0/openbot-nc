@@ -251,8 +251,6 @@ export class BrowserViewGateway {
   }
 
   #authorized(request: IncomingMessage, session: ManagedViewSession): boolean {
-    const remoteSession = request.headers["x-openbot-webrtc-session"];
-    if (remoteSession === session.teamSessionId) return true;
     const protocols = (request.headers["sec-websocket-protocol"] ?? "").split(",").map((value) => value.trim());
     const encodedToken = protocols.find((value) => value.startsWith("openbot-token."));
     const token = encodedToken?.slice("openbot-token.".length) ?? "";

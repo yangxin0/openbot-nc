@@ -28,7 +28,6 @@ import {
   type TeamRealtimeEvent,
 } from "@openbot/contracts/ipc";
 import type { RelayPeer, RelayPeerCertificate } from "@openbot/contracts/relay-protocol/messages";
-import { isString } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import { ACP_REGISTRY_CAPABILITY } from "@openbot/contracts/team-protocol/acp-registry-v1";
 import { AGENT_ACCESS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-access-v1";
@@ -444,7 +443,6 @@ import { routeHostAdmin } from "./team-api/route-host-admin";
 import { routeHostAppearance } from "./team-api/route-host-appearance";
 import { routeHostPersonality } from "./team-api/route-host-personality";
 import { routeHostRestart } from "./team-api/route-host-restart";
-import { routeHostSignalHome } from "./team-api/route-host-signal-home";
 import { routeHostTimezone } from "./team-api/route-host-timezone";
 import { routeHostTurnLimits } from "./team-api/route-host-turn-limits";
 import { routeHostUpdate } from "./team-api/route-host-update";
@@ -687,7 +685,6 @@ export class TeamApiServer {
     server.keepAliveTimeout = KEEP_ALIVE_TIMEOUT_MS;
     this.#server = server;
     server.on("upgrade", (request, socket, head) => {
-      this.#forgetLocalSessionHeader(request);
       const url = new URL(request.url ?? "/", "http://127.0.0.1");
       if (this.#options.browserView?.handlesUpgrade(url)) {
         this.#options.browserView.handleUpgrade(request, socket, head, url);
@@ -1055,7 +1052,6 @@ export class TeamApiServer {
   }
 
   async #handle(request: IncomingMessage, response: ServerResponse) {
-    this.#forgetLocalSessionHeader(request);
     const method = request.method ?? "GET";
     this.#responseRoutes.set(response, {
       method,
@@ -1316,7 +1312,6 @@ export class TeamApiServer {
       if ((await routeHostUpdate(context, this.#options.admin)) === "handled") return;
       if ((await routeHostTimezone(context, this.#options.admin)) === "handled") return;
       if ((await routeHostVoiceModel(context, this.#options.admin)) === "handled") return;
-      if ((await routeHostSignalHome(context, this.#options.admin)) === "handled") return;
       if ((await routeHostTurnLimits(context, this.#options.admin)) === "handled") return;
       if ((await routeHostRestart(context, this.#options.admin)) === "handled") return;
       if ((await routeHostPersonality(context, this.#options.admin)) === "handled") return;
@@ -1501,10 +1496,6 @@ export class TeamApiServer {
     }
   }
 
-  #forgetLocalSessionHeader(request: IncomingMessage): void {
-    if (this.#relayPeers.has(request.socket)) delete request.headers["x-openbot-webrtc-session"];
-  }
-
   #relayPeer(request: IncomingMessage): RelayPeer | undefined {
     const socketPeer = this.#relayPeers.get(request.socket);
     if (socketPeer || this.#relaySessions.size === 0) return socketPeer;
@@ -1516,12 +1507,7 @@ export class TeamApiServer {
   #rateLimitSource(request: IncomingMessage): string {
     const relayPeer = this.#relayPeer(request);
     if (relayPeer) return `relay:${relayPeer.keyId}`;
-    const address = request.socket.remoteAddress ?? "local";
-    const webRtcSession = request.headers["x-openbot-webrtc-session"];
-    const token = bearerToken(request.headers.authorization);
-    if (!isString(webRtcSession) || !token) return address;
-    const authenticated = this.#options.store.authenticateSession(token);
-    return authenticated?.sessionId === webRtcSession ? `webrtc:${webRtcSession}` : address;
+    return request.socket.remoteAddress ?? "local";
   }
 
   #pruneRateLimits(now: number, force: boolean): void {
@@ -2758,7 +2744,7 @@ export class TeamApiServer {
           capability === BROWSER_PROXIES_CAPABILITY
         )
           return this.#options.browserProfiles !== undefined;
-        if (capability === BROWSER_EGRESS_CAPABILITY) return this.#options.browserProfiles !== undefined;
+        if (capability === BROWSER_EGRESS_CAPABILITY) return false;
         if (capability === SKILLS_ADMIN_CAPABILITY) return this.#options.admin?.skills !== undefined;
         if (capability === GITHUB_SKILLS_CAPABILITY) return this.#options.admin?.skills !== undefined;
         if (capability === SKILLS_EVENTS_CAPABILITY) return this.#options.skills !== undefined;
@@ -2795,7 +2781,7 @@ export class TeamApiServer {
         if (capability === PHONE_FEEDBACK_CAPABILITY || capability === FEEDBACK_WITHDRAW_CAPABILITY) return false;
         if (capability === HOST_TIMEZONE_CAPABILITY) return this.#options.admin?.timezone !== undefined;
         if (capability === HOST_VOICE_MODEL_CAPABILITY) return this.#options.admin?.voiceModel !== undefined;
-        if (capability === HOST_SIGNAL_HOME_CAPABILITY) return this.#options.admin?.signalHome !== undefined;
+        if (capability === HOST_SIGNAL_HOME_CAPABILITY) return false;
         if (capability === HOST_TURN_LIMITS_CAPABILITY || capability === HOST_TURN_LIMITS_EVENTS_CAPABILITY)
           return this.#options.admin?.turnLimits !== undefined;
         if (capability === HOST_RESTART_CAPABILITY) return this.#options.admin?.restart !== undefined;

@@ -102,8 +102,6 @@ import {
   DEFAULT_PROMPT_CACHE_TTL,
   DEFAULT_PROVIDER_ACCOUNT_ID,
   DEFAULT_PROVIDER_DETECTION_SETTINGS,
-  DEFAULT_REMOTE_NETWORK_ROUTE,
-  DEFAULT_REMOTE_SESSION_REUSE_PREFERENCE,
   DEFAULT_SKILL_LEARNING_MODE,
   DEFAULT_TRANSPARENT_WINDOW,
   type DirectConversationSnapshot,
@@ -163,8 +161,6 @@ import {
   type QueuedMessageReceipt,
   type QueueHold,
   type QueueSnapshot,
-  type RemoteNetworkRouteState,
-  type RemoteSessionReusePreference,
   type ReorderQueueInput,
   type RespondToPromptInput,
   type Routine,
@@ -227,7 +223,6 @@ import { createMockChannels, type MockChannelSeed } from "./mock-channels";
 import { type MockCrmSeed, mockCrm } from "./mock-crm";
 import { createMockEvents } from "./mock-events";
 import { createMockHostPersonality } from "./mock-host-personality";
-import { createMockHostSignalHome } from "./mock-host-signal-home";
 import { createMockHostTimezone } from "./mock-host-timezone";
 import { createMockHostTurnLimits } from "./mock-host-turn-limits";
 import { createMockHostUpdate, type MockHostUpdateOptions } from "./mock-host-update";
@@ -496,9 +491,7 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
   let agentAccess: AgentAccessChange = { revision: 0, everyone: {}, roles: [] };
   let serverAudit: ServerAuditEntry[] = clone(STORY_SERVER_AUDIT_ENTRIES);
   const agentMemoryLimitListeners = new Set<(preference: AgentMemoryLimitPreference) => void>();
-  let remoteSessionReuse: RemoteSessionReusePreference = { ...DEFAULT_REMOTE_SESSION_REUSE_PREFERENCE };
   let externalLinks: ExternalLinkPreference = clone(DEFAULT_EXTERNAL_LINK_PREFERENCE);
-  let remoteNetworkRoute: RemoteNetworkRouteState = { route: DEFAULT_REMOTE_NETWORK_ROUTE, tailscaleConnected: true };
   let appBehavior: AppBehaviorPreference = {
     launchAtLogin: false,
     keepRunningInBackground: false,
@@ -1316,11 +1309,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       appBehavior = { ...appBehavior, ...change };
       return clone(appBehavior);
     },
-    getRemoteSessionReusePreference: async () => clone(remoteSessionReuse),
-    setRemoteSessionReusePreference: async ({ keepBetweenRuns }) => {
-      remoteSessionReuse = { keepBetweenRuns };
-      return clone(remoteSessionReuse);
-    },
     getExternalLinkPreference: async () => clone(externalLinks),
     setExternalLinkPreference: async (preference) => {
       externalLinks = clone(preference);
@@ -1329,11 +1317,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
     listExternalLinkBrowsers: async () => clone(PREVIEW_BROWSERS),
     chooseExternalLinkApp: async () => ({ name: "Orion", path: "/Applications/Orion.app" }),
     onExternalLinkFallback: () => () => undefined,
-    getRemoteNetworkRoute: async () => clone(remoteNetworkRoute),
-    setRemoteNetworkRoute: async ({ route }) => {
-      remoteNetworkRoute = { ...remoteNetworkRoute, route };
-      return clone(remoteNetworkRoute);
-    },
     getAgentDefaults: async () => clone(agentDefaults),
     getAgentMemoryLimitPreference: async () => clone(agentMemoryLimit),
     onAgentMemoryLimitPreference: (listener) => {
@@ -2163,10 +2146,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
         return api.agent.getAgentDefaultsOverview(serverId);
       },
       listBrowserProxies: async () => ({ proxies: browserProxies, computers: [] }),
-      getBrowserComputerSharing: async () => null,
-      setBrowserComputerSharing: async () => {
-        throw new Error(sourceText("error.team.agentSettingsUnsupported"));
-      },
       saveBrowserProxy: async ({ proxyId, previousAddress, keepPassword, address }) => {
         const parsed = parseBrowserProxyAddress(address);
         if (parsed === null) throw new Error(sourceText("error.backend.browserProxyAddressInvalid"));
@@ -3370,7 +3349,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       restartHost: async () => {},
       ...createMockHostUpdate(options),
       ...createMockHostTimezone(),
-      ...createMockHostSignalHome(),
       ...createMockHostVoiceModel(),
       ...hostTurnLimits,
       ...createMockHostPersonality(),

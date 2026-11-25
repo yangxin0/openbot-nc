@@ -1,6 +1,5 @@
 import { type AvatarColor, isAvatarColor } from "./ipc-agent-identity";
 import type { AvatarImageInput } from "./ipc-agents";
-import type { IceServer } from "./signal-protocol/messages";
 import type { ClientBrowserCommandEvent } from "./team-protocol/client-browser-v1";
 import type { HostAppearanceEvent, ServerAppearance } from "./team-protocol/host-appearance-v1";
 import type { HostRestartEvent, HostRestartState } from "./team-protocol/host-update-v1";
@@ -60,11 +59,6 @@ export interface SetServerMutedInput {
   durationMs?: number;
 }
 
-export interface SetServerHiddenInput {
-  serverId: string;
-  hidden: boolean;
-}
-
 export interface SetServerNotificationLevelInput {
   serverId: string;
   level: ServerNotificationLevel;
@@ -86,7 +80,6 @@ export interface ServerSummary {
   restartAvailable?: boolean;
   keyChangedAt?: number;
   thisComputer?: true;
-  hidden?: boolean;
   compatibility?: ServerCompatibility | null;
   issue?: ServerConnectionIssue | null;
   connectionSequence?: number;
@@ -436,8 +429,6 @@ export interface UpdateTeamMemberInput {
   role?: Exclude<TeamRole, "owner">;
   disabled?: boolean;
 }
-
-export type RemoteDesktopIceServer = IceServer;
 
 import { INPUT_LIMITS } from "./input-limits";
 import { isBoolean, isDynamicRecord, isNumber, isString } from "./runtime-values";

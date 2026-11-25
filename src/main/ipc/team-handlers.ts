@@ -16,7 +16,6 @@ import {
   parseReadDirectConversationPage,
   parseReorderServers,
   parseSendDirectMessage,
-  parseSetServerHidden,
   parseSetServerMuted,
   parseSetServerNotificationLevel,
   parseSetTeamTyping,
@@ -41,11 +40,6 @@ export function teamIpcHandlers({
     servers: {
       setMuted: payloadHandler(parseSetServerMuted, ({ serverId, muted, durationMs }) =>
         runCauseEffect(remoteServers.setMuted(serverId, muted, durationMs)).then((servers) =>
-          withLocalHostSummary(servers, host.getStatus()),
-        ),
-      ),
-      setHidden: payloadHandler(parseSetServerHidden, ({ serverId, hidden }) =>
-        runCauseEffect(remoteServers.setHidden(serverId, hidden)).then((servers) =>
           withLocalHostSummary(servers, host.getStatus()),
         ),
       ),

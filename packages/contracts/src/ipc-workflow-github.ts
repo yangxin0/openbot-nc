@@ -1,6 +1,7 @@
 import { isBoundedString, isIdentifier } from "./ipc-bounded-values";
 import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "./runtime-values";
-import { GITHUB_REPOSITORY_NAME_PATTERN } from "./signal-protocol/github-route";
+
+const GITHUB_REPOSITORY_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}\/[A-Za-z0-9._-]{1,100}$/u;
 
 export const WORKFLOW_GITHUB_EVENTS = [
   "issue.opened",

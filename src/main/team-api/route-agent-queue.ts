@@ -24,7 +24,7 @@ import {
   requireListedAgent,
   stringArray,
   stringField,
-  WEBRTC_FRAME_BODY_BUDGET,
+  TEAM_V2_FRAME_BODY_BUDGET,
 } from "./request-helpers";
 
 export interface AgentQueueRouteDependencies {
@@ -154,7 +154,7 @@ function queueWindow(snapshot: QueueSnapshot): QueueSnapshot {
   const keep = (deliveries: QueueDelivery[]) => {
     for (const delivery of deliveries) {
       const next = bytes + Buffer.byteLength(JSON.stringify(delivery)) + 1;
-      if (next > WEBRTC_FRAME_BODY_BUDGET) return;
+      if (next > TEAM_V2_FRAME_BODY_BUDGET) return;
       bytes = next;
       kept.add(delivery);
     }

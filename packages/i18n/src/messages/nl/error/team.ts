@@ -111,7 +111,6 @@ export const messages = {
   "error.team.hostIdentityUnsupported": "Deze verbinding ondersteunt het wijzigen van de serveridentiteit niet.",
   "error.team.hostUpdateUnsupported": "Deze verbinding ondersteunt geen updates van de host.",
   "error.team.hostTimezoneUnsupported": "Deze verbinding ondersteunt de tijdzone van de server niet.",
-  "error.team.hostSignalHomeUnsupported": "Deze verbinding ondersteunt het kiezen van de Signal-server niet.",
   "error.team.hostVoiceModelUnsupported": "Deze verbinding ondersteunt het spraakherkenningsmodel van de server niet.",
   "error.team.hostRestartUnsupported": "Deze verbinding ondersteunt het herstarten van de server niet.",
   "error.team.localServersUnsupported": "Deze verbinding ondersteunt geen servers op deze computer.",

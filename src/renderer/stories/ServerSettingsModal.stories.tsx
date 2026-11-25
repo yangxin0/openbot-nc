@@ -176,7 +176,6 @@ const STORY_BROWSER_COMPUTERS: BrowserProxyComputer[] = [
 
 interface StoryComputers {
   computers: readonly BrowserProxyComputer[];
-  sharing: boolean;
 }
 
 function storyBrowserProfiles(
@@ -189,7 +188,6 @@ function storyBrowserProfiles(
     sharedAgentIds: string[] | undefined;
     proxies: BrowserProxySummary[] | undefined;
     computers: BrowserProxyComputer[] | undefined;
-    sharing: boolean | undefined;
   }>({
     profiles: initial.map((profile) => ({ ...profile, agentIds: [...profile.agentIds] })),
     proxies: initialProxies.map((proxy) => ({ ...proxy, profileIds: [...proxy.profileIds] })),
@@ -197,7 +195,6 @@ function storyBrowserProfiles(
       ...computer,
       profileIds: [...computer.profileIds],
     })),
-    sharing: initialComputers?.sharing,
     sharedAgentIds: ["chief", "research", "sales", "writer", "support"].filter(
       (agentId) => !initial.some((profile) => profile.agentIds.includes(agentId)),
     ),
@@ -280,27 +277,6 @@ function storyBrowserProfiles(
           draft.computers = draft.computers?.filter((computer) => computer.id !== proxyId);
         }),
       setProfileProxy: async (profileId, proxyId) => setState((draft) => assignStoryProxy(draft, profileId, proxyId)),
-      setSharing: async (sharing, assignTo) =>
-        setState((draft) => {
-          draft.sharing = sharing;
-          const computers = draft.computers ?? [];
-          let mine = computers.find((computer) => computer.mine);
-          if (sharing && !mine) {
-            mine = {
-              id: crypto.randomUUID().replaceAll("-", ""),
-              memberId: "member-you",
-              name: "You",
-              online: true,
-              mine: true,
-              profileIds: [],
-              failure: null,
-            };
-            computers.push(mine);
-          }
-          if (mine) mine.online = sharing;
-          draft.computers = computers;
-          if (mine && assignTo !== undefined) assignStoryProxy(draft, assignTo, mine.id);
-        }),
     },
   };
 }
@@ -370,7 +346,6 @@ export const BrowserProfilesWithComputers: Story = {
         ...args,
         browserProfiles: storyBrowserProfiles(STORY_BROWSER_PROFILES, STORY_BROWSER_PROXIES, {
           computers: STORY_BROWSER_COMPUTERS,
-          sharing: false,
         }),
       }}
     />
@@ -385,7 +360,6 @@ export const BrowserProfilesComputerOffline: Story = {
         ...args,
         browserProfiles: storyBrowserProfiles(STORY_BROWSER_PROFILES, [], {
           computers: STORY_BROWSER_COMPUTERS.map((computer) => ({ ...computer, online: false })),
-          sharing: false,
         }),
       }}
     />

@@ -18,13 +18,6 @@ export function startProviderLog(logsDirectory: string): () => void {
   });
 }
 
-export function startAccountLog(logsDirectory: string): () => void {
-  const directory = join(logsDirectory, "account");
-  return teeLogLines(["central-auth"], (line) => {
-    Effect.runFork(appendRemoteDiagnosticLog(directory, "account", `${line}\n`));
-  });
-}
-
 export function startAgentLog(logsDirectory: string): () => void {
   const directory = join(logsDirectory, "agents");
   return teeLogLines(["agent-removal"], (line) => {

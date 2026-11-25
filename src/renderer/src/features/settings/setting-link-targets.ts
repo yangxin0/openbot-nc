@@ -38,7 +38,6 @@ const TARGETS: Record<Exclude<AppSettingLinkId, "island.show">, AppSettingLinkTa
   "app.launch-at-login": { tab: "app-behavior", row: "settings.launchAtLogin.title" },
   "app.restore-workspace": { tab: "app-behavior", row: "settings.restoreWorkspace.title" },
   "phones.devices": { tab: "team", row: "settings.tab.team.title" },
-  "app.fast-server-connection": { tab: "app-behavior", row: "settings.keepRemoteSessions.title" },
   "app.keep-awake": { tab: "app-behavior", row: "settings.keepAwake.title" },
   "app.keep-awake-on-battery": { tab: "app-behavior", row: "settings.keepAwakeOnBattery.title" },
   "dock.show": { tab: "agent-dock", row: "settings.agentDock.show.title" },

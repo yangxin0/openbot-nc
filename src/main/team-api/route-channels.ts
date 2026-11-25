@@ -51,7 +51,7 @@ import {
   requireAgentLevel,
   requireReleasedSchedule,
   stringField,
-  WEBRTC_FRAME_BODY_BUDGET,
+  TEAM_V2_FRAME_BODY_BUDGET,
 } from "./request-helpers";
 
 export type ChannelSettingsAgents = Pick<
@@ -139,17 +139,17 @@ export async function routeChannels(
       };
       let body = withWaits(base);
       let bytes = Buffer.byteLength(JSON.stringify(body));
-      if (bytes <= WEBRTC_FRAME_BODY_BUDGET) ({ body, bytes } = sized(body));
-      if (bytes > WEBRTC_FRAME_BODY_BUDGET) {
+      if (bytes <= TEAM_V2_FRAME_BODY_BUDGET) ({ body, bytes } = sized(body));
+      if (bytes > TEAM_V2_FRAME_BODY_BUDGET) {
         body = withWaits({ ...base, tasks: channelPageTasks(base.tasks, base.messages) });
         bytes = Buffer.byteLength(JSON.stringify(body));
-        if (bytes <= WEBRTC_FRAME_BODY_BUDGET || limit === 1) ({ body, bytes } = sized(body));
+        if (bytes <= TEAM_V2_FRAME_BODY_BUDGET || limit === 1) ({ body, bytes } = sized(body));
       }
-      if (bytes <= WEBRTC_FRAME_BODY_BUDGET) return json(200, body);
+      if (bytes <= TEAM_V2_FRAME_BODY_BUDGET) return json(200, body);
       if (limit === 1) {
         const cut = messageTextCut(
           body.messages.map((item) => item.message),
-          bytes - WEBRTC_FRAME_BODY_BUDGET,
+          bytes - TEAM_V2_FRAME_BODY_BUDGET,
         );
         return json(200, { ...body, messages: body.messages.map((item) => ({ ...item, message: cut(item.message) })) });
       }

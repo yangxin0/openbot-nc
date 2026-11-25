@@ -23,8 +23,7 @@ renderer-to-main trust boundary. [Main-process rules](../main/AGENTS.md#trust-bo
   `listen` and decode the raw value in the handler. Do not call `ipcRenderer.on` directly.
 - Invoke only request endpoints from `IPC_ENDPOINTS`, and subscribe only to event endpoints.
   `src/main/ipc-channel-coverage.test.ts` reads these sources and fails on an unused or extra channel.
-- Do not expose `ipcRenderer`, Electron objects, or Node APIs to the page. `team-webrtc.ts` gives
-  the hidden WebRTC window only one `MessagePort`.
+- Do not expose `ipcRenderer`, Electron objects, or Node APIs to the page.
 - Add a method in the same change as its channel, handler, and preview mock. See
   [IPC binding rules](../main/ipc/AGENTS.md#adding-an-endpoint).
 - Keep the sandbox and context isolation. The browser tabs' preload (`browser-page.ts`) has no IPC

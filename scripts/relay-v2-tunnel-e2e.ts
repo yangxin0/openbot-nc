@@ -44,7 +44,7 @@ import {
   type TeamProtocolV2Json,
   type TeamProtocolV2RpcFrame,
 } from "@openbot/contracts/team-protocol/v2";
-import { encodeTeamWebRtcPayload, TeamWebRtcPayloadDecoder } from "@openbot/team-client/webrtc-framing";
+import { encodeTeamV2Payload, TeamV2PayloadDecoder } from "@openbot/team-client/v2-framing";
 import { Effect, Result } from "effect";
 import type { AgentBrowserHost } from "../src/backend/agent/turn-lifecycle";
 import type { AgentService as AgentServiceInstance } from "../src/backend/agent-service";
@@ -230,7 +230,7 @@ class TestTunnel {
   closed = false;
   onMessage: ((message: RelayV2TunnelMessage) => void) | null = null;
   readonly #records = new RelayV2TunnelRecordDecoder();
-  readonly #payloads = new TeamWebRtcPayloadDecoder();
+  readonly #payloads = new TeamV2PayloadDecoder();
   readonly #waiters = new Set<() => void>();
 
   constructor(
@@ -258,7 +258,7 @@ class TestTunnel {
   }
 
   send(data: RelayV2TunnelMessage): void {
-    for (const frame of encodeTeamWebRtcPayload(data, Number.POSITIVE_INFINITY)) {
+    for (const frame of encodeTeamV2Payload(data, Number.POSITIVE_INFINITY)) {
       this.stream.write(encodeRelayV2TunnelRecord(frame));
     }
   }

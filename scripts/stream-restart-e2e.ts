@@ -7,20 +7,18 @@ import { join } from "node:path";
 import { PassThrough } from "node:stream";
 import { Effect, Result } from "effect";
 import { restartActivityGeneration } from "../src/backend/restart-activity";
-import type { TeamWebRtcBridge } from "../src/main/team-webrtc-bridge";
-import { TeamWebRtcFileTransfer } from "../src/main/team-webrtc-file-transfer";
+import type { TeamV2ChannelTransport, TeamV2ChannelTransportEvents } from "../src/main/team-v2-channel-transport";
+import { TeamV2FileTransfer } from "../src/main/team-v2-file-transfer";
 
-type BridgeEvents = TeamWebRtcBridge extends EventEmitter<infer Events> ? Events : never;
-
-class InertBridge extends EventEmitter<BridgeEvents> {
+class InertBridge extends EventEmitter<TeamV2ChannelTransportEvents> {
   sends = 0;
 
-  readonly send: TeamWebRtcBridge["send"] = (..._input) => {
+  readonly send: TeamV2ChannelTransport["send"] = (..._input) => {
     this.sends += 1;
     return Effect.die(new Error("Unexpected peer traffic during disk spooling."));
   };
 
-  readonly disconnectPeer: TeamWebRtcBridge["disconnectPeer"] = (..._input) =>
+  readonly disconnectPeer: TeamV2ChannelTransport["disconnectPeer"] = (..._input) =>
     Effect.die(new Error("Unexpected peer disconnect during disk spooling."));
 }
 
@@ -78,7 +76,7 @@ interface StreamRestartReport {
 async function checkWriting(directory: string, action: StreamAction): Promise<ScenarioReport> {
   await mkdir(directory);
   const bridge = new InertBridge();
-  const service = new TeamWebRtcFileTransfer(bridge, directory);
+  const service = new TeamV2FileTransfer(bridge, directory);
   const input = new PassThrough();
   const bytes = Buffer.from(`Held stream for ${action}.`);
   const diskWait = new AbortController();

@@ -3,7 +3,6 @@ import type { messages as source } from "../../en/status/host";
 
 export const messages = {
   "status.host.identityUpdated": "服务器身份信息已更新。",
-  "status.host.ready": "本 OpenBot 已可用于 WebRTC 连接。",
   "status.host.signalLost": "其他设备目前无法连接到本 OpenBot。正在重新连接。",
   "status.host.stopping": "正在将本 OpenBot 设为私有…",
   "status.host.private": "本 OpenBot 已设为私有。",

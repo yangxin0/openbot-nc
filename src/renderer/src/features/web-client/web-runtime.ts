@@ -589,7 +589,6 @@ export function createWebWorkspaceRuntime(
         update.state !== "online" && !rosterHostIds().has(update.hostId) ? { ...update, hostOffline: true } : update,
       );
     },
-    onHostStreamData: (data) => browserView.receive(data),
     onTeamEvent: async (id, event) => events.event(id, event),
   };
   const hostProtocols = {
@@ -921,7 +920,7 @@ export function createWebWorkspaceRuntime(
     return listed;
   }
   const browserView = createRemoteBrowserView(
-    (data) => peer.sendHostStreamData(data),
+    () => Promise.reject(new Error(currentText().t("error.remote.channelNotOpen"))),
     request,
     () => capabilities.includes(TEAM_BROWSER_VIEW_FRAME_POINT_CAPABILITY),
     () => capabilities.includes(TEAM_BROWSER_VIEW_CLIPBOARD_CAPABILITY),
@@ -987,7 +986,6 @@ export function createWebWorkspaceRuntime(
         const handover = hosts?.handOver(host.hostId) ?? null;
         if (handover) {
           handover.actions.current = openedActions;
-          handover.peer.setWaitForHost(true);
           ({ peer, actions: peerActions } = handover);
         } else ({ peer, actions: peerActions } = createOpenedPeer());
         retire(previous.peer, previous.actions, previous.releaseLock);

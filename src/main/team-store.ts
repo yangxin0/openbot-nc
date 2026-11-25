@@ -383,11 +383,6 @@ export class TeamStore {
     return { ...identity, challenge, signature };
   }
 
-  signRemoteAuthentication(transcript: string): string {
-    if (!this.#state) throw new TeamStoreError(sourceText("error.team.hostNotConfigured"));
-    return sign(null, Buffer.from(transcript), this.#state.privateKey).toString("base64url");
-  }
-
   readonly configure = Effect.fn("TeamStore.configure")(
     function* (
       this: TeamStore,

@@ -38,8 +38,7 @@ const sources = new Map<string, string>();
 
 const mainSources = sourceFilesUnder("src/main");
 
-const WEBRTC_PRELOAD_MODULE = "src/preload/team-webrtc.ts";
-const preloadSources = sourceFilesUnder("src/preload").filter((file) => file !== WEBRTC_PRELOAD_MODULE);
+const preloadSources = sourceFilesUnder("src/preload");
 
 const TRUSTED_IPC_MODULE = "src/main/trusted-ipc.ts";
 

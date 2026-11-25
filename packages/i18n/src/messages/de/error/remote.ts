@@ -9,7 +9,6 @@ export const messages = {
   "error.remote.requestFailedStatus": "Die Anfrage an den Remote-Server ist fehlgeschlagen ({status}).",
   "error.remote.appUpdateRequired": "Aktualisiere diese OpenBot-App, bevor du dich mit dem Host verbindest.",
   "error.remote.identityNotVerified": "Die Serveridentität konnte nicht überprüft werden.",
-  "error.remote.webRtcUnavailable": "Der WebRTC-Transport ist nicht verfügbar.",
   "error.remote.invalidCompatibility": "Der Host hat ungültige Kompatibilitätsinformationen zurückgegeben.",
   "error.remote.serverListUnreadable": "Die Liste der Remote-Server hat kein Format, das diese Version lesen kann.",
   "error.remote.serverNotFound": "Remote-Server nicht gefunden.",
@@ -22,18 +21,6 @@ export const messages = {
   "error.remote.emailDeliveryUnavailable": "Der E-Mail-Versand ist nicht verfügbar.",
   "error.remote.localServerRemove": "Der lokale Server kann nicht entfernt werden.",
   "error.remote.viewerProxyUnavailable": "Der lokale Proxy der Fernanzeige ist nicht verfügbar.",
-  "error.remote.viewerProxyNoPort": "Der lokale Proxy der Fernanzeige hat keinen Port erhalten.",
-  "error.remote.bridgeStartFailed": "Die Team-WebRTC-Brücke konnte nicht gestartet werden.",
-  "error.remote.bridgeStopped": "Die Team-WebRTC-Brücke wurde gestoppt.",
-  "error.remote.bridgeDidNotStart": "Die Team-WebRTC-Brücke wurde nicht gestartet.",
-  "error.remote.bridgeNotReady": "Die Team-WebRTC-Brücke ist nicht bereit.",
-  "error.remote.bridgeCommandTimeout": "Die Zeit für den Team-WebRTC-Befehl {command} ist abgelaufen.",
-  "error.remote.bridgeCommandFailed": "Der Team-WebRTC-Befehl ist fehlgeschlagen.",
-  "error.remote.webRtcFailed": "WebRTC ist fehlgeschlagen.",
-  "error.remote.ownerCannotLeave": "Der Eigentümer kann diesen Host nicht verlassen.",
-  "error.remote.ownerOnlyRemove": "Nur der Eigentümer kann diesen Server entfernen.",
-  "error.remote.requestTimeout": "Die Zeit für die entfernte Anfrage ist abgelaufen.",
-  "error.remote.requestFailed": "Die entfernte Anfrage ist fehlgeschlagen.",
   "error.remote.hostKeyMissing":
     "OpenBot kann diesen Server nicht prüfen, weil sein Sicherheitsschlüssel fehlt oder sich geändert hat. Bitte den Serverbesitzer, den Server zu prüfen.",
   "error.remote.connectionNotStarted":
@@ -43,10 +30,6 @@ export const messages = {
   "error.remote.serverAnswerTimeout":
     "Der Server hat nicht rechtzeitig geantwortet. OpenBot verbindet sich automatisch wieder.",
   "error.remote.connectionCancelled": "Die entfernte Verbindung wurde abgebrochen.",
-  "error.remote.hostDisconnected":
-    "Die Verbindung zum Server wurde unterbrochen. Prüfe, ob die Aktion abgeschlossen wurde, und versuche es dann erneut.",
-  "error.remote.eventGap": "Die Ereignisfolge des Hosts hat eine Lücke.",
-  "error.remote.malformedKnownEvent": "Der Host hat ein fehlerhaft formatiertes bekanntes Ereignis zurückgegeben.",
   "error.remote.fileTransportIsStopped": "Der WebRTC-Dateitransport ist gestoppt.",
   "error.remote.fileTooLarge": "Die Datei ist größer als 100 MB.",
   "error.remote.fileSetTooLarge": "Die aktive Dateimenge ist größer als 250 MB.",
@@ -61,13 +44,8 @@ export const messages = {
   "error.remote.responseTooLarge": "Die Antwort des Hosts ist zu groß, um sie an dieses Gerät zu senden.",
   "error.remote.sessionNotReady": "Die entfernte Sitzung ist nicht bereit.",
   "error.remote.peerDisconnected": "Die WebRTC-Gegenstelle hat die Verbindung getrennt.",
-  "error.remote.tooManyStreams": "Es sind zu viele Host-Streams geöffnet.",
-  "error.remote.streamSocketFailed": "Der Socket des Host-Streams ist fehlgeschlagen.",
-  "error.remote.signalRecoveryFailed": "Die Wiederherstellung von Remote Signal ist fehlgeschlagen.",
-  "error.remote.signalTimeout": "Die Zeit für die Remote-Signal-Verbindung ist abgelaufen.",
   "error.remote.serverConnectionReplaced": "Die Serververbindung wurde ersetzt.",
   "error.remote.selectedServerOffline": "Der gewählte Server ist offline.",
-  "error.remote.hostConnectionOffline": "Die Host-Verbindung ist offline.",
   "error.remote.appInBackground": "Die App ist im Hintergrund.",
   "error.remote.desktopRestoreNeeded": "Die Desktop-Verbindung muss wiederhergestellt werden.",
   "error.remote.desktopOffline": "Der Desktop ist offline gegangen.",
@@ -85,21 +63,8 @@ export const messages = {
   "error.remote.channelNotOpen": "Der WebRTC-Kanal ist nicht geöffnet.",
   "error.remote.channelBackpressure": "Im WebRTC-Kanal blieb ein Datenrückstau bestehen.",
   "error.remote.signalOffline": "Signal ist offline.",
-  "error.remote.webRtcConnectionFailed": "Die WebRTC-Verbindung ist fehlgeschlagen.",
   "error.remote.serverDisconnected": "Der Server hat die Verbindung getrennt.",
   "error.remote.preferencesUnreadable": "Die gespeicherten Chateinstellungen konnten nicht gelesen werden.",
-  "error.remote.accountAuthRequired": "Eine Kontoauthentifizierung ist erforderlich.",
-  "error.remote.pairedIdentityChanged":
-    "Die Identität des gekoppelten Desktops fehlt oder wurde geändert. Scanne einen neuen Code von diesem Desktop.",
-  "error.remote.permanentInviteNoEmail": "Dauerhafte Einladungen können nicht per E-Mail gesendet werden.",
-  "error.remote.selfHostedInviteNoEmail":
-    "Eine Einladung von einem selbst gehosteten Kontodienst kann nicht per E-Mail gesendet werden. Kopiere den Link.",
-  "error.remote.inviteOtherService": "Diese Einladung gehört zu einem anderen OpenBot-Dienst.",
-  "error.remote.inviteFingerprintMismatch":
-    "Die Identität des Einladungshosts stimmt nicht mit seinem Fingerabdruck überein.",
-  "error.remote.inviteHostKeyMissing": "Der Schlüssel des Einladungshosts fehlt.",
-  "error.remote.inviteKeyConflict": "Die Einladung steht im Konflikt mit dem vertrauenswürdigen Host-Schlüssel.",
-  "error.remote.serviceRequestFailed": "Die Anfrage an den OpenBot-Dienst ist fehlgeschlagen.",
   "error.remote.downloadTimeout": "Die Zeit für den Anhangsdownload ist abgelaufen. Versuche es erneut.",
   "error.remote.attachmentConnectionClosed": "Die Anhangsverbindung wurde geschlossen.",
   "error.remote.tooManyDownloads": "Zu viele Anhangsdownloads.",
@@ -127,9 +92,6 @@ export const messages = {
   "error.remote.ticketInvalid": "Das Verbindungsticket ist ungültig.",
   "error.remote.mobileUpdateRequired": "Aktualisiere OpenBot Mobile oder die Desktop-App, bevor du dich verbindest.",
   "error.remote.connectionStepFailed": "Dieser Verbindungsschritt konnte nicht abgeschlossen werden.",
-  "error.remote.signalNotConnected": "Signal ist nicht verbunden.",
-  "error.remote.signalFrameUnreadable": "Signal hat einen Frame gesendet, den diese Gegenstelle nicht lesen kann.",
-  "error.remote.webRtcCommandFailed": "Der WebRTC-Befehl ist fehlgeschlagen.",
   "error.remote.dataChannelFailed": "Der Kanal {kind} ist fehlgeschlagen.",
   "error.remote.hostBusy": "Der Host ist mit einer anderen Verbindung beschäftigt. Versuche es gleich noch einmal.",
   "error.remote.signalPermissionDenied":
@@ -144,8 +106,6 @@ export const messages = {
   "error.remote.iceFailed":
     "Es konnte keine direkte Verbindung zum Host hergestellt werden. Eine Firewall, ein VPN oder ein Proxy kann sie blockieren.",
   "error.remote.iceDisconnected": "Die direkte Verbindung zum Host wurde unterbrochen.",
-  "error.remote.webrtcBlocked":
-    "Dieses Gerät blockiert die Verbindung, die OpenBot braucht. Wenn der Blockierungsmodus aktiv ist, schalte ihn für OpenBot aus unter Einstellungen > Datenschutz & Sicherheit > Blockierungsmodus.",
   "error.remote.directoryUnreachable": "OpenBot konnte den OpenBot-Dienst nicht erreichen. Prüfe deine Verbindung.",
   "error.remote.directoryTimeout": "Der OpenBot-Dienst hat nicht rechtzeitig geantwortet. Versuche es erneut.",
   "error.remote.inviteAlreadyUsed": "Diese Einladung wurde bereits verwendet. Bitte um eine neue Einladung.",
@@ -157,8 +117,6 @@ export const messages = {
   "error.remote.hostNotRegistered": "Dieser Host ist nicht mehr beim OpenBot-Dienst registriert.",
   "error.remote.membershipEnded":
     "Du bist kein Mitglied dieses Hosts mehr. Bitte den Eigentümer um eine neue Einladung.",
-  "error.remote.membershipChanged":
-    "Jemand hat dieses Mitglied gleichzeitig geändert. Lade die Mitglieder neu und versuche es erneut.",
   "error.remote.accountSessionInactive": "Deine Anmeldung ist nicht mehr aktiv. Melde dich erneut an.",
   "error.remote.hostOtherAccount": "Dieser Host gehört zu einem anderen Konto.",
   "error.remote.remoteNotConfigured": "Remote-Verbindungen sind für diesen OpenBot-Dienst nicht eingerichtet.",

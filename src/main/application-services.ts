@@ -148,8 +148,6 @@ import { managedBitwardenCli } from "./bitwarden-cli-installer";
 import { BitwardenConnectorService } from "./bitwarden-connector-service";
 import { BitwardenConnectorStore } from "./bitwarden-connector-store";
 import { BrowserDockOverlay } from "./browser-dock-overlay";
-import { BrowserEgressClient } from "./browser-egress-client";
-import { BrowserEgressHost } from "./browser-egress-host";
 import { BrowserPictureInPicture } from "./browser-picture-in-picture";
 import {
   type BrowserProfileService,
@@ -208,7 +206,6 @@ import { DetachedBrowserWindow } from "./detached-browser-window";
 import {
   applyDevelopmentRemoteProfile,
   type DevelopmentRemoteRole,
-  readDevelopmentClientTransport,
   startDevelopmentRemoteRole,
 } from "./development-remote-bootstrap";
 import { performDynamicIslandCriticalAction } from "./dynamic-island-actions";
@@ -224,7 +221,6 @@ import { HermesImportService } from "./hermes-import-service";
 import { HermesInstaller } from "./hermes-installer";
 import { agentWebhookRoutineWriter, HostEventsService, hostAgentWebhookKeys } from "./host-events-service";
 import { HostService } from "./host-service";
-import { HostSignalHomeService, SIGNAL_HOME_PREFERENCE_FILE } from "./host-signal-home";
 import { HostTurnLimitsPreferenceStore } from "./host-turn-limits-preference-store";
 import { HostUpdateCoordinator } from "./host-update-coordinator";
 import { HostVoiceModelService } from "./host-voice-model";
@@ -329,7 +325,7 @@ import {
   providerEnvironmentControl,
 } from "./provider-environment-store";
 import { ProviderHostSignIns } from "./provider-host-sign-ins";
-import { startAccountLog, startAgentLog, startProviderLog } from "./provider-log";
+import { startAgentLog, startProviderLog } from "./provider-log";
 import { toProviderRuntimeFailure } from "./provider-runtime-effects";
 import { ProviderRuntimeManager, providerRuntimeRoot, runtimeTarget } from "./provider-runtime-manager";
 import { ProviderUseSettingsStore } from "./provider-use-settings-store";
@@ -339,19 +335,10 @@ import { createRelayHostingPreferenceStore, RELAY_HOSTING_PREFERENCE_FILE } from
 import type { RelayLaunchOptions } from "./relay-launch-options";
 import { RELAY_IDENTITY_FILE, RelayService } from "./relay-service";
 import { decodeQueuedMessageReceipt } from "./remote-agent-decoding";
-import { RemoteConnectTrace } from "./remote-connect-trace";
 import { appendRemoteDiagnosticLog } from "./remote-diagnostics";
 import { decodeVoid } from "./remote-host-decoding";
-import {
-  createRemoteNetworkRoutePreferenceStore,
-  type RemoteNetworkRoutePreferenceStore,
-} from "./remote-network-route-preference-store";
 import { RemoteServerManager } from "./remote-server-manager";
 import { RemoteWorkflowError } from "./remote-service-effects";
-import {
-  createRemoteSessionReusePreferenceStore,
-  type RemoteSessionReusePreferenceStore,
-} from "./remote-session-reuse-preference-store";
 import { remoteSyncProfileFile } from "./remote-sync-profile-file";
 import { sendToRenderer } from "./renderer-ipc";
 import { RequestedUpdate, RequestedUpdateRefusal } from "./requested-update";
@@ -383,7 +370,6 @@ import { StartupTiming } from "./startup-timing";
 import { AGENT_CERTIFICATES_FILE, agentCertificateEnvironment } from "./system-certificates";
 import { mcpSignInSharedWithOthers } from "./team-api/mcp-member-access";
 import { LEGACY_TEAM_STORE_FILE, TEAM_STORE_FILE, TeamStore } from "./team-store";
-import { TeamWebRtcBridge } from "./team-webrtc-bridge";
 import type { TeardownRegistry } from "./teardown-registry";
 import { THEME_PALETTE_DIRECTORY } from "./theme-palette-files";
 import { TraceFile } from "./trace-file";
@@ -453,9 +439,7 @@ const CRM_PREFERENCE_FILE = "openbot-crm-v1.json";
 const CLAUDE_COMPACT_WINDOW_PREFERENCE_FILE = "openbot-claude-compact-window-v1.json";
 const PROVIDER_ENVIRONMENT_PREFERENCE_FILE = "openbot-provider-environment-v1.json";
 const MODEL_VISIBILITY_PREFERENCE_FILE = "openbot-model-visibility-v1.json";
-const REMOTE_SESSION_REUSE_PREFERENCE_FILE = "openbot-remote-session-reuse-preference-v1.json";
 const EXTERNAL_LINK_PREFERENCE_FILE = "openbot-external-link-preference-v1.json";
-const REMOTE_NETWORK_ROUTE_PREFERENCE_FILE = "openbot-remote-network-route-v1.json";
 const APP_BEHAVIOR_PREFERENCE_FILE = "openbot-app-behavior-preference-v1.json";
 const DYNAMIC_ISLAND_PREFERENCE_FILE = "openbot-dynamic-island-preference-v1.json";
 const BROWSER_STATE_FILE = "openbot-browser-state-v1.json";
@@ -513,8 +497,6 @@ const TEARDOWN_ORDER = {
   messaging: 85,
   host: 90,
   clientBrowser: 98,
-  browserEgress: 99,
-  teamWebRtcBridge: 100,
   routineFlows: 103,
   workflows: 103.5,
   crm: 103.75,
@@ -532,7 +514,6 @@ const TEARDOWN_ORDER = {
   trace: 120,
   providerLog: 121,
   agentLog: 122,
-  accountLog: 123,
   database: 130,
 } as const;
 
@@ -569,7 +550,6 @@ export interface ApplicationServices {
   providerRuntimes: ProviderRuntimeManager;
   providerCredentials: ProviderCredentialStore;
   messaging: MessagingService;
-  teamWebRtcBridge: TeamWebRtcBridge;
   mcpOAuth: McpOAuth;
   signInRelayClient: SignInRelayClient;
   linkAccount: LinkAccountService;
@@ -619,7 +599,6 @@ export interface ApplicationServices {
   mcpAccess: McpAccessControl;
   serverAudit: ServerAuditStore;
   serverTimezone: ServerTimezonePreferenceStore;
-  hostSignalHome: HostSignalHomeService;
   hostTurnLimits: HostTurnLimitsPreferenceStore;
   serverPersonality: ServerPersonalityPreferenceStore;
   promptCacheTtl: PromptCacheTtlPreferenceStore;
@@ -628,11 +607,9 @@ export interface ApplicationServices {
   claudeCompactWindow: ClaudeCompactWindowControl;
   providerEnvironment: ProviderEnvironmentControl;
   modelVisibility: ModelVisibility;
-  remoteSessionReuse: RemoteSessionReusePreferenceStore;
   externalLinkPreference: ExternalLinkPreferenceStore;
   externalLinks: ExternalLinkOpener;
   openLink: (url: string) => Promise<void>;
-  remoteNetworkRoute: RemoteNetworkRoutePreferenceStore;
   appBehavior: AppBehaviorService;
   agentInitialization: AgentInitializationGate<AgentLifecycleFailed>;
   sidebarLayout: SidebarLayoutStore;
@@ -764,7 +741,6 @@ export async function createApplicationServices({
     startProviderLog(join(app.getPath("userData"), "logs")),
   );
   teardown.push(TEARDOWN_ORDER.agentLog, "the agent log", startAgentLog(join(app.getPath("userData"), "logs")));
-  teardown.push(TEARDOWN_ORDER.accountLog, "the account log", startAccountLog(join(app.getPath("userData"), "logs")));
   const externalLinkPreference = createExternalLinkPreferenceStore(
     join(app.getPath("userData"), EXTERNAL_LINK_PREFERENCE_FILE),
   );
@@ -948,15 +924,6 @@ export async function createApplicationServices({
   await runCauseEffect(mailbox.initialize());
   configureApplicationProtocol();
   const developmentUrl = process.env.ELECTRON_RENDERER_URL;
-  const teamWebRtcBridge = new TeamWebRtcBridge({
-    developmentUrl: developmentUrl ?? null,
-    iceTransportPolicy: developmentUrl && process.env.OPENBOT_DEV_ICE_TRANSPORT_POLICY === "relay" ? "relay" : "all",
-  });
-  teardown.push(TEARDOWN_ORDER.teamWebRtcBridge, "the team WebRTC bridge", () =>
-    runCauseEffect(teamWebRtcBridge.stop()),
-  );
-  const browserEgress = new BrowserEgressHost(teamWebRtcBridge);
-  teardown.push(TEARDOWN_ORDER.browserEgress, "the computer proxies of members", () => browserEgress.dispose());
   const clientBrowser = new ClientBrowserHub();
   teardown.push(TEARDOWN_ORDER.clientBrowser, "the shared Chrome tabs of members", () => clientBrowser.dispose());
   const hostMemory = serverModeEnvironment
@@ -1022,7 +989,6 @@ export async function createApplicationServices({
     agentChat: (threadId) => browserAgentChat(store, agentThreads, threadId),
     profileProxy: (profileId) => browserProxyConnection(browserProxyStore, browserProxyCipher, profileId),
     onProxyStatusChanged: () => browserProxyStatusChanged(),
-    computerExit: (memberId) => browserEgress.exit(memberId),
     quitShortcut: (input) => windows.handleQuitShortcut(mainWindow, input),
     pagePreload: join(__dirname, "../preload/browserPage.cjs"),
     siteMemories: (agentId, hostname) =>
@@ -1126,13 +1092,6 @@ export async function createApplicationServices({
     join(app.getPath("userData"), SERVER_TIMEZONE_PREFERENCE_FILE),
     systemTimezone,
   );
-  const hostSignalHome = new HostSignalHomeService({
-    path: join(app.getPath("userData"), SIGNAL_HOME_PREFERENCE_FILE),
-    fetch: (url, init) => net.fetch(url, { ...init, credentials: "omit", cache: "no-store" }),
-    listHomes: () => Effect.succeed([]),
-    currentHome: () => host.signalHome(),
-    followHome: () => host.followSignalHome(),
-  });
   const hostTurnLimits = new HostTurnLimitsPreferenceStore(
     join(app.getPath("userData"), HOST_TURN_LIMITS_PREFERENCE_FILE),
     () => hostMemory?.turnLimit() ?? null,
@@ -1155,12 +1114,6 @@ export async function createApplicationServices({
   );
   const providerEnvironment = createProviderEnvironmentPreferenceStore(
     join(app.getPath("userData"), PROVIDER_ENVIRONMENT_PREFERENCE_FILE),
-  );
-  const remoteSessionReuse = createRemoteSessionReusePreferenceStore(
-    join(app.getPath("userData"), REMOTE_SESSION_REUSE_PREFERENCE_FILE),
-  );
-  const remoteNetworkRoute = createRemoteNetworkRoutePreferenceStore(
-    join(app.getPath("userData"), REMOTE_NETWORK_ROUTE_PREFERENCE_FILE),
   );
   const appBehavior = new AppBehaviorService({
     path: join(app.getPath("userData"), APP_BEHAVIOR_PREFERENCE_FILE),
@@ -1188,7 +1141,6 @@ export async function createApplicationServices({
       serverAudit.load(),
       mcpServerOwners.load(),
       serverTimezone.load(),
-      hostSignalHome.load(),
       hostTurnLimits.load(),
       serverPersonality.load(),
       promptCacheTtl.load(),
@@ -1197,9 +1149,7 @@ export async function createApplicationServices({
       crmPreference.load(),
       claudeCompactWindow.load(),
       providerEnvironment.load(),
-      remoteSessionReuse.load(),
       externalLinkPreference.load(),
-      remoteNetworkRoute.load(),
       appBehavior.load(),
     ],
     { concurrency: "unbounded", discard: true },
@@ -2238,13 +2188,10 @@ export async function createApplicationServices({
       const member = teamStore.getMember(memberId);
       return member ? (member.name ?? member.username) : null;
     },
-    computerOnline: (memberId) => browserEgress.online(memberId),
     onChanged: () => service.notifyBrowserProfilesChanged(),
   });
   browserProxyStatusChanged = () => service.notifyBrowserProfilesChanged();
   agentBrowserProfiles = browserProfiles;
-  browserEgress.on("connected", (memberId) => browser.forgetComputerFailures(memberId));
-  browserEgress.on("changed", () => service.notifyBrowserProfilesChanged());
   const customProviderChanges = createCustomProviderChanges({
     service,
     customProviders,
@@ -2648,7 +2595,6 @@ export async function createApplicationServices({
         changeSettings: (change) => scheduledUpdate().changeSettings(change),
       },
       timezone: serverTimezone,
-      signalHome: hostSignalHome,
       ...(serverModeEnvironment || localServerChild
         ? {
             voiceModel: {
@@ -2740,11 +2686,6 @@ export async function createApplicationServices({
       ensureToolRuntimesReady: () => providerRuntimes.ensureToolRuntimesReady(),
       toolRuntimes: () => providerRuntimes.mcpToolRuntimes(),
     },
-    teamWebRtcBridge,
-    peerMemberChanged: browserEgress.peerMemberChanged,
-    privateNetwork: () => remoteNetworkRoute.get().route === "private",
-    preferredSignalHome: () => hostSignalHome.preferred(),
-    signalHomeAnswers: (home) => hostSignalHome.answers(home),
     localDevelopmentHost: developmentRemoteRole === "host",
     passwordOwner: localServerChild !== null,
     logDirectory: join(app.getPath("userData"), "logs", "remote"),
@@ -2789,7 +2730,6 @@ export async function createApplicationServices({
     Effect.runFork(startup.recordStart());
     teardown.push(TEARDOWN_ORDER.startupTiming, "the startup timing", () => startup.dispose());
   }
-  const connectTrace = new RemoteConnectTrace((span) => trace.record(span));
   const developmentRoundTripMs = app.isPackaged ? 0 : Math.max(0, Number(process.env.OPENBOT_DEV_RTT_MS) || 0);
   installRemoteSyncProfileSink(
     remoteSyncProfileFile({
@@ -2813,7 +2753,6 @@ export async function createApplicationServices({
     safeStorageCipher("error.app.macSecureStorageUnavailable"),
     {
       appVersion: app.getVersion(),
-      connectTrace,
       localNotificationLevels: {
         snapshot: () => agentNotificationLevels.snapshot(OWNER_NOTIFICATION_KEY),
         setServer: (level) => agentNotificationLevels.setServer(OWNER_NOTIFICATION_KEY, level),
@@ -2844,7 +2783,6 @@ export async function createApplicationServices({
               },
             },
           }),
-      getLocalHostId: () => teamStore.getIdentity()?.serverId ?? null,
     },
   );
   teardown.push(TEARDOWN_ORDER.remoteServers, "the remote servers", () => {
@@ -2859,15 +2797,6 @@ export async function createApplicationServices({
     logger: createOpenBotLogger("relay"),
   });
   teardown.push(TEARDOWN_ORDER.relayHosting, "relay hosting", () => runCauseEffect(host.stopRelayHosting()));
-  const browserEgressClient = new BrowserEgressClient(teamWebRtcBridge, {
-    serverIds: () => remoteServers.list().map((server) => server.id),
-    browserEgressWanted: (serverId) => remoteServers.browserEgressWanted(serverId),
-  });
-  remoteServers.on("changed", browserEgressClient.reconcile);
-  teardown.push(TEARDOWN_ORDER.browserEgress, "the computer proxy of this computer", () => {
-    remoteServers.off("changed", browserEgressClient.reconcile);
-    browserEgressClient.dispose();
-  });
   performance.mark("openbot:services.plugin-catalog");
   const localServers =
     localServerChild || serverModeEnvironment
@@ -2908,12 +2837,10 @@ export async function createApplicationServices({
   );
   criticalActionTargets = { agents: service, host, remoteServers };
   if (developmentRemoteRole) {
-    await runCauseEffect(remoteServers.awaitHostDirectory());
     await runCauseEffect(
       startDevelopmentRemoteRole({
         role: developmentRemoteRole,
         testClientEnabled: developmentTestClientEnabled,
-        clientTransport: readDevelopmentClientTransport(process.env.OPENBOT_DEV_CLIENT_TRANSPORT),
         host,
         remoteServers,
       }),
@@ -3113,7 +3040,6 @@ export async function createApplicationServices({
       ],
       hostBlockers: host.describeRestartBlockers(),
       activeBrowserControls: browser.getControlState().sessions.length,
-      activeFileTransfers: remoteServers.hasActiveTransfers(),
       updaterBusy: !updater.getStatus().managedByHost && isUpdateBusyPhase(updater.getStatus().phase),
       initializationPending: !agentInitialization.succeeded,
     });
@@ -3234,7 +3160,6 @@ export async function createApplicationServices({
     providerRuntimes,
     providerCredentials,
     messaging,
-    teamWebRtcBridge,
     mcpOAuth,
     signInRelayClient,
     linkAccount,
@@ -3280,7 +3205,6 @@ export async function createApplicationServices({
     mcpAccess,
     serverAudit,
     serverTimezone,
-    hostSignalHome,
     hostTurnLimits,
     serverPersonality,
     promptCacheTtl,
@@ -3289,11 +3213,9 @@ export async function createApplicationServices({
     claudeCompactWindow: claudeCompactWindowSetting,
     providerEnvironment: providerEnvironmentSetting,
     modelVisibility,
-    remoteSessionReuse,
     externalLinkPreference,
     externalLinks,
     openLink,
-    remoteNetworkRoute,
     appBehavior,
     agentInitialization,
     hostUpdateCoordinator,

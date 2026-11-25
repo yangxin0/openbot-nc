@@ -61,7 +61,6 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve("src/preload/index.ts"),
-          teamWebrtc: resolve("src/preload/team-webrtc.ts"),
           browserPage: resolve("src/preload/browser-page.ts"),
         },
         output: {
@@ -98,7 +97,6 @@ export default defineConfig({
           browserPip: resolve("src/renderer/browser-pip.html"),
           browserPipControls: resolve("src/renderer/browser-pip-controls.html"),
           browserWindow: resolve("src/renderer/browser-window.html"),
-          teamWebrtc: resolve("src/renderer/team-webrtc.html"),
           serverSetup: resolve("src/renderer/server-setup.html"),
         },
         ...(benchBuild ? { output: benchRendererOutput } : {}),

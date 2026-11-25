@@ -15,7 +15,7 @@ import {
 import type { TeamApiCrm } from "./dependencies";
 import { HttpError } from "./http-error";
 import type { RouteOutcome, TeamApiRequestContext } from "./request-context";
-import { readJson, requireAdmin, WEBRTC_FRAME_BODY_BUDGET } from "./request-helpers";
+import { readJson, requireAdmin, TEAM_V2_FRAME_BODY_BUDGET } from "./request-helpers";
 
 const CRM_PATHS: ReadonlySet<string> = new Set(Object.values(CRM_ROUTES));
 const ACTOR_NAME_LIMIT = 200;
@@ -43,13 +43,13 @@ function bytesOf(value: unknown): number {
 
 function cutToFrame<T>(items: readonly T[], bytes: number): T[] {
   const kept = [...items];
-  while (kept.length > 1 && bytes > WEBRTC_FRAME_BODY_BUDGET) bytes -= bytesOf(kept.pop()) + 1;
+  while (kept.length > 1 && bytes > TEAM_V2_FRAME_BODY_BUDGET) bytes -= bytesOf(kept.pop()) + 1;
   return kept;
 }
 
 function fittedCustomers(page: CrmCustomerPage): CrmCustomerPage {
   const bytes = bytesOf(page);
-  if (bytes <= WEBRTC_FRAME_BODY_BUDGET) return page;
+  if (bytes <= TEAM_V2_FRAME_BODY_BUDGET) return page;
   const customers = cutToFrame(page.customers, bytes);
   const last = customers.at(-1);
   return fitted({ customers, next: last ? last.number : page.next });
@@ -57,12 +57,12 @@ function fittedCustomers(page: CrmCustomerPage): CrmCustomerPage {
 
 function fittedOverview(overview: CrmOverview): CrmOverview {
   const bytes = bytesOf(overview);
-  if (bytes <= WEBRTC_FRAME_BODY_BUDGET) return overview;
+  if (bytes <= TEAM_V2_FRAME_BODY_BUDGET) return overview;
   return fitted({ ...overview, proposals: cutToFrame(overview.proposals, bytes) });
 }
 
 function fitted<A>(value: A): A {
-  if (bytesOf(value) > WEBRTC_FRAME_BODY_BUDGET) throw new HttpError(413, sourceText("error.crm.tooLargeToSend"));
+  if (bytesOf(value) > TEAM_V2_FRAME_BODY_BUDGET) throw new HttpError(413, sourceText("error.crm.tooLargeToSend"));
   return value;
 }
 

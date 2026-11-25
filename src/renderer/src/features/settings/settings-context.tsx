@@ -162,7 +162,6 @@ const Settings = createSimpleContext({
     let busyMessageModeChanged = false;
     let agentDefaultsChanged = false;
     let agentMemoryLimitChanged = false;
-    let keepRemoteSessionsChanged = false;
     let externalLinkTargetChanged = false;
     let launchAtLoginChanged = false;
     let keepRunningInBackgroundChanged = false;
@@ -294,14 +293,6 @@ const Settings = createSimpleContext({
           "externalLinkTarget",
           settingsPort().setExternalLinkPreference({ target: value.externalLinkTarget }),
           (preference) => preference.target,
-        );
-      }
-      if (previous.keepRemoteSessions !== value.keepRemoteSessions) {
-        keepRemoteSessionsChanged = true;
-        persistField(
-          "keepRemoteSessions",
-          settingsPort().setRemoteSessionReusePreference({ keepBetweenRuns: value.keepRemoteSessions }),
-          (preference) => preference.keepBetweenRuns,
         );
       }
       if (
@@ -518,12 +509,6 @@ const Settings = createSimpleContext({
           .then((preference) => {
             if (externalLinkTargetChanged) return;
             setGeneralSettings((current) => ({ ...current, externalLinkTarget: preference.target }));
-          }),
-        settingsPort()
-          .getRemoteSessionReusePreference()
-          .then((preference) => {
-            if (keepRemoteSessionsChanged) return;
-            setGeneralSettings((current) => ({ ...current, keepRemoteSessions: preference.keepBetweenRuns }));
           }),
         settingsPort()
           .notifications.getPreference()

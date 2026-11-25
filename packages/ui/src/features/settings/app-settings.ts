@@ -45,7 +45,6 @@ export interface GeneralSettingsValue {
   busyMessageMode: BusyMessageMode;
   agentDefaults: AgentDefaults;
   agentMemoryLimit: AgentMemoryLimit;
-  keepRemoteSessions: boolean;
   soundFeedback: boolean;
   soundTheme: SoundTheme;
   autoDownloadUpdates: boolean;
@@ -78,7 +77,6 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettingsValue = {
   busyMessageMode: DEFAULT_BUSY_MESSAGE_MODE,
   agentDefaults: DEFAULT_AGENT_DEFAULTS,
   agentMemoryLimit: DEFAULT_AGENT_MEMORY_LIMIT,
-  keepRemoteSessions: true,
   soundFeedback: false,
   soundTheme: "default",
   autoDownloadUpdates: true,

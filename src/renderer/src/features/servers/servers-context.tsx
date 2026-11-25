@@ -128,7 +128,6 @@ const Servers = createSimpleContext({
       }
       setServers(value);
       if (!value.some((server) => server.kind === "remote") && untrack(localServerHidden)) setLocalServerHidden(false);
-      moveLocalServerHiddenToAccount(value.find((server) => server.kind === "local"));
       const retryTarget = value.find(
         (server) => server.id === pendingCompatibilityRetryServerId && server.active && server.state === "online",
       );
@@ -171,25 +170,6 @@ const Servers = createSimpleContext({
         if (hidden) window.localStorage.setItem(LOCAL_SERVER_HIDDEN_STORAGE_KEY, "true");
         else window.localStorage.removeItem(LOCAL_SERVER_HIDDEN_STORAGE_KEY);
       } catch {}
-    }
-
-    let localServerHiddenMoveStarted = false;
-    function moveLocalServerHiddenToAccount(local: ServerSummary | undefined): void {
-      if (!local || local.hidden === undefined || !untrack(localServerHidden)) return;
-      if (local.hidden) {
-        setLocalServerHidden(false);
-        return;
-      }
-      if (localServerHiddenMoveStarted) return;
-      localServerHiddenMoveStarted = true;
-      void serversPort()
-        .servers.setHidden({ serverId: local.id, hidden: true })
-        .then(applyServerSummaries)
-        .catch(() => undefined);
-    }
-
-    async function setServerHidden(serverId: string, hidden: boolean): Promise<void> {
-      applyServerSummaries(await serversPort().servers.setHidden({ serverId, hidden }));
     }
 
     async function refreshServers(): Promise<void> {
@@ -322,7 +302,6 @@ const Servers = createSimpleContext({
       reorderServers,
       localServerHidden,
       setLocalServerHidden,
-      setServerHidden,
       setServerMuted,
       setServerNotificationLevel,
       retryServerConnection,

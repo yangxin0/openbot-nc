@@ -185,7 +185,7 @@ await verifyLaunch(executablePath);
 
 logger.info(`Verified ${appPath}`);
 logger.info(
-  `OpenBot-NC ${String(packageJson.version)} · ${machOArchitecture} · icon · WebRTC remote stack · ASAR integrity · hardened fuses · launch`,
+  `OpenBot-NC ${String(packageJson.version)} · ${machOArchitecture} · icon · ASAR integrity · hardened fuses · launch`,
 );
 
 function expectEqual(actual: unknown, expected: unknown, label: string): void {

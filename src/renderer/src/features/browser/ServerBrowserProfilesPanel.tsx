@@ -40,11 +40,9 @@ export function ServerBrowserProfilesPanel(
     return {
       list,
       computers: props.store.state.computers ?? [],
-      sharing: props.store.state.sharing,
       onSave: props.store.saveProxy,
       onDelete: props.store.removeProxy,
       onSetProfileProxy: props.store.setProfileProxy,
-      onSetSharing: props.store.setSharing,
     };
   };
   return (

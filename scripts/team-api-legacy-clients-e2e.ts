@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { generateKeyPairSync, randomBytes, randomUUID, sign, verify } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -18,7 +18,6 @@ import {
   decodeTeamProtocolV1Event,
   decodeTeamProtocolV1HttpRequest,
   decodeTeamProtocolV1HttpResponse,
-  decodeTeamProtocolV2AuthFrame,
   decodeTeamProtocolV2RpcFrame,
   decodeTeamProtocolV3HttpRequest,
   decodeTeamProtocolV3HttpResponse,
@@ -41,7 +40,6 @@ import {
   TEAM_PROTOCOL_V7,
   TEAM_PROTOCOL_VERSION_HEADER,
   teamCapabilitiesForProtocol,
-  teamProtocolV2AuthenticationTranscript,
 } from "@openbot/contracts/team-protocol";
 import { AGENT_BACKGROUND_WORK_CAPABILITY } from "@openbot/contracts/team-protocol/agent-background-work-v1";
 import { AGENT_NOTIFICATION_LEVELS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-notification-levels-v1";
@@ -81,7 +79,7 @@ import { MailboxStore } from "../src/backend/mailbox-store";
 import { OpenBotDatabase } from "../src/backend/openbot-database";
 import { SidebarLayoutStore } from "../src/backend/sidebar-layout-store";
 import type { TeamApiBrowser } from "../src/main/team-api/dependencies";
-import type { TeamWebRtcChannel } from "../src/main/team-webrtc-bridge";
+import { TeamV2Loopback } from "./team-v2-loopback";
 
 const OUT = resolve(import.meta.dirname, "../.openbot-build/team-api-legacy-clients-e2e");
 const FIXTURES = resolve(import.meta.dirname, "../packages/contracts/src/team-protocol/fixtures");
@@ -121,9 +119,7 @@ plugin({
 
 const { TeamApiServer } = await import("../src/main/team-api-server");
 const { TeamStore } = await import("../src/main/team-store");
-const { TeamWebRtcBridge } = await import("../src/main/team-webrtc-bridge");
-const { TeamWebRtcHostPeer } = await import("../src/main/team-webrtc-host-peer");
-const { RemoteWorkflowError } = await import("../src/main/remote-service-effects");
+const { TeamV2HostPeer } = await import("../src/main/team-v2-host-peer");
 const { AGENT_ACCESS_FILE, AgentAccessStore } = await import("../src/main/agent-access-store");
 
 interface Step {
@@ -310,49 +306,6 @@ function nextMessage<T>(socket: WebSocket, pick: (value: unknown) => T | null): 
   });
 }
 
-class LoopbackBridge extends TeamWebRtcBridge {
-  readonly sent: { peerId: string; channel: TeamWebRtcChannel; data: string }[] = [];
-  readonly disconnected: string[] = [];
-  readonly #waiters = new Set<() => void>();
-
-  override readonly send = (peerId: string, channel: TeamWebRtcChannel, data: string | ArrayBuffer) =>
-    Effect.sync(() => {
-      if (typeof data === "string") this.sent.push({ peerId, channel, data });
-      for (const wake of this.#waiters) wake();
-    });
-
-  override readonly disconnectPeer = (peerId: string) =>
-    Effect.sync(() => {
-      this.disconnected.push(peerId);
-      queueMicrotask(() => this.emit("disconnected", peerId));
-      for (const wake of this.#waiters) wake();
-    });
-
-  until<T>(pick: () => T | null): Promise<T> {
-    return new Promise((resolveValue) => {
-      const check = () => {
-        const value = pick();
-        if (value === null) return;
-        this.#waiters.delete(check);
-        resolveValue(value);
-      };
-      this.#waiters.add(check);
-      check();
-    });
-  }
-
-  rpcFrom<T>(from: number, decode: (data: string) => T | null): Promise<T> {
-    return this.until(() => {
-      for (const frame of this.sent.slice(from)) {
-        if (frame.channel !== "rpc") continue;
-        const value = decode(frame.data);
-        if (value !== null) return value;
-      }
-      return null;
-    });
-  }
-}
-
 const root = await mkdtemp(join(tmpdir(), "openbot-team-api-legacy-"));
 const userData = join(root, "user-data");
 const home = join(root, "home");
@@ -365,7 +318,7 @@ const access = new AgentAccessStore(join(userData, AGENT_ACCESS_FILE));
 let agents: AgentService | null = null;
 let server: InstanceType<typeof TeamApiServer> | null = null;
 let socket: WebSocket | undefined;
-const peers: InstanceType<typeof TeamWebRtcHostPeer>[] = [];
+const peers: InstanceType<typeof TeamV2HostPeer>[] = [];
 
 try {
   await runCauseEffect(sidebar.initialize());
@@ -1299,97 +1252,29 @@ try {
     return { relayed: relayed.status, malformed: "invalid" };
   });
 
-  const clientKeys = generateKeyPairSync("ed25519", {
-    publicKeyEncoding: { type: "spki", format: "pem" },
-    privateKeyEncoding: { type: "pkcs8", format: "pem" },
-  });
-  const fingerprints = { localFingerprint: "host-fingerprint", remoteFingerprint: "client-fingerprint" };
-
-  async function connectV2(peerId: string, opening: "valid" | "forged" | "request-first" = "valid") {
-    const bridge = new LoopbackBridge();
-    const ticket = `ticket-${randomUUID()}`;
-    const sessionId = randomUUID();
-    const sessionExpiresAt = Math.floor(Date.now() / 1_000) + 3_600;
-    const claims = {
-      sessionId,
-      hostId: identity.serverId,
-      userId: `account-${member.id}`,
-      membershipId: member.id,
-      authEpoch: 1,
-      sessionExpiresAt,
-      role: "member" as const,
-      clientPublicKey: clientKeys.publicKey,
-    };
-    const pathChanges: [sessionId: string, lost: boolean][] = [];
-    const peer = new TeamWebRtcHostPeer(
-      {
-        store: team,
-        appVersion: HOST_VERSION,
-        transferDirectory: join(root, "transfers"),
-        pathChanged: (changed, lost) => pathChanges.push([changed, lost]),
-        verifyClientTicket: (presented) =>
-          presented === ticket
-            ? Effect.succeed(claims)
-            : Effect.fail(new RemoteWorkflowError({ cause: new Error("Unknown ticket.") })),
-      },
-      { peerId, hostId: identity.serverId, localApiPort: port, transport: bridge },
+  function createV2Peer(peerId: string) {
+    const bridge = new TeamV2Loopback();
+    const peer = new TeamV2HostPeer(
+      { store: team, appVersion: HOST_VERSION, transferDirectory: join(root, "transfers") },
+      { peerId, localApiPort: port, transport: bridge },
     );
     peers.push(peer);
-    await Effect.runPromise(
-      peer.incoming({
-        hostId: identity.serverId,
-        connectionId: randomUUID(),
-        sessionId,
-        userId: claims.userId,
-        membershipId: member.id,
-        role: "member",
-        sessionExpiresAt,
-      }),
-    );
-    bridge.emit("connected", peerId, fingerprints);
-    if (opening === "request-first") {
-      bridge.emit(
-        "data",
-        peerId,
-        "rpc",
-        encodeTeamProtocolV2Frame(
-          createTeamProtocolV2Request(randomUUID(), "http.request", { method: "GET", path: "/v1/agents", body: null }),
-        ),
-      );
-    }
-    const clientNonce = randomBytes(32).toString("base64url");
-    const transcript = teamProtocolV2AuthenticationTranscript({
-      hostId: identity.serverId,
-      sessionId,
-      ticket,
-      clientPublicKey: clientKeys.publicKey,
-      clientNonce,
-      clientFingerprint: fingerprints.remoteFingerprint,
-      hostFingerprint: fingerprints.localFingerprint,
-    });
-    const signed = opening === "forged" ? `${transcript}-forged` : transcript;
-    bridge.emit(
-      "data",
-      peerId,
-      "rpc",
-      encodeTeamProtocolV2Frame({
-        version: 2,
-        type: "auth-init",
-        ticket,
-        clientPublicKey: clientKeys.publicKey,
-        clientNonce,
-        signature: sign(null, Buffer.from(signed), clientKeys.privateKey).toString("base64url"),
-      }),
-    );
-    return { bridge, peer, ticket, sessionId, clientNonce, pathChanges };
+    return { bridge, peer };
   }
 
-  function authFrame(data: string) {
-    try {
-      return decodeTeamProtocolV2AuthFrame(data);
-    } catch {
-      return null;
-    }
+  async function connectV2(peerId: string) {
+    const { bridge, peer } = createV2Peer(peerId);
+    const sessionId = randomUUID();
+    const expiresAt = Date.now() + 3_600_000;
+    const { sessionToken } = team.openRemoteSession({
+      sessionId,
+      membershipId: member.id,
+      userId: `account-${member.id}`,
+      role: "member",
+      expiresAt,
+    });
+    await Effect.runPromise(peer.adoptSession({ sessionId, sessionToken, membershipId: member.id, expiresAt }));
+    return { bridge, peer, sessionId };
   }
 
   function rpcFrame(data: string) {
@@ -1408,50 +1293,16 @@ try {
   }
 
   const v2 = await step(
-    "v2 handshake: the host signs the transcript and confirms the session",
+    "v2 session: a session that the relay tunnel host adopts is a team session",
     async () => {
       const connection = await connectV2("peer-v2");
-      const ready = await connection.bridge.rpcFrom(0, (data) => {
-        const frame = authFrame(data);
-        return frame?.type === "auth-ready" ? frame : null;
-      });
-      assert.equal(ready.clientNonce, connection.clientNonce);
-      const hostTranscript = teamProtocolV2AuthenticationTranscript({
-        hostId: identity.serverId,
-        sessionId: connection.sessionId,
-        ticket: connection.ticket,
-        clientPublicKey: clientKeys.publicKey,
-        clientNonce: connection.clientNonce,
-        hostNonce: ready.hostNonce,
-        clientFingerprint: fingerprints.remoteFingerprint,
-        hostFingerprint: fingerprints.localFingerprint,
-      });
-      assert.ok(
-        verify(null, Buffer.from(hostTranscript), identity.publicKey, Buffer.from(ready.signature, "base64url")),
-        "The host signature does not verify with the host key that the client pinned.",
-      );
-      connection.bridge.emit(
-        "data",
-        "peer-v2",
-        "rpc",
-        encodeTeamProtocolV2Frame({
-          version: 2,
-          type: "auth-complete",
-          clientNonce: connection.clientNonce,
-          hostNonce: ready.hostNonce,
-        }),
-      );
-      await connection.bridge.rpcFrom(0, (data) => {
-        const frame = authFrame(data);
-        return frame?.type === "auth-confirmed" && frame.hostNonce === ready.hostNonce ? frame : null;
-      });
       assert.ok(
         team.listSessions().some((session) => session.id === connection.sessionId),
-        "The confirmed WebRTC session is not a team session.",
+        "The adopted session is not a team session.",
       );
       return connection;
     },
-    ({ sessionId }) => ({ sessionId, confirmed: true }),
+    ({ sessionId }) => ({ sessionId, adopted: true }),
   );
 
   await step(
@@ -1776,66 +1627,30 @@ try {
     return { status: error?.status };
   });
 
-  await step("v2 path: a failed ICE path marks the session away and keeps it open (#3583)", async () => {
-    v2.bridge.emit("pathLost", "other-peer");
-    assert.deepEqual(v2.pathChanges, [], "The path of another peer must not change this session.");
-    v2.bridge.emit("pathLost", "peer-v2");
-    v2.bridge.emit("pathRestored", "peer-v2");
-    assert.deepEqual(v2.pathChanges, [
-      [v2.sessionId, true],
-      [v2.sessionId, false],
-    ]);
-    assert.deepEqual(v2.bridge.disconnected, [], "A failed path must not drop the peer.");
-    assert.ok(
-      team.listSessions().some((session) => session.id === v2.sessionId),
-      "A failed path must not end the team session.",
-    );
-    return v2.pathChanges;
-  });
-
-  await step("v2 handshake: a forged proof or an RPC before the proof gets no session", async () => {
+  await step("v2 session: an RPC before a session gets no result, and the host drops the peer", async () => {
     const before = team.listSessions().length;
-    const results: Record<string, boolean> = {};
-    for (const [peerId, opening] of [
-      ["peer-forged", "forged"],
-      ["peer-request-first", "request-first"],
-    ] as const) {
-      const refused = await connectV2(peerId, opening);
-      await refused.bridge.until(() => (refused.bridge.disconnected.includes(peerId) ? true : null));
-      const ready = refused.bridge.sent
-        .map((frame) => authFrame(frame.data))
-        .find((frame) => frame?.type === "auth-ready");
-      if (opening === "forged") assert.equal(ready, undefined, "The host signed for a forged proof.");
-      refused.bridge.emit(
-        "data",
-        peerId,
-        "rpc",
-        encodeTeamProtocolV2Frame({
-          version: 2,
-          type: "auth-complete",
-          clientNonce: refused.clientNonce,
-          hostNonce: ready?.type === "auth-ready" ? ready.hostNonce : randomBytes(32).toString("base64url"),
-        }),
-      );
-      const outcome = await refused.bridge.until(() => {
-        if (refused.bridge.sent.some((frame) => authFrame(frame.data)?.type === "auth-confirmed")) return "confirmed";
-        return refused.bridge.disconnected.filter((id) => id === peerId).length > 1 ? "refused" : null;
-      });
-      assert.equal(outcome, "refused", `The ${opening} client was confirmed.`);
-      assert.ok(
-        !refused.bridge.sent.some((frame) => {
-          const response = rpcFrame(frame.data);
-          return response?.type === "response" && "result" in response;
-        }),
-        `The ${opening} client got an RPC result.`,
-      );
-      results[opening] = true;
-    }
-    assert.equal(team.listSessions().length, before, "A refused handshake opened a session.");
-    return { disconnected: results };
+    const { bridge } = createV2Peer("peer-no-session");
+    bridge.emit(
+      "data",
+      "peer-no-session",
+      "rpc",
+      encodeTeamProtocolV2Frame(
+        createTeamProtocolV2Request(randomUUID(), "http.request", { method: "GET", path: "/v1/agents", body: null }),
+      ),
+    );
+    await bridge.until(() => (bridge.disconnected.includes("peer-no-session") ? true : null));
+    assert.ok(
+      !bridge.sent.some((frame) => {
+        const response = rpcFrame(frame.data);
+        return response?.type === "response" && "result" in response;
+      }),
+      "The client with no session got an RPC result.",
+    );
+    assert.equal(team.listSessions().length, before, "An RPC with no session opened a session.");
+    return { disconnected: true };
   });
 
-  await step("v2 revoke: the host ends the session of a revoked WebRTC member", async () => {
+  await step("v2 revoke: the host ends the session of a revoked relay member", async () => {
     await Effect.runPromise(v2.peer.revokeSession(v2.sessionId));
     await v2.bridge.until(() => (v2.bridge.disconnected.includes("peer-v2") ? true : null));
     await runCauseEffect(team.revokeSession(v2.sessionId));

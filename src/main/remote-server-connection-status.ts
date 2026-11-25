@@ -325,14 +325,3 @@ export function negotiatedCompatibility(
     capabilities: host.capabilities,
   };
 }
-
-export function webRtcCompatibility(localAppVersion: string | null, host: TeamProtocolSupportV1): ServerCompatibility {
-  return {
-    localAppVersion: localAppVersion ?? "0.0.0",
-    hostAppVersion: host.appVersion,
-    localProtocol: LOCAL_TEAM_PROTOCOL,
-    hostProtocol: { minimum: 2, maximum: 2 },
-    negotiatedProtocol: 2,
-    capabilities: host.capabilities,
-  };
-}

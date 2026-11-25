@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { generateKeyPairSync, randomBytes, randomUUID, sign } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
@@ -9,7 +9,6 @@ import { type AgentModelOption, LEGACY_AGENT_REASONING_EFFORTS } from "@openbot/
 import {
   createTeamProtocolV2Request,
   decodeTeamProtocolSupportV9,
-  decodeTeamProtocolV2AuthFrame,
   decodeTeamProtocolV2RpcFrame,
   encodeTeamProtocolV2Frame,
   TEAM_APP_VERSION_HEADER,
@@ -17,7 +16,6 @@ import {
   TEAM_PROTOCOL_V1,
   TEAM_PROTOCOL_V1_CAPABILITIES,
   TEAM_PROTOCOL_VERSION_HEADER,
-  teamProtocolV2AuthenticationTranscript,
 } from "@openbot/contracts/team-protocol";
 import {
   expandTeamCapabilitiesV10,
@@ -49,7 +47,6 @@ import { runCauseEffect } from "../src/backend/effect-boundary";
 import { MailboxStore } from "../src/backend/mailbox-store";
 import { OpenBotDatabase } from "../src/backend/openbot-database";
 import { SidebarLayoutStore } from "../src/backend/sidebar-layout-store";
-import type { TeamWebRtcChannel } from "../src/main/team-webrtc-bridge";
 import { readWebHostCompatibility } from "../src/renderer/src/features/web-client/web-host-compatibility";
 
 const OUT = resolve(import.meta.dirname, "../.openbot-build/team-protocol-v10-e2e");
@@ -91,9 +88,8 @@ plugin({
 
 const { TeamApiServer } = await import("../src/main/team-api-server");
 const { TeamStore } = await import("../src/main/team-store");
-const { TeamWebRtcBridge } = await import("../src/main/team-webrtc-bridge");
-const { TeamWebRtcHostPeer } = await import("../src/main/team-webrtc-host-peer");
-const { RemoteWorkflowError } = await import("../src/main/remote-service-effects");
+const { TeamV2HostPeer } = await import("../src/main/team-v2-host-peer");
+const { TeamV2Loopback } = await import("./team-v2-loopback");
 const { RemoteServerClient } = await import("../src/main/remote-server-client");
 const { AGENT_ACCESS_FILE, AgentAccessStore } = await import("../src/main/agent-access-store");
 
@@ -202,48 +198,6 @@ async function http(
   return { status: response.status, body: body ? JSON.parse(body) : null };
 }
 
-class LoopbackBridge extends TeamWebRtcBridge {
-  readonly sent: { peerId: string; channel: TeamWebRtcChannel; data: string }[] = [];
-  readonly #waiters = new Set<() => void>();
-
-  override readonly send = (peerId: string, channel: TeamWebRtcChannel, data: string | ArrayBuffer) =>
-    Effect.sync(() => {
-      if (typeof data === "string") this.sent.push({ peerId, channel, data });
-      for (const wake of this.#waiters) wake();
-    });
-
-  override readonly disconnectPeer = (peerId: string) =>
-    Effect.sync(() => {
-      queueMicrotask(() => this.emit("disconnected", peerId));
-      for (const wake of this.#waiters) wake();
-    });
-
-  rpcFrom<T>(from: number, pick: (data: string) => T | null): Promise<T> {
-    return new Promise((resolveValue) => {
-      const check = () => {
-        for (const frame of this.sent.slice(from)) {
-          if (frame.channel !== "rpc") continue;
-          const value = pick(frame.data);
-          if (value === null) continue;
-          this.#waiters.delete(check);
-          resolveValue(value);
-          return;
-        }
-      };
-      this.#waiters.add(check);
-      check();
-    });
-  }
-}
-
-function authFrame(data: string) {
-  try {
-    return decodeTeamProtocolV2AuthFrame(data);
-  } catch {
-    return null;
-  }
-}
-
 function rpcResponse(requestId: string) {
   return (data: string) => {
     try {
@@ -298,7 +252,7 @@ const access = new AgentAccessStore(join(userData, AGENT_ACCESS_FILE));
 let agents: AgentService | null = null;
 let server: InstanceType<typeof TeamApiServer> | null = null;
 let protocol9Host: Server | null = null;
-const peers: InstanceType<typeof TeamWebRtcHostPeer>[] = [];
+const peers: InstanceType<typeof TeamV2HostPeer>[] = [];
 
 try {
   await runCauseEffect(sidebar.initialize());
@@ -306,7 +260,7 @@ try {
   await runCauseEffect(mailbox.initialize());
   await runCauseEffect(team.initialize());
   agents = new AgentService({ store: agentStore, mailbox, browser: agentBrowser, sidebarLayout: sidebar });
-  const identity = await runCauseEffect(team.configure("E2E Host", OWNER.username, OWNER.password));
+  await runCauseEffect(team.configure("E2E Host", OWNER.username, OWNER.password));
   const source = await runCauseEffect(
     agents.createAgentProfile({ name: "Research", description: "Finds sources.", avatarSeed: "r", avatarHue: null }),
   );
@@ -442,7 +396,6 @@ try {
       clearStaleIssue: () => {},
       reportError: () => {},
     },
-    transport: null,
   });
 
   await step("HTTP desktop client: negotiates protocol 10 with this host and reads the full set", async () => {
@@ -546,90 +499,23 @@ try {
     },
   );
 
-  const clientKeys = generateKeyPairSync("ed25519", {
-    publicKeyEncoding: { type: "spki", format: "pem" },
-    privateKeyEncoding: { type: "pkcs8", format: "pem" },
-  });
-  const fingerprints = { localFingerprint: "host-fingerprint", remoteFingerprint: "client-fingerprint" };
-
-  async function connectWebRtc(peerId: string) {
-    const bridge = new LoopbackBridge();
-    const ticket = `ticket-${randomUUID()}`;
-    const sessionId = randomUUID();
-    const sessionExpiresAt = Math.floor(Date.now() / 1_000) + 3_600;
-    const claims = {
-      sessionId,
-      hostId: identity.serverId,
-      userId: `account-${memberId}`,
-      membershipId: memberId,
-      authEpoch: 1,
-      sessionExpiresAt,
-      role: "member" as const,
-      clientPublicKey: clientKeys.publicKey,
-    };
-    const peer = new TeamWebRtcHostPeer(
-      {
-        store: team,
-        appVersion: HOST_VERSION,
-        transferDirectory: join(root, "transfers"),
-        pathChanged: () => {},
-        verifyClientTicket: (presented) =>
-          presented === ticket
-            ? Effect.succeed(claims)
-            : Effect.fail(new RemoteWorkflowError({ cause: new Error("Unknown ticket.") })),
-      },
-      { peerId, hostId: identity.serverId, localApiPort: port, transport: bridge },
+  async function connectV2(peerId: string) {
+    const bridge = new TeamV2Loopback();
+    const peer = new TeamV2HostPeer(
+      { store: team, appVersion: HOST_VERSION, transferDirectory: join(root, "transfers") },
+      { peerId, localApiPort: port, transport: bridge },
     );
     peers.push(peer);
-    await Effect.runPromise(
-      peer.incoming({
-        hostId: identity.serverId,
-        connectionId: randomUUID(),
-        sessionId,
-        userId: claims.userId,
-        membershipId: memberId,
-        role: "member",
-        sessionExpiresAt,
-      }),
-    );
-    bridge.emit("connected", peerId, fingerprints);
-    const clientNonce = randomBytes(32).toString("base64url");
-    const transcript = teamProtocolV2AuthenticationTranscript({
-      hostId: identity.serverId,
+    const sessionId = randomUUID();
+    const expiresAt = Date.now() + 3_600_000;
+    const { sessionToken } = team.openRemoteSession({
       sessionId,
-      ticket,
-      clientPublicKey: clientKeys.publicKey,
-      clientNonce,
-      clientFingerprint: fingerprints.remoteFingerprint,
-      hostFingerprint: fingerprints.localFingerprint,
+      membershipId: memberId,
+      userId: `account-${memberId}`,
+      role: "member",
+      expiresAt,
     });
-    bridge.emit(
-      "data",
-      peerId,
-      "rpc",
-      encodeTeamProtocolV2Frame({
-        version: 2,
-        type: "auth-init",
-        ticket,
-        clientPublicKey: clientKeys.publicKey,
-        clientNonce,
-        signature: sign(null, Buffer.from(transcript), clientKeys.privateKey).toString("base64url"),
-      }),
-    );
-    const ready = await bridge.rpcFrom(0, (data) => {
-      const frame = authFrame(data);
-      return frame?.type === "auth-ready" ? frame : null;
-    });
-    bridge.emit(
-      "data",
-      peerId,
-      "rpc",
-      encodeTeamProtocolV2Frame({ version: 2, type: "auth-complete", clientNonce, hostNonce: ready.hostNonce }),
-    );
-    await bridge.rpcFrom(0, (data) => {
-      const frame = authFrame(data);
-      return frame?.type === "auth-confirmed" ? frame : null;
-    });
+    await Effect.runPromise(peer.adoptSession({ sessionId, sessionToken, membershipId: memberId, expiresAt }));
 
     async function call(path: string, keys: { capabilities: string[]; absent?: string[] }) {
       const requestId = randomUUID();
@@ -647,8 +533,8 @@ try {
     return { call };
   }
 
-  const web = await connectWebRtc("peer-web");
-  await step("WebRTC web client: protocol 10 with this host, and the full set after a second read", async () => {
+  const web = await connectV2("peer-web");
+  await step("V2 web client: protocol 10 with this host, and the full set after a second read", async () => {
     let known: number | undefined;
     const sent: { capabilities: number; absent: boolean }[] = [];
     const { support, negotiated } = await readWebHostCompatibility(async () => {
@@ -670,7 +556,7 @@ try {
     return { protocol: negotiated.protocol, reads: sent, names: support.capabilities.length };
   });
 
-  await step("WebRTC web client: a host of protocols 1-9 stays on protocol 9 with one read", async () => {
+  await step("V2 web client: a host of protocols 1-9 stays on protocol 9 with one read", async () => {
     let reads = 0;
     const { support, negotiated } = await readWebHostCompatibility(async () => {
       reads += 1;
@@ -682,8 +568,8 @@ try {
     return { protocol: negotiated.protocol, reads, names: support.capabilities.length };
   });
 
-  const mobile = await connectWebRtc("peer-mobile");
-  await step("WebRTC protocol 9 peer (mobile): gets the protocol 9 list, with no `absent`", async () => {
+  const mobile = await connectV2("peer-mobile");
+  await step("V2 protocol 9 peer (mobile): gets the protocol 9 list, with no `absent`", async () => {
     const frame = await mobile.call("/v1/compatibility", {
       capabilities: [...teamCapabilitiesForProtocol(TEAM_PROTOCOL_V9)],
     });
@@ -696,7 +582,7 @@ try {
     return { names: support.capabilities.length };
   });
 
-  await step("WebRTC protocol 10: a baseline capability in `absent` is not served to the client", async () => {
+  await step("V2 protocol 10: a baseline capability in `absent` is not served to the client", async () => {
     const efforts = async (keys: { capabilities: string[]; absent?: string[] }) => {
       const frame = await web.call("/v1/agents/models", keys);
       assert.ok("result" in frame, JSON.stringify(frame));
@@ -717,7 +603,7 @@ try {
     return { full: full.defaultReasoningEffort, absent: left.defaultReasoningEffort };
   });
 
-  await step("WebRTC protocol 10: a malformed list fails closed with protocol_error", async () => {
+  await step("V2 protocol 10: a malformed list fails closed with protocol_error", async () => {
     const frame = await web.call("/v1/compatibility", {
       capabilities: [TEAM_LONG_CAPABILITY_LISTS_CAPABILITY, TEAM_CAPABILITY_BASELINE_CAPABILITY],
       absent: ["Not A Name"],

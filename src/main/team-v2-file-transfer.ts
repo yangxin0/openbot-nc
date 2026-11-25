@@ -18,7 +18,7 @@ import { Deferred, Effect, Result, Semaphore } from "effect";
 import { sha256File } from "../backend/file-hash";
 import { recordRestartActivity } from "../backend/restart-activity";
 import { RemoteWorkflowError, remoteCall, remoteDecode, toRemoteWorkflowError } from "./remote-service-effects";
-import type { TeamV2ChannelTransport } from "./team-v2-channel-transport";
+import type { TeamV2Channel, TeamV2ChannelTransport } from "./team-v2-channel-transport";
 
 const FILE_CHUNK_BYTES = 60 * 1024;
 const ACK_INTERVAL_BYTES = 1024 * 1024;
@@ -67,7 +67,7 @@ export interface IncomingFileWatch {
   stop: Effect.Effect<void>;
 }
 
-export interface ReceivedWebRtcFile {
+export interface ReceivedV2File {
   peerId: string;
   transferId: string;
   name: string;
@@ -78,7 +78,7 @@ export interface ReceivedWebRtcFile {
 
 export class TeamFileTooLargeError extends Error {}
 
-export class TeamWebRtcFileTransfer {
+export class TeamV2FileTransfer {
   readonly #transport: TeamV2ChannelTransport;
   readonly #writingAbort = new AbortController();
   readonly #operations = new Set<Deferred.Deferred<void>>();
@@ -88,13 +88,13 @@ export class TeamWebRtcFileTransfer {
   readonly #incoming = new Map<string, IncomingTransfer>();
   readonly #outgoing = new Map<string, OutgoingTransfer>();
   readonly #writing = new Set<{ peerId: string; size: number }>();
-  readonly #completed = new Map<string, ReceivedWebRtcFile>();
+  readonly #completed = new Map<string, ReceivedV2File>();
   readonly #watches = new Set<IncomingWatch>();
   readonly #expirationTimers = new Map<string, ReturnType<typeof setTimeout>>();
   readonly #waiters = new Map<
     string,
     {
-      resolve: (file: ReceivedWebRtcFile) => void;
+      resolve: (file: ReceivedV2File) => void;
       reject: (error: Error) => void;
       timer: ReturnType<typeof setTimeout>;
     }
@@ -130,7 +130,7 @@ export class TeamWebRtcFileTransfer {
   }
 
   readonly send = Effect.fn("TeamFileTransfer.send")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     peerId: string,
     input: {
       name: string;
@@ -156,7 +156,7 @@ export class TeamWebRtcFileTransfer {
   }).bind(this);
 
   readonly sendStream = Effect.fn("TeamFileTransfer.sendStream")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     peerId: string,
     input: { name: string; mimeType: string; body: AsyncIterable<Uint8Array> | Iterable<Uint8Array> },
   ): Effect.fn.Return<{ transferId: string; size: number }, RemoteWorkflowError> {
@@ -207,7 +207,7 @@ export class TeamWebRtcFileTransfer {
                 read: async (offset, length) => {
                   const bytes = new Uint8Array(length);
                   const { bytesRead } = await source.read(bytes, 0, length, offset);
-                  if (bytesRead !== length) throw new Error("The outgoing WebRTC file is incomplete.");
+                  if (bytesRead !== length) throw new Error("The outgoing Team file is incomplete.");
                   return bytes;
                 },
               });
@@ -237,7 +237,7 @@ export class TeamWebRtcFileTransfer {
   }
 
   readonly #sendOutgoingEffect = Effect.fn("TeamFileTransfer.sendOutgoing")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     peerId: string,
     input: Pick<OutgoingTransfer, "name" | "mimeType" | "size" | "sha256" | "read" | "onProgress">,
   ): Effect.fn.Return<string, RemoteWorkflowError> {
@@ -310,11 +310,11 @@ export class TeamWebRtcFileTransfer {
   }
 
   readonly receive = Effect.fn("TeamFileTransfer.receive")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     peerId: string,
     transferId: string,
     timeoutMs = 60_000,
-  ): Effect.fn.Return<ReceivedWebRtcFile, RemoteWorkflowError> {
+  ): Effect.fn.Return<ReceivedV2File, RemoteWorkflowError> {
     return yield* this.#owned(
       Effect.gen({ self: this }, function* () {
         const key = transferKey(peerId, transferId);
@@ -323,8 +323,8 @@ export class TeamWebRtcFileTransfer {
         if (this.#stopped)
           return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.fileTransportStopped")) });
         if (this.#waiters.has(key))
-          return yield* new RemoteWorkflowError({ cause: new Error("The WebRTC file is already being received.") });
-        return yield* Effect.callback<ReceivedWebRtcFile, RemoteWorkflowError>((resume) => {
+          return yield* new RemoteWorkflowError({ cause: new Error("The Team file is already being received.") });
+        return yield* Effect.callback<ReceivedV2File, RemoteWorkflowError>((resume) => {
           const timer = setTimeout(() => {
             this.#waiters.delete(key);
             resume(
@@ -349,7 +349,7 @@ export class TeamWebRtcFileTransfer {
   }).bind(this);
 
   readonly consume = Effect.fn("TeamFileTransfer.consume")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     peerId: string,
     transferId: string,
   ): Effect.fn.Return<{ bytes: Uint8Array; name: string; mimeType: string }, RemoteWorkflowError> {
@@ -365,10 +365,10 @@ export class TeamWebRtcFileTransfer {
   }).bind(this);
 
   readonly useReceived = Effect.fn("TeamFileTransfer.useReceived")(function* <T, E, R>(
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     peerId: string,
     transferId: string,
-    use: (file: ReceivedWebRtcFile) => Effect.Effect<T, E, R>,
+    use: (file: ReceivedV2File) => Effect.Effect<T, E, R>,
   ): Effect.fn.Return<T, E | RemoteWorkflowError, R> {
     return yield* this.#owned(
       Effect.gen({ self: this }, function* () {
@@ -396,7 +396,7 @@ export class TeamWebRtcFileTransfer {
     });
   }
 
-  readonly stop = Effect.fn("TeamFileTransfer.stop")(function* (this: TeamWebRtcFileTransfer) {
+  readonly stop = Effect.fn("TeamFileTransfer.stop")(function* (this: TeamV2FileTransfer) {
     this.#stopped = true;
     this.#writingAbort.abort();
     for (const waiter of this.#waiters.values()) {
@@ -432,11 +432,7 @@ export class TeamWebRtcFileTransfer {
     this.setPeerAuthenticated(peerId, false);
   };
 
-  readonly #onData = (
-    peerId: string,
-    channel: "rpc" | "events" | "files" | "desktop",
-    data: string | ArrayBuffer,
-  ): void => {
+  readonly #onData = (peerId: string, channel: TeamV2Channel, data: string | ArrayBuffer): void => {
     if (channel !== "files" || !this.#connectedPeers.has(peerId) || !this.#acceptPeer(peerId)) return;
     const transferId = fileTransferId(data);
     const previous = this.#lastFrame;
@@ -459,7 +455,7 @@ export class TeamWebRtcFileTransfer {
   };
 
   readonly #handleData = Effect.fn("TeamFileTransfer.handleData")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     peerId: string,
     data: string | ArrayBuffer,
   ): Effect.fn.Return<void, RemoteWorkflowError> {
@@ -470,7 +466,7 @@ export class TeamWebRtcFileTransfer {
         const existing = this.#incoming.get(key);
         if (existing) {
           if (existing.size !== frame.size || existing.sha256 !== frame.sha256)
-            return yield* new RemoteWorkflowError({ cause: new Error("The resumed WebRTC file metadata changed.") });
+            return yield* new RemoteWorkflowError({ cause: new Error("The resumed Team file metadata changed.") });
           yield* this.#transport.send(
             peerId,
             "files",
@@ -538,10 +534,10 @@ export class TeamWebRtcFileTransfer {
       } else if (frame.type === "file-complete") {
         const transfer = this.#incoming.get(key);
         if (!transfer || transfer.received !== transfer.size)
-          return yield* new RemoteWorkflowError({ cause: new Error("The WebRTC file is incomplete.") });
+          return yield* new RemoteWorkflowError({ cause: new Error("The Team file is incomplete.") });
         yield* remoteCall(() => transfer.file.close());
         if ((yield* sha256File(transfer.path).pipe(toRemoteWorkflowError)) !== transfer.sha256) {
-          const error = new Error("The WebRTC file hash is invalid.");
+          const error = new Error("The Team file hash is invalid.");
           yield* this.#transport
             .send(
               peerId,
@@ -591,7 +587,7 @@ export class TeamWebRtcFileTransfer {
     const transfer = this.#incoming.get(key);
     const end = chunk.offset + chunk.bytes.byteLength;
     if (!transfer || chunk.offset > transfer.received || end > transfer.size) {
-      return yield* new RemoteWorkflowError({ cause: new Error("The WebRTC file offset is invalid.") });
+      return yield* new RemoteWorkflowError({ cause: new Error("The Team file offset is invalid.") });
     }
     if (end <= transfer.received) {
       this.#scheduleExpiration(key);
@@ -622,7 +618,7 @@ export class TeamWebRtcFileTransfer {
   });
 
   readonly #cancelEffect = Effect.fn("TeamFileTransfer.cancel")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     key: string,
     error: Error,
   ): Effect.fn.Return<void, RemoteWorkflowError> {
@@ -647,7 +643,7 @@ export class TeamWebRtcFileTransfer {
   });
 
   readonly #refuse = Effect.fn("TeamFileTransfer.refuse")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     peerId: string,
     transferId: string,
     error: Error,
@@ -663,7 +659,7 @@ export class TeamWebRtcFileTransfer {
   });
 
   readonly #failFrame = Effect.fn("TeamFileTransfer.failFrame")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     peerId: string,
     transferId: string | null,
     error: unknown,
@@ -690,7 +686,7 @@ export class TeamWebRtcFileTransfer {
   });
 
   readonly #sendWithResumeEffect = Effect.fn("TeamFileTransfer.sendWithResume")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     transfer: OutgoingTransfer,
   ): Effect.fn.Return<void, RemoteWorkflowError> {
     while (Date.now() < transfer.lastProgressAt + this.#resumeMilliseconds) {
@@ -827,7 +823,7 @@ export class TeamWebRtcFileTransfer {
   }
 
   readonly #expire = Effect.fn("TeamFileTransfer.expire")(function* (
-    this: TeamWebRtcFileTransfer,
+    this: TeamV2FileTransfer,
     key: string,
   ): Effect.fn.Return<void, RemoteWorkflowError> {
     const error = new Error(sourceText("error.remote.fileResumeExpired"));

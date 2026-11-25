@@ -96,7 +96,6 @@ import {
   decodeHostProviderAccounts,
   decodeHostProviderAccountUsage,
   decodeHostReleaseStatus,
-  decodeHostSignalHomeSettings,
   decodeHostSkillLearning,
   decodeHostTimezoneSettings,
   decodeHostTurnLimits,
@@ -150,7 +149,6 @@ import {
   type HostReleaseStatus,
   type HostSetDiscordAccessInput,
   type HostSetMessagingEnabledInput,
-  type HostSignalHomeSettings,
   type HostSkillLearning,
   type HostTimezoneSettings,
   type HostTurnLimits,
@@ -347,7 +345,6 @@ import { HOST_MEMBER_UPDATE_ROUTES } from "@openbot/contracts/team-protocol/host
 import { HOST_PERSONALITY_ROUTES } from "@openbot/contracts/team-protocol/host-personality-v1";
 import { HOST_RELEASE_ROUTES } from "@openbot/contracts/team-protocol/host-release-v1";
 import { HOST_RESTART_ROUTES } from "@openbot/contracts/team-protocol/host-restart-v1";
-import { HOST_SIGNAL_HOME_ROUTES } from "@openbot/contracts/team-protocol/host-signal-home-v1";
 import { HOST_TIMEZONE_ROUTES } from "@openbot/contracts/team-protocol/host-timezone-v1";
 import { HOST_TURN_LIMITS_ROUTES } from "@openbot/contracts/team-protocol/host-turn-limits-v1";
 import { HOST_UPDATE_ROUTES } from "@openbot/contracts/team-protocol/host-update-v1";
@@ -841,19 +838,6 @@ export function setHostTurnLimits(
 
 export function getHostVoiceModel(request: TeamApiRequest): Effect.Effect<HostVoiceModel, TeamAdminRequestError> {
   return adminCall(() => request("POST", HOST_VOICE_MODEL_ROUTES.settings, decodeHostVoiceModel, {}));
-}
-
-export function getHostSignalHome(
-  request: TeamApiRequest,
-): Effect.Effect<HostSignalHomeSettings, TeamAdminRequestError> {
-  return adminCall(() => request("POST", HOST_SIGNAL_HOME_ROUTES.settings, decodeHostSignalHomeSettings, {}));
-}
-
-export function setHostSignalHome(
-  request: TeamApiRequest,
-  home: string | null,
-): Effect.Effect<HostSignalHomeSettings, TeamAdminRequestError> {
-  return adminCall(() => request("POST", HOST_SIGNAL_HOME_ROUTES.update, decodeHostSignalHomeSettings, { home }));
 }
 
 export function changeHostVoiceModel(

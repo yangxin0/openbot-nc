@@ -20,7 +20,7 @@ interface Assembly {
   updatedAt: number;
 }
 
-export function encodeTeamWebRtcPayload(
+export function encodeTeamV2Payload(
   data: string | ArrayBuffer,
   maximumMessageSize: number,
   messageId = crypto.getRandomValues(new Uint32Array(1))[0] ?? 0,
@@ -29,10 +29,10 @@ export function encodeTeamWebRtcPayload(
   const bytes = isString(data) ? textEncoder.encode(data) : new Uint8Array(data);
   if (isString(data) && bytes.byteLength <= maximumFrameBytes) return [data];
   if (bytes.byteLength > TEAM_PROTOCOL_V2_MAX_JSON_FRAME_BYTES) {
-    throw new Error("The WebRTC payload is larger than the protocol limit.");
+    throw new Error("The V2 payload is larger than the protocol limit.");
   }
   const maximumChunkBytes = maximumFrameBytes - FRAME_HEADER_BYTES;
-  if (maximumChunkBytes <= 0) throw new Error("The negotiated WebRTC message size is too small.");
+  if (maximumChunkBytes <= 0) throw new Error("The negotiated message size is too small.");
   const frames: Array<ArrayBuffer> = [];
   const type = isString(data) ? FRAME_TYPE_TEXT : FRAME_TYPE_BINARY;
   for (
@@ -55,7 +55,7 @@ export function encodeTeamWebRtcPayload(
   return frames;
 }
 
-export class TeamWebRtcPayloadDecoder {
+export class TeamV2PayloadDecoder {
   readonly #assemblies = new Map<number, Assembly>();
   #bufferedBytes = 0;
 
@@ -63,9 +63,9 @@ export class TeamWebRtcPayloadDecoder {
     if (isString(data)) return data;
     this.#prune(now);
     const frame = new Uint8Array(data);
-    if (frame.byteLength < FRAME_HEADER_BYTES) throw new Error("The WebRTC payload frame is invalid.");
+    if (frame.byteLength < FRAME_HEADER_BYTES) throw new Error("The V2 payload frame is invalid.");
     const view = new DataView(frame.buffer, frame.byteOffset, frame.byteLength);
-    if (view.getUint32(0) !== FRAME_MAGIC) throw new Error("The WebRTC payload frame is invalid.");
+    if (view.getUint32(0) !== FRAME_MAGIC) throw new Error("The V2 payload frame is invalid.");
     const messageId = view.getUint32(4);
     const totalBytes = view.getUint32(8);
     const offset = view.getUint32(12);
@@ -79,13 +79,13 @@ export class TeamWebRtcPayloadDecoder {
       (totalBytes > 0 && chunk.byteLength === 0)
     ) {
       this.#delete(messageId);
-      throw new Error("The WebRTC payload frame is invalid.");
+      throw new Error("The V2 payload frame is invalid.");
     }
     let assembly = this.#assemblies.get(messageId);
     if (offset === 0) {
       if (assembly) this.#delete(messageId);
       if (this.#assemblies.size >= MAXIMUM_ASSEMBLIES || this.#bufferedBytes + totalBytes > MAXIMUM_BUFFERED_BYTES) {
-        throw new Error("Too many WebRTC payloads are being assembled.");
+        throw new Error("Too many V2 payloads are being assembled.");
       }
       assembly = { type, bytes: new Uint8Array(totalBytes), received: 0, updatedAt: now };
       this.#assemblies.set(messageId, assembly);
@@ -98,7 +98,7 @@ export class TeamWebRtcPayloadDecoder {
       offset !== assembly.received
     ) {
       this.#delete(messageId);
-      throw new Error("The WebRTC payload fragments are not contiguous.");
+      throw new Error("The V2 payload fragments are not contiguous.");
     }
     assembly.bytes.set(chunk, offset);
     assembly.received += chunk.byteLength;

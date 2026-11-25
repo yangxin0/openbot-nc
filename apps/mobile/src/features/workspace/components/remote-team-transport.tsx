@@ -159,7 +159,6 @@ export const RemoteTeamTransport = memo(
           peerRef.current?.eventsFailed();
         }
       },
-      onHostStreamData: (data) => browserViewRef.current?.receive(data),
       digestUploadFile: async (fileRef) => uploadFile(fileRef).digest("SHA-256"),
       writeDownloadFile: async ({ ref: fileRef, base64, append }) => {
         if (!downloadFiles.current.has(fileRef)) throw new Error("The file is not part of a download.");
@@ -180,7 +179,7 @@ export const RemoteTeamTransport = memo(
         downloadListeners.current.get(commandId)?.(received, total),
       onDiagnostic: async ({ hostId, step, detail }: RemoteTeamDiagnostic) => {
         supportLog.add(
-          step === "failed" || step === "stalled" ? "warn" : "info",
+          step === "failed" ? "warn" : "info",
           "connection",
           `${hostId} peer ${step}${detail ? `: ${detail}` : ""}`,
         );
@@ -190,7 +189,7 @@ export const RemoteTeamTransport = memo(
     peerRef.current ??= createPhoneRelayPeer(props.relay, actions);
     const peer = peerRef.current;
     browserViewRef.current ??= createBrowserViewBridge(
-      (data) => peer.sendHostStreamData(data),
+      () => Promise.reject(new Error(sourceText("error.remote.channelNotOpen"))),
       async (method, path, body) => {
         const result = await peer.execute({ id: Crypto.randomUUID(), type: "request", method, path, body: body ?? {} });
         if (!result.ok) throw new Error(result.error ?? sourceText("error.remote.serverRequestFailed"));

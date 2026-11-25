@@ -92,19 +92,12 @@ export interface RemoteEventAgentState {
   forward(serverId: string, event: AgentEvent, bufferedLive?: boolean): Effect.Effect<void, RemoteWorkflowError>;
 }
 
-export interface RemoteEventLiveTransport {
-  connect(hostId: string): Effect.Effect<void, RemoteWorkflowError>;
-  retry(hostId: string): Effect.Effect<void, RemoteWorkflowError>;
-  requestRuntimeSnapshot(hostId: string): Effect.Effect<void, RemoteWorkflowError>;
-}
-
 export interface RemoteEventStreamOptions {
   appVersion: string | null;
   servers: RemoteServerDirectory;
   client: RemoteEventCompatibilitySource;
   connections: RemoteEventConnectionSink;
   agents: RemoteEventAgentState;
-  transport: RemoteEventLiveTransport | null;
   openSocket?: RemoteEventSocketOpener | undefined;
   onServerIdentity: (serverId: string, identity: { serverName: string; logoVersion: string | null }) => void;
   onPresence: (serverId: string, snapshot: TeamPresenceSnapshot) => void;
@@ -125,7 +118,6 @@ export class RemoteEventStream {
   readonly #client: RemoteEventCompatibilitySource;
   readonly #connections: RemoteEventConnectionSink;
   readonly #agents: RemoteEventAgentState;
-  readonly #transport: RemoteEventLiveTransport | null;
   readonly #openSocket: RemoteEventSocketOpener;
   readonly #onServerIdentity: RemoteEventStreamOptions["onServerIdentity"];
   readonly #onPresence: RemoteEventStreamOptions["onPresence"];
@@ -140,12 +132,9 @@ export class RemoteEventStream {
   readonly #sockets = new Map<string, RemoteEventSocket>();
   readonly #reconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
   readonly #reconnectAttempts = new Map<string, number>();
-  readonly #transportAttempts = new Set<string>();
   readonly #authenticationPaused = new Set<string>();
   readonly #offlineHosts = new Map<string, number>();
   readonly #seenOnlineAt = new Map<string, number>();
-  readonly #transportConnectedAt = new Map<string, number>();
-  readonly #transportDrops = new Map<string, number>();
   readonly #startingHosts = new Set<string>();
   #appFocused = true;
   #enabled = false;
@@ -156,7 +145,6 @@ export class RemoteEventStream {
     this.#client = options.client;
     this.#connections = options.connections;
     this.#agents = options.agents;
-    this.#transport = options.transport;
     this.#openSocket = options.openSocket ?? openDirectEventSocket;
     this.#onServerIdentity = options.onServerIdentity;
     this.#onPresence = options.onPresence;
@@ -187,9 +175,6 @@ export class RemoteEventStream {
     this.#reconnectAttempts.clear();
     this.#offlineHosts.clear();
     this.#seenOnlineAt.clear();
-    this.#transportConnectedAt.clear();
-    this.#transportDrops.clear();
-    this.#transportAttempts.clear();
     this.#authenticationPaused.clear();
     yield* Scope.close(this.#scope, Exit.void);
   }).bind(this);
@@ -198,16 +183,6 @@ export class RemoteEventStream {
     this: RemoteEventStream,
   ) {
     for (const server of this.#servers.servers) {
-      if (server.transport === "webrtc-v2") {
-        const transport = this.#transport;
-        if (transport)
-          yield* Effect.forkIn(
-            transport.requestRuntimeSnapshot(server.id).pipe(Effect.catch(() => Effect.void)),
-            this.#scope,
-            { startImmediately: true },
-          );
-        continue;
-      }
       const socket = this.#sockets.get(server.id);
       if (socket?.readyState !== WebSocket.OPEN) {
         yield* this.ensure(server.id);
@@ -240,32 +215,9 @@ export class RemoteEventStream {
     this.syncScopes();
   }
 
-  transportConnected(serverId: string): void {
-    this.#cancelPendingReconnect(serverId);
-    const drops = this.#transportDrops.get(serverId);
-    if (drops) this.#reconnectAttempts.set(serverId, drops);
-    else this.#reconnectAttempts.delete(serverId);
-    this.#transportConnectedAt.set(serverId, Date.now());
-  }
-
-  transportDisconnected(serverId: string): boolean {
-    const connectedAt = this.#transportConnectedAt.get(serverId);
-    this.#transportConnectedAt.delete(serverId);
-    if (connectedAt === undefined) return !this.#transportDrops.has(serverId);
-    if (Date.now() - connectedAt >= REMOTE_EVENT_HEALTHY_MS) {
-      this.#transportDrops.delete(serverId);
-      this.#reconnectAttempts.delete(serverId);
-      return true;
-    }
-    const drops = (this.#transportDrops.get(serverId) ?? 0) + 1;
-    this.#transportDrops.set(serverId, drops);
-    return drops === 1;
-  }
-
   clearReconnectBackoff(serverId: string): void {
     this.#cancelPendingReconnect(serverId);
     this.#reconnectAttempts.delete(serverId);
-    this.#transportDrops.delete(serverId);
   }
 
   #cancelPendingReconnect(serverId: string): void {
@@ -319,8 +271,7 @@ export class RemoteEventStream {
     for (const server of this.#servers.servers) {
       if (this.#authenticationPaused.has(server.id)) continue;
       this.clearReconnectBackoff(server.id);
-      if (server.transport === "webrtc-v2") yield* this.ensure(server.id, true);
-      else yield* this.restart(server.id);
+      yield* this.restart(server.id);
     }
   }).bind(this);
 
@@ -370,44 +321,13 @@ export class RemoteEventStream {
     this.#reconnectAttempts.delete(serverId);
     this.#offlineHosts.delete(serverId);
     this.#seenOnlineAt.delete(serverId);
-    this.#transportConnectedAt.delete(serverId);
-    this.#transportDrops.delete(serverId);
     this.#startingHosts.delete(serverId);
     this.#authenticationPaused.delete(serverId);
     this.#sockets.delete(serverId);
   }
 
-  readonly ensure = Effect.fn("RemoteEventStream.ensure")(function* (
-    this: RemoteEventStream,
-    serverId: string,
-    checkLiveConnection = false,
-  ) {
+  readonly ensure = Effect.fn("RemoteEventStream.ensure")(function* (this: RemoteEventStream, serverId: string) {
     const server = this.#servers.find(serverId);
-    if (server?.transport === "webrtc-v2") {
-      if (
-        !this.#enabled ||
-        this.#reconnectTimers.has(serverId) ||
-        this.#authenticationPaused.has(serverId) ||
-        this.#transportAttempts.has(serverId)
-      )
-        return;
-      this.#transportAttempts.add(serverId);
-      const transport = this.#transport;
-      if (transport)
-        yield* Effect.forkIn(
-          (checkLiveConnection ? transport.retry(serverId) : transport.connect(serverId)).pipe(
-            Effect.catch(() => Effect.sync(() => this.scheduleReconnect(serverId))),
-            Effect.ensuring(
-              Effect.sync(() => {
-                this.#transportAttempts.delete(serverId);
-              }),
-            ),
-          ),
-          this.#scope,
-          { startImmediately: true },
-        );
-      return;
-    }
     if (
       !server ||
       !this.#enabled ||
@@ -466,7 +386,6 @@ export class RemoteEventStream {
   ): Effect.fn.Return<void, RemoteWorkflowError> {
     if (!this.#enabled || this.#controllers.has(serverId)) return;
     const server = yield* remoteDecode(() => this.#servers.require(serverId));
-    if (server.transport === "webrtc-v2") return;
     const controller = new AbortController();
     this.#controllers.set(serverId, controller);
     let opened = false;

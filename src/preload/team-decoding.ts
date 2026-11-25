@@ -202,7 +202,6 @@ function server(summary: DynamicRecord): ServerSummary {
     restartAvailable,
     keyChangedAt,
     thisComputer,
-    hidden,
     appearance,
     relayHost,
   } = summary;
@@ -218,7 +217,6 @@ function server(summary: DynamicRecord): ServerSummary {
     throw new Error("Invalid keyChangedAt.");
   }
   if (thisComputer !== undefined && thisComputer !== true) throw new Error("Invalid thisComputer.");
-  if (hidden !== undefined && !isBoolean(hidden)) throw new Error("Invalid hidden.");
   if (capabilitiesPending !== undefined && capabilitiesPending !== true) {
     throw new Error("Invalid capabilitiesPending.");
   }
@@ -245,7 +243,6 @@ function server(summary: DynamicRecord): ServerSummary {
     ...(restartAvailable === undefined ? {} : { restartAvailable }),
     ...(keyChangedAt === undefined ? {} : { keyChangedAt }),
     ...(thisComputer === undefined ? {} : { thisComputer }),
-    ...(hidden === undefined ? {} : { hidden }),
     ...(relayHost === undefined ? {} : { relayHost: serverRelayHost(relayHost) }),
   };
 }

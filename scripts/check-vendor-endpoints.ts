@@ -44,7 +44,6 @@ const VENDOR_URL_BUILDERS =
   "vendor link and contact builders that desktop, team client or phone code still imports; Stage 3 and Stage 4 remove those callers.";
 const RELEASE_SOURCE =
   "names the vendor GitHub repository or container image as the release source; the fork's own repository and image are a developer decision (update feeds).";
-const WEBRTC = "live smoke test of the vendor Signal service for WebRTC peers; deleted with the WebRTC code (step E2).";
 
 const ALLOWED_PATHS: readonly AllowedPath[] = [
   { path: "scripts/check-vendor-endpoints.ts", reason: "the vendor pattern of this check." },
@@ -77,7 +76,6 @@ const ALLOWED_PATHS: readonly AllowedPath[] = [
     path: "src/renderer/src/features/updates/whats-new/*.json",
     reason: "translations of released What's new notes; history text, not an address.",
   },
-  { path: "scripts/team-webrtc-live-smoke.mjs", reason: WEBRTC },
   { path: "package.json", reason: RELEASE_SOURCE },
   { path: "nix/package.nix", reason: RELEASE_SOURCE },
   { path: "docker/Dockerfile", reason: RELEASE_SOURCE },

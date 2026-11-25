@@ -71,7 +71,6 @@ function readinessInput(state: HostState): RestartReadinessInput {
     ],
     hostBlockers: state.browserView ? ["browser-view"] : [],
     activeBrowserControls: state.browserControls,
-    activeFileTransfers: false,
     updaterBusy: false,
     initializationPending: false,
   };

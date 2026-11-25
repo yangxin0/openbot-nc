@@ -2,7 +2,8 @@ import type { AgentModelId, AgentReasoningEffort } from "./ipc-agent-identity";
 import type { AgentProviderId } from "./ipc-agent-status";
 import { isBoundedString, isIdentifier, isNullableBoundedString } from "./ipc-bounded-values";
 import { isBoolean, isDynamicRecord, isOneOf } from "./runtime-values";
-import { TELEGRAM_ROUTE_CHATS_LIMIT } from "./signal-protocol/telegram-route";
+
+const TELEGRAM_ROUTE_CHATS_LIMIT = 64;
 
 export const MESSAGING_PLATFORMS = ["slack", "discord", "telegram", "whatsapp"] as const;
 export type MessagingPlatform = (typeof MESSAGING_PLATFORMS)[number];

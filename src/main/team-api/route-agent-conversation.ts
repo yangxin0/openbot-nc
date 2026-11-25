@@ -19,7 +19,7 @@ import {
   requireListedAgent,
   stringArray,
   stringField,
-  WEBRTC_FRAME_BODY_BUDGET,
+  TEAM_V2_FRAME_BODY_BUDGET,
 } from "./request-helpers";
 
 export interface AgentConversationRouteDependencies {
@@ -54,19 +54,19 @@ export async function routeAgentConversation(
     for (let limit = pageLimit(url); ; limit = Math.floor(limit / 2)) {
       const page = await runCauseEffect(agents.readConversationPageFor(agentId, member.id, anchor, limit, exclusions));
       const bytes = Buffer.byteLength(JSON.stringify(page));
-      if (bytes <= WEBRTC_FRAME_BODY_BUDGET) return json(200, page);
+      if (bytes <= TEAM_V2_FRAME_BODY_BUDGET) return json(200, page);
       if (limit === 1) {
         const references = Object.entries(page.references);
         const cut = messageTextCut(
           [...page.messages, ...references.map(([, message]) => message)],
-          bytes - WEBRTC_FRAME_BODY_BUDGET,
+          bytes - TEAM_V2_FRAME_BODY_BUDGET,
         );
         const fitted = {
           ...page,
           messages: page.messages.map(cut),
           references: Object.fromEntries(references.map(([id, message]) => [id, cut(message)])),
         };
-        if (Buffer.byteLength(JSON.stringify(fitted)) <= WEBRTC_FRAME_BODY_BUDGET) return json(200, fitted);
+        if (Buffer.byteLength(JSON.stringify(fitted)) <= TEAM_V2_FRAME_BODY_BUDGET) return json(200, fitted);
         throw new HttpError(413, sourceText("error.team.conversationPageTooLarge"));
       }
     }

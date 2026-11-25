@@ -179,12 +179,6 @@ const SETTING_LINKS: Record<SettingLinkId, SettingLinkEntry> = {
     about: "Open the workspace and tasks of the previous session at start.",
     words: "reopen session tabs",
   },
-  "app.fast-server-connection": {
-    title: "Fast connection to servers",
-    place: `${APP} > App behavior`,
-    about: "Keep the connections to joined servers open in the background.",
-    words: "remote server connection background",
-  },
   "app.keep-awake": {
     title: "Keep this computer awake",
     place: `${APP} > App behavior`,

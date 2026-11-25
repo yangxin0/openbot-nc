@@ -531,16 +531,14 @@ const uploadRemoteImports = Effect.fn("AttachmentIpc.uploadRemoteImports")(funct
       bytes: item.bytes,
     })),
   ];
-  return yield* uploadRemoteFiles(remoteServers, serverId, files, input.requestId);
+  return yield* uploadRemoteFiles(remoteServers, serverId, files);
 });
 
 function uploadRemoteFiles(
   remoteServers: AttachmentIpcDependencies["remoteServers"],
   serverId: string,
   files: { name: string; mimeType: string; bytes: Uint8Array }[],
-  requestId?: string,
 ) {
-  const progressId = files.length === 1 ? requestId : undefined;
   return remoteDecode(() => {
     if (files.some((file) => file.bytes.byteLength > ATTACHMENT_LIMITS.fileBytes)) {
       throw new Error(sourceText("error.attachment.fileTooLarge"));
@@ -550,11 +548,9 @@ function uploadRemoteFiles(
     }
   }).pipe(
     Effect.andThen(
-      Effect.forEach(
-        files,
-        (file) => remoteServers.uploadAttachment(file.name, file.mimeType, file.bytes, serverId, progressId),
-        { concurrency: "unbounded" },
-      ),
+      Effect.forEach(files, (file) => remoteServers.uploadAttachment(file.name, file.mimeType, file.bytes, serverId), {
+        concurrency: "unbounded",
+      }),
     ),
   );
 }

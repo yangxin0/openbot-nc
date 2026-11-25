@@ -269,7 +269,7 @@ Read the instruction file for each directory you change. Use the
 | [packages/contracts/AGENTS.md](packages/contracts/AGENTS.md) | Frozen Team API protocols and IPC mirrors |
 | [src/preload/AGENTS.md](src/preload/AGENTS.md) | Preload bridge and payload decoding |
 | [packages/ui/AGENTS.md](packages/ui/AGENTS.md) | Shared SolidJS controls and feature components |
-| [packages/team-client/AGENTS.md](packages/team-client/AGENTS.md) | Team WebRTC client and framing |
+| [packages/team-client/AGENTS.md](packages/team-client/AGENTS.md) | Team relay client and V2 framing |
 | [apps/mobile/AGENTS.md](apps/mobile/AGENTS.md) | Expo and build/simulator permissions |
 | [remote/api/AGENTS.md](remote/api/AGENTS.md) | Central relay server: TLS, CA files, server identity |
 

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createHash, generateKeyPairSync, randomBytes, randomUUID, sign } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import {
   mkdirSync,
   mkdtempSync,
@@ -18,13 +18,11 @@ import { join, relative, resolve } from "node:path";
 import {
   createTeamProtocolV2Request,
   decodeTeamProtocolSupportV9,
-  decodeTeamProtocolV2AuthFrame,
   decodeTeamProtocolV2RpcFrame,
   encodeTeamProtocolV2Frame,
   TEAM_APP_VERSION_HEADER,
   TEAM_PROTOCOL_VERSION_HEADER,
   type TeamProtocolV2Json,
-  teamProtocolV2AuthenticationTranscript,
 } from "@openbot/contracts/team-protocol";
 import {
   expandTeamCapabilitiesV10,
@@ -52,7 +50,6 @@ import { plugin } from "bun";
 import { Effect, Exit } from "effect";
 import { runCauseEffect } from "../src/backend/effect-boundary";
 import { OpenBotDatabase } from "../src/backend/openbot-database";
-import type { TeamWebRtcChannel } from "../src/main/team-webrtc-bridge";
 
 const OUT = resolve(import.meta.dirname, "../.openbot-build/server-safe-mode-e2e");
 const HOST_VERSION = "0.0.0-e2e";
@@ -94,8 +91,8 @@ const { TEAM_STORE_FILE, TeamStore } = await import("../src/main/team-store");
 const { handleServerSafeModeRequest, refuseServerSafeModeUpgrade } = await import(
   "../src/main/team-api/server-safe-mode-api"
 );
-const { TeamWebRtcBridge } = await import("../src/main/team-webrtc-bridge");
-const { TeamWebRtcHostPeer } = await import("../src/main/team-webrtc-host-peer");
+const { TeamV2HostPeer } = await import("../src/main/team-v2-host-peer");
+const { TeamV2Loopback } = await import("./team-v2-loopback");
 const { RemoteWorkflowError } = await import("../src/main/remote-service-effects");
 const { RemoteServerClient } = await import("../src/main/remote-server-client");
 const { RemoteProtocolError } = await import("../src/main/remote-server-errors");
@@ -196,48 +193,6 @@ function snapshot(directory: string): Record<string, { size: number; mtimeMs: nu
   };
   walk(directory);
   return files;
-}
-
-class LoopbackBridge extends TeamWebRtcBridge {
-  readonly sent: { peerId: string; channel: TeamWebRtcChannel; data: string }[] = [];
-  readonly #waiters = new Set<() => void>();
-
-  override readonly send = (peerId: string, channel: TeamWebRtcChannel, data: string | ArrayBuffer) =>
-    Effect.sync(() => {
-      if (typeof data === "string") this.sent.push({ peerId, channel, data });
-      for (const wake of this.#waiters) wake();
-    });
-
-  override readonly disconnectPeer = (peerId: string) =>
-    Effect.sync(() => {
-      queueMicrotask(() => this.emit("disconnected", peerId));
-      for (const wake of this.#waiters) wake();
-    });
-
-  rpcFrom<T>(from: number, pick: (data: string) => T | null): Promise<T> {
-    return new Promise((resolveValue) => {
-      const check = () => {
-        for (const frame of this.sent.slice(from)) {
-          if (frame.channel !== "rpc") continue;
-          const value = pick(frame.data);
-          if (value === null) continue;
-          this.#waiters.delete(check);
-          resolveValue(value);
-          return;
-        }
-      };
-      this.#waiters.add(check);
-      check();
-    });
-  }
-}
-
-function authFrame(data: string) {
-  try {
-    return decodeTeamProtocolV2AuthFrame(data);
-  } catch {
-    return null;
-  }
 }
 
 function rpcResponse(requestId: string) {
@@ -383,7 +338,7 @@ const userData = join(root, "user-data");
 const reason: ServerSafeModeReason = { reason: "newer_database", appVersion: HOST_VERSION, haltedAt: Date.now() };
 report.reason = reason;
 let safeServer: Server | null = null;
-const peers: InstanceType<typeof TeamWebRtcHostPeer>[] = [];
+const peers: InstanceType<typeof TeamV2HostPeer>[] = [];
 
 try {
   mkdirSync(userData, { recursive: true });
@@ -549,7 +504,6 @@ try {
         clearStaleIssue: () => {},
         reportError: () => {},
       },
-      transport: null,
     });
     const exit = await Effect.runPromiseExit(
       desktop.ensureCompatibility(
@@ -580,91 +534,24 @@ try {
     return { code: cause.code, message: cause.message, state: outcome.state };
   });
 
-  const clientKeys = generateKeyPairSync("ed25519", {
-    publicKeyEncoding: { type: "spki", format: "pem" },
-    privateKeyEncoding: { type: "pkcs8", format: "pem" },
-  });
-  const fingerprints = { localFingerprint: "host-fingerprint", remoteFingerprint: "client-fingerprint" };
-
-  async function connectWebRtc(peerId: string, role: "owner" | "admin" | "member") {
-    const bridge = new LoopbackBridge();
-    const ticket = `ticket-${randomUUID()}`;
-    const sessionId = randomUUID();
-    const sessionExpiresAt = Math.floor(Date.now() / 1_000) + 3_600;
+  async function connectV2(peerId: string, role: "owner" | "admin" | "member") {
+    const bridge = new TeamV2Loopback();
     const membershipId = members[role].id;
-    const claims = {
-      sessionId,
-      hostId: identity.serverId,
-      userId: `account-${membershipId}`,
-      membershipId,
-      authEpoch: 1,
-      sessionExpiresAt,
-      role,
-      clientPublicKey: clientKeys.publicKey,
-    };
-    const peer = new TeamWebRtcHostPeer(
-      {
-        store,
-        appVersion: HOST_VERSION,
-        transferDirectory: join(root, "transfers"),
-        pathChanged: () => {},
-        verifyClientTicket: (presented) =>
-          presented === ticket
-            ? Effect.succeed(claims)
-            : Effect.fail(new RemoteWorkflowError({ cause: new Error("Unknown ticket.") })),
-      },
-      { peerId, hostId: identity.serverId, localApiPort: port, transport: bridge },
+    const peer = new TeamV2HostPeer(
+      { store, appVersion: HOST_VERSION, transferDirectory: join(root, "transfers") },
+      { peerId, localApiPort: port, transport: bridge },
     );
     peers.push(peer);
-    await Effect.runPromise(
-      peer.incoming({
-        hostId: identity.serverId,
-        connectionId: randomUUID(),
-        sessionId,
-        userId: claims.userId,
-        membershipId,
-        role,
-        sessionExpiresAt,
-      }),
-    );
-    bridge.emit("connected", peerId, fingerprints);
-    const clientNonce = randomBytes(32).toString("base64url");
-    const transcript = teamProtocolV2AuthenticationTranscript({
-      hostId: identity.serverId,
+    const sessionId = randomUUID();
+    const expiresAt = Date.now() + 3_600_000;
+    const { sessionToken } = store.openRemoteSession({
       sessionId,
-      ticket,
-      clientPublicKey: clientKeys.publicKey,
-      clientNonce,
-      clientFingerprint: fingerprints.remoteFingerprint,
-      hostFingerprint: fingerprints.localFingerprint,
+      membershipId,
+      userId: `account-${membershipId}`,
+      role,
+      expiresAt,
     });
-    bridge.emit(
-      "data",
-      peerId,
-      "rpc",
-      encodeTeamProtocolV2Frame({
-        version: 2,
-        type: "auth-init",
-        ticket,
-        clientPublicKey: clientKeys.publicKey,
-        clientNonce,
-        signature: sign(null, Buffer.from(transcript), clientKeys.privateKey).toString("base64url"),
-      }),
-    );
-    const ready = await bridge.rpcFrom(0, (data) => {
-      const frame = authFrame(data);
-      return frame?.type === "auth-ready" ? frame : null;
-    });
-    bridge.emit(
-      "data",
-      peerId,
-      "rpc",
-      encodeTeamProtocolV2Frame({ version: 2, type: "auth-complete", clientNonce, hostNonce: ready.hostNonce }),
-    );
-    await bridge.rpcFrom(0, (data) => {
-      const frame = authFrame(data);
-      return frame?.type === "auth-confirmed" ? frame : null;
-    });
+    await Effect.runPromise(peer.adoptSession({ sessionId, sessionToken, membershipId, expiresAt }));
 
     async function call(path: string, keys: { capabilities: string[]; absent?: string[] }, input?: TeamProtocolV2Json) {
       const requestId = randomUUID();
@@ -690,8 +577,8 @@ try {
 
   const v10Lists = () => teamCapabilityLists(TEAM_PROTOCOL_V10, teamCapabilitiesForProtocol(TEAM_PROTOCOL_V10));
 
-  const web = await connectWebRtc("peer-web", "member");
-  await step("WebRTC web and mobile client: protocol 10 and server-safe-mode-v1", async () => {
+  const web = await connectV2("peer-web", "member");
+  await step("V2 web and mobile client: protocol 10 and server-safe-mode-v1", async () => {
     let known: number | undefined;
     let reads = 0;
     const { support, negotiated } = await readTeamHostCompatibility(async () => {
@@ -712,10 +599,10 @@ try {
     return { protocol: negotiated.protocol, reads, capabilities: support.capabilities };
   });
 
-  await step("WebRTC protocol 10: owner, admin and member peers read the reason", async () => {
+  await step("V2 protocol 10: owner, admin and member peers read the reason", async () => {
     const roles: string[] = [];
     for (const role of ["owner", "admin", "member"] as const) {
-      const peer = role === "member" ? web : await connectWebRtc(`peer-${role}`, role);
+      const peer = role === "member" ? web : await connectV2(`peer-${role}`, role);
       const frame = await peer.call(SERVER_SAFE_MODE_ROUTES.reason, v10Lists(), role === "member" ? {} : undefined);
       assert.ok("result" in frame, `${role}: ${JSON.stringify(frame)}`);
       const result = record(frame.result, "result");
@@ -729,15 +616,15 @@ try {
     return roles;
   });
 
-  await step("WebRTC protocol 10: another route gets server_safe_mode", async () => {
+  await step("V2 protocol 10: another route gets server_safe_mode", async () => {
     const frame = await web.call("/v1/agents", v10Lists());
     assert.ok("error" in frame, `The route answered: ${JSON.stringify(frame)}.`);
     assert.equal(frame.error.code, "server_safe_mode");
     return { status: frame.error.status, code: frame.error.code };
   });
 
-  const old = await connectWebRtc("peer-protocol-9", "member");
-  await step("WebRTC protocol 9 peer (an older phone app): reads that it must update", async () => {
+  const old = await connectV2("peer-protocol-9", "member");
+  await step("V2 protocol 9 peer (an older phone app): reads that it must update", async () => {
     const compatibility = await old.call("/v1/compatibility", {
       capabilities: [...teamCapabilitiesForProtocol(TEAM_PROTOCOL_V9)],
     });

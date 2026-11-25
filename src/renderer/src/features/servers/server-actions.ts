@@ -16,15 +16,8 @@ import { useServers } from "./servers-context";
 export function useServerActions() {
   const platform = usePlatform();
   const { t, errorMessage } = useText();
-  const {
-    servers,
-    setServerMuted,
-    setCreateLocalServerOpen,
-    localServerHidden,
-    setLocalServerHidden,
-    setServerHidden,
-    reorderServers,
-  } = useServers();
+  const { servers, setServerMuted, setCreateLocalServerOpen, localServerHidden, setLocalServerHidden, reorderServers } =
+    useServers();
   const { selectServer } = useServerSelection();
   const { openServerSettings, requestLeaveServer, requestRestartServer } = useServerSettings();
   const { openAppSettings, openNotificationLevels } = useSettings();
@@ -35,7 +28,6 @@ export function useServerActions() {
   }
 
   function isHidden(server: ServerSummary): boolean {
-    if (server.hidden === true) return true;
     return server.kind === "local" && localServerHidden() && remoteServers().length > 0;
   }
 
@@ -84,24 +76,9 @@ export function useServerActions() {
 
   const createLocal = platform.landingPreview ? undefined : () => setCreateLocalServerOpen(true);
 
-  function hideFailed(server: ServerSummary, hidden: boolean, error: unknown): void {
-    actionToast.error(t(hidden ? "server.rail.hideFailed" : "server.rail.showFailed", { name: server.name }), {
-      error,
-      report: { operation: "team", source: "action", cause_code: classifyFailure(error) },
-    });
-  }
-
-  async function changeAccountHidden(server: ServerSummary, hidden: boolean): Promise<void> {
-    try {
-      await setServerHidden(server.id, hidden);
-    } catch (error) {
-      hideFailed(server, hidden, error);
-    }
-  }
-
   function canHide(serverId: string): boolean {
     const server = servers().find((candidate) => candidate.id === serverId);
-    if (!server || isHidden(server) || (server.hidden === undefined && server.kind !== "local")) return false;
+    if (!server || isHidden(server) || server.kind !== "local") return false;
     return allServers().some((candidate) => candidate.id !== serverId && !isHidden(candidate));
   }
 
@@ -119,13 +96,11 @@ export function useServerActions() {
         return;
       }
     }
-    if (server.hidden === undefined) setLocalServerHidden(true);
-    else await changeAccountHidden(server, true);
+    setLocalServerHidden(true);
   }
 
   function show(server: ServerSummary): void {
     if (server.kind === "local") setLocalServerHidden(false);
-    if (server.hidden === true) void changeAccountHidden(server, false);
   }
 
   function hiddenServers(): HiddenServer[] {

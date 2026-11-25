@@ -12,12 +12,12 @@ import {
   type RelayV2TunnelMarker,
   RelayV2TunnelRecordDecoder,
 } from "@openbot/contracts/relay-protocol/v2-tunnel";
-import { encodeTeamWebRtcPayload, TeamWebRtcPayloadDecoder } from "@openbot/team-client/webrtc-framing";
+import { encodeTeamV2Payload, TeamV2PayloadDecoder } from "@openbot/team-client/v2-framing";
 import { Effect, Fiber, Result } from "effect";
 import { RemoteWorkflowError } from "./remote-service-effects";
 import { type TeamStore, TeamStoreError } from "./team-store";
 import type { TeamV2Channel, TeamV2ChannelTransport, TeamV2ChannelTransportEvents } from "./team-v2-channel-transport";
-import { TeamWebRtcHostPeer } from "./team-webrtc-host-peer";
+import { TeamV2HostPeer } from "./team-v2-host-peer";
 
 const CONNECTIONS_PER_PEER = 8;
 const CONNECTIONS_LIMIT = 64;
@@ -42,7 +42,7 @@ interface RelayV2Tunnel {
   stream: Duplex;
   rest: Uint8Array;
   records: RelayV2TunnelRecordDecoder;
-  payloads: TeamWebRtcPayloadDecoder;
+  payloads: TeamV2PayloadDecoder;
 }
 
 interface RelayV2Session {
@@ -57,7 +57,7 @@ class RelayV2Connection extends EventEmitter<TeamV2ChannelTransportEvents> imple
   readonly peerId: string;
   state: RelayV2ConnectionState = "gathering";
   timer: ReturnType<typeof setTimeout> | null = null;
-  hostPeer: TeamWebRtcHostPeer | null = null;
+  hostPeer: TeamV2HostPeer | null = null;
   session: RelayV2Session | null = null;
 
   constructor(
@@ -77,7 +77,7 @@ class RelayV2Connection extends EventEmitter<TeamV2ChannelTransportEvents> imple
         return Effect.fail(new RemoteWorkflowError({ cause: new Error("The relay tunnel is not open.") }));
       }
       return Effect.try({
-        try: () => encodeTeamWebRtcPayload(data, Number.POSITIVE_INFINITY).map(encodeRelayV2TunnelRecord),
+        try: () => encodeTeamV2Payload(data, Number.POSITIVE_INFINITY).map(encodeRelayV2TunnelRecord),
         catch: (cause) => new RemoteWorkflowError({ cause }),
       }).pipe(Effect.flatMap((records) => writeRecords(tunnel.stream, records)));
     });
@@ -141,7 +141,7 @@ export class RelayV2TunnelHost {
       stream,
       rest,
       records: new RelayV2TunnelRecordDecoder(),
-      payloads: new TeamWebRtcPayloadDecoder(),
+      payloads: new TeamV2PayloadDecoder(),
     });
     stream.once("close", () => this.#close(connection, null));
     if (connection.tunnels.size === RELAY_V2_TUNNEL_CHANNELS.length) {
@@ -213,11 +213,10 @@ export class RelayV2TunnelHost {
     }
     connection.session = { id: sessionId, token: sessionToken };
     server.bindRelaySession(sessionId, connection.peer);
-    const hostPeer = new TeamWebRtcHostPeer(
+    const hostPeer = new TeamV2HostPeer(
       { store, appVersion: this.#options.appVersion, transferDirectory: this.#options.transferDirectory },
       {
         peerId: connection.peerId,
-        hostId: store.getIdentity()?.serverId ?? connection.peerId,
         localApiPort: port,
         transport: connection,
       },
@@ -258,7 +257,7 @@ export class RelayV2TunnelHost {
 
   readonly #release = Effect.fn("RelayV2TunnelHost.release")(function* (
     this: RelayV2TunnelHost,
-    hostPeer: TeamWebRtcHostPeer | null,
+    hostPeer: TeamV2HostPeer | null,
     session: RelayV2Session | null,
   ) {
     if (hostPeer) yield* hostPeer.dispose();

@@ -28,9 +28,6 @@ import { aboveAppsScreenSupport } from "../linux-wayland-output";
 import type { LogoColorService } from "../logo-color-service";
 import { MAC_PERMISSION_URLS } from "../mac-permission-urls";
 import { exportDiagnostics, exportOpenBotData } from "../maintenance-service";
-import { isTailscaleConnected } from "../private-network-detection";
-import type { RemoteNetworkRoutePreferenceStore } from "../remote-network-route-preference-store";
-import type { RemoteSessionReusePreferenceStore } from "../remote-session-reuse-preference-store";
 import { readSetupState, writeSetupState } from "../setup-store";
 import { systemHourCycle } from "../system-hour-cycle";
 import type { UpdateService } from "../update-service";
@@ -43,8 +40,6 @@ import {
   parseChatWindowTarget,
   parseExternalDestination,
   parseExternalLinkPreference,
-  parseRemoteNetworkRoutePreference,
-  parseRemoteSessionReusePreference,
   parseRendererTimingReport,
   parseSetup,
 } from "./app-inputs";
@@ -76,9 +71,6 @@ export interface AppIpcDependencies {
   busyMessageMode: BusyMessageModePreferenceStore;
   agentDefaults: AgentDefaultsPreferenceStore;
   agentMemoryLimit: AgentMemoryLimitSetting;
-  remoteSessionReuse: RemoteSessionReusePreferenceStore;
-  remoteNetworkRoute: RemoteNetworkRoutePreferenceStore;
-  applyRemoteNetworkRoute: () => Promise<void>;
   externalLinkPreference: ExternalLinkPreferenceStore;
   externalLinks: ExternalLinkOpener;
   openLink: (url: string) => Promise<void>;
@@ -109,9 +101,6 @@ export function appIpcHandlers({
   busyMessageMode,
   agentDefaults,
   agentMemoryLimit,
-  remoteSessionReuse,
-  remoteNetworkRoute,
-  applyRemoteNetworkRoute,
   externalLinkPreference,
   externalLinks,
   openLink,
@@ -162,23 +151,6 @@ export function appIpcHandlers({
       getBusyMessageModePreference: handler(() => busyMessageMode.get()),
       getAgentDefaults: handler(() => agentDefaults.get()),
       getAgentMemoryLimitPreference: handler(() => agentMemoryLimit.get()),
-      getRemoteSessionReusePreference: handler(() => remoteSessionReuse.get()),
-      setRemoteSessionReusePreference: payloadHandler(parseRemoteSessionReusePreference, (parsed) =>
-        runCauseEffect(remoteSessionReuse.set(parsed)),
-      ),
-      getRemoteNetworkRoute: handler(() => ({
-        ...remoteNetworkRoute.get(),
-        tailscaleConnected: isTailscaleConnected(),
-      })),
-      setRemoteNetworkRoute: payloadHandler(parseRemoteNetworkRoutePreference, async (parsed) => {
-        const previous = remoteNetworkRoute.get();
-        const saved = await runCauseEffect(remoteNetworkRoute.set(parsed));
-        await applyRemoteNetworkRoute().catch(async (error: unknown) => {
-          await runCauseEffect(remoteNetworkRoute.set(previous));
-          throw error;
-        });
-        return { ...saved, tailscaleConnected: isTailscaleConnected() };
-      }),
       getAppBehaviorPreference: handler(() => runCauseEffect(appBehavior.get())),
       setAppBehaviorPreference: payloadHandler(parseAppBehaviorPreferenceChange, (parsed) =>
         runCauseEffect(appBehavior.set(parsed)),

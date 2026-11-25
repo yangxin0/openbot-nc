@@ -14,7 +14,6 @@ interface BrowserProfilesState {
   sharedAgentIds: string[] | undefined;
   proxies: BrowserProxySummary[] | undefined;
   computers: BrowserProxyComputer[] | undefined;
-  sharing: boolean | undefined;
 }
 
 export function createBrowserProfilesStore(calls: () => BrowserProfileCalls) {
@@ -23,7 +22,6 @@ export function createBrowserProfilesStore(calls: () => BrowserProfileCalls) {
     sharedAgentIds: undefined,
     proxies: undefined,
     computers: undefined,
-    sharing: undefined,
   });
   let request = 0;
   let listed: BrowserProfileCalls | undefined;
@@ -38,13 +36,11 @@ export function createBrowserProfilesStore(calls: () => BrowserProfileCalls) {
         draft.sharedAgentIds = undefined;
         draft.proxies = undefined;
         draft.computers = undefined;
-        draft.sharing = undefined;
       });
     }
-    const [list, proxies, sharing] = await Promise.all([
+    const [list, proxies] = await Promise.all([
       target.list(),
       target.proxies?.list().catch(() => null) ?? Promise.resolve(null),
-      target.proxies?.computerSharing?.read().catch(() => null) ?? Promise.resolve(null),
     ]);
     if (current === request)
       setState((draft) => {
@@ -52,7 +48,6 @@ export function createBrowserProfilesStore(calls: () => BrowserProfileCalls) {
         draft.sharedAgentIds = list.sharedAgentIds;
         draft.proxies = proxies?.proxies;
         draft.computers = proxies?.computers;
-        draft.sharing = sharing?.sharing;
       });
   }
 
@@ -109,17 +104,6 @@ export function createBrowserProfilesStore(calls: () => BrowserProfileCalls) {
     },
     removeProxy: (proxyId: string, profileIds: readonly string[]) =>
       change(() => proxyCalls().remove({ proxyId, profileIds: [...profileIds] })),
-    setSharing: async (sharing: boolean, assignTo?: string): Promise<void> => {
-      const proxies = proxyCalls();
-      if (!proxies.computerSharing) throw new Error(currentText().t("browser.proxies.unsupported"));
-      await proxies.computerSharing.set(sharing);
-      if (assignTo !== undefined) {
-        const list = await proxies.list();
-        const mine = list?.computers.find((computer) => computer.mine);
-        if (mine) await proxies.setProfileProxy({ profileId: assignTo, proxyId: mine.id });
-      }
-      await refreshAfterChange();
-    },
     setProfileProxy: (profileId: string, proxyId: string | null) =>
       change(() => proxyCalls().setProfileProxy({ profileId, proxyId })),
     assign: (agentId: string, profile: AgentBrowserProfile): Promise<AgentBrowserProfile> =>

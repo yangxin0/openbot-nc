@@ -3,7 +3,6 @@ import type { messages as source } from "../../en/status/host";
 
 export const messages = {
   "status.host.identityUpdated": "Identità del server aggiornata.",
-  "status.host.ready": "Questo OpenBot è pronto per le connessioni WebRTC.",
   "status.host.signalLost": "Gli altri dispositivi non possono raggiungere questo OpenBot ora. Si ricollega.",
   "status.host.stopping": "Questo OpenBot sta diventando privato…",
   "status.host.private": "Questo OpenBot è privato.",

@@ -6,7 +6,6 @@ import type {
   ReadDirectConversationPageInput,
   ReorderServersInput,
   SendDirectMessageInput,
-  SetServerHiddenInput,
   SetServerMutedInput,
   SetServerNotificationLevelInput,
   SetTeamTypingInput,
@@ -165,11 +164,6 @@ export function parseSetServerMuted(value: unknown): SetServerMutedInput {
     throw new Error("Invalid server mute duration.");
   }
   return { serverId, muted: true, durationMs: value.durationMs };
-}
-
-export function parseSetServerHidden(value: unknown): SetServerHiddenInput {
-  if (!isObject(value) || !isBoolean(value.hidden)) throw new Error("Invalid server hidden setting.");
-  return { serverId: requireString(value.serverId, "serverId", INPUT_LIMITS.identifier), hidden: value.hidden };
 }
 
 export function parseSetServerNotificationLevel(value: unknown): SetServerNotificationLevelInput {

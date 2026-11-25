@@ -5,11 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./ed25519": "./src/ed25519.ts",
     "./feedback-approval": "./src/feedback-approval.ts",
     "./host-key-handover": "./src/host-key-handover.ts",
     "./remote-directory": "./src/remote-directory.ts",
-    "./ice-diagnostics": "./src/ice-diagnostics.ts",
     "./remote-peer": "./src/remote-peer.ts",
     "./remote-recovery": "./src/remote-recovery.ts",
     "./relay-certificates": "./src/relay-certificates.ts",
@@ -31,7 +29,7 @@
     "./runtime-attention": "./src/runtime-attention.ts",
     "./agent-notifications": "./src/agent-notifications.ts",
     "./channel-notifications": "./src/channel-notifications.ts",
-    "./webrtc-framing": "./src/webrtc-framing.ts",
+    "./v2-framing": "./src/v2-framing.ts",
     "./workspace-preferences": "./src/workspace-preferences.ts",
     "./browser-view": "./src/browser-view.ts",
     "./team-api-requests": "./src/team-api-requests.ts",
@@ -60,7 +58,6 @@
   },
   "dependencies": {
     "@noble/curves": "catalog:",
-    "@noble/ed25519": "3.2.0",
     "@noble/hashes": "catalog:",
     "@openbot/contracts": "workspace:*",
     "@openbot/i18n": "workspace:*",

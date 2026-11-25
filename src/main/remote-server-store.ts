@@ -335,29 +335,6 @@ export class RemoteServerStore implements RemoteServerDirectory {
     });
   });
 
-  sharesBrowserEgress(serverId: string): boolean {
-    return this.#state.browserEgressServerIds.includes(serverId);
-  }
-
-  readonly setBrowserEgress = Effect.fn("RemoteStore.setBrowserEgress")(function* (
-    this: RemoteServerStore,
-    serverId: string,
-    sharing: boolean,
-  ): Effect.fn.Return<void, RemoteWorkflowError> {
-    yield* this.#writes.withPermit(
-      Effect.uninterruptible(
-        Effect.gen({ self: this }, function* () {
-          if (!this.has(serverId))
-            return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.serverNotFound")) });
-          const browserEgressServerIds = this.#state.browserEgressServerIds.filter((id) => id !== serverId);
-          if (sharing) browserEgressServerIds.push(serverId);
-          yield* this.#writeSnapshot({ ...structuredClone(this.#state), browserEgressServerIds });
-          this.#state.browserEgressServerIds = browserEgressServerIds;
-        }),
-      ),
-    );
-  });
-
   readonly #writeNotificationsEffect = Effect.fn("RemoteStore.writeNotifications")(function* (
     this: RemoteServerStore,
     serverId: string,

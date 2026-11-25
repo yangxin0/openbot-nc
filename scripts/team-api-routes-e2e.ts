@@ -588,7 +588,6 @@ import { createCustomProviderChanges } from "../src/main/custom-provider-changes
 import { CustomProviderStore } from "../src/main/custom-provider-store";
 import { githubSkillSource } from "../src/main/github-skill-source";
 import type { HostEventsApi } from "../src/main/host-events-api";
-import { HostSignalHomeService, SIGNAL_HOME_PREFERENCE_FILE } from "../src/main/host-signal-home";
 import { HostTurnLimitsPreferenceStore } from "../src/main/host-turn-limits-preference-store";
 import { HostVoiceModelService, type VoiceModels } from "../src/main/host-voice-model";
 import {
@@ -627,7 +626,7 @@ import type {
   TeamApiVoiceTranscription,
 } from "../src/main/team-api/dependencies";
 import { isPeerHiddenProvider } from "../src/main/team-api/provider-visibility";
-import { WEBRTC_FRAME_BODY_BUDGET } from "../src/main/team-api/request-helpers";
+import { TEAM_V2_FRAME_BODY_BUDGET } from "../src/main/team-api/request-helpers";
 import { TeamApiServer } from "../src/main/team-api-server";
 import { TeamStore } from "../src/main/team-store";
 import { VaultService } from "../src/main/vault-service";
@@ -734,28 +733,6 @@ class FakeVoiceModels extends EventEmitter<{ modelStatus: [VoiceModelStatus] }> 
   }
 }
 const fakeVoiceModels = new FakeVoiceModels();
-const signalHomePreferencePath = join(root, SIGNAL_HOME_PREFERENCE_FILE);
-let signalHomeInUse: string | null = "a";
-const hostSignalHome = new HostSignalHomeService({
-  path: signalHomePreferencePath,
-  fetch: async (url) => {
-    record("signalHealth", url);
-    if (url.startsWith("https://signal-down.test/")) throw new TypeError("fetch failed");
-    return new Response("{}", { status: 200 });
-  },
-  listHomes: () =>
-    Effect.succeed([
-      { id: "a", url: "wss://signal-a.test/v1/signal" },
-      { id: "au", url: "wss://signal-au.test/v1/signal" },
-      { id: "sg", url: "wss://signal-down.test/v1/signal" },
-    ]),
-  currentHome: () => signalHomeInUse,
-  followHome: () =>
-    Effect.sync(() => {
-      record("followSignalHome");
-      signalHomeInUse = hostSignalHome.preferred() ?? "a";
-    }),
-});
 const transferUploads = join(root, "user-data", "instance-transfer-uploads");
 const checks: Check[] = [];
 const calls: RecordedCall[] = [];
@@ -2794,7 +2771,6 @@ try {
       },
       turnLimits: hostTurnLimits,
       voiceModel: new HostVoiceModelService(fakeVoiceModels),
-      signalHome: hostSignalHome,
       localServers: {
         list: () => Effect.sync(() => ({ servers: [...localServerList], limit: 5 })),
         create: (name) =>
@@ -4308,81 +4284,19 @@ try {
 
   {
     const v10 = { capabilities: [HOST_SIGNAL_HOME_CAPABILITY], protocol: TEAM_PROTOCOL_V10 };
-    const route = HOST_SIGNAL_HOME_ROUTES;
-    const latencyOf = (body: Json, id: string) =>
-      field(
-        list(field(body, "homes")).find((home) => field(home, "id") === id),
-        "latencyMs",
-      );
     const compatibility = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: TEAM_PROTOCOL_V10 });
-    const unsupported = await call("POST", route.settings, {
+    const read = await call("POST", HOST_SIGNAL_HOME_ROUTES.settings, { token: adaToken, json: {}, ...v10 });
+    const change = await call("POST", HOST_SIGNAL_HOME_ROUTES.update, {
       token: adaToken,
-      json: {},
-      capabilities: [],
-      protocol: TEAM_PROTOCOL_V10,
+      json: { home: null },
+      ...v10,
     });
-    const memberRead = await call("POST", route.settings, { token: bobToken, json: {}, ...v10 });
-    const memberChange = await call("POST", route.update, { token: bobToken, json: { home: "au" }, ...v10 });
     check(
-      "the host advertises host-signal-home-v1; a member reads the Signal servers but cannot choose one, and a client without the capability gets 400",
-      JSON.stringify(compatibility.body).includes(HOST_SIGNAL_HOME_CAPABILITY) &&
-        errorIs(unsupported, 400, sourceText("error.team.hostSignalHomeUnsupported")) &&
-        memberRead.status === 200 &&
-        list(field(memberRead.body, "homes")).length === 3 &&
-        errorIs(memberChange, 403, sourceText("error.team.adminRequired")) &&
-        callsOf("followSignalHome").length === 0,
-      [summary(unsupported), summary(memberRead), summary(memberChange)],
-    );
-    const adminRead = await call("POST", route.settings, { token: adaToken, json: {}, ...v10 });
-    check(
-      "an admin reads each Signal server with the latency that the host measures once a minute, and no latency for a server that does not answer",
-      adminRead.status === 200 &&
-        field(adminRead.body, "preferred") === null &&
-        field(adminRead.body, "current") === "a" &&
-        typeof latencyOf(adminRead.body, "a") === "number" &&
-        typeof latencyOf(adminRead.body, "au") === "number" &&
-        latencyOf(adminRead.body, "sg") === null &&
-        callsOf("signalHealth").filter(([url]) => url === "https://signal-a.test/health/ready").length === 4,
-      summary(adminRead),
-    );
-    const unknown = await call("POST", route.update, { token: adaToken, json: { home: "eu" }, ...v10 });
-    const invalid = await call("POST", route.update, { token: adaToken, json: { home: "Not a home" }, ...v10 });
-    check(
-      "the host refuses a Signal server that the account service does not list, and saves nothing",
-      errorIs(unknown, 400, sourceText("error.host.signalHomeUnknown")) &&
-        invalid.status === 400 &&
-        !existsSync(signalHomePreferencePath) &&
-        callsOf("followSignalHome").length === 0,
-      [summary(unknown), summary(invalid)],
-    );
-    const chosen = await call("POST", route.update, { token: adaToken, json: { home: "au" }, ...v10 });
-    check(
-      "an admin chooses a Signal server; the host saves it, moves to it, and answers with the new server in use",
-      chosen.status === 200 &&
-        field(chosen.body, "preferred") === "au" &&
-        field(chosen.body, "current") === "au" &&
-        hostSignalHome.preferred() === "au" &&
-        JSON.parse(readFileSync(signalHomePreferencePath, "utf8")).home === "au" &&
-        callsOf("followSignalHome").length === 1,
-      summary(chosen),
-    );
-    const reloaded = new HostSignalHomeService({
-      path: signalHomePreferencePath,
-      fetch: async () => new Response("{}", { status: 200 }),
-      listHomes: () => Effect.succeed([]),
-      currentHome: () => null,
-      followHome: () => Effect.void,
-    });
-    await Effect.runPromise(reloaded.load());
-    const automatic = await call("POST", route.update, { token: adaToken, json: { home: null }, ...v10 });
-    check(
-      "the choice stays after a restart, and an admin returns the server to the automatic Signal server",
-      reloaded.preferred() === "au" &&
-        automatic.status === 200 &&
-        field(automatic.body, "preferred") === null &&
-        field(automatic.body, "current") === "a" &&
-        callsOf("followSignalHome").length === 2,
-      summary(automatic),
+      "the host does not advertise host-signal-home-v1, and the Signal server routes are not served",
+      !JSON.stringify(compatibility.body).includes(HOST_SIGNAL_HOME_CAPABILITY) &&
+        read.status === 404 &&
+        change.status === 404,
+      [summary(read), summary(change)],
     );
   }
 
@@ -12497,7 +12411,7 @@ try {
         isDeepStrictEqual(field(large.body, "omitted"), ["agent-ada"]) &&
         !ids(large).includes("agent-ada") &&
         ids(large).length === visibleIds.length - 1 &&
-        Buffer.byteLength(large.text) <= WEBRTC_FRAME_BODY_BUDGET,
+        Buffer.byteLength(large.text) <= TEAM_V2_FRAME_BODY_BUDGET,
       { status: large.status, bytes: large.text.length, omitted: field(large.body, "omitted"), queues: ids(large) },
     );
     activeQueueDeliveries = AGENT_ACTIVE_QUEUE_DELIVERY_LIMIT + 1;
@@ -14095,7 +14009,7 @@ try {
     check(
       "a thread queue larger than one WebRTC frame answers with its first messages, in order, inside the frame",
       long.status === 200 &&
-        Buffer.byteLength(long.text) <= WEBRTC_FRAME_BODY_BUDGET &&
+        Buffer.byteLength(long.text) <= TEAM_V2_FRAME_BODY_BUDGET &&
         Array.isArray(longDeliveries) &&
         longDeliveries.length > 0 &&
         longDeliveries.length < 20 &&

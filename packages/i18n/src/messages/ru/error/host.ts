@@ -2,7 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.webRtcNotConfigured": "Служба хоста WebRTC не настроена.",
   "error.host.nameBeforePublish": "Дайте этому OpenBot имя, прежде чем публиковать его.",
   "error.host.publishBeforeInvite": "Сделайте этот OpenBot публичным, прежде чем создавать приглашение.",
   "error.host.teamAccessUnavailable": "Доступ вашей команды недоступен.",
@@ -11,7 +10,6 @@ export const messages = {
   "error.host.noServer": "На этом компьютере нет сервера, который можно изменить.",
   "error.host.identityLocalOnly": "Название и логотип сервера можно изменить только на компьютере, где он работает.",
   "error.host.timezoneInvalid": "Этот часовой пояс неизвестен.",
-  "error.host.signalHomeUnknown": "Этот сервер Signal недоступен.",
   "error.host.turnLimitInvalid": "Это ограничение потоков недопустимо.",
   "error.host.maintenanceInterrupted":
     "Обслуживание хоста прервано. Проверьте приложение и сбросьте состояние хоста, прежде чем повторять.",

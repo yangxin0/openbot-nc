@@ -65,7 +65,7 @@ import { HttpError } from "./http-error";
 import type { TeamApiRequestContext } from "./request-context";
 
 export const JSON_LIMIT = 1024 * 1024;
-export const WEBRTC_FRAME_BODY_BUDGET = Math.floor(TEAM_PROTOCOL_V2_MAX_JSON_FRAME_BYTES * 0.75);
+export const TEAM_V2_FRAME_BODY_BUDGET = Math.floor(TEAM_PROTOCOL_V2_MAX_JSON_FRAME_BYTES * 0.75);
 
 const CUT_TEXT_BYTES = 256 * 1024;
 

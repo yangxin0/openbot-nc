@@ -2,7 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.webRtcNotConfigured": "WebRTC ホストサービスが設定されていません。",
   "error.host.nameBeforePublish": "公開する前に、この OpenBot に名前を付けてください。",
   "error.host.publishBeforeInvite": "招待を作成する前に、この OpenBot を公開してください。",
   "error.host.teamAccessUnavailable": "チームへのアクセスを利用できません。",
@@ -11,7 +10,6 @@ export const messages = {
   "error.host.noServer": "このコンピューターには変更できるサーバーがありません。",
   "error.host.identityLocalOnly": "サーバーの名前とロゴは、サーバーを実行しているコンピューターでのみ変更できます。",
   "error.host.timezoneInvalid": "このタイムゾーンは不明です。",
-  "error.host.signalHomeUnknown": "この Signal サーバーは利用できません。",
   "error.host.turnLimitInvalid": "このスレッド数の上限は無効です。",
   "error.host.maintenanceInterrupted":
     "ホストのメンテナンスが中断されました。再試行する前に、アプリケーションを確認し、ホストの状態をリセットしてください。",

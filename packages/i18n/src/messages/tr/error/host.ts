@@ -2,7 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.webRtcNotConfigured": "WebRTC ana makine hizmeti yapılandırılmamış.",
   "error.host.nameBeforePublish": "Yayımlamadan önce bu OpenBot'a bir ad verin.",
   "error.host.publishBeforeInvite": "Davet oluşturmadan önce bu OpenBot'u herkese açık hale getirin.",
   "error.host.teamAccessUnavailable": "Ekip erişiminiz kullanılamıyor.",
@@ -11,7 +10,6 @@ export const messages = {
   "error.host.noServer": "Bu bilgisayarda değiştirilecek bir sunucu yok.",
   "error.host.identityLocalOnly": "Sunucu adı ve logosu yalnızca onu çalıştıran bilgisayarda değiştirilebilir.",
   "error.host.timezoneInvalid": "Bu saat dilimi bilinmiyor.",
-  "error.host.signalHomeUnknown": "Bu Signal sunucusu kullanılamıyor.",
   "error.host.turnLimitInvalid": "Bu iş parçacığı sınırı geçerli değil.",
   "error.host.maintenanceInterrupted":
     "Ana makine bakımı kesintiye uğradı. Tekrar denemeden önce uygulamayı doğrulayın ve ana makine durumunu sıfırlayın.",

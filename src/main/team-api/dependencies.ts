@@ -58,7 +58,6 @@ import type { PeerCustomProviderChanges } from "../custom-provider-changes";
 import type { HermesImportService } from "../hermes-import-service";
 import type { HostEventsApi } from "../host-events-api";
 import type { HostService } from "../host-service";
-import type { HostSignalHomeService } from "../host-signal-home";
 import type { HostTurnLimitsPreferenceStore } from "../host-turn-limits-preference-store";
 import type { HostVoiceModelService } from "../host-voice-model";
 import type { InstanceTransferService } from "../instance-transfer-service";
@@ -426,7 +425,6 @@ export interface TeamApiAdmin {
   restart?: { request(memberId: string): void };
   timezone?: Pick<ServerTimezonePreferenceStore, "get" | "set">;
   voiceModel?: Pick<HostVoiceModelService, "snapshot" | "change">;
-  signalHome?: Pick<HostSignalHomeService, "snapshot" | "set">;
   turnLimits?: Pick<HostTurnLimitsPreferenceStore, "get" | "set">;
   personality?: Pick<ServerPersonalityPreferenceStore, "get" | "set">;
   localServers?: {

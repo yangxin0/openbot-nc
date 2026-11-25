@@ -9,7 +9,6 @@ import { teamSideRouteCodec } from "@openbot/contracts/team-protocol/side-routes
 import { addSkillSuggestionNames, SKILL_LEARNING_CAPABILITY } from "@openbot/contracts/team-protocol/skill-learning-v1";
 import { TEAM_APP_VERSION_HEADER, TEAM_PROTOCOL_VERSION_HEADER } from "@openbot/contracts/team-protocol/v1";
 import { decodeTeamProtocolV1CurrentHttpResponse } from "@openbot/contracts/team-protocol/v1-adapter";
-import { decodeTeamProtocolV2Json, type TeamProtocolV2Json } from "@openbot/contracts/team-protocol/v2";
 import { sourceText } from "@openbot/i18n/source";
 import { startRemoteRequest } from "@openbot/team-client/sync-profile";
 import { Effect, Result, Schema } from "effect";
@@ -153,24 +152,6 @@ export const requestJson = Effect.fn("RemoteHttp.requestJson")(function* <T>(
 function isJsonContentType(contentType: string | null | undefined): boolean {
   const mimeType = contentType?.split(";", 1)[0]?.trim().toLowerCase();
   return mimeType === "application/json" || mimeType?.endsWith("+json") === true;
-}
-
-export function webRtcRequestBody(
-  body: RequestInit["body"],
-  contentType: string | undefined,
-): RequestInit["body"] | TeamProtocolV2Json {
-  if (!body || !isJsonContentType(contentType)) return body;
-  let text: string;
-  if (isString(body)) text = body;
-  else if (body instanceof ArrayBuffer) text = new TextDecoder().decode(body);
-  else if (ArrayBuffer.isView(body)) {
-    text = new TextDecoder().decode(new Uint8Array(body.buffer, body.byteOffset, body.byteLength));
-  } else return body;
-  try {
-    return decodeTeamProtocolV2Json(JSON.parse(text));
-  } catch {
-    return body;
-  }
 }
 
 export const throwRemoteResponseError = Effect.fn("RemoteHttp.responseError")(function* (

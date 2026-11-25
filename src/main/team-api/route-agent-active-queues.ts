@@ -9,7 +9,7 @@ import { sourceText } from "@openbot/i18n/source";
 import type { TeamApiAgents } from "./dependencies";
 import { HttpError } from "./http-error";
 import type { RouteOutcome, TeamApiRequestContext } from "./request-context";
-import { readJson, stringArray, WEBRTC_FRAME_BODY_BUDGET } from "./request-helpers";
+import { readJson, stringArray, TEAM_V2_FRAME_BODY_BUDGET } from "./request-helpers";
 
 export async function routeAgentActiveQueues(
   context: TeamApiRequestContext,
@@ -58,7 +58,7 @@ function inFrame(queues: readonly QueueSnapshot[]): { queues: QueueSnapshot[]; o
     }
     const wire = withoutHostAddresses(queue);
     const size = Buffer.byteLength(JSON.stringify(wire)) + 1;
-    if (bytes + size <= WEBRTC_FRAME_BODY_BUDGET) {
+    if (bytes + size <= TEAM_V2_FRAME_BODY_BUDGET) {
       bytes += size;
       kept.push(wire);
     } else omitted.push(queue.agentId);

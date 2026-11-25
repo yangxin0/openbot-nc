@@ -220,7 +220,6 @@ import type {
   UpdateBrowserProfileInput,
 } from "./ipc-browser-profiles";
 import type {
-  BrowserComputerSharing,
   BrowserProxyList,
   BrowserProxySummary,
   DeleteBrowserProxyInput,
@@ -344,7 +343,6 @@ import type { ApplyHermesImportInput, HermesImportPreview } from "./ipc-hermes-i
 import type { HiddenAgentsSnapshot, SetAgentHiddenInput } from "./ipc-hidden-agents";
 import type { HostAnalytics, HostAnalyticsInput } from "./ipc-host-analytics";
 import type { HostPersonality } from "./ipc-host-personality";
-import type { HostSignalHomeSettings } from "./ipc-host-signal-home";
 import type { HostTimezoneSettings } from "./ipc-host-timezone";
 import type { HostTurnLimits, HostTurnLimitsInput } from "./ipc-host-turn-limits";
 import type {
@@ -433,11 +431,6 @@ import type {
 } from "./ipc-queue";
 import type { RelayImportResult, RelayState } from "./ipc-relay";
 import type {
-  RemoteNetworkRoutePreference,
-  RemoteNetworkRouteState,
-  RemoteSessionReusePreference,
-} from "./ipc-remote-sessions";
-import type {
   ResendRoutineResultInput,
   RoutineResultConnectionOption,
   RoutineResultDelivery,
@@ -503,7 +496,6 @@ import type {
   ScopedTeamPresenceSnapshot,
   SendDirectMessageInput,
   ServerSummary,
-  SetServerHiddenInput,
   SetServerMutedInput,
   SetServerNotificationLevelInput,
   SetTeamTypingInput,
@@ -646,14 +638,6 @@ export const IPC_ENDPOINTS = {
     getAgentDefaults: request<undefined, AgentDefaults>()("app:get-agent-defaults"),
     getAgentMemoryLimitPreference: request<undefined, AgentMemoryLimitPreference>()("app:get-agent-memory-limit"),
     agentMemoryLimitPreference: event<AgentMemoryLimitPreference>()("app:agent-memory-limit"),
-    getRemoteSessionReusePreference: request<undefined, RemoteSessionReusePreference>()("app:get-remote-session-reuse"),
-    setRemoteSessionReusePreference: request<RemoteSessionReusePreference, RemoteSessionReusePreference>()(
-      "app:set-remote-session-reuse",
-    ),
-    getRemoteNetworkRoute: request<undefined, RemoteNetworkRouteState>()("app:get-remote-network-route"),
-    setRemoteNetworkRoute: request<RemoteNetworkRoutePreference, RemoteNetworkRouteState>()(
-      "app:set-remote-network-route",
-    ),
     getAppBehaviorPreference: request<undefined, AppBehaviorPreference>()("app:get-behavior-preference"),
     setAppBehaviorPreference: request<AppBehaviorPreferenceChange, AppBehaviorPreference>()(
       "app:set-behavior-preference",
@@ -1044,8 +1028,6 @@ export const IPC_ENDPOINTS = {
     ),
     getTimezone: scopedQuery<HostTimezoneSettings, "required">()("host-admin:get-timezone"),
     setTimezone: scopedRequest<string | null, HostTimezoneSettings, "required">()("host-admin:set-timezone"),
-    getSignalHome: scopedQuery<HostSignalHomeSettings, "required">()("host-admin:get-signal-home"),
-    setSignalHome: scopedRequest<string | null, HostSignalHomeSettings, "required">()("host-admin:set-signal-home"),
     getVoiceModel: scopedQuery<HostVoiceModel, "required">()("host-admin:get-voice-model"),
     changeVoiceModel: scopedRequest<HostVoiceModelChange, HostVoiceModel, "required">()(
       "host-admin:change-voice-model",
@@ -1509,7 +1491,6 @@ export const IPC_ENDPOINTS = {
     select: request<string, ServerSummary[]>()("servers:select"),
     reorder: request<ReorderServersInput, ServerSummary[]>()("servers:reorder"),
     setMuted: request<SetServerMutedInput, ServerSummary[]>()("servers:set-muted"),
-    setHidden: request<SetServerHiddenInput, ServerSummary[]>()("servers:set-hidden"),
     setNotificationLevel: request<SetServerNotificationLevelInput, ServerSummary[]>()("servers:set-notification-level"),
     retryConnection: request<string, ServerSummary>()("servers:retry-connection"),
     remove: request<string, void>()("servers:remove"),
@@ -1578,10 +1559,6 @@ export const IPC_ENDPOINTS = {
     saveBrowserProxy: scopedRequest<SaveBrowserProxyInput, BrowserProxySummary>()("agent:admin:save-browser-proxy"),
     deleteBrowserProxy: scopedRequest<DeleteBrowserProxyInput, void>()("agent:admin:delete-browser-proxy"),
     setBrowserProfileProxy: scopedRequest<SetBrowserProfileProxyInput, void>()("agent:admin:set-browser-profile-proxy"),
-    getBrowserComputerSharing: scopedQuery<BrowserComputerSharing | null>()("agent:admin:get-browser-computer-sharing"),
-    setBrowserComputerSharing: scopedRequest<BrowserComputerSharing, void>()(
-      "agent:admin:set-browser-computer-sharing",
-    ),
     listBrowserTabProfiles: scopedQuery<BrowserTabProfile[]>()("agent:admin:list-browser-tab-profiles"),
     getAgentAdminSettings: scopedRequest<string, AgentAdminSettings>()("agent:admin:get-settings"),
     updateAgentAdminSettings: scopedRequest<UpdateAgentAdminSettingsInput, AgentAdminSettings>()(

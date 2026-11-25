@@ -11,7 +11,7 @@ import {
   readJson,
   requireAgentLevel,
   stringField,
-  WEBRTC_FRAME_BODY_BUDGET,
+  TEAM_V2_FRAME_BODY_BUDGET,
 } from "./request-helpers";
 
 const REFUSED_STATUS = { "not-found": 404, limit: 409 } as const;
@@ -40,7 +40,7 @@ export async function routeMessagePins(
     for (let limit = typeof body.limit === "number" ? body.limit : 50; ; limit = Math.floor(limit / 2)) {
       const part = tasks.readTaskAround({ ...input, limit }, markerExclusionsForCapabilities(capabilities));
       const answer = { ...part, conversation: conversationSnapshotForCapabilities(part.conversation, capabilities) };
-      if (Buffer.byteLength(JSON.stringify(answer)) <= WEBRTC_FRAME_BODY_BUDGET) return json(200, answer);
+      if (Buffer.byteLength(JSON.stringify(answer)) <= TEAM_V2_FRAME_BODY_BUDGET) return json(200, answer);
       if (limit <= 1) throw new HttpError(413, sourceText("error.team.conversationPageTooLarge"));
     }
   }

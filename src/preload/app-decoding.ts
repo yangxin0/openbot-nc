@@ -63,7 +63,6 @@ import {
   isElevenLabsSpeechVoice,
   isPlanStartAfterMs,
   isProviderDetectionSettings,
-  isRemoteNetworkRoute,
   isSpeechModelId,
   isSpeechSpeed,
   isSpeechVoice,
@@ -81,8 +80,6 @@ import {
   parseLinkAccountStatus,
   parseOnePasswordConnectorStatus,
   QUIT_GUARDS,
-  type RemoteNetworkRouteState,
-  type RemoteSessionReusePreference,
   type SentMessageStats,
   type SpeechAudio,
   type SpeechModelStatus,
@@ -343,18 +340,6 @@ export function decodeExternalLinkBrowsers(value: unknown): ExternalLinkBrowsers
 
 export function decodeExternalLinkFallback(value: unknown): ExternalLinkFallback {
   return { name: requiredString(decodeRecord(value, "external link fallback"), "name") };
-}
-
-export function decodeRemoteSessionReusePreference(value: unknown): RemoteSessionReusePreference {
-  return {
-    keepBetweenRuns: requiredBoolean(decodeRecord(value, "remote session preference"), "keepBetweenRuns"),
-  };
-}
-
-export function decodeRemoteNetworkRouteState(value: unknown): RemoteNetworkRouteState {
-  const state = decodeRecord(value, "remote network route");
-  if (!isRemoteNetworkRoute(state.route)) throw new Error("Invalid remote network route.");
-  return { route: state.route, tailscaleConnected: requiredBoolean(state, "tailscaleConnected") };
 }
 
 export function decodeNotificationPreference(value: unknown): NotificationPreference {

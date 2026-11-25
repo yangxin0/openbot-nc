@@ -28,7 +28,7 @@ import {
 import type { TeamApiAgents, TeamApiRoutineFlows } from "./dependencies";
 import { HttpError } from "./http-error";
 import type { RouteOutcome, TeamApiRequestContext } from "./request-context";
-import { readJson, requireAgentLevel, stringField, WEBRTC_FRAME_BODY_BUDGET } from "./request-helpers";
+import { readJson, requireAgentLevel, stringField, TEAM_V2_FRAME_BODY_BUDGET } from "./request-helpers";
 
 const ROUTINE_FLOW_PATHS = new Set<string>([
   ...Object.values(ROUTINE_FLOWS_ROUTES),
@@ -106,20 +106,20 @@ function memberCanvas(canvas: RoutineFlowCanvas, hidden: ReadonlySet<string>, ad
   );
   let bytes = Buffer.byteLength(JSON.stringify(result));
   for (const flow of oldestFirst) {
-    if (bytes <= WEBRTC_FRAME_BODY_BUDGET) break;
+    if (bytes <= TEAM_V2_FRAME_BODY_BUDGET) break;
     const before = Buffer.byteLength(JSON.stringify(flow.steps));
     flow.steps = flow.steps.map((step) => ({ ...step, input: "", output: null, error: null }));
     bytes -= before - Buffer.byteLength(JSON.stringify(flow.steps));
   }
   for (const flow of oldestFirst) {
-    if (bytes <= WEBRTC_FRAME_BODY_BUDGET) break;
+    if (bytes <= TEAM_V2_FRAME_BODY_BUDGET) break;
     const before = Buffer.byteLength(JSON.stringify(flow.recentRuns));
     flow.recentRuns = flow.recentRuns.map((run, index) =>
       index === 0 ? run : { ...run, instruction: "", error: null },
     );
     bytes -= before - Buffer.byteLength(JSON.stringify(flow.recentRuns));
   }
-  if (bytes > WEBRTC_FRAME_BODY_BUDGET) throw new HttpError(413, sourceText("error.team.routineCanvasTooLarge"));
+  if (bytes > TEAM_V2_FRAME_BODY_BUDGET) throw new HttpError(413, sourceText("error.team.routineCanvasTooLarge"));
   return result;
 }
 

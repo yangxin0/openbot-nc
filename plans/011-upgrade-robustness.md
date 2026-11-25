@@ -164,7 +164,7 @@ Prerequisite steps 2 and 3 (branch `t3/plan-011-item-2-steps-2-3`, 2026-11-18):
   no longer import the v3 WebRTC codec. `scripts/team-webrtc-wire-parity-e2e.ts --before=<ref>`
   compares each codec, framing and transcript output of protocols 1 to 10 with the base commit:
   38904 cases against `6ea0807f6a`, 0 differences.
-- Step 3. `TeamWebRtcHostPeer` refuses an `http.request` with no protocol marker with status 426,
+- Step 3. `TeamV2HostPeer` refuses an `http.request` with no protocol marker with status 426,
   `client_update_required` and `error.team.clientUpdateRequired`, as the HTTP gate refuses a request
   with no protocol header. `scripts/team-api-legacy-clients-e2e.ts` proves that an unmarked request
   is refused and that a protocol 4 request still works.
@@ -186,8 +186,8 @@ What the deletion PR must still move, because current code uses it:
 
 - 31 files outside the contracts package import `@openbot/contracts/team-protocol/v2`. Point them at
   `team-protocol/webrtc-framing` before `v2.ts` goes.
-- The WebRTC response encoders of protocols 4-8 in `src/main/team-webrtc-host-peer.ts`
-  (`webRtcResponseEncoder`, selected by the peer protocol). The v3 encoder is no longer imported there.
+- The WebRTC response encoders of protocols 4-8 in `src/main/team-v2-host-peer.ts`
+  (`v2ResponseEncoder`, selected by the peer protocol). The v3 encoder is no longer imported there.
 - `current.ts`, `current-agent-keys.ts`, `current-adapter-routes.ts`, `analytics-v1.ts`,
   `host-analytics-v1.ts`, `channels-v1.ts`, `routines-once-v1.ts`, `profile-v1.ts` and
   `http-codecs.ts` import from `v1`, `v1-adapter`, `v3` or `v3-adapter`.

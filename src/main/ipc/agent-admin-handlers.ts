@@ -3,7 +3,6 @@ import {
   type AgentFastModeSettings,
   agentFastModeSettings,
   agentSpeed,
-  type BrowserComputerSharing,
   decodeAgentAdminSettings,
   decodeAgentBackupModelSettings,
   decodeAgentBrowserProfile,
@@ -11,7 +10,6 @@ import {
   decodeAgentDefaultsOverview,
   decodeAgentPlanCardSettings,
   decodeAgentSpeedSettings,
-  decodeBrowserComputerSharing,
   decodeBrowserProfileList,
   decodeBrowserProfileSummary,
   decodeBrowserProxyList,
@@ -97,8 +95,6 @@ import { requireString } from "./validation";
 
 interface AgentAdminRemoteServers {
   supportsCapability(serverId: string, capability: TeamCurrentCapability): boolean;
-  browserComputerSharing(serverId: string): BrowserComputerSharing | null;
-  setBrowserComputerSharing(serverId: string, sharing: boolean): Effect.Effect<void, RemoteWorkflowError>;
   request<T>(
     serverId: string,
     path: string,
@@ -257,16 +253,6 @@ export function agentAdminIpcHandlers({
       setBrowserProfileProxy: scopedHandler(parseSetBrowserProfileProxyInput, {
         local: (input) => runCauseEffect(browserProfiles.setProfileProxy(input)),
         remote: (input, serverId) => remoteBrowserProxies(serverId, BROWSER_PROXIES_ROUTES.profile, input, acceptEmpty),
-      }),
-      getBrowserComputerSharing: scopedQueryHandler({
-        local: () => null,
-        remote: (serverId) => remoteServers.browserComputerSharing(serverId),
-      }),
-      setBrowserComputerSharing: scopedHandler(decodeBrowserComputerSharing, {
-        local: () => {
-          throw new Error(sourceText("error.team.agentSettingsUnsupported"));
-        },
-        remote: ({ sharing }, serverId) => runCauseEffect(remoteServers.setBrowserComputerSharing(serverId, sharing)),
       }),
       listBrowserTabProfiles: scopedQueryHandler({
         local: () => browserProfiles.tabProfiles(),

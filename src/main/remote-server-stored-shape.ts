@@ -31,7 +31,7 @@ export interface StoredRemoteServer {
   logoVersion?: string | null;
   appearance?: ServerAppearance | null;
   role: TeamRole;
-  transport?: "webrtc-v2" | "relay";
+  transport?: "relay";
   relayKeyId?: string;
   relayTeamId?: string;
   relayUser?: string;
@@ -188,7 +188,7 @@ function readStoredRemoteServer(value: unknown): StoredRemoteServer | null {
     !isString(value.username) ||
     !isString(value.encryptedToken) ||
     !(value.logoVersion === undefined || value.logoVersion === null || isString(value.logoVersion)) ||
-    !(value.transport === undefined || value.transport === "webrtc-v2" || value.transport === "relay") ||
+    !(value.transport === undefined || value.transport === "relay") ||
     !isOneOf(["owner", "admin", "member"] as const, value.role)
   ) {
     return null;

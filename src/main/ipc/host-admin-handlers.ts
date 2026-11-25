@@ -7,7 +7,6 @@ import {
   decodeHostBrowsingMemory,
   decodeHostMemoryReview,
   decodeHostPersonality,
-  decodeHostSignalHomeSettings,
   decodeHostSkillLearning,
   decodeHostTimezoneSettings,
   decodeHostTurnLimits,
@@ -44,7 +43,6 @@ import {
   parseHostVoiceModelChange,
   parseProviderModelVisibilityChange,
   parseProviderModelVisibilityProvider,
-  parseSignalHomeChoice,
   type ServerAuditLog,
   type ServerAuditName,
   type ServerSummary,
@@ -93,10 +91,6 @@ import {
   HOST_PERSONALITY_ROUTES,
 } from "@openbot/contracts/team-protocol/host-personality-v1";
 import { HOST_RESTART_CAPABILITY, HOST_RESTART_ROUTES } from "@openbot/contracts/team-protocol/host-restart-v1";
-import {
-  HOST_SIGNAL_HOME_CAPABILITY,
-  HOST_SIGNAL_HOME_ROUTES,
-} from "@openbot/contracts/team-protocol/host-signal-home-v1";
 import { HOST_TIMEZONE_CAPABILITY, HOST_TIMEZONE_ROUTES } from "@openbot/contracts/team-protocol/host-timezone-v1";
 import {
   HOST_TURN_LIMITS_CAPABILITY,
@@ -137,7 +131,6 @@ import type { CacheExpiryCompactionControl } from "../cache-expiry-compaction-pr
 import type { ClaudeCompactWindowControl } from "../claude-compact-window-preference-store";
 import type { ClaudeUserSetupControl } from "../claude-user-setup-preference-store";
 import type { HostService } from "../host-service";
-import type { HostSignalHomeService } from "../host-signal-home";
 import type { HostTurnLimitsPreferenceStore } from "../host-turn-limits-preference-store";
 import type { HostVoiceModelService } from "../host-voice-model";
 import type { MachineAlertMonitor } from "../machine-alerts";
@@ -180,7 +173,6 @@ interface HostAdminIpcDependencies {
   remoteServers: HostAdminRemoteServers;
   serverTimezone: Pick<ServerTimezonePreferenceStore, "get" | "set">;
   voiceModel: Pick<HostVoiceModelService, "snapshot" | "change">;
-  signalHome: Pick<HostSignalHomeService, "snapshot" | "set">;
   hostTurnLimits: Pick<HostTurnLimitsPreferenceStore, "get" | "set">;
   serverPersonality: Pick<ServerPersonalityPreferenceStore, "get" | "set">;
   agentMemoryLimit: AgentMemoryLimitSetting;
@@ -210,7 +202,6 @@ export function hostAdminIpcHandlers({
   remoteServers,
   serverTimezone,
   voiceModel,
-  signalHome,
   hostTurnLimits,
   serverPersonality,
   agentMemoryLimit,
@@ -246,13 +237,6 @@ export function hostAdminIpcHandlers({
     if (!remoteServers.supportsCapability(serverId, HOST_TIMEZONE_CAPABILITY))
       throw new Error(sourceText("error.team.hostTimezoneUnsupported"));
     return runCauseEffect(remoteServers.request(serverId, route, decodeHostTimezoneSettings, { method: "POST", body }));
-  }
-  function remoteSignalHome(serverId: string, route: string, body: { home?: string | null }) {
-    if (!remoteServers.supportsCapability(serverId, HOST_SIGNAL_HOME_CAPABILITY))
-      throw new Error(sourceText("error.team.hostSignalHomeUnsupported"));
-    return runCauseEffect(
-      remoteServers.request(serverId, route, decodeHostSignalHomeSettings, { method: "POST", body }),
-    );
   }
   function remoteVoiceModel(serverId: string, route: string, body: Record<string, never> | HostVoiceModelChange) {
     if (!remoteServers.supportsCapability(serverId, HOST_VOICE_MODEL_CAPABILITY))
@@ -445,14 +429,6 @@ export function hostAdminIpcHandlers({
       changeVoiceModel: scopedHandler(parseHostVoiceModelChange, {
         local: (change) => runCauseEffect(voiceModel.change(change)),
         remote: (change, serverId) => remoteVoiceModel(serverId, HOST_VOICE_MODEL_ROUTES.change, change),
-      }),
-      getSignalHome: scopedQueryHandler({
-        local: () => runCauseEffect(signalHome.snapshot()),
-        remote: (serverId) => remoteSignalHome(serverId, HOST_SIGNAL_HOME_ROUTES.settings, {}),
-      }),
-      setSignalHome: scopedHandler(parseSignalHomeChoice, {
-        local: (home) => runCauseEffect(signalHome.set(home)),
-        remote: (home, serverId) => remoteSignalHome(serverId, HOST_SIGNAL_HOME_ROUTES.update, { home }),
       }),
       getTurnLimits: scopedQueryHandler({
         local: () => hostTurnLimits.get(),

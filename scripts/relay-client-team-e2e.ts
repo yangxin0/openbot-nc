@@ -716,60 +716,70 @@ try {
     },
   );
 
-  await check("A server list of a released version loads, and an unknown transport stays preserved", async () => {
-    const directory = join(work, "released");
-    mkdirSync(directory);
-    const path = join(directory, "openbot-remote-servers.json");
-    const base = {
-      fingerprint: "fingerprint",
-      username: "person@example.com",
-      encryptedToken: Buffer.from("token").toString("base64"),
-      role: "member",
-    };
-    writeFileSync(
-      path,
-      `${JSON.stringify({
-        version: 3,
-        activeServerId: "direct-server",
-        servers: [
-          { ...base, id: "direct-server", name: "Direct", apiUrl: "https://openbot.example" },
-          { ...base, id: "webrtc-server", name: "WebRTC", apiUrl: "webrtc://webrtc-server", transport: "webrtc-v2" },
-          {
-            ...base,
-            id: "relay-server",
-            name: "Relay",
-            apiUrl: "https://not-the-relay.example",
-            transport: "relay",
-            relayKeyId: hostKeyId,
-            relayTeamId: "A".repeat(43),
-            relayUser: HOST_USER,
-            relayDevice: null,
-          },
-          { ...base, id: "future-server", name: "Future", apiUrl: "future://x", transport: "future-v9" },
-          { ...base, id: "broken-relay", name: "Broken", apiUrl: "x", transport: "relay", relayKeyId: "short" },
+  await check(
+    "A server list of a released version loads; old WebRTC records and an unknown transport do not load and stay preserved",
+    async () => {
+      const directory = join(work, "released");
+      mkdirSync(directory);
+      const path = join(directory, "openbot-remote-servers.json");
+      const base = {
+        fingerprint: "fingerprint",
+        username: "person@example.com",
+        encryptedToken: Buffer.from("token").toString("base64"),
+        role: "member",
+      };
+      const webrtcRecord = {
+        ...base,
+        id: "webrtc-server",
+        name: "WebRTC",
+        apiUrl: "webrtc://webrtc-server",
+        transport: "webrtc-v2",
+      };
+      writeFileSync(
+        path,
+        `${JSON.stringify({
+          version: 3,
+          activeServerId: "direct-server",
+          servers: [
+            { ...base, id: "direct-server", name: "Direct", apiUrl: "https://openbot.example" },
+            webrtcRecord,
+            {
+              ...base,
+              id: "relay-server",
+              name: "Relay",
+              apiUrl: "https://not-the-relay.example",
+              transport: "relay",
+              relayKeyId: hostKeyId,
+              relayTeamId: "A".repeat(43),
+              relayUser: HOST_USER,
+              relayDevice: null,
+            },
+            { ...base, id: "future-server", name: "Future", apiUrl: "future://x", transport: "future-v9" },
+            { ...base, id: "broken-relay", name: "Broken", apiUrl: "x", transport: "relay", relayKeyId: "short" },
+          ],
+        })}\n`,
+      );
+      const store = new RemoteServerStore({ path, cipher: testCipher });
+      await ok(store.load());
+      assert.deepEqual(
+        store.servers.map((server) => [server.id, server.transport ?? "direct"]),
+        [
+          ["direct-server", "direct"],
+          ["relay-server", "relay"],
         ],
-      })}\n`,
-    );
-    const store = new RemoteServerStore({ path, cipher: testCipher });
-    await ok(store.load());
-    assert.deepEqual(
-      store.servers.map((server) => [server.id, server.transport ?? "direct"]),
-      [
-        ["direct-server", "direct"],
-        ["webrtc-server", "webrtc-v2"],
-        ["relay-server", "relay"],
-      ],
-    );
-    const relayRecord = store.find("relay-server");
-    assert.ok(relayRecord?.apiUrl.endsWith(RELAY_ADDRESS_SUFFIX), relayRecord?.apiUrl);
-    assert.equal(store.activeServerId, "direct-server");
-    await ok(store.persist());
-    const written = readStoredRemoteServers(JSON.parse(readFileSync(path, "utf8")));
-    assert.deepEqual(
-      written?.unreadableServers.map((preserved) => preserved.entry.id),
-      ["future-server", "broken-relay"],
-    );
-  });
+      );
+      const relayRecord = store.find("relay-server");
+      assert.ok(relayRecord?.apiUrl.endsWith(RELAY_ADDRESS_SUFFIX), relayRecord?.apiUrl);
+      assert.equal(store.activeServerId, "direct-server");
+      await ok(store.persist());
+      const written = readStoredRemoteServers(JSON.parse(readFileSync(path, "utf8")));
+      assert.deepEqual(
+        written?.unreadableServers.map((preserved) => preserved.entry.id),
+        ["webrtc-server", "future-server", "broken-relay"],
+      );
+      assert.deepEqual(written?.unreadableServers[0]?.entry, webrtcRecord);
+    },
+  );
 
   await check("The client opens network connections only to the relay server", () => {
     const relayTarget = `127.0.0.1:${relayPort}`;

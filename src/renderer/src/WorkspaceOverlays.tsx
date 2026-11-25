@@ -571,7 +571,6 @@ function ServerSettings() {
           hostUpdate={{}}
           hostTimezone={{}}
           hostVoiceModel={{}}
-          hostSignalHome={{}}
           hostTurnLimits={{}}
           hostPersonality={{}}
           hostMemoryLimit={{}}

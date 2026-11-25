@@ -107,7 +107,6 @@ export const messages = {
   "error.team.hostIdentityUnsupported": "تغييرات هوية الخادم غير مدعومة في هذا الاتصال.",
   "error.team.hostUpdateUnsupported": "تحديثات المضيف غير مدعومة في هذا الاتصال.",
   "error.team.hostTimezoneUnsupported": "المنطقة الزمنية للخادم غير مدعومة في هذا الاتصال.",
-  "error.team.hostSignalHomeUnsupported": "اختيار خادم Signal غير مدعوم في هذا الاتصال.",
   "error.team.hostVoiceModelUnsupported": "نموذج التعرّف على الكلام الخاص بالخادم غير مدعوم في هذا الاتصال.",
   "error.team.hostRestartUnsupported": "إعادة تشغيل الخادم غير مدعومة في هذا الاتصال.",
   "error.team.localServersUnsupported": "الخوادم على هذا الحاسوب غير مدعومة في هذا الاتصال.",

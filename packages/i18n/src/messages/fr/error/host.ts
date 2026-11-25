@@ -2,7 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.webRtcNotConfigured": "Le service d’hôte WebRTC n’est pas configuré.",
   "error.host.nameBeforePublish": "Donnez un nom à cet OpenBot avant de le publier.",
   "error.host.publishBeforeInvite": "Rendez cet OpenBot public avant de créer une invitation.",
   "error.host.teamAccessUnavailable": "Votre accès à l’équipe n’est pas disponible.",
@@ -12,7 +11,6 @@ export const messages = {
   "error.host.identityLocalOnly":
     "Le nom et le logo du serveur ne peuvent être modifiés que sur l’ordinateur qui l’exécute.",
   "error.host.timezoneInvalid": "Ce fuseau horaire est inconnu.",
-  "error.host.signalHomeUnknown": "Ce serveur Signal n'est pas disponible.",
   "error.host.turnLimitInvalid": "Cette limite de fils n’est pas valide.",
   "error.host.maintenanceInterrupted":
     "La maintenance de l’hôte a été interrompue. Vérifiez l’application et réinitialisez l’état de l’hôte avant de réessayer.",

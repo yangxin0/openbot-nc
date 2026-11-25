@@ -3,7 +3,6 @@ import type { messages as source } from "../../en/status/host";
 
 export const messages = {
   "status.host.identityUpdated": "サーバーの ID を更新しました。",
-  "status.host.ready": "この OpenBot は WebRTC 接続の準備ができています。",
   "status.host.signalLost": "現在、ほかのデバイスからこの OpenBot に接続できません。再接続しています。",
   "status.host.stopping": "この OpenBot を非公開にしています…",
   "status.host.private": "この OpenBot は非公開です。",

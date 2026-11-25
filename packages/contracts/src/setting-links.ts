@@ -30,7 +30,6 @@ export const SETTING_LINK_SCOPES = {
   "phones.devices": "app",
   "app.launch-at-login": "app",
   "app.restore-workspace": "app",
-  "app.fast-server-connection": "app",
   "app.keep-awake": "app",
   "app.keep-awake-on-battery": "app",
   "island.show": "app",

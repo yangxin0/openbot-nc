@@ -2,7 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.webRtcNotConfigured": "WebRTC 호스트 서비스가 설정되어 있지 않아요.",
   "error.host.nameBeforePublish": "이 OpenBot을 게시하기 전에 이름을 지정해 주세요.",
   "error.host.publishBeforeInvite": "초대를 만들기 전에 이 OpenBot을 공개해 주세요.",
   "error.host.teamAccessUnavailable": "팀 접근 권한을 사용할 수 없어요.",
@@ -11,7 +10,6 @@ export const messages = {
   "error.host.noServer": "이 컴퓨터에는 변경할 서버가 없어요.",
   "error.host.identityLocalOnly": "서버 이름과 로고는 서버를 실행하는 컴퓨터에서만 변경할 수 있어요.",
   "error.host.timezoneInvalid": "알 수 없는 시간대예요.",
-  "error.host.signalHomeUnknown": "이 Signal 서버를 사용할 수 없어요.",
   "error.host.turnLimitInvalid": "올바르지 않은 스레드 한도예요.",
   "error.host.maintenanceInterrupted":
     "호스트 유지 관리가 중단되었어요. 다시 시도하기 전에 애플리케이션을 확인하고 호스트 상태를 재설정해 주세요.",

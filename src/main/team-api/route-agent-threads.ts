@@ -42,7 +42,7 @@ import {
   requireListedAgent,
   stringArray,
   stringField,
-  WEBRTC_FRAME_BODY_BUDGET,
+  TEAM_V2_FRAME_BODY_BUDGET,
 } from "./request-helpers";
 import { agentTaskWire } from "./route-agent-tasks";
 
@@ -253,7 +253,7 @@ export async function routeAgentThreadPages(
   for (let limit = typeof body.limit === "number" ? body.limit : 50; ; limit = Math.floor(limit / 2)) {
     const page = tasks.readTaskPage({ ...input, limit }, markerExclusionsForCapabilities(capabilities));
     const answer = { ...page, conversation: conversationSnapshotForCapabilities(page.conversation, capabilities) };
-    if (Buffer.byteLength(JSON.stringify(answer)) <= WEBRTC_FRAME_BODY_BUDGET) return json(200, answer);
+    if (Buffer.byteLength(JSON.stringify(answer)) <= TEAM_V2_FRAME_BODY_BUDGET) return json(200, answer);
     if (limit <= 1) throw new HttpError(413, sourceText("error.team.conversationPageTooLarge"));
   }
 }

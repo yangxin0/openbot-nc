@@ -375,7 +375,6 @@
     "test:provider-detection": "bun scripts/provider-detection-e2e.ts",
     "test:storage-live": "bun scripts/provider-storage-smoke.ts",
     "test:grok-live": "bun scripts/provider-storage-smoke.ts --grok-only",
-    "test:team-live": "electron scripts/team-webrtc-live-smoke-app",
     "test:speech-voice-select": "bun scripts/speech-voice-select-e2e.ts --allow-mutations",
     "test:voice-speech": "bun scripts/voice-speech-smoke.ts",
     "test:voice-transcription": "bun scripts/voice-transcription-smoke.ts",

@@ -161,13 +161,6 @@ export function SettingsGeneralTab(props: SettingsGeneralTabProps) {
               label={i18n.t("settings.restoreWorkspace.title")}
               description={i18n.t("settings.restoreWorkspace.description")}
             />
-            <SwitchField
-              data-settings-row="settings.keepRemoteSessions.title"
-              checked={props.value.keepRemoteSessions}
-              onChange={(checked) => props.onUpdateSetting("keepRemoteSessions", checked)}
-              label={i18n.t("settings.keepRemoteSessions.title")}
-              description={i18n.t("settings.keepRemoteSessions.description")}
-            />
             <Show when={props.value.quitGuard}>
               {(quitGuard) => (
                 <Item data-settings-row="settings.quitGuard.title" class="settings-modal-row">

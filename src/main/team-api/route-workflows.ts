@@ -69,7 +69,7 @@ import {
 import type { TeamApiAgents, TeamApiWorkflows } from "./dependencies";
 import { HttpError } from "./http-error";
 import type { RouteOutcome, TeamApiRequestContext } from "./request-context";
-import { readJson, requireAdmin, requireAgentLevel, stringField, WEBRTC_FRAME_BODY_BUDGET } from "./request-helpers";
+import { readJson, requireAdmin, requireAgentLevel, stringField, TEAM_V2_FRAME_BODY_BUDGET } from "./request-helpers";
 import { runWorkflowEffect as run, workflowMissing, workflowVisibility } from "./workflow-visibility";
 
 const WORKFLOW_PATHS = new Set<string>(
@@ -144,7 +144,7 @@ function bytesOf(value: unknown): number {
 }
 
 function fitted<A>(value: A): A {
-  if (bytesOf(value) > WEBRTC_FRAME_BODY_BUDGET) throw new HttpError(413, sourceText("error.workflow.tooLargeToSend"));
+  if (bytesOf(value) > TEAM_V2_FRAME_BODY_BUDGET) throw new HttpError(413, sourceText("error.workflow.tooLargeToSend"));
   return value;
 }
 
@@ -152,7 +152,7 @@ function trimmed<A>(whole: A, lists: readonly WorkflowStep[][]): A {
   let bytes = bytesOf(whole);
   for (const steps of lists)
     for (const [index, step] of steps.entries()) {
-      if (bytes <= WEBRTC_FRAME_BODY_BUDGET) return whole;
+      if (bytes <= TEAM_V2_FRAME_BODY_BUDGET) return whole;
       const blank: WorkflowStep = { ...step, output: null, error: null };
       bytes -= bytesOf(step) - bytesOf(blank);
       steps[index] = blank;
@@ -243,7 +243,7 @@ export async function routeWorkflows(
     const result = admin
       ? detail
       : { ...detail, triggers: detail.triggers.map((trigger) => ({ ...trigger, webhookUrl: null })) };
-    if (bytesOf(result) > WEBRTC_FRAME_BODY_BUDGET)
+    if (bytesOf(result) > TEAM_V2_FRAME_BODY_BUDGET)
       throw new HttpError(413, sourceText("error.workflow.tooLargeToSend"));
     return result;
   };

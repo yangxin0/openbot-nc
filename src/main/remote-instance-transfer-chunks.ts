@@ -156,10 +156,7 @@ export const uploadTransferInParts = Effect.fn("RemoteInstanceTransfer.upload")(
       const position = index * upload.chunkBytes;
       const bytes = yield* archiveCall(() => readFully(handle, buffer, position, partLength(index)));
       const part = { uploadId: upload.uploadId, index, sha256: sha256Hex(bytes) };
-      const before = done;
-      yield* retryPart(
-        remote.sendInstanceTransferPart(serverId, part, bytes, (sent) => report(before + Math.min(sent, bytes.length))),
-      );
+      yield* retryPart(remote.sendInstanceTransferPart(serverId, part, bytes));
       done += bytes.length;
       report(done, true);
     }

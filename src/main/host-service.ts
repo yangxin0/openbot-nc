@@ -59,8 +59,6 @@ import { OWNER_PIN_KEY, type SidebarPinStore } from "./sidebar-pin-store";
 import type { TeamApiAgentNotificationLevels, TeamApiSidebarPins } from "./team-api/dependencies";
 import { TeamApiServer } from "./team-api-server";
 import type { TeamIdentity, TeamStore } from "./team-store";
-import type { TeamWebRtcBridge } from "./team-webrtc-bridge";
-import { TeamWebRtcHostGateway } from "./team-webrtc-host-gateway";
 
 export const DEVELOPMENT_REMOTE_CLIENT_USERNAME = "openbot-dev-client";
 
@@ -146,11 +144,6 @@ interface HostServiceOptions {
   logDirectory?: string;
   removeLegacyRemoteDesktopCredential?: () => Effect.Effect<void, RemoteWorkflowError>;
   getLocalProfile?: () => LocalProfile;
-  teamWebRtcBridge?: TeamWebRtcBridge;
-  peerMemberChanged?: (peerId: string, membershipId: string | null) => void;
-  privateNetwork?: () => boolean;
-  preferredSignalHome?: () => string | null;
-  signalHomeAnswers?: (home: string) => Effect.Effect<boolean>;
 }
 
 class HostApiRuntime extends Context.Service<
@@ -169,11 +162,9 @@ export class HostService extends EventEmitter<HostEvents> {
   #shutdown: Deferred.Deferred<void, RemoteWorkflowError> | null = null;
   readonly #browserView: BrowserViewGateway;
   #lastBrowserViewInputAt: number | null = null;
-  readonly #webrtcGateway: TeamWebRtcHostGateway | null;
   #status: HostStatus;
   readonly #memberWrites = Semaphore.makeUnsafe(1);
   readonly #relayHostingLock = Semaphore.makeUnsafe(1);
-  #webRtcOnline = false;
   #boundProfileId: string | undefined = undefined;
   #legacyCredentialRemoved = false;
   #adoptedReaderKey: string | null = null;
@@ -258,7 +249,7 @@ export class HostService extends EventEmitter<HostEvents> {
       createInvite: (input) => this.createInvite(input),
       updateMember: (input, actor) => this.updateMember(input, actor),
       removeMember: (memberId, actor) => this.removeMember(memberId, actor),
-      onSessionRevoked: (sessionId) => this.#revokeWebRtcSession(sessionId),
+      onSessionRevoked: (sessionId) => this.#revokeRelaySession(sessionId),
       ...(options.focusUse === undefined ? {} : { focusUse: options.focusUse }),
     });
     this.#runtime = ManagedRuntime.make(
@@ -269,50 +260,6 @@ export class HostService extends EventEmitter<HostEvents> {
         }),
       ),
     );
-    this.#webrtcGateway = options.teamWebRtcBridge
-      ? new TeamWebRtcHostGateway({
-          bridge: options.teamWebRtcBridge,
-          store: options.store,
-          appVersion: options.appVersion,
-          transferDirectory: join(options.logDirectory ?? ".openbot-remote", "transfers"),
-          renewSignal: () =>
-            Effect.fail(new RemoteWorkflowError({ cause: new Error(sourceText("error.host.webRtcNotConfigured")) })),
-          onSignalRecoveryFailure: (error, reason) => {
-            logger.warn(`Host phase ${this.#status.phase} -> error: Signal ${reason}.`);
-            this.#setStatus({
-              phase: "error",
-              apiOnline: false,
-              message: error.message,
-            });
-          },
-          onSignalLost: (lost) => {
-            if (this.#status.phase !== "online") return;
-            const lostMessage = sourceText("status.host.signalLost");
-            if (lost) this.#setStatus({ message: lostMessage });
-            else if (this.#status.message === lostMessage)
-              this.#setStatus({ message: sourceText("status.host.ready") });
-          },
-          closeSession: (sessionId) => this.#releaseTeamSession(sessionId),
-          ...(options.peerMemberChanged ? { peerMemberChanged: options.peerMemberChanged } : {}),
-          ...(options.privateNetwork ? { privateNetwork: options.privateNetwork } : {}),
-          ...(options.preferredSignalHome ? { preferredSignalHome: options.preferredSignalHome } : {}),
-          ...(options.signalHomeAnswers ? { signalHomeAnswers: options.signalHomeAnswers } : {}),
-        })
-      : null;
-  }
-
-  readonly applyNetworkRoute = Effect.fn("HostService.applyNetworkRoute")(function* (this: HostService) {
-    if (this.#webrtcGateway) yield* this.#webrtcGateway.applyNetworkRoute();
-  }).bind(this);
-
-  signalHome(): string | null {
-    return this.#webRtcOnline ? (this.#webrtcGateway?.signalHome() ?? null) : null;
-  }
-
-  followSignalHome(): Effect.Effect<void> {
-    return Effect.sync(() => {
-      if (this.#webRtcOnline) this.#webrtcGateway?.scheduleSignalHomeFollow();
-    });
   }
 
   getStatus(): HostStatus {
@@ -322,8 +269,7 @@ export class HostService extends EventEmitter<HostEvents> {
   describeRestartBlockers(): string[] {
     const reasons: string[] = [];
     if (this.#browserView.activeViewCount() > 0) reasons.push("browser-view");
-    if (this.#webrtcGateway?.hasActiveTransfers() || this.#relayTunnels?.hasActiveTransfers())
-      reasons.push("file-transfer");
+    if (this.#relayTunnels?.hasActiveTransfers()) reasons.push("file-transfer");
     return reasons;
   }
 
@@ -867,7 +813,7 @@ export class HostService extends EventEmitter<HostEvents> {
 
   readonly revokeSession = Effect.fn("HostService.revokeSession")(
     function* (this: HostService, sessionId: string): Effect.fn.Return<void, RemoteWorkflowError> {
-      yield* this.#revokeWebRtcSession(sessionId);
+      yield* this.#revokeRelaySession(sessionId);
       yield* this.#options.store.revokeSession(sessionId);
       yield* this.#browserView.revokeTeamSession(sessionId);
       this.#options.browser.releaseUserControlHeldBy({ kind: "session", sessionId });
@@ -894,11 +840,10 @@ export class HostService extends EventEmitter<HostEvents> {
     });
   }
 
-  readonly #revokeWebRtcSession = Effect.fn("HostService.revokeWebRtcSession")(function* (
+  readonly #revokeRelaySession = Effect.fn("HostService.revokeRelaySession")(function* (
     this: HostService,
     sessionId: string,
   ): Effect.fn.Return<void, RemoteWorkflowError> {
-    if (this.#webrtcGateway) yield* this.#webrtcGateway.revokeSession(sessionId);
     if (this.#relayTunnels) yield* this.#relayTunnels.revokeSession(sessionId);
   });
 
@@ -994,25 +939,19 @@ export class HostService extends EventEmitter<HostEvents> {
       Effect.void,
       () => this.stop(false).pipe(Effect.asVoid),
       () =>
-        Effect.acquireUseRelease(
-          Effect.void,
-          () => this.#webrtcGateway?.dispose() ?? Effect.void,
-          () =>
-            Effect.gen({ self: this }, function* () {
-              while (this.#operations.size > 0) {
-                yield* Effect.all([...this.#operations].map(Deferred.await), { concurrency: "unbounded" });
-              }
-              yield* this.#runtime.disposeEffect;
-            }),
-        ),
+        Effect.gen({ self: this }, function* () {
+          while (this.#operations.size > 0) {
+            yield* Effect.all([...this.#operations].map(Deferred.await), { concurrency: "unbounded" });
+          }
+          yield* this.#runtime.disposeEffect;
+        }),
     ).pipe(Effect.onExit((exit) => Effect.sync(() => Deferred.doneUnsafe(stopped, exit))));
   }, Effect.uninterruptible).bind(this);
 
   readonly #stopRuntime = Effect.fn("HostService.stopRuntime")(function* (this: HostService) {
-    this.#webRtcOnline = false;
     return yield* Effect.acquireUseRelease(
       Effect.void,
-      () => this.#stopHostRelay().pipe(Effect.andThen(() => this.#webrtcGateway?.stop() ?? Effect.void)),
+      () => this.#stopHostRelay(),
       () => this.#api.stop(),
     );
   }, Effect.uninterruptible);

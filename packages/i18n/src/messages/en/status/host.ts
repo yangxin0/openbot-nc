@@ -2,7 +2,6 @@ import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("status.host", {
   "status.host.identityUpdated": "Server identity updated.",
-  "status.host.ready": "This OpenBot is ready for WebRTC connections.",
   "status.host.relayReady": "Your team can connect to this OpenBot through the relay server.",
   "status.host.signalLost": "Other devices cannot reach this OpenBot now. It connects again.",
   "status.host.stopping": "Making this OpenBot private…",

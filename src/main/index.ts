@@ -725,11 +725,9 @@ function registerIpcHandlers({
   claudeCompactWindow,
   providerEnvironment,
   modelVisibility,
-  remoteSessionReuse,
   externalLinkPreference,
   externalLinks,
   openLink,
-  remoteNetworkRoute,
   appBehavior,
   agentInitialization,
   sidebarLayout,
@@ -757,7 +755,6 @@ function registerIpcHandlers({
   instanceTransfer,
   voice,
   hostVoiceModel,
-  hostSignalHome,
   speech,
   voiceServer,
   dynamicIsland,
@@ -789,12 +786,9 @@ function registerIpcHandlers({
       busyMessageMode,
       agentDefaults,
       agentMemoryLimit,
-      remoteSessionReuse,
       externalLinkPreference,
       externalLinks,
       openLink,
-      remoteNetworkRoute,
-      applyRemoteNetworkRoute: () => runCauseEffect(host.applyNetworkRoute()),
       appBehavior,
       language,
       logoColor,
@@ -947,7 +941,6 @@ function registerIpcHandlers({
       remoteServers,
       serverTimezone,
       voiceModel: hostVoiceModel,
-      signalHome: hostSignalHome,
       hostTurnLimits,
       serverPersonality,
       agentMemoryLimit,
@@ -1379,16 +1372,11 @@ if (!hasSingleInstanceLock) {
         app.quit();
       });
       registerIpcHandlers(built);
-      const renewHostSignal = () =>
-        void runCauseEffect(built.teamWebRtcBridge.renewHostSignal()).catch((error) =>
-          logger.warn("Unable to renew the host Signal connection after sleep:", toLogValue(error)),
-        );
       if (localServerChild) {
         const childRoutineWake = new RoutineWake({ routines: service, isOnline: () => net.isOnline() });
         powerMonitor.on("suspend", () => childRoutineWake.suspend());
         powerMonitor.on("resume", () => childRoutineWake.resume());
         powerMonitor.on("resume", () => built.messaging.resume());
-        powerMonitor.on("resume", renewHostSignal);
         teardown.push(0, "routine wake", () => childRoutineWake.dispose());
         void runCauseEffect(built.agentInitialization.start()).catch((error) => {
           logger.error("Unable to initialize the local agent backend:", toLogValue(error));
@@ -1487,7 +1475,6 @@ if (!hasSingleInstanceLock) {
       powerMonitor.on("resume", reconcileAgentDock);
       powerMonitor.on("resume", () => void Effect.runPromise(remoteServers.wake()));
       powerMonitor.on("resume", () => built.messaging.resume());
-      powerMonitor.on("resume", renewHostSignal);
       const routineWake = new RoutineWake({ routines: service, isOnline: () => net.isOnline() });
       powerMonitor.on("suspend", () => routineWake.suspend());
       powerMonitor.on("resume", () => routineWake.resume());

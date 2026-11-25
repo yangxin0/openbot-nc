@@ -160,3 +160,17 @@
   desktop release workflow builds for the GitHub releases of your own repository, and a new release
   goes to all installs unless `RELEASE_STAGING_PERCENTAGE` is set.
 - The macOS app no longer claims `openbot.run` links (Universal Links).
+- The WebRTC and Signal code. All clients reach hosts only through the central server: the desktop
+  with HTTP over relay tunnels, the web client, the browser extension and the phone with Team
+  protocol V2 over relay tunnels. The hidden WebRTC window is gone. A team server saved by an older
+  version as a WebRTC server no longer shows in the server list; its entry stays unchanged in
+  `openbot-remote-servers-v1.json`. Connect to that server again through your team.
+- The Signal server choice in Server Settings > General, the "Fast connection to servers" switch,
+  and the network route setting. Their saved preference files stay on disk unused.
+- Sharing the network of this computer with a browser profile of a team server ("computer" proxy).
+  It needed a WebRTC channel. A browser profile that uses a member's computer shows it offline.
+- The phone and the web client cannot open the live browser view of a host yet: it needed a WebRTC
+  channel.
+- Upload progress of attachments sent to a team server from the desktop. The upload still works.
+- A server in safe mode starts its safe mode service on this computer only; team members cannot
+  read the safe mode reason until the central server carries it.

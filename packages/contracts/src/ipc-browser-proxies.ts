@@ -309,16 +309,3 @@ export function parseSetBrowserProfileProxyInput(value: unknown): SetBrowserProf
   if (!isDynamicRecord(value) || !isBrowserProfileId(value.profileId)) throw new Error("Invalid browser profile.");
   return { profileId: value.profileId, proxyId: value.proxyId === null ? null : parseBrowserProxyId(value.proxyId) };
 }
-
-export interface BrowserComputerSharing {
-  sharing: boolean;
-}
-
-export function decodeBrowserComputerSharing(value: unknown): BrowserComputerSharing {
-  if (!isDynamicRecord(value) || typeof value.sharing !== "boolean") throw new Error("Invalid computer sharing.");
-  return { sharing: value.sharing };
-}
-
-export function decodeOptionalBrowserComputerSharing(value: unknown): BrowserComputerSharing | null {
-  return value === null ? null : decodeBrowserComputerSharing(value);
-}

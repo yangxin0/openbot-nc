@@ -72,11 +72,6 @@ for (const [path, endpoint] of expected) {
   if (method !== undefined) checkCall(main, path, method, endpoint);
 }
 
-const teamWebrtc = runPreload("teamWebrtc.cjs");
-if (teamWebrtc.worlds.size > 0) {
-  failures.push(`teamWebrtc.cjs must expose no world; it exposes: ${[...teamWebrtc.worlds.keys()].join(", ")}.`);
-}
-
 const browserPage = runPreload("browserPage.cjs");
 if (browserPage.worlds.size > 0) {
   failures.push(`browserPage.cjs must expose no world; it exposes: ${[...browserPage.worlds.keys()].join(", ")}.`);

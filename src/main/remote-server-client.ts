@@ -23,64 +23,17 @@ import {
   teamProtocolUpdateDirection,
 } from "@openbot/contracts/team-protocol/v1";
 import type { TeamProtocolSupportV9 } from "@openbot/contracts/team-protocol/v9";
-import { hasTeamProtocolV10Lists, TEAM_PROTOCOL_V10 } from "@openbot/contracts/team-protocol/v10";
 import { sourceText } from "@openbot/i18n/source";
 import { Deferred, Effect, Option, Result } from "effect";
 import type { ResponseDecoder } from "./remote-host-decoding";
-import {
-  assumedCompatibility,
-  LOCAL_TEAM_PROTOCOL,
-  negotiatedCompatibility,
-  webRtcCompatibility,
-} from "./remote-server-connection-status";
+import { assumedCompatibility, LOCAL_TEAM_PROTOCOL, negotiatedCompatibility } from "./remote-server-connection-status";
 import { RemoteProtocolError, RemoteRequestError } from "./remote-server-errors";
-import {
-  type RemoteFetch,
-  remoteFetch,
-  requestJson,
-  throwRemoteResponseError,
-  webRtcRequestBody,
-} from "./remote-server-http";
+import { type RemoteFetch, remoteFetch, requestJson, throwRemoteResponseError } from "./remote-server-http";
 import type { StoredRemoteServerView } from "./remote-server-store";
 import { addRemotePreviewUrls } from "./remote-server-urls";
-import { type RemoteFileProgress, RemoteWorkflowError, remoteDecode } from "./remote-service-effects";
+import { RemoteWorkflowError, remoteDecode } from "./remote-service-effects";
 import { decodeIdentityProof } from "./remote-team-decoding";
 import { fingerprint } from "./team-store";
-import { TeamWebRtcRequestError } from "./team-webrtc-client-transport";
-
-export interface RemoteHostRequestTransport {
-  request: (
-    hostId: string,
-    path: string,
-    init?: {
-      method?: string | undefined;
-      body?: unknown;
-      preserveSemanticTags?: boolean | undefined;
-      agentCreateModel?: boolean | undefined;
-      timeoutMs?: number | undefined;
-    },
-  ) => Effect.Effect<unknown, RemoteWorkflowError>;
-  requestResponse: (
-    hostId: string,
-    path: string,
-    init?: {
-      method?: string | undefined;
-      body?: unknown;
-      contentType?: string | undefined;
-      preserveSemanticTags?: boolean | undefined;
-      timeoutMs?: number | undefined;
-      fileProgress?: RemoteFileProgress | undefined;
-      uploadProgress?: ((sent: number, total: number) => void) | undefined;
-    },
-  ) => Effect.Effect<
-    {
-      status: number;
-      body: unknown;
-      file?: { bytes: Uint8Array; name: string; mimeType: string };
-    },
-    RemoteWorkflowError
-  >;
-}
 
 export interface RemoteServerLookup {
   require: (serverId: string) => StoredRemoteServerView;
@@ -99,7 +52,6 @@ export interface RemoteServerClientOptions {
   appVersion: string | null;
   servers: RemoteServerLookup;
   connections: RemoteConnectionSink;
-  transport: RemoteHostRequestTransport | null;
   relayFetch?: ((url: URL) => RemoteFetch | null) | undefined;
 }
 
@@ -131,7 +83,6 @@ export class RemoteServerClient {
   readonly #appVersion: string | null;
   readonly #servers: RemoteServerLookup;
   readonly #connections: RemoteConnectionSink;
-  readonly #transport: RemoteHostRequestTransport | null;
   readonly #relayFetch: ((url: URL) => RemoteFetch | null) | null;
   readonly #compatibilityRequests = new Map<string, Deferred.Deferred<ServerCompatibility, RemoteWorkflowError>>();
 
@@ -139,7 +90,6 @@ export class RemoteServerClient {
     this.#appVersion = options.appVersion;
     this.#servers = options.servers;
     this.#connections = options.connections;
-    this.#transport = options.transport;
     this.#relayFetch = options.relayFetch ?? null;
   }
 
@@ -156,15 +106,6 @@ export class RemoteServerClient {
   ): Effect.fn.Return<T, RemoteWorkflowError> {
     const server = yield* remoteDecode(() => this.#servers.require(serverId));
     return yield* Effect.gen({ self: this }, function* () {
-      if (server.transport === "webrtc-v2") {
-        const compatibility = yield* this.ensureCompatibility(server);
-        const value = yield* this.#hostRequestEffect(server.id, path, {
-          ...init,
-          preserveSemanticTags: supportsTeamSemanticTags(compatibility.capabilities),
-          agentCreateModel: this.supportsAgentCreateModel(path, init, compatibility.capabilities),
-        });
-        return yield* remoteDecode(() => addRemotePreviewUrls(decodeOrProtocolError(decoder, value), server.id));
-      }
       const compatibility = yield* this.ensureCompatibility(server);
       const value = yield* requestJson(server.apiUrl, path, decoder, {
         ...init,
@@ -194,46 +135,8 @@ export class RemoteServerClient {
     init: RequestInit = {},
     affectsConnection = true,
     timeoutMs?: number,
-    fileProgress?: RemoteFileProgress,
-    uploadProgress?: (sent: number, total: number) => void,
   ): Effect.fn.Return<Response, RemoteWorkflowError> {
     return yield* Effect.gen({ self: this }, function* () {
-      if (server.transport === "webrtc-v2") {
-        const transport = yield* remoteDecode(() => this.#requireTransport());
-        const url = new URL(input);
-        const attempt2 = yield* Effect.gen({ self: this }, function* () {
-          const compatibility = yield* this.ensureCompatibility(server);
-          const contentType = new Headers(init.headers).get("Content-Type") ?? undefined;
-          const requestBody = yield* remoteDecode(() => webRtcRequestBody(init.body, contentType));
-          const response = yield* transport.requestResponse(server.id, `${url.pathname}${url.search}`, {
-            ...(init.method === undefined ? {} : { method: init.method }),
-            ...(requestBody === undefined ? {} : { body: requestBody }),
-            ...(contentType === undefined ? {} : { contentType }),
-            ...(timeoutMs === undefined ? {} : { timeoutMs }),
-            ...(fileProgress === undefined ? {} : { fileProgress }),
-            ...(uploadProgress === undefined ? {} : { uploadProgress }),
-            preserveSemanticTags: supportsTeamSemanticTags(compatibility.capabilities),
-          });
-          const headers = new Headers();
-          if (response.file) {
-            headers.set("Content-Type", response.file.mimeType);
-            headers.set(
-              "Content-Disposition",
-              `attachment; filename*=UTF-8''${encodeURIComponent(response.file.name)}`,
-            );
-            return new Response(Buffer.from(response.file.bytes), { status: response.status, headers });
-          }
-          headers.set("Content-Type", "application/json");
-          return new Response(response.status === 204 ? null : JSON.stringify(response.body), {
-            status: response.status,
-            headers,
-          });
-        }).pipe(Effect.result);
-        if (Result.isFailure(attempt2)) {
-          const error = attempt2.failure.cause;
-          return yield* remoteDecode(() => rethrowAsRemoteRequestError(error));
-        } else return attempt2.success;
-      }
       const compatibility = yield* this.ensureCompatibility(server);
       const headers = new Headers(init.headers);
       headers.set("Authorization", `Bearer ${this.#servers.token(server)}`);
@@ -333,9 +236,7 @@ export class RemoteServerClient {
     const request = Deferred.makeUnsafe<ServerCompatibility, RemoteWorkflowError>();
     this.#compatibilityRequests.set(server.id, request);
     return yield* Effect.gen({ self: this }, function* () {
-      const compatibility = yield* server.transport === "webrtc-v2"
-        ? this.#negotiateWebRtcCompatibilityEffect(server.id)
-        : this.negotiateCompatibility(server.apiUrl);
+      const compatibility = yield* this.negotiateCompatibility(server.apiUrl);
       if (compatibility.capabilities.includes(SERVER_SAFE_MODE_CAPABILITY))
         return yield* this.#serverSafeModeError(server, compatibility);
       this.#connections.setCompatibility(server.id, compatibility);
@@ -356,16 +257,11 @@ export class RemoteServerClient {
     server: StoredRemoteServerView,
     compatibility: ServerCompatibility,
   ): Effect.fn.Return<never, RemoteWorkflowError> {
-    const reason = yield* server.transport === "webrtc-v2"
-      ? this.#hostRequestEffect(server.id, SERVER_SAFE_MODE_ROUTES.reason).pipe(
-          Effect.flatMap((value) => remoteDecode(() => decodeServerSafeModeReason(value))),
-          Effect.option,
-        )
-      : requestJson(server.apiUrl, SERVER_SAFE_MODE_ROUTES.reason, decodeServerSafeModeReason, {
-          fetch: this.fetchFor(server.apiUrl),
-          token: this.#servers.token(server),
-          ...this.requestProtocol(compatibility),
-        }).pipe(Effect.option);
+    const reason = yield* requestJson(server.apiUrl, SERVER_SAFE_MODE_ROUTES.reason, decodeServerSafeModeReason, {
+      fetch: this.fetchFor(server.apiUrl),
+      token: this.#servers.token(server),
+      ...this.requestProtocol(compatibility),
+    }).pipe(Effect.option);
     const message = Option.match(reason, {
       onNone: () => sourceText("error.team.serverSafeMode"),
       onSome: ({ reason, appVersion }) =>
@@ -387,16 +283,6 @@ export class RemoteServerClient {
       ),
     });
   });
-
-  readonly refreshWebRtcCompatibility = Effect.fn("RemoteClient.refreshWebRtcCompatibility")(function* (
-    this: RemoteServerClient,
-    server: StoredRemoteServerView,
-  ): Effect.fn.Return<void, RemoteWorkflowError> {
-    if (!this.#transport) return;
-    yield* this.ensureCompatibility(server, true).pipe(
-      Effect.tapError(({ cause }) => Effect.sync(() => this.#connections.reportError(server.id, cause))),
-    );
-  }).bind(this);
 
   readonly negotiateCompatibility = Effect.fn("RemoteClient.negotiateCompatibility")(function* (
     this: RemoteServerClient,
@@ -539,66 +425,10 @@ export class RemoteServerClient {
     this.#compatibilityRequests.clear();
   }
 
-  readonly #negotiateWebRtcCompatibilityEffect = Effect.fn("RemoteClient.negotiateWebRtcCompatibility")(function* (
-    this: RemoteServerClient,
-    serverId: string,
-  ): Effect.fn.Return<ServerCompatibility, RemoteWorkflowError> {
-    const first = yield* this.#readWebRtcCompatibilityEffect(serverId);
-    const host =
-      !first.lists && Math.min(first.support.protocol.maximum, LOCAL_TEAM_PROTOCOL.maximum) >= TEAM_PROTOCOL_V10
-        ? (yield* this.#readWebRtcCompatibilityEffect(serverId)).support
-        : first.support;
-    return webRtcCompatibility(this.#appVersion, host);
-  });
-
-  readonly #readWebRtcCompatibilityEffect = Effect.fn("RemoteClient.readWebRtcCompatibility")(function* (
-    this: RemoteServerClient,
-    serverId: string,
-  ): Effect.fn.Return<{ support: TeamProtocolSupportV9; lists: boolean }, RemoteWorkflowError> {
-    const value = yield* this.#hostRequestEffect(serverId, TEAM_API_ROUTES.compatibility);
-    const support = yield* remoteDecode(() =>
-      decodeOrProtocolError(decodeTeamProtocolSupportExpanded, value, sourceText("error.remote.invalidCompatibility")),
-    );
-    return { support, lists: hasTeamProtocolV10Lists(value) };
-  });
-
-  readonly #hostRequestEffect = Effect.fn("RemoteClient.hostRequest")(function* (
-    this: RemoteServerClient,
-    serverId: string,
-    path: string,
-    init: { method?: string; body?: unknown; preserveSemanticTags?: boolean; agentCreateModel?: boolean } = {},
-  ): Effect.fn.Return<unknown, RemoteWorkflowError> {
-    return yield* Effect.gen({ self: this }, function* () {
-      return yield* this.#requireTransport().request(serverId, path, init);
-    }).pipe(Effect.catch(({ cause }) => remoteDecode(() => rethrowAsRemoteRequestError(cause))));
-  });
-
   private supportsAgentCreateModel(path: string, init: RemoteRequestInit, capabilities: readonly string[]): boolean {
     return (
       isAgentCreateRoute(init.method ?? (init.body === undefined ? "GET" : "POST"), path) &&
       capabilities.includes(TEAM_AGENT_CREATE_MODEL_CAPABILITY)
     );
   }
-
-  #requireTransport(): RemoteHostRequestTransport {
-    if (!this.#transport) throw new Error(sourceText("error.remote.webRtcUnavailable"));
-    return this.#transport;
-  }
-}
-
-function decodeOrProtocolError<T>(
-  decoder: ResponseDecoder<T>,
-  value: unknown,
-  message = sourceText("error.remote.unsafeData"),
-): T {
-  try {
-    return decoder(value);
-  } catch (error) {
-    throw new RemoteProtocolError("protocol_error", message, null, { cause: error });
-  }
-}
-
-function rethrowAsRemoteRequestError(error: unknown): never {
-  if (error instanceof TeamWebRtcRequestError) throw new RemoteRequestError(error.status, error.message, error.code);
-  throw error;
 }

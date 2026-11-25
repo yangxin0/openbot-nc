@@ -9,7 +9,7 @@ import { sourceText } from "@openbot/i18n/source";
 import type { TeamApiAgents } from "./dependencies";
 import { HttpError } from "./http-error";
 import type { RouteOutcome, TeamApiRequestContext } from "./request-context";
-import { messageTextCut, nullableString, readJson, WEBRTC_FRAME_BODY_BUDGET } from "./request-helpers";
+import { messageTextCut, nullableString, readJson, TEAM_V2_FRAME_BODY_BUDGET } from "./request-helpers";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -19,21 +19,21 @@ export function searchPageWithinFrame(
 ): ConversationSearchPage {
   let page = search(limit);
   let bytes = Buffer.byteLength(JSON.stringify(page));
-  if (bytes > WEBRTC_FRAME_BODY_BUDGET) {
+  if (bytes > TEAM_V2_FRAME_BODY_BUDGET) {
     let kept = 0;
     let size = Buffer.byteLength(JSON.stringify({ ...page, results: [] }));
     for (const result of page.results) {
       size += Buffer.byteLength(JSON.stringify(result)) + 1;
-      if (size > WEBRTC_FRAME_BODY_BUDGET) break;
+      if (size > TEAM_V2_FRAME_BODY_BUDGET) break;
       kept += 1;
     }
     page = search(Math.max(1, kept));
     bytes = Buffer.byteLength(JSON.stringify(page));
   }
-  if (bytes <= WEBRTC_FRAME_BODY_BUDGET) return page;
+  if (bytes <= TEAM_V2_FRAME_BODY_BUDGET) return page;
   const cut = messageTextCut(
     page.results.map((result) => result.message),
-    bytes - WEBRTC_FRAME_BODY_BUDGET,
+    bytes - TEAM_V2_FRAME_BODY_BUDGET,
   );
   return { ...page, results: page.results.map((result) => ({ ...result, message: cut(result.message) })) };
 }

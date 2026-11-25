@@ -30,8 +30,6 @@ import type {
   MacPermissionId,
   MemoryReviewPreference,
   NotificationPreference,
-  RemoteNetworkRoutePreference,
-  RemoteSessionReusePreference,
   RendererTimingReport,
   SaveSetupInput,
   SetAgentDockInteractiveInput,
@@ -78,7 +76,6 @@ import {
   isDynamicIslandPreference,
   isDynamicIslandPresentation,
   isMemoryReviewInterval,
-  isRemoteNetworkRoute,
   MAC_AUTOMATION_TARGETS,
   QUIT_GUARDS,
   RENDERER_TIMING_LIMITS,
@@ -158,17 +155,6 @@ export function parseExternalLinkPreference(input: unknown): ExternalLinkPrefere
   const target = isDynamicRecord(input) ? decodeExternalLinkTarget(input.target) : null;
   if (!target) throw new Error("The external link setting is required.");
   return { target };
-}
-
-export function parseRemoteSessionReusePreference(input: unknown): RemoteSessionReusePreference {
-  if (!isDynamicRecord(input) || !isBoolean(input.keepBetweenRuns))
-    throw new Error("The remote session setting is required.");
-  return { keepBetweenRuns: input.keepBetweenRuns };
-}
-
-export function parseRemoteNetworkRoutePreference(input: unknown): RemoteNetworkRoutePreference {
-  if (!isDynamicRecord(input) || !isRemoteNetworkRoute(input.route)) throw new Error("The network route is required.");
-  return { route: input.route };
 }
 
 export function parseAppLanguagePreference(input: unknown): SetAppLanguagePreferenceInput {

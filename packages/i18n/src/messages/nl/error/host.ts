@@ -2,7 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.webRtcNotConfigured": "De WebRTC-hostservice is niet geconfigureerd.",
   "error.host.nameBeforePublish": "Geef deze OpenBot een naam voordat je hem publiceert.",
   "error.host.publishBeforeInvite": "Maak deze OpenBot openbaar voordat je een uitnodiging maakt.",
   "error.host.teamAccessUnavailable": "Je teamtoegang is niet beschikbaar.",
@@ -12,7 +11,6 @@ export const messages = {
   "error.host.identityLocalOnly":
     "De naam en het logo van de server kun je alleen wijzigen op de computer waarop de server draait.",
   "error.host.timezoneInvalid": "Deze tijdzone is onbekend.",
-  "error.host.signalHomeUnknown": "Deze Signal-server is niet beschikbaar.",
   "error.host.turnLimitInvalid": "Deze threadlimiet is ongeldig.",
   "error.host.maintenanceInterrupted":
     "Onderhoud van de host is onderbroken. Controleer de app en zet de status van de host terug voordat je het opnieuw probeert.",

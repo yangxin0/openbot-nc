@@ -10,15 +10,13 @@ import {
 } from "@openbot/contracts/team-protocol/v2";
 import { Effect, Result } from "effect";
 import { RemoteWorkflowError } from "../src/main/remote-service-effects";
-import type { TeamWebRtcBridge } from "../src/main/team-webrtc-bridge";
-import { TeamWebRtcFileTransfer } from "../src/main/team-webrtc-file-transfer";
-
-type BridgeEvents = TeamWebRtcBridge extends EventEmitter<infer Events> ? Events : never;
+import type { TeamV2ChannelTransport, TeamV2ChannelTransportEvents } from "../src/main/team-v2-channel-transport";
+import { TeamV2FileTransfer } from "../src/main/team-v2-file-transfer";
 
 const FILE_BYTES = 3 * 1024 * 1024;
 const FAILED_CHUNK_INDEX = 30;
 
-class LinkedBridge extends EventEmitter<BridgeEvents> {
+class LinkedBridge extends EventEmitter<TeamV2ChannelTransportEvents> {
   target: LinkedBridge | null = null;
   #chain: Promise<void> = Promise.resolve();
   #onSend: (data: string | ArrayBuffer) => "fail" | "hold" | "release" | "send" = () => "send";
@@ -32,7 +30,7 @@ class LinkedBridge extends EventEmitter<BridgeEvents> {
     this.#onSend = onSend;
   }
 
-  readonly send: TeamWebRtcBridge["send"] = (_peerId, channel, data) =>
+  readonly send: TeamV2ChannelTransport["send"] = (_peerId, channel, data) =>
     Effect.suspend(() => {
       const action = this.#onSend(data);
       if (action === "fail")
@@ -50,7 +48,7 @@ class LinkedBridge extends EventEmitter<BridgeEvents> {
       return Effect.void;
     });
 
-  readonly disconnectPeer: TeamWebRtcBridge["disconnectPeer"] = () => Effect.void;
+  readonly disconnectPeer: TeamV2ChannelTransport["disconnectPeer"] = () => Effect.void;
 }
 
 interface ResumeReport {
@@ -74,13 +72,13 @@ const report: ResumeReport = {
   receivedEqualsSent: false,
 };
 
-const directory = await mkdtemp(join(tmpdir(), "openbot-webrtc-file-resume-"));
+const directory = await mkdtemp(join(tmpdir(), "openbot-team-v2-file-resume-"));
 const clientBridge = new LinkedBridge("client");
 const hostBridge = new LinkedBridge("host");
 clientBridge.target = hostBridge;
 hostBridge.target = clientBridge;
-const client = new TeamWebRtcFileTransfer(clientBridge, join(directory, "client"));
-const host = new TeamWebRtcFileTransfer(hostBridge, join(directory, "host"));
+const client = new TeamV2FileTransfer(clientBridge, join(directory, "client"));
+const host = new TeamV2FileTransfer(hostBridge, join(directory, "host"));
 client.setPeerAuthenticated("host", true);
 host.setPeerAuthenticated("client", true);
 
@@ -142,6 +140,6 @@ try {
   await rm(directory, { recursive: true, force: true });
   const artifactDirectory = new URL("../.openbot-build/", import.meta.url);
   await mkdir(artifactDirectory, { recursive: true });
-  await writeFile(new URL("webrtc-file-resume-e2e.json", artifactDirectory), `${JSON.stringify(report, null, 2)}\n`);
+  await writeFile(new URL("team-v2-file-resume-e2e.json", artifactDirectory), `${JSON.stringify(report, null, 2)}\n`);
 }
 process.stdout.write(`${JSON.stringify(report)}\n`);
