@@ -135,7 +135,7 @@ import {
 } from "./remote-desktop-signal";
 import { RemoteWorkflowError, remoteCall, remoteDecode } from "./remote-service-effects";
 import type { TeamStore } from "./team-store";
-import type { TeamWebRtcBridge } from "./team-webrtc-bridge";
+import type { TeamV2Channel, TeamV2ChannelBinding, TeamV2ChannelTransport } from "./team-v2-channel-transport";
 import type { VerifiedRemoteSessionTicket } from "./team-webrtc-directory-records";
 import { type ReceivedWebRtcFile, TeamFileTooLargeError, TeamWebRtcFileTransfer } from "./team-webrtc-file-transfer";
 import { rawDataBytes, sendableCloseCode } from "./ws-raw-data";
@@ -149,7 +149,6 @@ const MAXIMUM_KEPT_RESPONSE_CHARACTERS = 4 * 1024 * 1024;
 const MAXIMUM_DESKTOP_STREAMS = 6;
 
 export interface TeamWebRtcHostPeerOptions {
-  bridge: TeamWebRtcBridge;
   store: TeamStore;
   appVersion: string;
   transferDirectory: string;
@@ -175,13 +174,13 @@ export interface IncomingConnection {
 class HostPeerTransport extends Context.Service<
   HostPeerTransport,
   {
-    send(...args: Parameters<TeamWebRtcBridge["send"]>): Effect.Effect<void, RemoteWorkflowError>;
+    send(...args: Parameters<TeamV2ChannelTransport["send"]>): Effect.Effect<void, RemoteWorkflowError>;
     fetch(input: URL, init: RequestInit): Effect.Effect<Response, RemoteWorkflowError>;
   }
 >()("openbot/main/HostPeerTransport") {}
 
 export class TeamWebRtcHostPeer {
-  readonly #bridge: TeamWebRtcBridge;
+  readonly #transport: TeamV2ChannelTransport;
   readonly #runtime: ManagedRuntime.ManagedRuntime<HostPeerTransport, never>;
   readonly #operations = new Set<Fiber.Fiber<void, RemoteWorkflowError>>();
   readonly #closingSessions = new Set<Fiber.Fiber<void>>();
@@ -219,24 +218,28 @@ export class TeamWebRtcHostPeer {
   #sessionExpirationTimer: ReturnType<typeof setTimeout> | null = null;
   #sessionPreparation: Deferred.Deferred<void, RemoteWorkflowError> | null = null;
   #pendingConnection: IncomingConnection | null = null;
-  #peerBinding: { localFingerprint: string; remoteFingerprint: string } | null = null;
-  #sessionBinding: { localFingerprint: string; remoteFingerprint: string } | null = null;
+  #peerBinding: TeamV2ChannelBinding | null = null;
+  #sessionBinding: TeamV2ChannelBinding | null = null;
+  #webRtcSessionHeader: string | null = null;
   #authenticationCompletion: {
     claims: VerifiedRemoteSessionTicket;
     clientNonce: string;
     hostNonce: string;
   } | null = null;
 
-  constructor(options: TeamWebRtcHostPeerOptions, input: { peerId: string; hostId: string; localApiPort: number }) {
+  constructor(
+    options: TeamWebRtcHostPeerOptions,
+    input: { peerId: string; hostId: string; localApiPort: number; transport: TeamV2ChannelTransport },
+  ) {
     this.#peerId = input.peerId;
     this.#hostId = input.hostId;
     this.#localApiPort = input.localApiPort;
-    this.#bridge = options.bridge;
+    this.#transport = input.transport;
     this.#runtime = ManagedRuntime.make(
       Layer.succeed(
         HostPeerTransport,
         HostPeerTransport.of({
-          send: (...args) => options.bridge.send(...args),
+          send: (...args) => input.transport.send(...args),
           fetch: (input, init) =>
             Effect.tryPromise({
               try: (signal) => fetch(input, { ...init, signal }),
@@ -248,7 +251,7 @@ export class TeamWebRtcHostPeer {
     this.#store = options.store;
     this.#appVersion = options.appVersion;
     this.#files = new TeamWebRtcFileTransfer(
-      options.bridge,
+      input.transport,
       join(options.transferDirectory, createHash("sha256").update(input.peerId).digest("hex")),
       undefined,
       (peerId) => peerId === this.#peerId && this.#localSessionToken !== null,
@@ -258,11 +261,11 @@ export class TeamWebRtcHostPeer {
     this.#unknownMemberConnected = options.unknownMemberConnected ?? (() => undefined);
     this.#peerMemberChanged = options.peerMemberChanged ?? (() => undefined);
     this.#verifyClientTicket = options.verifyClientTicket ?? null;
-    this.#bridge.on("connected", this.#onConnected);
-    this.#bridge.on("data", this.#onData);
-    this.#bridge.on("disconnected", this.#onDisconnected);
-    this.#bridge.on("pathLost", this.#onPathLost);
-    this.#bridge.on("pathRestored", this.#onPathRestored);
+    this.#transport.on("connected", this.#onConnected);
+    this.#transport.on("data", this.#onData);
+    this.#transport.on("disconnected", this.#onDisconnected);
+    this.#transport.on("pathLost", this.#onPathLost);
+    this.#transport.on("pathRestored", this.#onPathRestored);
   }
 
   readonly revokeSession = Effect.fn("TeamHostPeer.revokeSession")(function* (
@@ -272,7 +275,7 @@ export class TeamWebRtcHostPeer {
     if (sessionId !== this.#localSessionId && sessionId !== this.#pendingConnection?.sessionId) return;
     const peerId = this.#peerId;
     yield* this.#beginDisposal();
-    if (peerId) yield* this.#bridge.disconnectPeer(peerId).pipe(Effect.catch(() => Effect.void));
+    if (peerId) yield* this.#transport.disconnectPeer(peerId).pipe(Effect.catch(() => Effect.void));
   }).bind(this);
 
   #setPeerAuthenticated(peerId: string, authenticated: boolean): void {
@@ -297,11 +300,11 @@ export class TeamWebRtcHostPeer {
 
   readonly #beginDisposal = Effect.fn("TeamHostPeer.beginDisposal")(function* (this: TeamWebRtcHostPeer) {
     if (this.#disposal) return this.#disposal;
-    this.#bridge.off("connected", this.#onConnected);
-    this.#bridge.off("data", this.#onData);
-    this.#bridge.off("disconnected", this.#onDisconnected);
-    this.#bridge.off("pathLost", this.#onPathLost);
-    this.#bridge.off("pathRestored", this.#onPathRestored);
+    this.#transport.off("connected", this.#onConnected);
+    this.#transport.off("data", this.#onData);
+    this.#transport.off("disconnected", this.#onDisconnected);
+    this.#transport.off("pathLost", this.#onPathLost);
+    this.#transport.off("pathRestored", this.#onPathRestored);
     yield* this.#closeLocalSession(false);
     this.#forgetResponses();
     this.#peerId = null;
@@ -332,7 +335,7 @@ export class TeamWebRtcHostPeer {
     this.#pendingConnection = connection;
   }).bind(this);
 
-  readonly #onConnected = (peerId: string, binding?: { localFingerprint: string; remoteFingerprint: string }): void => {
+  readonly #onConnected = (peerId: string, binding?: TeamV2ChannelBinding): void => {
     if (peerId !== this.#peerId) return;
     this.#peerBinding = binding ?? null;
     if (
@@ -361,21 +364,42 @@ export class TeamWebRtcHostPeer {
   ): Effect.fn.Return<void, RemoteWorkflowError, HostPeerTransport> {
     if (peerId !== this.#peerId) return;
     if (connection.sessionId === this.#localSessionId && this.#localSessionToken) return;
+    this.#resetSessionStreams();
+    const expiresAt = connection.sessionExpiresAt * 1_000;
+    if (expiresAt <= Date.now()) return;
+    const session = yield* remoteDecode(() => this.#store.openRemoteSession({ ...connection, expiresAt }));
+    this.#localSessionToken = session.sessionToken;
+    this.#localSessionId = connection.sessionId;
+    this.#webRtcSessionHeader = connection.sessionId;
+    this.#sessionMembershipId = connection.membershipId;
+    this.#scheduleSessionExpiration(expiresAt);
+    if (!this.#store.getMember(connection.membershipId)) this.#unknownMemberConnected(connection.membershipId);
+  });
+
+  readonly adoptSession = Effect.fn("TeamHostPeer.adoptSession")(function* (
+    this: TeamWebRtcHostPeer,
+    session: { sessionId: string; sessionToken: string; membershipId: string; expiresAt: number },
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    const peerId = this.#peerId;
+    if (!peerId || this.#localSessionToken || this.#pendingConnection || session.expiresAt <= Date.now()) {
+      return yield* new RemoteWorkflowError({ cause: new Error("The relay session cannot start.") });
+    }
+    this.#resetSessionStreams();
+    this.#localSessionToken = session.sessionToken;
+    this.#localSessionId = session.sessionId;
+    this.#sessionMembershipId = session.membershipId;
+    this.#scheduleSessionExpiration(session.expiresAt);
+    this.#setPeerAuthenticated(peerId, true);
+  }).bind(this);
+
+  #resetSessionStreams(): void {
     this.#events.clear();
     this.#eventCharacters = 0;
     this.#forgetResponses();
     this.#nextEventSequence = 1;
     this.#eventsSentThrough = 0;
     this.#eventResetPending = false;
-    const expiresAt = connection.sessionExpiresAt * 1_000;
-    if (expiresAt <= Date.now()) return;
-    const session = yield* remoteDecode(() => this.#store.openRemoteSession({ ...connection, expiresAt }));
-    this.#localSessionToken = session.sessionToken;
-    this.#localSessionId = connection.sessionId;
-    this.#sessionMembershipId = connection.membershipId;
-    this.#scheduleSessionExpiration(expiresAt);
-    if (!this.#store.getMember(connection.membershipId)) this.#unknownMemberConnected(connection.membershipId);
-  });
+  }
 
   #scheduleSessionExpiration(expiresAt: number): void {
     const remaining = expiresAt - Date.now();
@@ -390,11 +414,7 @@ export class TeamWebRtcHostPeer {
     this.#sessionExpirationTimer.unref?.();
   }
 
-  readonly #onData = (
-    peerId: string,
-    channel: "rpc" | "events" | "files" | "desktop",
-    data: string | ArrayBuffer,
-  ): void => {
+  readonly #onData = (peerId: string, channel: TeamV2Channel, data: string | ArrayBuffer): void => {
     if (peerId !== this.#peerId) return;
     const authFrame = channel === "rpc" && isString(data) ? authenticationFrame(data) : null;
     if (authFrame?.type === "auth-init") {
@@ -800,7 +820,7 @@ export class TeamWebRtcHostPeer {
             "OpenBot-App-Version": this.#appVersion,
             "OpenBot-Capabilities": forwarded.capabilities.join(","),
             ...(forwarded.absent.length ? { [TEAM_ABSENT_CAPABILITIES_HEADER]: forwarded.absent.join(",") } : {}),
-            ...(this.#localSessionId ? { "X-OpenBot-WebRTC-Session": this.#localSessionId } : {}),
+            ...(this.#webRtcSessionHeader ? { "X-OpenBot-WebRTC-Session": this.#webRtcSessionHeader } : {}),
           },
           ...(requestBody === undefined ? {} : { body: requestBody }),
         }),
@@ -1056,7 +1076,7 @@ export class TeamWebRtcHostPeer {
     if (peerId !== this.#peerId) return;
     this.#setPeerAuthenticated(peerId, false);
     yield* this.#closeLocalSession();
-    yield* this.#bridge.disconnectPeer(peerId).pipe(Effect.catch(() => Effect.void));
+    yield* this.#transport.disconnectPeer(peerId).pipe(Effect.catch(() => Effect.void));
   });
 
   readonly #handleDesktopSignal = Effect.fn("TeamHostPeer.handleDesktopSignal")(function* (
@@ -1172,6 +1192,7 @@ export class TeamWebRtcHostPeer {
     }
     this.#localSessionId = null;
     this.#localSessionToken = null;
+    this.#webRtcSessionHeader = null;
     this.#sessionMembershipId = null;
     this.#sessionBinding = null;
     this.#sessionPreparation = null;

@@ -184,6 +184,7 @@ import { QUEUE_HOLD_CAPABILITY, QUEUE_HOLD_SIGN_IN_CAPABILITY } from "./queue-ho
 import { QUIET_TURN_CAPABILITY } from "./quiet-turn-v1";
 import { TEAM_REASONING_EFFORTS_CAPABILITY } from "./reasoning-efforts-v1";
 import { TEAM_RELAY_AUTH_CAPABILITY } from "./relay-auth-v1";
+import { TEAM_RELAY_V2_TUNNELS_CAPABILITY } from "./relay-v2-tunnels-v1";
 import { ROUTINE_FLOW_STOP_CAPABILITY } from "./routine-flow-stop-v1";
 import { ROUTINE_FLOWS_CAPABILITY } from "./routine-flows-v1";
 import { ROUTINE_PAUSE_REASONS_CAPABILITY } from "./routine-pause-reasons-v1";
@@ -482,6 +483,7 @@ export {
   TEAM_PROMPT_MULTI_SELECT_CAPABILITY,
   TEAM_REASONING_EFFORTS_CAPABILITY,
   TEAM_RELAY_AUTH_CAPABILITY,
+  TEAM_RELAY_V2_TUNNELS_CAPABILITY,
   TEAM_SUBAGENTS_CAPABILITY,
   TEAM_UI_BLOCK_AUTO_ANSWER_CAPABILITY,
   TEAM_UI_BLOCK_LOCATION_CAPABILITY,
@@ -850,6 +852,7 @@ const TEAM_CAPABILITY_REGISTRY = [
   [TEAM_PROMPT_DETAIL_CAPABILITY, V10],
   [HOST_TURN_LIMITS_EVENTS_CAPABILITY, V10],
   [TEAM_RELAY_AUTH_CAPABILITY, V10],
+  [TEAM_RELAY_V2_TUNNELS_CAPABILITY, V10],
 ] as const satisfies readonly (readonly [string, TeamCapabilityPlacement])[];
 
 export const TEAM_CURRENT_CAPABILITIES = TEAM_CAPABILITY_REGISTRY.map(([capability]) => capability);

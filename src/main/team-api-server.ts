@@ -180,6 +180,7 @@ import {
   TEAM_MEMORY_CHANGES_CAPABILITY,
   TEAM_PROMPT_MULTI_SELECT_CAPABILITY,
   TEAM_RELAY_AUTH_CAPABILITY,
+  TEAM_RELAY_V2_TUNNELS_CAPABILITY,
   TEAM_SUBAGENTS_CAPABILITY,
   TEAM_UI_BLOCKS_CAPABILITY,
   TEAM_USAGE_GROUPS_CAPABILITY,
@@ -632,7 +633,9 @@ export class TeamApiServer {
   readonly #representableAgents = new Map<string, Map<string, { json: string; representable: boolean }>>();
   #nextRateLimitSweepAt = 0;
   readonly #relayPeers = new WeakMap<object, RelayPeer>();
+  readonly #relaySessions = new Map<string, RelayPeer>();
   #relayHosting = false;
+  #relayV2Tunnels = false;
 
   constructor(options: TeamApiOptions) {
     this.#options = { ...options, sidebarLayout: options.sidebarLayout ?? unavailableSidebarLayout() };
@@ -654,8 +657,17 @@ export class TeamApiServer {
     server.emit("connection", stream);
   }
 
-  setRelayHosting(enabled: boolean): void {
+  setRelayHosting(enabled: boolean, v2Tunnels: boolean): void {
     this.#relayHosting = enabled;
+    this.#relayV2Tunnels = enabled && v2Tunnels;
+  }
+
+  bindRelaySession(sessionId: string, peer: RelayPeerCertificate): void {
+    this.#relaySessions.set(sessionId, { keyId: peer.keyId, user: peer.user, device: peer.device });
+  }
+
+  releaseRelaySession(sessionId: string): void {
+    this.#relaySessions.delete(sessionId);
   }
 
   start(): Effect.Effect<number, RemoteWorkflowError> {
@@ -1069,7 +1081,7 @@ export class TeamApiServer {
       const protocolIssue = this.#protocolIssue(request);
       if (protocolIssue) return this.#json(response, protocolIssue.status, protocolIssue.body);
 
-      const relayPeer = this.#relayPeers.get(request.socket);
+      const relayPeer = this.#relayPeer(request);
       if (relayPeer && method === "POST" && RELAY_REFUSED_ROUTES.has(url.pathname)) {
         return this.#json(response, 403, { error: sourceText("error.team.relaySignInOnly") });
       }
@@ -1493,8 +1505,16 @@ export class TeamApiServer {
     if (this.#relayPeers.has(request.socket)) delete request.headers["x-openbot-webrtc-session"];
   }
 
+  #relayPeer(request: IncomingMessage): RelayPeer | undefined {
+    const socketPeer = this.#relayPeers.get(request.socket);
+    if (socketPeer || this.#relaySessions.size === 0) return socketPeer;
+    const token = bearerToken(request.headers.authorization);
+    const sessionId = token ? this.#options.store.authenticateSession(token)?.sessionId : undefined;
+    return sessionId === undefined ? undefined : this.#relaySessions.get(sessionId);
+  }
+
   #rateLimitSource(request: IncomingMessage): string {
-    const relayPeer = this.#relayPeers.get(request.socket);
+    const relayPeer = this.#relayPeer(request);
     if (relayPeer) return `relay:${relayPeer.keyId}`;
     const address = request.socket.remoteAddress ?? "local";
     const webRtcSession = request.headers["x-openbot-webrtc-session"];
@@ -2631,6 +2651,7 @@ export class TeamApiServer {
         if (capability === ATTACHMENT_PREVIEW_CAPABILITY) return this.#options.attachmentPreviews !== undefined;
         if (capability === "live-voice-v1" || capability === "live-voice-account-v1") return false;
         if (capability === TEAM_RELAY_AUTH_CAPABILITY) return this.#relayHosting;
+        if (capability === TEAM_RELAY_V2_TUNNELS_CAPABILITY) return this.#relayV2Tunnels;
         if (capability === VOICE_TRANSCRIPTION_CAPABILITY) return this.#options.voiceTranscription !== undefined;
         if (capability === CLIENT_BROWSER_CAPABILITY) return this.#options.clientBrowser !== undefined;
         if (capability === MCP_ACCOUNTS_CAPABILITY)

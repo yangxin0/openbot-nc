@@ -442,6 +442,8 @@
     "test:relay-client-team": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-client-team-e2e.ts",
     "test:relay-app": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-app-e2e.ts",
     "test:relay-team-ui": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-team-ui-e2e.ts",
+    "test:relay-v2-tunnel": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-v2-tunnel-e2e.ts",
+    "test:relay-browser-client": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-browser-client-e2e.ts",
     "relay:build": "bun remote/scripts/build-relay.ts",
     "test:ipc-input": "bun scripts/ipc-input-e2e.ts",
     "test:automation-cli": "bun scripts/automation-cli-e2e.ts",

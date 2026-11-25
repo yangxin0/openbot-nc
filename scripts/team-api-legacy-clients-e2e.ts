@@ -1323,7 +1323,6 @@ try {
     const pathChanges: [sessionId: string, lost: boolean][] = [];
     const peer = new TeamWebRtcHostPeer(
       {
-        bridge,
         store: team,
         appVersion: HOST_VERSION,
         transferDirectory: join(root, "transfers"),
@@ -1333,7 +1332,7 @@ try {
             ? Effect.succeed(claims)
             : Effect.fail(new RemoteWorkflowError({ cause: new Error("Unknown ticket.") })),
       },
-      { peerId, hostId: identity.serverId, localApiPort: port },
+      { peerId, hostId: identity.serverId, localApiPort: port, transport: bridge },
     );
     peers.push(peer);
     await Effect.runPromise(

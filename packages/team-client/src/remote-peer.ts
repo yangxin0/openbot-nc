@@ -332,6 +332,35 @@ interface ActionsRef {
 }
 type ChannelKind = "rpc" | "events" | "files" | "desktop";
 
+export type RemoteTeamChannelState = "connecting" | "open" | "closing" | "closed";
+
+export interface RemoteTeamChannelHandlers {
+  open: () => void;
+  message: (data: unknown) => void;
+  error: () => void;
+  close: (reason: Error | null) => void;
+}
+
+export interface RemoteTeamChannel {
+  readonly readyState: RemoteTeamChannelState;
+  readonly bufferedAmount: number;
+  readonly bufferedAmountLowThreshold: number;
+  send(data: string | ArrayBuffer): void;
+  listen(handlers: RemoteTeamChannelHandlers): void;
+  onBufferedAmountLow(listener: () => void): () => void;
+}
+
+export interface RemoteTeamTunnels {
+  readonly rpc: RemoteTeamChannel;
+  readonly events: RemoteTeamChannel;
+  readonly files: RemoteTeamChannel;
+  close(): void;
+}
+
+export interface RemoteTeamTunnelTransport {
+  open(hostId: string, hostKey: string, signal: AbortSignal): Promise<RemoteTeamTunnels>;
+}
+
 interface PendingRequest {
   method: string;
   path: string;
@@ -339,6 +368,18 @@ interface PendingRequest {
   reject: (error: Error) => void;
   timer: ReturnType<typeof setTimeout>;
   profile: RemoteRequestProfile | null;
+}
+
+interface PeerStateSeed {
+  generation: number;
+  hostId: string;
+  hostPublicKey: string;
+  sessionId: string;
+  ticket: string;
+  signalUrl: string;
+  identity: Ed25519Identity | null;
+  clientPublicKey: string;
+  preparedSocket: WebSocket | null;
 }
 
 interface PeerState {
@@ -353,9 +394,10 @@ interface PeerState {
   signalLock: Semaphore.Semaphore;
   connectionId: string | null;
   connection: RTCPeerConnection | null;
-  channels: Partial<Record<ChannelKind, RTCDataChannel>>;
+  channels: Partial<Record<ChannelKind, RemoteTeamChannel>>;
   decoders: Partial<Record<ChannelKind, TeamWebRtcPayloadDecoder>>;
-  identity: Ed25519Identity;
+  tunnels: RemoteTeamTunnels | null;
+  identity: Ed25519Identity | null;
   clientPublicKey: string;
   clientNonce: string;
   hostNonce: string | null;
@@ -408,6 +450,7 @@ interface PeerState {
 }
 
 const CHANNELS: ChannelKind[] = ["rpc", "events", "files", "desktop"];
+const TUNNEL_CHANNELS = ["rpc", "events", "files"] as const satisfies readonly ChannelKind[];
 const DISCONNECT_GRACE_MS = 15_000;
 const CHANNEL_DRAIN_IDLE_MS = 60_000;
 const ICE_RESTART_DELAY_MS = 2_000;
@@ -476,6 +519,7 @@ export function createRemoteTeamPeer(
     waitForHost?: boolean;
     hostProtocols?: RemoteHostProtocols;
     clientProtocol?: TeamProtocolSupportV1["protocol"];
+    tunnels?: RemoteTeamTunnelTransport;
   } = {},
 ) {
   const runtime = ManagedRuntime.make(RemotePeerIO.layer(actions));
@@ -546,6 +590,7 @@ export function createRemoteTeamPeer(
   let retainedSession: { hostId: string; sessionId: string } | null = null;
   const hostProtocols: RemoteHostProtocols = options.hostProtocols ?? new Map<string, number>();
   const clientProtocol = options.clientProtocol ?? TEAM_WEBRTC_CLIENT_PROTOCOL;
+  const tunnelTransport = options.tunnels ?? null;
   let lastSignal: { hostId: string; signalUrl: string; iceServers: RTCIceServer[]; at: number } | null = null;
   let lastTyping: { agentId: string | null; typing: boolean; sentAt: number } | null = null;
   let typingInFlight: {
@@ -640,6 +685,8 @@ export function createRemoteTeamPeer(
         } else if (!isPeerOnline(state)) {
           resumed(state.authenticated ? "connect again" : "attempt not finished");
           failPeer(state, new Error(sourceText("error.remote.desktopRestoreNeeded")), actions);
+        } else if (state.tunnels) {
+          resumed("keep relay tunnels");
         } else {
           resumeTurnRefresh(state);
           resumed(
@@ -652,7 +699,7 @@ export function createRemoteTeamPeer(
     },
     networkRestored() {
       const state = peer;
-      if (active && state && !state.closed && (state.authenticated || state.waitingForHost))
+      if (active && state && !state.closed && !state.tunnels && (state.authenticated || state.waitingForHost))
         renewSignal(state, actions);
       void runPeerEffect(peerCall(() => actions.current.onNetworkRestored?.())).catch(() => undefined);
     },
@@ -730,6 +777,8 @@ export function createRemoteTeamPeer(
   }
 
   function isPeerOnline(state: PeerState): boolean {
+    if (state.tunnels)
+      return state.authenticated && TUNNEL_CHANNELS.every((kind) => state.channels[kind]?.readyState === "open");
     return (
       state.authenticated &&
       state.connection?.connectionState === "connected" &&
@@ -968,6 +1017,8 @@ export function createRemoteTeamPeer(
       if (!active) return yield* new RemotePeerError({ message: sourceText("error.remote.appInBackground") });
       const currentGeneration = ++generation;
       yield* RemotePeerIO.use((io) => io.connectionUpdate({ hostId, state: "connecting", message: null }));
+      if (tunnelTransport)
+        return yield* connectTunnelPeer(hostId, hostPublicKey, tunnelTransport, currentGeneration, actions);
       const identity = yield* createEd25519Identity((size) => crypto.getRandomValues(new Uint8Array(size)));
       while (closingSessions.has(hostId)) {
         const closing = closingSessions.get(hostId);
@@ -994,70 +1045,17 @@ export function createRemoteTeamPeer(
       }
       const usableSocket = preparedSocket && known?.signalUrl === bootstrap.signalUrl ? preparedSocket : null;
       if (preparedSocket && !usableSocket) preparedSocket.close();
-      const state: PeerState = {
+      const state = newPeerState({
         generation: currentGeneration,
         hostId,
         hostPublicKey,
         sessionId: bootstrap.sessionId,
         ticket: bootstrap.ticket,
-        resumeToken: null,
         signalUrl: bootstrap.signalUrl,
-        socket: null,
-        signalLock: Semaphore.makeUnsafe(1),
-        connectionId: null,
-        connection: null,
-        channels: {},
-        decoders: {},
         identity,
         clientPublicKey,
-        clientNonce: randomBase64Url(32),
-        hostNonce: null,
-        binding: null,
-        authenticated: false,
-        closed: false,
-        reconnectAttempt: 0,
-        reconnectTimer: null,
-        turnRefreshTimer: null,
-        turnRefreshDueAt: 0,
-        iceServers: [],
-        restartIceOnReady: false,
-        lastEventSequence: 0,
-        eventAckTimer: null,
-        needsResync: false,
-        connected: null,
-        abort: new AbortController(),
-        connectedTimer: null,
-        disconnectedTimer: null,
-        iceRecoveryTimer: null,
-        waitingForHost: false,
-        hostWaitTimer: null,
-        failedOpens: 0,
-        signalAnswered: false,
-        hostWaitingSince: null,
-        hostWaitTicketMs: HOST_WAIT_TICKET_MS,
-        hostWaitTicketTimer: null,
-        ticketRequest: false,
-        signalReady: false,
-        answeredRequest: false,
-        probingPath: false,
-        fullSnapshotRequested: false,
-        lastAnswerAt: 0,
-        lastSignalClose: null,
-        signalOpenedAt: 0,
-        offerSentAt: null,
-        offerKind: null,
-        localCandidates: new Set(),
-        remoteCandidates: new Set(),
-        hostProtocol: hostProtocols.get(hostId),
-        iceRestarts: 0,
-        iceRestartSentAt: null,
-        iceRestartAt: null,
-        reconnectGraceMs: DEFAULT_RECONNECT_GRACE_MS,
         preparedSocket: usableSocket,
-        offerPending: false,
-        preparedAt: 0,
-        preparedIceServersAt: 0,
-      };
+      });
       peer = state;
       const connected = Deferred.makeUnsafe<void, RemotePeerError>();
       state.connected = connected;
@@ -1075,6 +1073,111 @@ export function createRemoteTeamPeer(
         yield* failPeerEffect(state, error, actions);
       }
       yield* Deferred.await(connected);
+    })();
+  }
+
+  function newPeerState(seed: PeerStateSeed): PeerState {
+    return {
+      ...seed,
+      resumeToken: null,
+      socket: null,
+      signalLock: Semaphore.makeUnsafe(1),
+      connectionId: null,
+      connection: null,
+      channels: {},
+      decoders: {},
+      tunnels: null,
+      clientNonce: randomBase64Url(32),
+      hostNonce: null,
+      binding: null,
+      authenticated: false,
+      closed: false,
+      reconnectAttempt: 0,
+      reconnectTimer: null,
+      turnRefreshTimer: null,
+      turnRefreshDueAt: 0,
+      iceServers: [],
+      restartIceOnReady: false,
+      lastEventSequence: 0,
+      eventAckTimer: null,
+      needsResync: false,
+      connected: null,
+      abort: new AbortController(),
+      connectedTimer: null,
+      disconnectedTimer: null,
+      iceRecoveryTimer: null,
+      waitingForHost: false,
+      hostWaitTimer: null,
+      failedOpens: 0,
+      signalAnswered: false,
+      hostWaitingSince: null,
+      hostWaitTicketMs: HOST_WAIT_TICKET_MS,
+      hostWaitTicketTimer: null,
+      ticketRequest: false,
+      signalReady: false,
+      answeredRequest: false,
+      probingPath: false,
+      fullSnapshotRequested: false,
+      lastAnswerAt: 0,
+      lastSignalClose: null,
+      signalOpenedAt: 0,
+      offerSentAt: null,
+      offerKind: null,
+      localCandidates: new Set(),
+      remoteCandidates: new Set(),
+      hostProtocol: hostProtocols.get(seed.hostId),
+      iceRestarts: 0,
+      iceRestartSentAt: null,
+      iceRestartAt: null,
+      reconnectGraceMs: DEFAULT_RECONNECT_GRACE_MS,
+      offerPending: false,
+      preparedAt: 0,
+      preparedIceServersAt: 0,
+    };
+  }
+
+  function connectTunnelPeer(
+    hostId: string,
+    hostKey: string,
+    transport: RemoteTeamTunnelTransport,
+    currentGeneration: number,
+    actions: ActionsRef,
+  ) {
+    return Effect.fn("RemotePeer.connectTunnelPeer")(function* () {
+      const state = newPeerState({
+        generation: currentGeneration,
+        hostId,
+        hostPublicKey: hostKey,
+        sessionId: "",
+        ticket: "",
+        signalUrl: "",
+        identity: null,
+        clientPublicKey: "",
+        preparedSocket: null,
+      });
+      peer = state;
+      state.connected = Deferred.makeUnsafe<void, RemotePeerError>();
+      const opened = yield* Effect.result(peerCall(() => transport.open(hostId, hostKey, state.abort.signal)));
+      if (Result.isFailure(opened)) {
+        yield* failPeerEffect(state, opened.failure, actions);
+        return yield* opened.failure;
+      }
+      const tunnels = opened.success;
+      if (state.closed || peer !== state) {
+        tunnels.close();
+        return yield* new RemotePeerError({ message: sourceText("error.remote.connectionReplaced") });
+      }
+      state.tunnels = tunnels;
+      state.authenticated = true;
+      for (const kind of TUNNEL_CHANNELS) bindChannel(state, kind, tunnels[kind], actions);
+      yield* Effect.gen(function* () {
+        yield* notify(diagnosticCall(state, "authenticated"));
+        settleConnected(state);
+        yield* sendEventAckEffect(state);
+        yield* RemotePeerIO.use((io) =>
+          io.connectionUpdate({ hostId, state: "online", message: null, lostAfterMs: peerLostAfterMs(state) }),
+        );
+      }).pipe(Effect.tapError((error) => failPeerEffect(state, error, actions)));
     })();
   }
 
@@ -1096,7 +1199,12 @@ export function createRemoteTeamPeer(
       state.preparedAt = Date.now();
       state.preparedIceServersAt = iceServersAt;
       for (const kind of CHANNELS)
-        bindChannel(state, kind, connection.createDataChannel(channelLabel(kind), { ordered: true }), actions);
+        bindChannel(
+          state,
+          kind,
+          webRtcChannel(connection.createDataChannel(channelLabel(kind), { ordered: true })),
+          actions,
+        );
       yield* Effect.gen(function* () {
         const offer = yield* peerCall(() => connection.createOffer());
         yield* peerCall(() => connection.setLocalDescription(offer));
@@ -1375,7 +1483,12 @@ export function createRemoteTeamPeer(
           const startedAt = Date.now();
           const connection = yield* peerDecode(() => createPeerConnection(state, state.iceServers, actions));
           for (const kind of CHANNELS)
-            bindChannel(state, kind, connection.createDataChannel(channelLabel(kind), { ordered: true }), actions);
+            bindChannel(
+              state,
+              kind,
+              webRtcChannel(connection.createDataChannel(channelLabel(kind), { ordered: true })),
+              actions,
+            );
           const offer = yield* peerCall(() => connection.createOffer());
           yield* peerCall(() => connection.setLocalDescription(offer));
           yield* peerDecode(() =>
@@ -1459,7 +1572,7 @@ export function createRemoteTeamPeer(
     };
     connection.ondatachannel = (event) => {
       const kind = channelKind(event.channel.label);
-      if (kind) bindChannel(state, kind, event.channel, actions);
+      if (kind) bindChannel(state, kind, webRtcChannel(event.channel), actions);
     };
     const candidateErrors = new Set<string>();
     connection.onicecandidateerror = (event) => {
@@ -1513,51 +1626,54 @@ export function createRemoteTeamPeer(
     return connection;
   }
 
-  function bindChannel(state: PeerState, kind: ChannelKind, channel: RTCDataChannel, actions: ActionsRef): void {
-    channel.binaryType = "arraybuffer";
-    channel.bufferedAmountLowThreshold = 1024 * 1024;
+  function bindChannel(state: PeerState, kind: ChannelKind, channel: RemoteTeamChannel, actions: ActionsRef): void {
     state.channels[kind] = channel;
     state.decoders[kind] = new TeamWebRtcPayloadDecoder();
     let handled = Promise.resolve();
-    channel.onopen = () => {
-      if (CHANNELS.every((name) => state.channels[name]?.readyState === "open") && !state.binding) {
-        diagnose(state, "channels-open");
-        void runPeerEffect(beginAuthentication(state)).catch((error) => failPeer(state, error, actions));
-      }
-    };
-    channel.onmessage = (event) => {
-      const data = event.data;
-      handled = handled
-        .then(() =>
-          runPeerEffect(
-            Effect.gen(function* () {
-              const decoded = yield* Effect.try({
-                try: () => {
-                  if (!isString(data) && !(data instanceof ArrayBuffer)) {
-                    throw new Error("The host sent unsupported binary data.");
-                  }
-                  return state.decoders[kind]?.push(data);
-                },
-                catch: peerError,
-              });
-              if (decoded !== undefined) yield* handleChannelData(state, kind, decoded, actions);
-            }),
-          ),
-        )
-        .catch((error) => failPeer(state, error, actions));
-    };
-    channel.onerror = () => {
-      if (state.channels[kind] !== channel) return;
-      failPeer(
-        state,
-        referenced(sourceText("error.remote.dataChannelFailed", { kind }), referenceFrom("webrtc", "channel", kind)),
-        actions,
-      );
-    };
-    channel.onclose = () => {
-      if (state.authenticated && state.channels[kind] === channel)
-        failPeer(state, referenced(sourceText("error.remote.desktopOffline"), "webrtc/channel/closed"), actions);
-    };
+    channel.listen({
+      open: () => {
+        if (CHANNELS.every((name) => state.channels[name]?.readyState === "open") && !state.binding) {
+          diagnose(state, "channels-open");
+          void runPeerEffect(beginAuthentication(state)).catch((error) => failPeer(state, error, actions));
+        }
+      },
+      message: (data) => {
+        handled = handled
+          .then(() =>
+            runPeerEffect(
+              Effect.gen(function* () {
+                const decoded = yield* Effect.try({
+                  try: () => {
+                    if (!isString(data) && !(data instanceof ArrayBuffer)) {
+                      throw new Error("The host sent unsupported binary data.");
+                    }
+                    return state.decoders[kind]?.push(data);
+                  },
+                  catch: peerError,
+                });
+                if (decoded !== undefined) yield* handleChannelData(state, kind, decoded, actions);
+              }),
+            ),
+          )
+          .catch((error) => failPeer(state, error, actions));
+      },
+      error: () => {
+        if (state.channels[kind] !== channel) return;
+        failPeer(
+          state,
+          referenced(sourceText("error.remote.dataChannelFailed", { kind }), referenceFrom("webrtc", "channel", kind)),
+          actions,
+        );
+      },
+      close: (reason) => {
+        if (state.authenticated && state.channels[kind] === channel)
+          failPeer(
+            state,
+            reason ?? referenced(sourceText("error.remote.desktopOffline"), "webrtc/channel/closed"),
+            actions,
+          );
+      },
+    });
   }
 
   function beginAuthentication(state: PeerState) {
@@ -1578,7 +1694,9 @@ export function createRemoteTeamPeer(
           hostFingerprint: binding.hostFingerprint,
         }),
       );
-      const signature = yield* signEd25519(new TextEncoder().encode(transcript), state.identity.secretKey);
+      const identity = state.identity;
+      if (!identity) return yield* new RemotePeerError({ message: "The WebRTC connection has no client key." });
+      const signature = yield* signEd25519(new TextEncoder().encode(transcript), identity.secretKey);
       yield* sendPayload(
         state,
         "rpc",
@@ -2061,10 +2179,7 @@ export function createRemoteTeamPeer(
       for (const frame of yield* peerDecode(() => encodeTeamWebRtcPayload(data, maximumMessageSize))) {
         yield* waitForWritable(state, channel);
         yield* Effect.try({
-          try: () => {
-            if (frame instanceof ArrayBuffer) channel.send(frame);
-            else channel.send(frame);
-          },
+          try: () => channel.send(frame),
           catch: (error) =>
             new RemotePeerError({
               message: error instanceof Error ? error.message : sourceText("error.remote.requestNotSent"),
@@ -2074,16 +2189,17 @@ export function createRemoteTeamPeer(
     })();
   }
 
-  function waitForWritable(state: PeerState, channel: RTCDataChannel) {
+  function waitForWritable(state: PeerState, channel: RemoteTeamChannel) {
     return Effect.fn("RemotePeer.waitForWritable")(function* () {
       if (state.closed) return yield* new RemotePeerError({ message: sourceText("error.remote.serverDisconnected") });
       if (channel.bufferedAmount <= 4 * 1024 * 1024) return;
       return yield* Effect.callback<void, RemotePeerError>((resume) => {
         let lowestBuffered = channel.bufferedAmount;
         let timer: ReturnType<typeof setTimeout> | undefined;
+        let stopLow = () => {};
         const release = () => {
           clearTimeout(timer);
-          channel.removeEventListener("bufferedamountlow", onLow);
+          stopLow();
           state.abort.signal.removeEventListener("abort", onAbort);
         };
         const finish = (result: Effect.Effect<void, RemotePeerError>) => {
@@ -2103,7 +2219,7 @@ export function createRemoteTeamPeer(
         };
         state.abort.signal.addEventListener("abort", onAbort, { once: true });
         timer = setTimeout(checkDrain, CHANNEL_DRAIN_IDLE_MS);
-        channel.addEventListener("bufferedamountlow", onLow);
+        stopLow = channel.onBufferedAmountLow(onLow);
         if (channel.bufferedAmount <= channel.bufferedAmountLowThreshold) onLow();
         return Effect.sync(release);
       });
@@ -2322,9 +2438,11 @@ export function createRemoteTeamPeer(
       state.preparedSocket?.close();
       state.preparedSocket = null;
       state.connection?.close();
+      state.tunnels?.close();
       for (const decoder of Object.values(state.decoders)) decoder?.reset();
       rejectRequests(new Error(sourceText("error.remote.serverDisconnected")));
       rejectConnection(state, new Error(sourceText("error.remote.serverDisconnected")));
+      if (tunnelTransport) return;
       if (retainSession) {
         retainedSession = { hostId: state.hostId, sessionId: state.sessionId };
         return;
@@ -2427,6 +2545,36 @@ export function createRemoteTeamPeer(
   function randomBase64Url(size: number): string {
     return bytesToBase64Url(crypto.getRandomValues(new Uint8Array(size)));
   }
+}
+
+function webRtcChannel(channel: RTCDataChannel): RemoteTeamChannel {
+  channel.binaryType = "arraybuffer";
+  channel.bufferedAmountLowThreshold = 1024 * 1024;
+  return {
+    get readyState() {
+      return channel.readyState;
+    },
+    get bufferedAmount() {
+      return channel.bufferedAmount;
+    },
+    get bufferedAmountLowThreshold() {
+      return channel.bufferedAmountLowThreshold;
+    },
+    send: (data) => {
+      if (data instanceof ArrayBuffer) channel.send(data);
+      else channel.send(data);
+    },
+    listen: (handlers) => {
+      channel.onopen = () => handlers.open();
+      channel.onmessage = (event) => handlers.message(event.data);
+      channel.onerror = () => handlers.error();
+      channel.onclose = () => handlers.close(null);
+    },
+    onBufferedAmountLow: (listener) => {
+      channel.addEventListener("bufferedamountlow", listener);
+      return () => channel.removeEventListener("bufferedamountlow", listener);
+    },
+  };
 }
 
 function candidateType(candidate: string): string {

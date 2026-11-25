@@ -1,16 +1,23 @@
 import { EventEmitter } from "node:events";
 import type { Duplex } from "node:stream";
 import { RELAY_LABEL_LIMIT, type RelayPeerCertificate } from "@openbot/contracts/relay-protocol/messages";
+import type { RelayV2TunnelMarker } from "@openbot/contracts/relay-protocol/v2-tunnel";
 import { Effect } from "effect";
 import { RelayAcceptor } from "./acceptor";
 import { RelayControl, type RelayControlState } from "./control";
 import type { RelayCredentialSource } from "./identity-store";
 import type { RelaySocketError } from "./socket";
 import type { RelayStream } from "./stream";
+import { type RelayStreamOpening, sniffRelayStream } from "./stream-sniffer";
 
 interface RelayHostedServer {
   acceptConnection(stream: Duplex, peer: RelayPeerCertificate): void;
-  setRelayHosting(enabled: boolean): void;
+  setRelayHosting(enabled: boolean, v2Tunnels: boolean): void;
+}
+
+interface RelayV2TunnelAcceptor {
+  accept(stream: Duplex, peer: RelayPeerCertificate, marker: RelayV2TunnelMarker, rest: Uint8Array): void;
+  stop(): Effect.Effect<void>;
 }
 
 interface HostRelayEvents {
@@ -24,6 +31,8 @@ interface HostRelayOptions {
   label: string | null;
   reconnect?: { baseMs?: number; maxMs?: number };
   control?: RelayControl;
+  tunnels?: RelayV2TunnelAcceptor;
+  firstBytesDeadlineMs?: number;
 }
 
 export class HostRelay extends EventEmitter<HostRelayEvents> {
@@ -32,12 +41,16 @@ export class HostRelay extends EventEmitter<HostRelayEvents> {
   readonly #ownsControl: boolean;
   readonly #label: string | null;
   readonly #acceptor: RelayAcceptor;
+  readonly #tunnels: RelayV2TunnelAcceptor | null;
+  readonly #firstBytesDeadlineMs: number | undefined;
   readonly #streams = new Set<RelayStream>();
   #started = false;
 
   constructor(options: HostRelayOptions) {
     super();
     this.#server = options.server;
+    this.#tunnels = options.tunnels ?? null;
+    this.#firstBytesDeadlineMs = options.firstBytesDeadlineMs;
     this.#label = relayLabel(options.label);
     this.#ownsControl = options.control === undefined;
     this.#control =
@@ -59,7 +72,7 @@ export class HostRelay extends EventEmitter<HostRelayEvents> {
   readonly start = Effect.fn("HostRelay.start")(function* (this: HostRelay) {
     if (this.#started) return;
     this.#started = true;
-    this.#server.setRelayHosting(true);
+    this.#server.setRelayHosting(true, this.#tunnels !== null);
     this.#control.on("state", this.#onState);
     yield* this.#acceptor.start();
     if (!this.#ownsControl) yield* this.#control.setHosting(true, this.#label).pipe(Effect.ignore);
@@ -73,9 +86,10 @@ export class HostRelay extends EventEmitter<HostRelayEvents> {
     if (this.#ownsControl) yield* this.#control.stop();
     else yield* this.#control.setHosting(false).pipe(Effect.ignore);
     this.#control.off("state", this.#onState);
-    this.#server.setRelayHosting(false);
+    this.#server.setRelayHosting(false, false);
     for (const stream of this.#streams) stream.destroy();
     this.#streams.clear();
+    if (this.#tunnels) yield* this.#tunnels.stop();
   }).bind(this);
 
   readonly setLabel = Effect.fn("HostRelay.setLabel")(function* (
@@ -100,7 +114,39 @@ export class HostRelay extends EventEmitter<HostRelayEvents> {
     }
     this.#streams.add(stream);
     stream.once("close", () => this.#streams.delete(stream));
+    stream.on("error", () => stream.destroy());
+    const tunnels = this.#tunnels;
+    if (!tunnels) {
+      this.#server.acceptConnection(stream, peer);
+      return;
+    }
+    Effect.runFork(
+      sniffRelayStream(stream, this.#firstBytesDeadlineMs).pipe(
+        Effect.match({
+          onFailure: () => stream.destroy(),
+          onSuccess: (opening) => this.#open(stream, peer, opening, tunnels),
+        }),
+      ),
+    );
+  }
+
+  #open(
+    stream: RelayStream,
+    peer: RelayPeerCertificate,
+    opening: RelayStreamOpening,
+    tunnels: RelayV2TunnelAcceptor,
+  ): void {
+    if (!this.#started || stream.destroyed) {
+      stream.destroy();
+      return;
+    }
+    if (opening.kind === "v2") {
+      tunnels.accept(stream, peer, opening.marker, opening.rest);
+      return;
+    }
+    stream.unshift(opening.head);
     this.#server.acceptConnection(stream, peer);
+    stream.resume();
   }
 }
 

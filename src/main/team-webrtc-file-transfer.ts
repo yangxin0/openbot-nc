@@ -1,5 +1,4 @@
 import { createHash, randomUUID } from "node:crypto";
-import type { EventEmitter } from "node:events";
 import { createWriteStream } from "node:fs";
 import { type FileHandle, mkdir, open, readFile, rm } from "node:fs/promises";
 import { basename, join } from "node:path";
@@ -19,16 +18,12 @@ import { Deferred, Effect, Result, Semaphore } from "effect";
 import { sha256File } from "../backend/file-hash";
 import { recordRestartActivity } from "../backend/restart-activity";
 import { RemoteWorkflowError, remoteCall, remoteDecode, toRemoteWorkflowError } from "./remote-service-effects";
-import type { TeamWebRtcBridge } from "./team-webrtc-bridge";
+import type { TeamV2ChannelTransport } from "./team-v2-channel-transport";
 
 const FILE_CHUNK_BYTES = 60 * 1024;
 const ACK_INTERVAL_BYTES = 1024 * 1024;
 const TRANSFER_RESUME_MILLISECONDS = 10 * 60_000;
 const STOPPED_WATCH_MILLISECONDS = 60_000;
-
-type BridgeEvents = TeamWebRtcBridge extends EventEmitter<infer Events> ? Events : never;
-type FileTransferBridge = Pick<EventEmitter<BridgeEvents>, "on" | "off"> &
-  Pick<TeamWebRtcBridge, "send" | "disconnectPeer">;
 
 interface IncomingTransfer {
   peerId: string;
@@ -84,7 +79,7 @@ export interface ReceivedWebRtcFile {
 export class TeamFileTooLargeError extends Error {}
 
 export class TeamWebRtcFileTransfer {
-  readonly #bridge: FileTransferBridge;
+  readonly #transport: TeamV2ChannelTransport;
   readonly #writingAbort = new AbortController();
   readonly #operations = new Set<Deferred.Deferred<void>>();
   readonly #directory: string;
@@ -111,17 +106,17 @@ export class TeamWebRtcFileTransfer {
   #stopped = false;
 
   constructor(
-    bridge: FileTransferBridge,
+    transport: TeamV2ChannelTransport,
     directory: string,
     resumeMilliseconds = TRANSFER_RESUME_MILLISECONDS,
     acceptPeer: (peerId: string) => boolean = () => true,
   ) {
-    this.#bridge = bridge;
+    this.#transport = transport;
     this.#directory = directory;
     this.#resumeMilliseconds = resumeMilliseconds;
     this.#acceptPeer = acceptPeer;
-    bridge.on("data", this.#onData);
-    bridge.on("disconnected", this.#onDisconnected);
+    transport.on("data", this.#onData);
+    transport.on("disconnected", this.#onDisconnected);
   }
 
   setPeerAuthenticated(peerId: string, authenticated: boolean): void {
@@ -410,8 +405,8 @@ export class TeamWebRtcFileTransfer {
     }
     this.#waiters.clear();
     this.#notifyStateChange();
-    this.#bridge.off("data", this.#onData);
-    this.#bridge.off("disconnected", this.#onDisconnected);
+    this.#transport.off("data", this.#onData);
+    this.#transport.off("disconnected", this.#onDisconnected);
     for (const timer of this.#expirationTimers.values()) clearTimeout(timer);
     this.#expirationTimers.clear();
     while (this.#operations.size)
@@ -476,7 +471,7 @@ export class TeamWebRtcFileTransfer {
         if (existing) {
           if (existing.size !== frame.size || existing.sha256 !== frame.sha256)
             return yield* new RemoteWorkflowError({ cause: new Error("The resumed WebRTC file metadata changed.") });
-          yield* this.#bridge.send(
+          yield* this.#transport.send(
             peerId,
             "files",
             encodeTeamProtocolV2Frame({
@@ -522,7 +517,7 @@ export class TeamWebRtcFileTransfer {
           watch.taken.push(frame.transferId);
           watch.onProgress(0, frame.size);
         }
-        yield* this.#bridge.send(
+        yield* this.#transport.send(
           peerId,
           "files",
           encodeTeamProtocolV2Frame({
@@ -547,7 +542,7 @@ export class TeamWebRtcFileTransfer {
         yield* remoteCall(() => transfer.file.close());
         if ((yield* sha256File(transfer.path).pipe(toRemoteWorkflowError)) !== transfer.sha256) {
           const error = new Error("The WebRTC file hash is invalid.");
-          yield* this.#bridge
+          yield* this.#transport
             .send(
               peerId,
               "files",
@@ -613,7 +608,7 @@ export class TeamWebRtcFileTransfer {
         watch.onProgress(transfer.received, transfer.size);
     if (transfer.received === transfer.size || transfer.received - transfer.lastAcknowledged >= ACK_INTERVAL_BYTES) {
       transfer.lastAcknowledged = transfer.received;
-      yield* this.#bridge.send(
+      yield* this.#transport.send(
         peerId,
         "files",
         encodeTeamProtocolV2Frame({
@@ -657,7 +652,7 @@ export class TeamWebRtcFileTransfer {
     transferId: string,
     error: Error,
   ): Effect.fn.Return<void, RemoteWorkflowError> {
-    yield* this.#bridge
+    yield* this.#transport
       .send(
         peerId,
         "files",
@@ -675,11 +670,11 @@ export class TeamWebRtcFileTransfer {
   ): Effect.fn.Return<void, RemoteWorkflowError> {
     if (!transferId) {
       this.setPeerAuthenticated(peerId, false);
-      yield* this.#bridge.disconnectPeer(peerId).pipe(Effect.catch(() => Effect.void));
+      yield* this.#transport.disconnectPeer(peerId).pipe(Effect.catch(() => Effect.void));
       return;
     }
     const failure = error instanceof Error ? error : new Error(sourceText("error.remote.fileTransferFailed"));
-    yield* this.#bridge
+    yield* this.#transport
       .send(
         peerId,
         "files",
@@ -706,7 +701,7 @@ export class TeamWebRtcFileTransfer {
       );
       const generation = transfer.acknowledgementGeneration;
       const attempt = yield* Effect.gen({ self: this }, function* () {
-        yield* this.#bridge.send(
+        yield* this.#transport.send(
           transfer.peerId,
           "files",
           encodeTeamProtocolV2Frame({
@@ -737,9 +732,9 @@ export class TeamWebRtcFileTransfer {
           );
           const transferable = new Uint8Array(chunk.byteLength);
           transferable.set(chunk);
-          yield* this.#bridge.send(transfer.peerId, "files", transferable.buffer);
+          yield* this.#transport.send(transfer.peerId, "files", transferable.buffer);
         }
-        yield* this.#bridge.send(
+        yield* this.#transport.send(
           transfer.peerId,
           "files",
           encodeTeamProtocolV2Frame({ version: 2, type: "file-complete", transferId: transfer.transferId }),

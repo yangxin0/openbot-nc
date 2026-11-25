@@ -278,8 +278,8 @@ function upgradeStatus(port: number, token: string): Promise<string> {
 }
 
 const HOSTING = resolve(import.meta.dirname, "hosting");
-const START = "systemctl start --no-block openbot.service";
-const STOP = "systemctl stop openbot.service";
+const START = "systemctl start --no-block openbot-nc.service";
+const STOP = "systemctl stop openbot-nc.service";
 
 interface CheckCase {
   name: string;
@@ -604,7 +604,6 @@ try {
     };
     const peer = new TeamWebRtcHostPeer(
       {
-        bridge,
         store,
         appVersion: HOST_VERSION,
         transferDirectory: join(root, "transfers"),
@@ -614,7 +613,7 @@ try {
             ? Effect.succeed(claims)
             : Effect.fail(new RemoteWorkflowError({ cause: new Error("Unknown ticket.") })),
       },
-      { peerId, hostId: identity.serverId, localApiPort: port },
+      { peerId, hostId: identity.serverId, localApiPort: port, transport: bridge },
     );
     peers.push(peer);
     await Effect.runPromise(

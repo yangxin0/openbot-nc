@@ -1,15 +1,15 @@
 import { createHash, type KeyObject, X509Certificate } from "node:crypto";
+import type { RelayPeerCertificate } from "@openbot/contracts/relay-protocol/messages";
 import {
-  RELAY_SUBJECT_FIELDS,
-  RELAY_SUBJECT_NAME_PATTERN,
-  type RelayPeerCertificate,
-} from "@openbot/contracts/relay-protocol/messages";
-
-interface RelaySubjectNames {
-  team: string | null;
-  user: string;
-  device: string | null;
-}
+  type RelayCertificateView,
+  type RelayPeerRefusal,
+  type RelaySubjectNames,
+  type RelayValidityWindow,
+  relayPeerRefusal,
+  relaySubjectNames,
+  relayTrustPath,
+  relayValidityWindow,
+} from "@openbot/contracts/relay-protocol/peer-rules";
 
 interface RelayTrustAnchors {
   team: string;
@@ -17,7 +17,16 @@ interface RelayTrustAnchors {
   chain: readonly string[];
 }
 
-type RelayPeerRefusal = "unreadable" | "key_mismatch" | "name_mismatch" | "untrusted" | "not_in_date";
+const NODE_CERTIFICATE_VIEW: RelayCertificateView<X509Certificate> = {
+  authority: (certificate) => certificate.ca,
+  keyId: (certificate) => publicKeyId(certificate.publicKey),
+  names: (certificate) => subjectNames(certificate.subject),
+  validity: (certificate) => ({
+    notBefore: Date.parse(certificate.validFrom),
+    notAfter: Date.parse(certificate.validTo),
+  }),
+  issuedBy: (certificate, authority) => issuedBy(certificate, authority),
+};
 
 export function publicKeyId(publicKey: KeyObject): string {
   return createHash("sha256")
@@ -43,32 +52,17 @@ export function issuedBy(certificate: X509Certificate, authority: X509Certificat
 }
 
 export function subjectNames(subject: string): RelaySubjectNames | null {
-  const values = new Map<string, string[]>();
+  const attributes: Array<readonly [string, string]> = [];
   for (const line of subject.split("\n")) {
     const separator = line.indexOf("=");
     if (separator <= 0) return null;
-    const field = line.slice(0, separator);
-    values.set(field, [...(values.get(field) ?? []), line.slice(separator + 1)]);
+    attributes.push([line.slice(0, separator), line.slice(separator + 1)]);
   }
-  const single = (field: string): string | null | undefined => {
-    const list = values.get(field) ?? [];
-    const [value] = list;
-    if (list.length === 0) return null;
-    return list.length === 1 && value !== undefined && RELAY_SUBJECT_NAME_PATTERN.test(value) ? value : undefined;
-  };
-  const team = single(RELAY_SUBJECT_FIELDS.team);
-  const user = single(RELAY_SUBJECT_FIELDS.user);
-  const device = single(RELAY_SUBJECT_FIELDS.device);
-  if (team === undefined || device === undefined || user === undefined || user === null) return null;
-  return { team, user, device };
+  return relaySubjectNames(attributes);
 }
 
-export function validityWindow(
-  certificates: readonly X509Certificate[],
-): { startsAt: number; expiresAt: number } | null {
-  const startsAt = Math.max(...certificates.map((certificate) => Date.parse(certificate.validFrom)));
-  const expiresAt = Math.min(...certificates.map((certificate) => Date.parse(certificate.validTo)));
-  return Number.isFinite(startsAt) && Number.isFinite(expiresAt) ? { startsAt, expiresAt } : null;
+export function validityWindow(certificates: readonly X509Certificate[]): RelayValidityWindow | null {
+  return relayValidityWindow(certificates.map(NODE_CERTIFICATE_VIEW.validity));
 }
 
 export function trustPath(
@@ -76,11 +70,7 @@ export function trustPath(
   root: X509Certificate,
   chain: readonly X509Certificate[],
 ): X509Certificate[] | null {
-  if (issuedBy(leaf, root)) return [root];
-  for (const authority of chain) {
-    if (issuedBy(leaf, authority) && issuedBy(authority, root)) return [authority, root];
-  }
-  return null;
+  return relayTrustPath(leaf, root, chain, issuedBy);
 }
 
 export function peerRefusal(
@@ -88,18 +78,13 @@ export function peerRefusal(
   trust: RelayTrustAnchors,
   now: number,
 ): RelayPeerRefusal | null {
-  const leaf = readCertificate(peer.certificate);
-  const root = readCertificate(trust.root);
-  const chain = trust.chain.map(readCertificate).filter((certificate) => certificate !== null);
-  if (!leaf || !root || leaf.ca) return "unreadable";
-  if (publicKeyId(leaf.publicKey) !== peer.keyId) return "key_mismatch";
-  const names = subjectNames(leaf.subject);
-  if (!names || names.team !== trust.team || names.user !== peer.user || names.device !== peer.device) {
-    return "name_mismatch";
-  }
-  const authorities = trustPath(leaf, root, chain);
-  if (!authorities) return "untrusted";
-  const window = validityWindow([leaf, ...authorities]);
-  if (!window || now < window.startsAt || now >= window.expiresAt) return "not_in_date";
-  return null;
+  return relayPeerRefusal({
+    peer,
+    leaf: readCertificate(peer.certificate),
+    root: readCertificate(trust.root),
+    chain: trust.chain.map(readCertificate).filter((certificate) => certificate !== null),
+    team: trust.team,
+    now,
+    view: NODE_CERTIFICATE_VIEW,
+  });
 }

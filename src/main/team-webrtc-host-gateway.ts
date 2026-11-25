@@ -8,6 +8,7 @@ import type { TeamWebRtcBridge } from "./team-webrtc-bridge";
 import { type IncomingConnection, TeamWebRtcHostPeer, type TeamWebRtcHostPeerOptions } from "./team-webrtc-host-peer";
 
 interface TeamWebRtcHostGatewayOptions extends TeamWebRtcHostPeerOptions {
+  bridge: TeamWebRtcBridge;
   renewSignal?: (
     hostId: string,
     failedSignalUrl?: string,
@@ -358,6 +359,7 @@ export class TeamWebRtcHostGateway {
         peerId,
         hostId: connection.hostId,
         localApiPort: this.#localApiPort,
+        transport: this.#bridge,
       });
       this.#peers.set(peerId, peer);
     }

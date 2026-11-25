@@ -52,6 +52,7 @@ import type { LocalProfile } from "./local-profile-store";
 import type { RelayControl, RelayControlState } from "./relay/control";
 import { HostRelay } from "./relay/host-relay";
 import type { RelayCredentialSource } from "./relay/identity-store";
+import { RelayV2TunnelHost } from "./relay-v2-tunnel-host";
 import { RemoteWorkflowError, remoteDecode } from "./remote-service-effects";
 import { memberAuditChanges, memberAuditName, type ServerAuditStore } from "./server-audit-store";
 import { OWNER_PIN_KEY, type SidebarPinStore } from "./sidebar-pin-store";
@@ -84,6 +85,8 @@ type ForwardedApiOptions = ConstructorParameters<typeof TeamApiServer>[0];
 interface RelayHostingOptions {
   reconnect?: { baseMs?: number; maxMs?: number };
   control?: RelayControl;
+  firstBytesDeadlineMs?: number;
+  tunnelConnectionDeadlineMs?: number;
 }
 
 interface HostServiceOptions {
@@ -175,6 +178,7 @@ export class HostService extends EventEmitter<HostEvents> {
   #legacyCredentialRemoved = false;
   #adoptedReaderKey: string | null = null;
   #hostRelay: HostRelay | null = null;
+  #relayTunnels: RelayV2TunnelHost | null = null;
 
   constructor(options: HostServiceOptions) {
     super();
@@ -288,11 +292,7 @@ export class HostService extends EventEmitter<HostEvents> {
             else if (this.#status.message === lostMessage)
               this.#setStatus({ message: sourceText("status.host.ready") });
           },
-          closeSession: (sessionId) =>
-            Effect.gen({ self: this }, function* () {
-              yield* this.#browserView.revokeTeamSession(sessionId);
-              this.#options.browser.releaseUserControlHeldBy({ kind: "session", sessionId });
-            }),
+          closeSession: (sessionId) => this.#releaseTeamSession(sessionId),
           ...(options.peerMemberChanged ? { peerMemberChanged: options.peerMemberChanged } : {}),
           ...(options.privateNetwork ? { privateNetwork: options.privateNetwork } : {}),
           ...(options.preferredSignalHome ? { preferredSignalHome: options.preferredSignalHome } : {}),
@@ -322,7 +322,8 @@ export class HostService extends EventEmitter<HostEvents> {
   describeRestartBlockers(): string[] {
     const reasons: string[] = [];
     if (this.#browserView.activeViewCount() > 0) reasons.push("browser-view");
-    if (this.#webrtcGateway?.hasActiveTransfers()) reasons.push("file-transfer");
+    if (this.#webrtcGateway?.hasActiveTransfers() || this.#relayTunnels?.hasActiveTransfers())
+      reasons.push("file-transfer");
     return reasons;
   }
 
@@ -456,15 +457,26 @@ export class HostService extends EventEmitter<HostEvents> {
       const hostIdentity = this.#options.store.getIdentity();
       if (!hostIdentity)
         return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.host.nameBeforePublish")) });
+      const tunnels = new RelayV2TunnelHost({
+        store: this.#options.store,
+        server: this.#api,
+        appVersion: this.#options.appVersion,
+        transferDirectory: join(this.#options.logDirectory ?? ".openbot-remote", "relay-transfers"),
+        closeSession: (sessionId) => this.#releaseTeamSession(sessionId),
+        ...(options.tunnelConnectionDeadlineMs ? { connectionDeadlineMs: options.tunnelConnectionDeadlineMs } : {}),
+      });
       const relay = new HostRelay({
         identity,
         server: this.#api,
+        tunnels,
         label: hostIdentity.serverName,
         ...(options.reconnect ? { reconnect: options.reconnect } : {}),
         ...(options.control ? { control: options.control } : {}),
+        ...(options.firstBytesDeadlineMs ? { firstBytesDeadlineMs: options.firstBytesDeadlineMs } : {}),
       });
       relay.on("state", (state) => this.#relayStateChanged(relay, state));
       this.#hostRelay = relay;
+      this.#relayTunnels = tunnels;
       this.#setStatus({ phase: "starting", message: null });
       this.#removeLegacyRemoteDesktopCredential();
       const started = yield* Effect.gen(function* () {
@@ -529,6 +541,7 @@ export class HostService extends EventEmitter<HostEvents> {
   readonly #stopHostRelay = Effect.fn("HostService.stopHostRelay")(function* (this: HostService) {
     const relay = this.#hostRelay;
     this.#hostRelay = null;
+    this.#relayTunnels = null;
     if (relay) yield* relay.stop();
   });
 
@@ -886,7 +899,15 @@ export class HostService extends EventEmitter<HostEvents> {
     sessionId: string,
   ): Effect.fn.Return<void, RemoteWorkflowError> {
     if (this.#webrtcGateway) yield* this.#webrtcGateway.revokeSession(sessionId);
+    if (this.#relayTunnels) yield* this.#relayTunnels.revokeSession(sessionId);
   });
+
+  #releaseTeamSession(sessionId: string): Effect.Effect<void, RemoteWorkflowError> {
+    return Effect.gen({ self: this }, function* () {
+      yield* this.#browserView.revokeTeamSession(sessionId);
+      this.#options.browser.releaseUserControlHeldBy({ kind: "session", sessionId });
+    });
+  }
 
   readonly createInvite = Effect.fn("HostService.createInvite")(
     function* (this: HostService, input: CreateTeamInviteInput): Effect.fn.Return<InviteSummary, RemoteWorkflowError> {
