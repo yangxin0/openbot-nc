@@ -11,7 +11,6 @@ import CalendarClock from "lucide-react-native/icons/calendar-clock";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Linking, View } from "react-native";
 import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
-import { useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { ChatMarkdown } from "@/features/chat/components/chat-markdown";
 import { SettingsNote, SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
 import {
@@ -24,6 +23,7 @@ import { SheetScrollView } from "@/shared/components/sheet-scroll-view";
 import { haptics } from "@/shared/lib/haptics";
 import { useText } from "@/shared/lib/text";
 import { MIRROR_IN_RTL } from "@/shared/lib/text-direction";
+import { VENDOR_SERVICE_URL } from "@/shared/lib/vendor-service";
 import { loadMarketplaceAgent, loadMarketplaceSkill } from "../api/marketplace-catalog";
 import {
   HeroChips,
@@ -55,8 +55,7 @@ export function MarketplaceListingScreen() {
     id: string;
     name?: string;
   }>();
-  const { session } = useMobileSession();
-  const apiUrl = session?.apiUrl ?? null;
+  const apiUrl = VENDOR_SERVICE_URL;
   const agent = useQuery({
     queryKey: queryKeys.marketplace(apiUrl, "agent", id),
     enabled: apiUrl !== null && kind === "agent",

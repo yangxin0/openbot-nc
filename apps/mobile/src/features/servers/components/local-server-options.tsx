@@ -7,7 +7,7 @@ import { SettingsRow, SettingsSection } from "@/features/settings/components/set
 import { useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
 import { useText } from "@/shared/lib/text";
 
-export type LocalServerPathname = "/add-server/local" | "/hosted-server/local";
+export type LocalServerPathname = "/add-server/local";
 
 export function LocalServerOptions({ pathname }: { pathname: LocalServerPathname }) {
   const { t } = useText();

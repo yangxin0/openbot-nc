@@ -10,11 +10,11 @@ import * as Updates from "expo-updates";
 import { useEffect } from "react";
 import { AppState, Linking } from "react-native";
 import { create } from "zustand";
-import { useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { supportLog } from "@/features/support/model/support-log";
 import { devLatestAppVersion } from "@/shared/lib/dev-feature-overrides";
 import { currentAppVersion, useLatestAppVersion, useMobileFeaturesRefresh } from "@/shared/lib/mobile-features";
 import { isIOS } from "@/shared/lib/platform";
+import { VENDOR_SERVICE_URL } from "@/shared/lib/vendor-service";
 
 export type AppUpdate = { kind: "ready"; id: string } | { kind: "store"; id: string; version: string };
 
@@ -91,8 +91,7 @@ function downloadedUpdateId(update: Updates.UpdateInfo): string {
 }
 
 export function useAppUpdate(): AppUpdate | null {
-  const { session } = useMobileSession();
-  const apiUrl = session?.apiUrl ?? null;
+  const apiUrl = VENDOR_SERVICE_URL;
   const latest = useLatestAppVersion(apiUrl ?? "");
   const { isUpdatePending, downloadedUpdate, availableUpdate } = Updates.useUpdates();
   const rollbackWaits = availableUpdate?.type === Updates.UpdateInfoType.ROLLBACK && !isUpdatePending;
@@ -160,8 +159,7 @@ async function fetchReleaseNotes(apiUrl: string, after: string | null, signal: A
 }
 
 export function useAppUpdateNotes(enabled: boolean) {
-  const { session } = useMobileSession();
-  const apiUrl = session?.apiUrl ?? null;
+  const apiUrl = VENDOR_SERVICE_URL;
   const after = devLatestAppVersion() ? null : currentAppVersion();
   return useQuery<MobileReleaseNotes[]>({
     queryKey: ["app-update-notes", apiUrl, after],

@@ -2,24 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/link";
 
 export const messages = {
-  "mobile.link.connectFailed": "تعذّر على OpenBot الاتصال. أعد المحاولة.",
-  "mobile.link.invite.signInTitle": "سجّل الدخول للانضمام إلى هذا الخادم",
-  "mobile.link.invite.signInDescription": "امسح رمز QR في OpenBot على حاسوبك. بعد ذلك يمكنك مراجعة الدعوة.",
-  "mobile.link.invite.cancel": "إلغاء الدعوة",
-  "mobile.link.pairing.title": "ربط هذا الهاتف",
-  "mobile.link.pairing.alreadySignedIn": "سجّلت الدخول بالفعل. سجّل الخروج من الإعدادات قبل ربط حساب آخر.",
-  "mobile.link.pairing.description": "تابع فقط إذا طلبت رابط Mobile Connect هذا من حاسوبك المكتبي.",
-  "mobile.link.pairing.accountService": "يتصل هذا الرابط بخدمة الحسابات على {origin}، وليس بخدمة حسابات OpenBot.",
-  "mobile.link.pairing.connect": "ربط",
   "mobile.link.plugin.title": "فتح صفحة الإضافة",
   "mobile.link.plugin.description": "اعرض هذه الإضافة على موقع OpenBot.",
   "mobile.link.plugin.openFailed": "تعذّر فتح صفحة الإضافة.",
   "mobile.link.plugin.view": "عرض الإضافة",
   "mobile.link.unavailable.title": "الرابط غير متاح",
   "mobile.link.unavailable.description": "هذا الرابط غير صالح، أو لم يعد متاحًا، أو غير مدعوم على الهاتف.",
-  "mobile.link.template.signInTitle": "سجّل الدخول لإضافة هذا الوكيل",
-  "mobile.link.template.signInDescription":
-    "امسح رمز QR في OpenBot على حاسوبك. بعد ذلك يمكنك مراجعة الوكيل قبل إضافته.",
   "mobile.link.template.loading": "جارٍ تحميل الوكيل…",
   "mobile.link.template.creator": "بواسطة {name}",
   "mobile.link.template.section.instructions": "التعليمات",

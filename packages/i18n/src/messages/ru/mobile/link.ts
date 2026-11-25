@@ -2,18 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/link";
 
 export const messages = {
-  "mobile.link.connectFailed": "OpenBot не удалось подключиться. Повторите попытку.",
-  "mobile.link.invite.signInTitle": "Войдите, чтобы присоединиться к серверу",
-  "mobile.link.invite.signInDescription":
-    "Отсканируйте QR-код в OpenBot на компьютере. После этого вы сможете просмотреть приглашение.",
-  "mobile.link.invite.cancel": "Отменить приглашение",
-  "mobile.link.pairing.title": "Подключить этот телефон",
-  "mobile.link.pairing.alreadySignedIn": "Вы уже вошли. Выйдите в настройках, прежде чем подключать другой аккаунт.",
-  "mobile.link.pairing.description":
-    "Продолжайте, только если вы сами запросили эту ссылку Mobile Connect на компьютере.",
-  "mobile.link.pairing.accountService":
-    "Эта ссылка подключает к сервису аккаунтов {origin}, а не к сервису аккаунтов OpenBot.",
-  "mobile.link.pairing.connect": "Подключить",
   "mobile.link.plugin.title": "Открыть страницу плагина",
   "mobile.link.plugin.description": "Посмотреть этот плагин на сайте OpenBot.",
   "mobile.link.plugin.openFailed": "Не удалось открыть страницу плагина.",
@@ -21,9 +9,6 @@ export const messages = {
   "mobile.link.unavailable.title": "Ссылка недоступна",
   "mobile.link.unavailable.description":
     "Эта ссылка недействительна, больше недоступна или не поддерживается на мобильных устройствах.",
-  "mobile.link.template.signInTitle": "Войдите, чтобы добавить этого агента",
-  "mobile.link.template.signInDescription":
-    "Отсканируйте QR-код в OpenBot на компьютере. После этого вы сможете просмотреть агента перед добавлением.",
   "mobile.link.template.loading": "Загрузка агента…",
   "mobile.link.template.creator": "Автор: {name}",
   "mobile.link.template.section.instructions": "Инструкции",

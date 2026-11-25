@@ -3,47 +3,22 @@ import {
   OPENBOT_AGENT_TEMPLATE_PATH_PREFIX,
   parseAgentTemplateUrl,
 } from "@openbot/contracts/agent-template-links";
-import { parseInviteUrl, selfHostedApiOrigin } from "@openbot/contracts/invite-links";
-import { parseMobileConnectUrl } from "@openbot/contracts/mobile-connect";
 import { createPluginShareUrl, parsePluginUrl } from "@openbot/contracts/plugin-links";
 
 export type IncomingLink =
-  | { kind: "invite"; url: string }
-  | { kind: "pairing"; url: string }
   | { kind: "plugin"; url: string }
   | { kind: "template"; url: string; templateId: string }
   | { kind: "invalid" };
 
 function parseIncomingLink(value: string): IncomingLink {
-  if (isInviteLink(value)) return { kind: "invite", url: value };
   try {
     const templateId = parseAgentTemplateUrl(value);
     return { kind: "template", url: createAgentTemplateShareUrl(templateId), templateId };
   } catch {}
   try {
-    const url = new URL(value);
-    const pairing = parseMobileConnectUrl(value);
-    if (pairing && url.username === "" && url.password === "" && url.port === "") {
-      return { kind: "pairing", url: value };
-    }
     return { kind: "plugin", url: createPluginShareUrl(parsePluginUrl(value)) };
   } catch {
     return { kind: "invalid" };
-  }
-}
-
-function isInviteLink(value: string): boolean {
-  try {
-    parseInviteUrl(value);
-    return true;
-  } catch {}
-  try {
-    const url = new URL(value);
-    if (url.protocol !== "openbot:") return false;
-    parseInviteUrl(value, { selfHostedApiOrigin: selfHostedApiOrigin(url.searchParams.get("api") ?? undefined) });
-    return true;
-  } catch {
-    return false;
   }
 }
 
@@ -70,10 +45,6 @@ export function readIncomingLink(id: string | undefined): IncomingLink {
 
 export function forgetIncomingLink(id: string | undefined): void {
   if (id) requests.delete(id);
-}
-
-export function pendingSignInLinkId(): string | undefined {
-  return [...requests].reverse().find(([, link]) => link.kind === "invite" || link.kind === "template")?.[0];
 }
 
 export function redirectIncomingLink(path: string, initial: boolean): string | null {

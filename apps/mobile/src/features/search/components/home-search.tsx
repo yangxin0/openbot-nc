@@ -18,7 +18,6 @@ import Plus from "lucide-react-native/icons/plus";
 import Search from "lucide-react-native/icons/search";
 import Settings from "lucide-react-native/icons/settings";
 import SlidersHorizontal from "lucide-react-native/icons/sliders-horizontal";
-import UsersRound from "lucide-react-native/icons/users-round";
 import {
   memo,
   type PropsWithChildren,
@@ -923,12 +922,6 @@ function HomeSearchIdle({ onLeave, canUseTasks }: { onLeave: () => void; canUseT
               label: t("mobile.app.route.usage"),
               icon: ChartArea,
               href: { pathname: "/server-usage", params: { serverId } } as const,
-            },
-            {
-              id: "members",
-              label: t("mobile.app.route.members"),
-              icon: UsersRound,
-              href: { pathname: "/server-settings/members", params: { serverId } } as const,
             },
             {
               id: "server",

@@ -137,6 +137,38 @@ export function readRelayPrivateKeyAlgorithm(der: Uint8Array): RelayKeyAlgorithm
   }
 }
 
+export function readRelayP256PrivateKey(der: Uint8Array): Uint8Array | null {
+  try {
+    const outer = new DerReader(der);
+    const info = new DerReader(der, outer.next(TAG.sequence));
+    if (!outer.done) return null;
+    info.next(TAG.integer);
+    const key = algorithm(der, info.next(TAG.sequence));
+    if (key.oid !== RELAY_X509_OID.ecPublicKey || key.parameter !== RELAY_X509_OID.prime256v1) return null;
+    const wrapped = new DerReader(der, info.next(TAG.octetString));
+    const ecKey = new DerReader(der, wrapped.next(TAG.sequence));
+    ecKey.next(TAG.integer);
+    const secret = ecKey.next(TAG.octetString);
+    const bytes = der.slice(secret.contentStart, secret.end);
+    return bytes.byteLength === 32 ? bytes : null;
+  } catch {
+    return null;
+  }
+}
+
+export function readRelaySpkiPublicKey(der: Uint8Array): Uint8Array | null {
+  try {
+    const outer = new DerReader(der);
+    const spki = new DerReader(der, outer.next(TAG.sequence));
+    if (!outer.done) return null;
+    spki.next(TAG.sequence);
+    const key = bitString(der, spki.next(TAG.bitString));
+    return spki.done ? key : null;
+  } catch {
+    return null;
+  }
+}
+
 export function relayX509NamesEqual(first: RelayX509Name, second: RelayX509Name): boolean {
   if (first.der.byteLength !== second.der.byteLength) return false;
   return first.der.every((byte, index) => byte === second.der[index]);

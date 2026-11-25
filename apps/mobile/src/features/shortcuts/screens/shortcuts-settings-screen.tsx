@@ -27,7 +27,7 @@ export function ShortcutsSettingsScreen() {
   const saving = useShortcutAgent((state) => state.saving);
   const accent = String(useCSSVariable("--openbot-accent"));
   const [error, setError] = useState<string | null>(null);
-  const apiUrl = session?.apiUrl;
+  const apiUrl = session?.relayUrl;
   const userId = session?.user.id;
 
   useEffect(() => {

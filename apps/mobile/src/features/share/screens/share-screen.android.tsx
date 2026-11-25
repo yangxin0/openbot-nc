@@ -88,7 +88,7 @@ export function ShareScreen() {
     };
   }, [takeShare]);
 
-  const apiUrl = session?.apiUrl;
+  const apiUrl = session?.relayUrl;
   const userId = session?.user.id;
   const lastTarget = useLastShareTarget(apiUrl, userId);
 

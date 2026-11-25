@@ -1,15 +1,12 @@
 import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("mobile.app", {
-  "mobile.app.route.scanQrCode": "Scan QR code",
   "mobile.app.route.actionsNeeded": "Actions needed",
   "mobile.app.route.newChannel": "New channel",
   "mobile.app.route.createAgent": "Create an agent",
   "mobile.app.route.addSharedAgent": "Add a shared agent",
   "mobile.app.route.newSection": "New folder",
   "mobile.app.route.settings": "Settings",
-  "mobile.app.route.profile": "Profile",
-  "mobile.app.route.accountSessions": "Account sessions",
   "mobile.app.route.about": "About",
   "mobile.app.route.support": "Support",
   "mobile.app.route.supportLog": "Support log",
@@ -26,9 +23,6 @@ export const messages = defineMessages("mobile.app", {
   "mobile.app.route.messageOptions": "Message options",
   "mobile.app.route.editMessage": "Edit message",
   "mobile.app.route.serverOptions": "Server options",
-  "mobile.app.route.members": "Members",
-  "mobile.app.route.hostedServerPlans": "Cloud server",
-  "mobile.app.route.hostedServerSetup": "Setup",
   "mobile.app.route.schedule": "Schedule",
   "mobile.app.route.workflows": "Workflows",
   "mobile.app.route.workflow": "Workflow",

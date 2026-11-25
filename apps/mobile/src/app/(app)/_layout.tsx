@@ -391,7 +391,6 @@ function AuthenticatedStack() {
       <Stack.Screen name="thread-rename" listeners={refocusNameField} options={formSheet([0.85])} />
       <Stack.Screen name="new-task" options={formSheet([0.85])} />
       <Stack.Screen name="add-server" options={formSheet([0.85])} />
-      <Stack.Screen name="hosted-server" options={formSheet([0.85])} />
       <Stack.Screen name="hidden-chats" options={formSheet([0.85])} />
       <Stack.Screen name="deleted-chats" options={formSheet([0.85])} />
       <Stack.Screen name="server-settings" options={formSheet([0.85])} />
@@ -452,7 +451,7 @@ function AuthenticatedSplit({ children }: PropsWithChildren) {
 
 export default function AuthenticatedLayout() {
   const { session } = useMobileSession();
-  const workspaceKey = session ? `${session.apiUrl}:${session.user.id}` : "signed-out";
+  const workspaceKey = session ? `${session.relayUrl}:${session.user.id}` : "signed-out";
 
   return (
     <MobileWorkspaceProvider key={workspaceKey}>

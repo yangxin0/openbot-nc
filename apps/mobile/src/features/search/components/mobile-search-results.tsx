@@ -51,8 +51,7 @@ function useSearchSettings(channelsSupported: boolean): MobileSearchSetting[] {
   return useMemo(() => {
     const app = t("mobile.app.route.settings");
     const pages: MobileSearchSetting[] = [
-      { id: "profile", title: t("mobile.app.route.profile"), detail: app },
-      { id: "sessions", title: t("mobile.app.route.accountSessions"), detail: app },
+      { id: "identity", title: t("mobile.identity.settings.title"), detail: app },
       { id: "appearance", title: t("mobile.settings.appearance.title"), detail: app },
       { id: "animations", title: t("mobile.settings.animations.title"), detail: app },
       { id: "language", title: t("mobile.settings.language.title"), detail: app },
@@ -73,7 +72,6 @@ function useSearchSettings(channelsSupported: boolean): MobileSearchSetting[] {
       { id: "support", title: t("mobile.settings.home.support"), detail: app },
       { id: "about", title: t("mobile.settings.home.about"), detail: app },
       { id: "serverOptions", title: t("mobile.app.route.serverOptions"), detail: serverName },
-      { id: "serverMembers", title: t("mobile.app.route.members"), detail: serverName },
       { id: "serverRoutines", title: t("mobile.app.route.schedule"), detail: serverName },
       { id: "serverUsage", title: t("mobile.server.drawer.usage"), detail: serverName },
     );

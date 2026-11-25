@@ -2,15 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/app";
 
 export const messages = {
-  "mobile.app.route.scanQrCode": "סריקת קוד QR",
   "mobile.app.route.actionsNeeded": "נדרשות פעולות",
   "mobile.app.route.newChannel": "ערוץ חדש",
   "mobile.app.route.createAgent": "יצירת סוכן",
   "mobile.app.route.addSharedAgent": "הוספת סוכן משותף",
   "mobile.app.route.newSection": "תיקייה חדשה",
   "mobile.app.route.settings": "הגדרות",
-  "mobile.app.route.profile": "פרופיל",
-  "mobile.app.route.accountSessions": "סשנים של החשבון",
   "mobile.app.route.about": "אודות",
   "mobile.app.route.support": "תמיכה",
   "mobile.app.route.supportLog": "יומן תמיכה",
@@ -27,9 +24,6 @@ export const messages = {
   "mobile.app.route.messageOptions": "אפשרויות הודעה",
   "mobile.app.route.editMessage": "עריכת הודעה",
   "mobile.app.route.serverOptions": "אפשרויות שרת",
-  "mobile.app.route.members": "חברים",
-  "mobile.app.route.hostedServerPlans": "שרת בענן",
-  "mobile.app.route.hostedServerSetup": "הגדרה",
   "mobile.app.route.schedule": "לוח זמנים",
   "mobile.app.route.workflows": "תהליכי עבודה",
   "mobile.app.route.workflow": "תהליך עבודה",

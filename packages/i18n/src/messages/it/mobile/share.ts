@@ -2,9 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/share";
 
 export const messages = {
-  "mobile.share.signInTitle": "Accedi per condividere",
-  "mobile.share.signInDescription":
-    "Scansiona il codice QR in OpenBot sul computer. Poi potrai scegliere l'agente che riceve ciò che hai condiviso.",
   "mobile.share.reading": "Lettura del contenuto condiviso…",
   "mobile.share.readFailed": "OpenBot non è riuscito a leggere ciò che hai condiviso. Condividilo di nuovo.",
   "mobile.share.content": "Da condividere",

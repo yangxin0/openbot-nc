@@ -2,7 +2,7 @@ import type { InstalledSkill } from "@openbot/contracts/ipc";
 import { useInfiniteQuery, useQueries } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { agentSkillsQuery } from "@/features/agents/model/agent-skills-query";
-import { useMobileSession, useQueryScope } from "@/features/auth/context/mobile-session-context";
+import { useQueryScope } from "@/features/auth/context/mobile-session-context";
 import { CONNECTOR_TITLE_KEYS } from "@/features/servers/model/connectors";
 import { useConnectorRows } from "@/features/servers/model/use-connector-rows";
 import { useMcpServerList } from "@/features/servers/model/use-server-mcp";
@@ -12,6 +12,7 @@ import {
 } from "@/features/workspace/context/mobile-workspace-context";
 import { queryKeys } from "@/features/workspace/model/query-keys";
 import { useText } from "@/shared/lib/text";
+import { VENDOR_SERVICE_URL } from "@/shared/lib/vendor-service";
 import { listMarketplaceAgents, listMarketplaceSkills, MARKETPLACE_PAGE_SIZE } from "../api/marketplace-catalog";
 import {
   agentListing,
@@ -66,9 +67,8 @@ export function useMarketplaceCatalog({
   query: string;
   filter: MarketplaceFilter;
 }) {
-  const { session } = useMobileSession();
   const { apps: serverApps, mcpServers } = useServerApps(serverId);
-  const apiUrl = session?.apiUrl ?? null;
+  const apiUrl = VENDOR_SERVICE_URL;
   const search = useDebounced(query.trim(), SEARCH_DEBOUNCE_MS);
   const category = filter.category;
   const listQuery = {
@@ -104,7 +104,7 @@ export function useMarketplaceCatalog({
       ...[...serverApps, ...appListings(apiUrl)].filter((app) => matchesQuery(app, search)),
       ...(skills.data?.pages ?? []).flatMap((page) => page.skills.map((skill) => skillListing(apiUrl, skill))),
     ];
-  }, [apiUrl, agents.data, skills.data, search, serverApps]);
+  }, [agents.data, skills.data, search, serverApps]);
   const pending =
     (agents.isPending && agents.fetchStatus !== "idle") || (skills.isPending && skills.fetchStatus !== "idle");
   const { fetchNextPage: moreAgents } = agents;

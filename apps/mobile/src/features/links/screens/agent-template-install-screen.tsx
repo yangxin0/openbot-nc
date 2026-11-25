@@ -13,7 +13,6 @@ import { Pressable, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { BloubAvatarPreview } from "@/features/agents/components/bloub-avatar";
 import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
-import { useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { ThinkingTextGradient } from "@/features/chat/components/thinking-text-gradient";
 import { SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
 import { useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
@@ -27,6 +26,7 @@ import { SheetScrollView } from "@/shared/components/sheet-scroll-view";
 import { backOrConnected } from "@/shared/lib/back-or-connected";
 import { type MobileText, useText } from "@/shared/lib/text";
 import { MIRROR_IN_RTL } from "@/shared/lib/text-direction";
+import { VENDOR_SERVICE_URL } from "@/shared/lib/vendor-service";
 import { AgentTemplateNotFoundError, loadAgentTemplate } from "../api/agent-templates";
 import { forgetIncomingLink, readIncomingLink } from "../model/incoming-links";
 
@@ -37,14 +37,13 @@ export function AgentTemplateInstallScreen() {
 
 function AgentTemplateInstall({ request }: { request?: string }) {
   const { t, errorMessage } = useText();
-  const { session } = useMobileSession();
   const workspace = useMobileWorkspace();
   const [link] = useState(() => readIncomingLink(request));
   useEffect(() => {
     forgetIncomingLink(request);
   }, [request]);
   const templateId = link.kind === "template" ? link.templateId : null;
-  const apiUrl = session?.apiUrl ?? null;
+  const apiUrl = VENDOR_SERVICE_URL;
   const template = useQuery({
     queryKey: queryKeys.agentTemplate(apiUrl, templateId),
     queryFn: ({ signal }) => {

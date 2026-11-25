@@ -5,16 +5,15 @@ import { BackHandler, Modal, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FullWindowOverlay } from "react-native-screens";
 import { openStorePage } from "@/features/app-update/model/app-update";
-import { useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { BloubBlock } from "@/shared/components/bloub-stage/bloub-block";
 import { useBloubColors } from "@/shared/components/bloub-stage/bloub-look";
 import { currentAppVersion, useMinimumAppVersion, useMobileFeaturesRefresh } from "@/shared/lib/mobile-features";
 import { isIOS } from "@/shared/lib/platform";
 import { useText } from "@/shared/lib/text";
+import { VENDOR_SERVICE_URL } from "@/shared/lib/vendor-service";
 
 export function UpdateRequiredOverlay() {
-  const { session } = useMobileSession();
-  const apiUrl = session?.apiUrl ?? null;
+  const apiUrl = VENDOR_SERVICE_URL;
   const minimum = useMinimumAppVersion(apiUrl ?? "");
   const current = currentAppVersion();
 

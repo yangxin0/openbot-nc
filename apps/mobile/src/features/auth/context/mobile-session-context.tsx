@@ -1,5 +1,4 @@
-import { createRemoteAccountRefresh, runTeamEffect } from "@openbot/team-client";
-import { Effect } from "effect";
+import type { RelayBrowserIdentity, RelayControlSnapshot } from "@openbot/team-client/relay-client";
 import {
   createContext,
   type PropsWithChildren,
@@ -9,51 +8,50 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
-import {
-  followAccountAnalytics,
-  loadAnalyticsPreference,
-  type SendAnalyticsChoice,
-  sendAnalyticsChoice,
-} from "@/features/analytics/preference";
-import {
-  logoutMobileSession,
-  type MobileProfileChange,
-  type MobileSession,
-  MobileSessionExpiredError,
-  readMobileSession,
-  retryMobileSessionRevocations,
-  sameCredential,
-  updateMobileProfile,
-  validateMobileSession,
-} from "@/features/auth/api/mobile-auth";
 import { deleteComposerDrafts } from "@/features/chat/model/composer-drafts";
 import { deleteLocationAlwaysAllowed } from "@/features/chat/model/location-always-allowed";
 import { deleteSideQuestions } from "@/features/chat/model/side-questions";
+import { type PhoneIdentityErrorKey, phoneIdentityErrorKey } from "@/features/identity/model/phone-identity";
+import { phoneIdentityStore, phoneRelayCrypto } from "@/features/identity/model/phone-platform";
+import { type RelayStateKey, relayStateKey } from "@/features/identity/model/phone-relay";
+import { PhoneRelayRuntime } from "@/features/identity/model/phone-relay-runtime";
 import { deleteAgentBackdrops } from "@/features/settings/model/chat-backdrop";
 import { deleteAgentAvatars } from "@/features/workspace/model/agent-avatar-cache";
-import { type QueryScope, queryKeys } from "@/features/workspace/model/query-keys";
+import type { QueryScope } from "@/features/workspace/model/query-keys";
 import { deleteWorkspaceCaches } from "@/features/workspace/model/workspace-cache";
-import { queryClient } from "@/shared/lib/query-client";
+import * as LockedKeychain from "@/shared/lib/locked-keychain";
 import { untilForeground } from "@/shared/lib/until-foreground";
 import { useAppForeground } from "@/shared/lib/use-app-foreground";
 
-import { resolveSessionValidation } from "./session-validation";
+export type SessionEndKey = PhoneIdentityErrorKey | RelayStateKey;
+
+export interface MobileSession {
+  relayUrl: string;
+  user: { id: string; name: string };
+  identity: RelayBrowserIdentity;
+  relay: PhoneRelayRuntime;
+}
 
 interface MobileSessionContextValue {
   loading: boolean;
   session: MobileSession | null;
   sessionScope: number;
-  refreshProfile: () => Promise<void>;
-  handleSessionError: (error: unknown, initiatingSession: MobileSession) => void;
-  connect: (session: MobileSession) => void;
-  signOut: () => Promise<void>;
-  updateProfile: (change: MobileProfileChange) => Promise<MobileSession>;
-  sendAnalyticsChoice: () => Promise<void>;
+  endedKey: SessionEndKey | null;
+  importIdentity: (text: string) => Promise<void>;
+  removeIdentity: () => Promise<void>;
 }
 
 const MobileSessionContext = createContext<MobileSessionContextValue | null>(null);
+
+const VENDOR_ACCOUNT_KEYS = [
+  "openbot.mobile.session.v1",
+  "openbot.mobile.pending-revocations.v1",
+  "openbot.mobile.device-id.v1",
+];
+const LONGEST_TIMER_MS = 2_147_483_647;
 
 function deletePhoneCopy() {
   void deleteWorkspaceCaches();
@@ -62,153 +60,132 @@ function deletePhoneCopy() {
   deleteLocationAlwaysAllowed();
 }
 
+function forgetVendorAccount() {
+  for (const key of VENDOR_ACCOUNT_KEYS) void LockedKeychain.deleteItemAsync(key).catch(() => undefined);
+}
+
 export function MobileSessionProvider({ children }: PropsWithChildren) {
   const [sessionState, setSessionState] = useState<MobileSession | null | undefined>(undefined);
+  const [endedKey, setEndedKey] = useState<SessionEndKey | null>(null);
   const sessionRef = useRef<MobileSession | null>(null);
   const sessionScope = useRef(0);
   const foreground = useAppForeground();
-  const foregroundRef = useRef(foreground);
-  foregroundRef.current = foreground;
-  const validation = useRef<ReturnType<typeof createRemoteAccountRefresh> | null>(null);
-  const refreshProfileRef = useRef<() => Promise<void>>(async () => undefined);
-  const refreshProfile = useCallback(() => refreshProfileRef.current(), []);
 
-  const setCurrentSession = useCallback((session: MobileSession | null) => {
-    if (sessionRef.current?.sessionToken !== session?.sessionToken || sessionRef.current?.apiUrl !== session?.apiUrl) {
+  const endSession = useRef<(key: SessionEndKey | null) => Promise<void>>(async () => undefined);
+
+  const setCurrentSession = useCallback((identity: RelayBrowserIdentity | null) => {
+    const previous = sessionRef.current;
+    if (previous?.identity.keyId !== identity?.keyId) {
       sessionScope.current += 1;
-      queryClient.removeQueries({ queryKey: queryKeys.accountSessions() });
-      queryClient.removeQueries({ queryKey: queryKeys.hostedServerPlans() });
-      queryClient.removeQueries({ queryKey: queryKeys.billing() });
-      queryClient.removeQueries({ queryKey: queryKeys.credits() });
-      queryClient.removeQueries({ queryKey: queryKeys.creditActivity() });
-      queryClient.removeQueries({ queryKey: queryKeys.referrals() });
       deleteComposerDrafts();
       deleteSideQuestions();
     }
-    if (sessionRef.current && !session) deletePhoneCopy();
-    mobileAnalytics.setUser(session?.user ?? null);
+    previous?.relay.stop();
+    if (previous && !identity) deletePhoneCopy();
+    const relayUrl = identity?.relayUrl ?? null;
+    const session =
+      identity && relayUrl
+        ? {
+            relayUrl,
+            user: { id: identity.keyId, name: identity.user },
+            identity,
+            relay: new PhoneRelayRuntime({ identity, crypto: phoneRelayCrypto }, (code) => {
+              void endSession.current(relayStateKey(code));
+            }),
+          }
+        : null;
+    mobileAnalytics.setUser(null);
     sessionRef.current = session;
     setSessionState(session);
   }, []);
 
-  const handleSessionError = useCallback(
-    (error: unknown, initiatingSession: MobileSession) => {
-      if (
-        error instanceof MobileSessionExpiredError &&
-        sessionRef.current &&
-        sameCredential(sessionRef.current, initiatingSession)
-      )
-        setCurrentSession(null);
-    },
-    [setCurrentSession],
-  );
+  endSession.current = async (key) => {
+    if (!sessionRef.current) return;
+    setEndedKey(key);
+    await phoneIdentityStore.remove().catch(() => undefined);
+    setCurrentSession(null);
+  };
 
   useEffect(() => {
     let active = true;
     const scope = sessionScope.current;
-    void untilForeground().then(loadAnalyticsPreference);
+    forgetVendorAccount();
     const read = () =>
-      readMobileSession().then((stored) => {
+      phoneIdentityStore.load().then((identity) => {
         if (!active || scope !== sessionScope.current) return;
-        if (!stored) deletePhoneCopy();
-        setCurrentSession(stored);
+        if (!identity) deletePhoneCopy();
+        setCurrentSession(identity);
       });
     void read()
-      .catch(() => untilForeground().then(read))
-      .catch(() => {
-        if (active && scope === sessionScope.current) setCurrentSession(null);
+      .catch(async (error: unknown) => {
+        const key = phoneIdentityErrorKey(error);
+        if (key === "mobile.identity.error.storage") return untilForeground().then(read);
+        throw error;
+      })
+      .catch(async (error: unknown) => {
+        if (!active || scope !== sessionScope.current) return;
+        const key = phoneIdentityErrorKey(error);
+        setEndedKey(key);
+        if (key !== "mobile.identity.error.storage") {
+          await phoneIdentityStore.remove().catch(() => undefined);
+          deletePhoneCopy();
+        }
+        setCurrentSession(null);
       });
     return () => {
       active = false;
     };
   }, [setCurrentSession]);
 
-  const credentialToken = sessionState?.sessionToken;
-  const credentialApiUrl = sessionState?.apiUrl;
+  const relay = sessionState?.relay ?? null;
   useEffect(() => {
-    if (!credentialToken || !credentialApiUrl) return;
-    let active = true;
-    const controller = createRemoteAccountRefresh(() =>
-      Effect.tryPromise(async () => {
-        const current = sessionRef.current;
-        if (!current) return;
-        await validateMobileSession(current, (validated) => {
-          if (!active) return;
-          const next = resolveSessionValidation(sessionRef.current, current, validated);
-          if (next !== sessionRef.current) setCurrentSession(next);
-        });
-      }),
+    if (!relay || !foreground) return;
+    relay.start();
+    return () => relay.stop();
+  }, [relay, foreground]);
+
+  const expiresAt = sessionState?.identity.expiresAt ?? null;
+  useEffect(() => {
+    if (expiresAt === null || !foreground) return;
+    const remaining = expiresAt - Date.now();
+    if (remaining <= 0) {
+      void endSession.current("mobile.identity.error.expired");
+      return;
+    }
+    const timer = setTimeout(
+      () => void endSession.current("mobile.identity.error.expired"),
+      Math.min(remaining, LONGEST_TIMER_MS),
     );
-    validation.current = controller;
-    refreshProfileRef.current = () => {
-      controller.invalidate();
-      return runTeamEffect(controller.refresh()).catch(() => undefined);
-    };
-    controller.setActive(foregroundRef.current);
-    return () => {
-      active = false;
-      controller.dispose();
-      validation.current = null;
-      refreshProfileRef.current = async () => undefined;
-    };
-  }, [credentialToken, credentialApiUrl, setCurrentSession]);
+    return () => clearTimeout(timer);
+  }, [expiresAt, foreground]);
 
-  useEffect(() => {
-    validation.current?.setActive(foreground);
-    if (foreground) void retryMobileSessionRevocations();
-  }, [foreground]);
-
-  const signOut = useCallback(async () => {
-    const current = sessionRef.current;
-    if (!current) return;
-    await mobileAnalytics.operation("account_sign_out", {}, () => logoutMobileSession(current));
-    deleteAgentAvatars();
-    if (sessionRef.current && sameCredential(sessionRef.current, current)) setCurrentSession(null);
-  }, [setCurrentSession]);
-
-  const updateProfile = useCallback(
-    async (change: MobileProfileChange) => {
-      const current = sessionRef.current;
-      if (!current) throw new MobileSessionExpiredError();
-      try {
-        return await updateMobileProfile(current, change, (updated) => {
-          const next = resolveSessionValidation(sessionRef.current, current, updated);
-          if (next !== sessionRef.current) setCurrentSession(next);
-        });
-      } catch (error) {
-        handleSessionError(error, current);
-        throw error;
-      }
+  const importIdentity = useCallback(
+    async (text: string) => {
+      const identity = await phoneIdentityStore.importText(text);
+      if (sessionRef.current && sessionRef.current.identity.keyId !== identity.keyId) deletePhoneCopy();
+      setEndedKey(null);
+      setCurrentSession(identity);
     },
-    [handleSessionError, setCurrentSession],
+    [setCurrentSession],
   );
 
-  const sendAnalytics = useCallback<SendAnalyticsChoice>(
-    async (enabled, ageMs) => (await updateProfile({ analyticsEnabled: enabled, ageMs })).user.analyticsEnabled ?? null,
-    [updateProfile],
-  );
-  const sendUnsentAnalytics = useCallback(() => sendAnalyticsChoice(sendAnalytics), [sendAnalytics]);
-
-  const accountAnalytics = sessionState?.user.analyticsEnabled;
-  const signedIn = Boolean(sessionState);
-  useEffect(() => {
-    if (!signedIn) return;
-    void followAccountAnalytics(accountAnalytics, sendAnalytics).catch(() => undefined);
-  }, [signedIn, accountAnalytics, sendAnalytics]);
+  const removeIdentity = useCallback(async () => {
+    await phoneIdentityStore.remove();
+    deleteAgentAvatars();
+    setEndedKey(null);
+    setCurrentSession(null);
+  }, [setCurrentSession]);
 
   const value = useMemo<MobileSessionContextValue>(
     () => ({
       loading: sessionState === undefined,
       session: sessionState ?? null,
       sessionScope: sessionScope.current,
-      refreshProfile,
-      handleSessionError,
-      connect: setCurrentSession,
-      signOut,
-      updateProfile,
-      sendAnalyticsChoice: sendUnsentAnalytics,
+      endedKey,
+      importIdentity,
+      removeIdentity,
     }),
-    [sessionState, setCurrentSession, signOut, updateProfile, sendUnsentAnalytics, handleSessionError, refreshProfile],
+    [sessionState, endedKey, importIdentity, removeIdentity],
   );
 
   return <MobileSessionContext.Provider value={value}>{children}</MobileSessionContext.Provider>;
@@ -222,5 +199,24 @@ export function useMobileSession(): MobileSessionContextValue {
 
 export function useQueryScope(): QueryScope {
   const { session, sessionScope } = useMobileSession();
-  return [session?.apiUrl, session?.user.id, sessionScope];
+  return [session?.relayUrl, session?.user.id, sessionScope];
+}
+
+const STOPPED_RELAY: RelayControlSnapshot = {
+  state: { status: "offline", code: "stopped", message: "", retryInMs: null },
+  roster: [],
+  self: null,
+  team: null,
+};
+
+const noRelay = () => () => undefined;
+const stoppedRelay = () => STOPPED_RELAY;
+
+export function useRelaySnapshot(): RelayControlSnapshot {
+  const relay = useMobileSession().session?.relay ?? null;
+  return useSyncExternalStore(
+    relay?.subscribe ?? noRelay,
+    relay?.snapshot ?? stoppedRelay,
+    relay?.snapshot ?? stoppedRelay,
+  );
 }

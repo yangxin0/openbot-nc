@@ -68,9 +68,11 @@ function current(): RelayBrowserIdentity {
 }
 
 async function describe(value: RelayBrowserIdentity): Promise<ImportedIdentity> {
+  const key = value.privateKey;
+  if (!(key instanceof CryptoKey)) throw new Error("The browser identity must hold a WebCrypto key.");
   let exportRefused = false;
   try {
-    await crypto.subtle.exportKey("pkcs8", value.privateKey);
+    await crypto.subtle.exportKey("pkcs8", key);
   } catch {
     exportRefused = true;
   }
@@ -79,7 +81,7 @@ async function describe(value: RelayBrowserIdentity): Promise<ImportedIdentity> 
     team: value.team,
     user: value.user,
     device: value.device,
-    extractable: value.privateKey.extractable,
+    extractable: key.extractable,
     exportRefused,
   };
 }

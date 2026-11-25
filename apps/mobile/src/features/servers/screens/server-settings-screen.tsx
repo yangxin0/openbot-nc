@@ -4,14 +4,12 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Typography } from "heroui-native";
 import Eye from "lucide-react-native/icons/eye";
 import EyeOff from "lucide-react-native/icons/eye-off";
-import LogOut from "lucide-react-native/icons/log-out";
 import Palette from "lucide-react-native/icons/palette";
 import Trash2 from "lucide-react-native/icons/trash";
 import { useRef, useState } from "react";
 import { Alert, Keyboard, View } from "react-native";
 import { ServerAvatar } from "@/features/servers/components/server-avatar";
 import { ServerStatusLabel } from "@/features/servers/components/server-status-label";
-import { useOwnerHostedServerIds } from "@/features/servers/model/server-settings-access";
 import { useLockedAction } from "@/features/servers/model/use-locked-action";
 import { useServerUpdate } from "@/features/servers/model/use-server-update";
 import {
@@ -53,7 +51,6 @@ export function ServerSettingsScreen() {
 }
 
 function ServerSettingsHome({ server }: { server: MobileServer }) {
-  const hostedServerIds = useOwnerHostedServerIds(server);
   return (
     <SettingsContent>
       {canAdministerServer(server.role) ? <ServerIdentityForm server={server} /> : <ServerHeader server={server} />}
@@ -61,9 +58,9 @@ function ServerSettingsHome({ server }: { server: MobileServer }) {
       <ServerPeopleSection server={server} />
       <ServerAiSection serverId={server.id} />
       <ServerDataSections serverId={server.id} />
-      <ServerConnectionSection server={server} hostedServerIds={hostedServerIds} />
+      <ServerConnectionSection server={server} />
       <ServerVisibilitySection server={server} />
-      <ServerExitSection server={server} hostedServerIds={hostedServerIds} />
+      <ServerExitSection server={server} />
       <ServerKeySettings server={server} />
     </SettingsContent>
   );
@@ -124,47 +121,11 @@ function ServerVisibilitySection({ server }: { server: MobileServer }) {
   );
 }
 
-function ServerExitSection({
-  server,
-  hostedServerIds,
-}: {
-  server: MobileServer;
-  hostedServerIds: ReadonlySet<string> | null;
-}) {
+function ServerExitSection({ server }: { server: MobileServer }) {
   const { t, errorMessage } = useText();
-  const { leaveServer, removeServer, deleteLocalServer, localServerKind } = useMobileWorkspace();
+  const { removeServer, deleteLocalServer, localServerKind } = useMobileWorkspace();
   const serverId = server.id;
   const { busy, error, perform } = useLockedAction();
-  if (server.role !== "owner")
-    return (
-      <SettingsSection footer={error}>
-        <SettingsRow
-          leading={<RowIcon icon={LogOut} tone="danger" />}
-          disclosure={false}
-          disabled={busy}
-          onPress={() =>
-            Alert.alert(
-              t("mobile.server.settings.leaveTitle", { name: server.name }),
-              t("mobile.server.settings.leaveBody"),
-              [
-                { text: t("common.cancel"), style: "cancel" },
-                {
-                  text: t("mobile.server.settings.leave"),
-                  style: "destructive",
-                  onPress: () =>
-                    void perform(async () => {
-                      await leaveServer(serverId);
-                      router.dismiss();
-                    }),
-                },
-              ],
-            )
-          }
-        >
-          <Typography.Paragraph className="text-danger-text">{t("mobile.server.settings.leave")}</Typography.Paragraph>
-        </SettingsRow>
-      </SettingsSection>
-    );
   if (localServerKind(serverId) === "onComputer")
     return (
       <SettingsSection footer={error}>
@@ -198,21 +159,20 @@ function ServerExitSection({
         </SettingsRow>
       </SettingsSection>
     );
-  if (!hostedServerIds || hostedServerIds.has(serverId)) return null;
   return (
-    <SettingsSection footer={error}>
+    <SettingsSection footer={error ?? t("mobile.server.settings.forgetHint")}>
       <SettingsRow
         leading={<RowIcon icon={Trash2} tone="danger" />}
         disclosure={false}
         disabled={busy}
         onPress={() =>
           Alert.alert(
-            t("mobile.server.settings.removeTitle", { name: server.name }),
-            t("mobile.server.settings.removeBody"),
+            t("mobile.server.settings.forgetTitle", { name: server.name }),
+            t("mobile.server.settings.forgetBody"),
             [
               { text: t("common.cancel"), style: "cancel" },
               {
-                text: t("mobile.server.settings.remove"),
+                text: t("mobile.server.settings.forget"),
                 style: "destructive",
                 onPress: () =>
                   void perform(
@@ -227,7 +187,7 @@ function ServerExitSection({
           )
         }
       >
-        <Typography.Paragraph className="text-danger-text">{t("mobile.server.settings.remove")}</Typography.Paragraph>
+        <Typography.Paragraph className="text-danger-text">{t("mobile.server.settings.forget")}</Typography.Paragraph>
       </SettingsRow>
     </SettingsSection>
   );

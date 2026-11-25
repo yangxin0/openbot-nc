@@ -2,27 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/link";
 
 export const messages = {
-  "mobile.link.connectFailed": "OpenBot は接続できませんでした。もう一度お試しください。",
-  "mobile.link.invite.signInTitle": "サインインしてこのサーバーに参加",
-  "mobile.link.invite.signInDescription":
-    "コンピューターの OpenBot に表示される QR コードをスキャンしてください。その後、招待を確認できます。",
-  "mobile.link.invite.cancel": "招待をキャンセル",
-  "mobile.link.pairing.title": "このスマートフォンを接続",
-  "mobile.link.pairing.alreadySignedIn":
-    "すでにサインインしています。別のアカウントを接続する前に、設定でサインアウトしてください。",
-  "mobile.link.pairing.description": "この Mobile Connect リンクをデスクトップから要求した場合にのみ続行してください。",
-  "mobile.link.pairing.accountService":
-    "このリンクは OpenBot のアカウントサービスではなく、{origin} のアカウントサービスに接続します。",
-  "mobile.link.pairing.connect": "接続",
   "mobile.link.plugin.title": "プラグインのページを開く",
   "mobile.link.plugin.description": "このプラグインを OpenBot の Web サイトで表示します。",
   "mobile.link.plugin.openFailed": "プラグインのページを開けませんでした。",
   "mobile.link.plugin.view": "プラグインを表示",
   "mobile.link.unavailable.title": "リンクを使用できません",
   "mobile.link.unavailable.description": "このリンクは無効か、利用できなくなったか、モバイルでサポートされていません。",
-  "mobile.link.template.signInTitle": "サインインしてこのエージェントを追加",
-  "mobile.link.template.signInDescription":
-    "コンピューターの OpenBot に表示される QR コードをスキャンしてください。その後、追加する前にエージェントを確認できます。",
   "mobile.link.template.loading": "エージェントを読み込み中…",
   "mobile.link.template.creator": "作成者: {name}",
   "mobile.link.template.section.instructions": "指示",

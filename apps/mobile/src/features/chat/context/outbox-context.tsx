@@ -73,7 +73,7 @@ export function OutboxProvider({ children }: PropsWithChildren) {
   const readWorkspace = useMobileWorkspaceReader();
   const { session } = useMobileSession();
   const [{ store, workspace: current }] = useState(() =>
-    accountOutbox(session ? `${session.apiUrl}:${session.user.id}` : null),
+    accountOutbox(session ? `${session.relayUrl}:${session.user.id}` : null),
   );
   current.current = readWorkspace;
   const onlineKey = useMobileWorkspaceSelector((workspace) =>

@@ -133,7 +133,7 @@ function LockScreen({ leaving, onHeaderLayout }: { leaving: boolean; onHeaderLay
   const insets = useSafeAreaInsets();
   const foreground = useThemeColor("foreground");
   const buttonForeground = useThemeColor("default-foreground");
-  const { signOut } = useMobileSession();
+  const { removeIdentity: signOut } = useMobileSession();
   const status = useAppLock((state) => state.status);
   const config = useAppLock((state) => state.config);
   const confirming = useAppLock((state) => state.confirming);

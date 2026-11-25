@@ -80,7 +80,7 @@ export function usePlanLimits(serverId: string) {
   const workspace = useMobileWorkspaceActions();
   const queryScope = useQueryScope();
   const { session } = useMobileSession();
-  const account = session ? `${session.apiUrl}:${session.user.id}` : null;
+  const account = session ? `${session.relayUrl}:${session.user.id}` : null;
   const online = useMobileWorkspaceSelector(
     (current) => current.servers.find((server) => server.id === serverId)?.state === "online",
   );

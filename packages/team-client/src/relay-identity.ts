@@ -4,8 +4,6 @@ import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { Schema } from "effect";
 import {
   isRelayP256Certificate,
-  RELAY_ECDSA_P256,
-  RELAY_ECDSA_SHA256,
   type RelayCertificate,
   readRelayCertificate,
   readRelayPem,
@@ -14,6 +12,7 @@ import {
   relayTrustPairs,
   verifyRelayP256,
 } from "./relay-certificates";
+import { type RelayCrypto, type RelayPrivateKey, webRelayCrypto } from "./relay-crypto";
 
 export const RELAY_IDENTITY_TEXT_LIMIT = 64 * 1024;
 const STORED_IDENTITY_VERSION = 1;
@@ -49,7 +48,7 @@ export interface RelayBrowserIdentity {
   root: string;
   startsAt: number;
   expiresAt: number;
-  privateKey: CryptoKey;
+  privateKey: RelayPrivateKey;
 }
 
 export interface RelayIdentityKeyStore {
@@ -65,7 +64,17 @@ export interface IndexedDbRelayIdentityOptions {
 
 const refused = (code: RelayIdentityErrorCode, message: string) => new RelayIdentityError({ code, message });
 
-export async function readRelayIdentityText(text: string, now = Date.now()): Promise<RelayBrowserIdentity> {
+export interface RelayIdentityReadOptions {
+  now?: number;
+  crypto?: RelayCrypto;
+}
+
+export async function readRelayIdentityText(
+  text: string,
+  options: RelayIdentityReadOptions = {},
+): Promise<RelayBrowserIdentity> {
+  const now = options.now ?? Date.now();
+  const crypto = options.crypto ?? webRelayCrypto;
   if (text.length > RELAY_IDENTITY_TEXT_LIMIT) throw refused("invalid_bundle", "The identity file is too large.");
   let value: unknown;
   try {
@@ -76,9 +85,9 @@ export async function readRelayIdentityText(text: string, now = Date.now()): Pro
   const bundle = decodeRelayIdentityBundle(value);
   if (!bundle) throw refused("invalid_bundle", "The identity file is not valid.");
   const [leaf = null, root = null, ...authorities] = await Promise.all([
-    readRelayCertificate(bundle.certificate),
-    readRelayCertificate(bundle.root),
-    ...bundle.chain.map(readRelayCertificate),
+    readRelayCertificate(bundle.certificate, crypto),
+    readRelayCertificate(bundle.root, crypto),
+    ...bundle.chain.map((pem) => readRelayCertificate(pem, crypto)),
   ]);
   const chain = authorities.filter((certificate) => certificate !== null);
   if (!leaf || !root || leaf.authority || chain.length !== authorities.length) {
@@ -88,11 +97,11 @@ export async function readRelayIdentityText(text: string, now = Date.now()): Pro
   if (!names || names.team !== bundle.team || names.user !== bundle.user || names.device !== bundle.device) {
     throw refused("invalid_bundle", "The certificate does not name the team, user and device of the identity file.");
   }
-  const privateKey = await importPrivateKey(bundle.privateKey);
-  if (!isRelayP256Certificate(leaf) || !(await keyMatches(privateKey, leaf))) {
+  const privateKey = await importPrivateKey(bundle.privateKey, crypto);
+  if (!isRelayP256Certificate(leaf) || !(await keyMatches(privateKey, leaf, crypto))) {
     throw refused("key_mismatch", "The private key is not the key of the certificate.");
   }
-  const issuedBy = await relayIssuance([[root, root], ...relayTrustPairs(leaf, root, chain)]);
+  const issuedBy = await relayIssuance([[root, root], ...relayTrustPairs(leaf, root, chain)], crypto);
   const authority = chain.find((candidate) => issuedBy(leaf, candidate) && issuedBy(candidate, root));
   const path: RelayCertificate[] | null = issuedBy(leaf, root) ? [root] : authority ? [authority, root] : null;
   if (!issuedBy(root, root) || !path) {
@@ -126,7 +135,10 @@ export async function readRelayIdentityText(text: string, now = Date.now()): Pro
   };
 }
 
-export async function readRelayIdentityFile(file: Blob, now = Date.now()): Promise<RelayBrowserIdentity> {
+export async function readRelayIdentityFile(
+  file: Blob,
+  options: RelayIdentityReadOptions = {},
+): Promise<RelayBrowserIdentity> {
   if (file.size > RELAY_IDENTITY_TEXT_LIMIT) throw refused("invalid_bundle", "The identity file is too large.");
   let text: string;
   try {
@@ -134,7 +146,7 @@ export async function readRelayIdentityFile(file: Blob, now = Date.now()): Promi
   } catch {
     throw refused("invalid_bundle", "The identity file cannot be read.");
   }
-  return readRelayIdentityText(text, now);
+  return readRelayIdentityText(text, options);
 }
 
 export function createIndexedDbRelayIdentityKeyStore(
@@ -170,7 +182,7 @@ export function createIndexedDbRelayIdentityKeyStore(
       return identity;
     },
     async save(identity) {
-      if (identity.privateKey.extractable)
+      if (!(identity.privateKey instanceof CryptoKey) || identity.privateKey.extractable)
         throw refused("unsupported_key", "Only a key that cannot be exported is saved.");
       const stored = { version: STORED_IDENTITY_VERSION, ...identity, chain: [...identity.chain] };
       await transact("readwrite", (store) => store.put(stored, RECORD_KEY)).catch(() => {
@@ -185,7 +197,7 @@ export function createIndexedDbRelayIdentityKeyStore(
   };
 }
 
-async function importPrivateKey(pem: string): Promise<CryptoKey> {
+async function importPrivateKey(pem: string, crypto: RelayCrypto): Promise<RelayPrivateKey> {
   const block = readRelayPem(pem);
   if (!block) throw refused("invalid_bundle", "The private key cannot be read.");
   if (block.label !== "PRIVATE KEY")
@@ -196,17 +208,21 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
     throw refused("unsupported_key", "This client supports only an ECDSA P-256 private key.");
   }
   try {
-    return await crypto.subtle.importKey("pkcs8", block.der, RELAY_ECDSA_P256, false, ["sign"]);
+    return await crypto.importPrivateKey(block.der);
   } catch {
     throw refused("invalid_bundle", "The private key cannot be read.");
   }
 }
 
-async function keyMatches(privateKey: CryptoKey, certificate: RelayCertificate): Promise<boolean> {
-  const sample = crypto.getRandomValues(new Uint8Array(KEY_CHECK_BYTES));
+async function keyMatches(
+  privateKey: RelayPrivateKey,
+  certificate: RelayCertificate,
+  crypto: RelayCrypto,
+): Promise<boolean> {
   try {
-    const signature = new Uint8Array(await crypto.subtle.sign(RELAY_ECDSA_SHA256, privateKey, sample));
-    return await verifyRelayP256(certificate.spki, sample, signature);
+    const sample = crypto.randomBytes(KEY_CHECK_BYTES);
+    const signature = await crypto.sign(privateKey, sample);
+    return await verifyRelayP256(certificate.spki, sample, signature, crypto);
   } catch {
     return false;
   }

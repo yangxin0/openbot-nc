@@ -16,7 +16,6 @@ import type { WelcomeHandOff } from "@/features/agents/components/empty-agents-s
 import { InstructionsLimit, instructionsTooLong } from "@/features/agents/components/instructions-limit";
 import { newAvatarSeed } from "@/features/agents/model/avatar-candidates";
 import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
-import { useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { AgentStep } from "@/features/onboarding/components/agent-step";
 import { ConversationStep } from "@/features/onboarding/components/conversation-step";
 import { HelloStep } from "@/features/onboarding/components/hello-step";
@@ -40,16 +39,9 @@ import {
   CUSTOM_CHOICE,
   ONBOARDING_ROLES,
 } from "@/features/onboarding/model/onboarding-roles";
-import { hostedServerCalls } from "@/features/servers/api/hosted-servers";
 import { useAppDrawer } from "@/features/servers/components/app-drawer-shell";
-import {
-  refreshHostedServerAvailability,
-  useHostedServerAvailability,
-} from "@/features/servers/model/hosted-server-availability";
 import { useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
-import { devFeatureOverride } from "@/shared/lib/dev-feature-overrides";
 import { haptics } from "@/shared/lib/haptics";
-import { refreshMobileFeatures, useMobileFeature } from "@/shared/lib/mobile-features";
 import { useText } from "@/shared/lib/text";
 
 type Step = "hello" | "server" | "agent" | "look" | "name" | "role" | "task" | "ready";
@@ -172,7 +164,6 @@ export function OnboardingFlow({ onFinish }: { onFinish: (welcome?: WelcomeHandO
   const { t, errorMessage } = useText();
   const insets = useSafeAreaInsets();
   const motion = useOnboardingMotion();
-  const { session, signOut } = useMobileSession();
   const { servers, createAgent } = useMobileWorkspace();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const [step, setStep] = useState<Step>("hello");
@@ -250,17 +241,6 @@ export function OnboardingFlow({ onFinish }: { onFinish: (welcome?: WelcomeHandO
     ? null
     : (servers.find((server) => server.state === "connecting" || server.state === "unknown") ?? null);
   const needsServer = !online;
-
-  const accountHasPlans = useHostedServerAvailability(
-    (state) => session !== null && state.userId === session.user.id && state.available,
-  );
-  const cloudServersOn = useMobileFeature(session?.apiUrl ?? "", "cloudServers");
-  const showsPlans = devFeatureOverride("cloudServers") ?? (accountHasPlans && cloudServersOn);
-  useEffect(() => {
-    if (!session || step !== "server") return;
-    void refreshHostedServerAvailability(session.user.id, hostedServerCalls(session));
-    void refreshMobileFeatures(session.apiUrl);
-  }, [session, step]);
 
   const go = useCallback(
     (next: Step, nextDirection: 1 | -1) => {
@@ -361,13 +341,8 @@ export function OnboardingFlow({ onFinish }: { onFinish: (welcome?: WelcomeHandO
   );
 
   const connectComputer = () => {
-    Alert.alert(t("mobile.onboarding.server.computerTitle"), t("mobile.onboarding.server.computerSteps"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("mobile.onboarding.server.signOut"),
-        style: "destructive",
-        onPress: () => void signOut().catch(() => undefined),
-      },
+    Alert.alert(t("mobile.onboarding.server.computerTitle"), t("mobile.onboarding.server.relaySteps"), [
+      { text: t("common.close"), style: "cancel" },
     ]);
   };
 
@@ -459,10 +434,6 @@ export function OnboardingFlow({ onFinish }: { onFinish: (welcome?: WelcomeHandO
         motion={motion}
         connecting={connecting}
         onComputer={connectComputer}
-        onCloud={
-          showsPlans ? () => router.push({ pathname: "/hosted-server", params: { entryPoint: "onboarding" } }) : null
-        }
-        onInvitation={() => router.push("/add-server")}
         onBack={previous !== null ? back : null}
         onSkip={skip}
       />

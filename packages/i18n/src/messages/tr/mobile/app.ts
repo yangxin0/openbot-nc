@@ -2,15 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/app";
 
 export const messages = {
-  "mobile.app.route.scanQrCode": "QR kodunu tara",
   "mobile.app.route.actionsNeeded": "Gerekli işlemler",
   "mobile.app.route.newChannel": "Yeni kanal",
   "mobile.app.route.createAgent": "Ajan oluştur",
   "mobile.app.route.addSharedAgent": "Paylaşılan bir ajan ekle",
   "mobile.app.route.newSection": "Yeni klasör",
   "mobile.app.route.settings": "Ayarlar",
-  "mobile.app.route.profile": "Profil",
-  "mobile.app.route.accountSessions": "Hesap oturumları",
   "mobile.app.route.about": "Hakkında",
   "mobile.app.route.support": "Destek",
   "mobile.app.route.supportLog": "Destek günlüğü",
@@ -27,9 +24,6 @@ export const messages = {
   "mobile.app.route.messageOptions": "Mesaj seçenekleri",
   "mobile.app.route.editMessage": "Mesajı düzenle",
   "mobile.app.route.serverOptions": "Sunucu seçenekleri",
-  "mobile.app.route.members": "Üyeler",
-  "mobile.app.route.hostedServerPlans": "Bulut sunucusu",
-  "mobile.app.route.hostedServerSetup": "Kurulum",
   "mobile.app.route.schedule": "Zamanlama",
   "mobile.app.route.workflows": "İş akışları",
   "mobile.app.route.workflow": "İş akışı",

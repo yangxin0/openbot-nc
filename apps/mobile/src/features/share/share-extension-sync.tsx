@@ -11,7 +11,7 @@ import {
   readShareExtensionAgents,
   type ShareExtensionAgent,
   type ShareExtensionDirectory,
-  setShareExtensionSession,
+  sendSharesThroughApp,
   shareAvatarName,
   shareConversationId,
   writeShareExtensionDirectory,
@@ -20,20 +20,12 @@ import {
 interface ShareExtensionSyncProps {
   apiUrl: string;
   userId: string;
-  sessionToken: string;
   servers: readonly MobileServer[];
   serversReady: boolean;
   agents: readonly MobileAgent[];
 }
 
-export function ShareExtensionSync({
-  apiUrl,
-  userId,
-  sessionToken,
-  servers,
-  serversReady,
-  agents,
-}: ShareExtensionSyncProps): null {
+export function ShareExtensionSync({ apiUrl, userId, servers, serversReady, agents }: ShareExtensionSyncProps): null {
   const { t } = useText();
   const accent = String(useCSSVariable("--openbot-accent"));
   const locked = useAppLock((state) => state.status !== "ready" || appLockEnabled(state.config));
@@ -42,8 +34,8 @@ export function ShareExtensionSync({
   const lastTarget = useLastShareTarget(apiUrl, userId);
 
   useEffect(() => {
-    setShareExtensionSession({ apiUrl, userId, sessionToken });
-  }, [apiUrl, userId, sessionToken]);
+    sendSharesThroughApp();
+  }, []);
 
   const text = useMemo(
     () => ({

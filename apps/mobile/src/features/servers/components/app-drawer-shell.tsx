@@ -78,7 +78,7 @@ export function AppDrawerShell({ children }: PropsWithChildren) {
   const activeServerId = useMobileWorkspaceSelector((current) => current.activeServer.id);
   const servers = useMobileWorkspaceSelector((current) => current.servers);
   const localServerKind = useMobileWorkspaceSelector((current) => current.localServerKind);
-  const { leaveServer, removeServer, deleteLocalServer, setServerHidden, reorderServers, selectServer } =
+  const { removeServer, deleteLocalServer, setServerHidden, reorderServers, selectServer } =
     useMobileWorkspaceActions();
   const [muted] = useThemeColor(["muted"]);
   const reducedMotion = useReducedMotion();
@@ -355,7 +355,6 @@ export function AppDrawerShell({ children }: PropsWithChildren) {
                 sideInset={drawerSideInset}
                 topInset={insets.top}
                 onNavigate={navigateAfterClosing}
-                onLeave={leaveServer}
                 onRemove={removeServer}
                 onDelete={deleteLocalServer}
                 onSetHidden={setServerHidden}

@@ -2,15 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/app";
 
 export const messages = {
-  "mobile.app.route.scanQrCode": "QR 코드 스캔",
   "mobile.app.route.actionsNeeded": "필요한 작업",
   "mobile.app.route.newChannel": "새 채널",
   "mobile.app.route.createAgent": "에이전트 만들기",
   "mobile.app.route.addSharedAgent": "공유 에이전트 추가",
   "mobile.app.route.newSection": "새 폴더",
   "mobile.app.route.settings": "설정",
-  "mobile.app.route.profile": "프로필",
-  "mobile.app.route.accountSessions": "계정 세션",
   "mobile.app.route.about": "정보",
   "mobile.app.route.support": "지원",
   "mobile.app.route.supportLog": "지원 로그",
@@ -27,9 +24,6 @@ export const messages = {
   "mobile.app.route.messageOptions": "메시지 옵션",
   "mobile.app.route.editMessage": "메시지 수정",
   "mobile.app.route.serverOptions": "서버 옵션",
-  "mobile.app.route.members": "멤버",
-  "mobile.app.route.hostedServerPlans": "클라우드 서버",
-  "mobile.app.route.hostedServerSetup": "설정",
   "mobile.app.route.schedule": "일정",
   "mobile.app.route.workflows": "워크플로",
   "mobile.app.route.workflow": "워크플로",

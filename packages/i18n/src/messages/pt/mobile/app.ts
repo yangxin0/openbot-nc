@@ -2,15 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/app";
 
 export const messages = {
-  "mobile.app.route.scanQrCode": "Ler código QR",
   "mobile.app.route.actionsNeeded": "Ações necessárias",
   "mobile.app.route.newChannel": "Novo canal",
   "mobile.app.route.createAgent": "Criar um agente",
   "mobile.app.route.addSharedAgent": "Adicionar um agente compartilhado",
   "mobile.app.route.newSection": "Nova pasta",
   "mobile.app.route.settings": "Configurações",
-  "mobile.app.route.profile": "Perfil",
-  "mobile.app.route.accountSessions": "Sessões da conta",
   "mobile.app.route.about": "Sobre",
   "mobile.app.route.support": "Suporte",
   "mobile.app.route.supportLog": "Registro de suporte",
@@ -27,9 +24,6 @@ export const messages = {
   "mobile.app.route.messageOptions": "Opções da mensagem",
   "mobile.app.route.editMessage": "Editar mensagem",
   "mobile.app.route.serverOptions": "Opções do servidor",
-  "mobile.app.route.members": "Membros",
-  "mobile.app.route.hostedServerPlans": "Servidor na nuvem",
-  "mobile.app.route.hostedServerSetup": "Configuração",
   "mobile.app.route.schedule": "Agenda",
   "mobile.app.route.workflows": "Fluxos de trabalho",
   "mobile.app.route.workflow": "Fluxo de trabalho",

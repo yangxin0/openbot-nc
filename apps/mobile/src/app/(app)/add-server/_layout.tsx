@@ -5,7 +5,7 @@ import { sheetBackHaptics } from "@/shared/lib/sheet-back-haptics";
 import { sheetHeaderInsetOptions } from "@/shared/lib/sheet-header";
 import { useText } from "@/shared/lib/text";
 
-export const unstable_settings = { anchor: "index" };
+export const unstable_settings = { anchor: "local" };
 
 export default function AddServerLayout() {
   const { t } = useText();

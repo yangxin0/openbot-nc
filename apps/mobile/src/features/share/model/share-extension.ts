@@ -110,14 +110,13 @@ export function writeShareExtensionDirectory(
 let writtenSession: string | null = null;
 let signedIn = false;
 
-export function setShareExtensionSession(session: { apiUrl: string; userId: string; sessionToken: string }): void {
+export function sendSharesThroughApp(): void {
   signedIn = true;
-  const value = JSON.stringify(session);
-  if (!native || value === writtenSession) return;
-  writtenSession = value;
-  native.setSession(value).catch((error: unknown) => {
-    if (writtenSession === value) writtenSession = null;
-    supportLog.add("warn", "app", `Share extension session not saved: ${supportLogValue(error)}`);
+  if (!native || writtenSession === "") return;
+  writtenSession = "";
+  native.setSession(null).catch((error: unknown) => {
+    if (writtenSession === "") writtenSession = null;
+    supportLog.add("warn", "app", `Share extension session not removed: ${supportLogValue(error)}`);
   });
 }
 

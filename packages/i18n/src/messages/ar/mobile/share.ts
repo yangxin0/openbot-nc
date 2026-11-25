@@ -2,9 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/share";
 
 export const messages = {
-  "mobile.share.signInTitle": "سجّل الدخول للمشاركة",
-  "mobile.share.signInDescription":
-    "امسح رمز QR في OpenBot على حاسوبك. بعدها يمكنك اختيار الوكيل الذي يتلقى ما شاركته.",
   "mobile.share.reading": "جارٍ قراءة ما شاركته…",
   "mobile.share.readFailed": "تعذّر على OpenBot قراءة ما شاركته. شاركه مرة أخرى.",
   "mobile.share.content": "للمشاركة",

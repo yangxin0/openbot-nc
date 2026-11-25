@@ -18,7 +18,6 @@ import { MobileAnalyticsLifecycle } from "@/features/analytics/lifecycle";
 import { AppLockOverlay } from "@/features/app-lock/components/app-lock-overlay";
 import { installAppLock } from "@/features/app-lock/model/app-lock";
 import { UpdateRequiredOverlay } from "@/features/app-update/components/update-required-overlay";
-import { DevelopmentConnectLinkHandler } from "@/features/auth/components/development-connect-link-handler";
 import { MobileSessionProvider, useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { backgroundRefreshNative } from "@/features/background-refresh/background-refresh-native";
 import { loadOnboardingProgress } from "@/features/onboarding/model/onboarding-progress";
@@ -62,7 +61,6 @@ import { BloubStage } from "@/shared/components/bloub-stage/bloub-stage";
 import { BloubStageProvider, useBloubStageRequest } from "@/shared/components/bloub-stage/bloub-stage-context";
 import { BLOUB_PRIORITY } from "@/shared/components/bloub-stage/bloub-stage-store";
 import { headerFontOptions, navigationFonts } from "@/shared/lib/app-font";
-import { useReducedMotion } from "@/shared/lib/motion";
 import { nativeSplash } from "@/shared/lib/native-splash";
 import { isAndroid, isIOS } from "@/shared/lib/platform";
 import { queryClient } from "@/shared/lib/query-client";
@@ -106,7 +104,6 @@ function RootNavigator() {
     nativeSplash,
     preferencesReady,
   );
-  const reducedMotion = useReducedMotion();
 
   const [slow, setSlow] = useState(false);
   useEffect(() => {
@@ -153,7 +150,7 @@ function RootNavigator() {
           importantForAccessibility={blocked ? "no-hide-descendants" : "auto"}
         >
           {!loading && preferencesReady ? (
-            <View className="flex-1" onLayout={session || pathname !== "/" ? reportContentReady : undefined}>
+            <View className="flex-1" onLayout={reportContentReady}>
               <Stack
                 screenOptions={{
                   headerBackButtonDisplayMode: "minimal",
@@ -166,13 +163,6 @@ function RootNavigator() {
                   <Stack.Screen
                     name="index"
                     options={{ animation: "fade", animationDuration: SESSION_FADE_MS, headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="scan-qr-code"
-                    options={{
-                      animation: reducedMotion ? "fade" : "slide_from_right",
-                      title: t("mobile.app.route.scanQrCode"),
-                    }}
                   />
                 </Stack.Protected>
                 <Stack.Protected guard={Boolean(session)} redirectTo="/">
@@ -265,7 +255,6 @@ export default function RootLayout() {
               <BloubStageProvider>
                 <MobileSessionProvider>
                   <MobileAnalyticsLifecycle />
-                  {__DEV__ ? <DevelopmentConnectLinkHandler /> : null}
                   <AppLoadingOverlayProvider>
                     <RootNavigator />
                   </AppLoadingOverlayProvider>

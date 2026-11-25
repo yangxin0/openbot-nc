@@ -12,6 +12,7 @@ import {
   RelayV2TunnelRecordDecoder,
 } from "@openbot/contracts/relay-protocol/v2-tunnel";
 import { Schema } from "effect";
+import { type RelayCrypto, webRelayCrypto } from "./relay-crypto";
 import type { RelayBrowserIdentity } from "./relay-identity";
 import { dialRelayPeer, type RelaySocketClose, type RelaySocketOptions, type RelayTunnel } from "./relay-socket";
 import type {
@@ -176,7 +177,12 @@ export async function openRelayV2Tunnels(
   };
   abort.signal.addEventListener("abort", closeAll, { once: true });
   try {
-    await waitForReady(channels, options.readyDeadlineMs ?? READY_DEADLINE_MS, abort.signal);
+    await waitForReady(
+      channels,
+      options.readyDeadlineMs ?? READY_DEADLINE_MS,
+      abort.signal,
+      options.crypto ?? webRelayCrypto,
+    );
   } catch (error) {
     closeAll();
     throw error;
@@ -200,8 +206,9 @@ function waitForReady(
   channels: Record<RelayV2TunnelChannel, RelayV2Channel>,
   deadlineMs: number,
   signal: AbortSignal,
+  crypto: RelayCrypto,
 ): Promise<void> {
-  const connectionKey = randomConnectionKey();
+  const connectionKey = randomConnectionKey(crypto);
   return new Promise<void>((resolve, reject) => {
     const timer = setTimeout(
       () =>
@@ -260,6 +267,6 @@ function refusalError(refusal: Refusal): RelayV2TunnelError {
   });
 }
 
-function randomConnectionKey(): string {
-  return [...crypto.getRandomValues(new Uint8Array(16))].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+function randomConnectionKey(crypto: RelayCrypto): string {
+  return [...crypto.randomBytes(16)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }

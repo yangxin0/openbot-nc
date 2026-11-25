@@ -2,18 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/link";
 
 export const messages = {
-  "mobile.link.connectFailed": "OpenBot non è riuscito a connettersi. Riprova.",
-  "mobile.link.invite.signInTitle": "Accedi per unirti a questo server",
-  "mobile.link.invite.signInDescription":
-    "Scansiona il codice QR in OpenBot sul computer. Poi potrai controllare l'invito.",
-  "mobile.link.invite.cancel": "Annulla invito",
-  "mobile.link.pairing.title": "Collega questo telefono",
-  "mobile.link.pairing.alreadySignedIn":
-    "Hai già effettuato l'accesso. Esci dall'account nelle Impostazioni prima di collegare un altro account.",
-  "mobile.link.pairing.description": "Continua solo se hai richiesto tu questo link Mobile Connect dal computer.",
-  "mobile.link.pairing.accountService":
-    "Questo link si collega al servizio account su {origin}, non al servizio account di OpenBot.",
-  "mobile.link.pairing.connect": "Connetti",
   "mobile.link.plugin.title": "Apri la pagina del plugin",
   "mobile.link.plugin.description": "Guarda questo plugin sul sito di OpenBot.",
   "mobile.link.plugin.openFailed": "Impossibile aprire la pagina del plugin.",
@@ -21,9 +9,6 @@ export const messages = {
   "mobile.link.unavailable.title": "Link non disponibile",
   "mobile.link.unavailable.description":
     "Questo link non è valido, non è più disponibile o non è supportato sul telefono.",
-  "mobile.link.template.signInTitle": "Accedi per aggiungere questo agente",
-  "mobile.link.template.signInDescription":
-    "Scansiona il codice QR in OpenBot sul computer. Poi potrai controllare l'agente prima di aggiungerlo.",
   "mobile.link.template.loading": "Caricamento dell'agente…",
   "mobile.link.template.creator": "Di {name}",
   "mobile.link.template.section.instructions": "Istruzioni",

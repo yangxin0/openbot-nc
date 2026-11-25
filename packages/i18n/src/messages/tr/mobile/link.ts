@@ -2,27 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/link";
 
 export const messages = {
-  "mobile.link.connectFailed": "OpenBot bağlanamadı. Tekrar deneyin.",
-  "mobile.link.invite.signInTitle": "Bu sunucuya katılmak için oturum açın",
-  "mobile.link.invite.signInDescription":
-    "Bilgisayarınızdaki OpenBot'ta QR kodunu tarayın. Ardından daveti inceleyebilirsiniz.",
-  "mobile.link.invite.cancel": "Daveti iptal et",
-  "mobile.link.pairing.title": "Bu telefonu bağlayın",
-  "mobile.link.pairing.alreadySignedIn":
-    "Zaten oturum açtınız. Başka bir hesap bağlamadan önce Ayarlar'dan oturumu kapatın.",
-  "mobile.link.pairing.description": "Yalnızca bu Mobile Connect bağlantısını masaüstünüzden istediyseniz devam edin.",
-  "mobile.link.pairing.accountService":
-    "Bu bağlantı OpenBot hesap hizmetine değil, {origin} adresindeki hesap hizmetine bağlanır.",
-  "mobile.link.pairing.connect": "Bağlan",
   "mobile.link.plugin.title": "Eklenti sayfasını aç",
   "mobile.link.plugin.description": "Bu eklentiyi OpenBot web sitesinde görüntüleyin.",
   "mobile.link.plugin.openFailed": "Eklenti sayfası açılamadı.",
   "mobile.link.plugin.view": "Eklentiyi görüntüle",
   "mobile.link.unavailable.title": "Bağlantı kullanılamıyor",
   "mobile.link.unavailable.description": "Bu bağlantı geçersiz, artık kullanılamıyor veya mobilde desteklenmiyor.",
-  "mobile.link.template.signInTitle": "Bu ajanı eklemek için oturum açın",
-  "mobile.link.template.signInDescription":
-    "Bilgisayarınızdaki OpenBot'ta QR kodunu tarayın. Ardından ajanı eklemeden önce inceleyebilirsiniz.",
   "mobile.link.template.loading": "Ajan yükleniyor…",
   "mobile.link.template.creator": "{name} tarafından",
   "mobile.link.template.section.instructions": "Talimatlar",

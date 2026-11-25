@@ -2,8 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/share";
 
 export const messages = {
-  "mobile.share.signInTitle": "登录后即可分享",
-  "mobile.share.signInDescription": "扫描电脑上 OpenBot 显示的二维码，然后就能选择由哪个助手接收你分享的内容。",
   "mobile.share.reading": "正在读取你分享的内容…",
   "mobile.share.readFailed": "OpenBot 无法读取你分享的内容，请重新分享。",
   "mobile.share.content": "待分享内容",

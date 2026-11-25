@@ -11,12 +11,9 @@ export const messages = {
   "mobile.workspace.status.attemptPrefix": "試行 ",
   "mobile.workspace.status.retryIn": "{seconds} 秒後に再試行します",
   "mobile.workspace.section.agents": "エージェント",
-  "mobile.workspace.error.directoryUnavailable": "サーバーディレクトリを利用できません。",
   "mobile.workspace.error.sectionsLoadFailed": "フォルダーを読み込めませんでした。もう一度お試しください。",
   "mobile.workspace.error.transportNotReady": "モバイル接続の準備ができていません。",
   "mobile.workspace.error.sectionsUnsupported": "このホストはフォルダーの変更に対応していません。",
-  "mobile.workspace.error.leaveOwnServer": "退出できるのは参加したリモートサーバーのみです。",
-  "mobile.workspace.error.removeOwnedServerOnly": "このサーバーを削除できるのはオーナーだけです。",
   "mobile.workspace.error.agentNotOnHost": "エージェントはこのホストにありません。",
   "mobile.workspace.error.filesUnsupported":
     "このホストはファイル管理に対応していません。ホストの OpenBot を更新してください。",

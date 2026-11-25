@@ -21,9 +21,7 @@ import {
   relayX509NamesEqual,
 } from "@openbot/contracts/relay-protocol/x509";
 import { base64ToBytes, base64UrlToBytes, bytesToBase64Url } from "./base64";
-
-export const RELAY_ECDSA_P256 = { name: "ECDSA", namedCurve: "P-256" } as const;
-export const RELAY_ECDSA_SHA256 = { name: "ECDSA", hash: "SHA-256" } as const;
+import { type RelayCrypto, webRelayCrypto } from "./relay-crypto";
 
 const PEM_PATTERN = /^-----BEGIN ([A-Z0-9 ]{1,40})-----\s*([A-Za-z0-9+/=\s]+?)\s*-----END \1-----/u;
 const textEncoder = new TextEncoder();
@@ -45,6 +43,7 @@ export interface RelayServerProofCheck {
   relayUrl: string;
   transcript: RelayServerProofTranscriptInput;
   now: number;
+  crypto?: RelayCrypto;
 }
 
 export interface RelayPem {
@@ -64,15 +63,18 @@ export function readRelayPem(text: string): RelayPem | null {
   }
 }
 
-export async function readRelayCertificate(pem: string): Promise<RelayCertificate | null> {
+export async function readRelayCertificate(
+  pem: string,
+  crypto: RelayCrypto = webRelayCrypto,
+): Promise<RelayCertificate | null> {
   const block = readRelayPem(pem);
   const certificate = block?.label === "CERTIFICATE" ? readRelayX509Certificate(block.der) : null;
   if (!certificate) return null;
-  return { ...certificate, keyId: await relaySpkiKeyId(certificate.spki) };
+  return { ...certificate, keyId: await relaySpkiKeyId(certificate.spki, crypto) };
 }
 
-export async function relaySpkiKeyId(spki: Uint8Array): Promise<string> {
-  return bytesToBase64Url(new Uint8Array(await crypto.subtle.digest("SHA-256", owned(spki))));
+export async function relaySpkiKeyId(spki: Uint8Array, crypto: RelayCrypto = webRelayCrypto): Promise<string> {
+  return bytesToBase64Url(await crypto.sha256(spki));
 }
 
 export function relayCertificateNames(certificate: RelayX509Certificate): RelaySubjectNames | null {
@@ -86,10 +88,14 @@ export function isRelayP256Certificate(certificate: RelayX509Certificate): boole
   );
 }
 
-export async function verifyRelayP256(spki: Uint8Array, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+export async function verifyRelayP256(
+  spki: Uint8Array,
+  data: Uint8Array,
+  signature: Uint8Array,
+  crypto: RelayCrypto = webRelayCrypto,
+): Promise<boolean> {
   try {
-    const key = await crypto.subtle.importKey("spki", owned(spki), RELAY_ECDSA_P256, false, ["verify"]);
-    return await crypto.subtle.verify(RELAY_ECDSA_SHA256, key, owned(signature), owned(data));
+    return await crypto.verify({ format: "spki", bytes: spki }, data, signature);
   } catch {
     return false;
   }
@@ -98,22 +104,24 @@ export async function verifyRelayP256(spki: Uint8Array, data: Uint8Array, signat
 export async function relayCertificateIssuedBy(
   certificate: RelayX509Certificate,
   authority: RelayX509Certificate,
+  crypto: RelayCrypto = webRelayCrypto,
 ): Promise<boolean> {
   if (!authority.authority || !relayX509NamesEqual(certificate.issuer, authority.subject)) return false;
   if (certificate.signatureAlgorithm !== RELAY_X509_OID.ecdsaWithSha256 || !isRelayP256Certificate(authority)) {
     return false;
   }
   const signature = relayEcdsaSignatureToP1363(certificate.signature);
-  return signature !== null && verifyRelayP256(authority.spki, certificate.tbs, signature);
+  return signature !== null && verifyRelayP256(authority.spki, certificate.tbs, signature, crypto);
 }
 
 export async function relayIssuance<Certificate extends RelayX509Certificate>(
   pairs: ReadonlyArray<readonly [Certificate, Certificate]>,
+  crypto: RelayCrypto = webRelayCrypto,
 ): Promise<(certificate: Certificate, authority: Certificate) => boolean> {
   const issued = new Map<Certificate, Set<Certificate>>();
   await Promise.all(
     pairs.map(async ([certificate, authority]) => {
-      if (!(await relayCertificateIssuedBy(certificate, authority))) return;
+      if (!(await relayCertificateIssuedBy(certificate, authority, crypto))) return;
       issued.set(certificate, new Set([...(issued.get(certificate) ?? []), authority]));
     }),
   );
@@ -132,14 +140,15 @@ export async function relayPeerCertificateRefusal(
   peer: RelayPeerCertificate,
   trust: RelayTrustAnchors,
   now: number,
+  crypto: RelayCrypto = webRelayCrypto,
 ): Promise<RelayPeerRefusal | null> {
   const [leaf = null, root = null, ...authorities] = await Promise.all([
-    readRelayCertificate(peer.certificate),
-    readRelayCertificate(trust.root),
-    ...trust.chain.map(readRelayCertificate),
+    readRelayCertificate(peer.certificate, crypto),
+    readRelayCertificate(trust.root, crypto),
+    ...trust.chain.map((pem) => readRelayCertificate(pem, crypto)),
   ]);
   const chain = authorities.filter((certificate) => certificate !== null);
-  const issuedBy = leaf && root ? await relayIssuance(relayTrustPairs(leaf, root, chain)) : () => false;
+  const issuedBy = leaf && root ? await relayIssuance(relayTrustPairs(leaf, root, chain), crypto) : () => false;
   return relayPeerRefusal({
     peer,
     leaf,
@@ -158,14 +167,15 @@ export async function relayPeerCertificateRefusal(
 }
 
 export async function relayServerProofRefusal(check: RelayServerProofCheck): Promise<RelayServerProofRefusal | null> {
+  const crypto = check.crypto ?? webRelayCrypto;
   const [certificate, root] = await Promise.all([
-    readRelayCertificate(check.certificate),
-    readRelayCertificate(check.root),
+    readRelayCertificate(check.certificate, crypto),
+    readRelayCertificate(check.root, crypto),
   ]);
   if (!certificate || !root) return "unreadable";
   const refusal = relayServerCertificateRefusal(
     {
-      issuedByRoot: await relayCertificateIssuedBy(certificate, root),
+      issuedByRoot: await relayCertificateIssuedBy(certificate, root, crypto),
       authority: certificate.authority,
       extendedKeyUsages: certificate.extendedKeyUsages,
       notBefore: certificate.notBefore,
@@ -179,7 +189,7 @@ export async function relayServerProofRefusal(check: RelayServerProofCheck): Pro
   if (refusal !== null) return refusal;
   const signature = base64UrlBytes(check.signature);
   const transcript = textEncoder.encode(relayServerProofTranscript(check.transcript));
-  return signature && (await verifyRelayP256(certificate.spki, transcript, signature)) ? null : "signature";
+  return signature && (await verifyRelayP256(certificate.spki, transcript, signature, crypto)) ? null : "signature";
 }
 
 function base64UrlBytes(text: string): Uint8Array<ArrayBuffer> | null {
@@ -188,8 +198,4 @@ function base64UrlBytes(text: string): Uint8Array<ArrayBuffer> | null {
   } catch {
     return null;
   }
-}
-
-function owned(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
-  return new Uint8Array(bytes);
 }

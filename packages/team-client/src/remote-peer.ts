@@ -520,8 +520,10 @@ export function createRemoteTeamPeer(
     hostProtocols?: RemoteHostProtocols;
     clientProtocol?: TeamProtocolSupportV1["protocol"];
     tunnels?: RemoteTeamTunnelTransport;
+    randomBytes?: (size: number) => Uint8Array<ArrayBuffer>;
   } = {},
 ) {
+  const randomBytes = options.randomBytes ?? ((size: number) => crypto.getRandomValues(new Uint8Array(size)));
   const runtime = ManagedRuntime.make(RemotePeerIO.layer(actions));
   const workScope = Scope.makeUnsafe();
   const running = new Set<Promise<unknown>>();
@@ -550,7 +552,7 @@ export function createRemoteTeamPeer(
           return Effect.fail(new RemotePeerError({ message: sourceText("error.remote.selectedServerOffline") }));
         return sendPayload(state, "files", data);
       }),
-    () => createTeamRequestId((size) => crypto.getRandomValues(new Uint8Array(size))),
+    () => createTeamRequestId(randomBytes),
     {
       digest: (ref) =>
         peerCall(() => {
@@ -1961,7 +1963,7 @@ export function createRemoteTeamPeer(
                   agentCreateModel: true,
                 }),
               );
-        const requestId = createTeamRequestId((size) => crypto.getRandomValues(new Uint8Array(size)));
+        const requestId = createTeamRequestId(randomBytes);
         const capabilityProtocol =
           !checksConnection || (state.hostProtocol !== undefined && state.hostProtocol >= TEAM_PROTOCOL_V10)
             ? state.hostProtocol

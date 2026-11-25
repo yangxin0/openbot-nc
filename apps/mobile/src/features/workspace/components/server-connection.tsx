@@ -4,7 +4,6 @@ import {
   type RemoteConnectionFailure,
   type RemoteConnectionStage,
   type RemoteRecoveryStatus,
-  type RemoteTeamDirectoryClient,
   remoteConnectionFailureDetails,
 } from "@openbot/team-client";
 import {
@@ -17,6 +16,7 @@ import { errorReference } from "@openbot/user-errors/reference";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { MobileConnectionAnalytics } from "@/features/analytics/connection";
 import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
+import type { PhoneRelay } from "@/features/identity/model/phone-relay";
 import { phoneVpn } from "@/features/support/model/phone-network-capture";
 import { supportLog, supportLogValue } from "@/features/support/model/support-log";
 import { referencedError } from "@/features/workspace/model/referenced-error";
@@ -51,7 +51,7 @@ interface Props {
   publicKey: string;
   active: boolean;
   background: boolean;
-  directory: RemoteTeamDirectoryClient;
+  relay: PhoneRelay;
   register(hostId: string, handle: ServerConnectionHandle | null): void;
   load(hostId: string, publicKey: string, client: RemoteTeamTransportRef, context: ServerLoadContext): Promise<void>;
   onStatus(
@@ -70,7 +70,7 @@ export const ServerConnection = memo(function ServerConnection({
   publicKey,
   active,
   background,
-  directory,
+  relay,
   register,
   load,
   onStatus,
@@ -144,7 +144,7 @@ export const ServerConnection = memo(function ServerConnection({
       supportLog.add(
         update.state === "offline" ? "warn" : "info",
         "connection",
-        `${hostId} ${update.state}${update.code ? ` (${update.code})` : ""}${update.message ? `: ${update.message}` : ""}${update.reference ? ` [${update.reference}]` : ""}${update.hostOffline ? ", host not on Signal" : ""}${update.resync ? ", resync" : ""}`,
+        `${hostId} ${update.state}${update.code ? ` (${update.code})` : ""}${update.message ? `: ${update.message}` : ""}${update.reference ? ` [${update.reference}]` : ""}${update.hostOffline ? ", host offline" : ""}${update.resync ? ", resync" : ""}`,
       );
       if (update.hostOffline && activeRef.current) onUnavailableRef.current?.(hostId);
       if (update.state === "online" && update.lostAfterMs !== undefined) lostAfterMs.current = update.lostAfterMs;
@@ -276,8 +276,7 @@ export const ServerConnection = memo(function ServerConnection({
       ref={attach}
       hostId={hostId}
       active={active}
-      directory={directory}
-      onMembershipChanged={onMembershipChanged}
+      relay={relay}
       onNetworkRestored={handleNetworkRestored}
       onTeamEvent={onTeamEvent}
       onConnectionUpdate={handleConnectionUpdate}

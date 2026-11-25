@@ -11,12 +11,9 @@ export const messages = {
   "mobile.workspace.status.attemptPrefix": "Deneme ",
   "mobile.workspace.status.retryIn": "{seconds} saniye içinde tekrar dene",
   "mobile.workspace.section.agents": "Ajanlar",
-  "mobile.workspace.error.directoryUnavailable": "Sunucu dizini kullanılamıyor.",
   "mobile.workspace.error.sectionsLoadFailed": "Klasörler yüklenemedi. Tekrar deneyin.",
   "mobile.workspace.error.transportNotReady": "Mobil aktarım hazır değil.",
   "mobile.workspace.error.sectionsUnsupported": "Bu ana makine klasör değişikliklerini desteklemiyor.",
-  "mobile.workspace.error.leaveOwnServer": "Yalnızca katılınan uzak sunuculardan ayrılınabilir.",
-  "mobile.workspace.error.removeOwnedServerOnly": "Bu sunucuyu yalnızca sahibi kaldırabilir.",
   "mobile.workspace.error.agentNotOnHost": "Ajan bu ana makinede değil.",
   "mobile.workspace.error.filesUnsupported":
     "Bu ana makine dosya yönetimini desteklemiyor. Ana makinedeki OpenBot'u güncelleyin.",

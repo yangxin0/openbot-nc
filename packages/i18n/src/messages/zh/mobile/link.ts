@@ -2,23 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/link";
 
 export const messages = {
-  "mobile.link.connectFailed": "OpenBot 无法连接，请重试。",
-  "mobile.link.invite.signInTitle": "登录后加入该服务器",
-  "mobile.link.invite.signInDescription": "扫描电脑上 OpenBot 显示的二维码，然后就能查看邀请。",
-  "mobile.link.invite.cancel": "取消邀请",
-  "mobile.link.pairing.title": "连接这台手机",
-  "mobile.link.pairing.alreadySignedIn": "你已登录。连接其他账号前请先在设置中退出登录。",
-  "mobile.link.pairing.description": "只有在你从桌面端申请了这个 Mobile Connect 链接时，才继续操作。",
-  "mobile.link.pairing.accountService": "该链接连接的是 {origin} 处的账号服务，而不是 OpenBot 账号服务。",
-  "mobile.link.pairing.connect": "连接",
   "mobile.link.plugin.title": "打开插件页面",
   "mobile.link.plugin.description": "在 OpenBot 网站上查看该插件。",
   "mobile.link.plugin.openFailed": "无法打开插件页面。",
   "mobile.link.plugin.view": "查看插件",
   "mobile.link.unavailable.title": "链接不可用",
   "mobile.link.unavailable.description": "该链接无效、已失效，或在手机端不受支持。",
-  "mobile.link.template.signInTitle": "登录后添加该助手",
-  "mobile.link.template.signInDescription": "扫描电脑上 OpenBot 显示的二维码，然后就能在添加前查看该助手。",
   "mobile.link.template.loading": "正在加载助手…",
   "mobile.link.template.creator": "作者：{name}",
   "mobile.link.template.section.instructions": "指令",

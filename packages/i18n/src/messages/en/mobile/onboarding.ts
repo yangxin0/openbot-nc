@@ -12,14 +12,9 @@ export const messages = defineMessages("mobile.onboarding", {
   "mobile.onboarding.server.body": "Agents run on a server. Choose how to connect one.",
   "mobile.onboarding.server.computer": "My computer",
   "mobile.onboarding.server.computerBody": "Use OpenBot on your computer as the server.",
-  "mobile.onboarding.server.cloud": "Cloud server",
-  "mobile.onboarding.server.cloudBody": "Use a server that OpenBot runs for you.",
-  "mobile.onboarding.server.invitation": "Invitation",
-  "mobile.onboarding.server.invitationBody": "Join a server that someone shared with you.",
   "mobile.onboarding.server.computerTitle": "Connect your computer",
-  "mobile.onboarding.server.computerSteps":
-    "Sign out on this phone. Then open OpenBot on your computer, go to Settings → Mobile Connect, choose Add phone → Yes, sign in, and scan the code with this phone.",
-  "mobile.onboarding.server.signOut": "Sign out",
+  "mobile.onboarding.server.relaySteps":
+    "On your computer, open OpenBot-NC with an identity of the same team and turn on relay hosting. The computer shows here when it is online.",
   "mobile.onboarding.server.connecting": "Connecting to {name}…",
   "mobile.onboarding.agent.title": "Pick your first agent",
   "mobile.onboarding.agent.body": "Swipe to choose. You can change its look and role later.",

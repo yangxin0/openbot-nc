@@ -214,7 +214,7 @@ import type {
 } from "@openbot/contracts/ipc-events";
 import type { ServerAppearance } from "@openbot/contracts/team-protocol/host-appearance-v1";
 import type { QueueEditRequest } from "@openbot/contracts/team-protocol/queue-edit-v1";
-import type { RemoteConnectionFailure, RemoteRecoveryStatus, RemoteTeamDirectoryClient } from "@openbot/team-client";
+import type { RemoteConnectionFailure, RemoteRecoveryStatus } from "@openbot/team-client";
 import type { PlanLimits } from "@openbot/team-client/plan-limits";
 import type { RemoteDownloadWatch, RemoteFileUpload, RemoteLargeDownload } from "@openbot/team-client/remote-peer";
 import type {
@@ -304,10 +304,6 @@ export type GitHubConnectorRoute = "githubStatus" | "githubConnect" | "githubCan
 
 type ToggleAgentPinResult = "pinned" | "unpinned" | "error";
 
-interface AddRemoteServerInput {
-  inviteUrl: string;
-}
-
 export interface MobileBrowserViewSupport {
   view: boolean;
   clipboard: boolean;
@@ -363,7 +359,6 @@ export interface MobileWorkspaceContextValue {
   servers: MobileServer[];
   reorderServers: (serverIds: string[]) => boolean;
   memberCountByServer: Readonly<Record<string, number>>;
-  teamDirectory: RemoteTeamDirectoryClient;
   serverDirectoryState: MobileServerDirectoryState;
   serverDirectoryError: string | null;
   agents: MobileAgent[];
@@ -386,12 +381,10 @@ export interface MobileWorkspaceContextValue {
   conversationStore: MobileConversationStore;
   liveState: LiveWorkspaceStore;
   selectServer: (serverId: string) => void;
-  leaveServer: (serverId: string) => Promise<void>;
   removeServer: (serverId: string) => Promise<void>;
   setServerHidden: (serverId: string, hidden: boolean) => Promise<void>;
   refreshServers: () => Promise<void>;
   refreshServer: (serverId: string) => Promise<void>;
-  hostedServerStarting: (serverId: string) => void;
   knownServerChecks: (serverId: string) => ServerChecks | null;
   canEditServerIdentity: (serverId: string) => boolean;
   canEditServerAppearance: (serverId: string) => boolean;
@@ -579,7 +572,6 @@ export interface MobileWorkspaceContextValue {
   canManageMcpAccess: (serverId: string) => boolean;
   loadMcpAccess: (serverId: string) => Promise<McpAccessSnapshot>;
   setMcpAccess: (input: SetMcpAccessInput, serverId: string) => Promise<McpAccessSnapshot>;
-  addRemoteServer: (input: AddRemoteServerInput) => Promise<string>;
   createAgent: (input: NewAgentInput) => Promise<string>;
   updateAgent: (input: UpdateAgentInput, serverId?: string) => Promise<void>;
   setAgentAvatar: (agentId: string, image: RemoteFileUpload | null, serverId: string) => Promise<void>;

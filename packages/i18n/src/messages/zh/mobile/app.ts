@@ -2,15 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/app";
 
 export const messages = {
-  "mobile.app.route.scanQrCode": "扫描二维码",
   "mobile.app.route.actionsNeeded": "待处理事项",
   "mobile.app.route.newChannel": "新建频道",
   "mobile.app.route.createAgent": "创建助手",
   "mobile.app.route.addSharedAgent": "添加共享助手",
   "mobile.app.route.newSection": "新建文件夹",
   "mobile.app.route.settings": "设置",
-  "mobile.app.route.profile": "个人资料",
-  "mobile.app.route.accountSessions": "账号会话",
   "mobile.app.route.about": "关于",
   "mobile.app.route.support": "支持",
   "mobile.app.route.supportLog": "支持日志",
@@ -27,9 +24,6 @@ export const messages = {
   "mobile.app.route.messageOptions": "消息选项",
   "mobile.app.route.editMessage": "编辑消息",
   "mobile.app.route.serverOptions": "服务器选项",
-  "mobile.app.route.members": "成员",
-  "mobile.app.route.hostedServerPlans": "云服务器",
-  "mobile.app.route.hostedServerSetup": "配置",
   "mobile.app.route.schedule": "日程",
   "mobile.app.route.workflows": "工作流",
   "mobile.app.route.workflow": "工作流",

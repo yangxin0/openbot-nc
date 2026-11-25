@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCSSVariable } from "uniwind";
 import { AvatarThumbnail } from "@/features/agents/components/bloub-avatar";
 import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
-import { useMobileSession, useQueryScope } from "@/features/auth/context/mobile-session-context";
+import { useQueryScope } from "@/features/auth/context/mobile-session-context";
 import { SettingsNote, SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
 import {
   useMobileWorkspaceActions,
@@ -18,14 +18,14 @@ import { SheetSaveAction } from "@/shared/components/sheet-save-action";
 import { SheetScrollView } from "@/shared/components/sheet-scroll-view";
 import { haptics } from "@/shared/lib/haptics";
 import { useText } from "@/shared/lib/text";
+import { VENDOR_SERVICE_URL } from "@/shared/lib/vendor-service";
 import { loadMarketplaceSkill } from "../api/marketplace-catalog";
 import { useMarketplaceInstalled } from "../model/use-marketplace";
 
 export function MarketplaceSkillAgentsScreen() {
   const { t, errorMessage } = useText();
   const { serverId, skillId } = useLocalSearchParams<{ serverId: string; skillId: string }>();
-  const { session } = useMobileSession();
-  const apiUrl = session?.apiUrl ?? null;
+  const apiUrl = VENDOR_SERVICE_URL;
   const skill = useQuery({
     queryKey: queryKeys.marketplace(apiUrl, "skill", skillId),
     enabled: apiUrl !== null,

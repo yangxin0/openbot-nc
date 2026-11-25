@@ -137,8 +137,7 @@
           "android": {
             "usesCleartextTraffic": true,
             "enableMinifyInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true,
-            "extraProguardRules": "-dontwarn org.webrtc.Dav1dDecoder$Natives"
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ],
@@ -226,13 +225,6 @@
         {
           "microphonePermission": "Allow OpenBot to use the microphone to dictate messages.",
           "speechRecognitionPermission": "Allow OpenBot to turn your speech into message text."
-        }
-      ],
-      [
-        "@config-plugins/react-native-webrtc",
-        {
-          "cameraPermission": "Allow OpenBot to use your camera to scan QR codes.",
-          "microphonePermission": "Allow OpenBot to use the microphone to dictate messages."
         }
       ],
       [

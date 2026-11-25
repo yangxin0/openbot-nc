@@ -23,8 +23,7 @@ export type MobileSearchFilter = (typeof MOBILE_SEARCH_FILTERS)[number];
 type MobileSearchSectionKey = Exclude<MobileSearchFilter, "all">;
 
 export type MobileSearchSettingId =
-  | "profile"
-  | "sessions"
+  | "identity"
   | "appearance"
   | "animations"
   | "language"
@@ -38,7 +37,6 @@ export type MobileSearchSettingId =
   | "support"
   | "about"
   | "serverOptions"
-  | "serverMembers"
   | "serverRoutines"
   | "serverUsage";
 

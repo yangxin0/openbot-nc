@@ -2,16 +2,7 @@ import { isString } from "@openbot/contracts/runtime-values";
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
 
-const DRAWER_TOOL_IDS = [
-  "tasks",
-  "routines",
-  "workflows",
-  "marketplace",
-  "usage",
-  "library",
-  "providers",
-  "members",
-] as const;
+const DRAWER_TOOL_IDS = ["tasks", "routines", "workflows", "marketplace", "usage", "library", "providers"] as const;
 
 export type DrawerToolId = (typeof DRAWER_TOOL_IDS)[number];
 

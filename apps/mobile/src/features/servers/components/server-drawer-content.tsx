@@ -16,7 +16,6 @@ import Plus from "lucide-react-native/icons/plus";
 import Settings from "lucide-react-native/icons/settings";
 import Sparkles from "lucide-react-native/icons/sparkles";
 import Store from "lucide-react-native/icons/store";
-import UsersRound from "lucide-react-native/icons/users-round";
 import Waypoints from "lucide-react-native/icons/waypoints";
 import {
   Fragment,
@@ -41,9 +40,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useCSSVariable, useUniwind } from "uniwind";
 import { showFailureAlert } from "@/features/analytics/failure-reports";
-import type { MobileSession } from "@/features/auth/api/mobile-auth";
-import { mobileUserName } from "@/features/auth/api/mobile-user-name";
-import { hostedServerCalls } from "@/features/servers/api/hosted-servers";
+import type { MobileSession } from "@/features/auth/context/mobile-session-context";
 import {
   type DrawerToolId,
   isDrawerToolId,
@@ -51,10 +48,6 @@ import {
   setDrawerToolPinned,
   useDrawerToolLayout,
 } from "@/features/servers/model/drawer-tools";
-import {
-  refreshHostedServerAvailability,
-  useHostedServerAvailability,
-} from "@/features/servers/model/hosted-server-availability";
 import { DrawerPinnedWorkflows, useDrawerWorkflows } from "@/features/workflows/components/drawer-workflows";
 import { type MobileServer, useMobileWorkspaceSelector } from "@/features/workspace/context/mobile-workspace-context";
 import { moveServerId } from "@/features/workspace/model/server-order";
@@ -62,15 +55,12 @@ import { serverRowState } from "@/features/workspace/model/server-row-state";
 import { serverStatusLabel, showsOnline } from "@/features/workspace/model/server-status";
 import { type MenuAction, type MenuComponentRef, MenuView } from "@/shared/components/menu-view";
 import { ProfileAvatar } from "@/shared/components/profile-avatar";
-import { devFeatureOverride } from "@/shared/lib/dev-feature-overrides";
 import { haptics } from "@/shared/lib/haptics";
-import { refreshMobileFeatures, useMobileFeature } from "@/shared/lib/mobile-features";
 import { useReducedMotion } from "@/shared/lib/motion";
 import { isAndroid, longPressDelay } from "@/shared/lib/platform";
 import { currentText, useText } from "@/shared/lib/text";
 import { MIRROR_IN_RTL } from "@/shared/lib/text-direction";
 import { typeScale } from "@/shared/lib/type-scale";
-import { DrawerCredits } from "./drawer-credits";
 import { DrawerHeaderBlur } from "./drawer-header-blur";
 import { SERVER_AVATAR_CORNER_RATIO, ServerAvatar } from "./server-avatar";
 import { ServerDrawerIconButton } from "./server-drawer-icon-button";
@@ -98,7 +88,6 @@ interface ServerDrawerContentProps {
   sideInset: number;
   topInset: number;
   onNavigate: (href: Href) => void;
-  onLeave: (serverId: string) => Promise<void>;
   onRemove: (serverId: string) => Promise<void>;
   onDelete: (serverId: string) => Promise<void>;
   onSetHidden: (serverId: string, hidden: boolean) => Promise<void>;
@@ -113,19 +102,13 @@ function serverDetail(server: MobileServer, t: MobileTranslate): string {
   return pending || server.state === "error" ? `${label} · ${serverStatusLabel(server, t)}` : label;
 }
 
-type ServerExit = "leave" | "remove" | "delete";
+type ServerExit = "remove" | "delete";
 
 const EXIT_TEXT = {
-  leave: {
-    action: "mobile.server.settings.leave",
-    title: "mobile.server.settings.leaveTitle",
-    body: "mobile.server.settings.leaveBody",
-    failed: "mobile.server.drawer.leaveFailed",
-  },
   remove: {
-    action: "mobile.server.settings.remove",
-    title: "mobile.server.settings.removeTitle",
-    body: "mobile.server.settings.removeBody",
+    action: "mobile.server.settings.forget",
+    title: "mobile.server.settings.forgetTitle",
+    body: "mobile.server.settings.forgetBody",
     failed: "mobile.server.drawer.removeFailed",
   },
   delete: {
@@ -137,7 +120,7 @@ const EXIT_TEXT = {
 } as const;
 
 function isServerExit(value: string): value is ServerExit {
-  return value === "leave" || value === "remove" || value === "delete";
+  return value === "remove" || value === "delete";
 }
 
 const VISIBILITY_TEXT = {
@@ -164,7 +147,6 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
   sideInset,
   topInset,
   onNavigate,
-  onLeave,
   onRemove,
   onDelete,
   onSetHidden,
@@ -176,8 +158,11 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
   const { theme } = useUniwind();
   const reducedMotion = useReducedMotion();
   const menus = useRef(new Map<string, MenuComponentRef | null>());
-  const displayName = mobileUserName(session.user);
-  const avatarUrl = session.user.avatarUrl ? new URL(session.user.avatarUrl, session.apiUrl).toString() : null;
+  const displayName = session.user.name;
+  const identityLine = t("mobile.identity.settings.summary", {
+    team: session.identity.team,
+    device: session.identity.device ?? t("mobile.identity.settings.deviceNone"),
+  });
   const mutedColor = String(muted);
   const controlColor = useCSSVariable("--openbot-bg-control");
   const [editing, setEditing] = useState(false);
@@ -200,14 +185,9 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
     return onReorder(servers.map((server) => (visible.has(server.id) ? (ids[index++] ?? server.id) : server.id)));
   };
   const memberCount = useDrawerMemberCount(activeServer?.id ?? "");
-  const hostedServerIds = useHostedServerAvailability((state) =>
-    state.userId === session.user.id ? state.serverIds : null,
-  );
   const exiting = useRef(false);
   function serverExit(server: MobileServer): ServerExit | null {
-    if (server.role !== "owner") return "leave";
-    if (localServerKind(server.id) === "onComputer") return "delete";
-    return hostedServerIds && !hostedServerIds.has(server.id) ? "remove" : null;
+    return localServerKind(server.id) === "onComputer" ? "delete" : "remove";
   }
   function serverVisibility(server: MobileServer): ServerVisibility | null {
     if (server.hidden) return "show";
@@ -235,7 +215,7 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
           {
             id: exit,
             title: t(EXIT_TEXT[exit].action),
-            image: exit === "leave" ? "rectangle.portrait.and.arrow.right" : "trash",
+            image: "trash",
             attributes: { destructive: true },
           },
         ],
@@ -259,7 +239,7 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
     if (exiting.current) return;
     exiting.current = true;
     try {
-      await (exit === "leave" ? onLeave : exit === "remove" ? onRemove : onDelete)(server.id);
+      await (exit === "remove" ? onRemove : onDelete)(server.id);
       void haptics.notification("success");
     } catch (error) {
       void haptics.notification("error");
@@ -317,18 +297,6 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
     setListOpen(false);
     setHiddenOpen(false);
   }, [open]);
-
-  const accountHasPlans = useHostedServerAvailability((state) => state.userId === session.user.id && state.available);
-  const ownsHostedServers = useHostedServerAvailability(
-    (state) => state.userId === session.user.id && state.ownsServers,
-  );
-  const cloudServersOn = useMobileFeature(session.apiUrl, "cloudServers");
-  const showsPlans = devFeatureOverride("cloudServers") ?? ((accountHasPlans && cloudServersOn) || ownsHostedServers);
-  useEffect(() => {
-    if (!open) return;
-    void refreshHostedServerAvailability(session.user.id, hostedServerCalls(session));
-    void refreshMobileFeatures(session.apiUrl);
-  }, [open, session]);
 
   function move(serverId: string, targetIndex: number) {
     const next = moveServerId(serverIds, serverId, targetIndex);
@@ -571,11 +539,7 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
                 accessibilityRole="button"
                 className="flex-row items-center gap-3 rounded-2xl px-3"
                 style={({ pressed }) => ({ height: SERVER_ROW_HEIGHT - 4, opacity: pressed ? 0.58 : 1 })}
-                onPress={() =>
-                  onNavigate(
-                    showsPlans ? { pathname: "/hosted-server", params: { entryPoint: "drawer" } } : "/add-server",
-                  )
-                }
+                onPress={() => onNavigate("/add-server/local")}
               >
                 <View
                   className="items-center justify-center bg-control"
@@ -588,7 +552,7 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
                   <Plus color={mutedColor} size={20} strokeWidth={2} />
                 </View>
                 <Typography.Paragraph className="font-medium" numberOfLines={1} style={typeScale.rowTitle}>
-                  {showsPlans ? t("mobile.server.drawer.add") : t("mobile.server.drawer.join")}
+                  {t("mobile.server.drawer.add")}
                 </Typography.Paragraph>
               </Pressable>
             )}
@@ -659,10 +623,9 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
       </View>
 
       <View className="mr-6 pt-2">
-        <DrawerCredits serverId={activeServer?.id ?? null} open={open} onNavigate={onNavigate} />
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${displayName}, ${session.user.email}`}
+          accessibilityLabel={`${displayName}, ${identityLine}`}
           accessibilityHint={t("mobile.server.drawer.settings")}
           className="min-h-14 flex-row items-center gap-2.5 rounded-2xl py-2 pl-3"
           style={({ pressed }) => ({
@@ -675,13 +638,13 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
             onNavigate("/settings");
           }}
         >
-          <ProfileAvatar neutral name={displayName} imageUrl={avatarUrl} size={36} />
+          <ProfileAvatar neutral name={displayName} imageUrl={null} size={36} />
           <View className="min-w-0 flex-1">
             <Typography.Paragraph className="font-semibold" numberOfLines={1} style={typeScale.preview}>
               {displayName}
             </Typography.Paragraph>
             <Typography.Paragraph className="text-text-secondary" numberOfLines={1} style={typeScale.small}>
-              {session.user.email}
+              {identityLine}
             </Typography.Paragraph>
           </View>
           <ChevronRight color={mutedColor} size={18} strokeWidth={2} style={MIRROR_IN_RTL} />
@@ -743,7 +706,6 @@ function DrawerServerTools({
       usage: { pathname: "/server-usage", params: { serverId } },
       library: { pathname: "/server-library", params: { serverId } },
       providers: { pathname: "/server-settings/providers", params: { serverId } },
-      members: { pathname: "/server-settings/members", params: { serverId } },
     }),
     [serverId],
   );
@@ -779,7 +741,6 @@ function DrawerServerTools({
       providers === "hidden"
         ? null
         : { icon: Sparkles, label: t("mobile.server.route.providers"), disabled: providers === "disabled" },
-    members: { icon: UsersRound, label: t("mobile.app.route.members"), value: values.members },
   };
   const available = layout.order.filter((id) => tools[id] !== null);
   const shown = available.filter((id) => !layout.hidden.includes(id));

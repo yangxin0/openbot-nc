@@ -2,25 +2,12 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/link";
 
 export const messages = {
-  "mobile.link.connectFailed": "OpenBot לא הצליח להתחבר. יש לנסות שוב.",
-  "mobile.link.invite.signInTitle": "התחברות להצטרפות לשרת הזה",
-  "mobile.link.invite.signInDescription": "יש לסרוק את קוד ה-QR ב-OpenBot במחשב. לאחר מכן אפשר לעיין בהזמנה.",
-  "mobile.link.invite.cancel": "ביטול ההזמנה",
-  "mobile.link.pairing.title": "חיבור הטלפון הזה",
-  "mobile.link.pairing.alreadySignedIn": "כבר התחברת. יש להתנתק בהגדרות לפני חיבור חשבון אחר.",
-  "mobile.link.pairing.description": "יש להמשיך רק אם ביקשת את קישור Mobile Connect הזה מהמחשב.",
-  "mobile.link.pairing.accountService":
-    "הקישור הזה מתחבר לשירות החשבונות בכתובת {origin}, ולא לשירות החשבונות של OpenBot.",
-  "mobile.link.pairing.connect": "חיבור",
   "mobile.link.plugin.title": "פתיחת דף התוסף",
   "mobile.link.plugin.description": "הצגת התוסף הזה באתר של OpenBot.",
   "mobile.link.plugin.openFailed": "לא ניתן לפתוח את דף התוסף.",
   "mobile.link.plugin.view": "הצגת התוסף",
   "mobile.link.unavailable.title": "הקישור אינו זמין",
   "mobile.link.unavailable.description": "הקישור הזה אינו תקין, אינו זמין עוד או אינו נתמך בנייד.",
-  "mobile.link.template.signInTitle": "התחברות להוספת הסוכן הזה",
-  "mobile.link.template.signInDescription":
-    "יש לסרוק את קוד ה-QR ב-OpenBot במחשב. לאחר מכן אפשר לעיין בסוכן לפני שמוסיפים אותו.",
   "mobile.link.template.loading": "טוען סוכן…",
   "mobile.link.template.creator": "מאת {name}",
   "mobile.link.template.section.instructions": "הוראות",

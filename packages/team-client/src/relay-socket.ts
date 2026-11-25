@@ -16,7 +16,8 @@ import {
 } from "@openbot/contracts/relay-protocol/messages";
 import { Schema } from "effect";
 import { bytesToBase64Url } from "./base64";
-import { RELAY_ECDSA_SHA256, relayPeerCertificateRefusal, relayServerProofRefusal } from "./relay-certificates";
+import { relayPeerCertificateRefusal, relayServerProofRefusal } from "./relay-certificates";
+import { type RelayCrypto, webRelayCrypto } from "./relay-crypto";
 import type { RelayBrowserIdentity } from "./relay-identity";
 
 export const RELAY_CONNECT_DEADLINE_MS = 15_000;
@@ -57,6 +58,7 @@ export interface RelaySocketOptions {
   connectDeadlineMs?: number;
   signal?: AbortSignal;
   now?: () => number;
+  crypto?: RelayCrypto;
 }
 
 type RelayHello = { role: "member"; hosting: boolean; label: string | null } | { role: "client"; target: string };
@@ -103,7 +105,8 @@ export class RelayBrowserSocket {
   }
 
   get bufferedAmount(): number {
-    return this.#socket.bufferedAmount;
+    const amount = this.#socket.bufferedAmount;
+    return Number.isFinite(amount) ? amount : 0;
   }
 
   get open(): boolean {
@@ -303,7 +306,12 @@ export async function dialRelayPeer(
     const refusal =
       open.peer.keyId !== target
         ? "different_peer"
-        : await relayPeerCertificateRefusal(open.peer, identity, (options.now ?? Date.now)());
+        : await relayPeerCertificateRefusal(
+            open.peer,
+            identity,
+            (options.now ?? Date.now)(),
+            options.crypto ?? webRelayCrypto,
+          );
     if (refusal !== null) {
       const message = `The certificate of the peer was refused (${refusal}).`;
       socket.fail("peer_refused", message);
@@ -363,7 +371,7 @@ function connect(identity: RelayBrowserIdentity): RelayBrowserSocket {
     });
   }
   try {
-    return new RelayBrowserSocket(new WebSocket(url));
+    return new RelayBrowserSocket(new WebSocket(url.href));
   } catch {
     throw new RelaySocketError({ code: "connect_failed", message: "The relay socket cannot be opened." });
   }
@@ -381,15 +389,14 @@ async function authenticate(
     throw new RelaySocketError({ code: "relay_url_missing", message: "The identity does not name a relay server." });
   }
   const audience = relayAudience(relayUrl);
-  const clientNonce = bytesToBase64Url(crypto.getRandomValues(new Uint8Array(32)));
+  const crypto = options.crypto ?? webRelayCrypto;
+  const clientNonce = bytesToBase64Url(crypto.randomBytes(32));
   const role: RelayRole = hello.role;
   const target = hello.role === "client" ? hello.target : undefined;
   const transcript = relayHelloTranscript({ nonce: challenge.nonce, clientNonce, audience, role, target });
   let signature: string;
   try {
-    signature = bytesToBase64Url(
-      new Uint8Array(await crypto.subtle.sign(RELAY_ECDSA_SHA256, identity.privateKey, textEncoder.encode(transcript))),
-    );
+    signature = bytesToBase64Url(await crypto.sign(identity.privateKey, textEncoder.encode(transcript)));
   } catch {
     throw new RelaySocketError({ code: "identity_unavailable", message: "The relay identity cannot sign." });
   }
@@ -430,6 +437,7 @@ async function authenticate(
             target,
           },
           now: (options.now ?? Date.now)(),
+          crypto,
         });
   if (refusal !== null) {
     const message = `The relay server did not prove that it belongs to the team (${refusal}).`;

@@ -2,9 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/share";
 
 export const messages = {
-  "mobile.share.signInTitle": "공유하려면 로그인",
-  "mobile.share.signInDescription":
-    "컴퓨터의 OpenBot에서 QR 코드를 스캔하세요. 그러면 공유한 내용을 받을 에이전트를 고를 수 있어요.",
   "mobile.share.reading": "공유한 내용을 읽는 중…",
   "mobile.share.readFailed": "OpenBot이 공유한 내용을 읽지 못했어요. 다시 공유해 주세요.",
   "mobile.share.content": "공유할 내용",

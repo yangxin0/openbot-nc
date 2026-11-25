@@ -4,6 +4,7 @@ import {
   type RelayTeam,
   type RelayTeamMember,
 } from "@openbot/contracts/relay-protocol/messages";
+import type { RelayCrypto } from "./relay-crypto";
 import type { RelayBrowserIdentity } from "./relay-identity";
 import {
   openRelayControlSocket,
@@ -47,6 +48,7 @@ export interface RelayControlOptions {
   reconnect?: { baseMs?: number; maxMs?: number };
   connectDeadlineMs?: number;
   now?: () => number;
+  crypto?: RelayCrypto;
 }
 
 interface RelayControlRun {
@@ -60,6 +62,7 @@ export class RelayBrowserControl {
   readonly #maxMs: number;
   readonly #connectDeadlineMs: number | undefined;
   readonly #now: () => number;
+  readonly #crypto: RelayCrypto | undefined;
   readonly #listeners = new Set<(snapshot: RelayControlSnapshot) => void>();
   #run: RelayControlRun | null = null;
   #socket: RelayBrowserSocket | null = null;
@@ -78,6 +81,7 @@ export class RelayBrowserControl {
     this.#maxMs = options.reconnect?.maxMs ?? RECONNECT_MAX_MS;
     this.#connectDeadlineMs = options.connectDeadlineMs;
     this.#now = options.now ?? Date.now;
+    this.#crypto = options.crypto;
   }
 
   start(): void {
@@ -126,7 +130,12 @@ export class RelayBrowserControl {
         const { socket, welcome } = await openRelayControlSocket(
           this.#identity,
           { hosting: false, label: this.#label },
-          { signal: run.abort.signal, now: this.#now, connectDeadlineMs: this.#connectDeadlineMs },
+          {
+            signal: run.abort.signal,
+            now: this.#now,
+            connectDeadlineMs: this.#connectDeadlineMs,
+            ...(this.#crypto ? { crypto: this.#crypto } : {}),
+          },
         );
         if (run.abort.signal.aborted) {
           socket.close();

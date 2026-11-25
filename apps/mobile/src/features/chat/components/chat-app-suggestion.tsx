@@ -5,7 +5,6 @@ import { useThemeColor } from "heroui-native/hooks";
 import Check from "lucide-react-native/icons/check";
 import { type ReactNode, useMemo } from "react";
 import { View } from "react-native";
-import { useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { useChatCardSurface } from "@/features/chat/components/chat-bubble-fill";
 import { dismissAppSuggestion, useAppSuggestionDismissals } from "@/features/chat/model/app-suggestion-dismissals";
 import { ListingIcon } from "@/features/marketplace/components/marketplace-parts";
@@ -19,6 +18,7 @@ import { useMobileWorkspaceSelector } from "@/features/workspace/context/mobile-
 import { showsOnline } from "@/features/workspace/model/server-status";
 import { haptics } from "@/shared/lib/haptics";
 import { useText } from "@/shared/lib/text";
+import { VENDOR_SERVICE_URL } from "@/shared/lib/vendor-service";
 
 const BUTTON_SHAPE = "rounded-[8px]";
 const ICON_SIZE = 44;
@@ -55,16 +55,12 @@ function blockedState(access: { online: boolean; administers: boolean }): Sugges
 }
 
 function PluginSuggestion({ serverId, messageId, slug }: { serverId: string; messageId: string; slug: string }) {
-  const { session } = useMobileSession();
   const canRelay = useMobileWorkspaceSelector((workspace) => workspace.canRelayMcpSignIn(serverId));
   const macUnavailable = useMobileWorkspaceSelector((workspace) => workspace.macAppsUnavailable(serverId));
   const { canManage, list: mcpServers } = useMcpServerList(serverId);
   const access = useServerAccess(serverId);
-  const apiUrl = session?.apiUrl;
-  const listing = useMemo(
-    () => (apiUrl ? appListings(apiUrl).find((item) => item.id === slug) : undefined),
-    [apiUrl, slug],
-  );
+  const apiUrl = VENDOR_SERVICE_URL;
+  const listing = useMemo(() => (apiUrl ? appListings(apiUrl).find((item) => item.id === slug) : undefined), [slug]);
   if (listing?.kind !== "app" || listing.source !== "plugin") return null;
   const { plugin } = listing;
   const app = plugin.apps[0] ?? null;

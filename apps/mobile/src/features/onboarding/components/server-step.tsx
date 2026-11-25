@@ -3,8 +3,6 @@ import { Typography } from "heroui-native";
 import { useThemeColor } from "heroui-native/hooks";
 import type { LucideIcon } from "lucide-react-native";
 import ChevronRight from "lucide-react-native/icons/chevron-right";
-import Cloud from "lucide-react-native/icons/cloud";
-import Mail from "lucide-react-native/icons/mail";
 import Monitor from "lucide-react-native/icons/monitor";
 import { View } from "react-native";
 import { GlassChoice } from "@/features/onboarding/components/onboarding-glass";
@@ -56,16 +54,12 @@ export function ServerStep({
   motion,
   connecting,
   onComputer,
-  onCloud,
-  onInvitation,
   onBack,
   onSkip,
 }: {
   motion: OnboardingMotion;
   connecting: MobileServer | null;
   onComputer: () => void;
-  onCloud: (() => void) | null;
-  onInvitation: () => void;
   onBack: (() => void) | null;
   onSkip: (() => void) | null;
 }) {
@@ -88,24 +82,6 @@ export function ServerStep({
     BLOUB_PRIORITY.loader,
   );
   const options: ServerOption[] = [
-    {
-      id: "invitation",
-      icon: Mail,
-      title: t("mobile.onboarding.server.invitation"),
-      description: t("mobile.onboarding.server.invitationBody"),
-      onPress: onInvitation,
-    },
-    ...(onCloud
-      ? [
-          {
-            id: "cloud",
-            icon: Cloud,
-            title: t("mobile.onboarding.server.cloud"),
-            description: t("mobile.onboarding.server.cloudBody"),
-            onPress: onCloud,
-          },
-        ]
-      : []),
     {
       id: "computer",
       icon: Monitor,

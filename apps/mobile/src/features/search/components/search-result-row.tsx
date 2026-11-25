@@ -13,7 +13,6 @@ import Info from "lucide-react-native/icons/info";
 import Languages from "lucide-react-native/icons/languages";
 import LifeBuoy from "lucide-react-native/icons/life-buoy";
 import MessagesSquare from "lucide-react-native/icons/messages-square";
-import MonitorSmartphone from "lucide-react-native/icons/monitor-smartphone";
 import Palette from "lucide-react-native/icons/palette";
 import Radio from "lucide-react-native/icons/radio";
 import Server from "lucide-react-native/icons/server";
@@ -21,7 +20,6 @@ import ShieldCheck from "lucide-react-native/icons/shield-check";
 import Sparkles from "lucide-react-native/icons/sparkles";
 import Trash2 from "lucide-react-native/icons/trash";
 import UserRound from "lucide-react-native/icons/user-round";
-import UsersRound from "lucide-react-native/icons/users-round";
 import Vibrate from "lucide-react-native/icons/vibrate";
 import WorkflowIcon from "lucide-react-native/icons/workflow";
 import { type ReactNode, useMemo } from "react";
@@ -132,8 +130,7 @@ function AgentAvatar({ agent }: { agent: MobileAgent }) {
 }
 
 const SETTING_ICON = {
-  profile: UserRound,
-  sessions: MonitorSmartphone,
+  identity: UserRound,
   appearance: Palette,
   animations: Sparkles,
   language: Languages,
@@ -147,17 +144,14 @@ const SETTING_ICON = {
   support: LifeBuoy,
   about: Info,
   serverOptions: Server,
-  serverMembers: UsersRound,
   serverRoutines: CalendarClock,
   serverUsage: ChartArea,
 } as const satisfies Record<MobileSearchSettingId, LucideIcon>;
 
 function openSetting(id: MobileSearchSettingId, serverId: string) {
   switch (id) {
-    case "profile":
-      return router.push("/settings/profile");
-    case "sessions":
-      return router.push("/settings/sessions");
+    case "identity":
+      return router.push("/settings/identity");
     case "appearance":
       return router.push("/settings/appearance");
     case "animations":
@@ -183,8 +177,6 @@ function openSetting(id: MobileSearchSettingId, serverId: string) {
       return router.push("/settings/about");
     case "serverOptions":
       return router.push({ pathname: "/server-settings", params: { serverId } });
-    case "serverMembers":
-      return router.push({ pathname: "/server-settings/members", params: { serverId } });
     case "serverRoutines":
       return router.push({ pathname: "/server-routines", params: { serverId } });
     case "serverUsage":

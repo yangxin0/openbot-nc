@@ -1,10 +1,12 @@
 import type { RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
 import type { TeamProtocolSupportV1 } from "@openbot/contracts/team-protocol";
 import { RelayBrowserControl, type RelayControlOptions } from "./relay-control";
+import type { RelayCrypto } from "./relay-crypto";
 import {
   createIndexedDbRelayIdentityKeyStore,
   type RelayBrowserIdentity,
   type RelayIdentityKeyStore,
+  type RelayIdentityReadOptions,
   readRelayIdentityFile,
   readRelayIdentityText,
 } from "./relay-identity";
@@ -12,13 +14,16 @@ import { relayTeamTunnelTransport } from "./relay-v2-tunnels";
 import type { RemoteTeamHost } from "./remote-directory";
 import { createRemoteTeamPeer, type RemoteHostProtocols, type RemoteTeamPeerActions } from "./remote-peer";
 
-export type { RelayControlSnapshot, RelayControlState } from "./relay-control";
+export type { RelayControlOptions, RelayControlSnapshot, RelayControlState } from "./relay-control";
 export { RelayBrowserControl } from "./relay-control";
+export type { RelayCrypto, RelayPrivateKey } from "./relay-crypto";
+export { webRelayCrypto } from "./relay-crypto";
 export type {
   IndexedDbRelayIdentityOptions,
   RelayBrowserIdentity,
   RelayIdentityErrorCode,
   RelayIdentityKeyStore,
+  RelayIdentityReadOptions,
 } from "./relay-identity";
 export { RelayIdentityError } from "./relay-identity";
 export type { RelaySocketErrorCode } from "./relay-socket";
@@ -35,14 +40,21 @@ export interface RelayTeamPeerOptions {
   hostProtocols?: RemoteHostProtocols;
   clientProtocol?: TeamProtocolSupportV1["protocol"];
   readyDeadlineMs?: number;
+  crypto?: RelayCrypto;
 }
 
-export function createRelayIdentityFromText(text: string): Promise<RelayBrowserIdentity> {
-  return readRelayIdentityText(text);
+export function createRelayIdentityFromText(
+  text: string,
+  options: RelayIdentityReadOptions = {},
+): Promise<RelayBrowserIdentity> {
+  return readRelayIdentityText(text, options);
 }
 
-export function createRelayIdentityFromFile(file: Blob): Promise<RelayBrowserIdentity> {
-  return readRelayIdentityFile(file);
+export function createRelayIdentityFromFile(
+  file: Blob,
+  options: RelayIdentityReadOptions = {},
+): Promise<RelayBrowserIdentity> {
+  return readRelayIdentityFile(file, options);
 }
 
 export function loadRelayIdentity(store: RelayIdentityKeyStore): Promise<RelayBrowserIdentity | null> {
@@ -99,10 +111,11 @@ export function createRelayTeamPeer(
   return createRemoteTeamPeer(peerActions, {
     ...(options.hostProtocols ? { hostProtocols: options.hostProtocols } : {}),
     ...(options.clientProtocol ? { clientProtocol: options.clientProtocol } : {}),
-    tunnels: relayTeamTunnelTransport(
-      identity,
-      options.readyDeadlineMs === undefined ? {} : { readyDeadlineMs: options.readyDeadlineMs },
-    ),
+    ...(options.crypto ? { randomBytes: options.crypto.randomBytes } : {}),
+    tunnels: relayTeamTunnelTransport(identity, {
+      ...(options.readyDeadlineMs === undefined ? {} : { readyDeadlineMs: options.readyDeadlineMs }),
+      ...(options.crypto ? { crypto: options.crypto } : {}),
+    }),
   });
 }
 

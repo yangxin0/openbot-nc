@@ -1,5 +1,5 @@
 import { BROWSER_SECRET_RESPONSE_PATH } from "@openbot/contracts/ipc";
-import { isDynamicRecord } from "@openbot/contracts/runtime-values";
+import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import { BROWSER_SECRET_VAULT_ROUTES } from "@openbot/contracts/team-protocol/browser-secret-vault-v1";
 import {
@@ -11,35 +11,32 @@ import { PHONE_FEEDBACK_ROUTES } from "@openbot/contracts/team-protocol/phone-fe
 import { isQueueEditRoute, QueueEditRejectedError } from "@openbot/contracts/team-protocol/queue-edit-v1";
 import type { TeamProtocolV2Json } from "@openbot/contracts/team-protocol/v2";
 import { sourceText } from "@openbot/i18n/source";
-import type { RemoteTeamDirectoryClient } from "@openbot/team-client";
-import { runTeamEffect } from "@openbot/team-client";
 import { bytesToBase64 } from "@openbot/team-client/base64";
-import {
-  createRemoteCommandMailbox,
-  type RemoteDownloadProgress,
-  type RemoteDownloadWatch,
-  type RemoteFileUpload,
-  type RemoteLargeDownload,
-  type RemoteTeamCommand,
-  type RemoteTeamCommandResult,
-  type RemoteTeamConnectionUpdate,
-  type RemoteTeamDiagnostic,
-  type RemoteTeamEvent,
-  type RemoteUploadProgress,
+import type { RelayTeamPeerActions } from "@openbot/team-client/relay-client";
+import type {
+  RemoteDownloadProgress,
+  RemoteDownloadWatch,
+  RemoteFileUpload,
+  RemoteLargeDownload,
+  RemoteTeamCommand,
+  RemoteTeamCommandResult,
+  RemoteTeamConnectionUpdate,
+  RemoteTeamDiagnostic,
+  RemoteTeamEvent,
+  RemoteUploadProgress,
 } from "@openbot/team-client/remote-peer";
 import { remoteWorkspaceReadTimeout } from "@openbot/team-client/remote-recovery";
 import { referenceFrom } from "@openbot/user-errors";
-import type { DOMProps } from "expo/dom";
 import * as Crypto from "expo-crypto";
 import { File, FileMode } from "expo-file-system";
-import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { useMobileSession } from "@/features/auth/context/mobile-session-context";
-import type {
-  BrowserViewBridgeCommand,
-  BrowserViewBridgeEvent,
-  BrowserViewBridgeOpen,
-  RemoteBrowserViewSession,
+import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import {
+  type BrowserViewBridgeEvent,
+  type BrowserViewBridgeOpen,
+  createBrowserViewBridge,
+  type RemoteBrowserViewSession,
 } from "@/features/browser/model/browser-view-bridge";
+import { createPhoneRelayPeer, type PhoneRelay, type PhoneRelayPeer } from "@/features/identity/model/phone-relay";
 import { supportLog, supportLogUrl } from "@/features/support/model/support-log";
 import { InactiveRequestError } from "@/features/workspace/model/pending-approvals";
 import { referencedError } from "@/features/workspace/model/referenced-error";
@@ -49,10 +46,7 @@ import {
   isBackgroundRead,
 } from "@/features/workspace/model/request-lanes";
 import { uploadCancelled } from "@/features/workspace/model/upload-cancels";
-import { expoGoDomOptions } from "@/shared/lib/expo-go-dom";
 import { currentText } from "@/shared/lib/text";
-
-import RemoteTeamBridge, { type RemoteTeamBridgeHandle } from "./remote-team-bridge.dom";
 
 export interface RemoteTeamTransportRef {
   connect(hostId: string, hostPublicKey: string): Promise<{ kept: boolean }>;
@@ -77,10 +71,9 @@ export interface RemoteTeamTransportRef {
 interface RemoteTeamTransportProps {
   hostId: string;
   active: boolean;
-  directory: RemoteTeamDirectoryClient;
+  relay: PhoneRelay;
   onConnectionUpdate: (update: RemoteTeamConnectionUpdate) => void;
   onDiagnostic?: (step: RemoteTeamDiagnostic["step"], detail: string | undefined) => void;
-  onMembershipChanged?: () => Promise<void>;
   onNetworkRestored?: () => void;
   onTeamEvent: (hostId: string, event: RemoteTeamEvent) => void;
 }
@@ -120,66 +113,111 @@ async function keepDownloadedFile(uri: string, size: number) {
   }
 }
 
+function requestError(body: unknown): string {
+  return isDynamicRecord(body) && isString(body.error) && body.error
+    ? body.error
+    : sourceText("error.remote.serverRequestFailed");
+}
+
 function savedTo(result: RemoteTeamCommandResult, uri: string) {
   const file = isDynamicRecord(result.body) ? result.body.file : undefined;
   return result.ok && isDynamicRecord(file) && file.ref === uri;
 }
 
-const BRIDGE_DOM: DOMProps = {
-  ...expoGoDomOptions,
-  containerStyle: {
-    flex: 0,
-    height: 1,
-    left: 0,
-    opacity: 0,
-    position: "absolute",
-    top: 0,
-    width: 1,
-  },
-  pointerEvents: "none",
-  scrollEnabled: false,
-  style: { flex: 0, height: 1, width: 1 },
-};
-
-const GATHERING_STALLS_BEFORE_NEW_BRIDGE = 2;
-
 export const RemoteTeamTransport = memo(
   forwardRef<RemoteTeamTransportRef, RemoteTeamTransportProps>(function RemoteTeamTransport(props, ref) {
-    const { refreshProfile } = useMobileSession();
-    const latest = useRef({ props, refreshProfile });
-    latest.current = { props, refreshProfile };
-
-    const bridge = useRef<RemoteTeamBridgeHandle>(null);
-    const deliverCommands = useCallback((commands: RemoteTeamCommand[]) => {
-      const teamCommands = bridge.current?.teamCommands;
-      if (typeof teamCommands === "function" && commands.length > 0) teamCommands(commands);
-    }, []);
-    const sendActive = useCallback((active: boolean) => {
-      const setActive = bridge.current?.setActive;
-      if (typeof setActive === "function") setActive(active);
-    }, []);
-    useEffect(() => sendActive(props.active), [props.active, sendActive]);
-    const mailboxRef = useRef<ReturnType<typeof createRemoteCommandMailbox> | null>(null);
-    if (!mailboxRef.current) mailboxRef.current = createRemoteCommandMailbox((command) => deliverCommands([command]));
-    const mailbox = mailboxRef.current;
-    const hostIdRef = useRef<string | null>(null);
-    useEffect(() => () => mailbox.dispose(), [mailbox]);
+    const latest = useRef(props);
+    latest.current = props;
     const backgroundReads = useRef<ReturnType<typeof createRequestLimiter> | null>(null);
     backgroundReads.current ??= createRequestLimiter(BACKGROUND_READS_IN_FLIGHT);
     const backgroundLane = backgroundReads.current;
-
+    const hostIdRef = useRef<string | null>(null);
     const viewListeners = useRef(new Map<string, (event: BrowserViewBridgeEvent) => void>());
-    const sendViewCommand = useCallback((command: BrowserViewBridgeCommand) => {
-      const browserView = bridge.current?.browserView;
-      if (typeof browserView !== "function") return false;
-      browserView(command);
-      return true;
-    }, []);
-
     const uploadListeners = useRef(new Map<string, (fraction: number) => void>());
     const downloadListeners = useRef(new Map<string, (received: number, total: number) => void>());
     const uploadFiles = useRef(new Map<string, number>());
     const downloadFiles = useRef(new Set<string>());
+    const peerRef = useRef<PhoneRelayPeer | null>(null);
+    const browserViewRef = useRef<ReturnType<typeof createBrowserViewBridge> | null>(null);
+
+    const uploadFile = (fileRef: string) => {
+      if (!uploadFiles.current.has(fileRef)) throw new Error("The file is not part of an upload.");
+      if (uploadCancelled(fileRef)) {
+        void peerRef.current?.cancelUpload().catch(() => undefined);
+        throw new Error("The upload was cancelled.");
+      }
+      return new File(fileRef);
+    };
+    const actions = useRef<RelayTeamPeerActions>({
+      onConnectionUpdate: async (update) => {
+        if (update.state !== "online") browserViewRef.current?.disconnect(update.message);
+        latest.current.onConnectionUpdate(update);
+      },
+      onTeamEvent: async (hostId, event) => {
+        try {
+          latest.current.onTeamEvent(hostId, event);
+        } catch {
+          peerRef.current?.eventsFailed();
+        }
+      },
+      onHostStreamData: (data) => browserViewRef.current?.receive(data),
+      digestUploadFile: async (fileRef) => uploadFile(fileRef).digest("SHA-256"),
+      writeDownloadFile: async ({ ref: fileRef, base64, append }) => {
+        if (!downloadFiles.current.has(fileRef)) throw new Error("The file is not part of a download.");
+        await partialFile(fileRef).write(base64, { encoding: "base64", append });
+      },
+      readUploadFile: async ({ ref: fileRef, offset, length }) => {
+        const handle = uploadFile(fileRef).open(FileMode.ReadOnly);
+        try {
+          handle.offset = offset;
+          return bytesToBase64(await handle.readBytes(length));
+        } finally {
+          handle.close();
+        }
+      },
+      onUploadProgress: async ({ commandId, sent, total }: RemoteUploadProgress) =>
+        uploadListeners.current.get(commandId)?.(total > 0 ? sent / total : 1),
+      onDownloadProgress: async ({ commandId, received, total }: RemoteDownloadProgress) =>
+        downloadListeners.current.get(commandId)?.(received, total),
+      onDiagnostic: async ({ hostId, step, detail }: RemoteTeamDiagnostic) => {
+        supportLog.add(
+          step === "failed" || step === "stalled" ? "warn" : "info",
+          "connection",
+          `${hostId} peer ${step}${detail ? `: ${detail}` : ""}`,
+        );
+        latest.current.onDiagnostic?.(step, detail);
+      },
+      onNetworkRestored: async () => latest.current.onNetworkRestored?.(),
+    });
+    peerRef.current ??= createPhoneRelayPeer(props.relay, actions);
+    const peer = peerRef.current;
+    browserViewRef.current ??= createBrowserViewBridge(
+      (data) => peer.sendHostStreamData(data),
+      async (method, path, body) => {
+        const result = await peer.execute({ id: Crypto.randomUUID(), type: "request", method, path, body: body ?? {} });
+        if (!result.ok) throw new Error(result.error ?? sourceText("error.remote.serverRequestFailed"));
+        if (result.status !== undefined && result.status >= 400) throw new Error(requestError(result.body));
+        return result.body;
+      },
+      (event) => {
+        const listener = viewListeners.current.get(event.viewId);
+        if (event.type === "ended") viewListeners.current.delete(event.viewId);
+        listener?.(event);
+      },
+    );
+    const browserView = browserViewRef.current;
+
+    useEffect(() => {
+      peer.setActive(props.active);
+    }, [peer, props.active]);
+    useEffect(
+      () => () => {
+        browserView.disconnect(null);
+        void peer.dispose();
+      },
+      [peer, browserView],
+    );
+
     const enqueue = useCallback(
       (
         next: RemoteTeamCommandInput,
@@ -210,14 +248,14 @@ export const RemoteTeamTransport = memo(
         const fileRef = command.type === "request" ? command.upload?.file?.ref : undefined;
         const saved = command.type === "request" ? command.largeDownload : undefined;
         const savedFile = saved?.file;
-        if (!onUploadProgress && !onDownloadProgress && !fileRef && !savedFile) return mailbox.send(command);
+        if (!onUploadProgress && !onDownloadProgress && !fileRef && !savedFile) return peer.execute(command);
         if (onUploadProgress) uploadListeners.current.set(id, onUploadProgress);
         if (onDownloadProgress) downloadListeners.current.set(id, onDownloadProgress);
         if (fileRef) uploadFiles.current.set(fileRef, (uploadFiles.current.get(fileRef) ?? 0) + 1);
         if (savedFile) downloadFiles.current.add(savedFile);
         const sent =
           saved && savedFile
-            ? mailbox.send(command).then(
+            ? peer.execute(command).then(
                 async (result) => {
                   downloadFiles.current.delete(savedFile);
                   if (savedTo(result, savedFile)) await keepDownloadedFile(savedFile, saved.maxBytes);
@@ -230,7 +268,7 @@ export const RemoteTeamTransport = memo(
                   throw error;
                 },
               )
-            : mailbox.send(command);
+            : peer.execute(command);
         return sent.finally(() => {
           uploadListeners.current.delete(id);
           downloadListeners.current.delete(id);
@@ -241,7 +279,7 @@ export const RemoteTeamTransport = memo(
           else uploadFiles.current.delete(fileRef);
         });
       },
-      [mailbox],
+      [peer],
     );
 
     useImperativeHandle(
@@ -257,10 +295,7 @@ export const RemoteTeamTransport = memo(
             );
           return { kept: result.kept === true };
         },
-        networkChanged: () => {
-          const networkChanged = bridge.current?.networkChanged;
-          if (typeof networkChanged === "function") networkChanged(null);
-        },
+        networkChanged: () => peer.networkMoved(),
         disconnect: async () => {
           const result = await enqueue({ type: "disconnect" });
           if (!result.ok)
@@ -328,162 +363,22 @@ export const RemoteTeamTransport = memo(
         openBrowserView: (options, listener) => {
           const viewId = Crypto.randomUUID();
           viewListeners.current.set(viewId, listener);
-          if (!sendViewCommand({ type: "open", viewId, ...options })) {
-            viewListeners.current.delete(viewId);
-            return null;
-          }
+          browserView.command({ type: "open", viewId, ...options });
           return {
             input: (inputs) => {
-              if (inputs.length > 0) sendViewCommand({ type: "input", viewId, inputs });
+              if (inputs.length > 0) browserView.command({ type: "input", viewId, inputs });
             },
-            frameDone: (sequence, drawn) => sendViewCommand({ type: "frame-done", viewId, sequence, drawn }),
+            frameDone: (sequence, drawn) => browserView.command({ type: "frame-done", viewId, sequence, drawn }),
             close: () => {
               if (!viewListeners.current.delete(viewId)) return;
-              sendViewCommand({ type: "close", viewId });
+              browserView.command({ type: "close", viewId });
             },
           };
         },
       }),
-      [enqueue, sendViewCommand, backgroundLane],
+      [enqueue, backgroundLane, peer, browserView],
     );
 
-    const pageLoads = useRef(0);
-    const [bridgeKey, setBridgeKey] = useState(0);
-    const gatheringStalls = useRef(0);
-    const handleReady = useCallback(async () => {
-      pageLoads.current += 1;
-      const outstanding = mailbox.outstanding();
-      supportLog.add(
-        "info",
-        "connection",
-        `${latest.current.props.hostId} page ready, load ${pageLoads.current}, ${outstanding.length} commands waiting`,
-      );
-      sendActive(latest.current.props.active);
-      deliverCommands(outstanding);
-    }, [sendActive, deliverCommands, mailbox]);
-    const handleCommandResult = useCallback(
-      async (result: RemoteTeamCommandResult) => {
-        mailbox.receive(result);
-      },
-      [mailbox],
-    );
-    const earlySession = useRef<{
-      hostId: string;
-      directory: RemoteTeamDirectoryClient;
-      sessionId: Promise<string | null>;
-    } | null>(null);
-    const earlySessionAsked = useRef(false);
-    useEffect(() => {
-      if (!props.active || earlySessionAsked.current) return;
-      earlySessionAsked.current = true;
-      earlySession.current = {
-        hostId: props.hostId,
-        directory: props.directory,
-        sessionId: runTeamEffect(props.directory.startSession(props.hostId)).catch(() => null),
-      };
-    }, [props.active, props.hostId, props.directory]);
-    const uploadFile = (ref: string) => {
-      if (!uploadFiles.current.has(ref)) throw new Error("The file is not part of an upload.");
-      if (uploadCancelled(ref)) {
-        const cancelUpload = bridge.current?.cancelUpload;
-        if (typeof cancelUpload === "function") cancelUpload(null);
-        throw new Error("The upload was cancelled.");
-      }
-      return new File(ref);
-    };
-    const [actions] = useState(() => ({
-      digestUploadFile: async (ref: string) => uploadFile(ref).digest("SHA-256"),
-      writeDownloadFile: async ({ ref, base64, append }: { ref: string; base64: string; append: boolean }) => {
-        if (!downloadFiles.current.has(ref)) throw new Error("The file is not part of a download.");
-        await partialFile(ref).write(base64, { encoding: "base64", append });
-      },
-      readUploadFile: async ({ ref, offset, length }: { ref: string; offset: number; length: number }) => {
-        const handle = uploadFile(ref).open(FileMode.ReadOnly);
-        try {
-          handle.offset = offset;
-          return bytesToBase64(await handle.readBytes(length));
-        } finally {
-          handle.close();
-        }
-      },
-      endSession: (sessionId: string) => runTeamEffect(latest.current.props.directory.endSession(sessionId)),
-      getBootstrap: async (hostId: string, clientPublicKey: string, existingSessionId: string | null) => {
-        const { directory } = latest.current.props;
-        const early = earlySession.current;
-        earlySession.current = null;
-        const earlySessionId =
-          existingSessionId === null && early?.hostId === hostId && early.directory === directory
-            ? await early.sessionId
-            : null;
-        if (earlySessionId === null)
-          return runTeamEffect(directory.createBootstrap(hostId, clientPublicKey, existingSessionId));
-        return runTeamEffect(directory.createBootstrap(hostId, clientPublicKey, earlySessionId)).catch(
-          async (error: unknown) => {
-            await runTeamEffect(directory.endSession(earlySessionId)).catch(() => undefined);
-            throw error;
-          },
-        );
-      },
-      onUploadProgress: async ({ commandId, sent, total }: RemoteUploadProgress) =>
-        uploadListeners.current.get(commandId)?.(total > 0 ? sent / total : 1),
-      onDownloadProgress: async ({ commandId, received, total }: RemoteDownloadProgress) =>
-        downloadListeners.current.get(commandId)?.(received, total),
-      onAccountProfileChanged: () => latest.current.refreshProfile(),
-      onBrowserViewEvent: async (event: BrowserViewBridgeEvent) => {
-        const listener = viewListeners.current.get(event.viewId);
-        if (event.type === "ended") viewListeners.current.delete(event.viewId);
-        listener?.(event);
-      },
-      onAccountServersChanged: async () => latest.current.props.onMembershipChanged?.(),
-      onConnectionUpdate: async (update: RemoteTeamConnectionUpdate) => latest.current.props.onConnectionUpdate(update),
-      onDiagnostic: async ({ hostId, step, detail }: RemoteTeamDiagnostic) => {
-        supportLog.add(
-          step === "failed" ||
-            step === "stalled" ||
-            step === "signal-error" ||
-            step === "ice-candidate-error" ||
-            step === "ice-gathering-stalled"
-            ? "warn"
-            : "info",
-          "connection",
-          `${hostId} peer ${step}${detail ? `: ${detail}` : ""}`,
-        );
-        if (step === "authenticated") gatheringStalls.current = 0;
-        if (step === "ice-gathering-stalled") {
-          gatheringStalls.current += 1;
-          if (gatheringStalls.current >= GATHERING_STALLS_BEFORE_NEW_BRIDGE) {
-            gatheringStalls.current = 0;
-            supportLog.add("warn", "connection", `${hostId} new page after ICE gathering stalls`);
-            setBridgeKey((key) => key + 1);
-          }
-        }
-        latest.current.props.onDiagnostic?.(step, detail);
-      },
-      onNetworkRestored: async () => latest.current.props.onNetworkRestored?.(),
-      onTeamEvents: async (hostId: string, events: RemoteTeamEvent[]) => {
-        const { onTeamEvent } = latest.current.props;
-        let failure: { error: unknown } | null = null;
-        for (const event of events) {
-          try {
-            onTeamEvent(hostId, event);
-          } catch (error) {
-            failure ??= { error };
-          }
-        }
-        if (failure) throw failure.error;
-      },
-    }));
-
-    return (
-      <RemoteTeamBridge
-        key={bridgeKey}
-        ref={bridge}
-        active={props.active}
-        dom={BRIDGE_DOM}
-        onCommandResult={handleCommandResult}
-        onReady={handleReady}
-        {...actions}
-      />
-    );
+    return null;
   }),
 );

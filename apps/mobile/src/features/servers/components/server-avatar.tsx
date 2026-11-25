@@ -1,6 +1,5 @@
 import { avatarHeadColor } from "@openbot/brand/bloub-avatar";
 import MaskedView from "@react-native-masked-view/masked-view";
-import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { Typography } from "heroui-native";
 import Monitor from "lucide-react-native/icons/monitor";
@@ -9,11 +8,8 @@ import { View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useCSSVariable } from "uniwind";
 import { thumbnailColor } from "@/features/agents/components/bloub-avatar";
-import { useMobileSession, useQueryScope } from "@/features/auth/context/mobile-session-context";
-import { loadServerLogo } from "@/features/servers/model/server-logo";
 import { useServerPlush } from "@/features/servers/model/server-plush";
 import { DISCONNECTED_APPEARANCE } from "@/features/workspace/components/use-connection-appearance";
-import { queryKeys } from "@/features/workspace/model/query-keys";
 import { showsOnline } from "@/features/workspace/model/server-status";
 import type { MobileServer } from "@/features/workspace/model/workspace-types";
 import { END_X } from "@/shared/lib/text-direction";
@@ -51,20 +47,7 @@ export function ServerAvatar({
   logoUri?: string | null;
   showStatus?: boolean;
 }) {
-  const { session } = useMobileSession();
-  const queryScope = useQueryScope();
-  const { logoKey } = server;
-  const saved = useQuery({
-    queryKey: queryKeys.serverLogo(queryScope, server.id, logoKey),
-    enabled: logoUri === undefined && Boolean(session && logoKey),
-    queryFn: () => {
-      if (!session || !logoKey) throw new Error("The server logo is unavailable.");
-      return loadServerLogo(session, server.id, logoKey);
-    },
-    retry: 4,
-    staleTime: Infinity,
-  });
-  const logo = logoUri === undefined ? (saved.data ?? null) : logoUri;
+  const logo = logoUri ?? null;
   const [failedUri, setFailedUri] = useState<string | null>(null);
   const logoFailed = logo === failedUri;
   const success = String(useCSSVariable("--openbot-success"));
