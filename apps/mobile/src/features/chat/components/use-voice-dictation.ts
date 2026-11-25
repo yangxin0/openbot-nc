@@ -33,13 +33,7 @@ import {
   retriesWithSystemService,
   spokenText,
 } from "../model/voice-dictation";
-import {
-  type ModelRecognition,
-  modelCaptureAvailable,
-  showNotice,
-  trackTurn,
-  useModelDictation,
-} from "./use-model-dictation";
+import { type ModelRecognition, modelCaptureAvailable, showNotice, useModelDictation } from "./use-model-dictation";
 
 type Recognizer = NonNullable<typeof speechRecognition>;
 type StartOptions = Parameters<Recognizer["start"]>[0];
@@ -55,10 +49,6 @@ interface DictationSession {
   listeningAt: number | null;
   stoppingAt: number | null;
   ending: "cancelled" | "permission_denied" | "operation_failed" | null;
-}
-
-function transcriptionOf(options: StartOptions | null): "cloud" | "local" | undefined {
-  return !options ? undefined : !options.requiresOnDeviceRecognition ? "cloud" : isIOS ? undefined : "local";
 }
 
 let owner: symbol | null = null;
@@ -153,7 +143,6 @@ function useSystemDictation({
   }, []);
 
   const settle = useCallback(() => {
-    if (session.current) trackTurn(session.current, transcriptionOf(session.current.options));
     if (owner === id) owner = null;
     session.current = null;
     if (stopTimer.current) clearTimeout(stopTimer.current);

@@ -42,7 +42,6 @@ export const AGENT_SETTINGS_PARTS: readonly string[] = [
 
 export const queryKeys = {
   agentTemplate: (apiUrl: string | null, templateId: string | null) => ["agent-template", apiUrl, templateId],
-  marketplace: (apiUrl: string | null, ...parts: (string | null)[]) => ["marketplace", apiUrl, ...parts],
 
   agentInfo: (
     ...prefix: [] | [scope: QueryScope, serverId: string] | [scope: QueryScope, serverId: string, agentId: string]
@@ -129,12 +128,11 @@ export const queryKeys = {
   agentModels: (scope: QueryScope, serverId: string) => ["agent-models", ...scope, serverId],
 
   serverMembers: (scope: QueryScope, serverId: string) => ["server-members", ...scope, serverId],
-  serverInvites: (scope: QueryScope, serverId: string) => ["server-invites", ...scope, serverId],
+  serverCurrentMember: (scope: QueryScope, serverId: string) => ["server-current-member", ...scope, serverId],
   ownerTransfer: (scope: QueryScope, serverId: string) => ["owner-transfer", ...scope, serverId],
   serverTimezone: (scope: QueryScope, serverId: string) => ["server-timezone", ...scope, serverId],
   serverTurnLimits: (scope: QueryScope, serverId: string) => ["server-turn-limits", ...scope, serverId],
   serverVoiceModel: (scope: QueryScope, serverId: string) => ["server-voice-model", ...scope, serverId],
-  serverSignalHome: (scope: QueryScope, serverId: string) => ["server-signal-home", ...scope, serverId],
   localServers: (scope: QueryScope, serverId: string) => ["local-servers", ...scope, serverId],
   agentMemoryLimit: (scope: QueryScope, serverId: string) => ["agent-memory-limit", ...scope, serverId],
   memoryReview: (scope: QueryScope, serverId: string) => ["memory-review", ...scope, serverId],
@@ -152,7 +150,6 @@ export const queryKeys = {
   serverUpdate: (scope: QueryScope, serverId: string) => ["server-update", ...scope, serverId],
   serverStorage: (scope: QueryScope, serverId: string) => ["server-storage", ...scope, serverId],
   serverLibraryFolders: (scope: QueryScope, serverId: string) => ["server-library-folders", ...scope, serverId],
-  serverDisk: (scope: QueryScope, serverId: string) => ["server-disk", ...scope, serverId],
   serverSites: (scope: QueryScope, serverId: string) => ["server-sites", ...scope, serverId],
   serverVault: (scope: QueryScope, serverId: string) => ["server-vault", ...scope, serverId],
   serverVaultCodes: (scope: QueryScope, serverId: string) => ["server-vault-codes", ...scope, serverId],

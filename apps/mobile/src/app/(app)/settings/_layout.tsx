@@ -22,12 +22,9 @@ export default function SettingsLayout() {
       <Stack.Screen name="elevenlabs-key" options={{ title: t("mobile.settings.voice.elevenLabs.key") }} />
       <Stack.Screen name="voice-server" options={{ title: t("mobile.settings.voice.server.title") }} />
       <Stack.Screen name="quick-actions" options={{ title: t("mobile.settings.quickActions.title") }} />
-      <Stack.Screen name="shortcuts" options={{ title: t("mobile.settings.shortcuts.title") }} />
       <Stack.Screen name="haptics" options={{ title: t("mobile.settings.feedback.haptics") }} />
       <Stack.Screen name="agents" options={{ title: t("mobile.settings.agents.title") }} />
       <Stack.Screen name="agent-defaults" options={{ title: t("mobile.settings.agents.title") }} />
-      <Stack.Screen name="notifications" options={{ title: t("mobile.settings.notifications.title") }} />
-      <Stack.Screen name="privacy" options={{ title: t("mobile.settings.privacy.title") }} />
       <Stack.Screen name="app-lock" options={{ title: t("mobile.appLock.title") }} />
       <Stack.Screen name="app-lock-pin" options={{ title: t("mobile.appLock.pinSetup.title") }} />
       <Stack.Screen name="about" options={{ title: t("mobile.app.route.about") }} />

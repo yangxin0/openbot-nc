@@ -1,8 +1,7 @@
-import { FEEDBACK_LIMITS, type FeedbackPhone } from "@openbot/contracts/feedback";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import * as Device from "expo-device";
 import { File, Paths } from "expo-file-system";
-import * as Updates from "expo-updates";
-import { AppState, Platform } from "react-native";
+import { AppState } from "react-native";
 import { nativeApplicationVersion, nativeBuildVersion } from "@/shared/lib/native-application";
 import { installPhoneNetwork, phoneNetwork } from "./phone-network-capture";
 import {
@@ -14,7 +13,6 @@ import {
   supportLog,
   supportLogCacheLines,
   supportLogCacheText,
-  supportLogExcerpt,
   supportLogValue,
   withRequestLog,
 } from "./support-log";
@@ -31,7 +29,7 @@ let cacheLines = 0;
 
 function redactionKey(): string | null {
   if (__DEV__) return null;
-  return `${appVersion()} ${Updates.updateId ?? "embedded"}`;
+  return appVersion();
 }
 
 function cacheFile(): File {
@@ -129,12 +127,6 @@ function appVersion(): string {
   return build ? `${version} (${build})` : version;
 }
 
-function bundleName(): string {
-  if (!Updates.isEnabled) return "no update server";
-  const bundle = Updates.isEmbeddedLaunch ? "embedded" : (Updates.updateId ?? "unknown");
-  return `${bundle}, channel ${Updates.channel ?? "none"}, runtime ${Updates.runtimeVersion ?? "none"}`;
-}
-
 function systemName(): string {
   const { modelName, modelId } = Device;
   const model =
@@ -145,10 +137,9 @@ function systemName(): string {
 export function supportLogFileText(): string {
   const entries = supportLog.entries();
   return [
-    "OpenBot support log",
+    `${APP_NAME} support log`,
     `Saved: ${new Date().toISOString()}`,
     `App: ${appVersion()}`,
-    `Bundle: ${bundleName()}`,
     `System: ${systemName()}`,
     `Network: ${phoneNetwork()}`,
     `Entries: ${entries.length}`,
@@ -156,40 +147,6 @@ export function supportLogFileText(): string {
     ...entries.map(formatSupportLogEntry),
     "",
   ].join("\n");
-}
-
-export function phoneFeedback(): FeedbackPhone {
-  const update = Updates.isEmbeddedLaunch ? null : Updates.updateId?.slice(0, 8);
-  return {
-    platform: Platform.OS === "android" ? "Android" : "iOS",
-    appVersion: (update ? `${appVersion()} · ${update}` : appVersion()).slice(0, FEEDBACK_LIMITS.fact),
-    system: systemName().slice(0, FEEDBACK_LIMITS.fact),
-    network: phoneNetwork().slice(0, FEEDBACK_LIMITS.fact),
-    log:
-      supportLogExcerpt(supportLog.entries(), FEEDBACK_LIMITS.phoneLog) ||
-      "The support log has no warning, error or connection event.",
-  };
-}
-
-const shown = new Map<string, FeedbackPhone>();
-
-function shownKey(approval: { agentId: string; requestId: string | number }): string {
-  return `${approval.agentId}\n${String(approval.requestId)}`;
-}
-
-export function showPhoneFeedback(approval: { agentId: string; requestId: string | number }): FeedbackPhone {
-  const phone = phoneFeedback();
-  shown.set(shownKey(approval), phone);
-  return phone;
-}
-
-export function shownPhoneFeedback(approval: { agentId: string; requestId: string | number }): FeedbackPhone | null {
-  const phone = shown.get(shownKey(approval));
-  return phone ? { ...phone, network: phoneNetwork().slice(0, FEEDBACK_LIMITS.fact) } : null;
-}
-
-export function forgetPhoneFeedback(approval: { agentId: string; requestId: string | number }): void {
-  shown.delete(shownKey(approval));
 }
 
 export function clearSupportLog(): void {
@@ -242,7 +199,7 @@ export function installSupportLog(): void {
   installed = true;
   restoreWhenIdle();
   supportLog.subscribe(schedulePersist);
-  supportLog.add("info", "app", `Started OpenBot ${appVersion()} on ${systemName()}, bundle ${bundleName()}`);
+  supportLog.add("info", "app", `Started ${APP_NAME} ${appVersion()} on ${systemName()}`);
   captureConsole();
   captureErrors();
   captureFetch();

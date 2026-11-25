@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { inspect } from "node:util";
+import type { TeamApiRequest } from "@openbot/team-client/team-api-requests";
 import WsSocket from "ws";
 
 interface PhoneConfig {
   phoneText: string;
+  ownerText: string;
   wrongKeyText: string;
   otherHostText: string;
   otherHostKeyId: string;
@@ -28,6 +30,7 @@ interface PhoneFacts {
   otherTeamRelayRefusal?: string;
   otherTeamPeerRefusal?: string;
   foreignStates?: string[];
+  memberRoles?: string[];
 }
 
 interface PhoneCheck {
@@ -195,6 +198,9 @@ const { isDynamicRecord, isString } = await import("@openbot/contracts/runtime-v
 const identityModule = await import("../apps/mobile/src/features/identity/model/phone-identity");
 const relayModule = await import("../apps/mobile/src/features/identity/model/phone-relay");
 const { PhoneRelayRuntime } = await import("../apps/mobile/src/features/identity/model/phone-relay-runtime");
+const membersModule = await import("../apps/mobile/src/features/servers/model/server-members");
+const { sourceText } = await import("@openbot/i18n/source");
+const adminRequired = sourceText("error.team.adminRequired");
 
 const crypto = createNobleRelayCrypto({ randomBytes: (size) => randomValues(new Uint8Array(size)) });
 const store = identityModule.createPhoneIdentityStore(memoryStore, crypto);
@@ -204,6 +210,24 @@ const held: {
   peer: ReturnType<typeof relayModule.createPhoneRelayPeer> | null;
 } = { identity: null, peer: null };
 const events: string[] = [];
+const ownerHeld: { peer: ReturnType<typeof relayModule.createPhoneRelayPeer> | null } = { peer: null };
+
+class PeerRequestError extends Error {}
+
+function peerTeamApi(peer: ReturnType<typeof relayModule.createPhoneRelayPeer>): TeamApiRequest {
+  return async (method, path, decode, body) => {
+    const result = await deadline(
+      `${method} ${path}`,
+      peer.execute({ id: commandId(), type: "request", method, path, body: body ?? {} }),
+    );
+    if (!result.ok) throw new PeerRequestError(result.error ?? "The request failed.");
+    return decode(result.body);
+  };
+}
+
+function refusal(error: unknown): string {
+  return error instanceof PeerRequestError ? error.message : errorCode(error);
+}
 const eventWaiters = new Set<() => void>();
 let commandCount = 0;
 const commandId = () => `phone-command-${++commandCount}`;
@@ -393,6 +417,110 @@ try {
     facts.fileSha256 = expected;
   });
 
+  await check("A plain member cannot read the member list of the host, and reads itself as a member", async () => {
+    const activePeer = held.peer;
+    assert(activePeer !== null, "No peer.");
+    const api = peerTeamApi(activePeer);
+    const refused = await membersModule.listServerMembers(api).then(
+      () => "listed",
+      (error: unknown) => refusal(error),
+    );
+    assert(refused === adminRequired, `The host gave: ${refused}`);
+    const me = await membersModule.readCurrentMember(api);
+    assert(me.role === "member" && me.username === "alice" && !me.disabled, inspect(me));
+  });
+
+  const ownerMemory = new Map<string, string>();
+  const ownerStore = identityModule.createPhoneIdentityStore(
+    {
+      getItemAsync: async (key: string) => ownerMemory.get(key) ?? null,
+      setItemAsync: async (key: string, value: string) => {
+        ownerMemory.set(key, value);
+      },
+      deleteItemAsync: async (key: string) => {
+        ownerMemory.delete(key);
+      },
+    },
+    crypto,
+  );
+
+  await check("The server owner reads the member list with the roles over the relay", async () => {
+    const ownerIdentity = await ownerStore.importText(config.ownerText);
+    const ownerRuntime = new PhoneRelayRuntime({ identity: ownerIdentity, crypto }, () => undefined, {
+      baseMs: 100,
+      maxMs: 500,
+    });
+    runtimes.push(ownerRuntime);
+    ownerRuntime.start();
+    await untilSnapshot(ownerRuntime, "the owner relay online", () =>
+      ownerRuntime.snapshot().state.status === "online" ? true : null,
+    );
+    const peer = relayModule.createPhoneRelayPeer(ownerRuntime, {
+      current: { onConnectionUpdate: async () => undefined, onTeamEvent: async () => undefined },
+    });
+    ownerHeld.peer = peer;
+    const connected = await deadline(
+      "the owner connect",
+      peer.execute({ id: commandId(), type: "connect", hostId, hostPublicKey: config.hostKeyId }),
+    );
+    assert(connected.ok, connected.error ?? "The owner connect failed.");
+    const api = peerTeamApi(peer);
+    const me = await membersModule.readCurrentMember(api);
+    assert(me.role === "owner", inspect(me));
+    const members = membersModule.sortServerMembers(await membersModule.listServerMembers(api));
+    const alice = members.find((member) => member.username === "alice");
+    assert(alice !== undefined && alice.role === "member" && !alice.disabled, inspect(members));
+    assert(members[0]?.role === "owner", "The owner is not first.");
+    assert(membersModule.canManageServerMember(me, alice), "The owner cannot manage the member.");
+    assert(!membersModule.canManageServerMember(me, me), "The owner can manage itself.");
+    facts.memberRoles = members.map((member) => member.role);
+  });
+
+  await check("The owner makes a member an admin, and back; the member list follows the role", async () => {
+    const ownerPeer = ownerHeld.peer;
+    const alicePeer = held.peer;
+    assert(ownerPeer !== null && alicePeer !== null, "No peer.");
+    const owner = peerTeamApi(ownerPeer);
+    const member = peerTeamApi(alicePeer);
+    const alice = (await membersModule.listServerMembers(owner)).find((entry) => entry.username === "alice");
+    assert(alice !== undefined, "Alice is not listed.");
+    const promoted = await membersModule.updateServerMember(owner, { memberId: alice.id, role: "admin" });
+    assert(promoted.role === "admin" && promoted.id === alice.id, inspect(promoted));
+    const seen = await membersModule.listServerMembers(member);
+    assert(
+      seen.some((entry) => entry.role === "owner"),
+      "The admin does not see the owner.",
+    );
+    const ownerEntry = seen.find((entry) => entry.role === "owner");
+    assert(ownerEntry !== undefined, "No owner entry.");
+    const refusedOwnerChange = await membersModule
+      .updateServerMember(member, { memberId: ownerEntry.id, role: "member" })
+      .then(
+        () => "changed",
+        (error: unknown) => refusal(error),
+      );
+    assert(refusedOwnerChange !== "changed", "An admin changed the owner.");
+    const demoted = await membersModule.updateServerMember(owner, { memberId: alice.id, role: "member" });
+    assert(demoted.role === "member", inspect(demoted));
+    const refused = await membersModule.listServerMembers(member).then(
+      () => "listed",
+      (error: unknown) => refusal(error),
+    );
+    assert(refused === adminRequired, `After the change back the host gave: ${refused}`);
+  });
+
+  await check("The owner disables a member and enables it again", async () => {
+    const ownerPeer = ownerHeld.peer;
+    assert(ownerPeer !== null, "No owner peer.");
+    const owner = peerTeamApi(ownerPeer);
+    const alice = (await membersModule.listServerMembers(owner)).find((entry) => entry.username === "alice");
+    assert(alice !== undefined, "Alice is not listed.");
+    const disabled = await membersModule.updateServerMember(owner, { memberId: alice.id, disabled: true });
+    assert(disabled.disabled, inspect(disabled));
+    const enabled = await membersModule.updateServerMember(owner, { memberId: alice.id, disabled: false });
+    assert(!enabled.disabled && enabled.role === "member", inspect(enabled));
+  });
+
   await check("A host of another team is not in the roster and the relay refuses the dial", async () => {
     const otherIdentity = await createRelayIdentityFromText(config.otherHostText, { crypto });
     const control = await deadline(
@@ -477,6 +605,7 @@ try {
 } finally {
   for (const runtime of runtimes) runtime.stop();
   await held.peer?.dispose().catch(() => undefined);
+  await ownerHeld.peer?.dispose().catch(() => undefined);
 }
 
 writeFileSync(config.out, `${JSON.stringify({ checks, facts }, null, 2)}\n`);

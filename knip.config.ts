@@ -94,13 +94,7 @@ const config: KnipConfig = {
       project: ["src/**/*.ts", "scripts/**/*.ts"],
     },
     "apps/mobile": {
-      entry: [
-        "src/app/**/*.{ts,tsx}",
-        "plugins/**/*.{js,ts}",
-        "src/shims/*.{ts,js}",
-        "global.css",
-        "src/features/share/extension/share-sender.ts",
-      ],
+      entry: ["src/app/**/*.{ts,tsx}", "plugins/**/*.{js,ts}", "src/shims/*.{ts,js}", "global.css"],
       project: ["src/**/*.{ts,tsx}", "plugins/**/*.{js,ts}"],
       ignoreDependencies: [
         "openbot-original-react-native",

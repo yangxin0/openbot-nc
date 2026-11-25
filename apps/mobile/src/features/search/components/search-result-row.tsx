@@ -2,7 +2,6 @@ import { router } from "expo-router";
 import { Typography } from "heroui-native";
 import { useThemeColor } from "heroui-native/hooks";
 import type { LucideIcon } from "lucide-react-native";
-import Bell from "lucide-react-native/icons/bell";
 import CalendarClock from "lucide-react-native/icons/calendar-clock";
 import ChartArea from "lucide-react-native/icons/chart-area";
 import EyeOff from "lucide-react-native/icons/eye-off";
@@ -14,9 +13,7 @@ import Languages from "lucide-react-native/icons/languages";
 import LifeBuoy from "lucide-react-native/icons/life-buoy";
 import MessagesSquare from "lucide-react-native/icons/messages-square";
 import Palette from "lucide-react-native/icons/palette";
-import Radio from "lucide-react-native/icons/radio";
 import Server from "lucide-react-native/icons/server";
-import ShieldCheck from "lucide-react-native/icons/shield-check";
 import Sparkles from "lucide-react-native/icons/sparkles";
 import Trash2 from "lucide-react-native/icons/trash";
 import UserRound from "lucide-react-native/icons/user-round";
@@ -135,9 +132,6 @@ const SETTING_ICON = {
   animations: Sparkles,
   language: Languages,
   haptics: Vibrate,
-  notifications: Bell,
-  liveActivities: Radio,
-  privacy: ShieldCheck,
   conversations: MessagesSquare,
   hiddenChats: EyeOff,
   deletedChannels: Trash2,
@@ -160,11 +154,6 @@ function openSetting(id: MobileSearchSettingId, serverId: string) {
       return router.push("/settings/language");
     case "haptics":
       return router.push("/settings/haptics");
-    case "notifications":
-    case "liveActivities":
-      return router.push("/settings/notifications");
-    case "privacy":
-      return router.push("/settings/privacy");
     case "conversations":
       return router.push("/settings/conversations");
     case "hiddenChats":

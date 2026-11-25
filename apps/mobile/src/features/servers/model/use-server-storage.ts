@@ -22,19 +22,6 @@ export function useServerStorage(serverId: string) {
     query,
     async rescan(): Promise<void> {
       await queryClient.fetchQuery({ queryKey, staleTime: 0, queryFn: () => loadServerStorage(serverId, true) });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.serverDisk(queryScope, serverId) });
     },
   };
-}
-
-export function useServerDisk(serverId: string, enabled: boolean) {
-  const { loadServerDisk } = useMobileWorkspaceActions();
-  const queryScope = useQueryScope();
-  return useQuery({
-    queryKey: queryKeys.serverDisk(queryScope, serverId),
-    enabled,
-    retry: false,
-    staleTime: 0,
-    queryFn: () => loadServerDisk(serverId),
-  });
 }

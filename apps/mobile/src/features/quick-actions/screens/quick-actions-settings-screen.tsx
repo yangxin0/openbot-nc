@@ -19,7 +19,6 @@ const LABELS = {
   secondChat: "mobile.settings.quickActions.secondChat",
   schedule: "mobile.app.route.schedule",
   search: "mobile.app.quickAction.search",
-  share: "mobile.app.quickAction.share",
   support: "mobile.app.quickAction.support",
 } as const satisfies Record<QuickActionKind, MobileTextKey>;
 

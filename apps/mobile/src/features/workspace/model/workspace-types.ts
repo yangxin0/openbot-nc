@@ -1,7 +1,6 @@
 import type { AttachmentSupport } from "@openbot/contracts/attachment-files";
 import type {
   AddAgentFolderInput,
-  AddedAgent,
   AddMessagingOrchestratorResult,
   AgentAccessChange,
   AgentAccessSnapshot,
@@ -25,7 +24,6 @@ import type {
   AgentModelId,
   AgentModelOption,
   AgentNewChatSettings,
-  AgentNotificationLevelsSnapshot,
   AgentPlanCardSettings,
   AgentProviderId,
   AgentReasoningEffort,
@@ -84,7 +82,6 @@ import type {
   HostProviderAccounts,
   HostReleaseStatus,
   HostSetMessagingEnabledInput,
-  HostSignalHomeSettings,
   HostSkillLearning,
   HostTimezoneSettings,
   HostTurnLimits,
@@ -93,9 +90,7 @@ import type {
   HostUpdateStatus,
   HostVoiceModel,
   HostVoiceModelChange,
-  InstallAgentTemplateInput,
   InstalledSkill,
-  InstallMarketplaceAgentInput,
   InstallSkillInput,
   InstanceTransferPreview,
   InstanceTransferSummary,
@@ -135,10 +130,8 @@ import type {
   SaveBrowserProxyInput,
   SaveWorkflowGraphInput,
   ServerAuditLog,
-  ServerNotificationLevel,
   SetAgentDefaultChoiceInput,
   SetAgentMemoryInclusionInput,
-  SetAgentNotificationLevelInput,
   SetAgentProviderAccountInput,
   SetAgentSessionSettingInput,
   SetBrowserProfileProxyInput,
@@ -158,8 +151,8 @@ import type {
   SidebarPin,
   SignInRelayStatus,
   StartWhatsAppLinkInput,
-  StorageDisk,
   StorageUsage,
+  TeamMemberSummary,
   UninstallSkillInput,
   UpdateAgentAdminSettingsInput,
   UpdateAgentBackupModelsInput,
@@ -229,6 +222,7 @@ import type { BrowserViewBridgeEvent, RemoteBrowserViewSession } from "@/feature
 import type { MobileChannelStore } from "@/features/channels/model/channel-store";
 import type { MessageFileTarget } from "@/features/chat/model/message-file-target";
 import type { ProviderAdmin } from "@/features/servers/model/provider-admin";
+import type { ServerMemberChange } from "@/features/servers/model/server-members";
 import type { MobileConversationStore } from "./conversation-store";
 import type { LiveWorkspaceStore } from "./live-workspace-store";
 import type { PendingApproval } from "./pending-approvals";
@@ -273,7 +267,6 @@ export interface MobileServer {
   memberLimit?: number;
   hosted?: boolean;
   hidden?: true;
-  storageGb?: number;
   restartAvailable?: boolean;
   keyChangedAt?: number;
 }
@@ -388,17 +381,6 @@ export interface MobileWorkspaceContextValue {
   knownServerChecks: (serverId: string) => ServerChecks | null;
   canEditServerIdentity: (serverId: string) => boolean;
   canEditServerAppearance: (serverId: string) => boolean;
-  canSendNotifications: (serverId: string) => boolean;
-  canSetAgentNotificationLevel: (serverId: string) => boolean;
-  loadAgentNotificationLevels: (serverId: string) => Promise<AgentNotificationLevelsSnapshot>;
-  setAgentNotificationLevel: (
-    input: SetAgentNotificationLevelInput,
-    serverId: string,
-  ) => Promise<AgentNotificationLevelsSnapshot>;
-  setOwnServerNotificationLevel: (
-    level: ServerNotificationLevel | null,
-    serverId: string,
-  ) => Promise<AgentNotificationLevelsSnapshot>;
   updateServerIdentity: (
     serverId: string,
     input: { serverName?: string; logo?: AvatarImageInput | null },
@@ -422,10 +404,6 @@ export interface MobileWorkspaceContextValue {
   loadServerTurnLimits: (serverId: string) => Promise<HostTurnLimits>;
   setServerTurnLimits: (input: HostTurnLimitsInput, serverId: string) => Promise<HostTurnLimits>;
   canManageServerVoiceModel: (serverId: string) => boolean;
-  canManageServerSignalHome: (serverId: string) => boolean;
-  servesServerSignalHome: (serverId: string) => boolean;
-  loadServerSignalHome: (serverId: string) => Promise<HostSignalHomeSettings>;
-  setServerSignalHome: (home: string | null, serverId: string) => Promise<HostSignalHomeSettings>;
   loadServerVoiceModel: (serverId: string) => Promise<HostVoiceModel>;
   changeServerVoiceModel: (change: HostVoiceModelChange, serverId: string) => Promise<HostVoiceModel>;
   canManageAgentMemoryLimit: (serverId: string) => boolean;
@@ -632,9 +610,12 @@ export interface MobileWorkspaceContextValue {
   canReadMachineMetrics: (serverId: string) => boolean;
   loadMachineMetrics: (serverId: string) => Promise<MachineMetrics>;
   loadServerStorage: (serverId: string, force?: boolean) => Promise<StorageUsage>;
+  loadServerMembers: (serverId: string) => Promise<TeamMemberSummary[]>;
+  loadCurrentMember: (serverId: string) => Promise<TeamMemberSummary>;
+  updateServerMember: (change: ServerMemberChange, serverId: string) => Promise<TeamMemberSummary>;
+  removeServerMember: (memberId: string, serverId: string) => Promise<void>;
   loadLibraryFolders: (serverId: string) => Promise<LibraryFoldersSnapshot>;
   changeLibraryFolders: (action: LibraryFolderAction, serverId: string) => Promise<LibraryFoldersSnapshot>;
-  loadServerDisk: (serverId: string) => Promise<StorageDisk | null>;
   clearServerStorage: (category: ClearableStorageCategory, serverId: string) => Promise<void>;
   loadAgentAdminSettings: (agentId: string, serverId: string) => Promise<AgentAdminSettings | null>;
   updateAgentAdminSettings: (input: UpdateAgentAdminSettingsInput, serverId: string) => Promise<AgentAdminSettings>;
@@ -706,11 +687,6 @@ export interface MobileWorkspaceContextValue {
   loadAgentTemplatePreview: (agentId: string, serverId: string) => Promise<AgentTemplatePreview>;
   publishAgentTemplate: (agentId: string, serverId: string) => Promise<AgentTemplatePublication>;
   unpublishAgentTemplate: (agentId: string, serverId: string) => Promise<void>;
-  canInstallAgentTemplate: (serverId: string) => boolean;
-  installAgentTemplate: (input: InstallAgentTemplateInput, serverId: string) => Promise<AddedAgent>;
-  canAddMarketplaceAgents: (serverId: string) => boolean;
-  canUpdateMarketplaceAgents: (serverId: string) => boolean;
-  installMarketplaceAgent: (input: InstallMarketplaceAgentInput, serverId: string) => Promise<AddedAgent>;
   deleteStoredFile: (fileId: string, serverId: string) => Promise<void>;
   searchMessages: (query: string, serverId: string, cursor?: string) => Promise<ConversationSearchPage>;
   canSearchFiles: (serverId: string) => boolean;
@@ -839,7 +815,6 @@ export type MobileWorkspaceCapabilityCheck =
   | "canCompactContext"
   | "canDeleteChatHistory"
   | "canChooseNewAgentModel"
-  | "canInstallAgentTemplate"
   | "canSearchFiles"
   | "canUseTasks"
   | "canRunQueuedMessageAsTask"
@@ -857,8 +832,7 @@ export type MobileWorkspaceCapabilityCheck =
   | "canUseWorkflowAssets"
   | "canPauseWorkflows"
   | "canReadServerStorage"
-  | "canOrganizeLibrary"
-  | "canSetAgentNotificationLevel";
+  | "canOrganizeLibrary";
 
 type ServerCheckKey =
   | Exclude<MobileWorkspaceCapabilityCheck, "browserViewSupport">
@@ -871,8 +845,6 @@ type ServerCheckKey =
   | "canManageServerTimezone"
   | "canManageServerTurnLimits"
   | "canManageServerVoiceModel"
-  | "canManageServerSignalHome"
-  | "servesServerSignalHome"
   | "canReadMachineMetrics"
   | "canManageAgentMemoryLimit"
   | "canManageMemoryReview"
@@ -907,8 +879,6 @@ type ServerCheckKey =
   | "macAppsUnavailable"
   | "canEditUiBlockPreview"
   | "canManageMcpAccess"
-  | "canAddMarketplaceAgents"
-  | "canUpdateMarketplaceAgents"
   | "canManageEvents"
   | "canManageMissedRuns"
   | "canUseOnceRoutines"
@@ -955,8 +925,7 @@ type MobileWorkspaceStateKey =
   | "hidesAgentsOnServer"
   | "hiddenAgentsWorkOnServer"
   | "canUnhideAgent"
-  | "localServerKind"
-  | "canSendNotifications";
+  | "localServerKind";
 
 export type MobileWorkspaceState = Pick<MobileWorkspaceContextValue, MobileWorkspaceStateKey>;
 

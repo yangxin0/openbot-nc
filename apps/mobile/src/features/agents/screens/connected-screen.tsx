@@ -50,18 +50,10 @@ import {
 } from "@/features/agents/components/home-backdrop-card";
 import { PinnedAgentsGrid } from "@/features/agents/components/pinned-agents-grid";
 import { SidebarSectionHeader } from "@/features/agents/components/sidebar-section-header";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
-import {
-  AppUpdateBlock,
-  AppUpdateSpacer,
-  useAppUpdateHeader,
-} from "@/features/app-update/components/app-update-header";
-import { useAppUpdate } from "@/features/app-update/model/app-update";
 import { ChannelListRow } from "@/features/channels/components/channel-list";
 import { useChannels } from "@/features/channels/components/use-channels";
 import { OnboardingFlow } from "@/features/onboarding/components/onboarding-flow";
 import { useHomeOnboarding } from "@/features/onboarding/context/home-onboarding-context";
-import { useRatingAskGate } from "@/features/rating-ask/model/use-rating-ask-gate";
 import {
   HOME_SEARCH_HEIGHT,
   HomeSearchBar,
@@ -102,6 +94,7 @@ import { useAppLoadingOverlay, useScreenLoadingLabel } from "@/shared/components
 import { LargeTitleBar, useLargeTitleScroll } from "@/shared/components/large-title";
 import { type MenuAction, MenuView } from "@/shared/components/menu-view";
 import { useChromeGlass } from "@/shared/lib/chrome-glass";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { BAR_BUTTON_SIZE, NATIVE_BAR_HEIGHT, useBarTop } from "@/shared/lib/native-bar";
 import { isAndroid, isIOS } from "@/shared/lib/platform";
@@ -254,7 +247,6 @@ function applyChatDrop(workspace: MobileWorkspaceActions, serverId: string, chan
     const text = currentText();
     showFailureAlert(
       error,
-      "turn",
       text.t("mobile.agent.section.moveFailed"),
       text.errorMessage(error, text.t("mobile.agent.section.tryAgain")),
     );
@@ -436,7 +428,6 @@ export function ConnectedScreen({ variant = "screen" }: { variant?: "screen" | "
       .catch((error: unknown) =>
         showFailureAlert(
           error,
-          "settings",
           currentText().t("mobile.workspace.alert.markAllReadTitle"),
           currentText().t("mobile.workspace.alert.markAllReadBody"),
         ),
@@ -533,18 +524,14 @@ export function ConnectedScreen({ variant = "screen" }: { variant?: "screen" | "
   };
   const sceneShows = listReady && showAgentsScene;
   const searchShows = listReady && hasSelectedServer && !onboarding.active && !sceneShows;
-  const appUpdate = useAppUpdate();
-  const updateHeader = useAppUpdateHeader(searchShows ? appUpdate : null);
-  useRatingAskGate(!pane && searchShows && !search.open && !updateHeader.shown);
   const { open: searchOpen, closeSearch } = search;
   useEffect(() => {
     if (!searchShows && searchOpen) closeSearch();
   }, [searchShows, searchOpen, closeSearch]);
-  const updateExpanded = updateHeader.expanded;
   useEffect(() => {
-    setHomeSearchUnavailable(listReady && (!searchShows || updateExpanded));
+    setHomeSearchUnavailable(listReady && !searchShows);
     return () => setHomeSearchUnavailable(false);
-  }, [listReady, searchShows, updateExpanded]);
+  }, [listReady, searchShows]);
   const finishGate = onboarding.finish;
   const finishOnboarding = useCallback(
     (welcome?: WelcomeHandOff) => {
@@ -935,7 +922,6 @@ export function ConnectedScreen({ variant = "screen" }: { variant?: "screen" | "
                 ListHeaderComponent={
                   <View onLayout={(event) => layoutStage(event.nativeEvent.layout.height)}>
                     <AgentListRowReveal index={0} reveal={listReveal}>
-                      {hasSelectedServer ? <AppUpdateSpacer header={updateHeader} headerHeight={headerHeight} /> : null}
                       {sidebar?.error ? (
                         <View className="gap-2 px-4">
                           <Typography.Paragraph className="text-danger-text">
@@ -956,7 +942,6 @@ export function ConnectedScreen({ variant = "screen" }: { variant?: "screen" | "
                     </AgentListRowReveal>
                     <PinnedAgentsGrid
                       agents={pinnedAgents}
-                      animateLayout={!updateHeader.moving}
                       dropZone={dragging && !hasPins}
                       reveal={listReveal}
                       revealOffset={1}
@@ -1051,14 +1036,12 @@ export function ConnectedScreen({ variant = "screen" }: { variant?: "screen" | "
       </AndroidBlurTarget>
 
       {onboarding.active ? null : (
-        <LargeTitleBar scroll={scroll} blurTarget={barBlurTarget} androidSurfaceOnScroll={homeCard}>
-          <AppUpdateBlock header={updateHeader} scroll={scroll} hidden={search.open} />
-        </LargeTitleBar>
+        <LargeTitleBar scroll={scroll} blurTarget={barBlurTarget} androidSurfaceOnScroll={homeCard} />
       )}
 
       {searchShows ? <HomeSearchResults search={search} barHeight={searchBarOffset} /> : null}
 
-      {searchShows && !updateHeader.expanded ? <HomeSearchBar search={search} /> : null}
+      {searchShows ? <HomeSearchBar search={search} /> : null}
 
       {onboardingReady ? (
         <Animated.View exiting={ONBOARDING_EXIT} style={StyleSheet.absoluteFill}>

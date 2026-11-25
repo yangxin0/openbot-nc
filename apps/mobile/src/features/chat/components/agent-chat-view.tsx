@@ -3,7 +3,6 @@ import type { RespondToPromptInput } from "@openbot/contracts/ipc";
 import { router, useIsFocused } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useAgentSteers } from "@/features/agents/model/use-agent-steers";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import { useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { useBrowserFeature } from "@/features/browser/components/use-browser-feature";
 import { ChatChannelWorkRow } from "@/features/channels/components/chat-channel-work-row";
@@ -27,6 +26,7 @@ import { openTurnActivity } from "@/features/workspace/model/agent-activity";
 import { sameAgentsApartFromMessage } from "@/features/workspace/model/directory-agents";
 import { showsOnline } from "@/features/workspace/model/server-status";
 import { hostAwaitsQuestion } from "@/features/workspace/model/thread-waits";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { currentText, useText } from "@/shared/lib/text";
 import {
   chatRowIndex,
@@ -361,7 +361,6 @@ export function MobileChatView({
         const text = currentText();
         showFailureAlert(
           error,
-          "settings",
           text.t("mobile.workspace.alert.markUnreadTitle"),
           text.t("mobile.workspace.alert.markUnreadBody"),
         );

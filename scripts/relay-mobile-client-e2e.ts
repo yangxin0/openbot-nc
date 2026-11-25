@@ -459,6 +459,7 @@ try {
 
   const hostBundle = issue(environment, TEAM, HOST_USER, HOST_DEVICE);
   const phoneBundle = issue(environment, TEAM, "alice", "phone");
+  const ownerPhoneBundle = issue(environment, TEAM, HOST_USER, "owner-phone");
   const otherHostBundle = issue(environment, OTHER_TEAM, "eve", HOST_DEVICE);
   const serverTls = {
     cert: readFileSync(join(dataDirectory, "tls/server.crt"), "utf8"),
@@ -543,6 +544,7 @@ try {
     configPath,
     JSON.stringify({
       phoneText: JSON.stringify(phoneBundle),
+      ownerText: JSON.stringify(ownerPhoneBundle),
       wrongKeyText: JSON.stringify({ ...phoneBundle, privateKey: otherHostBundle.privateKey }),
       otherHostText: JSON.stringify(otherHostBundle),
       otherHostKeyId: keyIdOf(otherHostBundle.certificate),

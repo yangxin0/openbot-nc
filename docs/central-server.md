@@ -308,6 +308,48 @@ document of the extension while the side panel is closed. Settings in the server
 identity and remove it. The extension has no X posting: the X agent came from the agent
 marketplace.
 
+## Phone app
+
+The phone app OpenBot-NC (`apps/mobile`, iOS bundle identifier and Android package
+`app.openbotnc.mobile`, URL scheme `openbot-nc`) connects only to the central server that its
+identity file names. It sends no analytics, gets no push notifications and no over-the-air updates,
+and uses no other server. A developer builds it with their own Apple team and Android signing key.
+
+1. Issue an identity for the phone only, for example
+   `bun remote/api/src/relay/main.ts ca issue --team Acme --user alice --device phone --out alice-phone.json`.
+   Two connections with the same certificate disconnect each other, so do not use the identity of
+   the person's desktop, web client or extension.
+2. Send the file to the phone. In the app, paste the text of the identity file or choose the file.
+   The app keeps the identity in the keychain of the phone (this device only).
+3. An owner or admin of a server sees Server settings > Members: the members of the team that
+   connected to that server, with their roles. They change the role of a member between member and
+   admin, give roles to a member when the server has roles, disable a member, or remove a member. A
+   removed member with a valid certificate joins again as a member; disable the member or revoke the
+   certificate to keep them out.
+
+Build the app on a Mac with Xcode and Android Studio (the developer runs these commands; the
+repository does not run them):
+
+```sh
+bun install
+cd apps/mobile
+bunx expo prebuild --clean
+bunx expo run:ios --device --configuration Release
+bunx expo run:android --variant release
+```
+
+- iOS: set your Apple team ID as `ios.appleTeamId` in `apps/mobile/app.json` before `expo prebuild`
+  (the repository leaves it unset), or select the team for the app target and the
+  `expo-sharing-extension` target in the workspace that `expo prebuild` makes in `apps/mobile/ios/`.
+  Register the bundle identifiers `app.openbotnc.mobile` and
+  `app.openbotnc.mobile.ShareExtension` and the App Group `group.app.openbotnc.mobile` in your
+  Apple Developer account, or change them in `app.json` to identifiers of your team.
+- Android: `expo run:android --variant release` signs with the debug key of the generated project.
+  For your own key, put it in `apps/mobile/android/app/build.gradle` (`signingConfigs.release`)
+  after `expo prebuild`, or build with your own EAS account: `bunx eas-cli init`, then
+  `bunx eas-cli build --platform android --profile production --local`. `eas.json` has no project
+  of the original vendor.
+
 ## Test
 
 ```sh

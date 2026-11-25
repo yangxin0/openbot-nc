@@ -28,27 +28,29 @@ const SCOPES = [
   "scripts/hosting",
   "remote",
   "apps/browser-extension",
+  "apps/mobile",
 ];
+const EXCLUDED = [":(glob,exclude)apps/mobile/**/*.md"];
 const VENDOR = /openbot\.run|nightly-labs|openpanel/giu;
 
 const IGNORED_SPELLINGS: readonly IgnoredSpelling[] = [
   { text: "openPanel", reason: "camelCase identifiers for the verb phrase open panel, such as openPanelThread" },
 ];
 
-const MOBILE_AND_ACCOUNT_SERVICE =
-  "apps/mobile or apps/auth-api still import it; no desktop code calls its vendor URL builders. Deleted with those apps.";
+const ACCOUNT_SERVICE =
+  "apps/auth-api still imports it; no desktop or phone code calls its vendor URL builders. Deleted with that app.";
 const SIGNAL_SERVICE =
   "deployment of the vendor Signal service for WebRTC peers; deleted with WebRTC and the vendor infrastructure.";
 const HOSTED_SERVER_OPERATIONS =
   "vendor hosted-server pool operations for apps/auth-api; deleted with the vendor infrastructure.";
 
 const ALLOWED_PATHS: readonly AllowedPath[] = [
-  { path: "packages/contracts/src/invite-links.ts", reason: MOBILE_AND_ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/plugin-links.ts", reason: MOBILE_AND_ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/marketplace-links.ts", reason: MOBILE_AND_ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/agent-template-links.ts", reason: MOBILE_AND_ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/feedback.ts", reason: MOBILE_AND_ACCOUNT_SERVICE },
-  { path: "packages/contracts/src/hosted-servers.ts", reason: MOBILE_AND_ACCOUNT_SERVICE },
+  { path: "packages/contracts/src/invite-links.ts", reason: ACCOUNT_SERVICE },
+  { path: "packages/contracts/src/plugin-links.ts", reason: ACCOUNT_SERVICE },
+  { path: "packages/contracts/src/marketplace-links.ts", reason: ACCOUNT_SERVICE },
+  { path: "packages/contracts/src/agent-template-links.ts", reason: ACCOUNT_SERVICE },
+  { path: "packages/contracts/src/feedback.ts", reason: ACCOUNT_SERVICE },
+  { path: "packages/contracts/src/hosted-servers.ts", reason: ACCOUNT_SERVICE },
   {
     path: "packages/contracts/src/ipc-agent-import.ts",
     reason: "HERMES_SKILL_COMMAND is shown only by the apps/mobile import guide; the desktop guide does not show it.",
@@ -56,18 +58,6 @@ const ALLOWED_PATHS: readonly AllowedPath[] = [
   {
     path: "packages/i18n/src/messages/*/mobile/server.ts",
     reason: "apps/mobile catalog; the desktop does not render these keys.",
-  },
-  {
-    path: "packages/telemetry/src/**",
-    reason: "analytics transport of apps/mobile only; the desktop and the browser extension send no analytics.",
-  },
-  {
-    path: "packages/logging/src/identifiers.ts",
-    reason: "maskIdentifiers is called only by the apps/mobile support log, which keeps vendor hosts readable.",
-  },
-  {
-    path: "packages/logging/src/identifiers.test.ts",
-    reason: "redaction test of maskIdentifiers for the apps/mobile support log.",
   },
   {
     path: "packages/ui/src/features/social-follow/social-networks.ts",
@@ -114,7 +104,7 @@ const allowed = ALLOWED_PATHS.map((entry) => ({ ...entry, expression: globExpres
 function scopedFiles(): string[] {
   const output = execFileSync(
     "git",
-    ["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", ...SCOPES],
+    ["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", ...SCOPES, ...EXCLUDED],
     { cwd: ROOT, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 },
   );
   return [...new Set(output.split("\0").filter(Boolean))].sort();

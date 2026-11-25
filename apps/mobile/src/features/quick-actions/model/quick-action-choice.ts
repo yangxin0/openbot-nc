@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import * as LockedKeychain from "@/shared/lib/locked-keychain";
 
-export const QUICK_ACTION_KINDS = ["latestChat", "secondChat", "schedule", "search", "share", "support"] as const;
+export const QUICK_ACTION_KINDS = ["latestChat", "secondChat", "schedule", "search", "support"] as const;
 export type QuickActionKind = (typeof QUICK_ACTION_KINDS)[number];
 
 export const QUICK_ACTION_LIMIT = 4;

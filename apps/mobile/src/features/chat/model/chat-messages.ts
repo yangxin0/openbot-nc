@@ -41,8 +41,7 @@ import {
 } from "@openbot/contracts/ipc";
 import type { ConversationUiBlock } from "@openbot/contracts/ui-blocks";
 import type { MobileTextKey } from "@openbot/i18n/mobile";
-import { MOBILE_PLUGINS } from "@/features/marketplace/model/plugin-catalog.generated";
-import { isMobileConnectorId } from "@/features/servers/model/connectors";
+import { isMobileConnectorId, type MobileConnectorId } from "@/features/servers/model/connectors";
 import { thinkingRowId } from "./turn-thinking";
 
 export type RoutineMarkerEvent = RoutineConversationEventAction | RoutineRunStatus;
@@ -68,7 +67,7 @@ export type ChatMessage =
       standalone: boolean;
     }
   | { id: string; kind: "context-reset" }
-  | { id: string; kind: "app-suggestion"; appId: string }
+  | { id: string; kind: "app-suggestion"; appId: MobileConnectorId }
   | { id: string; kind: "mcp-sign-in"; mcpServerId: string }
   | {
       id: string;
@@ -260,10 +259,9 @@ function progressBubble(id: string, message: ConversationMessage): Extract<ChatM
 const projectedSuggestions = new WeakMap<ConversationMessage, ChatMessage>();
 const projectedSignIns = new WeakMap<ConversationMessage, ChatMessage>();
 
-function suggestedApp(message: ConversationMessage): string | null {
+function suggestedApp(message: ConversationMessage): MobileConnectorId | null {
   const appId = marketplaceSuggestionEvent(message)?.appId;
-  if (!appId) return null;
-  return isMobileConnectorId(appId) || MOBILE_PLUGINS.some((plugin) => plugin.slug === appId) ? appId : null;
+  return appId && isMobileConnectorId(appId) ? appId : null;
 }
 
 function settingLinkMessage(message: ConversationMessage): boolean {

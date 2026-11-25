@@ -21,7 +21,6 @@ coverage/
 *.key
 *.p12
 *.pem
-!apps/mobile/certs/certificate.pem
 .idea/
 **/.vscode/*
 !/.vscode/settings.json

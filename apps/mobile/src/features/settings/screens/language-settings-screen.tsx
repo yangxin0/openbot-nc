@@ -6,16 +6,14 @@ import { SettingsContent, SettingsRow, SettingsSection } from "@/features/settin
 import { SettingsPicker } from "@/features/settings/components/settings-controls";
 import { saveAppLanguage, useAppLanguage } from "@/features/settings/model/app-language";
 import { offerLayoutRestart } from "@/features/settings/model/layout-direction";
-import { useBloubColors } from "@/shared/components/bloub-stage/bloub-look";
 import { haptics } from "@/shared/lib/haptics";
 import { useText } from "@/shared/lib/text";
 
 function AppLanguageSection({ dark }: { dark: boolean }) {
   const { t } = useText();
   const language = useAppLanguage();
-  const colors = useBloubColors();
   const [error, setError] = useState<string | null>(null);
-  const offerRestart = () => offerLayoutRestart(colors.dark ? colors.dimBody : colors.body, setError);
+  const offerRestart = () => offerLayoutRestart(setError);
   return (
     <SettingsSection footer={error ?? t("mobile.settings.language.footer")}>
       <SettingsRow

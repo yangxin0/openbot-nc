@@ -19,19 +19,9 @@ const nativeModuleShims = new Map([
 const BLOUB_ASSETS = "@norbert_bodziony/bloub/assets/";
 const bloubAssetFolder = path.join(path.dirname(require.resolve("@norbert_bodziony/bloub")), "assets");
 
-const TOPIC_SUBSCRIPTION_SHIM = path.resolve(__dirname, "src/shims/expo-notifications-topic-subscription.ts");
-const EXPO_NOTIFICATIONS_BUILD = path.join("node_modules", "expo-notifications", "build");
-
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   const shim = nativeModuleShims.get(moduleName);
   if (shim) return { filePath: shim, type: "sourceFile" };
-  if (
-    platform === "android" &&
-    moduleName === "./TopicSubscriptionModule" &&
-    path.dirname(context.originModulePath).endsWith(EXPO_NOTIFICATIONS_BUILD)
-  ) {
-    return { filePath: TOPIC_SUBSCRIPTION_SHIM, type: "sourceFile" };
-  }
   if (moduleName.startsWith(BLOUB_ASSETS)) {
     return context.resolveRequest(
       context,

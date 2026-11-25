@@ -1,33 +1,4 @@
 import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/mobile/link";
 
-export const messages = {
-  "mobile.link.plugin.title": "فتح صفحة الإضافة",
-  "mobile.link.plugin.description": "اعرض هذه الإضافة على موقع OpenBot.",
-  "mobile.link.plugin.openFailed": "تعذّر فتح صفحة الإضافة.",
-  "mobile.link.plugin.view": "عرض الإضافة",
-  "mobile.link.unavailable.title": "الرابط غير متاح",
-  "mobile.link.unavailable.description": "هذا الرابط غير صالح، أو لم يعد متاحًا، أو غير مدعوم على الهاتف.",
-  "mobile.link.template.loading": "جارٍ تحميل الوكيل…",
-  "mobile.link.template.creator": "بواسطة {name}",
-  "mobile.link.template.section.instructions": "التعليمات",
-  "mobile.link.template.section.skills": "المهارات",
-  "mobile.link.template.section.noSkills": "لا توجد مهارات.",
-  "mobile.link.template.section.routines": "المهام الدورية",
-  "mobile.link.template.section.noRoutines": "لا توجد مهام دورية.",
-  "mobile.link.template.skill.local": "مهارة محلية (SKILL.md فقط)",
-  "mobile.link.template.skill.marketplace": "مهارة من المتجر، الإصدار {version}",
-  "mobile.link.template.server.title": "إضافة إلى خادم",
-  "mobile.link.template.server.footer": "تظهر فقط الخوادم التي أنت مالكها أو مسؤول فيها.",
-  "mobile.link.template.server.updateRequired": "حدّث OpenBot على هذا الخادم لإضافة وكلاء مشتركين.",
-  "mobile.link.template.server.none": "يجب أن تكون مالكًا لخادم أو مسؤولًا فيه لإضافة وكيل مشترك.",
-  "mobile.link.template.install.action": "إضافة الوكيل",
-  "mobile.link.template.install.pending": "جارٍ الإضافة…",
-  "mobile.link.template.install.failed": "تعذّرت إضافة الوكيل.",
-  "mobile.link.template.notFound.title": "الوكيل غير موجود",
-  "mobile.link.template.notFound.description": "هذا الوكيل المشترك غير موجود، أو ألغى منشئه نشره.",
-  "mobile.link.template.error.title": "تعذّر تحميل الوكيل",
-  "mobile.link.template.error.loadFailed": "تعذّرت قراءة الوكيل المشترك. أعد المحاولة.",
-  "mobile.link.template.error.unsupported":
-    "لا يمكن لهذا الخادم إضافة وكلاء مشتركين. حدّث OpenBot على الحاسوب الذي يشغّل الخادم.",
-} as const satisfies PartialTranslation<typeof source>;
+export const messages = {} as const satisfies PartialTranslation<typeof source>;

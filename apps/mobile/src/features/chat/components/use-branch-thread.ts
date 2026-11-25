@@ -3,7 +3,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import * as Crypto from "expo-crypto";
 import { router } from "expo-router";
 import { useCallback, useMemo, useRef } from "react";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import { useQueryScope } from "@/features/auth/context/mobile-session-context";
 import { useAgentViewOnly } from "@/features/servers/model/use-server-roles";
 import {
@@ -11,6 +10,7 @@ import {
   useMobileWorkspaceSelector,
 } from "@/features/workspace/context/mobile-workspace-context";
 import { addStartedTask } from "@/features/workspace/model/task-cache";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { currentText } from "@/shared/lib/text";
 import { branchPointIds } from "../model/branch-points";
@@ -72,7 +72,7 @@ export function useBranchThread({
         void haptics.notification("error");
         const text = currentText();
         const title = text.t("mobile.chat.message.branchFailed");
-        showFailureAlert(cause, "team", title, text.errorMessage(cause, title));
+        showFailureAlert(cause, title, text.errorMessage(cause, title));
       } finally {
         pending.current = false;
       }

@@ -33,7 +33,6 @@ import {
 } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { BloubAvatarThumbnail } from "@/features/agents/components/bloub-avatar";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import { ChatLinkIcon } from "@/features/chat/components/chat-link-icon";
 import { ChatHorizontalScrollView } from "@/features/chat/components/chat-swipe-gesture";
 import {
@@ -43,6 +42,7 @@ import {
 } from "@/features/chat/components/streaming-tail-text";
 import { PLAIN_BUBBLE_SHARE } from "@/features/settings/model/message-color";
 import type { MobileAgent } from "@/features/workspace/model/workspace-types";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { useFontScale } from "@/shared/lib/font-scale";
 import { graphemes } from "@/shared/lib/graphemes";
 import { haptics } from "@/shared/lib/haptics";
@@ -498,12 +498,7 @@ function openMessageLink(url: string): void {
   void Linking.openURL(url).catch((error: unknown) => {
     void haptics.notification("error");
     const { t } = currentText();
-    showFailureAlert(
-      error,
-      "browser",
-      t("mobile.chat.markdown.linkFailedTitle"),
-      t("mobile.chat.markdown.linkFailedMessage"),
-    );
+    showFailureAlert(error, t("mobile.chat.markdown.linkFailedTitle"), t("mobile.chat.markdown.linkFailedMessage"));
   });
 }
 

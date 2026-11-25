@@ -1,10 +1,9 @@
 import type { MobileTextKey } from "@openbot/i18n/mobile";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Button, Typography } from "heroui-native";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import Animated, { LayoutAnimationConfig } from "react-native-reanimated";
-import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
 import { useMobileSession, useQueryScope } from "@/features/auth/context/mobile-session-context";
 import { useChannels } from "@/features/channels/components/use-channels";
 import { MobileSearchResultRow } from "@/features/search/components/search-result-row";
@@ -21,7 +20,6 @@ import { queryKeys } from "@/features/workspace/model/query-keys";
 import { BlurEnter, BlurSwap, swapItemMotion } from "@/shared/components/blur-swap";
 import { haptics } from "@/shared/lib/haptics";
 import { useTransitionMode } from "@/shared/lib/motion";
-import { isIOS } from "@/shared/lib/platform";
 import { useText } from "@/shared/lib/text";
 import { typeScale } from "@/shared/lib/type-scale";
 
@@ -57,19 +55,13 @@ function useSearchSettings(channelsSupported: boolean): MobileSearchSetting[] {
       { id: "language", title: t("mobile.settings.language.title"), detail: app },
       { id: "haptics", title: t("mobile.settings.feedback.haptics"), detail: app },
     ];
-    if (isIOS)
-      pages.push(
-        { id: "notifications", title: t("mobile.settings.notifications.title"), detail: app },
-        { id: "liveActivities", title: t("mobile.settings.liveActivities.title"), detail: app },
-      );
     pages.push(
-      { id: "privacy", title: t("mobile.settings.privacy.title"), detail: app },
       { id: "conversations", title: t("mobile.settings.conversations.title"), detail: app },
       { id: "hiddenChats", title: t("mobile.settings.conversations.hiddenChats"), detail: app },
       ...(channelsSupported
         ? [{ id: "deletedChannels" as const, title: t("mobile.app.route.deletedChannels"), detail: serverName }]
         : []),
-      { id: "support", title: t("mobile.settings.home.support"), detail: app },
+      { id: "support", title: t("mobile.settings.support.log"), detail: app },
       { id: "about", title: t("mobile.settings.home.about"), detail: app },
       { id: "serverOptions", title: t("mobile.app.route.serverOptions"), detail: serverName },
       { id: "serverRoutines", title: t("mobile.app.route.schedule"), detail: serverName },
@@ -261,7 +253,6 @@ export function MobileSearchResults({
     void haptics.selection();
     setFilter(next);
   };
-  const resultCount = view.sections.reduce((count, section) => count + section.results.length, 0);
   const item = swapItemMotion(motion);
   const showsIdle = filter === "all" && !normalizeMobileSearchQuery(query);
   const footer =
@@ -274,20 +265,6 @@ export function MobileSearchResults({
           : view.canLoadMore
             ? "more"
             : "none";
-
-  const searchSummary = useRef({ used: false, count: 0 });
-  if (query.trim()) searchSummary.current = { used: true, count: resultCount };
-  useEffect(() => {
-    const scope = mobileAnalytics.scope();
-    return () => {
-      if (searchSummary.current.used)
-        scope.track("search_action", {
-          scope: "global",
-          result: "succeeded",
-          result_count: searchSummary.current.count,
-        });
-    };
-  }, []);
 
   return (
     <>

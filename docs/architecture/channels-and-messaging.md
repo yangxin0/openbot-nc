@@ -125,12 +125,8 @@ does not learn about these. It makes the APNs alert itself, with "OpenBot" as th
 `mutable-content`, the sound, and the sealed bytes. It stores and logs nothing. A `410` answer, from
 the Worker or Apple, removes the registration.
 
-The Notification Service Extension of the app (`apps/mobile/plugins/with-notification-service.js`,
-`NotificationService.swift`) opens the seal with the keys that the app writes into the App Group
-file `push-notifications.json`, and shows the agent name and the text. It refuses content that names
-another server than the one whose keys open it. A notification that it cannot open keeps the app
-name only. A tap opens the conversation of the thread that the notification names: the channel of a
-channel thread, a side thread of the agent, or else the chat of the agent.
+The OpenBot-NC phone app has no push notifications and no Notification Service Extension: it does
+not register a device token, so a host sends it nothing.
 
 ### Side thread notifications
 

@@ -3,7 +3,7 @@ import { MOBILE_ATTACHMENT_BYTES } from "@openbot/team-client/remote-peer";
 import { requireNativeView, requireOptionalNativeModule } from "expo";
 import type { ReactNode } from "react";
 import type { NativeSyntheticEvent, ViewProps } from "react-native";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { currentText } from "@/shared/lib/text";
 import { type ComposerFile, deleteComposerFiles } from "../model/composer-requests";
@@ -47,12 +47,7 @@ export function addPastedFiles(attachments: ChatAttachments | undefined, { files
       if (failed === 0) return;
       void haptics.notification("error");
       const { t } = currentText();
-      showFailureAlert(
-        undefined,
-        "turn",
-        t("mobile.chat.attachment.addFailed"),
-        t("mobile.chat.attachment.unavailable"),
-      );
+      showFailureAlert(undefined, t("mobile.chat.attachment.addFailed"), t("mobile.chat.attachment.unavailable"));
     });
 }
 

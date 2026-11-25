@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.description    = 'Reads and selects the alternate app icon that the user selects in Settings.'
   s.license        = 'PolyForm-Noncommercial-1.0.0'
   s.author         = 'OpenBot'
-  s.homepage       = 'https://openbot.run'
+  s.homepage       = ''
   s.platforms      = { :ios => '16.4' }
   s.swift_version  = '5.9'
   s.source         = { git: '' }

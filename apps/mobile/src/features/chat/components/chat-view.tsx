@@ -3,7 +3,6 @@ import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type { ConversationMessage } from "@openbot/contracts/ipc";
 import { markdownPlainText } from "@openbot/contracts/markdown-preview-text";
 import { serializeSelectionInstruction } from "@openbot/contracts/selection-instruction";
-import { type CauseCode, classifyFailure, type FailureProperties } from "@openbot/telemetry";
 import { useQueryClient } from "@tanstack/react-query";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { router, useIsFocused } from "expo-router";
@@ -19,9 +18,6 @@ import { KeyboardGestureArea } from "react-native-keyboard-controller";
 import Animated, { useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { scheduleOnRN } from "react-native-worklets";
-import { MobileConversationAnalytics } from "@/features/analytics/conversation";
-import { reportMobileNotification } from "@/features/analytics/failure-reports";
-import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
 import { useBrowserFeature } from "@/features/browser/components/use-browser-feature";
 import { channelRecipient } from "@/features/channels/model/channel-draft";
 import type { ApprovalDecision } from "@/features/chat/components/chat-approval-card";
@@ -311,7 +307,6 @@ export function ChatView({
   }, [target, chatBrowserRequests, channelLeadAgentId]);
   const isFocused = useIsFocused();
   const foregroundVisit = useAppForeground();
-  const [conversationAnalytics] = useState(() => new MobileConversationAnalytics(mobileAnalytics));
   const appActive = useAppActive();
   const reducedTransparency = useReducedTransparency();
   const server = useMobileWorkspaceSelector((current) => current.servers.find((item) => item.id === target.serverId));
@@ -349,20 +344,8 @@ export function ChatView({
   const [sendError, setSendError] = useState<{
     agentId: string;
     message: string;
-    cause: CauseCode;
-    context: Partial<Pick<FailureProperties, "provider" | "model">>;
   } | null>(null);
   const failureAgent = target.kind === "agent" ? serverAgents.find((agent) => agent.id === target.id) : undefined;
-  const failureContext = useMemo(
-    () => (failureAgent ? { provider: failureAgent.provider, model: failureAgent.model } : {}),
-    [failureAgent],
-  );
-  const reportedError = useRef<typeof sendError>(null);
-  useEffect(() => {
-    if (!isFocused || !sendError || sendError.agentId !== target.id || reportedError.current === sendError) return;
-    reportedError.current = sendError;
-    reportMobileNotification({ code: sendError.cause }, "turn", "banner", sendError.context);
-  }, [isFocused, sendError, target.id]);
   const [sendRetryVersion, setSendRetryVersion] = useState(0);
   const queryClient = useQueryClient();
   const [skillPickerVersion, setSkillPickerVersion] = useState(0);
@@ -758,21 +741,6 @@ export function ChatView({
   );
   const palette = useMemo(() => voicePalette(voiceColors, dark), [voiceColors, dark]);
   const accent = useMemo(() => voiceAccent(palette), [palette]);
-  useEffect(() => {
-    conversationAnalytics.update(
-      isFocused && foregroundVisit,
-      ready,
-      historyLoadFailed || (!serverOnline && server?.initialConnectionPending === false),
-    );
-  }, [
-    conversationAnalytics,
-    isFocused,
-    foregroundVisit,
-    ready,
-    historyLoadFailed,
-    serverOnline,
-    server?.initialConnectionPending,
-  ]);
 
   const seesLatest = !detached && (atLatest || (motion.historyVisible && !motion.userScrolled));
   useEffect(() => {
@@ -866,14 +834,12 @@ export function ChatView({
         void haptics.notification("error");
         setStoppingTurnId((current) => (current === turnId ? null : current));
         setSendError({
-          cause: classifyFailure(error),
-          context: failureContext,
           agentId: target.id,
           message: errorMessage(error, t("mobile.chat.composer.stopFailed")),
         });
       });
     };
-  }, [stopTurn, activeTurnId, target.id, errorMessage, t, failureContext]);
+  }, [stopTurn, activeTurnId, target.id, errorMessage, t]);
 
   function sendMessage(value: string): void {
     if (!canSend) return;
@@ -884,8 +850,6 @@ export function ChatView({
       const message = t("mobile.chat.attachment.limit", { limit: INPUT_LIMITS.attachments });
       void haptics.notification("error");
       setSendError({
-        cause: classifyFailure(new Error(message)),
-        context: failureContext,
         agentId: target.id,
         message,
       });
@@ -981,8 +945,6 @@ export function ChatView({
     } catch (error) {
       void haptics.notification("error");
       setSendError({
-        cause: classifyFailure(error),
-        context: failureContext,
         agentId: target.id,
         message: errorMessage(error, t("mobile.chat.outbox.editFailed")),
       });

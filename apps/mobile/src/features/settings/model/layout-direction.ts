@@ -1,5 +1,5 @@
 import { localeDirection } from "@openbot/i18n/mobile";
-import * as Updates from "expo-updates";
+import { reloadAppAsync } from "expo";
 import { Alert, DevSettings, I18nManager } from "react-native";
 import { currentLocale, currentText } from "@/shared/lib/text";
 
@@ -10,17 +10,15 @@ function syncLayoutDirection(): boolean {
   return rightToLeft !== I18nManager.isRTL;
 }
 
-async function restartApp(backgroundColor: string): Promise<void> {
+async function restartApp(): Promise<void> {
   if (__DEV__) {
     DevSettings.reload();
     return;
   }
-  await Updates.reloadAsync({
-    reloadScreenOptions: { backgroundColor, fade: true, spinner: { enabled: false } },
-  });
+  await reloadAppAsync();
 }
 
-export function offerLayoutRestart(backgroundColor: string, onRestartFailed: (message: string) => void): void {
+export function offerLayoutRestart(onRestartFailed: (message: string) => void): void {
   if (!syncLayoutDirection()) return;
   const text = currentText();
   Alert.alert(text.t("mobile.settings.language.restartTitle"), text.t("mobile.settings.language.restartBody"), [
@@ -28,7 +26,7 @@ export function offerLayoutRestart(backgroundColor: string, onRestartFailed: (me
     {
       text: text.t("mobile.settings.language.restartNow"),
       onPress: () => {
-        void restartApp(backgroundColor).catch(() => {
+        void restartApp().catch(() => {
           onRestartFailed(text.t("mobile.settings.language.restartFailed"));
         });
       },

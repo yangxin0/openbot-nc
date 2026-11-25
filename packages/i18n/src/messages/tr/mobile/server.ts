@@ -301,8 +301,6 @@ export const messages = {
     "Saat dilimini değiştirmek için bu sunucuya sahip veya yönetici olarak bağlanın.",
   "mobile.server.settings.timezoneUnsupported":
     "Saat dilimini burada değiştirmek için bu sunucudaki OpenBot'u güncelleyin.",
-  "mobile.server.settings.signalHomeUnsupported":
-    "Signal sunucusunu buradan değiştirmek için bu sunucudaki OpenBot'u güncelleyin.",
   "mobile.server.settings.voiceModelDescription":
     "Bu sunucudaki ajanlar, altyazısı olmayan videoların sesini yazıya dökmek için bu modeli kullanır.",
   "mobile.server.settings.voiceModelLoading": "Konuşma tanıma yükleniyor…",
@@ -1520,4 +1518,23 @@ export const messages = {
     "Ajanları kopyalamak için başka bir sunucuya sahip veya yönetici olarak bağlanın.",
   "mobile.server.providers.updateAll": "Tümünü güncelle",
   "mobile.server.providers.updateAllFailed": "Bazı güncellemeler başlamadı. Tekrar deneyin.",
+  "mobile.server.settings.members": "Üyeler",
+  "mobile.server.route.member": "Üye",
+  "mobile.server.members.remove": "Üyeyi kaldır",
+  "mobile.server.members.role": "Rol",
+  "mobile.server.members.updateFailed": "Bu üye güncellenemedi. Tekrar deneyin.",
+  "mobile.server.members.loadFailed": "Üyeler yüklenemedi. Yenileyip tekrar deneyin.",
+  "mobile.server.members.empty": "Üye yok.",
+  "mobile.server.members.loading": "Üyeler yükleniyor…",
+  "mobile.server.members.rowLabel": "{name}, {role}",
+  "mobile.server.members.you": "{name} (siz)",
+  "mobile.server.members.gone": "Bu kişi artık bu sunucunun üyesi değil.",
+  "mobile.server.members.ownerHint": "Sahip bu sunucuya tam erişime sahiptir. Sahibin rolü değiştirilemez.",
+  "mobile.server.members.joined": "Katıldı",
+  "mobile.server.members.removeTitle": "{name} kaldırılsın mı?",
+  "mobile.server.roles.memberHint": "Bir üye, Herkes ve kendi rolleri arasındaki en yüksek erişimi alır.",
+  "mobile.server.roles.memberEmpty": "Bu sunucuda rol yok.",
+  "mobile.server.roles.memberTitle": "{name} rolleri",
+  "mobile.server.roles.memberNone": "Rol yok",
+  "mobile.server.roles.memberAdmin": "Sahipler ve yöneticiler tüm ajanları kullanabilir.",
 } as const satisfies PartialTranslation<typeof source>;

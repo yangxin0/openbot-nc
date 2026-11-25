@@ -305,8 +305,6 @@ export const messages = {
     "Connectez-vous à ce serveur en tant que propriétaire ou admin pour changer son fuseau horaire.",
   "mobile.server.settings.timezoneUnsupported":
     "Mettez à jour OpenBot sur ce serveur pour changer son fuseau horaire ici.",
-  "mobile.server.settings.signalHomeUnsupported":
-    "Mettez à jour OpenBot sur ce serveur pour changer ici son serveur Signal.",
   "mobile.server.settings.voiceModelDescription":
     "Les agents de ce serveur utilisent ce modèle pour transcrire le son des vidéos sans sous-titres.",
   "mobile.server.settings.voiceModelLoading": "Chargement de la reconnaissance vocale…",
@@ -1545,4 +1543,24 @@ export const messages = {
     "Connectez-vous à un autre serveur en tant que propriétaire ou administrateur pour y copier des agents.",
   "mobile.server.providers.updateAll": "Tout mettre à jour",
   "mobile.server.providers.updateAllFailed": "Certaines mises à jour n’ont pas démarré. Réessayez.",
+  "mobile.server.settings.members": "Membres",
+  "mobile.server.route.member": "Membre",
+  "mobile.server.members.remove": "Retirer le membre",
+  "mobile.server.members.role": "Rôle",
+  "mobile.server.members.updateFailed": "Impossible de mettre à jour ce membre. Réessayez.",
+  "mobile.server.members.loadFailed": "Impossible de charger les membres. Actualisez pour réessayer.",
+  "mobile.server.members.empty": "Aucun membre.",
+  "mobile.server.members.loading": "Chargement des membres…",
+  "mobile.server.members.rowLabel": "{name}, {role}",
+  "mobile.server.members.you": "{name} (vous)",
+  "mobile.server.members.gone": "Cette personne n’est plus membre de ce serveur.",
+  "mobile.server.members.ownerHint":
+    "Le propriétaire a un accès complet à ce serveur. Vous ne pouvez pas changer le rôle du propriétaire.",
+  "mobile.server.members.joined": "Membre depuis",
+  "mobile.server.members.removeTitle": "Retirer {name} ?",
+  "mobile.server.roles.memberHint": "Un membre a l’accès le plus élevé de Tout le monde et de ses rôles.",
+  "mobile.server.roles.memberEmpty": "Ce serveur n’a aucun rôle.",
+  "mobile.server.roles.memberTitle": "Rôles de {name}",
+  "mobile.server.roles.memberNone": "Aucun rôle",
+  "mobile.server.roles.memberAdmin": "Les propriétaires et les admins peuvent utiliser tous les agents.",
 } as const satisfies PartialTranslation<typeof source>;

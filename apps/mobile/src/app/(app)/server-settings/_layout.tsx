@@ -12,6 +12,9 @@ export default function ServerSettingsLayout() {
   return (
     <Stack screenListeners={sheetBackHaptics} screenOptions={sheetStackOptions(background)}>
       <Stack.Screen name="index" options={{ title: t("mobile.server.route.settings") }} />
+      <Stack.Screen name="members" options={{ title: t("mobile.server.settings.members") }} />
+      <Stack.Screen name="member" options={{ title: t("mobile.server.route.member") }} />
+      <Stack.Screen name="member-roles" options={{ title: t("mobile.server.roles.title") }} />
       <Stack.Screen name="roles" options={{ title: t("mobile.server.route.roles") }} />
       <Stack.Screen name="role" options={{ title: t("mobile.server.route.role") }} />
       <Stack.Screen name="audit" options={{ title: t("mobile.server.route.audit") }} />

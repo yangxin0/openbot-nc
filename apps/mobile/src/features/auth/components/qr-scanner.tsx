@@ -19,7 +19,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
-import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
 import { haptics } from "@/shared/lib/haptics";
 import { useReducedMotion } from "@/shared/lib/motion";
 import { isAndroid, isIOS } from "@/shared/lib/platform";
@@ -187,17 +186,6 @@ export function QrScanner({
   const sideLeft = inSheet ? 0 : insets.left;
   const sideRight = inSheet ? 0 : insets.right;
   const scanLocked = useRef(false);
-  const completed = useRef(false);
-  const scanPending = useRef(false);
-  useEffect(() => {
-    if (!pairing) return;
-    const scope = mobileAnalytics.scope();
-    scope.track("mobile_pairing_action", { action: "scanner_opened", entry_point: "qr", result: "succeeded" });
-    return () => {
-      if (!completed.current && !scanPending.current)
-        scope.track("mobile_pairing_action", { action: "cancel", entry_point: "qr", result: "cancelled" });
-    };
-  }, [pairing]);
   const [cameraAttempt, setCameraAttempt] = useState(0);
   const focused = useIsFocused();
   const [foreground, setForeground] = useState(AppState.currentState === "active");
@@ -263,11 +251,9 @@ export function QrScanner({
   async function connect(data: string): Promise<void> {
     if (!scanEnabled || scanLocked.current) return;
     scanLocked.current = true;
-    scanPending.current = true;
     setScanState({ status: "connecting" });
     try {
       await onScan(data);
-      completed.current = true;
       void haptics.notification("success");
     } catch (error) {
       void haptics.notification("error");
@@ -276,8 +262,6 @@ export function QrScanner({
         source: "connection",
         message: errorMessage(error, t("mobile.auth.scanner.connectFallback")),
       });
-    } finally {
-      scanPending.current = false;
     }
   }
 
@@ -343,20 +327,7 @@ export function QrScanner({
                   className="w-full"
                   onPress={
                     canRequestPermission
-                      ? async () => {
-                          const scope = mobileAnalytics.scope();
-                          const granted = await requestPermission().then(
-                            (response) => response.granted,
-                            () => false,
-                          );
-                          if (pairing)
-                            scope.track("mobile_pairing_action", {
-                              action: "camera_permission",
-                              entry_point: "qr",
-                              result: granted ? "succeeded" : "failed",
-                              ...(granted ? {} : { failure_code: "permission_denied" }),
-                            });
-                        }
+                      ? () => void requestPermission().catch(() => undefined)
                       : () => void Linking.openSettings()
                   }
                 >

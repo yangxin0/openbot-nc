@@ -482,7 +482,6 @@ export const messages = {
   "mobile.chat.approval.report.ideaHeadline": "יש לך רעיון? בוא נגשים אותו.",
   "mobile.chat.approval.report.dontSend": "לא עכשיו",
   "mobile.chat.approval.report.send": "שליחה לצוות OpenBot",
-  "mobile.chat.approval.report.phoneAdds": "הטלפון הזה מוסיף לדיווח:",
   "mobile.chat.approval.allow": "אישור",
   "mobile.chat.approval.deny": "דחייה",
   "mobile.chat.approval.reconnect": "יש להתחבר אל {server} כדי להשיב לבקשה הזו.",

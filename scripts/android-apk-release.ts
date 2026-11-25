@@ -9,7 +9,7 @@ import { androidApkRelease, androidApkVersion } from "../apps/auth-api/src/lib/a
 import { parseStoreBuilds } from "./mobile-ota-lib";
 
 const run = promisify(execFile);
-const PACKAGE = "run.openbot.mobile";
+const PACKAGE = "app.openbotnc.mobile";
 const INSTALL_PAGE = "https://openbot.run/download/android";
 
 class UsageError extends Error {}

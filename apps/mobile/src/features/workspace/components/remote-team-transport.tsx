@@ -73,7 +73,6 @@ interface RemoteTeamTransportProps {
   active: boolean;
   relay: PhoneRelay;
   onConnectionUpdate: (update: RemoteTeamConnectionUpdate) => void;
-  onDiagnostic?: (step: RemoteTeamDiagnostic["step"], detail: string | undefined) => void;
   onNetworkRestored?: () => void;
   onTeamEvent: (hostId: string, event: RemoteTeamEvent) => void;
 }
@@ -185,7 +184,6 @@ export const RemoteTeamTransport = memo(
           "connection",
           `${hostId} peer ${step}${detail ? `: ${detail}` : ""}`,
         );
-        latest.current.onDiagnostic?.(step, detail);
       },
       onNetworkRestored: async () => latest.current.onNetworkRestored?.(),
     });

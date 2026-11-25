@@ -1,3 +1,4 @@
+import { canAdministerServer } from "@openbot/contracts/ipc";
 import { router } from "expo-router";
 import { Typography } from "heroui-native";
 import type { LucideIcon } from "lucide-react-native";
@@ -18,6 +19,7 @@ import RotateCcwKey from "lucide-react-native/icons/rotate-ccw-key";
 import ShieldCheck from "lucide-react-native/icons/shield-check";
 import Sparkles from "lucide-react-native/icons/sparkles";
 import UserRound from "lucide-react-native/icons/user-round";
+import UsersRound from "lucide-react-native/icons/users-round";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
 import { confirmOwner } from "@/features/app-lock/model/app-lock";
@@ -43,6 +45,7 @@ import { SettingsRow, SettingsSection } from "@/features/settings/components/set
 import { RowIcon } from "@/features/settings/components/settings-row-icon";
 import { useMobileWorkspace, useMobileWorkspaceActions } from "@/features/workspace/context/mobile-workspace-context";
 import { type ServerRowState, serverRowState } from "@/features/workspace/model/server-row-state";
+import { showsOnline } from "@/features/workspace/model/server-status";
 import type { MobileServer, ServerChecks } from "@/features/workspace/model/workspace-types";
 import { haptics } from "@/shared/lib/haptics";
 import { currentText, useText } from "@/shared/lib/text";
@@ -69,6 +72,7 @@ interface LinkRowProps {
   label: string;
   icon: LucideIcon;
   pathname:
+    | "/server-settings/members"
     | "/server-settings/roles"
     | "/server-settings/audit"
     | "/server-settings/vault"
@@ -81,7 +85,9 @@ interface LinkRowProps {
 }
 
 export function ServerPeopleSection({ server }: { server: MobileServer }) {
-  const { t } = useText();
+  const { t, format } = useText();
+  const { memberCountByServer } = useMobileWorkspace();
+  const memberCount = memberCountByServer[server.id];
   const row = useServerRows(server.id);
   const roles = row((checks) => checks.canManageServerRoles(server.id));
   const audit = row((checks) => checks.canReadServerAudit(server.id));
@@ -98,6 +104,16 @@ export function ServerPeopleSection({ server }: { server: MobileServer }) {
       >
         <Typography.Paragraph>{t("mobile.server.settings.yourRole")}</Typography.Paragraph>
       </SettingsRow>
+      {canAdministerServer(server.role) ? (
+        <LinkRow
+          label={t("mobile.server.settings.members")}
+          icon={UsersRound}
+          pathname="/server-settings/members"
+          serverId={server.id}
+          disabled={!showsOnline(server)}
+          trailing={memberCount === undefined ? undefined : <TrailingValue value={format.number(memberCount)} />}
+        />
+      ) : null}
       {roles === "hidden" ? null : (
         <LinkRow
           label={t("mobile.server.route.roles")}

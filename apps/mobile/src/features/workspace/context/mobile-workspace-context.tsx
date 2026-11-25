@@ -19,7 +19,6 @@ import { AGENT_DEFAULTS_CAPABILITY } from "@openbot/contracts/team-protocol/agen
 import { AGENT_FOLDERS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-folders-v1";
 import { AGENT_HOST_SETTINGS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-host-settings-v1";
 import { AGENT_IMPORT_CAPABILITY } from "@openbot/contracts/team-protocol/agent-import-v1";
-import { AGENT_INSTALL_CAPABILITY } from "@openbot/contracts/team-protocol/agent-install-v1";
 import { AGENT_INSTRUCTIONS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-instructions-v1";
 import { AGENT_MEMORY_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/agent-memory-limit-v1";
 import { AGENT_NEW_CHAT_CAPABILITY } from "@openbot/contracts/team-protocol/agent-new-chat-v1";
@@ -31,7 +30,6 @@ import {
 import { AGENT_PLAN_CARD_CAPABILITY } from "@openbot/contracts/team-protocol/agent-plan-card-v1";
 import { AGENT_PUBLISH_CAPABILITY } from "@openbot/contracts/team-protocol/agent-publish-v1";
 import { AGENT_TASK_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/agent-task-limit-v1";
-import { AGENT_UPDATE_CAPABILITY } from "@openbot/contracts/team-protocol/agent-update-v1";
 import { BACKGROUND_PROCESSES_CAPABILITY } from "@openbot/contracts/team-protocol/background-processes-v1";
 import { BITWARDEN_CONNECTOR_CAPABILITY } from "@openbot/contracts/team-protocol/bitwarden-connector-v1";
 import { BROWSER_PROFILES_CAPABILITY } from "@openbot/contracts/team-protocol/browser-profiles-v1";
@@ -56,14 +54,12 @@ import { HOST_MEMBER_UPDATE_CAPABILITY } from "@openbot/contracts/team-protocol/
 import { HOST_PERSONALITY_CAPABILITY } from "@openbot/contracts/team-protocol/host-personality-v1";
 import { HOST_RELEASE_CAPABILITY } from "@openbot/contracts/team-protocol/host-release-v1";
 import { HOST_RESTART_CAPABILITY } from "@openbot/contracts/team-protocol/host-restart-v1";
-import { HOST_SIGNAL_HOME_CAPABILITY } from "@openbot/contracts/team-protocol/host-signal-home-v1";
 import { HOST_TIMEZONE_CAPABILITY } from "@openbot/contracts/team-protocol/host-timezone-v1";
 import { HOST_TURN_LIMITS_CAPABILITY } from "@openbot/contracts/team-protocol/host-turn-limits-v1";
 import { HOST_UPDATE_CAPABILITY } from "@openbot/contracts/team-protocol/host-update-v1";
 import { HOST_VOICE_MODEL_CAPABILITY } from "@openbot/contracts/team-protocol/host-voice-model-v1";
 import { HOSTED_SITES_CAPABILITY } from "@openbot/contracts/team-protocol/hosted-sites-v1";
 import { INSTANCE_TRANSFER_CAPABILITY } from "@openbot/contracts/team-protocol/instance-transfer-v1";
-import { LIVE_ACTIVITY_PUSH_CAPABILITY } from "@openbot/contracts/team-protocol/live-activity-push-v1";
 import { LOCAL_SERVERS_CAPABILITY } from "@openbot/contracts/team-protocol/local-servers-v1";
 import { MAC_APPS_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/mac-apps-limit-v1";
 import { MACHINE_RESOURCES_CAPABILITY } from "@openbot/contracts/team-protocol/machine-resources-v1";
@@ -73,12 +69,8 @@ import { ONEPASSWORD_CONNECTOR_CAPABILITY } from "@openbot/contracts/team-protoc
 import { OWNER_TRANSFER_CAPABILITY } from "@openbot/contracts/team-protocol/owner-transfer-v1";
 import { PASSWORD_MANAGERS_CAPABILITY } from "@openbot/contracts/team-protocol/password-managers-v1";
 import { PENDING_APPROVAL_CAPABILITY } from "@openbot/contracts/team-protocol/pending-approval-v1";
-import { PHONE_FEEDBACK_CAPABILITY } from "@openbot/contracts/team-protocol/phone-feedback-v1";
 import { PROVIDER_ACCOUNTS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-accounts-v1";
 import { PROVIDERS_ADMIN_CAPABILITY } from "@openbot/contracts/team-protocol/providers-v1";
-import { PUSH_NOTIFICATION_THREADS_CAPABILITY } from "@openbot/contracts/team-protocol/push-notification-threads-v1";
-import { ANDROID_PUSH_NOTIFICATIONS_CAPABILITY } from "@openbot/contracts/team-protocol/push-notifications-android-v1";
-import { PUSH_NOTIFICATIONS_CAPABILITY } from "@openbot/contracts/team-protocol/push-notifications-v1";
 import { ROUTINE_RECOVERY_CAPABILITY } from "@openbot/contracts/team-protocol/routine-recovery-v1";
 import { ROUTINE_RESULTS_CAPABILITY } from "@openbot/contracts/team-protocol/routine-results-v1";
 import { ROUTINES_ONCE_CAPABILITY } from "@openbot/contracts/team-protocol/routines-once-v1";
@@ -119,7 +111,6 @@ import {
   remoteRecoveryMessage,
   runTeamEffect,
 } from "@openbot/team-client";
-import { feedbackApproval } from "@openbot/team-client/feedback-approval";
 import { createFocusUsePing } from "@openbot/team-client/focus-use";
 import type {
   RemoteDownloadWatch,
@@ -149,7 +140,6 @@ import {
   respondToApproval,
   respondToBrowserSecret,
   respondToBrowserTakeover,
-  sendPhoneFeedback,
   type TeamApiRequest,
   uploadAttachmentDraft,
 } from "@openbot/team-client/team-api-requests";
@@ -159,9 +149,6 @@ import * as Crypto from "expo-crypto";
 import { type PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { View } from "react-native";
 import { agentInitialMessage, type NewAgentInput } from "@/features/agents/model/agent-initial-message";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
-import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
-import { trackWorkspaceActions } from "@/features/analytics/workspace-actions";
 import { useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { decodeMobileBrowserTabs } from "@/features/browser/model/browser-tabs";
 import { MobileChannelStore } from "@/features/channels/model/channel-store";
@@ -172,17 +159,10 @@ import {
 } from "@/features/chat/model/location-always-allowed";
 import { deleteServerSideQuestions } from "@/features/chat/model/side-questions";
 import { mergeRelayHosts, relayStateKey } from "@/features/identity/model/phone-relay";
-import { useLiveActivity } from "@/features/live-activity/use-live-activity";
-import { NotificationAvatarSync } from "@/features/push-notifications/notification-avatar-sync";
-import { usePushNotifications } from "@/features/push-notifications/use-push-notifications";
-import { useSyncedNotificationLevelsLoader } from "@/features/push-notifications/use-synced-notification-levels";
 import { QuickActionsSync } from "@/features/quick-actions/quick-actions-sync";
+import { decodeServerMember } from "@/features/servers/model/server-members";
 import { forgetAgentBackdrops, retainAgentBackdrops } from "@/features/settings/model/chat-backdrop";
-import { setSyncedNotificationLevels } from "@/features/settings/model/notification-levels";
-import { ShareExtensionSync } from "@/features/share/share-extension-sync";
-import { ShortcutsSync } from "@/features/shortcuts/shortcuts-sync";
 import { supportLog } from "@/features/support/model/support-log";
-import { forgetPhoneFeedback, shownPhoneFeedback } from "@/features/support/model/support-log-capture";
 import type { RemoteTeamTransportRef } from "@/features/workspace/components/remote-team-transport";
 import {
   ServerConnection,
@@ -197,7 +177,6 @@ import {
   hostOwnsHide,
   readHostAgentColors,
   readHostHiddenAgents,
-  requestAgentAvatar,
   writeHostAgentColor,
   writeHostAgentHidden,
 } from "@/features/workspace/context/host-request-actions";
@@ -212,7 +191,6 @@ import { createWorkflowActions } from "@/features/workspace/context/workflow-act
 import { WorkspaceContexts } from "@/features/workspace/context/workspace-store";
 import { reduceAgentActivity } from "@/features/workspace/model/agent-activity";
 import {
-  agentAvatarDataUrl,
   deleteServerAvatars,
   saveAgentAvatar,
   savedAgentAvatarCount,
@@ -248,7 +226,6 @@ import { LiveWorkspaceStore } from "@/features/workspace/model/live-workspace-st
 import {
   dropApproval,
   InactiveRequestError,
-  type PendingApproval,
   reducePendingApprovals,
 } from "@/features/workspace/model/pending-approvals";
 import { type QueryScope, queryKeys } from "@/features/workspace/model/query-keys";
@@ -271,12 +248,7 @@ import {
   showsOnline,
 } from "@/features/workspace/model/server-status";
 import { moveSidebarChat } from "@/features/workspace/model/sidebar-layout";
-import {
-  taskThreadCheck,
-  taskThreadMessages,
-  taskTurnThread,
-  withoutTaskTurns,
-} from "@/features/workspace/model/task-cache";
+import { taskThreadCheck, taskThreadMessages, withoutTaskTurns } from "@/features/workspace/model/task-cache";
 import { applyBrowserEvent, syncEventQueries } from "@/features/workspace/model/team-events";
 import { runTeamRequest } from "@/features/workspace/model/team-request";
 import { hostAwaitsQuestion, reduceThreadWaits } from "@/features/workspace/model/thread-waits";
@@ -302,8 +274,8 @@ import type {
   MobileWorkspaceState,
   ServerChecks,
 } from "@/features/workspace/model/workspace-types";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import * as LockedKeychain from "@/shared/lib/locked-keychain";
-import { isAndroid } from "@/shared/lib/platform";
 import { currentText } from "@/shared/lib/text";
 import { useAppForeground } from "@/shared/lib/use-app-foreground";
 
@@ -375,7 +347,6 @@ function colorList(colors: Readonly<Record<string, AvatarColor>> | undefined) {
 function showPreferencesFailure(error: unknown): void {
   showFailureAlert(
     error,
-    "settings",
     currentText().t("mobile.workspace.alert.preferencesTitle"),
     currentText().t("mobile.workspace.alert.preferencesBody"),
   );
@@ -619,7 +590,7 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
         for (const queryKey of [
           queryKeys.chatQueue(serverId),
           queryKeys.serverMembers(queryScope, serverId),
-          queryKeys.serverInvites(queryScope, serverId),
+          queryKeys.serverCurrentMember(queryScope, serverId),
           queryKeys.agentAvatar(queryScope, serverId),
           queryKeys.channelImage(queryScope, serverId),
           queryKeys.serverLogo(queryScope, serverId),
@@ -680,6 +651,20 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
       );
     },
     [dropServerState, sortByPreference, workspaceCache, keepHosts],
+  );
+
+  const applyServerRole = useCallback(
+    (serverId: string, role: MobileServer["role"]) => {
+      const kept = keptHosts.current;
+      if (kept?.some((host) => host.hostId === serverId && host.role !== role))
+        keepHosts(kept.map((host) => (host.hostId === serverId ? { ...host, role } : host)));
+      setServers((current) =>
+        current.some((server) => server.id === serverId && server.role !== role)
+          ? current.map((server) => (server.id === serverId ? { ...server, role } : server))
+          : current,
+      );
+    },
+    [keepHosts],
   );
 
   const [hostsRestored, setHostsRestored] = useState(!workspaceCache);
@@ -751,62 +736,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
     },
     [connectionWaits],
   );
-  const loadAgentAvatar = useCallback(
-    (agentId: string, avatarUrl: string, serverId: string) =>
-      queryClient
-        .fetchQuery({
-          queryKey: queryKeys.agentAvatar(queryScope, serverId, agentId, avatarUrl),
-          queryFn: () => requestAgentAvatar(request, agentId, avatarUrl, serverId),
-          staleTime: Infinity,
-        })
-        .then(agentAvatarDataUrl),
-    [request, queryClient, queryScope],
-  );
-  const postLiveActivityAction = useCallback(
-    (serverId: string, path: string, body: TeamProtocolV2Json) => request("POST", path, ignoreResponse, body, serverId),
-    [request],
-  );
-  const supportsLiveActivityPush = useCallback(
-    (serverId: string) => hasCapability(serverCapabilities.current, serverId, LIVE_ACTIVITY_PUSH_CAPABILITY),
-    [],
-  );
-  const sideThreadOfTurn = useCallback(
-    (serverId: string, agentId: string, turnId: string) =>
-      taskTurnThread(queryClient, queryScope, serverId, agentId, turnId),
-    [queryClient, queryScope],
-  );
-  const applyLiveActivityEvent = useLiveActivity({
-    servers,
-    activeServerId,
-    agents: directoryAgents,
-    liveState,
-    foreground,
-    post: postLiveActivityAction,
-    loadAgentAvatar,
-    supportsPush: supportsLiveActivityPush,
-    sideThreadOfTurn,
-  });
-  const supportsPushNotifications = useCallback(
-    (serverId: string) =>
-      hasCapability(
-        serverCapabilities.current,
-        serverId,
-        isAndroid ? ANDROID_PUSH_NOTIFICATIONS_CAPABILITY : PUSH_NOTIFICATIONS_CAPABILITY,
-      ),
-    [],
-  );
-  const supportsThreadNotifications = useCallback(
-    (serverId: string) => hasCapability(serverCapabilities.current, serverId, PUSH_NOTIFICATION_THREADS_CAPABILITY),
-    [],
-  );
-  usePushNotifications({
-    servers,
-    serversReady: serverDirectoryState === "ready",
-    foreground,
-    post: postLiveActivityAction,
-    supportsPush: supportsPushNotifications,
-    supportsThreads: supportsThreadNotifications,
-  });
   const teamApi = useCallback(
     (serverId?: string, onUploadProgress?: (fraction: number) => void): TeamApiRequest =>
       (method, path, decode, body, upload) =>
@@ -1276,6 +1205,12 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
       }
       serverCapabilities.current.set(serverId, compatibility.capabilities);
       channelStore.configure(serverId, compatibility.capabilities);
+      void client.request("GET", TEAM_API_ROUTES.me, decodeServerMember).then(
+        (member) => {
+          if (context.isCurrent()) applyServerRole(serverId, member.role);
+        },
+        () => undefined,
+      );
       void queryClient.invalidateQueries({ queryKey: [...queryKeys.serverTasks(queryScope, serverId), "task"] });
       if (compatibility.capabilities.includes(SIDEBAR_PINS_CAPABILITY))
         trackUntilSettled(
@@ -1354,6 +1289,7 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
       replaceServerAgents,
       applyHostHidden,
       applyHostColors,
+      applyServerRole,
       preferenceStore,
       readRefresh,
       conversationStore,
@@ -1376,20 +1312,9 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
   const foregroundRef = useRef(foreground);
   foregroundRef.current = foreground;
   const sendApproval = useCallback(
-    async (serverId: string, input: RespondToApprovalInput, approval: PendingApproval) => {
-      const phone =
-        input.decision === "accept" &&
-        feedbackApproval(approval)?.phone === true &&
-        hasCapability(serverCapabilities.current, serverId, PHONE_FEEDBACK_CAPABILITY)
-          ? shownPhoneFeedback(approval)
-          : null;
+    async (serverId: string, input: RespondToApprovalInput) => {
       try {
-        await runTeamRequest(
-          phone
-            ? sendPhoneFeedback(teamApi(serverId), { requestId: input.requestId, phone })
-            : respondToApproval(teamApi(serverId), input),
-        );
-        forgetPhoneFeedback(approval);
+        await runTeamRequest(respondToApproval(teamApi(serverId), input));
       } catch (error) {
         if (error instanceof InactiveRequestError)
           liveState.update("approvalRequests", (current) => dropApproval(current, serverId, input.requestId));
@@ -1560,7 +1485,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
   const handleTeamEvent = useCallback(
     (serverId: string, event: RemoteTeamEvent) => {
       if (removedServers.current.has(serverId)) return;
-      applyLiveActivityEvent(serverId, event);
       liveState.update("approvalRequests", (current) => {
         const previous = current[serverId] ?? [];
         const next = reducePendingApprovals(previous, event);
@@ -1584,10 +1508,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
         if (!preferencesRef.current[serverId]?.pinsPending) applyHostSidebarPins(serverId, event.items);
         return;
       }
-      if (event.type === "agent-notification-levels-changed") {
-        setSyncedNotificationLevels(serverId, { server: event.server, agents: event.agents });
-        return;
-      }
       syncEventQueries(queryClient, queryScope, serverId, event);
       if (event.type === "channels-changed") channelStore.changed(serverId, event.channelId);
       if (
@@ -1608,7 +1528,7 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
           );
           rememberDrawerValues(serverId, { memberCount: members });
           void queryClient.invalidateQueries({ queryKey: queryKeys.serverMembers(queryScope, serverId) });
-          void queryClient.invalidateQueries({ queryKey: queryKeys.serverInvites(queryScope, serverId) });
+          void queryClient.invalidateQueries({ queryKey: queryKeys.serverCurrentMember(queryScope, serverId) });
         }
         return;
       }
@@ -1705,7 +1625,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
     },
     [
       liveState,
-      applyLiveActivityEvent,
       channelStore,
       applySidebarLayout,
       applyHostHidden,
@@ -1748,19 +1667,13 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
         return { ...current, [serverId]: hide ? [...ids, agentId] : ids.filter((id) => id !== agentId) };
       };
       setHostHidden((current) => change(current, hidden));
-      const action = hidden ? "hide" : "unhide";
       void writeHostAgentHidden(teamApi(serverId), { agentId, hidden }).then(
-        (agents) => {
-          applyHostHidden(serverId, agents);
-          mobileAnalytics.track("conversation_action", { action, result: "succeeded" });
-        },
+        (agents) => applyHostHidden(serverId, agents),
         (error: unknown) => {
           if (!removedServers.current.has(serverId)) setHostHidden((current) => change(current, !hidden));
-          mobileAnalytics.track("conversation_action", { action, result: "failed" });
           const text = currentText();
           showFailureAlert(
             error,
-            "agent",
             text.t(hidden ? "mobile.agent.menu.hideFailed" : "mobile.agent.hidden.showFailed"),
             text.errorMessage(error, text.t("mobile.agent.menu.actionFailed")),
           );
@@ -1799,12 +1712,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
       }),
     [request, teamApi, queryClient, queryScope, attachmentDownloads, largeAttachmentDownloads],
   );
-  useSyncedNotificationLevelsLoader({
-    servers,
-    foreground,
-    supports: hostRequests.checks.canSetAgentNotificationLevel,
-    load: hostRequests.actions.loadAgentNotificationLevels,
-  });
   const workflows = useMemo(
     () =>
       createWorkflowActions({
@@ -1905,7 +1812,7 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
         if (!pending) throw new InactiveRequestError(currentText().t("mobile.workspace.error.approvalInactive"));
         if (!showsOnline(serversRef.current.find((server) => server.id === serverId)))
           throw new Error(currentText().t("mobile.workspace.error.approvalOffline"));
-        await sendApproval(serverId, input, pending);
+        await sendApproval(serverId, input);
       },
       readsWholeApprovals: (serverId) =>
         hasCapability(serverCapabilities.current, serverId, PENDING_APPROVAL_CAPABILITY),
@@ -2147,7 +2054,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
             const text = currentText();
             showFailureAlert(
               error,
-              "agent",
               text.t("mobile.chat.outbox.failed"),
               text.errorMessage(error, text.t("mobile.onboarding.task.sendFailed")),
             );
@@ -2304,16 +2210,15 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
           if (!hostHiddenRef.current[serverId]?.includes(agentId)) changeHostHidden(serverId, agentId, true);
           return;
         }
-        const saved = updatePreferences(serverId, (current) => ({
+        updatePreferences(serverId, (current) => ({
           ...current,
           hidden: [...new Set([...current.hidden, agentId])],
           pinned: current.pinned.filter((id) => id !== agentId),
         }));
-        mobileAnalytics.track("conversation_action", { action: "hide", result: saved ? "succeeded" : "failed" });
       },
       unhideAgent: (agentId) => {
         const serverId = currentActiveServer().id;
-        const saved = updatePreferences(serverId, (current) => ({
+        updatePreferences(serverId, (current) => ({
           ...current,
           hidden: current.hidden.filter((id) => id !== agentId),
         }));
@@ -2322,9 +2227,7 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
           hostHiddenRef.current[serverId]?.includes(agentId)
         ) {
           changeHostHidden(serverId, agentId, false);
-          return;
         }
-        mobileAnalytics.track("conversation_action", { action: "unhide", result: saved ? "succeeded" : "failed" });
       },
       markAgentRead,
       markAllRead: async () => {
@@ -2416,10 +2319,7 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
           : "error";
       },
     };
-    return trackWorkspaceActions(workspace, () => ({
-      agents: agentsRef.current,
-      pinnedAgentIds: currentPinnedAgentIds(),
-    }));
+    return workspace;
   }, [
     linkLocalServers,
     browser,
@@ -2509,13 +2409,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
         canManageServerTimezone: (serverId) => administers(serverId, HOST_TIMEZONE_CAPABILITY),
         canManageServerTurnLimits: (serverId) => administers(serverId, HOST_TURN_LIMITS_CAPABILITY),
         canManageServerVoiceModel: (serverId) => administers(serverId, HOST_VOICE_MODEL_CAPABILITY),
-        canManageServerSignalHome: (serverId) => administers(serverId, HOST_SIGNAL_HOME_CAPABILITY),
-        servesServerSignalHome: (serverId) => {
-          const server = servers.find((candidate) => candidate.id === serverId);
-          return Boolean(
-            server && online(server) && hasCapability(capabilities, serverId, HOST_SIGNAL_HOME_CAPABILITY),
-          );
-        },
         canReadMachineMetrics: (serverId) => administers(serverId, MACHINE_RESOURCES_CAPABILITY),
         canManageAgentMemoryLimit: (serverId) => administers(serverId, AGENT_MEMORY_LIMIT_CAPABILITY),
         canManageMemoryReview: (serverId) => administers(serverId, MEMORY_REVIEW_CAPABILITY),
@@ -2583,8 +2476,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
         macAppsUnavailable: (serverId) => hasCapability(capabilities, serverId, MAC_APPS_LIMIT_CAPABILITY),
         canEditUiBlockPreview: (serverId) => hasCapability(capabilities, serverId, UI_BLOCK_PREVIEW_EDIT_CAPABILITY),
         canManageMcpAccess: (serverId) => administers(serverId, MCP_ACCESS_CAPABILITY),
-        canAddMarketplaceAgents: (serverId) => administers(serverId, AGENT_INSTALL_CAPABILITY),
-        canUpdateMarketplaceAgents: (serverId) => administers(serverId, AGENT_UPDATE_CAPABILITY),
         canManageEvents: (serverId) => administers(serverId, EVENTS_CAPABILITY),
         canManageMissedRuns: (serverId) =>
           administers(serverId, EVENTS_CAPABILITY) && administers(serverId, ROUTINE_RECOVERY_CAPABILITY),
@@ -2644,8 +2535,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
           : localServerLinks.parents.has(serverId)
             ? "onComputer"
             : null,
-      canSendNotifications: (serverId) =>
-        servers.some((server) => server.id === serverId && showsOnline(server)) && supportsPushNotifications(serverId),
     };
   }, [
     localServerLinks,
@@ -2666,7 +2555,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
     collapsedSectionIds,
     hiddenChannelIds,
     hostHiddenIds,
-    supportsPushNotifications,
   ]);
   const value = useMemo<MobileWorkspaceContextValue>(() => ({ ...state, ...actions }), [state, actions]);
 
@@ -2684,33 +2572,12 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
             agents={directoryAgents}
             preferences={visiblePreferences}
           />
-          <ShareExtensionSync
-            apiUrl={session.relayUrl}
-            userId={session.user.id}
-            servers={orderedServers}
-            serversReady={serverDirectoryState === "ready"}
-            agents={directoryAgents}
-          />
-          <ShortcutsSync
-            apiUrl={session.relayUrl}
-            userId={session.user.id}
-            servers={orderedServers}
-            serversReady={serverDirectoryState === "ready"}
-            agents={directoryAgents}
-            preferences={visiblePreferences}
-          />
-          <NotificationAvatarSync
-            servers={servers}
-            serversReady={serverDirectoryState === "ready"}
-            agents={directoryAgents}
-          />
           {servers.map((server) => (
             <ServerConnection
               key={server.id}
               hostId={server.id}
               publicKey={server.publicKey}
               active={(foreground && (!othersHeld || server.id === activeServerId)) || backgroundRefreshing}
-              background={!foreground}
               relay={relay}
               register={registerConnection}
               load={loadServer}

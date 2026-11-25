@@ -12,11 +12,6 @@ export const messages = {
   "mobile.share.chooseAgent": "اختر وكيلًا",
   "mobile.share.action": "مشاركة مع {name}",
   "mobile.share.extension.send": "إرسال",
-  "mobile.share.extension.footer": "يرسل OpenBot هذا إلى الوكيل الآن. لا يُفتح التطبيق.",
   "mobile.share.extension.message": "أضف رسالة",
   "mobile.share.extension.sending": "جارٍ الإرسال إلى {name}…",
-  "mobile.share.extension.sent": "أُرسل إلى {name}",
-  "mobile.share.extension.failed": "تعذّر على OpenBot إرسال هذا. افتح التطبيق لإرساله من هناك.",
-  "mobile.share.extension.unconfirmed": "لم يؤكد الخادم الرسالة. تحقّق من الدردشة قبل أن ترسلها مرة أخرى.",
-  "mobile.share.extension.openApp": "فتح OpenBot",
 } as const satisfies PartialTranslation<typeof source>;

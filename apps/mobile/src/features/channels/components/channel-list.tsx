@@ -21,7 +21,6 @@ import {
 import { PinnedChatItem } from "@/features/agents/components/pinned-agents-grid";
 import { useChatPinToggle } from "@/features/agents/components/use-chat-pin-toggle";
 import { useChatSectionMenu } from "@/features/agents/components/use-chat-section-menu";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import {
   useMobileWorkspaceReader,
   useMobileWorkspaceSelector,
@@ -31,6 +30,7 @@ import { showsOnline } from "@/features/workspace/model/server-status";
 import type { MobileAgent } from "@/features/workspace/model/workspace-types";
 import type { MenuAction } from "@/shared/components/menu-view";
 import { copyWithHaptic } from "@/shared/lib/clipboard";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { formatUpdatedAt } from "@/shared/lib/format-updated-at";
 import { haptics } from "@/shared/lib/haptics";
 import { isAndroid, longPressDelay } from "@/shared/lib/platform";
@@ -84,7 +84,6 @@ function useChannelMenuActions(channel: ChannelSummary, serverId: string) {
               const text = currentText();
               showFailureAlert(
                 cause,
-                "team",
                 text.t("mobile.channel.list.deleteFailed"),
                 text.errorMessage(cause, text.t("mobile.channel.list.deleteFailedBody")),
               );

@@ -7,22 +7,18 @@ import { Stack } from "expo-router/stack";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { HeroUINativeProvider } from "heroui-native/provider";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { ReducedMotionConfig, ReduceMotion } from "react-native-reanimated";
 import { useCSSVariable, useUniwind, withUniwind } from "uniwind";
 
-import { MobileAnalyticsLifecycle } from "@/features/analytics/lifecycle";
 import { AppLockOverlay } from "@/features/app-lock/components/app-lock-overlay";
 import { installAppLock } from "@/features/app-lock/model/app-lock";
-import { UpdateRequiredOverlay } from "@/features/app-update/components/update-required-overlay";
 import { MobileSessionProvider, useMobileSession } from "@/features/auth/context/mobile-session-context";
 import { backgroundRefreshNative } from "@/features/background-refresh/background-refresh-native";
 import { loadOnboardingProgress } from "@/features/onboarding/model/onboarding-progress";
-import { resetNotificationAvatars } from "@/features/push-notifications/notification-avatars";
-import { installNotificationHandler } from "@/features/push-notifications/use-notification-taps";
 import { installQuickActions, resetQuickActions } from "@/features/quick-actions/quick-actions-native";
 import { ThemeSweep } from "@/features/settings/components/theme-sweep";
 import { loadAppLanguage } from "@/features/settings/model/app-language";
@@ -37,18 +33,13 @@ import { loadDictationLanguage } from "@/features/settings/model/dictation-langu
 import { loadHapticsPreference } from "@/features/settings/model/haptics";
 import { loadLargeFilePreference } from "@/features/settings/model/large-files";
 import { offerLayoutRestart } from "@/features/settings/model/layout-direction";
-import { loadLiveActivitiesPreference } from "@/features/settings/model/live-activities";
 import { loadMessageColor } from "@/features/settings/model/message-color";
 import { useMotionPreferences } from "@/features/settings/model/motion";
 import { loadMotionPreferences } from "@/features/settings/model/motion-storage";
 import { loadPhotoQualityPreference } from "@/features/settings/model/photo-quality";
-import { loadPushNotificationPreference } from "@/features/settings/model/push-notifications";
 import { loadRoutineCollapsePreference } from "@/features/settings/model/routine-collapse";
 import { loadTextSize } from "@/features/settings/model/text-size";
 import { loadFullVisualPreference } from "@/features/settings/model/visual-preview";
-import { resetShareExtension } from "@/features/share/model/share-extension";
-import { resetShortcutDirectory } from "@/features/shortcuts/model/shortcut-directory";
-import { installShortcuts, resetShortcuts } from "@/features/shortcuts/shortcuts-native";
 import { supportLog } from "@/features/support/model/support-log";
 import { installSupportLog } from "@/features/support/model/support-log-capture";
 import { checkRecognitionModels } from "@/features/voice/model/recognition-models";
@@ -56,7 +47,6 @@ import { supertonicModel } from "@/features/voice/model/supertonic-model";
 import { loadVoiceServer } from "@/features/voice/model/voice-server";
 import { loadVoiceSettings } from "@/features/voice/model/voice-settings";
 import { AppLoadingOverlayProvider, useAppLoadingOverlay } from "@/shared/components/app-loading-overlay";
-import { useBloubColors } from "@/shared/components/bloub-stage/bloub-look";
 import { BloubStage } from "@/shared/components/bloub-stage/bloub-stage";
 import { BloubStageProvider, useBloubStageRequest } from "@/shared/components/bloub-stage/bloub-stage-context";
 import { BLOUB_PRIORITY } from "@/shared/components/bloub-stage/bloub-stage-store";
@@ -74,9 +64,7 @@ export const unstable_settings = {
 
 installSupportLog();
 installQuickActions();
-installShortcuts();
 installAppLock();
-installNotificationHandler();
 backgroundRefreshNative?.install();
 
 const UniwindGestureHandlerRootView = withUniwind(GestureHandlerRootView);
@@ -130,10 +118,6 @@ function RootNavigator() {
   useEffect(() => {
     if (loading || session) return;
     resetQuickActions();
-    resetShareExtension();
-    resetShortcutDirectory();
-    resetShortcuts();
-    resetNotificationAvatars();
   }, [loading, session]);
 
   useLayoutEffect(() => {
@@ -184,7 +168,6 @@ function RootNavigator() {
         </View>
         <BloubStage nativeSplashHidden={nativeHidden} onLayout={() => reportArtwork("stage")} />
         <ThemeSweep />
-        <UpdateRequiredOverlay />
         <AppLockOverlay />
       </View>
     </SplashContentReadyContext.Provider>
@@ -196,9 +179,6 @@ export default function RootLayout() {
   const animations = useMotionPreferences((state) => state.allAnimations);
   const heroConfig = useMemo(() => (animations ? {} : { animation: "disable-all" as const }), [animations]);
   const canvas = String(useCSSVariable("--openbot-bg-native-canvas"));
-  const bloub = useBloubColors();
-  const splashColor = useRef("");
-  splashColor.current = bloub.dark ? bloub.dimBody : bloub.body;
   const darkTheme = useMemo(
     () => ({ ...DarkTheme, colors: { ...DarkTheme.colors, background: canvas }, fonts: navigationFonts }),
     [canvas],
@@ -224,8 +204,6 @@ export default function RootLayout() {
       void loadChatSwipePreference().catch(() => undefined);
       void loadChatPullPreference().catch(() => undefined);
       void loadTextSize().catch(() => undefined);
-      void loadLiveActivitiesPreference().catch(() => undefined);
-      void loadPushNotificationPreference().catch(() => undefined);
       void loadMotionPreferences().catch(() => undefined);
       void loadDictationLanguage().catch(() => undefined);
       void loadVoiceSettings().catch(() => undefined);
@@ -234,7 +212,7 @@ export default function RootLayout() {
       checkRecognitionModels();
       void loadAppLanguage()
         .catch(() => undefined)
-        .then(() => offerLayoutRestart(splashColor.current, () => undefined));
+        .then(() => offerLayoutRestart(() => undefined));
       void loadOnboardingProgress().catch(() => undefined);
     });
   }, []);
@@ -254,7 +232,6 @@ export default function RootLayout() {
               <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
               <BloubStageProvider>
                 <MobileSessionProvider>
-                  <MobileAnalyticsLifecycle />
                   <AppLoadingOverlayProvider>
                     <RootNavigator />
                   </AppLoadingOverlayProvider>

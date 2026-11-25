@@ -16,7 +16,7 @@ platform :ios do
     upload_to_testflight(
       api_key: api_key,
       ipa: ipa,
-      app_identifier: "run.openbot.mobile",
+      app_identifier: "app.openbotnc.mobile",
       skip_waiting_for_build_processing: true,
       distribute_external: false
     )
@@ -34,7 +34,7 @@ platform :android do
     UI.user_error!("PLAY_RELEASE_STATUS must be completed or draft") unless %w[completed draft].include?(release_status)
 
     upload_to_play_store(
-      package_name: "run.openbot.mobile",
+      package_name: "app.openbotnc.mobile",
       aab: aab,
       json_key_data: ENV.fetch("GOOGLE_PLAY_SERVICE_ACCOUNT_KEY"),
       track: track,
@@ -54,7 +54,7 @@ platform :android do
 
     # Google Play signs this APK with the app signing key, so it has the signature of the store app.
     download_universal_apk_from_google_play(
-      package_name: "run.openbot.mobile",
+      package_name: "app.openbotnc.mobile",
       version_code: version_code,
       json_key_data: ENV.fetch("GOOGLE_PLAY_SERVICE_ACCOUNT_KEY"),
       destination: ENV.fetch("APK_PATH")

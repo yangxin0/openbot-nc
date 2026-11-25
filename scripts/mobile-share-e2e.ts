@@ -6,10 +6,10 @@ import { promisify } from "node:util";
 import { createOpenBotLogger } from "@openbot/logging";
 import { bootedSimulatorIds, hasMobileRuntime } from "./dev-mobile";
 
-const BUNDLE_ID = "run.openbot.mobile";
-const APP_GROUP = "group.run.openbot.mobile";
+const BUNDLE_ID = "app.openbotnc.mobile";
+const APP_GROUP = "group.app.openbotnc.mobile";
 const PAYLOAD_KEY = "expo-sharing";
-const SHARE_LINK = "openbot://expo-sharing";
+const SHARE_LINK = "openbot-nc://expo-sharing";
 const OUT = resolve(import.meta.dirname, "../.openbot-build/mobile-share-e2e");
 const RUNTIME_TIMEOUT_MS = 5 * 60_000;
 const TAKE_TIMEOUT_MS = 2 * 60_000;

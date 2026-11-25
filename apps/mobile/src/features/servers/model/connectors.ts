@@ -1,3 +1,4 @@
+import { APP_LINK_SCHEME } from "@openbot/contracts/app-identity";
 import type { ConnectorMessagingPlatform, MessagingConnection } from "@openbot/contracts/ipc";
 import type { AppMobileMessages, MobileTextKey } from "@openbot/i18n/mobile";
 
@@ -162,9 +163,20 @@ export function platformPage(platform: keyof typeof PAGE_HOSTS, address: string 
   return rest === "" || /^[/?#][^\s\\]*$/u.test(rest) ? address : null;
 }
 
+export const CONNECTOR_TAGLINES = {
+  slack: "mobile.marketplace.app.slackTagline",
+  discord: "mobile.marketplace.app.discordTagline",
+  telegram: "mobile.marketplace.app.telegramTagline",
+  whatsapp: "mobile.marketplace.app.whatsappTagline",
+  github: "mobile.marketplace.app.githubTagline",
+  onepassword: "mobile.marketplace.app.onePasswordTagline",
+  bitwarden: "mobile.marketplace.app.bitwardenTagline",
+  protonpass: "mobile.marketplace.app.protonPassTagline",
+} as const satisfies Record<MobileConnectorId, MobileTextKey>;
+
 export const MESSAGING_INSTALL_RETURN = {
-  slack: "openbot://slack-workspace",
-  discord: "openbot://discord-guild",
+  slack: `${APP_LINK_SCHEME}://slack-workspace`,
+  discord: `${APP_LINK_SCHEME}://discord-guild`,
 } as const satisfies Record<WorkspacePlatform, string>;
 
 export function isMessagingInstallReturn(path: string): boolean {

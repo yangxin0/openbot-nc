@@ -5,8 +5,8 @@ import { useThemeColor } from "heroui-native/hooks";
 import Ellipsis from "lucide-react-native/icons/ellipsis";
 import { useState } from "react";
 import { Alert, Pressable, View } from "react-native";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import type { MobileAgent } from "@/features/workspace/context/mobile-workspace-context";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { currentText, useText } from "@/shared/lib/text";
 import { type MessageChannelTargets, type MessageFiles, openMessageActions } from "../model/message-actions-sheet";
@@ -35,7 +35,7 @@ export function reportTeamResult(work: Promise<void>, failedTitle: MobileTextKey
     (error: unknown) => {
       void haptics.notification("error");
       const title = currentText().t(failedTitle);
-      showFailureAlert(error, "team", title, currentText().errorMessage(error, title));
+      showFailureAlert(error, title, currentText().errorMessage(error, title));
     },
   );
 }
@@ -62,7 +62,7 @@ export function useMessageActions(input: MessageActionsInput | null) {
         onReact(emoji).catch((error: unknown) => {
           setPending(null);
           void haptics.notification("error");
-          showFailureAlert(error, "turn", t("mobile.chat.message.reactionFailed"), t("mobile.chat.copyFailedMessage"));
+          showFailureAlert(error, t("mobile.chat.message.reactionFailed"), t("mobile.chat.copyFailedMessage"));
         });
       }
     : undefined;

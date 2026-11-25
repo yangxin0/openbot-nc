@@ -3,17 +3,10 @@ import { Button, Typography } from "heroui-native";
 import { useThemeColor } from "heroui-native/hooks";
 import Folder from "lucide-react-native/icons/folder";
 import ShieldAlert from "lucide-react-native/icons/shield-alert";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { ScrollView, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Alert, ScrollView, View } from "react-native";
 import { useCSSVariable } from "uniwind";
-import { showWarningAlert } from "@/features/analytics/failure-reports";
 import { useChatCardSurface } from "@/features/chat/components/chat-bubble-fill";
-import {
-  phoneNetwork,
-  refreshPhoneNetwork,
-  subscribePhoneNetwork,
-} from "@/features/support/model/phone-network-capture";
-import { showPhoneFeedback } from "@/features/support/model/support-log-capture";
 import {
   approvalIsPartial,
   InactiveRequestError,
@@ -76,16 +69,6 @@ export function ChatApprovalCard({
   const disabled = !canAnswer || pending !== null;
   const report = feedbackApproval(approval);
   const reading = partial && readsWhole && canAnswer;
-  const phoneReport = report?.phone === true;
-  const { agentId, requestId } = approval;
-  const phone = useMemo(
-    () => (phoneReport ? showPhoneFeedback({ agentId, requestId }) : null),
-    [phoneReport, agentId, requestId],
-  );
-  const network = useSyncExternalStore(subscribePhoneNetwork, phoneNetwork);
-  useEffect(() => {
-    if (phoneReport) void refreshPhoneNetwork();
-  }, [phoneReport]);
 
   const loadWholeRef = useRef(loadWhole);
   loadWholeRef.current = loadWhole;
@@ -156,7 +139,7 @@ export function ChatApprovalCard({
     } catch (error) {
       void haptics.notification("error");
       if (error instanceof InactiveRequestError) {
-        showWarningAlert("turn", t("mobile.chat.approval.inactiveTitle"), error.message);
+        Alert.alert(t("mobile.chat.approval.inactiveTitle"), error.message);
         return;
       }
       setFailed(errorMessage(error, t("mobile.chat.approval.sendFailed")));
@@ -216,7 +199,7 @@ export function ChatApprovalCard({
                 )}
               </Typography.Paragraph>
             </View>
-            <ScrollView className={phone ? "max-h-56 grow-0" : "max-h-72 grow-0"} nestedScrollEnabled>
+            <ScrollView className="max-h-72 grow-0" nestedScrollEnabled>
               <View className="gap-1 border-s-[3px] border-border ps-3">
                 <Typography.Paragraph weight="medium" selectable>
                   {report.title}
@@ -228,25 +211,6 @@ export function ChatApprovalCard({
                 ) : null}
               </View>
             </ScrollView>
-            {phone ? (
-              <View className="gap-1">
-                <Typography.Paragraph type="body-xs" className="text-muted">
-                  {t("mobile.chat.approval.report.phoneAdds")}
-                </Typography.Paragraph>
-                <Typography.Paragraph type="body-xs" className="text-text-secondary" selectable>
-                  {`${phone.platform} · ${phone.appVersion}\n${phone.system}\n${network}`}
-                </Typography.Paragraph>
-                <ScrollView className="max-h-32 grow-0 rounded-xl bg-control px-2 py-1.5" nestedScrollEnabled>
-                  <Typography.Code
-                    selectable
-                    className="bg-transparent p-0"
-                    style={{ color: foreground, fontSize: 11, lineHeight: 15 }}
-                  >
-                    {phone.log}
-                  </Typography.Code>
-                </ScrollView>
-              </View>
-            ) : null}
             {approval.reason ? (
               <Typography.Paragraph type="body-xs" className="text-muted">
                 {sourceText(approval.reason)}

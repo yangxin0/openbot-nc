@@ -37,11 +37,7 @@ import {
   AgentBackupModelsRow,
 } from "@/features/agents/components/agent-backup-models";
 import { AgentBrowserProfileRow } from "@/features/agents/components/agent-browser-profile";
-import {
-  AgentDeleteHistoryRow,
-  AgentNewChatSection,
-  AgentNotificationLevelRow,
-} from "@/features/agents/components/agent-chat-settings";
+import { AgentDeleteHistoryRow, AgentNewChatSection } from "@/features/agents/components/agent-chat-settings";
 import { AgentDeleteSection } from "@/features/agents/components/agent-delete-section";
 import { AgentFolderBrowser, AgentFolders, AgentFoldersRow } from "@/features/agents/components/agent-folders";
 import {
@@ -163,7 +159,6 @@ function AgentForm({
     canManageAgentBuiltinMemory,
     canManageBrowserProfiles,
     canManageAgentFolders,
-    canSetAgentNotificationLevel,
     setAgentProviderAccount,
   } = useMobileWorkspace();
   const queryClient = useQueryClient();
@@ -174,7 +169,6 @@ function AgentForm({
   );
   const showPermissions = canManageAgentAccess(agent.serverId) || canManageAgentHostSettings(agent.serverId);
   const showFolders = canManageAgentFolders(agent.serverId);
-  const showNotificationLevel = agent.notifications !== undefined && canSetAgentNotificationLevel(agent.serverId);
   const accessLevel = useAgentAccessLevel(agent.serverId, agent.id);
   const showDeleteHistory = canDeleteChatHistory(agent.serverId) && accessLevel === "manage";
   const showBehavior =
@@ -633,11 +627,8 @@ function AgentForm({
           {host && canAdministerServer(host.role) ? (
             <AgentSessionSettingsSection key={`${agent.serverId}:${agent.id}`} agent={agent} available={available} />
           ) : null}
-          {showPermissions || showFolders || showNotificationLevel || showAdvanced ? (
-            <SettingsSection
-              title={t("mobile.agent.groups.rules")}
-              footer={showNotificationLevel ? t("mobile.agent.notificationLevel.footer") : undefined}
-            >
+          {showPermissions || showFolders || showAdvanced ? (
+            <SettingsSection title={t("mobile.agent.groups.rules")}>
               {showPermissions ? (
                 <SettingsRow
                   leading={<RowIcon icon={ShieldCheck} />}
@@ -653,7 +644,6 @@ function AgentForm({
                 </SettingsRow>
               ) : null}
               {showFolders ? <AgentFoldersRow agent={agent} host={host} available={available} /> : null}
-              {showNotificationLevel ? <AgentNotificationLevelRow agent={agent} /> : null}
               {showAdvanced ? (
                 <SettingsRow
                   leading={<RowIcon icon={SlidersHorizontal} />}

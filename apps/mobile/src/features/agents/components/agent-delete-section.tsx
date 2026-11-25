@@ -3,10 +3,10 @@ import { Typography } from "heroui-native";
 import Trash2 from "lucide-react-native/icons/trash";
 import { useRef, useState } from "react";
 import { Alert } from "react-native";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import { SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
 import { RowIcon } from "@/features/settings/components/settings-row-icon";
 import { type MobileAgent, useMobileWorkspaceReader } from "@/features/workspace/context/mobile-workspace-context";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { currentText, useText } from "@/shared/lib/text";
 
@@ -29,7 +29,6 @@ export function AgentDeleteSection({ agent, disabled }: { agent: MobileAgent; di
       const text = currentText();
       showFailureAlert(
         error,
-        "agent",
         text.t("mobile.agent.menu.deleteFailed"),
         text.errorMessage(error, text.t("mobile.agent.menu.actionFailed")),
       );

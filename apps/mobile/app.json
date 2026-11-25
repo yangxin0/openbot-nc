@@ -1,31 +1,29 @@
 {
   "expo": {
-    "name": "OpenBot",
-    "slug": "openbot",
+    "name": "OpenBot-NC",
+    "slug": "openbot-nc",
     "platforms": ["ios", "android"],
     "version": "1.4.14",
     "orientation": "portrait",
     "icon": "./assets/icons/app-icon.png",
-    "scheme": "openbot",
+    "scheme": "openbot-nc",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "run.openbot.mobile",
-      "appleTeamId": "8A47NKRZSJ",
+      "bundleIdentifier": "app.openbotnc.mobile",
       "supportsTablet": true,
-      "associatedDomains": ["applinks:openbot.run"],
       "infoPlist": {
-        "NSLocalNetworkUsageDescription": "Allow OpenBot to connect to your desktop during local development.",
+        "NSLocalNetworkUsageDescription": "Allow OpenBot-NC to connect to your desktop during local development.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         },
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": ["fetch"],
-        "BGTaskSchedulerPermittedIdentifiers": ["run.openbot.mobile.refresh"]
+        "BGTaskSchedulerPermittedIdentifiers": ["app.openbotnc.mobile.refresh"]
       },
       "icon": "./assets/icons/app-icon.icon"
     },
     "android": {
-      "package": "run.openbot.mobile",
+      "package": "app.openbotnc.mobile",
       "icon": "./assets/icons/app-icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons/android-adaptive-eyes.png",
@@ -45,7 +43,6 @@
     "plugins": [
       "./plugins/with-rocketsim",
       "./plugins/with-workspace-bundle-inputs",
-      "./plugins/with-update-channel",
       "./plugins/with-app-icons",
       "./plugins/with-android-view-preallocation-off",
       "./plugins/with-android-optional-features",
@@ -70,8 +67,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow OpenBot to use your camera to scan QR codes.",
-          "microphonePermission": "Allow OpenBot to use the microphone to dictate messages.",
+          "cameraPermission": "Allow OpenBot-NC to use your camera to scan QR codes.",
+          "microphonePermission": "Allow OpenBot-NC to use the microphone to dictate messages.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
         }
@@ -79,49 +76,30 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow OpenBot to access the photos you choose to share.",
-          "cameraPermission": "Allow OpenBot to use your camera to add photos.",
-          "microphonePermission": "Allow OpenBot to use the microphone to dictate messages."
+          "photosPermission": "Allow OpenBot-NC to access the photos you choose to share.",
+          "cameraPermission": "Allow OpenBot-NC to use your camera to add photos.",
+          "microphonePermission": "Allow OpenBot-NC to use the microphone to dictate messages."
         }
       ],
       [
         "expo-media-library",
         {
-          "photosPermission": "Allow OpenBot to access the photos you choose to share.",
-          "savePhotosPermission": "Allow OpenBot to save images and videos you download from a chat to your photo library.",
+          "photosPermission": "Allow OpenBot-NC to access the photos you choose to share.",
+          "savePhotosPermission": "Allow OpenBot-NC to save images and videos you download from a chat to your photo library.",
           "granularPermissions": ["photo"]
-        }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/icons/notification-icon.png",
-          "color": "#6960F1"
-        }
-      ],
-      [
-        "./plugins/with-notification-sounds",
-        {
-          "sounds": [
-            "./assets/sounds/openbot-task.wav",
-            "./assets/sounds/openbot-warm.wav",
-            "./assets/sounds/openbot-mech.wav",
-            "./assets/sounds/openbot-bubble.wav",
-            "./assets/sounds/openbot-press.wav"
-          ]
         }
       ],
       "expo-secure-store",
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Allow OpenBot to use Face ID to unlock the app."
+          "faceIDPermission": "Allow OpenBot-NC to use Face ID to unlock the app."
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow OpenBot to send your current location to an agent when you tap Share once, so it can answer questions about places near you.",
+          "locationWhenInUsePermission": "Allow OpenBot-NC to send your current location to an agent when you tap Share once, so it can answer questions about places near you.",
           "locationAlwaysAndWhenInUsePermission": false,
           "locationAlwaysPermission": false,
           "locationFullAccuracyPermission": false,
@@ -146,8 +124,8 @@
         {
           "ios": {
             "enabled": true,
-            "appGroupId": "group.run.openbot.mobile",
-            "extensionBundleIdentifier": "run.openbot.mobile.ShareExtension",
+            "appGroupId": "group.app.openbotnc.mobile",
+            "extensionBundleIdentifier": "app.openbotnc.mobile.ShareExtension",
             "activationRule": {
               "supportsText": true,
               "supportsWebUrlWithMaxCount": 1,
@@ -223,28 +201,10 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "Allow OpenBot to use the microphone to dictate messages.",
-          "speechRecognitionPermission": "Allow OpenBot to turn your speech into message text."
+          "microphonePermission": "Allow OpenBot-NC to use the microphone to dictate messages.",
+          "speechRecognitionPermission": "Allow OpenBot-NC to turn your speech into message text."
         }
       ],
-      [
-        "expo-widgets",
-        {
-          "bundleIdentifier": "run.openbot.mobile.ExpoWidgetsTarget",
-          "groupIdentifier": "group.run.openbot.mobile",
-          "enablePushNotifications": true,
-          "frequentUpdates": true
-        }
-      ],
-      [
-        "./plugins/with-notification-service",
-        {
-          "targetName": "OpenBotNotificationService",
-          "bundleIdentifier": "run.openbot.mobile.NotificationService",
-          "groupIdentifier": "group.run.openbot.mobile"
-        }
-      ],
-      "./plugins/with-shortcuts",
       "./plugins/with-xcode-warning-fixes"
     ],
     "experiments": {
@@ -252,22 +212,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "eeec730f-c8f4-42c0-a750-64df8af14940"
-      }
-    },
-    "owner": "openbot",
-    "runtimeVersion": {
-      "policy": "fingerprint"
-    },
-    "updates": {
-      "url": "https://updates.openbot.run/manifest",
-      "codeSigningCertificate": "./certs/certificate.pem",
-      "codeSigningMetadata": {
-        "keyid": "main",
-        "alg": "rsa-v1_5-sha256"
-      }
+      "router": {}
     }
   }
 }

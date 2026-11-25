@@ -24,7 +24,6 @@ import {
   decodeInstalledSkills,
   decodeLibraryFoldersSnapshot,
   decodeMachineMetrics,
-  decodeStorageDisk,
   decodeStorageUsage,
   type HiddenAgent,
   isAgentMemory,
@@ -79,7 +78,6 @@ import {
 } from "@openbot/contracts/team-protocol/agent-host-settings-v1";
 import { AGENT_IMPORT_CAPABILITY, AGENT_IMPORT_UPLOAD_BYTES } from "@openbot/contracts/team-protocol/agent-import-v1";
 import { AGENT_IMPORT_V2_CAPABILITY } from "@openbot/contracts/team-protocol/agent-import-v2";
-import { AGENT_INSTALL_CAPABILITY } from "@openbot/contracts/team-protocol/agent-install-v1";
 import {
   AGENT_INSTRUCTIONS_CAPABILITY,
   AGENT_INSTRUCTIONS_ROUTES,
@@ -87,7 +85,6 @@ import {
 import { AGENT_MEMORIES_CAPABILITY } from "@openbot/contracts/team-protocol/agent-memories-v1";
 import { AGENT_MEMORY_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/agent-memory-limit-v1";
 import { AGENT_NEW_CHAT_CAPABILITY, AGENT_NEW_CHAT_ROUTES } from "@openbot/contracts/team-protocol/agent-new-chat-v1";
-import { AGENT_NOTIFICATION_LEVELS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-notification-levels-v1";
 import {
   AGENT_PLAN_CARD_CAPABILITY,
   AGENT_PLAN_CARD_ROUTES,
@@ -108,7 +105,6 @@ import {
 import { AGENT_THREAD_FILES_CAPABILITY } from "@openbot/contracts/team-protocol/agent-thread-files-v1";
 import { AGENT_THREAD_READS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-thread-reads-v1";
 import { AGENT_THREADS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-threads-v1";
-import { AGENT_UPDATE_CAPABILITY } from "@openbot/contracts/team-protocol/agent-update-v1";
 import {
   BACKGROUND_PROCESSES_CAPABILITY,
   BACKGROUND_PROCESSES_ROUTES,
@@ -150,7 +146,6 @@ import { HOST_MEMBER_UPDATE_CAPABILITY } from "@openbot/contracts/team-protocol/
 import { HOST_PERSONALITY_CAPABILITY } from "@openbot/contracts/team-protocol/host-personality-v1";
 import { HOST_RELEASE_CAPABILITY } from "@openbot/contracts/team-protocol/host-release-v1";
 import { HOST_RESTART_CAPABILITY } from "@openbot/contracts/team-protocol/host-restart-v1";
-import { HOST_SIGNAL_HOME_CAPABILITY } from "@openbot/contracts/team-protocol/host-signal-home-v1";
 import { HOST_TIMEZONE_CAPABILITY } from "@openbot/contracts/team-protocol/host-timezone-v1";
 import { HOST_TURN_LIMITS_CAPABILITY } from "@openbot/contracts/team-protocol/host-turn-limits-v1";
 import { HOST_UPDATE_CAPABILITY } from "@openbot/contracts/team-protocol/host-update-v1";
@@ -195,11 +190,6 @@ import {
 import { SIGN_IN_RELAY_CAPABILITY } from "@openbot/contracts/team-protocol/sign-in-relay-v1";
 import { SKILL_LEARNING_CAPABILITY } from "@openbot/contracts/team-protocol/skill-learning-v1";
 import { SKILLS_ADMIN_CAPABILITY } from "@openbot/contracts/team-protocol/skills-admin-v1";
-import { STORAGE_DISK_CAPABILITY, STORAGE_DISK_ROUTES } from "@openbot/contracts/team-protocol/storage-disk-v1";
-import {
-  STORAGE_USER_FILES_CAPABILITY,
-  STORAGE_USER_FILES_ROUTES,
-} from "@openbot/contracts/team-protocol/storage-user-files-v1";
 import { STORAGE_ROUTES } from "@openbot/contracts/team-protocol/storage-v1";
 import { USAGE_CREDITS_CAPABILITY } from "@openbot/contracts/team-protocol/usage-credits-v1";
 import type { TeamProtocolV2Json } from "@openbot/contracts/team-protocol/v2";
@@ -266,7 +256,6 @@ import {
   getHostMemoryReview,
   getHostPersonality,
   getHostReleaseStatus,
-  getHostSignalHome,
   getHostSkillLearning,
   getHostTimezone,
   getHostTurnLimits,
@@ -279,9 +268,6 @@ import {
   importHostVaultCsv,
   includeAgentFolder,
   installAgentSkill,
-  installAgentTemplate,
-  installMarketplaceAgent,
-  listAgentNotificationLevels,
   listAgentSkills,
   listEventActivity,
   listEventRoutines,
@@ -322,7 +308,6 @@ import {
   saveHostVaultItem,
   saveMcpServer,
   setAgentHidden,
-  setAgentNotificationLevel,
   setAgentProviderAccount,
   setAgentSessionSetting,
   setAgentSkillEnabled,
@@ -333,13 +318,11 @@ import {
   setHostMcpAccess,
   setHostMemoryReview,
   setHostPersonality,
-  setHostSignalHome,
   setHostSkillLearning,
   setHostTimezone,
   setHostTurnLimits,
   setHostUpdateSettings,
   setMcpServerEnabled,
-  setOwnServerNotificationLevel,
   setRoutineResultDestination,
   signInRelayStatus,
   signOutMcpServer,
@@ -407,6 +390,12 @@ import type { QueryClient } from "@tanstack/react-query";
 import { Effect } from "effect";
 import * as Crypto from "expo-crypto";
 import { createProviderAdmin } from "@/features/servers/model/provider-admin";
+import {
+  listServerMembers,
+  readCurrentMember,
+  removeServerMember,
+  updateServerMember,
+} from "@/features/servers/model/server-members";
 import { saveAgentAvatar, savedAgentAvatar } from "@/features/workspace/model/agent-avatar-cache";
 import { decodeConversationSearchPage } from "@/features/workspace/model/conversation";
 import { type QueryScope, queryKeys } from "@/features/workspace/model/query-keys";
@@ -492,9 +481,12 @@ type HostRequestActions = Pick<
   | "uninstallAgentSkill"
   | "loadAgentStorage"
   | "loadServerStorage"
+  | "loadServerMembers"
+  | "loadCurrentMember"
+  | "updateServerMember"
+  | "removeServerMember"
   | "loadLibraryFolders"
   | "changeLibraryFolders"
-  | "loadServerDisk"
   | "loadMachineMetrics"
   | "clearServerStorage"
   | "loadAgentAdminSettings"
@@ -544,8 +536,6 @@ type HostRequestActions = Pick<
   | "setServerTurnLimits"
   | "loadServerVoiceModel"
   | "changeServerVoiceModel"
-  | "loadServerSignalHome"
-  | "setServerSignalHome"
   | "loadAgentMemoryLimit"
   | "setAgentMemoryLimit"
   | "loadMemoryReview"
@@ -559,9 +549,6 @@ type HostRequestActions = Pick<
   | "loadServerRoles"
   | "setServerRoles"
   | "loadServerAuditLog"
-  | "loadAgentNotificationLevels"
-  | "setAgentNotificationLevel"
-  | "setOwnServerNotificationLevel"
   | "githubConnector"
   | "loadGitHubRepositories"
   | "loadOnePasswordConnector"
@@ -649,8 +636,6 @@ type HostRequestActions = Pick<
   | "publishAgentTemplate"
   | "unpublishAgentTemplate"
   | "deleteStoredFile"
-  | "installAgentTemplate"
-  | "installMarketplaceAgent"
   | "mcpSignInRelay"
   | "loadAgentAvatar"
   | "duplicateAgent"
@@ -750,12 +735,10 @@ export function createHostRequestChecks(capabilities: ServerCapabilities): HostR
     canPauseWorkflows: (serverId) => has(serverId, WORKFLOWS_CAPABILITY) && has(serverId, WORKFLOWS_PAUSE_CAPABILITY),
     canReadServerStorage: (serverId) => has(serverId, STORAGE_CAPABILITY),
     canOrganizeLibrary: (serverId) => has(serverId, STORAGE_CAPABILITY) && has(serverId, LIBRARY_FOLDERS_CAPABILITY),
-    canSetAgentNotificationLevel: (serverId) => has(serverId, AGENT_NOTIFICATION_LEVELS_CAPABILITY),
     canStartNewChat: (serverId) => has(serverId, CONTEXT_RESET_CAPABILITY),
     canCompactContext: (serverId) => has(serverId, CONTEXT_COMPACT_CAPABILITY),
     canDeleteChatHistory: (serverId) => has(serverId, CHAT_HISTORY_CAPABILITY),
     canChooseNewAgentModel: (serverId) => has(serverId, TEAM_AGENT_CREATE_MODEL_CAPABILITY),
-    canInstallAgentTemplate: (serverId) => has(serverId, AGENT_INSTALL_CAPABILITY),
     canEditQueue: (serverId) => has(serverId, TEAM_QUEUE_EDIT_CAPABILITY),
     canReadModelSteering: (serverId) => has(serverId, MODEL_STEERING_CAPABILITY),
     canRetryMessage: (serverId) => has(serverId, TEAM_MESSAGE_CLIENT_ID_CAPABILITY),
@@ -846,8 +829,6 @@ export function createHostRequestActions({
     capabilityApi(serverId, HOST_TIMEZONE_CAPABILITY, "mobile.server.settings.timezoneUnsupported");
   const turnLimitsAdmin = (serverId: string) =>
     capabilityApi(serverId, HOST_TURN_LIMITS_CAPABILITY, "mobile.server.settings.turnLimitsUnsupported");
-  const signalHomeAdmin = (serverId: string) =>
-    capabilityApi(serverId, HOST_SIGNAL_HOME_CAPABILITY, "mobile.server.settings.signalHomeUnsupported");
   const voiceModelAdmin = (serverId: string) =>
     capabilityApi(serverId, HOST_VOICE_MODEL_CAPABILITY, "mobile.server.settings.voiceModelUnsupported");
   const memoryLimitAdmin = (serverId: string) =>
@@ -866,8 +847,6 @@ export function createHostRequestActions({
     capabilityApi(serverId, MCP_ACCESS_CAPABILITY, "mobile.server.mcp.accessUnsupported");
   const auditAdmin = (serverId: string) =>
     capabilityApi(serverId, SERVER_AUDIT_CAPABILITY, "mobile.server.audit.unsupported");
-  const notificationLevelsApi = (serverId: string) =>
-    capabilityApi(serverId, AGENT_NOTIFICATION_LEVELS_CAPABILITY, "mobile.agent.notificationLevel.unsupported");
   const connectorsAdmin = (serverId: string) =>
     capabilityApi(serverId, CONNECTORS_CAPABILITY, "mobile.server.connectors.unsupported");
   const onePasswordAdmin = (serverId: string) =>
@@ -926,8 +905,6 @@ export function createHostRequestActions({
     loadServerTurnLimits: async (serverId) => runTeamRequest(getHostTurnLimits(turnLimitsAdmin(serverId))),
     setServerTurnLimits: async (input, serverId) => runTeamRequest(setHostTurnLimits(turnLimitsAdmin(serverId), input)),
     loadServerVoiceModel: async (serverId) => runTeamRequest(getHostVoiceModel(voiceModelAdmin(serverId))),
-    loadServerSignalHome: async (serverId) => runTeamRequest(getHostSignalHome(signalHomeAdmin(serverId))),
-    setServerSignalHome: async (home, serverId) => runTeamRequest(setHostSignalHome(signalHomeAdmin(serverId), home)),
     changeServerVoiceModel: async (change, serverId) =>
       runTeamRequest(changeHostVoiceModel(voiceModelAdmin(serverId), change)),
     loadAgentMemoryLimit: async (serverId) => runTeamRequest(getHostAgentMemoryLimit(memoryLimitAdmin(serverId))),
@@ -951,12 +928,6 @@ export function createHostRequestActions({
     loadServerRoles: async (serverId) => runTeamRequest(getHostAgentAccess(rolesAdmin(serverId))),
     setServerRoles: async (change, serverId) => runTeamRequest(setHostAgentAccess(rolesAdmin(serverId), change)),
     loadServerAuditLog: async (serverId) => runTeamRequest(getHostAuditLog(auditAdmin(serverId))),
-    loadAgentNotificationLevels: async (serverId) =>
-      runTeamRequest(listAgentNotificationLevels(notificationLevelsApi(serverId))),
-    setAgentNotificationLevel: async (input, serverId) =>
-      runTeamRequest(setAgentNotificationLevel(notificationLevelsApi(serverId), input)),
-    setOwnServerNotificationLevel: async (level, serverId) =>
-      runTeamRequest(setOwnServerNotificationLevel(notificationLevelsApi(serverId), level)),
     githubConnector: async (route, serverId) =>
       runTeamRequest(githubConnectorRequest(connectorsAdmin(serverId), route)),
     loadGitHubRepositories: async (serverId) => runTeamRequest(githubConnectorRepositories(connectorsAdmin(serverId))),
@@ -1447,6 +1418,10 @@ export function createHostRequestActions({
         input,
       );
     },
+    loadServerMembers: (serverId) => listServerMembers(teamApi(serverId)),
+    loadCurrentMember: (serverId) => readCurrentMember(teamApi(serverId)),
+    updateServerMember: (change, serverId) => updateServerMember(teamApi(serverId), change),
+    removeServerMember: (memberId, serverId) => removeServerMember(teamApi(serverId), memberId),
     loadServerStorage: async (serverId, force = false) => {
       requireCapability(capabilities, serverId, STORAGE_CAPABILITY, "mobile.workspace.error.filesUnsupported");
       const input = { scope: "host" as const, ...(force ? { force: true } : {}) };
@@ -1478,13 +1453,6 @@ export function createHostRequestActions({
         decodeTeamProtocolV2Json(action),
         serverId,
       );
-    },
-    loadServerDisk: async (serverId) => {
-      if (has(serverId, STORAGE_USER_FILES_CAPABILITY))
-        return request("POST", STORAGE_USER_FILES_ROUTES.disk, decodeStorageDisk, {}, serverId);
-      if (has(serverId, STORAGE_DISK_CAPABILITY))
-        return request("POST", STORAGE_DISK_ROUTES.disk, decodeStorageDisk, {}, serverId);
-      return null;
     },
     loadMachineMetrics: async (serverId) => {
       requireCapability(capabilities, serverId, MACHINE_RESOURCES_CAPABILITY, "mobile.server.machine.unsupported");
@@ -1700,27 +1668,6 @@ export function createHostRequestActions({
     deleteStoredFile: async (fileId, serverId) => {
       requireCapability(capabilities, serverId, STORAGE_CAPABILITY, "mobile.workspace.error.filesUnsupported");
       await request("POST", STORAGE_ROUTES.deleteFile, ignoreResponse, { fileId }, serverId);
-    },
-    installAgentTemplate: async (input, serverId) => {
-      requireCapability(capabilities, serverId, AGENT_INSTALL_CAPABILITY, "mobile.link.template.error.unsupported");
-      return runTeamRequest(installAgentTemplate(teamApi(serverId), input));
-    },
-    installMarketplaceAgent: async (input, serverId) => {
-      if (input.agentId)
-        requireCapability(
-          capabilities,
-          serverId,
-          AGENT_UPDATE_CAPABILITY,
-          "mobile.marketplace.error.agentUpdateUnsupported",
-        );
-      else
-        requireCapability(
-          capabilities,
-          serverId,
-          AGENT_INSTALL_CAPABILITY,
-          "mobile.marketplace.error.agentUnsupported",
-        );
-      return runTeamRequest(installMarketplaceAgent(teamApi(serverId), input));
     },
     mcpSignInRelay: (serverId) => {
       const relay = capabilityApi(serverId, SIGN_IN_RELAY_CAPABILITY, "mobile.marketplace.error.signInUnsupported");

@@ -45,7 +45,7 @@ function useChannelFolders(serverId: string, channelId: string, enabled: boolean
 }
 
 function alertChannelFolderFailure(cause: unknown) {
-  alertFolderFailure(cause, "team");
+  alertFolderFailure(cause);
 }
 
 export function ChannelFoldersRow({

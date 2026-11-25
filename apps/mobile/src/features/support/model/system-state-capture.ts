@@ -1,6 +1,5 @@
 import { Camera } from "expo-camera";
 import { Paths } from "expo-file-system";
-import * as Notifications from "expo-notifications";
 import { AppState } from "react-native";
 import { speechRecognition } from "@/shared/lib/speech-recognition";
 import { supportLog } from "./support-log";
@@ -42,15 +41,14 @@ function freeStorage() {
 
 async function logState(): Promise<void> {
   const speech = speechRecognition;
-  const [notifications, microphone, camera] = await Promise.all([
-    read(() => Notifications.getPermissionsAsync()),
+  const [microphone, camera] = await Promise.all([
     read(speech ? () => speech.getMicrophonePermissionsAsync() : undefined),
     read(() => Camera.getCameraPermissionsAsync()),
   ]);
-  const text = `System: notifications ${notifications}, microphone ${microphone}, camera ${camera}, free storage ${freeStorage()}`;
+  const text = `System: microphone ${microphone}, camera ${camera}, free storage ${freeStorage()}`;
   if (text === last) return;
   last = text;
-  supportLog.add(notifications === "denied" ? "warn" : "info", "app", text);
+  supportLog.add("info", "app", text);
 }
 
 export function installSystemState(): void {

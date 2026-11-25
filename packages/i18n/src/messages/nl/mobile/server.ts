@@ -301,8 +301,6 @@ export const messages = {
   "mobile.server.settings.timezoneUnavailable":
     "Maak verbinding met deze server als eigenaar of beheerder om de tijdzone te wijzigen.",
   "mobile.server.settings.timezoneUnsupported": "Werk OpenBot bij op deze server om de tijdzone hier te wijzigen.",
-  "mobile.server.settings.signalHomeUnsupported":
-    "Werk OpenBot op deze server bij om de Signal-server hier te wijzigen.",
   "mobile.server.settings.voiceModelDescription":
     "Agents op deze server gebruiken dit model om het geluid van video’s zonder ondertiteling uit te schrijven.",
   "mobile.server.settings.voiceModelLoading": "Spraakherkenning laden…",
@@ -1502,4 +1500,24 @@ export const messages = {
     "Maak verbinding met een andere server als eigenaar of beheerder om er agents naar te kopiëren.",
   "mobile.server.providers.updateAll": "Alles updaten",
   "mobile.server.providers.updateAllFailed": "Sommige updates zijn niet gestart. Probeer het opnieuw.",
+  "mobile.server.settings.members": "Leden",
+  "mobile.server.route.member": "Lid",
+  "mobile.server.members.remove": "Lid verwijderen",
+  "mobile.server.members.role": "Rol",
+  "mobile.server.members.updateFailed": "Kan dit lid niet bijwerken. Probeer het opnieuw.",
+  "mobile.server.members.loadFailed": "Kan leden niet laden. Vernieuw om het opnieuw te proberen.",
+  "mobile.server.members.empty": "Geen leden.",
+  "mobile.server.members.loading": "Leden laden…",
+  "mobile.server.members.rowLabel": "{name}, {role}",
+  "mobile.server.members.you": "{name} (jij)",
+  "mobile.server.members.gone": "Deze persoon is geen lid meer van deze server.",
+  "mobile.server.members.ownerHint":
+    "De eigenaar heeft volledige toegang tot deze server. Je kunt de rol van de eigenaar niet wijzigen.",
+  "mobile.server.members.joined": "Lid sinds",
+  "mobile.server.members.removeTitle": "{name} verwijderen?",
+  "mobile.server.roles.memberHint": "Een lid krijgt de hoogste toegang van Iedereen en van zijn rollen.",
+  "mobile.server.roles.memberEmpty": "Deze server heeft geen rollen.",
+  "mobile.server.roles.memberTitle": "Rollen van {name}",
+  "mobile.server.roles.memberNone": "Geen rollen",
+  "mobile.server.roles.memberAdmin": "Eigenaren en beheerders kunnen alle agents gebruiken.",
 } as const satisfies PartialTranslation<typeof source>;

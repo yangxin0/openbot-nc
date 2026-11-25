@@ -296,8 +296,6 @@ export const messages = {
     "タイムゾーンを変更するには、オーナーまたは管理者としてこのサーバーに接続してください。",
   "mobile.server.settings.timezoneUnsupported":
     "ここでタイムゾーンを変更するには、このサーバーの OpenBot を更新してください。",
-  "mobile.server.settings.signalHomeUnsupported":
-    "ここで Signal サーバーを変更するには、このサーバーの OpenBot を更新してください。",
   "mobile.server.settings.voiceModelDescription":
     "このサーバーのエージェントは、字幕のない動画の音声をこのモデルで文字起こしします。",
   "mobile.server.settings.voiceModelLoading": "音声認識を読み込み中…",
@@ -1507,4 +1505,24 @@ export const messages = {
     "エージェントをコピーするには、オーナーまたは管理者として別のサーバーに接続してください。",
   "mobile.server.providers.updateAll": "すべて更新",
   "mobile.server.providers.updateAllFailed": "一部の更新を開始できませんでした。もう一度お試しください。",
+  "mobile.server.settings.members": "メンバー",
+  "mobile.server.route.member": "メンバー",
+  "mobile.server.members.remove": "メンバーを削除",
+  "mobile.server.members.role": "役割",
+  "mobile.server.members.updateFailed": "このメンバーを更新できませんでした。もう一度お試しください。",
+  "mobile.server.members.loadFailed": "メンバーを読み込めませんでした。更新してもう一度お試しください。",
+  "mobile.server.members.empty": "メンバーはいません。",
+  "mobile.server.members.loading": "メンバーを読み込んでいます…",
+  "mobile.server.members.rowLabel": "{name}、{role}",
+  "mobile.server.members.you": "{name}（あなた）",
+  "mobile.server.members.gone": "このユーザーはこのサーバーのメンバーではなくなりました。",
+  "mobile.server.members.ownerHint":
+    "オーナーはこのサーバーのすべてにアクセスできます。オーナーのロールは変更できません。",
+  "mobile.server.members.joined": "参加日",
+  "mobile.server.members.removeTitle": "{name} を削除しますか？",
+  "mobile.server.roles.memberHint": "メンバーには、全員と自分のロールのうち最も高いアクセス権が適用されます。",
+  "mobile.server.roles.memberEmpty": "このサーバーにはロールがありません。",
+  "mobile.server.roles.memberTitle": "{name} のロール",
+  "mobile.server.roles.memberNone": "ロールなし",
+  "mobile.server.roles.memberAdmin": "オーナーと管理者はすべてのエージェントを使えます。",
 } as const satisfies PartialTranslation<typeof source>;

@@ -15,7 +15,6 @@ import PinOff from "lucide-react-native/icons/pin-off";
 import Plus from "lucide-react-native/icons/plus";
 import Settings from "lucide-react-native/icons/settings";
 import Sparkles from "lucide-react-native/icons/sparkles";
-import Store from "lucide-react-native/icons/store";
 import Waypoints from "lucide-react-native/icons/waypoints";
 import {
   Fragment,
@@ -39,7 +38,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useCSSVariable, useUniwind } from "uniwind";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import type { MobileSession } from "@/features/auth/context/mobile-session-context";
 import {
   type DrawerToolId,
@@ -55,6 +53,7 @@ import { serverRowState } from "@/features/workspace/model/server-row-state";
 import { serverStatusLabel, showsOnline } from "@/features/workspace/model/server-status";
 import { type MenuAction, type MenuComponentRef, MenuView } from "@/shared/components/menu-view";
 import { ProfileAvatar } from "@/shared/components/profile-avatar";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { useReducedMotion } from "@/shared/lib/motion";
 import { isAndroid, longPressDelay } from "@/shared/lib/platform";
@@ -246,7 +245,6 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
       const text = currentText();
       showFailureAlert(
         error,
-        "team",
         text.t(EXIT_TEXT[exit].failed, { name: server.name }),
         text.errorMessage(error, text.t("mobile.server.drawer.actionFailed")),
       );
@@ -266,7 +264,6 @@ export const ServerDrawerContent = memo(function ServerDrawerContent({
       const text = currentText();
       showFailureAlert(
         error,
-        "team",
         text.t(VISIBILITY_TEXT[visibility].failed, { name: server.name }),
         text.errorMessage(error, text.t("mobile.server.drawer.actionFailed")),
       );
@@ -702,7 +699,6 @@ function DrawerServerTools({
       tasks: { pathname: "/server-tasks", params: { serverId } },
       routines: { pathname: "/server-routines", params: { serverId } },
       workflows: { pathname: "/server-workflows", params: { serverId } },
-      marketplace: { pathname: "/server-marketplace", params: { serverId } },
       usage: { pathname: "/server-usage", params: { serverId } },
       library: { pathname: "/server-library", params: { serverId } },
       providers: { pathname: "/server-settings/providers", params: { serverId } },
@@ -731,7 +727,6 @@ function DrawerServerTools({
       : workflowsRow === "disabled"
         ? { icon: Waypoints, label: t("mobile.app.route.workflows"), disabled: true }
         : null,
-    marketplace: { icon: Store, label: t("mobile.app.route.marketplace") },
     usage: { icon: ChartArea, label: t("mobile.app.route.usage"), value: values.usage },
     library:
       library === "hidden"

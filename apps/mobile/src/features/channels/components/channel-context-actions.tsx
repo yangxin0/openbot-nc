@@ -4,9 +4,9 @@ import SquarePen from "lucide-react-native/icons/square-pen";
 import Trash2 from "lucide-react-native/icons/trash";
 import { useState } from "react";
 import { Alert } from "react-native";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import { SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
 import { RowIcon } from "@/features/settings/components/settings-row-icon";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { currentText, useText } from "@/shared/lib/text";
 import type { MobileChannelStore } from "../model/channel-store";
@@ -55,7 +55,7 @@ export function ChannelContextActions({
             : action === "compact"
               ? (["mobile.channel.compact.failed", "mobile.channel.compact.failedBody"] as const)
               : (["mobile.channel.deleteHistory.failed", "mobile.channel.deleteHistory.failedBody"] as const);
-        showFailureAlert(cause, "team", text.t(title), text.errorMessage(cause, text.t(body)));
+        showFailureAlert(cause, text.t(title), text.errorMessage(cause, text.t(body)));
       })
       .finally(() => setRunning(null));
   }

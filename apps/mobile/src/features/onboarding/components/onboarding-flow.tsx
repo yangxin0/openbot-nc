@@ -15,7 +15,6 @@ import type { AgentColorValue } from "@/features/agents/components/agent-appeara
 import type { WelcomeHandOff } from "@/features/agents/components/empty-agents-scene";
 import { InstructionsLimit, instructionsTooLong } from "@/features/agents/components/instructions-limit";
 import { newAvatarSeed } from "@/features/agents/model/avatar-candidates";
-import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
 import { AgentStep } from "@/features/onboarding/components/agent-step";
 import { ConversationStep } from "@/features/onboarding/components/conversation-step";
 import { HelloStep } from "@/features/onboarding/components/hello-step";
@@ -180,11 +179,6 @@ export function OnboardingFlow({ onFinish }: { onFinish: (welcome?: WelcomeHandO
   const [created, setCreated] = useState<{ agentId: string; withTask: boolean } | null>(null);
   const [openingChat, setOpeningChat] = useState(false);
   const creating = useRef(false);
-  const stepRef = useRef<Step>("hello");
-  useEffect(() => {
-    stepRef.current = step;
-    mobileAnalytics.track("onboarding_step", { step, action: "viewed" });
-  }, [step]);
 
   const [slots, setSlots] = useState<Partial<Record<Step, HeroSlotRect>>>({});
   const [heroOrigin, setHeroOrigin] = useState({ x: 0, y: 0 });
@@ -246,10 +240,6 @@ export function OnboardingFlow({ onFinish }: { onFinish: (welcome?: WelcomeHandO
     (next: Step, nextDirection: 1 | -1) => {
       void KeyboardController.dismiss();
       heroDrag.set(0);
-      mobileAnalytics.track("onboarding_step", {
-        step: stepRef.current,
-        action: nextDirection === 1 ? "next" : "back",
-      });
       setDirection(nextDirection);
       setStep(next);
     },
@@ -321,8 +311,6 @@ export function OnboardingFlow({ onFinish }: { onFinish: (welcome?: WelcomeHandO
   const skip = () => {
     if (finishing.current) return;
     finishing.current = true;
-    mobileAnalytics.track("onboarding_step", { step, action: "skipped" });
-    mobileAnalytics.track("onboarding_completed", { skipped: true });
     void haptics.selection();
     void KeyboardController.dismiss();
     const place = step === "hello" ? primaryPlace.current : null;
@@ -374,8 +362,6 @@ export function OnboardingFlow({ onFinish }: { onFinish: (welcome?: WelcomeHandO
   const openChat = () => {
     if (!created || openingChat) return;
     setOpeningChat(true);
-    mobileAnalytics.track("onboarding_step", { step: "ready", action: "next" });
-    mobileAnalytics.track("onboarding_completed", { skipped: false });
     router.push({ pathname: "/chat/[agentId]", params: { agentId: created.agentId } });
   };
 

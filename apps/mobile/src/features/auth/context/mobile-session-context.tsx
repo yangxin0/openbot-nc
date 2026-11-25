@@ -10,7 +10,6 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
 import { deleteComposerDrafts } from "@/features/chat/model/composer-drafts";
 import { deleteLocationAlwaysAllowed } from "@/features/chat/model/location-always-allowed";
 import { deleteSideQuestions } from "@/features/chat/model/side-questions";
@@ -94,7 +93,6 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
             }),
           }
         : null;
-    mobileAnalytics.setUser(null);
     sessionRef.current = session;
     setSessionState(session);
   }, []);

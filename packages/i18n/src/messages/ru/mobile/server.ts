@@ -330,8 +330,6 @@ export const messages = {
     "Подключитесь к этому серверу как владелец или администратор, чтобы изменить его часовой пояс.",
   "mobile.server.settings.timezoneUnsupported":
     "Обновите OpenBot на этом сервере, чтобы изменить здесь его часовой пояс.",
-  "mobile.server.settings.signalHomeUnsupported":
-    "Обновите OpenBot на этом сервере, чтобы сменить здесь его сервер Signal.",
   "mobile.server.settings.voiceModelDescription":
     "Агенты на этом сервере используют эту модель, чтобы расшифровывать звук видео без субтитров.",
   "mobile.server.settings.voiceModelLoading": "Загрузка распознавания речи…",
@@ -1694,4 +1692,23 @@ export const messages = {
     "Подключитесь к другому серверу как владелец или администратор, чтобы скопировать на него агентов.",
   "mobile.server.providers.updateAll": "Обновить все",
   "mobile.server.providers.updateAllFailed": "Некоторые обновления не запустились. Попробуйте ещё раз.",
+  "mobile.server.settings.members": "Участники",
+  "mobile.server.route.member": "Участник",
+  "mobile.server.members.remove": "Удалить участника",
+  "mobile.server.members.role": "Роль",
+  "mobile.server.members.updateFailed": "Не удалось обновить участника. Повторите попытку.",
+  "mobile.server.members.loadFailed": "Не удалось загрузить участников. Обновите экран и повторите попытку.",
+  "mobile.server.members.empty": "Участников нет.",
+  "mobile.server.members.loading": "Загрузка участников…",
+  "mobile.server.members.rowLabel": "{name}, {role}",
+  "mobile.server.members.you": "{name} (вы)",
+  "mobile.server.members.gone": "Этот человек больше не участник этого сервера.",
+  "mobile.server.members.ownerHint": "Владелец имеет полный доступ к этому серверу. Роль владельца изменить нельзя.",
+  "mobile.server.members.joined": "Присоединился",
+  "mobile.server.members.removeTitle": "Удалить {name}?",
+  "mobile.server.roles.memberHint": "Участник получает наивысший доступ из роли «Все» и своих ролей.",
+  "mobile.server.roles.memberEmpty": "На этом сервере нет ролей.",
+  "mobile.server.roles.memberTitle": "Роли: {name}",
+  "mobile.server.roles.memberNone": "Нет ролей",
+  "mobile.server.roles.memberAdmin": "Владельцы и администраторы могут пользоваться всеми агентами.",
 } as const satisfies PartialTranslation<typeof source>;

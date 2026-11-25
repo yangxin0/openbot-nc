@@ -8,14 +8,13 @@ export type QuickActionTarget =
   | { type: "chat"; agentId: string }
   | { type: "routines"; serverId: string }
   | { type: "search" }
-  | { type: "share" }
   | { type: "support" };
 
 export interface QuickActionItem {
   id: string;
   title: string;
   subtitle: string | null;
-  icon: "agent" | "routines" | "search" | "share" | "support";
+  icon: "agent" | "routines" | "search" | "support";
 }
 
 export interface RecentAgent {
@@ -31,14 +30,13 @@ function quickActionId(target: QuickActionTarget): string {
     case "routines":
       return `routines:${target.serverId}`;
     case "search":
-    case "share":
     case "support":
       return target.type;
   }
 }
 
 export function readQuickActionId(id: string): QuickActionTarget | null {
-  if (id === "search" || id === "share" || id === "support") return { type: id };
+  if (id === "search" || id === "support") return { type: id };
   const separator = id.indexOf(":");
   const value = id.slice(separator + 1);
   if (separator < 0 || !value) return null;
@@ -133,9 +131,6 @@ export function quickActionItems({ kinds, recents, servers, activeServerId, t }:
             },
           ]
         : [],
-    share: () => [
-      { id: quickActionId({ type: "share" }), title: t("mobile.app.quickAction.share"), subtitle: null, icon: "share" },
-    ],
     support: () => [
       {
         id: quickActionId({ type: "support" }),

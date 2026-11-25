@@ -1,4 +1,3 @@
-import { hostedPlanMachineMetrics } from "@openbot/contracts/hosted-servers";
 import {
   DEFAULT_MACHINE_ALERT_SETTINGS,
   type MachineMetric,
@@ -21,7 +20,6 @@ import Svg, { Circle, G } from "react-native-svg";
 import { useCSSVariable } from "uniwind";
 import { RingArc } from "@/features/servers/components/plan-limit-ring";
 import { useMachineMetrics } from "@/features/servers/model/use-machine-metrics";
-import { useServerDisk } from "@/features/servers/model/use-server-storage";
 import { SettingsSection } from "@/features/settings/components/settings-content";
 import { useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
 import { haptics } from "@/shared/lib/haptics";
@@ -49,19 +47,10 @@ const TONE_TEXT = {
 
 export function MachineUsageSummary({ serverId }: { serverId: string }) {
   const { t } = useText();
-  const { canReadServerStorage, servers } = useMobileWorkspace();
+  const { canReadServerStorage } = useMobileWorkspace();
   const { available, query } = useMachineMetrics(serverId);
-  const server = servers.find((item) => item.id === serverId);
-  const planGb = server?.hosted === true ? (server.storageGb ?? null) : null;
-  const disk = useServerDisk(serverId, available && planGb !== null);
-  const reading = query.data;
-  if (!available || !reading || query.isError) return null;
-  const metrics =
-    planGb === null
-      ? reading
-      : disk.isPending
-        ? { ...reading, diskUsedBytes: null, diskFreeBytes: null, diskTotalBytes: null }
-        : hostedPlanMachineMetrics(reading, planGb, disk.data?.userBytes ?? null);
+  const metrics = query.data;
+  if (!available || !metrics || query.isError) return null;
   if (METRIC_ORDER.every((metric) => machineMetricPercent(metrics, metric) === null)) return null;
   const openStorage = canReadServerStorage(serverId)
     ? () => {
@@ -77,7 +66,6 @@ export function MachineUsageSummary({ serverId }: { serverId: string }) {
             key={metric}
             metrics={metrics}
             metric={metric}
-            hostedPlan={planGb !== null}
             onPress={metric === "disk" ? openStorage : undefined}
           />
         ))}
@@ -89,12 +77,10 @@ export function MachineUsageSummary({ serverId }: { serverId: string }) {
 function MachineMetricItem({
   metrics,
   metric,
-  hostedPlan,
   onPress,
 }: {
   metrics: MachineMetrics;
   metric: MachineMetric;
-  hostedPlan: boolean;
   onPress: (() => void) | undefined;
 }) {
   const text = useText();
@@ -102,7 +88,7 @@ function MachineMetricItem({
   const tone = machineMetricTone(percent, machineAlertLevel(DEFAULT_MACHINE_ALERT_SETTINGS, metric));
   const name = text.t(METRIC_LABELS[metric]);
   const percentText = percent === null ? text.t("mobile.server.machine.unknown") : text.format.percent(percent / 100);
-  const detail = metricDetail(metrics, metric, hostedPlan, text);
+  const detail = metricDetail(metrics, metric, text);
   const content = (
     <>
       <MachineMetricRing metric={metric} percent={percent ?? 0} tone={tone} />
@@ -142,12 +128,7 @@ function MachineMetricItem({
   );
 }
 
-function metricDetail(
-  metrics: MachineMetrics,
-  metric: MachineMetric,
-  hostedPlan: boolean,
-  { t, format }: MobileText,
-): string {
+function metricDetail(metrics: MachineMetrics, metric: MachineMetric, { t, format }: MobileText): string {
   if (metric === "cpu") {
     const cores = metrics.cpuMillicores / 1000;
     return t("mobile.server.machine.cores", {
@@ -158,8 +139,7 @@ function metricDetail(
   if (metric === "disk") {
     const { diskUsedBytes: used, diskTotalBytes: total } = metrics;
     if (used === null || total === null) return t("mobile.server.machine.unknown");
-    const size = hostedPlan ? format.fileSize : format.diskSize;
-    return t("mobile.server.machine.sizeDetail", { used: size(used), total: size(total) });
+    return t("mobile.server.machine.sizeDetail", { used: format.diskSize(used), total: format.diskSize(total) });
   }
   const { memoryTotalBytes: total, memoryAvailableBytes: free } = metrics;
   if (total === null || free === null) return t("mobile.server.machine.unknown");

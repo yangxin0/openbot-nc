@@ -3,22 +3,20 @@ import { router } from "expo-router";
 import { Button, Typography } from "heroui-native";
 import { useThemeColor } from "heroui-native/hooks";
 import Check from "lucide-react-native/icons/check";
-import { type ReactNode, useMemo } from "react";
+import type { ReactNode } from "react";
 import { View } from "react-native";
 import { useChatCardSurface } from "@/features/chat/components/chat-bubble-fill";
 import { dismissAppSuggestion, useAppSuggestionDismissals } from "@/features/chat/model/app-suggestion-dismissals";
-import { ListingIcon } from "@/features/marketplace/components/marketplace-parts";
-import { appListings, CONNECTOR_TAGLINES, customListing } from "@/features/marketplace/model/marketplace-listings";
-import { pluginConnectMethod, pluginInstalled } from "@/features/marketplace/model/plugin-connect";
 import { ConnectorLogo } from "@/features/servers/components/connector-logo";
-import { CONNECTOR_TITLE_KEYS, isMobileConnectorId, type MobileConnectorId } from "@/features/servers/model/connectors";
+import { CONNECTOR_TAGLINES, CONNECTOR_TITLE_KEYS, type MobileConnectorId } from "@/features/servers/model/connectors";
+import { mcpServerDetail } from "@/features/servers/model/mcp-server-draft";
 import { useConnectorRowState } from "@/features/servers/model/use-connector-rows";
 import { useMcpServerList, useMcpSignIns } from "@/features/servers/model/use-server-mcp";
 import { useMobileWorkspaceSelector } from "@/features/workspace/context/mobile-workspace-context";
 import { showsOnline } from "@/features/workspace/model/server-status";
 import { haptics } from "@/shared/lib/haptics";
 import { useText } from "@/shared/lib/text";
-import { VENDOR_SERVICE_URL } from "@/shared/lib/vendor-service";
+import { typeScale } from "@/shared/lib/type-scale";
 
 const BUTTON_SHAPE = "rounded-[8px]";
 const ICON_SIZE = 44;
@@ -32,11 +30,9 @@ export function ChatAppSuggestion({
 }: {
   serverId: string;
   messageId: string;
-  appId: string;
+  appId: MobileConnectorId;
 }) {
-  if (isMobileConnectorId(appId))
-    return <ConnectorSuggestion serverId={serverId} messageId={messageId} connector={appId} />;
-  return <PluginSuggestion serverId={serverId} messageId={messageId} slug={appId} />;
+  return <ConnectorSuggestion serverId={serverId} messageId={messageId} connector={appId} />;
 }
 
 function useServerAccess(serverId: string) {
@@ -52,50 +48,6 @@ function useServerAccess(serverId: string) {
 function blockedState(access: { online: boolean; administers: boolean }): SuggestionState {
   if (!access.online) return "pending";
   return access.administers ? "unavailable" : "notAllowed";
-}
-
-function PluginSuggestion({ serverId, messageId, slug }: { serverId: string; messageId: string; slug: string }) {
-  const canRelay = useMobileWorkspaceSelector((workspace) => workspace.canRelayMcpSignIn(serverId));
-  const macUnavailable = useMobileWorkspaceSelector((workspace) => workspace.macAppsUnavailable(serverId));
-  const { canManage, list: mcpServers } = useMcpServerList(serverId);
-  const access = useServerAccess(serverId);
-  const apiUrl = VENDOR_SERVICE_URL;
-  const listing = useMemo(() => (apiUrl ? appListings(apiUrl).find((item) => item.id === slug) : undefined), [slug]);
-  if (listing?.kind !== "app" || listing.source !== "plugin") return null;
-  const { plugin } = listing;
-  const app = plugin.apps[0] ?? null;
-  const method = app ? pluginConnectMethod(app, canRelay) : null;
-  const state: SuggestionState =
-    macUnavailable && plugin.apps.some((entry) => entry.needsMac)
-      ? "unavailable"
-      : !canManage
-        ? blockedState(access)
-        : mcpServers.data
-          ? pluginInstalled(plugin, mcpServers.data)
-            ? "connected"
-            : "available"
-          : // A failed read cannot tell; Connect opens the listing, which shows the real state.
-            mcpServers.isError
-            ? "available"
-            : "pending";
-  return (
-    <SuggestionCard
-      messageId={messageId}
-      name={listing.name}
-      tagline={listing.description}
-      icon={<ListingIcon listing={listing} size={ICON_SIZE} />}
-      state={state}
-      onConnect={() => {
-        if (method?.kind === "key" || method?.kind === "link")
-          router.push({ pathname: "/marketplace-listing/connect", params: { serverId, slug } });
-        else
-          router.push({
-            pathname: "/marketplace-listing",
-            params: { serverId, kind: "app", id: slug, name: listing.name },
-          });
-      }}
-    />
-  );
 }
 
 export function ChatMcpSignIn({
@@ -114,14 +66,13 @@ export function ChatMcpSignIn({
   const { online } = useServerAccess(serverId);
   const config = list.data?.find((item) => item.id === mcpServerId && item.transport === "http");
   if (!config) return null;
-  const listing = customListing(config);
   const signedIn = Boolean(signIns.data?.some((item) => item.mcpServerId === config.id && item.signedIn));
   return (
     <SuggestionCard
       messageId={messageId}
       name={config.name}
-      tagline={listing.description}
-      icon={<ListingIcon listing={listing} size={ICON_SIZE} />}
+      tagline={mcpServerDetail(config)}
+      icon={<NameIcon name={config.name} size={ICON_SIZE} />}
       state={!online ? "pending" : signedIn ? "connected" : canRelay ? "available" : "unavailable"}
       actionLabel={t("mobile.server.mcp.signIn")}
       actionAccessibilityLabel={t("mobile.chat.mcpSignIn.signInNamed", { name: config.name })}
@@ -176,6 +127,28 @@ function ConnectorSuggestion({
       state={state}
       onConnect={() => router.push({ pathname: "/server-settings/connector", params: { serverId, id: connector } })}
     />
+  );
+}
+
+function NameIcon({ name, size }: { name: string; size: number }) {
+  const [surface, muted] = useThemeColor(["surface-secondary", "muted"]);
+  return (
+    <View
+      className="items-center justify-center"
+      style={{
+        width: size,
+        height: size,
+        borderRadius: Math.round(size * 0.23),
+        borderCurve: "continuous",
+        backgroundColor: String(surface),
+      }}
+    >
+      <Typography.Paragraph
+        style={{ ...typeScale.rowTitle, color: String(muted), fontSize: size * 0.4, lineHeight: size * 0.5 }}
+      >
+        {name.slice(0, 1).toLocaleUpperCase()}
+      </Typography.Paragraph>
+    </View>
   );
 }
 

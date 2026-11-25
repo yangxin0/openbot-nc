@@ -2,13 +2,12 @@ import type { AnalyticsAgent } from "@openbot/contracts/ipc";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { Button, Typography } from "heroui-native";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { View } from "react-native";
 import { AgentProviderAvatar } from "@/features/agents/components/agent-provider-avatar";
 import { AgentUsageReport, type UsageAgentRow } from "@/features/agents/components/agent-usage-report";
 import { UsageLoading } from "@/features/agents/components/usage-motion";
 import { lastUsageDays, UsageRangePicker } from "@/features/agents/components/usage-range-picker";
-import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
 import { useQueryScope } from "@/features/auth/context/mobile-session-context";
 import { MachineUsageSummary } from "@/features/servers/components/machine-usage-summary";
 import { PlanLimitsSummary } from "@/features/servers/components/plan-limits-summary";
@@ -29,9 +28,6 @@ export function ServerUsageScreen() {
   const online = server?.state === "online";
   const serverAgents = agents.filter((agent) => agent.serverId === serverId);
   const [range, setRange] = useState(() => lastUsageDays());
-  useEffect(() => {
-    mobileAnalytics.track("usage_viewed", { scope: "server" });
-  }, []);
   const usage = useQuery({
     queryKey: queryKeys.serverUsage(queryScope, serverId, range),
     queryFn: () => loadHostAnalytics(range, serverId),

@@ -12,9 +12,9 @@ import { useThemeColor } from "heroui-native/hooks";
 import FileText from "lucide-react-native/icons/file-text";
 import { useEffect, useMemo, useState } from "react";
 import { Platform, View } from "react-native";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import { useMobileWorkspaceActions } from "@/features/workspace/context/mobile-workspace-context";
 import { queryKeys } from "@/features/workspace/model/query-keys";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { currentText, type MobileText, useText } from "@/shared/lib/text";
 import { createImageDimensionCache } from "../model/image-dimension-cache";
@@ -553,7 +553,6 @@ export function showFileFailure(error: unknown, title: string, text: Pick<Mobile
   void haptics.notification("error");
   showFailureAlert(
     error,
-    "turn",
     title,
     error instanceof Error ? text.sourceText(error.message) : text.t("mobile.chat.tryAgain"),
   );

@@ -28,7 +28,6 @@ import X from "lucide-react-native/icons/x";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, View } from "react-native";
 import { PERMISSION_LABEL, useAgentAdminSettings } from "@/features/agents/components/agent-access-fields";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import { useQueryScope } from "@/features/auth/context/mobile-session-context";
 import { SettingsNote, SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
 import { RowIcon } from "@/features/settings/components/settings-row-icon";
@@ -40,6 +39,7 @@ import {
 } from "@/features/workspace/context/mobile-workspace-context";
 import { queryKeys } from "@/features/workspace/model/query-keys";
 import { SheetSaveAction } from "@/shared/components/sheet-save-action";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { currentText, useText } from "@/shared/lib/text";
 import { MIRROR_IN_RTL } from "@/shared/lib/text-direction";
@@ -122,12 +122,11 @@ export function AgentFoldersRow({
   );
 }
 
-export function alertFolderFailure(cause: unknown, operation: Parameters<typeof showFailureAlert>[1] = "agent") {
+export function alertFolderFailure(cause: unknown) {
   void haptics.notification("error");
   const text = currentText();
   showFailureAlert(
     cause,
-    operation,
     text.t("mobile.agent.folders.failed"),
     text.errorMessage(cause, text.t("mobile.agent.folders.failed")),
   );

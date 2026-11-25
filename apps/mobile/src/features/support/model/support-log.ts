@@ -1,4 +1,4 @@
-import { maskIdentifiers, redactText } from "@openbot/logging";
+import { redactText } from "@openbot/logging";
 
 export type SupportLogLevel = "info" | "warn" | "error";
 export type SupportLogSource = "app" | "network" | "connection" | "console";
@@ -41,49 +41,6 @@ export function supportLogValue(value: unknown): string {
 
 export function formatSupportLogEntry(entry: SupportLogEntry): string {
   return `${new Date(entry.time).toISOString()} ${entry.level.toUpperCase().padEnd(5)} ${entry.source.padEnd(10)} ${entry.message}`;
-}
-
-const EXCERPT_LINES = 60;
-
-const REQUEST_LINE = /^(?:\S+ |unknown server )?(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) \S+ -> /u;
-const SERVER_ID_LENGTH = 8;
-
-function serverNames(entries: readonly SupportLogEntry[]): Map<string, string> {
-  const names = new Map<string, string>();
-  for (const entry of entries) {
-    if (entry.source !== "connection") continue;
-    const id = /^(\S+) /u.exec(entry.message)?.[1];
-    if (id && id !== "unknown" && !names.has(id)) names.set(id, `server-${names.size + 1}`);
-  }
-  return names;
-}
-
-function publicMessage(message: string, servers: ReadonlyMap<string, string>): string {
-  let text = message;
-  for (const [id, name] of servers) {
-    if (text.startsWith(`${id} `)) text = `${name}${text.slice(id.length)}`;
-    if (id.length >= SERVER_ID_LENGTH) text = text.replaceAll(id, name);
-  }
-  return maskIdentifiers(text.replace(/, capabilities: .*$/u, ""));
-}
-
-export function supportLogExcerpt(entries: readonly SupportLogEntry[], maxLength: number): string {
-  const taken: SupportLogEntry[] = [];
-  for (let index = entries.length - 1; index >= 0 && taken.length < EXCERPT_LINES; index -= 1) {
-    const entry = entries[index];
-    if (!entry || entry.source === "console") continue;
-    const event = entry.source === "connection" || entry.source === "app";
-    if (entry.level === "info" && (!event || REQUEST_LINE.test(entry.message))) continue;
-    taken.push(entry);
-  }
-  taken.reverse();
-  const servers = serverNames(taken);
-  const lines = taken.map((entry) =>
-    formatSupportLogEntry({ ...entry, message: publicMessage(entry.message, servers) }),
-  );
-  let length = lines.reduce((sum, line) => sum + line.length + 1, 0);
-  while (length > maxLength) length -= (lines.shift()?.length ?? 0) + 1;
-  return lines.join("\n");
 }
 
 type StoredEntry = Omit<SupportLogEntry, "id">;

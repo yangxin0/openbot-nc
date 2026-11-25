@@ -21,7 +21,6 @@ import {
   withTiming,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
-import { mobileAnalytics } from "@/features/analytics/mobile-analytics";
 import { type ReplyReading, replyVoiceFailureText, streamReply } from "@/features/voice/model/reply-voice";
 import { speechNative } from "@/features/voice/model/speech-native";
 import { useVoiceSettings } from "@/features/voice/model/voice-settings";
@@ -207,8 +206,6 @@ function createController({
   let graceTimer: ReturnType<typeof setTimeout> | null = null;
   let sessionListened = false;
   let previousRecognizerPhase: VoiceDictation["phase"] = "idle";
-  let startedAt = 0;
-  let turns = 0;
 
   const update = (change: Partial<LiveConversationState>) => setState((current) => ({ ...current, ...change }));
   const setPhase = (next: LiveConversationPhase) => {
@@ -280,7 +277,6 @@ function createController({
       update({ caption: text, error: currentText().t("mobile.chat.liveVoice.notSent") });
       return;
     }
-    turns += 1;
     const room = input().channel;
     pending = {
       clientMessageId: message.clientMessageId,
@@ -511,15 +507,8 @@ function createController({
       open = true;
       exiting = false;
       muted = false;
-      startedAt = performance.now();
-      turns = 0;
       setState(() => ({ ...CLOSED, open: true }));
       void haptics.impact("light");
-      mobileAnalytics.track("voice_conversation_action", {
-        action: "start",
-        server_kind: "remote",
-        result: "succeeded",
-      });
       presence.set(withTiming(1, PRESENCE_OPEN));
       if (online) listen();
       else {
@@ -555,13 +544,6 @@ function createController({
       dictation()?.cancel();
       update({ exit: "cancel" });
       void haptics.selection();
-      mobileAnalytics.track("voice_conversation_action", {
-        action: "end",
-        server_kind: "remote",
-        result: "succeeded",
-        duration_ms: performance.now() - startedAt,
-        turn_count: turns,
-      });
       presence.set(
         withTiming(0, PRESENCE_CLOSE, (finished) => {
           if (finished) scheduleOnRN(closed);

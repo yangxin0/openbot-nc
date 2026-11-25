@@ -64,7 +64,6 @@ interface OutboxStoreOptions {
   storage: OutboxStorage | null;
   deliver: OutboxDeliverer;
   describeError: (error: unknown) => string;
-  reportFailure?: (error: unknown, message: OutboxMessage) => void;
   now?: () => number;
   randomId: () => string;
 }
@@ -479,7 +478,6 @@ export class OutboxStore {
     } else if (!this.online.has(message.target.serverId)) {
       this.update(clientMessageId, { state: "waiting", error: null });
     } else {
-      this.options.reportFailure?.(error, message);
       this.update(clientMessageId, { state: "failed", error: this.options.describeError(error) });
     }
     void this.persist();

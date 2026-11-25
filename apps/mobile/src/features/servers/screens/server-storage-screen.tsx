@@ -1,4 +1,3 @@
-import { hostedPlanDisk } from "@openbot/contracts/hosted-servers";
 import {
   CLEARABLE_STORAGE_CATEGORIES,
   type ClearableStorageCategory,
@@ -15,10 +14,9 @@ import { Alert, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { Size, StoredFile } from "@/features/agents/components/agent-files";
 import { BloubAvatar } from "@/features/agents/components/bloub-avatar";
-import { showFailureAlert } from "@/features/analytics/failure-reports";
 import { StorageRing } from "@/features/servers/components/storage-ring";
 import { TrailingValue } from "@/features/servers/components/trailing-value";
-import { useServerDisk, useServerStorage } from "@/features/servers/model/use-server-storage";
+import { useServerStorage } from "@/features/servers/model/use-server-storage";
 import {
   SettingsContent,
   SettingsNote,
@@ -27,6 +25,7 @@ import {
 } from "@/features/settings/components/settings-content";
 import { useMobileWorkspace, useMobileWorkspaceActions } from "@/features/workspace/context/mobile-workspace-context";
 import { AndroidHeaderButton } from "@/shared/components/android-header-button";
+import { showFailureAlert } from "@/shared/lib/failure-alert";
 import { haptics } from "@/shared/lib/haptics";
 import { isAndroid, isIOS } from "@/shared/lib/platform";
 import { currentText, useText } from "@/shared/lib/text";
@@ -68,8 +67,6 @@ export function ServerStorageScreen() {
   const { clearServerStorage } = useMobileWorkspaceActions();
   const server = servers.find((item) => item.id === serverId);
   const { available, query, rescan } = useServerStorage(serverId);
-  const planGb = server?.hosted === true ? (server.storageGb ?? null) : null;
-  const disk = useServerDisk(serverId, available && planGb !== null);
   const groupColor = useStorageGroupColors();
   const [selectedGroup, setSelectedGroup] = useState<StorageGroup | null>(null);
   const [measuring, setMeasuring] = useState(false);
@@ -113,7 +110,6 @@ export function ServerStorageScreen() {
               const text = currentText();
               showFailureAlert(
                 cause,
-                "maintenance",
                 text.t("mobile.server.storage.clearFailed"),
                 text.errorMessage(cause, text.t("mobile.server.storage.clearFailedBody")),
               );
@@ -171,7 +167,7 @@ export function ServerStorageScreen() {
       )
     : [];
   const removableBytes = removable.reduce((sum, entry) => sum + entry.bytes, 0);
-  const freeBytes = planGb !== null && disk.data ? hostedPlanDisk(disk.data, planGb).freeBytes : usage.freeBytes;
+  const freeBytes = usage.freeBytes;
 
   return (
     <SettingsContent>
@@ -182,9 +178,7 @@ export function ServerStorageScreen() {
           query.isError
             ? errorMessage(query.error, t("mobile.server.storage.loadFailed"))
             : freeBytes !== null
-              ? t("mobile.server.storage.free", {
-                  size: planGb !== null ? format.fileSize(freeBytes) : format.diskSize(freeBytes),
-                })
+              ? t("mobile.server.storage.free", { size: format.diskSize(freeBytes) })
               : undefined
         }
       >

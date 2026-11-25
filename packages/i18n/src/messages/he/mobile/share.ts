@@ -12,11 +12,6 @@ export const messages = {
   "mobile.share.chooseAgent": "בחירת סוכן",
   "mobile.share.action": "שיתוף עם {name}",
   "mobile.share.extension.send": "שליחה",
-  "mobile.share.extension.footer": "OpenBot שולח את זה לסוכן עכשיו. האפליקציה לא נפתחת.",
   "mobile.share.extension.message": "הוספת הודעה",
   "mobile.share.extension.sending": "שולח אל {name}…",
-  "mobile.share.extension.sent": "נשלח אל {name}",
-  "mobile.share.extension.failed": "OpenBot לא הצליח לשלוח. יש לפתוח את האפליקציה ולשלוח משם.",
-  "mobile.share.extension.unconfirmed": "השרת לא אישר את ההודעה. יש לבדוק בצ'אט לפני שליחה חוזרת.",
-  "mobile.share.extension.openApp": "פתיחת OpenBot",
 } as const satisfies PartialTranslation<typeof source>;
