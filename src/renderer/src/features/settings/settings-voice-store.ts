@@ -1,5 +1,4 @@
 import {
-  type CodexLiveVoice,
   type DictationKeyProvider,
   ELEVENLABS_VOICE_MODEL_ID,
   type ElevenLabsSpeechVoice,
@@ -23,7 +22,6 @@ import {
 import { toast } from "@openbot/ui";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createStore } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { readAloud, stopSpeech } from "../speech/speech-playback";
 import { changeSpeechSpeed, speechSpeed, updateSpeechSettings } from "../speech/speech-speed";
 import { voicePort } from "./voice-port";
@@ -163,26 +161,10 @@ export function createSettingsVoiceStore(active: () => boolean) {
   }
 
   function downloadSpeech(): void {
-    const analytics = desktopAnalytics.scope();
-    const startedAt = performance.now();
-    const track = (phase: SpeechModelStatus["phase"]) =>
-      analytics.track("speech_model_action", {
-        action: "download",
-        entry_point: "settings",
-        result: phase === "ready" ? "succeeded" : "failed",
-        duration_ms: Math.max(0, Math.round(performance.now() - startedAt)),
-        ...(phase === "ready" ? {} : { failure_code: phase === "missing" ? "cancelled" : "download_failed" }),
-      });
     void voicePort()
       .voice.downloadSpeechModel()
-      .then((status) => {
-        track(status.phase);
-        setSpeechStatus(status);
-      })
-      .catch((error: unknown) => {
-        track("error");
-        fail(error, "settings.voice.downloadFailed");
-      });
+      .then(setSpeechStatus)
+      .catch((error: unknown) => fail(error, "settings.voice.downloadFailed"));
   }
 
   function cancelSpeech(): void {
@@ -245,14 +227,6 @@ export function createSettingsVoiceStore(active: () => boolean) {
       void saveServer({ address: server.address, apiKey: null, routes: { ...server.routes, dictation: false } });
   }
 
-  function setCodexLive(codexLive: boolean): void {
-    void saveSpeech({ codexLive });
-  }
-
-  function setCodexLiveVoice(codexLiveVoice: CodexLiveVoice | null): void {
-    void saveSpeech({ codexLiveVoice });
-  }
-
   function setTurnPause(turnPauseMs: VoiceTurnPause): void {
     void saveSpeech({ turnPauseMs });
   }
@@ -304,11 +278,6 @@ export function createSettingsVoiceStore(active: () => boolean) {
 
   function setReadReplies(readReplies: boolean): void {
     void saveSpeech({ readReplies }).then((saved) => {
-      desktopAnalytics.track("speech_settings_action", {
-        action: readReplies ? "read_replies_on" : "read_replies_off",
-        result: saved ? "succeeded" : "failed",
-        ...(saved ? {} : { failure_code: "update_failed" }),
-      });
       if (state.server?.routes.speech) return;
       if (saved && readReplies && supertonicMissing()) downloadSpeech();
     });
@@ -352,18 +321,8 @@ export function createSettingsVoiceStore(active: () => boolean) {
     setElevenLabsVoice: (elevenLabsVoice: ElevenLabsSpeechVoice) => void saveSpeech({ elevenLabsVoice }),
     setXaiVoice: (xaiVoice: XaiSpeechVoice) => void saveSpeech({ xaiVoice }),
     setReadReplies,
-    setCodexLive,
-    setCodexLiveVoice,
     setTurnPause,
-    setSpeechVoice: (voice: SpeechVoice) =>
-      void saveSpeech({ voice }).then((saved) =>
-        desktopAnalytics.track("speech_settings_action", {
-          action: "voice_changed",
-          result: saved ? "succeeded" : "failed",
-          voice,
-          ...(saved ? {} : { failure_code: "update_failed" }),
-        }),
-      ),
+    setSpeechVoice: (voice: SpeechVoice) => void saveSpeech({ voice }),
     speechSpeed,
     setSpeechSpeed: changeSpeechSpeed,
     listen,

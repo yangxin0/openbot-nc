@@ -13,10 +13,6 @@ export interface AgentDesktopApi extends PathApi<"agent"> {
   onEvent: (listener: (event: AgentEvent) => void) => () => void;
 }
 
-export type AgentTemplatesDesktopApi = GroupApi<IpcEndpoints["agentTemplates"]>;
-
-export type MarketplaceAgentsDesktopApi = GroupApi<IpcEndpoints["marketplaceAgents"]>;
-
 export interface BrowserDesktopApi extends GroupApi<IpcEndpoints["browser"]> {
   sendLiveViewInput: (input: BrowserLiveViewInput) => Promise<void>;
 }
@@ -45,23 +41,15 @@ export type PluginsDesktopApi = GroupApi<IpcEndpoints["plugins"]>;
 
 export type HostDesktopApi = GroupApi<IpcEndpoints["host"]>;
 
-export type RemoteDesktopDesktopApi = GroupApi<IpcEndpoints["remoteDesktop"]>;
+export type RelayDesktopApi = GroupApi<IpcEndpoints["relay"]>;
 
 export type VoiceDesktopApi = GroupApi<IpcEndpoints["voice"]>;
 
 export type SkillsDesktopApi = GroupApi<IpcEndpoints["skills"]>;
 
-export type HostedSitesDesktopApi = GroupApi<IpcEndpoints["hostedSites"]>;
-export type GitHubConnectorDesktopApi = GroupApi<IpcEndpoints["githubConnector"]>;
 export type LinkAccountDesktopApi = GroupApi<IpcEndpoints["linkAccount"]>;
 export type OnePasswordConnectorDesktopApi = GroupApi<IpcEndpoints["onePasswordConnector"]>;
-export type BillingDesktopApi = GroupApi<IpcEndpoints["billing"]>;
-export type ReferralDesktopApi = GroupApi<IpcEndpoints["referral"]>;
-export type CreditsDesktopApi = GroupApi<IpcEndpoints["credits"]>;
-export type LicenseDesktopApi = GroupApi<IpcEndpoints["license"]>;
 export type RoutineFeedDesktopApi = GroupApi<IpcEndpoints["routineFeed"]>;
-
-export type HostedServersDesktopApi = GroupApi<IpcEndpoints["hostedServers"]>;
 
 export type CustomProvidersDesktopApi = GroupApi<IpcEndpoints["customProviders"]>;
 

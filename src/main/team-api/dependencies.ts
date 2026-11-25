@@ -7,7 +7,6 @@ import type {
   DirectMessageRealtimeEvent,
   DirectTypingRealtimeEvent,
   McpAccessLevel,
-  RemoteControlAccess,
   RoutineResultConnectionOption,
   RoutineResultDestination,
   RoutineResultRoutineInput,
@@ -20,7 +19,6 @@ import type {
   SidebarPinsSnapshot,
   TeamPresenceSnapshot,
   UpdateHostIdentityInput,
-  VoiceLiveEvent,
   VoiceTranscriptionResult,
 } from "@openbot/contracts/ipc";
 import type { Logger } from "@openbot/logging";
@@ -44,9 +42,7 @@ import type { AgentFolders } from "../agent-folders";
 import type { AgentHostSettingsService } from "../agent-host-settings";
 import type { AgentImportService } from "../agent-import-service";
 import type { AgentInstructionsFiles } from "../agent-instructions-files";
-import type { AgentMarketplaceService } from "../agent-marketplace-service";
 import type { AgentMemoryLimitSetting } from "../agent-memory-limit-preference-store";
-import type { AgentTemplateService } from "../agent-template-service";
 import type { PreviewFile } from "../attachment-previews";
 import type { listBackgroundProcesses, stopBackgroundProcess } from "../background-processes";
 import type { BitwardenConnectorService } from "../bitwarden-connector-service";
@@ -60,21 +56,15 @@ import type { ClaudeUserSetupControl } from "../claude-user-setup-preference-sto
 import type { ClientBrowserHub } from "../client-browser-hub";
 import type { CustomAgentChanges } from "../custom-agent-changes";
 import type { PeerCustomProviderChanges } from "../custom-provider-changes";
-import type { GitHubConnectorService } from "../github-connector-service";
-import type { WorkflowGitHubDirectory } from "../github-rest";
 import type { HermesImportService } from "../hermes-import-service";
 import type { HostEventsApi } from "../host-events-api";
-import type { HostEventsService } from "../host-events-service";
-import type { HostReleaseService } from "../host-release-service";
 import type { HostService } from "../host-service";
 import type { HostSignalHomeService } from "../host-signal-home";
 import type { HostTurnLimitsPreferenceStore } from "../host-turn-limits-preference-store";
 import type { HostVoiceModelService } from "../host-voice-model";
-import type { HostedSiteDesktopService } from "../hosted-site-service";
 import type { InstanceTransferService } from "../instance-transfer-service";
 import type { McpToolRuntimePreparation } from "../ipc/mcp-server-handlers";
 import type { LibraryFoldersService } from "../library-folders-service";
-import type { LiveActivityPushService } from "../live-activity-push";
 import type { MachineAlertMonitor } from "../machine-alerts";
 import type { McpAccessControl } from "../mcp-access-store";
 import type { McpHostSignIns } from "../mcp-host-sign-ins";
@@ -92,8 +82,6 @@ import type { ProviderDetectionSettingsStore } from "../provider-detection-setti
 import type { ProviderEnvironmentControl } from "../provider-environment-store";
 import type { ProviderHostSignIns } from "../provider-host-sign-ins";
 import type { ProviderRuntimeManager } from "../provider-runtime-manager";
-import type { PushNotificationService } from "../push-notifications";
-import type { RemoteScreenGateway } from "../remote-screen-gateway";
 import type { RemoteWorkflowError } from "../remote-service-effects";
 import type { RequestedUpdate } from "../requested-update";
 import type { ServerAuditStore } from "../server-audit-store";
@@ -124,7 +112,6 @@ type TeamApiAgentMethods = Pick<
   | "generateProfile"
   | "askSideQuestion"
   | "saveSkillSuggestion"
-  | "withdrawFeedback"
   | "saveProfile"
   | "createAgent"
   | "committedAgentDuplication"
@@ -225,27 +212,10 @@ export type TeamApiMcpSignIns = Pick<
 >;
 
 export interface TeamApiConnectors {
-  github: Pick<GitHubConnectorService, "status" | "pages" | "connect" | "cancel" | "disconnect" | "repositories">;
   messaging: Pick<
     MessagingService,
-    | "slackOverview"
-    | "discordOverview"
-    | "telegramOverview"
-    | "connectSlackWorkspace"
-    | "connectDiscordGuild"
-    | "connectTelegramChat"
-    | "completeSlackWorkspace"
-    | "completeDiscordGuild"
-    | "disconnectSlackWorkspace"
-    | "disconnectDiscordGuild"
-    | "disconnectTelegramChat"
     | "reconnect"
     | "setEnabled"
-    | "addOrchestrator"
-    | "addTelegramOrchestrator"
-    | "discordAccess"
-    | "listDiscordRoles"
-    | "setDiscordAccess"
     | "whatsappOverview"
     | "whatsappLinkState"
     | "startWhatsAppLink"
@@ -276,8 +246,6 @@ export type TeamApiProviderAccounts = Pick<
   | "models"
   | "pools"
   | "setPool"
-  | "liveVoiceAccount"
-  | "setLiveVoiceAccount"
   | "usage"
   | "startSignIn"
   | "signInStatus"
@@ -310,7 +278,6 @@ export interface TeamApiBackgroundProcesses {
   list(): ReturnType<typeof listBackgroundProcesses>;
   stop(id: string): ReturnType<typeof stopBackgroundProcess>;
 }
-export type TeamApiHostedSites = Pick<HostedSiteDesktopService, "listServerSites" | "deleteServerSite">;
 
 export type TeamApiHiddenAgents = Pick<AgentService, "listHiddenAgents" | "setAgentHidden">;
 
@@ -403,18 +370,14 @@ export type TeamApiWorkflows = Pick<
   | "run"
   | "stepSettings"
   | "workflowOf"
-  | "githubHistory"
-  | "githubLastEvent"
   | "keepPicture"
   | "mediaProviders"
   | "mediaCredits"
   | "mediaCatalog"
   | "mediaPrice"
-> &
-  Pick<HostEventsService, "rotateWorkflowSecret"> & {
-    github?: WorkflowGitHubDirectory;
-    files?: Pick<WorkflowFileExporter, "source">;
-  };
+> & {
+  files?: Pick<WorkflowFileExporter, "source">;
+};
 
 export type TeamApiCrm = CrmPeopleOperations;
 
@@ -446,7 +409,6 @@ export interface TeamApiAdmin {
     >;
   };
   customAgents?: Pick<CustomAgentChanges, "list" | "save" | "remove">;
-  release?: Pick<HostReleaseService, "snapshot" | "check">;
   agents?: AgentAdminSettingsService;
   agentHost?: AgentHostSettingsService;
   agentDefaults?: AgentDefaultsSettingsService;
@@ -459,8 +421,6 @@ export interface TeamApiAdmin {
   >;
   skills?: Pick<SkillMarketplaceService, "listInstalled" | "install" | "uninstall" | "setEnabled" | "readGithub">;
   sharedTables?: Pick<AgentService, "listTables" | "deleteTable">;
-  marketplaceAgents?: Pick<AgentMarketplaceService, "install">;
-  agentTemplates?: Pick<AgentTemplateService, "install" | "preview" | "publish" | "unpublish">;
   providers?: TeamApiProviders;
   identity?: TeamApiHostIdentity;
   update?: Pick<RequestedUpdate, "snapshot" | "check" | "start" | "requestWhenIdle" | "cancel" | "changeSettings">;
@@ -578,21 +538,6 @@ export type TeamApiBrowserView = Pick<
   | "revokeTeamSession"
   | "closeRefusedSessions"
 >;
-export type TeamApiRemoteScreen = Pick<
-  RemoteScreenGateway,
-  | "handlesUpgrade"
-  | "handleUpgrade"
-  | "handlesHttp"
-  | "handleHttp"
-  | "stop"
-  | "capabilities"
-  | "createSession"
-  | "selectDisplay"
-  | "closeMemberSession"
-  | "revokeTeamSession"
-  | "revokeMember"
-> &
-  Partial<Pick<RemoteScreenGateway, "checkSetup" | "test">>;
 
 export type TeamApiOnePasswordConnector = Pick<
   OnePasswordConnectorService,
@@ -607,10 +552,6 @@ export type TeamApiPasswordManagers = Pick<
 >;
 
 export type TeamApiVault = VaultService;
-
-export type TeamApiLiveVoice = Pick<AgentService, "startLiveVoice" | "stopLiveVoice"> & {
-  subscribe(listener: (event: VoiceLiveEvent, memberId: string | null) => void): () => void;
-};
 
 export interface TeamApiVoiceTranscription {
   transcribe(audio: Uint8Array): Effect.Effect<VoiceTranscriptionResult, VoiceOperationError>;
@@ -647,10 +588,8 @@ export interface TeamApiOptions {
   workflowFolders?: TeamApiWorkflowFolders;
   machine?: TeamApiMachine;
   backgroundProcesses?: TeamApiBackgroundProcesses;
-  liveVoice?: TeamApiLiveVoice;
   voiceTranscription?: TeamApiVoiceTranscription;
   clientBrowser?: TeamApiClientBrowser;
-  hostedSites?: TeamApiHostedSites;
   agentImport?: TeamApiAgentImport;
   hermesImport?: TeamApiHermesImport;
   instanceTransfer?: TeamApiInstanceTransfer;
@@ -676,8 +615,6 @@ export interface TeamApiOptions {
   attachmentPreviews?: TeamApiAttachmentPreviews | undefined;
   browser: TeamApiBrowser;
   browserView?: TeamApiBrowserView | undefined;
-  remoteScreen?: TeamApiRemoteScreen | undefined;
-  remoteControlAccess?: (() => RemoteControlAccess) | undefined;
   redeemCentralTicket?: (
     ticket: string,
     serverId: string,
@@ -690,8 +627,6 @@ export interface TeamApiOptions {
   updateMember?: OmitThisParameter<HostService["updateMember"]> | undefined;
   removeMember?: OmitThisParameter<HostService["removeMember"]> | undefined;
   onSessionRevoked?: ((sessionId: string) => Effect.Effect<void, RemoteWorkflowError>) | undefined;
-  liveActivityPush?: LiveActivityPushService | undefined;
-  pushNotifications?: PushNotificationService | undefined;
   focusUse?: boolean | undefined;
   rateLimitCapacity?: number | undefined;
   now?: (() => number) | undefined;

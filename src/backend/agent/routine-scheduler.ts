@@ -25,7 +25,6 @@ import {
   routineConversationEventItemType,
   routineRunConversationEventItemType,
 } from "@openbot/contracts/ipc";
-import type { EventRoutine } from "@openbot/contracts/ipc-events";
 import { type DynamicRecord, isBoolean } from "@openbot/contracts/runtime-values";
 import { sourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger, redactText } from "@openbot/logging";
@@ -68,16 +67,7 @@ import {
   routineToolSchedule,
   routineToolString,
 } from "./routine-tools";
-import {
-  CREATE_WEBHOOK_ROUTINE_ARGUMENTS,
-  CREATE_WEBHOOK_ROUTINE_TOOL,
-  UPDATE_WEBHOOK_ROUTINE_ARGUMENTS,
-  UPDATE_WEBHOOK_ROUTINE_TOOL,
-  type WebhookRoutineWriter,
-  webhookRoutineSummary,
-  webhookRoutineToolResult,
-  webhookToolTrigger,
-} from "./webhook-routine-tool";
+import { type WebhookRoutineWriter, webhookRoutineSummary } from "./webhook-routine-tool";
 
 export interface RoutineMutationOptions {
   recordConversationEvent?: boolean;
@@ -730,84 +720,6 @@ export class RoutineScheduler implements RoutineDueSource {
       return openBotToolResult(routine);
     }
 
-    if (params.tool === CREATE_WEBHOOK_ROUTINE_TOOL) {
-      const args = routineToolArguments(params.arguments, CREATE_WEBHOOK_ROUTINE_ARGUMENTS);
-      const agentId = this.#toolAgentId(args, senderAgentId);
-      const webhooks = this.#webhookTool(requestedByPerson);
-      const active = args.active === undefined ? true : args.active;
-      if (!isBoolean(active)) throw new RoutineInputError("active must be a boolean.");
-      const timezone = this.#turnSenderTimezone(senderAgentId, params.turnId) ?? this.#timezone();
-      const name = routineToolString(args.name, "name", INPUT_LIMITS.routineName, "A routine name is required.");
-      this.#requireFreeRoutineName(agentId, name);
-      const { limitPolicy } = routineToolPolicies(args);
-      const routine = yield* webhooks.save({
-        agentId,
-        name,
-        instruction: routineToolString(
-          args.instruction,
-          "instruction",
-          INPUT_LIMITS.routineInstruction,
-          "A routine instruction is required.",
-        ),
-        active,
-        timezone,
-        ...webhookToolTrigger(args),
-        ...(limitPolicy === undefined ? {} : { limitPolicy }),
-        ...routineToolRunPlace(args),
-      });
-      const turnId = agentId === senderAgentId ? params.turnId : undefined;
-      const recorded = this.#recordWebhookEvent(agentId, "created", routine, turnId);
-      return openBotToolResult(webhookRoutineToolResult(routine, recorded && turnId !== undefined));
-    }
-
-    if (params.tool === UPDATE_WEBHOOK_ROUTINE_TOOL) {
-      const args = routineToolArguments(params.arguments, UPDATE_WEBHOOK_ROUTINE_ARGUMENTS);
-      const agentId = this.#toolAgentId(args, senderAgentId);
-      const webhooks = this.#webhookTool(requestedByPerson);
-      const routineId = routineToolString(
-        args.routineId,
-        "routineId",
-        INPUT_LIMITS.identifier,
-        "routineId is required.",
-      );
-      const current = this.#routines.getRecord(agentId, routineId);
-      if (current?.trigger.kind !== "webhook") {
-        throw new RoutineInputError(
-          `No webhook routine has routineId ${routineId}. The webhookRoutines of list_routines show their ids.`,
-        );
-      }
-      const active = args.active === undefined ? current.active : args.active;
-      if (!isBoolean(active)) throw new RoutineInputError("active must be a boolean.");
-      const name =
-        args.name === undefined
-          ? current.name
-          : routineToolString(args.name, "name", INPUT_LIMITS.routineName, "A routine name is required.");
-      if (name.trim().toLowerCase() !== current.name.trim().toLowerCase()) this.#requireFreeRoutineName(agentId, name);
-      const { limitPolicy } = routineToolPolicies(args);
-      const routine = yield* webhooks.save({
-        routineId,
-        agentId,
-        name,
-        instruction:
-          args.instruction === undefined
-            ? current.instruction
-            : routineToolString(
-                args.instruction,
-                "instruction",
-                INPUT_LIMITS.routineInstruction,
-                "A routine instruction is required.",
-              ),
-        active,
-        timezone: current.timezone,
-        ...webhookToolTrigger(args, current.trigger),
-        ...(limitPolicy === undefined ? {} : { limitPolicy }),
-        ...routineToolRunPlace(args),
-      });
-      const turnId = agentId === senderAgentId ? params.turnId : undefined;
-      const recorded = this.#recordWebhookEvent(agentId, "updated", routine, turnId);
-      return openBotToolResult(webhookRoutineToolResult(routine, recorded && turnId !== undefined, true));
-    }
-
     if (params.tool === "update_routine") {
       const args = routineToolArguments(params.arguments, [
         "agentId",
@@ -851,7 +763,7 @@ export class RoutineScheduler implements RoutineDueSource {
       }
       if (!hasUpdate) throw new RoutineInputError("At least one routine update is required.");
       if (this.#requireToolRoutine(input.agentId, input.routineId).trigger.kind === "webhook") {
-        throw new RoutineInputError(`Routine ${input.routineId} is a webhook routine. Use update_webhook_routine.`);
+        throw new RoutineInputError(`Routine ${input.routineId} is a webhook routine. It can only be deleted.`);
       }
       return openBotToolResult(this.update(input, this.#toolMutationOptions(input.agentId, senderAgentId, params)));
     }
@@ -1381,44 +1293,13 @@ export class RoutineScheduler implements RoutineDueSource {
 
   #webhookTool(requestedByPerson: () => boolean): WebhookRoutineWriter {
     const webhooks = this.#webhookRoutines?.();
-    if (!webhooks) throw new RoutineInputError("This server cannot create webhook routines.");
+    if (!webhooks) throw new RoutineInputError("This server cannot delete webhook routines.");
     if (!requestedByPerson()) {
       throw new RoutineInputError(
-        "Only a person's message, in your OpenBot chat or a thread they opened, can create, change or delete a webhook routine. Ask the user to request it there.",
+        "Only a person's message, in your OpenBot chat or a thread they opened, can delete a webhook routine. Ask the user to request it there.",
       );
     }
     return webhooks;
-  }
-
-  #requireFreeRoutineName(agentId: string, name: string): void {
-    const key = name.trim().toLowerCase();
-    const existing = this.#routines.listRecords(agentId).find((routine) => routine.name.trim().toLowerCase() === key);
-    if (existing) {
-      throw new RoutineInputError(
-        `Routine "${existing.name}" already exists with routineId ${existing.id}. Choose another name.`,
-      );
-    }
-  }
-
-  #recordWebhookEvent(
-    agentId: string,
-    action: "created" | "updated",
-    routine: EventRoutine,
-    turnId: string | undefined,
-  ): boolean {
-    try {
-      this.#mutateWithConversation(
-        agentId,
-        action,
-        () => routine,
-        (saved) => saved,
-        turnId,
-      );
-      return true;
-    } catch (error) {
-      this.#hooks.emitError("routine_event_record_failed", error, agentId);
-      return false;
-    }
   }
 
   #mutateWithConversation<T>(

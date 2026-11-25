@@ -98,8 +98,8 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
    lowercase, and each group of characters that are not letters or digits becomes one `-`. The name is only a label; a plan change
    renames the sandbox.
 3. **Env handoff.** boat puts the sandbox env in the setup script, not in systemd. The Worker sends
-   `setupScript: exec /opt/OpenBot/hosted/openbot-hosted-env`. That helper writes the two values to
-   `~/.config/openbot-hosted/env` (mode 0600). `openbot.service` waits for this file.
+   `setupScript: exec /opt/OpenBot-NC/hosted/openbot-hosted-env`. That helper writes the two values to
+   `~/.config/openbot-hosted/env` (mode 0600). `openbot-nc.service` waits for this file.
 4. **First boot.** OpenBot starts with `OPENBOT_HOSTED_SERVER=1`. It redeems the claim at
    `POST /v2/hosting/claims/redeem`, signs in as the owner, keeps the host ID, and publishes the
    host. `registerHost` refuses the host ID for any other account. This claim is not the operator's
@@ -175,14 +175,14 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
    starts, waits for it to end (at most 60 seconds), and then saves the disk. boat supports this
    hook, but its documentation does not show it yet. `openbot-hosted-update` installs `scripts/hosting/openbot-boat-pre-stop` there
    (`install_hosting`, and `trigger` at each start, so a server that an older release updated gets
-   it). The hook makes `/run/openbot-pre-stop` and runs `systemctl stop openbot.service`: OpenBot
+   it). The hook makes `/run/openbot-nc-pre-stop` and runs `systemctl stop openbot-nc.service`: OpenBot
    gets `SIGTERM`, stops its services and closes `openbot.db` last. After 40 seconds the hook kills
    the unit, which leaves a database that SQLite recovers. The file makes the unit condition
-   `ConditionPathExists=!/run/openbot-pre-stop` fail, so `Restart=` and the end of an update request
+   `ConditionPathExists=!/run/openbot-nc-pre-stop` fail, so `Restart=` and the end of an update request
    do not start OpenBot during the save. `/run` is empty at each boot. boat can also keep a stopped
    machine in memory and continue it at a resume with no boot: the resume answers `"status":
    "running"`, and the file stays. Then the Worker runs a command on the machine that removes the
-   file and starts `openbot.service` (`HELD_RESUME_START_COMMAND`). With no file the command does
+   file and starts `openbot-nc.service` (`HELD_RESUME_START_COMMAND`). With no file the command does
    nothing. boat can also cancel the stop after the hook, for example when it cannot pause a Docker
    container that restarts ("Final snapshot failed; stop aborted"). The machine then runs with the
    file, and OpenBot stays stopped. Two paths start it again, both only for a file older than 5
@@ -529,10 +529,10 @@ named snapshot access. The script:
 
 1. creates a builder sandbox with `noEnv`;
 2. uploads `scripts/hosting/` and runs `provision.sh` with `sudo`. It installs the packages in
-   `packages.txt` (Xvfb, D-Bus, gnome-keyring, the Electron libraries and the remote desktop runtime
-   libraries), checks the AppImage SHA-256, unpacks the AppImage to `/opt/OpenBot/app`, adds an
-   AppArmor profile that lets Chromium make user namespaces, and enables `openbot.service` and the
-   [update](#updates) units;
+   `packages.txt` (Xvfb, D-Bus, gnome-keyring and the Electron libraries; the list also has the
+   libraries of the remote desktop runtime, which OpenBot no longer has), checks the AppImage
+   SHA-256, unpacks the AppImage to `/opt/OpenBot-NC/app`, adds an AppArmor profile that lets Chromium
+   make user namespaces, and enables `openbot-nc.service` and the [update](#updates) units;
 3. checks the installed version, that OpenBot did not start, and that no profile or claim exists;
 4. saves the builder as `openbot-server-<version>` (or `--name=<snapshot>`) and deletes the builder.
 
@@ -557,35 +557,35 @@ Server Settings > Updates has the same controls as on a computer that updates it
 **Update when idle**, **Restart now**, automatic updates, and the switch that lets members update.
 OpenBot runs as the service user from a release that root owns, so it asks root to do the work
 (`src/main/hosted-update-adapter.ts`). It makes an empty file in its runtime directory:
-`/run/openbot/update-stage` to download, and `/run/openbot/update-install` to install.
-`openbot-update-request.path` then starts `openbot-update-request.service`, which runs
+`/run/openbot-nc/update-stage` to download, and `/run/openbot-nc/update-install` to install.
+`openbot-nc-update-request.path` then starts `openbot-nc-update-request.service`, which runs
 `openbot-hosted-update request` as root. That removes the file without reading it and runs `stage`.
 For an install, it then stops OpenBot, runs `apply` and starts OpenBot again, also after a failure.
 A request that comes during a timer download waits for it while OpenBot runs. While a request runs,
-root writes the step to `/run/openbot-update.state` and changes its time every 5 seconds. OpenBot
+root writes the step to `/run/openbot-nc-update.state` and changes its time every 5 seconds. OpenBot
 reads each change as download progress, so the download deadline finds a request that root never
 takes or that stops.
 
 The release that an older script moves into place has these units, but that script installs only
-the units it knows. So `openbot.service` runs `openbot-hosted-update trigger` as root before OpenBot
+the units it knows. So `openbot-nc.service` runs `openbot-hosted-update trigger` as root before OpenBot
 starts; it installs and starts the request units when they are missing. OpenBot offers the controls
-only when `/etc/systemd/system/openbot-update-request.path` is there at its start. Otherwise, and on
+only when `/etc/systemd/system/openbot-nc-update-request.path` is there at its start. Otherwise, and on
 hosts older than this release, the panel checks the release (`host-release-v1`) and shows the
 host-managed update path. A container has no request units. A container of `docker/instances` uses
-the same `HostedUpdateAdapter` with folders that the host mounts in `/var/lib/openbot-update`; see
+the same `HostedUpdateAdapter` with folders that the host mounts in `/var/lib/openbot-nc-update`; see
 [Updates from the app](docker.md#updates-from-the-app).
 
 The Linux build contains `scripts/hosting/` (without the TypeScript files) in `resources/hosting`.
 On a server, root runs `openbot-hosted-update`:
 
-1. `openbot-update.timer` runs `check` 5 to 10 minutes after each start of the timer and then
+1. `openbot-nc-update.timer` runs `check` 5 to 10 minutes after each start of the timer and then
    about each hour. `check` runs `stage` when no `stage` of `check` succeeded in the last 6 hours
-   (`/run/openbot-update.staged`, so the first `check` after a boot stages), and then the step that
+   (`/run/openbot-nc-update.staged`, so the first `check` after a boot stages), and then the step that
    [Start loop](#start-loop) describes. `stage` reads the `latest-linux.yml` (`latest-linux-arm64.yml` on arm64) of the
    latest GitHub release, the manifest that the Linux desktop updater reads. When that version is newer than the installed one, it downloads the
    AppImage, checks its SHA-512 against the manifest, unpacks it in `/var/tmp`, checks that it has
    all hosting files, installs the packages in the `packages.txt` and `optional-packages.txt` of
-   that release, and copies it to `/opt/OpenBot/staged`. The packages install with `--no-remove`.
+   that release, and copies it to `/opt/OpenBot-NC/staged`. The packages install with `--no-remove`.
    A package of `optional-packages.txt` is skipped when a command with its name already exists,
    or when it needs a removal. `stage` runs the installed
    script with the list of the new release, so a package that conflicts with a host package must
@@ -595,8 +595,8 @@ On a server, root runs `openbot-hosted-update`:
 2. `apply` copies `staged` to `app`, and then installs the scripts, AppArmor profile and units of
    the new release. `.applying` and `staged` stay until all of this is complete, so after a stop or
    a failure the next start does it again, and `stage` does nothing until then.
-   `openbot-update-apply.service` runs `boot` before `openbot.service`. `boot` runs `apply` only on
-   a complete disk, or when `.applying` shows an interrupted copy. `openbot.service` does not
+   `openbot-nc-update-apply.service` runs `boot` before `openbot-nc.service`. `boot` runs `apply` only on
+   a complete disk, or when `.applying` shows an interrupted copy. `openbot-nc.service` does not
    require it, so it starts after a failure too: with the old release, or with a partial copy after
    a failed copy, until the next start. On a self-installed server, the new release starts at the
    next boot, or when idle if the automatic update switch is on (it is off by default). A hosted
@@ -618,8 +618,8 @@ OpenBot for the restore. `boot` waits only for an interrupted copy, because Open
 it. During a restore it skips a staged release and recovers an incomplete one.
 
 boat starts the desktop (`lightdm`) about 8 s after the resume, and then the enabled units of
-`multi-user.target` again, about 16 s after it. `openbot.service` is also wanted by
-`lightdm.service`, so it starts with the desktop. The second start of `openbot-update-apply.service`
+`multi-user.target` again, about 16 s after it. `openbot-nc.service` is also wanted by
+`lightdm.service`, so it starts with the desktop. The second start of `openbot-nc-update-apply.service`
 does nothing: the unit stays active (`RemainAfterExit`), and `boot` does nothing while OpenBot runs
 (after a failed `boot`). [Observed on a boat VM on 2026-10-11; not in boat
 documentation.]
@@ -650,18 +650,18 @@ Main then writes `openbot-start-halt-v1.json` in its user data folder. The file 
 word, the app version and a time only. The journal shows the reason. Then main runs its safe mode
 (`src/main/server-safe-mode.ts`): it keeps a minimal Team API up, so each member's app shows why
 the server does not start and which version it runs. The safe mode opens no database and changes
-no user data. It writes the empty file `/run/openbot/server-safe-mode` while it runs. See
+no user data. It writes the empty file `/run/openbot-nc/server-safe-mode` while it runs. See
 [Team API](architecture/team-api.md#server-safe-mode).
 
 When the safe mode cannot start (no team, or no host credential), main exits with 78 as before.
-`openbot.service` has `RestartPreventExitStatus=78`, so systemd does not start it again.
+`openbot-nc.service` has `RestartPreventExitStatus=78`, so systemd does not start it again.
 
 The next start reads and removes the file, logs the reason, and tries once more. A failure of that
 start stops the loop again. These start OpenBot again:
 
-- a restart or a resume of the server, or `sudo openbot restart` or `start`;
-- `sudo openbot update`;
-- `check` of `openbot-update.timer`, about each hour: when `openbot.service` is stopped with
+- a restart or a resume of the server, or `sudo openbot-nc restart` or `start`;
+- `sudo openbot-nc update`;
+- `check` of `openbot-nc-update.timer`, about each hour: when `openbot-nc.service` is stopped with
   status 78, or runs its safe mode, it runs `stage`, stops the safe mode, and starts the service
   again, after `apply` when a newer release is staged. A hosted
   owner has no shell, and a failure can be temporary (a full disk, no network), so each run tries
@@ -669,10 +669,10 @@ start stops the loop again. These start OpenBot again:
   existence of the empty safe-mode file, never the content of a file of the service user.
 
 When OpenBot is not running or runs its safe mode, `openbot` commands that need the control socket
-say that the start loop stopped it, and name `openbot logs`, `sudo openbot update` and
-`sudo openbot restart`. The safe mode has no control socket.
+say that the start loop stopped it, and name `openbot-nc logs`, `sudo openbot-nc update` and
+`sudo openbot-nc restart`. The safe mode has no control socket.
 
-A Docker container has no systemd and no `openbot-update.timer`. There the safe mode ends after one
+A Docker container has no systemd and no `openbot-nc-update.timer`. There the safe mode ends after one
 hour with exit 78, and the restart policy starts the container again, with the backoff of Docker.
 Each second start after a halt tries again.
 
@@ -682,23 +682,23 @@ copies (`rm -rf`, then `cp -a`); see plan 011 item 3.
 
 A server that has no updater, such as one made from a template before 0.26.0, needs one upgrade by
 hand. With a boat key that has command and file access: upload `scripts/hosting/` to
-`/tmp/openbot-upgrade`, run `sudo systemctl stop openbot.service`, run `sudo bash /tmp/openbot-upgrade/provision.sh user <AppImage URL> <SHA-256>
+`/tmp/openbot-upgrade`, run `sudo systemctl stop openbot-nc.service`, run `sudo bash /tmp/openbot-upgrade/provision.sh user <AppImage URL> <SHA-256>
 https://api.openbot.run` as a detached command, and start the service again. The data in the home
 folder and in `/srv` stays.
 
 On a server, `openbot-hosted-server` starts a D-Bus session, unlocks a gnome-keyring with a
 random password for each server (so `safeStorage` can keep the account session), and runs OpenBot
 with `--password-store=gnome-libsecret`. The agents use the boat desktop: the lightdm session of the
-sandbox user on `:0`, with openbox. So boat's desktop viewer and OpenBot remote desktop show the same
-screen, and a click moves the keyboard focus to another window. After a resume, the script waits up
+sandbox user on `:0`, with openbox. So boat's desktop viewer shows the screen of the agents, and a
+click moves the keyboard focus to another window. After a resume, the script waits up
 to 2 minutes for that session. OpenBot shows its own windows on a 1280x800 Xvfb display that
 `xvfb-run` starts. `xvfb-run` adds the key of that display to `~/.Xauthority`, which has the key of
 `:0`, and lightdm keeps the other keys when it writes the file. The script names `:0` in
-`OPENBOT_AGENT_DISPLAY`, so an agent's screenshot and remote desktop do not show the OpenBot window
-(see [Computer Use and remote desktop](architecture/computer-use.md#agent-display-on-a-server)). With
+`OPENBOT_AGENT_DISPLAY`, so an agent's screenshot does not show the OpenBot window
+(see [Computer Use](architecture/computer-use.md#agent-display-on-a-server)). With
 no desktop session, the server starts two Xvfb displays and Openbox on the agent display, as a
 [self-hosted server](self-hosted-server.md#how-it-works) does. The keyring files are in
-`/srv/openbot-hosted/keyrings`:
+`/srv/openbot-nc-hosted/keyrings`:
 
 - not in `~/.local/share/keyrings`: the boat image has a locked `default` keyring there, and a
   snapshot restore resets that folder after the service starts;
@@ -728,11 +728,11 @@ again with backoff (30 s to 10 min) and then publishes the host.
 ## Watchdog
 
 Before it starts OpenBot, `openbot-hosted-server` starts itself again with `--watchdog` in the
-background. Main rewrites `~/.config/OpenBot/openbot-run-marker-v1.json` every 60 s from its event
+background. Main rewrites `~/.config/OpenBot-NC/openbot-run-marker-v1.json` every 60 s from its event
 loop (`src/main/run-marker.ts`). The watchdog reads the file every 30 s. When the content does not
 change in 20 reads (10 minutes) after it changed once in this run, the watchdog logs "OpenBot did not
 update its heartbeat for 600 seconds" and sends `SIGKILL` to the process in
-`/run/openbot/openbot.pid`. `Restart=always` starts the service again 10 s later. The watchdog does
+`/run/openbot-nc/openbot.pid`. `Restart=always` starts the service again 10 s later. The watchdog does
 nothing:
 
 - before the first change of the file in this run;
@@ -767,7 +767,7 @@ A Starter server has 4 GB. The guards are on a hosted server, a
 [self-hosted server](self-hosted-server.md#memory) and a [container](docker.md#memory); the desktop
 app does not change.
 
-The unit (`openbot.service`):
+The unit (`openbot-nc.service`):
 
 - `MemoryMax=90%`: the unit can use at most 90% of the memory, so 10% stays for the desktop, sshd
   and the boat agent. The limit counts memory only, not swap. The boat image has a 2 GB swap file,
@@ -807,8 +807,8 @@ Agent processes (`AgentProcesses` in `src/main/server-memory.ts`):
   variable still finds them. Xvfb, D-Bus and the keyring start before main and do not have it.
 - Every 5 s, each marked process gets an `oom_score_adj` of at least 500, also after it leaves main's
   tree, and each of its threads gets the nice value 10. Main and the Electron processes keep their
-  values. The Computer Use driver and remote desktop get the OOM value as children of main, but keep
-  their nice value. So a full CPU slows the agents' builds and not main or the WebRTC host. Without
+  values. The Computer Use driver gets the OOM value as a child of main, but keeps
+  its nice value. So a full CPU slows the agents' builds and not main or the WebRTC host. Without
   this, a build with many workers took all the CPU and memory, main stopped answering, and the
   clients lost the connection.
 - At `critical`, main stops leftover processes: marked processes that are not in main's tree. It
@@ -911,21 +911,21 @@ The `boat` scenario of `scripts/stripe-flows-e2e.ts` (see `apps/auth-api/README.
 
 - the builder user has passwordless `sudo`, and AppArmor is enabled in the boat VM;
 - boat runs `setupScript` for a sandbox created from a named snapshot, and systemd starts
-  `openbot.service` after a create;
+  `openbot-nc.service` after a create;
 - OpenBot redeems its claim, publishes the host with the server name, and signs in again from the
   stored session after a restart (`safeStorage` with gnome-keyring under Xvfb);
 - a delete through the Worker removes the sandbox.
 
 A resume test on 2026-09-28 (one sandbox with the 0.24.0 AppImage, 6 resumes, each on another
-machine) confirmed that systemd starts `openbot.service` again after a resume, and that a keyring
+machine) confirmed that systemd starts `openbot-nc.service` again after a resume, and that a keyring
 secret in `/srv` stays. From the resume call to the OpenBot start took 7 to 34 s; the keyring start
 took 40 ms. Most of the time is boat: it restores the disk and then starts the enabled units, 5 to
 20 s after the sandbox is `idle`.
 
 A wake test on 2026-10-11 (one hosted server with 0.37.0) measured, from the resume call: boat
-ready at 4 s, `openbot.service` at 17 s and the host register at 22 s. A wake with a staged release
+ready at 4 s, `openbot-nc.service` at 17 s and the host register at 22 s. A wake with a staged release
 took 3 min 35 s, because `apply` waited for the restore. With the start at `lightdm`,
-`openbot.service` started at 8 s and the host registered at about 20 s: Electron starts slowly from
+`openbot-nc.service` started at 8 s and the host registered at about 20 s: Electron starts slowly from
 the lazily restored disk, and the desktop session holds the display until about 12 s.
 
 A resize test on 2026-09-28 (one plain sandbox with `noEnv`, `small → default → small`, each a stop
@@ -935,7 +935,7 @@ and an enabled systemd unit started again after each resume. The stop took 25 to
 sandbox was `idle` 3 to 6 s after the resume call.
 
 A memory test on 2026-09-30 (one `small` sandbox with `noEnv`, the scripts and the Linux AppImage of
-main, and a `ServerMemory` driver in a unit with the same limits as `openbot.service`)
+main, and a `ServerMemory` driver in a unit with the same limits as `openbot-nc.service`)
 confirmed:
 
 - boat VMs use cgroup v2 with the memory controller, and the unit gets `memory.max` = 90% (3.4 GiB);
@@ -985,11 +985,11 @@ that boat saves the disk while the processes run, about 3 seconds after the stop
 call, and the last write that the restore kept was from after the hook ended. Thus boat waits for
 the hook before it saves the disk.
 
-An install test on the same sandbox put the new `openbot-hosted-update`, `openbot.service` and hook
+An install test on the same sandbox put the new `openbot-hosted-update`, `openbot-nc.service` and hook
 in place, as an older release does when it updates. At the next start, `trigger` installed the hook
 as `user` with mode 0755. It did not change a current hook, kept a hook that OpenBot did not write
 (a file, a link or a FIFO, with no wait), and replaced a changed OpenBot hook. At a stop of the real OpenBot, the hook
-stopped `openbot.service` in 0.3 seconds and ended with 0. After the resume (a new boot ID), the
+stopped `openbot-nc.service` in 0.3 seconds and ended with 0. After the resume (a new boot ID), the
 flag was gone, OpenBot ran, and `openbot.db` passed `quick_check`.
 
 ## Leaseweb VPS
@@ -1054,7 +1054,7 @@ The steps of the command:
 2. Install OpenBot with `install-server.sh` and a [server claim](self-hosted-server.md#sign-in-with-a-server-claim)
    for the customer's email.
 3. Run `scripts/hosting/leaseweb-bootstrap.sh` as root, with the public keys of the operators. Each
-   release also has it in `/opt/OpenBot/app/resources/hosting`.
+   release also has it in `/opt/OpenBot-NC/app/resources/hosting`.
 
    ```sh
    ssh root@<address> bash -s "$(ssh <core server> cat /root/.ssh/authorized_keys | base64 | tr -d '\n')" \
@@ -1070,12 +1070,12 @@ The bootstrap does not restart OpenBot, and a second run gives the same state:
 | Part | Result | Files |
 | --- | --- | --- |
 | SSH | Keys only, no forwarding. The operator keys sign in as root, and as no other user. | `/etc/ssh/sshd_config.d/00-openbot-hardening.conf`, `/etc/ssh/openbot-operator-keys/root` |
-| Egress rules | The service user cannot connect to the CloudStack router (the DHCP server, which gives metadata and a reset root password to each process that asks), nor to private, link-local and multicast addresses. It also cannot connect to the IPv6 addresses of Google services (`goog.json` without `cloud.json` from `https://www.gstatic.com/ipranges/`), so Gemini and other Google services connect over IPv4. Google can put an IPv6 range of Leaseweb in a country where Gemini refuses requests (#15812). No user can connect to TCP port 25. | `/usr/local/sbin/openbot-egress-firewall`, `/etc/openbot/egress-router`, `openbot-egress-firewall.service`, `openbot.service.d/10-egress-firewall.conf` |
+| Egress rules | The service user cannot connect to the CloudStack router (the DHCP server, which gives metadata and a reset root password to each process that asks), nor to private, link-local and multicast addresses. It also cannot connect to the IPv6 addresses of Google services (`goog.json` without `cloud.json` from `https://www.gstatic.com/ipranges/`), so Gemini and other Google services connect over IPv4. Google can put an IPv6 range of Leaseweb in a country where Gemini refuses requests (#15812). No user can connect to TCP port 25. | `/usr/local/sbin/openbot-egress-firewall`, `/etc/openbot/egress-router`, `openbot-egress-firewall.service`, `openbot-nc.service.d/10-egress-firewall.conf` |
 | Updates | Security updates each day. They restart neither the server nor OpenBot. Ubuntu (`needrestart`) restarts each other service that uses an updated library. | `/etc/apt/apt.conf.d/20auto-upgrades`, `52openbot-unattended`, `/etc/needrestart/conf.d/50-openbot.conf` |
 | Kernel | A new kernel gets a boot entry: the bootstrap installs `grub-pc` when the image has no `update-grub`. The boot arguments of the image stay. | `/etc/default/grub.d/50-openbot.cfg` |
 
 The rules load before the network starts, with the router of the last run, and again before each
-start of OpenBot, with the router of the current DHCP lease. `openbot.service` requires the rules
+start of OpenBot, with the router of the current DHCP lease. `openbot-nc.service` requires the rules
 unit, so OpenBot does not run without them. The rules also refuse the service user a container
 network in 172.16.0.0/12 and a VPN in 100.64.0.0/10; change `PRIVATE4` in the helper for a server
 that needs one. They do not filter incoming connections: a port that an agent opens on all
@@ -1089,7 +1089,7 @@ A server has three names, and each one can change later:
 | Name | Command | Notes |
 | --- | --- | --- |
 | Leaseweb reference | `PUT /publicCloud/v1/vps/{id}` with `{"reference": "<name>"}` | At most 255 characters; `@`, `+`, a space and letters outside ASCII are kept. `GET /publicCloud/v1/vps?reference=<text>` finds each server that has the text in its reference, with no difference between capital and small letters. |
-| OpenBot server name | `openbot name <name>` as the service user | 6 to 32 characters. No restart. The customer sees this name. |
+| OpenBot server name | `openbot-nc name <name>` as the service user | 6 to 32 characters. No restart. The customer sees this name. |
 | Linux hostname | `hostnamectl set-hostname <name>` | Set it before OpenBot starts, or restart OpenBot after it. |
 
 The X authorization of the virtual display has the hostname in it. After a hostname change, a new
@@ -1264,7 +1264,7 @@ The Worker cannot connect to a machine, and it has no Leaseweb key. So the machi
    never get one machine. After three machines that another payment took, the server starts on boat.
 5. The next request of the machine gets `{"state":"assigned","serverId":…,"claim":…}`. The unit runs
    `openbot-hosted-env` as the service user with the two values (the same helper as in the boat setup
-   script), enables and starts `openbot.service`, then removes the token and disables itself. The
+   script), enables and starts `openbot-nc.service`, then removes the token and disables itself. The
    answer is the same until OpenBot signs in, so a machine that restarts in this step asks again.
 6. OpenBot redeems the claim (`POST /v2/hosting/claims/redeem`). The Worker then sets the row to
    `running` and clears the token hash of the machine. From here the server is the same as a moved server: the tables of
@@ -1341,10 +1341,10 @@ writes `observed_state`:
 | A client or a connector event asks for a start | Nothing. | Nothing. |
 | The server reports its use | Stores `last_active_at` and `next_run_at`. | Nothing. |
 | The plan changes | Sets `size` at once. | Nothing: each pool server has the same size. |
-| The plan ends | Sets `desired_state = 'stopped'`, `observed_error = 'plan_ended'` and `plan_ended_at`. A start request gets `402 plan_required`. | Stop `openbot.service`, then write `observed_state = 'stopped'`. Until then the server still runs. |
-| The owner renews | Sets `desired_state = 'running'` and clears the error. `plan_ended_at` stays. | Start `openbot.service`, then write `observed_state = 'running'`. |
+| The plan ends | Sets `desired_state = 'stopped'`, `observed_error = 'plan_ended'` and `plan_ended_at`. A start request gets `402 plan_required`. | Stop `openbot-nc.service`, then write `observed_state = 'stopped'`. Until then the server still runs. |
+| The owner renews | Sets `desired_state = 'running'` and clears the error. `plan_ended_at` stays. | Start `openbot-nc.service`, then write `observed_state = 'running'`. |
 | 14 days after the plan ended, with no open subscription | Reads the subscription at Stripe, then deletes the server as the owner does. | As for a delete. |
-| The owner or an admin restarts the server | Refuses with `409 hosted_server_restart_unavailable`. | Restart `openbot.service` on a request to support. |
+| The owner or an admin restarts the server | Refuses with `409 hosted_server_restart_unavailable`. | Restart `openbot-nc.service` on a request to support. |
 | The owner deletes the server | Cancels the plan, deletes the sandbox in `retired_sandbox_id`, removes the Remote host, ends the session, and sets `observed_state = 'deleted'`. `operator_host` stays. | Reinstall the VPS, set its reference to `pool`, then set `operator_host = NULL`. |
 | boat sends an event for the old sandbox | Finds no row for it. | Nothing. |
 
@@ -1354,7 +1354,7 @@ The Worker sends no message to the operator, and it connects to no machine. Run
 Never write `desired_state = 'idle'` on such a row: the next client request changes it to `running`,
 and the cron query for a server with a routine does not look at the machine.
 
-The server on the VPS stays a hosted server (no `/opt/OpenBot/hosted/mode` file), so OpenBot signs
+The server on the VPS stays a hosted server (no `/opt/OpenBot-NC/hosted/mode` file), so OpenBot signs
 in, reports its use and installs updates as it did on boat. `provision.sh` installs it and does not
 start it, so the data is in place before the first start. `scripts/hosting/move-from-boat.sh` does
 the parts of a move that run on the two machines, as root.
@@ -1396,7 +1396,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    `move-from-boat.sh prepare lsw-<VPS ID> <uid> <gid> <appimage-url> <appimage-sha256> <auth-api-url>`.
    The IDs are those of `id user` in the sandbox (1000 and 1000 in the boat image). The release is the
    one that the sandbox has, or a newer one. The command sets the hostname, makes the user `user`
-   with the home `/home/user`, runs `provision.sh`, and disables `openbot.service`, so a restart does
+   with the home `/home/user`, runs `provision.sh`, and disables `openbot-nc.service`, so a restart does
    not start OpenBot with no data. `leaseweb-pool.ts prepare <VPS ID>... --apply` does
    steps 2 and 3 on free machines before a move, with the newest release.
 3. Run `leaseweb-bootstrap.sh` with the operator keys. Restart the VPS one time. A new or reinstalled
@@ -1437,10 +1437,10 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    with `ssh` to a key that the sandbox makes for this move: on the VPS, that key can only run
    `cat >/root/openbot-move.tar`, and the move removes it after the export. So no archive is on the
    disk of the sandbox, and the copy has no separate step. The downtime of the customer starts here.
-   The command sets `/run/openbot-pre-stop`, stops `openbot.service`, and archives, with numeric
-   owners, the home of `user` and `/srv/openbot-hosted`. The home has each provider sign-in, API key
+   The command sets `/run/openbot-nc-pre-stop`, stops `openbot-nc.service`, and archives, with numeric
+   owners, the home of `user` and `/srv/openbot-nc-hosted`. The home has each provider sign-in, API key
    and MCP server. The archive does not have the provider CLIs that OpenBot downloaded
-   (`~/.config/OpenBot/provider-runtimes`, but `bun` stays) or the caches: at start, a hosted server
+   (`~/.config/OpenBot-NC/provider-runtimes`, but `bun` stays) or the caches: at start, a hosted server
    downloads the CLI of each provider that an agent uses. The archive also has what the customer installed
    outside the home, and not what the boat image has (the lists at the top of the script, from image
    `c4ed68db` and `5f37c910`):
@@ -1504,7 +1504,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    The archive also has the SHA-256 of `openbot.db`, `agent-data.db`, `login.keyring` and
    `keyring-password`, the names of the npm commands and groups of the sandbox, and the Ubuntu
    version. It does not have:
-   - `/opt/OpenBot`, `~/.boat`, `~/.boatignore`, `~/.ascii`, `~/.config/ascii`, `~/.Xauthority*` and
+   - `/opt/OpenBot-NC`, `~/.boat`, `~/.boatignore`, `~/.ascii`, `~/.config/ascii`, `~/.Xauthority*` and
      `~/.npm/_cacache`.
    - the cache folders in each profile of Chromium, Chrome and Brave in `~/.config` (`Cache`,
      `Code Cache`, `GPUCache`, `GrShaderCache`, `ShaderCache`, the four Dawn caches,
@@ -1527,7 +1527,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
 6. On the VPS: `move-from-boat.sh import <archive>`. The command refuses an OpenBot that is older
    than that of the sandbox, restores the archive, and compares the four SHA-256 values. An agent
    of the customer can get root in the sandbox, and the service user has no root on the VPS. So the
-   service user restores the files, and only `/home/user`, `/srv/openbot-hosted` and the moved
+   service user restores the files, and only `/home/user`, `/srv/openbot-nc-hosted` and the moved
    directories. Root makes each moved directory new, owned by `user`; a directory that the VPS has
    already stays as it is, and the report names it. The archive cannot write a file of root, a setuid
    file of root or a device. A file that root or another user owned in the sandbox gets the service
@@ -1556,7 +1556,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    `archived` and stops when the stop becomes `failing`. Do not start the sandbox again while the VPS
    runs: two hosts would have one ID.
 8. On the VPS: `move-from-boat.sh start`. It refuses when the import is not complete or when
-   `openbot.db` changed after the import, then enables and starts `openbot.service`. A machine with
+   `openbot.db` changed after the import, then enables and starts `openbot-nc.service`. A machine with
    no display manager does not wait for the boat desktop: OpenBot uses two virtual displays at once.
    Confirm in the web client that the server is online and that an agent answers. Set the Leaseweb
    reference.
@@ -1614,13 +1614,13 @@ The VPS is not the same machine as the sandbox:
 - After the owner deletes the server, OpenBot still runs on the VPS with a session that is ended. It
   cannot connect, and it has the data until the operator reinstalls the machine.
 
-Rollback, while the sandbox exists: run `systemctl disable --now openbot.service` on the VPS, so that
+Rollback, while the sandbox exists: run `systemctl disable --now openbot-nc.service` on the VPS, so that
 no restart of the VPS starts a second host. Make sure that the sandbox is stopped at boat. Then give
 the row back to boat. The next client request resumes the sandbox, and the resume starts OpenBot
 there. The work that the server did on the VPS is not in the sandbox.
 
 When the export failed before the import, the sandbox still runs with OpenBot stopped and
-`/run/openbot-pre-stop` set. Delete `/root/openbot-move` and the marker, and start `openbot.service`
+`/run/openbot-nc-pre-stop` set. Delete `/root/openbot-move` and the marker, and start `openbot-nc.service`
 in the sandbox. Delete `/root/openbot-move.tar` on the VPS. Then give the row back with the statement
 below, but with `desired_state` and `observed_state` of before the move. On 2026-11-12 an export of
 24 GB took 9 minutes; a restart timer of boat started OpenBot during it, and tar stopped the export.
@@ -1651,7 +1651,7 @@ A moved server that lost its session cannot get a new claim from a client reques
 makes a claim of 16 to 128 characters from `A-Z a-z 0-9 _ -`, writes its SHA-256 as base64url with no
 padding to `claim_token_hash` and a time at most one hour ahead to `claim_expires_at`, writes
 the claim to `OPENBOT_HOSTED_CLAIM` in `/home/user/.config/openbot-hosted/env`, and restarts
-`openbot.service`. The redeem ends the old session.
+`openbot-nc.service`. The redeem ends the old session.
 
 `bun run test:hosted-operator-host` drives the real service with a fake boat and checks each line of
 the table, the claim recovery, the storage of a moved server in each list, and that the servers of
@@ -1721,7 +1721,7 @@ sales organization (locations FRA-01, FRA-10 and FRA-14), did not order a server
   `leaseweb-bootstrap-e2e.ts --restart=yes` passed its 75 checks. Ubuntu 26.04 has the `install`
   command of uutils, which refuses `/dev/stdin` as the source when the target exists; the bootstrap
   thus writes its files with `cat`. The bootstrap with this change was not run again on Ubuntu 24.04.
-- On Ubuntu 26.04, the server signed in with `openbot login`, and the web client connected to it. An
+- On Ubuntu 26.04, the server signed in with `openbot-nc login`, and the web client connected to it. An
   agent with a free OpenCode model ran a shell command as the service user and read a web page. After
   a restart, the server was online again with no new sign-in, and the agent had its chat. The log
   has `Failed to resolve address for turn.openbot.run` lines when a client connects, although the
@@ -1735,10 +1735,10 @@ sales organization (locations FRA-01, FRA-10 and FRA-14), did not order a server
   from 17:44 to 17:45 UTC. Each has a 1-year term to 2027-11-30 with a bill each month (EUR 8.09),
   and `cancellable: true`. With the key of this account, `GET /ordering/v1/products/vps?location=AMS-01`
   answers `200` with the packages `VPS02_1` to `VPS02_6`. No order was sent through the API.
-- The first daily update on Ubuntu 26.04 restarted `openbot.service`: `needrestart` restarts each
+- The first daily update on Ubuntu 26.04 restarted `openbot-nc.service`: `needrestart` restarts each
   service that uses an updated library. The bootstrap now writes
   `/etc/needrestart/conf.d/50-openbot.conf`. After that, a reinstall of `libpcre2-8-0` restarted
-  `cron.service`, `ssh.service` and six other services, and listed `openbot.service` as deferred; its
+  `cron.service`, `ssh.service` and six other services, and listed `openbot-nc.service` as deferred; its
   start time did not change. The E2E reads the value that `needrestart` uses for the unit.
 - Operator keys: the E2E adds a temporary key to the list. That key signed in as root and not as the
   service user, a key outside the list did not sign in, a list with a bad line changed nothing, and a
@@ -1754,7 +1754,7 @@ sales organization (locations FRA-01, FRA-10 and FRA-14), did not order a server
   the arguments `ro net.ifnames=0 quiet splash`, SSH answered 23 seconds after the restart command,
   and OpenBot was online 5 seconds later.
 - The three names of the test VPS changed: the reference through the API, the server name with
-  `openbot name`, and the hostname, which stayed after a restart of the server.
+  `openbot-nc name`, and the hostname, which stayed after a restart of the server.
 
 Not confirmed for Leaseweb:
 
@@ -1887,7 +1887,7 @@ run after the deploy deletes each server whose plan ended 14 to 30 days before.
 Tested on 2026-11-12 with the test Worker, its D1 and one VPS in `AMS-01`: `add`, `status`, `sync`
 stop and start, the cron delete of a server whose plan ended 31 days before with a `canceled` Stripe
 test subscription, then `sync`. The reinstall took 51 seconds: the machine started 26 seconds after
-the request, and `sync` returned 25 seconds later. A file in `/root` and `/opt/OpenBot` were gone.
+the request, and `sync` returned 25 seconds later. A file in `/root` and `/opt/OpenBot-NC` were gone.
 Then `remove` and `add`.
 
 `operator_hosts` has one row for each machine that was in the pool:
@@ -2066,10 +2066,9 @@ These were not tested on boat. Test them before a user gets access:
   container with a stand-in for OpenBot, not with systemd. When OpenBot does not close the database,
   it is as after a crash, which SQLite recovers, because the save starts after the stop;
 - the agent display on boat with a release build. On 2026-10-16 one boat server ran a 0.42.0 build
-  with this change, from `openbot.service`: OpenBot was on Xvfb `:99` at 1280x800, and `:0` had no
+  with this change, from `openbot-nc.service`: OpenBot was on Xvfb `:99` at 1280x800, and `:0` had no
   OpenBot window. In an agent turn, the agent shell and `cua-driver` had `DISPLAY=:0`, and Computer
-  Use saw a 1920x1080 screen with only the panel and the dock. A local remote desktop session
-  captured `:0`. The session reported the size of the OpenBot display, 1280x800. The first start
+  Use saw a 1920x1080 screen with only the panel and the dock. The first start
   after a resume, with this script in `/opt`, was not tested.
 
 

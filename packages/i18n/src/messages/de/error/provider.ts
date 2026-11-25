@@ -227,7 +227,6 @@ export const messages = {
     "Codex verwendet auf diesem Computer einen anderen Modellanbieter, und dieser Anbieter verwendet keine ChatGPT-Anmeldung und keinen OpenAI-API-Schlüssel. ChatGPT-Agenten können diesen Anbieter jetzt verwenden. Um dein ChatGPT-Konto zu verwenden, stelle den Modellanbieter von Codex wieder auf OpenAI.",
   "error.provider.signInExpired":
     "Deine Anmeldung bei {provider} ist abgelaufen. Melde dich erneut an, um fortzufahren.",
-  "error.provider.cliActivateFailed": "OpenBot konnte die verwaltete CLI nicht aktivieren.",
   "error.provider.noMainlandChinaSignIn": "{provider} hat keine Anmeldung für Festlandchina.",
   "error.provider.cliNewVersionNotStarted": "Die neue Version ist nicht gestartet.",
   "error.provider.cliBusyReconnect":

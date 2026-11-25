@@ -7,6 +7,7 @@ import {
   hostUnreachable,
   type RemoteConnectionOutcome,
   type RemoteServerConnectionStatus,
+  relayHostOffline,
 } from "./remote-server-connection-status";
 
 export interface RemoteServerConnectionsOptions {
@@ -22,12 +23,7 @@ interface MutableStatus {
   connectionSequence: number;
   capabilitiesPending: boolean;
   hostRestart: ServerSummary["hostRestart"];
-  hostedSleep: HostedSleep;
-  hostedIssue: ServerSummary["hostedIssue"];
-  hostedStart: ServerSummary["hostedStart"];
 }
-
-type HostedSleep = NonNullable<ServerSummary["hostedSleep"]> | null;
 
 export class RemoteServerConnections {
   readonly #appVersion: string | null;
@@ -50,32 +46,7 @@ export class RemoteServerConnections {
       connectionSequence: status?.connectionSequence ?? 0,
       capabilitiesPending: status?.capabilitiesPending ?? false,
       hostRestart: status?.hostRestart ?? null,
-      hostedSleep: status?.hostedSleep ?? null,
-      hostedIssue: status?.hostedIssue ?? null,
-      hostedStart: status?.hostedStart ?? null,
     };
-  }
-
-  setHostedIssue(serverId: string, issue: ServerSummary["hostedIssue"]): void {
-    this.#mutable(serverId).hostedIssue = issue;
-  }
-
-  setHostedStart(serverId: string, start: ServerSummary["hostedStart"]): boolean {
-    const status = this.#mutable(serverId);
-    if (status.hostedStart?.step === start?.step && status.hostedStart?.startedAt === start?.startedAt) return false;
-    status.hostedStart = start;
-    return true;
-  }
-
-  hostedSleepFor(serverId: string): HostedSleep {
-    return this.#statuses.get(serverId)?.hostedSleep ?? null;
-  }
-
-  setHostedSleep(serverId: string, hostedSleep: HostedSleep): boolean {
-    const status = this.#mutable(serverId);
-    if (status.hostedSleep === hostedSleep) return false;
-    status.hostedSleep = hostedSleep;
-    return true;
   }
 
   compatibilityFor(serverId: string): ServerCompatibility | null {
@@ -133,9 +104,6 @@ export class RemoteServerConnections {
     status.compatibility = null;
     status.issue = null;
     status.hostRestart = null;
-    status.hostedSleep = null;
-    status.hostedIssue = null;
-    status.hostedStart = null;
     status.connectionSequence += 1;
     status.capabilitiesPending = false;
   }
@@ -167,6 +135,10 @@ export class RemoteServerConnections {
 
   reportConnectFailure(serverId: string, failure: unknown): void {
     this.#apply(serverId, classifyConnectFailure(failure), null);
+  }
+
+  reportRelayHostOffline(serverId: string): void {
+    if (this.#apply(serverId, relayHostOffline(), null).changed) this.#onChanged();
   }
 
   forget(serverId: string): void {
@@ -213,9 +185,6 @@ export class RemoteServerConnections {
       connectionSequence: 0,
       capabilitiesPending: false,
       hostRestart: null,
-      hostedSleep: null,
-      hostedIssue: null,
-      hostedStart: null,
     };
     this.#statuses.set(serverId, status);
     return status;

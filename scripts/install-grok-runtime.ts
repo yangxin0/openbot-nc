@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { createOpenBotLogger } from "@openbot/logging";
 import { z } from "zod";
 import { type AgentRuntimeLock, loadAgentRuntimeLock } from "./agent-runtime-lock";
-import { sha256 } from "./remote-desktop-runtime-release";
+import { sha256 } from "./runtime-file-checks";
 import { download, escapeRegExp, installValidatedTree, isCurrentInstallation } from "./runtime-install";
 
 const logger = createOpenBotLogger("install-grok-runtime");

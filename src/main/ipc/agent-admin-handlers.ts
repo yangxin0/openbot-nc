@@ -1,5 +1,4 @@
 import {
-  type AddedAgent,
   type AgentAdminSettings,
   type AgentFastModeSettings,
   agentFastModeSettings,
@@ -17,9 +16,6 @@ import {
   decodeBrowserProfileSummary,
   decodeBrowserProxyList,
   decodeBrowserProxySummary,
-  decodeHostAddedAgent,
-  decodeHostAgentTemplatePreview,
-  decodeHostAgentTemplatePublication,
   decodeHostBrowserTabProfiles,
   decodeInstalledSkills,
   type InstalledSkill,
@@ -60,19 +56,12 @@ import {
   AGENT_HOST_SETTINGS_CAPABILITY,
   AGENT_HOST_SETTINGS_ROUTES,
 } from "@openbot/contracts/team-protocol/agent-host-settings-v1";
-import { AGENT_INSTALL_CAPABILITY, AGENT_INSTALL_ROUTES } from "@openbot/contracts/team-protocol/agent-install-v1";
 import { AGENT_NEW_CHAT_CAPABILITY, AGENT_NEW_CHAT_ROUTES } from "@openbot/contracts/team-protocol/agent-new-chat-v1";
 import {
   AGENT_PLAN_CARD_CAPABILITY,
   AGENT_PLAN_CARD_ROUTES,
 } from "@openbot/contracts/team-protocol/agent-plan-card-v1";
-import {
-  AGENT_PUBLISH_CAPABILITY,
-  AGENT_PUBLISH_IMAGE_BYTES,
-  AGENT_PUBLISH_ROUTES,
-} from "@openbot/contracts/team-protocol/agent-publish-v1";
 import { AGENT_SPEED_CAPABILITY, AGENT_SPEED_ROUTES } from "@openbot/contracts/team-protocol/agent-speed-v1";
-import { AGENT_UPDATE_CAPABILITY, AGENT_UPDATE_ROUTES } from "@openbot/contracts/team-protocol/agent-update-v1";
 import {
   BROWSER_PROFILES_CAPABILITY,
   BROWSER_PROFILES_ROUTES,
@@ -90,8 +79,6 @@ import { runCauseEffect } from "../../backend/effect-boundary";
 import type { AgentAdminSettingsService } from "../agent-admin-settings";
 import type { AgentDefaultsSettingsService } from "../agent-defaults-settings";
 import type { AgentHostSettingsService } from "../agent-host-settings";
-import type { AgentMarketplaceService } from "../agent-marketplace-service";
-import type { AgentTemplateService } from "../agent-template-service";
 import type { BrowserProfileService } from "../browser-profile-service";
 import {
   decodeAgentHostSettingsFromHost,
@@ -103,13 +90,7 @@ import { acceptEmpty, type ResponseDecoder } from "../remote-host-decoding";
 import type { RemoteRequestInit } from "../remote-server-client";
 import type { RemoteWorkflowError } from "../remote-service-effects";
 import type { SkillMarketplaceService } from "../skill-marketplace-service";
-import { parseInstallAgentTemplate, parsePublishAgentTemplate } from "./agent-template-handlers";
-import {
-  parseInstallMarketplaceAgent,
-  parseInstallSkill,
-  parseSetEnabledSkill,
-  parseUninstallSkill,
-} from "./app-inputs";
+import { parseInstallSkill, parseSetEnabledSkill, parseUninstallSkill } from "./app-inputs";
 import type { IpcGroupHandlers } from "./define-ipc-group";
 import { scopedHandler, scopedQueryHandler } from "./scoped-handler";
 import { requireString } from "./validation";
@@ -132,8 +113,6 @@ interface AgentAdminIpcDependencies {
   defaultsSettings: AgentDefaultsSettingsService;
   browserProfiles: BrowserProfileService;
   skills: Pick<SkillMarketplaceService, "listInstalled" | "install" | "uninstall" | "setEnabled" | "readGithub">;
-  marketplaceAgents: Pick<AgentMarketplaceService, "install">;
-  agentTemplates: Pick<AgentTemplateService, "install" | "preview" | "publish" | "unpublish">;
   remoteServers: AgentAdminRemoteServers;
 }
 
@@ -149,8 +128,6 @@ export function agentAdminIpcHandlers({
   defaultsSettings,
   browserProfiles,
   skills,
-  marketplaceAgents,
-  agentTemplates,
   remoteServers,
 }: AgentAdminIpcDependencies): Pick<IpcGroupHandlers, "agentAdmin"> {
   function remote(serverId: string, path: string, body: unknown): Promise<AgentAdminSettings> {
@@ -163,23 +140,6 @@ export function agentAdminIpcHandlers({
     if (!remoteServers.supportsCapability(serverId, SKILLS_ADMIN_CAPABILITY))
       throw new Error(sourceText("error.agent.skillsLocalOnly"));
     return runCauseEffect(remoteServers.request(serverId, path, decoder, { method: "POST", body }));
-  }
-
-  function remoteAdd(serverId: string, path: string, body: unknown): Promise<AddedAgent> {
-    if (!remoteServers.supportsCapability(serverId, AGENT_INSTALL_CAPABILITY))
-      throw new Error(sourceText("error.agent.addLocalOnly"));
-    return runCauseEffect(remoteServers.request(serverId, path, decodeHostAddedAgent, { method: "POST", body }));
-  }
-
-  function remoteUpdate(serverId: string, body: unknown): Promise<AddedAgent> {
-    if (!remoteServers.supportsCapability(serverId, AGENT_UPDATE_CAPABILITY))
-      throw new Error(sourceText("error.agent.joinedServerUpdate"));
-    return runCauseEffect(
-      remoteServers.request(serverId, AGENT_UPDATE_ROUTES.marketplace, decodeHostAddedAgent, {
-        method: "POST",
-        body,
-      }),
-    );
   }
 
   return {
@@ -355,48 +315,8 @@ export function agentAdminIpcHandlers({
           );
         },
       }),
-      addMarketplaceAgent: scopedHandler(parseInstallMarketplaceAgent, {
-        local: async (input) => addedAgent(await runCauseEffect(marketplaceAgents.install(input))),
-        remote: (input, serverId) =>
-          input.agentId === undefined
-            ? remoteAdd(serverId, AGENT_INSTALL_ROUTES.marketplace, input)
-            : remoteUpdate(serverId, input),
-      }),
-      addTemplateAgent: scopedHandler(parseInstallAgentTemplate, {
-        local: async (input) => addedAgent(await runCauseEffect(agentTemplates.install(input))),
-        remote: (input, serverId) => remoteAdd(serverId, AGENT_INSTALL_ROUTES.template, input),
-      }),
-      previewAgentTemplate: scopedHandler((value) => requireString(value, "agentId"), {
-        local: (agentId) => runCauseEffect(agentTemplates.preview(agentId)),
-        remote: (agentId, serverId) =>
-          remotePublish(serverId, AGENT_PUBLISH_ROUTES.preview, { agentId }, decodeHostAgentTemplatePreview),
-      }),
-      publishAgentTemplate: scopedHandler(parsePublishAgentTemplate, {
-        local: (input) => runCauseEffect(agentTemplates.publish(input)),
-        remote: ({ agentId, card }, serverId) =>
-          remotePublish(
-            serverId,
-            AGENT_PUBLISH_ROUTES.publish,
-            {
-              agentId,
-              card: card && card.byteLength <= AGENT_PUBLISH_IMAGE_BYTES ? Buffer.from(card).toString("base64") : null,
-            },
-            decodeHostAgentTemplatePublication,
-          ),
-      }),
-      unpublishAgentTemplate: scopedHandler((value) => requireString(value, "agentId"), {
-        local: (agentId) => runCauseEffect(agentTemplates.unpublish(agentId)),
-        remote: (agentId, serverId) =>
-          remotePublish(serverId, AGENT_PUBLISH_ROUTES.unpublish, { agentId }, acceptEmpty),
-      }),
     },
   };
-
-  function remotePublish<T>(serverId: string, path: string, body: unknown, decoder: ResponseDecoder<T>): Promise<T> {
-    if (!remoteServers.supportsCapability(serverId, AGENT_PUBLISH_CAPABILITY))
-      throw new Error(sourceText("error.team.agentPublishUnsupported"));
-    return runCauseEffect(remoteServers.request(serverId, path, decoder, { method: "POST", body }));
-  }
 
   function remoteHostSettings(serverId: string, path: string, body: unknown) {
     if (!remoteServers.supportsCapability(serverId, AGENT_HOST_SETTINGS_CAPABILITY))
@@ -476,8 +396,4 @@ export function agentAdminIpcHandlers({
       remoteServers.request(serverId, path, decodeRemoteAgentFastModeSettings, { method: "POST", body }),
     );
   }
-}
-
-function addedAgent({ agent }: { agent: { id: string; name: string } }): AddedAgent {
-  return { id: agent.id, name: agent.name };
 }

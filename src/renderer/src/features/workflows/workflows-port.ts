@@ -1,7 +1,6 @@
 import { ATTACHMENT_LIMITS } from "@openbot/contracts/input-limits";
 import {
   type AgentAccessLevels,
-  MESSAGING_LIMITS,
   type OpenBotDesktopApi,
   type ServerSummary,
   STORAGE_CAPABILITY,
@@ -22,23 +21,12 @@ import { WORKFLOWS_MEDIA_TRANSPARENT_CAPABILITY } from "@openbot/contracts/team-
 import { WORKFLOWS_PAUSE_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-pause-v1";
 import { WORKFLOWS_PORTABLE_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-portable-v1";
 import { WORKFLOWS_STEP_SETTINGS_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-step-settings-v1";
-import type {
-  WorkflowChannel,
-  WorkflowDiscordServer,
-  WorkflowPlace,
-  WorkflowSlackWorkspace,
-  WorkflowTelegramChat,
-} from "@openbot/ui/features/workflows/workflow-model";
+import type { WorkflowChannel, WorkflowPlace } from "@openbot/ui/features/workflows/workflow-model";
 import { currentText } from "@openbot/ui/text";
-import {
-  type GitHubConnectorPort,
-  githubConnectorPort,
-  hostGitHubConnectorPort,
-} from "../connectors/github-connector-port";
 import { serverCanAdminister, serverRoleCanAdminister, serverSupportsCapability } from "../servers/server-capabilities";
 
 type WorkflowsApi = OpenBotDesktopApi["workflows"];
-type NoInputMethod = "list" | "githubCatalog" | "mediaProviders" | "mediaCredits" | "mediaCatalog" | "folders";
+type NoInputMethod = "list" | "mediaProviders" | "mediaCredits" | "mediaCatalog" | "folders";
 type BoundWorkflowsApi = {
   [Name in Exclude<keyof WorkflowsApi, NoInputMethod>]: (
     input: Parameters<WorkflowsApi[Name]>[0],
@@ -50,11 +38,7 @@ export interface WorkflowHost {
   onChanged(changed: (workflowId: string | null, agentId?: string) => void): () => void;
   places(): Promise<WorkflowPlace[]>;
   channels(): Promise<WorkflowChannel[]>;
-  discordServers(): Promise<WorkflowDiscordServer[]>;
-  telegramChats(): Promise<WorkflowTelegramChat[]>;
-  slackWorkspaces(): Promise<WorkflowSlackWorkspace[]>;
   agentLevels(): Promise<AgentAccessLevels | null>;
-  githubSupported(): boolean;
   mediaSupported(): boolean;
   mediaAccountSupported(): boolean;
   mediaTransparentSupported(): boolean;
@@ -73,7 +57,6 @@ export interface WorkflowHost {
   downloadMedia?(attachmentId: string): Promise<void>;
   mediaUrl(attachmentId: string, kind: WorkflowMediaKind): string | null | undefined;
   mediaPreviewUrl(attachmentId: string): string | null | undefined;
-  githubConnector: GitHubConnectorPort;
   hostName(): string | undefined;
   openUrl(url: string): Promise<void>;
 }
@@ -117,7 +100,6 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
   const api = () => window.openbot.workflows;
   const local = () => server()?.kind !== "remote";
   const placesSupported = () => local() || serverCanAdminister(server(), "routine-results-v1");
-  const chatsSupported = () => local() || (placesSupported() && serverCanAdminister(server(), "workflows-chats-v1"));
   const channelsSupported = () => local() || serverCanAdminister(server(), "workflows-channels-v1");
   let optionsCall: ReturnType<OpenBotDesktopApi["routineResults"]["options"]> | undefined;
   const options = () => {
@@ -126,7 +108,6 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
     });
     return optionsCall;
   };
-  const githubSupported = () => serverSupportsCapability(server(), "workflows-github-v1");
   const mediaSupported = () => local() || serverSupportsCapability(server(), "workflows-media-v1");
   const mediaAccountSupported = () =>
     mediaSupported() && (local() || serverSupportsCapability(server(), WORKFLOWS_MEDIA_ACCOUNT_CAPABILITY));
@@ -136,7 +117,6 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
     mediaSupported() && (local() || serverSupportsCapability(server(), WORKFLOWS_MEDIA_SIZE_CAPABILITY));
   const agentFilesSupported = () => local() || serverSupportsCapability(server(), WORKFLOWS_AGENT_FILES_CAPABILITY);
   const foldersSupported = () => local() || serverSupportsCapability(server(), WORKFLOW_FOLDERS_CAPABILITY);
-  const hostGitHub = hostGitHubConnectorPort(() => (githubSupported() ? serverId : undefined));
   const mediaUrl = (attachmentId: string) =>
     local()
       ? `openbot-attachment://file/${encodeURIComponent(attachmentId)}`
@@ -167,11 +147,6 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
       runs: (input) => api().runs(input, serverId),
       run: (runId) => api().run(runId, serverId),
       stepSettings: (stepId) => api().stepSettings(stepId, serverId),
-      rotateWebhookSecret: (input) => api().rotateWebhookSecret(input, serverId),
-      githubCatalog: () => api().githubCatalog(serverId),
-      githubOptions: (input) => api().githubOptions(input, serverId),
-      githubHistory: (workflowId) => api().githubHistory(workflowId, serverId),
-      githubRunLastEvent: (input) => api().githubRunLastEvent(input, serverId),
       keepPicture: (draftId) => api().keepPicture(draftId, serverId),
       mediaProviders: () => api().mediaProviders(serverId),
       mediaCredits: () => api().mediaCredits(serverId),
@@ -220,47 +195,6 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
       const channels = await window.openbot.agent.listChannels(serverId);
       return channels.filter((channel) => !channel.archived).map((channel) => ({ id: channel.id, name: channel.name }));
     },
-    async discordServers() {
-      if (!local()) return [];
-      const [connections, overview] = await Promise.all([options(), window.openbot.messaging.getDiscordOverview()]);
-      const discord = connections.filter((option) => option.platform === "discord");
-      return Promise.all(
-        discord.map(async (option) => {
-          const guilds = overview.connections.filter(
-            (connection) => connection.workspaceName.slice(0, MESSAGING_LIMITS.name) === option.connectionName,
-          );
-          const guild = guilds.length === 1 ? guilds[0] : undefined;
-          const roles = guild
-            ? await window.openbot.messaging.listDiscordRoles({ workspaceId: guild.workspaceId }).then(
-                (list) => list.roles,
-                () => [],
-              )
-            : [];
-          return {
-            connectionId: option.connectionId,
-            name: option.connectionName,
-            channels: option.places.map((place) => ({ id: place.id, name: place.name.replace(/^#/u, "") })),
-            roles,
-          };
-        }),
-      );
-    },
-    async telegramChats() {
-      if (!chatsSupported()) return [];
-      return (await options())
-        .filter((option) => option.platform === "telegram")
-        .map((option) => ({ connectionId: option.connectionId, name: option.connectionName }));
-    },
-    async slackWorkspaces() {
-      if (!chatsSupported()) return [];
-      return (await options())
-        .filter((option) => option.platform === "slack")
-        .map((option) => ({
-          connectionId: option.connectionId,
-          name: option.connectionName,
-          channels: option.places.map((place) => ({ id: place.id, name: place.name.replace(/^#/u, "") })),
-        }));
-    },
     async agentLevels() {
       if (local() || serverRoleCanAdminister(server())) return null;
       return (await window.openbot.hostAdmin.getAgentAccess(serverId)).mine;
@@ -287,7 +221,6 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
     },
     downloadMedia: (attachmentId) =>
       window.openbot.agent.openAttachment({ attachmentId, action: "download" }, serverId),
-    githubSupported,
     mediaSupported,
     mediaAccountSupported,
     mediaTransparentSupported,
@@ -299,9 +232,6 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
     portableSupported: () => local() || serverSupportsCapability(server(), WORKFLOWS_PORTABLE_CAPABILITY),
     mediaUrl,
     mediaPreviewUrl,
-    get githubConnector() {
-      return local() ? githubConnectorPort() : hostGitHub;
-    },
     hostName: () => (local() ? undefined : server()?.name),
     openUrl: (url) => window.openbot.openUrl(url),
   };

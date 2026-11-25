@@ -1,12 +1,9 @@
 import {
-  decodeAgentWebhookSecret,
   decodeEventActivity,
   decodeEventRoutineRuns,
   decodeEventRoutines,
   decodeEventStatus,
   decodeSaveEventRoutineResult,
-  decodeWebhookSecret,
-  decodeWebhookTestResult,
   type EventRoutine,
   type EventRoutineOwner,
   type ListEventRoutinesInput,
@@ -28,15 +25,6 @@ import {
   ROUTINE_RUN_PLACE_ROUTES,
 } from "@openbot/contracts/team-protocol/routine-run-place-v1";
 import { ROUTINES_ONCE_CAPABILITY } from "@openbot/contracts/team-protocol/routines-once-v1";
-import {
-  WEBHOOK_AGENT_SECRET_CAPABILITY,
-  WEBHOOK_AGENT_SECRET_ROUTES,
-} from "@openbot/contracts/team-protocol/webhook-agent-secret-v1";
-import {
-  WEBHOOK_SENDER_SECRET_CAPABILITY,
-  WEBHOOK_SENDER_SECRET_ROUTES,
-} from "@openbot/contracts/team-protocol/webhook-sender-secret-v1";
-import { WEBHOOK_TESTS_CAPABILITY, WEBHOOK_TESTS_ROUTES } from "@openbot/contracts/team-protocol/webhook-tests-v1";
 import { sourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger } from "@openbot/logging";
 import {
@@ -55,7 +43,6 @@ import {
   parseListEventRoutineRuns,
   parseListEventRoutines,
   parseSaveEventRoutine,
-  parseSetWebhookSecret,
 } from "../host-events-inputs";
 import { acceptEmpty, type ResponseDecoder } from "../remote-host-decoding";
 import type { RemoteRequestInit } from "../remote-server-client";
@@ -73,10 +60,7 @@ interface EventsRemoteServers {
       | typeof ROUTINE_RECOVERY_CAPABILITY
       | typeof ROUTINE_PAUSE_REASONS_CAPABILITY
       | typeof ROUTINE_RUN_PLACE_CAPABILITY
-      | typeof ROUTINES_ONCE_CAPABILITY
-      | typeof WEBHOOK_TESTS_CAPABILITY
-      | typeof WEBHOOK_SENDER_SECRET_CAPABILITY
-      | typeof WEBHOOK_AGENT_SECRET_CAPABILITY,
+      | typeof ROUTINES_ONCE_CAPABILITY,
   ): boolean;
   request<T>(
     serverId: string,
@@ -192,34 +176,6 @@ export function eventsIpcHandlers({ events, remoteServers }: EventsIpcDependenci
       testRoutine: scopedHandler(parseEventRoutineRef, {
         local: (input) => runCauseEffect(events.testRoutine(input)),
         remote: (input, serverId) => remote(serverId, EVENTS_ROUTES.testRoutine, acceptEmpty, input),
-      }),
-      rotateSecret: scopedHandler(parseEventRoutineRef, {
-        local: (input) => runCauseEffect(events.rotateSecret(input)),
-        remote: (input, serverId) => remote(serverId, EVENTS_ROUTES.rotateSecret, decodeWebhookSecret, input),
-      }),
-      setSecret: scopedHandler(parseSetWebhookSecret, {
-        local: (input) => runCauseEffect(events.setSecret(input)),
-        remote: (input, serverId) => {
-          if (!remoteServers.supportsCapability(serverId, WEBHOOK_SENDER_SECRET_CAPABILITY))
-            throw new Error(sourceText("error.backend.eventsUnavailable"));
-          return remote(serverId, WEBHOOK_SENDER_SECRET_ROUTES.set, acceptEmpty, input);
-        },
-      }),
-      giveSecretToAgent: scopedHandler(parseEventRoutineRef, {
-        local: (input) => runCauseEffect(events.giveSecretToAgent(input)),
-        remote: (input, serverId) => {
-          if (!remoteServers.supportsCapability(serverId, WEBHOOK_AGENT_SECRET_CAPABILITY))
-            throw new Error(sourceText("error.backend.eventsUnavailable"));
-          return remote(serverId, WEBHOOK_AGENT_SECRET_ROUTES.give, decodeAgentWebhookSecret, input);
-        },
-      }),
-      sendTestEvent: scopedHandler(parseEventRoutineRef, {
-        local: (input) => runCauseEffect(events.sendTestEvent(input)),
-        remote: (input, serverId) => {
-          if (!remoteServers.supportsCapability(serverId, WEBHOOK_TESTS_CAPABILITY))
-            throw new Error(sourceText("error.backend.eventsUnavailable"));
-          return remote(serverId, WEBHOOK_TESTS_ROUTES.send, decodeWebhookTestResult, input);
-        },
       }),
       listActivity: scopedHandler(parseListEventActivity, {
         local: (input) => runCauseEffect(events.listActivity(input)),

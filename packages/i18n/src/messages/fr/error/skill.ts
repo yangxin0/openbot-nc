@@ -21,9 +21,7 @@ export const messages = {
   "error.skill.frontmatterInvalid": "L’en-tête de SKILL.md n’est pas du YAML valide.",
   "error.skill.descriptionLength": "SKILL.md doit avoir une description de 1 à {limit} caractères.",
   "error.skill.nameMismatch": "SKILL.md doit contenir « name: {slug} », comme le nom de son dossier.",
-  "error.skill.draftExpired": "Le paquet de compétence choisi a expiré. Choisissez-le de nouveau.",
   "error.skill.localHasNoVersion": "Une compétence locale n’a pas de version publiée.",
-  "error.skill.publishLocalFirst": "Publiez les compétences locales séparément avant de publier cet agent.",
   "error.skill.bundleMismatch": "La compétence téléchargée ne correspond pas à son entrée signée du catalogue.",
   "error.skill.metadataMismatch": "Les métadonnées de la compétence téléchargée ne correspondent pas au catalogue.",
   "error.skill.folderTaken": "Une autre compétence installée utilise ce nom de dossier.",
@@ -43,15 +41,10 @@ export const messages = {
   "error.skill.lockInvalid": "L’enregistrement de la compétence installée n’est pas valide. Il n’a pas été modifié.",
   "error.skill.installPathSymlink":
     "Les chemins d’installation des compétences ne peuvent pas contenir de liens symboliques.",
-  "error.skill.duplicateSlug": "Deux compétences s’appellent « {slug} ». Renommez l’une d’elles avant la publication.",
-  "error.skill.publishNeedsRepair": "{name} a des modifications locales ou doit être réparée avant la publication.",
-  "error.skill.publishUntracked":
-    "{name} a été installée avant le suivi exact des versions. Mettez-la à jour ou réparez-la avant la publication.",
   "error.skill.tooManySkills": "Un agent peut avoir jusqu’à {limit} compétences.",
   "error.skill.unmanagedExists": "Une compétence non gérée existe déjà à l’emplacement {path}.",
   "error.skill.managedSlug":
     "OpenBot donne à chaque agent sa propre compétence {slug}. Donnez un autre nom à cette compétence.",
-  "error.skill.templateMarkdownTooLarge": "{name} : SKILL.md dépasse 64 Ko. Raccourcissez-le avant la publication.",
   "error.skill.localNoRevisions": "La compétence locale n’a aucune révision publiée.",
   "error.skill.localNotFound":
     "Cette compétence locale n’existe pas. Vérifiez son ID dans la liste des compétences locales.",
@@ -77,6 +70,4 @@ export const messages = {
   "error.skill.githubTooLarge":
     "OpenBot ne peut pas lire tous les fichiers de {repository}. Le dépôt est trop volumineux.",
   "error.skill.githubHostTooOld": "Mettez à jour ce serveur pour ajouter des compétences depuis GitHub.",
-  "error.skill.publishGithub":
-    "{name} vient de GitHub. Vous pouvez publier uniquement les compétences que vous avez créées.",
 } as const satisfies PartialTranslation<typeof source>;

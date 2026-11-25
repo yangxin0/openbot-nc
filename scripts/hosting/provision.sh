@@ -49,6 +49,6 @@ chmod 0644 "$INSTALL/hosted/service-user"
 install_hosting "$SOURCE"
 finish_swap
 
-install -d -o "$SERVICE_USER" -g "$(id -gn "$SERVICE_USER")" -m 0700 /srv/openbot-hosted
+install -d -o "$SERVICE_USER" -g "$(id -gn "$SERVICE_USER")" -m 0700 /srv/openbot-nc-hosted
 printf 'OPENBOT_AUTH_API_URL=%s\n' "${AUTH_API_URL%/}" >"$INSTALL/hosted/openbot.env"
 chmod 0644 "$INSTALL/hosted/openbot.env"

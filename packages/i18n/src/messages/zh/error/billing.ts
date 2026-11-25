@@ -25,8 +25,6 @@ export const messages = {
   "error.billing.vatIdUnverified": "欧盟增值税系统现在无法核验增值税号。请稍后重试，或不填增值税号继续。",
   "error.billing.vatUnavailable": "现在无法付款，请稍后重试。",
   "error.billing.invalidRequest": "账单请求无效。",
-  "error.billing.invalidResponse": "账单响应无效。",
-  "error.billing.notStripePage": "该账单页面不是 Stripe 页面。",
   "error.billing.customServerOfferMissing": "此服务器没有可付款的方案。",
   "error.billing.checkoutUnavailable": "现在无法开始付款。请一分钟后重试。",
 } as const satisfies PartialTranslation<typeof source>;

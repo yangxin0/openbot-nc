@@ -89,8 +89,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "Отправка вложения отменена.",
   "webClient.error.duplication": "Этот сервер не поддерживает дублирование агентов.",
   "webClient.error.connectServerFirst": "Сначала подключитесь к этому серверу.",
-  "webClient.error.agentInstallNotAllowed":
-    "Добавлять агента здесь может только владелец или администратор, а на сервере должна работать актуальная версия OpenBot.",
   "webClient.error.linkDesktopOnly": "Эта ссылка открывается только в приложении для компьютера.",
   "webClient.error.saveEndpointOffline": "Подключитесь к серверу, чтобы сохранить эндпоинт.",
   "webClient.error.removeEndpointOffline": "Подключитесь к серверу, чтобы удалить эндпоинт.",

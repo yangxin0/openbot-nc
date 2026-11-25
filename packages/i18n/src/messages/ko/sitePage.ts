@@ -89,8 +89,6 @@ export const messages = {
   "sitePage.pricing.consent.statement": "{policy}, {terms}에 동의합니다.",
   "sitePage.pricing.consent.policy": "개인정보 처리방침",
   "sitePage.pricing.consent.terms": "이용약관 및 청약 철회권",
-  "sitePage.pricing.consent.earlyStart":
-    "14일의 청약 철회 기간이 끝나기 전에 호스팅 서비스를 시작해 줄 것을 요청합니다. 서비스가 완전히 제공되기 전에 계약을 철회하면 철회 시점까지 제공된 서비스 요금을 지불해야 하며, 서비스가 완전히 제공된 후에는 계약 철회 권리를 잃는다는 것을 확인합니다.",
   "sitePage.teams.title": "팀을 위한 OpenBot",
   "sitePage.teams.description":
     "관리형 인프라에서 OpenBot을 운영하거나, 팀과 워크플로, 기존 시스템에 맞춘 맞춤 구축을 저희와 함께 설계해 보세요.",

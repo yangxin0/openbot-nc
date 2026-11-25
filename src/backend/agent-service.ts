@@ -10,7 +10,6 @@ import {
 } from "@openbot/contracts/agent-providers";
 import { sortConversationMessages } from "@openbot/contracts/conversation-order";
 import { developmentStartingModel } from "@openbot/contracts/development-defaults";
-import type { FeedbackFacts } from "@openbot/contracts/feedback";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type {
   AgentAccessLevel,
@@ -46,7 +45,6 @@ import type {
   ChannelMemory,
   ChannelRoutine,
   ChannelRoutineRun,
-  CodexLiveVoice,
   CompleteMcpSignInRelayInput,
   ConversationFileSearchPage,
   ConversationMessage,
@@ -134,11 +132,6 @@ import type {
   UpdateChannelRoutineInput,
   UpdateQueuedMessageInput,
   UpdateRoutineInput,
-  VoiceLiveEvent,
-  VoiceLiveSession,
-  VoiceLiveStart,
-  WithdrawFeedbackInput,
-  WithdrawFeedbackResult,
 } from "@openbot/contracts/ipc";
 import {
   AGENT_TASK_LIMIT_DEFAULT,
@@ -221,9 +214,7 @@ import type { SectionTeammates } from "./agent/developer-instructions";
 import { DrainScheduler } from "./agent/drain-scheduler";
 import { DuplicationGate, toAgentDuplicationFailed } from "./agent/duplication-gate";
 import type { FailureContext, FailureSignal } from "./agent/failure-signal";
-import { FeedbackWithdrawal } from "./agent/feedback-withdrawal";
 import { type FinishCheckInput, FinishCheckResult, finishCheckPrompt } from "./agent/finish-check";
-import { type AgentHostedSites, HostedSiteCoordinator } from "./agent/hosted-site-coordinator";
 import { ImageGenRuntime } from "./agent/image-gen-runtime";
 import {
   decodeGeneratedImage,
@@ -237,7 +228,6 @@ import {
 import type { ImageFitter } from "./agent/image-reader";
 import { InstructionsChanges } from "./agent/instructions-changes";
 import type { AgentLibraryFolders } from "./agent/library-folder-tools";
-import { LiveVoice, type LiveVoiceOwner, type LiveVoiceRelayed, type LiveVoiceReply } from "./agent/live-voice";
 import { MailboxSync } from "./agent/mailbox-sync";
 import { type GitHubConnectorSource, McpGateway, type TestMcpServerOptions } from "./agent/mcp-gateway";
 import { agentFallbackMcpServers, type MarketplaceAppServer, mcpServersFromGateway } from "./agent/mcp-tools";
@@ -258,13 +248,7 @@ import {
   startingModel,
   workflowProvider,
 } from "./agent/model-choice";
-import {
-  type AgentFeedback,
-  type AgentMessageSteer,
-  type AgentServerClaims,
-  type McpServerOwnerHooks,
-  OpenBotToolRouter,
-} from "./agent/openbot-tool-router";
+import { type AgentMessageSteer, type McpServerOwnerHooks, OpenBotToolRouter } from "./agent/openbot-tool-router";
 import { PlanContinuation } from "./agent/plan-continuation";
 import { ProfileClients } from "./agent/profile-clients";
 import {
@@ -371,7 +355,6 @@ import { shortenDiagnostic } from "./stderr-diagnostics";
 import { extractJsonObject } from "./structured-output";
 import type { UserBrowsingLog } from "./user-browsing-log";
 import type { VaultItems } from "./vault-items";
-import { type CreditMediaGateway, CreditMediaWorkflows } from "./workflows/credit-media";
 import { generateHiggsfieldMedia, HIGGSFIELD_MCP_HOST, readHiggsfieldCredits } from "./workflows/higgsfield-media";
 import { WorkflowMediaCatalogCache } from "./workflows/media-catalog";
 import { generateSunraMedia, readSunraCredits, SUNRA_MCP_HOST } from "./workflows/sunra-media";
@@ -410,7 +393,6 @@ interface AgentServiceEvents {
   event: [event: AgentEvent, memberId?: string];
   toolUsage: [usage: ToolUsageSignal];
   workflowRun: [end: WorkflowRunEnd];
-  liveVoice: [event: VoiceLiveEvent, memberId: string | null];
 }
 
 export interface AgentServiceOptions {
@@ -428,7 +410,6 @@ export interface AgentServiceOptions {
   clientFactory?: AgentClientFactory | null;
   bundledExecutables?: BundledProviderExecutables;
   prepareAgentWorkspace?: (agent: AgentSummary) => Effect.Effect<void, AgentLifecycleFailed>;
-  hostedSites?: AgentHostedSites | null;
   visualPreview?: ChatVisualPreviewHost | null;
   setCommitCoAuthor?: SetCommitCoAuthor | undefined;
   clearPictureBackground?: ((bytes: Uint8Array) => Uint8Array | null) | undefined;
@@ -441,9 +422,6 @@ export interface AgentServiceOptions {
   hiddenModels?: (provider: AgentProvider) => ReadonlySet<string> | undefined;
   marketplaceAppServer?: (appId: string) => MarketplaceAppServer | null;
   passwordManagerConnected?: (manager: PasswordManagerId) => boolean;
-  feedbackFacts?: FeedbackFacts | null;
-  feedback?: AgentFeedback | null;
-  serverClaims?: AgentServerClaims | null;
   browserProfiles?: (() => AgentBrowserProfiles | null) | undefined;
   clientBrowser?: ClientBrowser | null;
   crm?: (() => CrmHandle | null) | undefined;
@@ -489,16 +467,13 @@ export interface AgentServiceOptions {
   agentApiKeys?: AgentApiKeys | null;
   hostMemory?: HostMemory | null;
   hostTurnLimits?: { turnLimit(): number | "unlimited" | null; agentTaskLimit(): number };
-  hostedStorageGb?: () => number | null;
   agentCursorDrawn?: boolean;
   computerUseOnWayland?: boolean;
   computerUseInputRefused?: () => boolean;
   codexIdleSessions?: { releaseAfterMs: number; idleLimit: number };
-  creditMedia?: CreditMediaGateway | null;
 }
 
 const USER_SEND_RETRY_WINDOW_MS = 24 * 60 * 60 * 1000;
-const LIVE_VOICE_RELAYED_LIMIT = 50;
 const FROM_CHROME_LIMIT = 200;
 
 function userSendKey(sender: ConversationMessageSender | undefined, agentId: string, clientMessageId: string): string {
@@ -556,7 +531,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
   readonly #tasks: AgentTasks;
   readonly #history: AgentHistoryTransfer;
   readonly #messageDeletion: MessageDeletion;
-  readonly #feedbackWithdrawal: FeedbackWithdrawal;
   readonly #messagePins: MessagePins;
   readonly #tables: AgentTables | null;
   readonly #routines: RoutineScheduler;
@@ -566,7 +540,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
   readonly routineRecords: RoutineRecords;
   readonly #mcp: McpGateway;
   readonly #mediaCatalog: WorkflowMediaCatalogCache;
-  readonly #creditMedia: CreditMediaWorkflows | null;
   readonly #mcpAgentAccess: AgentServiceOptions["mcpAgentAccess"];
   readonly #hiddenModels: AgentServiceOptions["hiddenModels"];
   readonly #clearPictureBackground: AgentServiceOptions["clearPictureBackground"];
@@ -574,7 +547,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
   readonly #providerUseChanges = Semaphore.makeUnsafe(1);
   readonly #endpoints: CustomEndpoints;
   readonly #prepareAgentWorkspace: (agent: AgentSummary) => Effect.Effect<void, AgentLifecycleFailed>;
-  readonly #hostedSites: HostedSiteCoordinator;
   readonly #conversation: ConversationRuntime;
   readonly #attention: AttentionRegistry;
   readonly #images: ImageGenRuntime;
@@ -584,8 +556,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
   readonly #usageLimits: UsageLimitGate;
   readonly #drain: DrainScheduler;
   readonly #sessionSettings: SessionSettings;
-  readonly #liveVoice: LiveVoice;
-  readonly #liveVoiceRelayed = new Map<string, LiveVoiceRelayed>();
   readonly #fromChrome = new Set<string>();
   readonly #queue: QueueControls;
   readonly #attachments: AttachmentGateway;
@@ -634,7 +604,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       clientFactory = null,
       bundledExecutables = DEFAULT_BUNDLED_EXECUTABLES,
       prepareAgentWorkspace = () => Effect.void,
-      hostedSites = null,
       sidebarLayout = null,
       libraryFolders = null,
       credentials = NO_PROVIDER_CREDENTIALS,
@@ -672,12 +641,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       signIn: (provider) => this.#mediaSignIn(provider),
       warn: (message, details) => logger.warn(message, details),
     });
-    this.#creditMedia = options.creditMedia
-      ? new CreditMediaWorkflows({
-          gateway: options.creditMedia,
-          warn: (message, details) => logger.warn(message, details),
-        })
-      : null;
     this.#sidebarLayout = sidebarLayout;
     this.#libraryFolders = libraryFolders;
     this.#profileSave = new ProfileSave(store, {
@@ -757,12 +720,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       mailbox,
       conversation: this.#conversation,
       tasks: this.#tasks,
-    });
-    this.#feedbackWithdrawal = new FeedbackWithdrawal({
-      store,
-      conversation: this.#conversation,
-      tasks: this.#tasks,
-      feedback: options.feedback ?? null,
     });
     this.#messagePins = new MessagePins({
       store,
@@ -889,17 +846,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
           );
         },
       },
-    });
-    this.#hostedSites = new HostedSiteCoordinator({
-      store,
-      conversation: this.#conversation,
-      hostedSites,
-      emitError: (code, error, agentId) => this.#emitError(code, error, agentId),
-      reportFailure: (code, error, agentId) => {
-        this.#reportFailure(code, error, agentId);
-      },
-      isStopping: () => this.#stopping,
-      redact: (text) => this.#mcp.redact(text),
     });
     this.#providers = new ProviderRuntime({
       offProviders: options.offProviders ?? [],
@@ -1208,7 +1154,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     this.#attention = new AttentionRegistry({
       conversation: this.#conversation,
       browser: this.#browser,
-      hostedSites: this.#hostedSites,
       routines: this.#routines,
       ...(approvalAutomation === undefined ? {} : { approvalAutomation }),
       workspaceSandboxed: (agentId) => {
@@ -1240,16 +1185,7 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       },
       sendLateAnswer: (agentId, target, text, sender) =>
         Effect.runFork(
-          this.#sendUserMessage(
-            { agentId, text, ...target },
-            sender,
-            undefined,
-            undefined,
-            false,
-            false,
-            undefined,
-            true,
-          ).pipe(
+          this.#sendUserMessage({ agentId, text, ...target }, sender, undefined, undefined, false, false, true).pipe(
             Effect.catch((failure) => Effect.sync(() => this.#emitError("late_answer_failed", failure.cause, agentId))),
             Effect.forkIn(this.#scope, { startImmediately: true }),
           ),
@@ -1368,7 +1304,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
         link: options.linkWallet?.connected() ?? false,
       }),
       serverHost: hostMemory !== null,
-      ...(options.hostedStorageGb ? { hostedStorageGb: options.hostedStorageGb } : {}),
       ...(options.agentCursorDrawn ? { agentCursorDrawn: true } : {}),
       ...(options.computerUseOnWayland ? { computerUseOnWayland: true } : {}),
       ...(options.computerUseInputRefused ? { computerUseInputRefused: options.computerUseInputRefused } : {}),
@@ -1782,7 +1717,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
         emitError: (code, error, agentId) => this.#emitError(code, error, agentId),
         redactMcp: (text) => this.#mcp.redact(text),
         tagReferences: (agentId, threadId) => this.#tagReferences(agentId, threadId),
-        liveVoiceRelayed: (deliveryId) => this.#liveVoiceRelayed.get(deliveryId) ?? null,
         fromChrome: (deliveryId) => this.#fromChrome.has(deliveryId),
         isStopping: () => this.#stopping,
         isDeleting: (agentId) => this.#removal.deleting().has(agentId),
@@ -1846,42 +1780,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       exclusive: (run) => this.#endpoints.runExclusive(run),
       changed: (agentId) => this.#emit({ type: "agent-session-settings-changed", agentId }),
     });
-    this.#liveVoice = new LiveVoice({
-      agent: (agentId) => {
-        const agent = this.#store.get(agentId);
-        if (!agent) throw new Error(sourceText("error.agent.selectedGone"));
-        return agent;
-      },
-      relay: (agent) => this.#liveVoiceRelay(agent),
-      send: (agentId, relayed, sender) =>
-        this.#sendUserMessage(
-          { agentId, text: relayed.shown },
-          sender,
-          undefined,
-          undefined,
-          false,
-          false,
-          relayed,
-        ).pipe(
-          Effect.flatMap((receipt) => {
-            const deliveryId = receipt.deliveries[0]?.id;
-            return deliveryId
-              ? Effect.succeed(deliveryId)
-              : Effect.fail({ cause: new Error(sourceText("error.voice.live.disconnected")) });
-          }),
-        ),
-      reply: (agentId, deliveryId) => this.#liveVoiceReply(agentId, deliveryId),
-      busy: (agentId) => this.#drain.ownChatHold(agentId) !== null,
-      answer: (agentId, threadId, turnId) =>
-        this.#store.get(agentId)?.threadId === threadId ? this.#turnAnswer(agentId, turnId) : null,
-      summarize: (agentId, prompt) => this.#liveVoiceSummary(agentId, prompt),
-      emit: (event, memberId) => this.emit("liveVoice", event, memberId),
-      redact: (text) => this.#mcp.redact(text),
-      otherAccounts: (agentId) =>
-        this.#providers.otherCodexAccounts(
-          this.#liveVoiceAccountId(this.#store.get(agentId)) ?? DEFAULT_PROVIDER_ACCOUNT_ID,
-        ),
-    });
     this.#browser.onControlChanged((state) => {
       this.#emit({ type: "browser-control-changed", state });
     });
@@ -1901,7 +1799,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
           return this.#tasks.threadForDelivery(deliveryId);
         },
         tagReferences: (agentId, threadId) => this.#tagReferences(agentId, threadId),
-        liveVoiceRelayed: (deliveryId) => this.#liveVoiceRelayed.get(deliveryId) ?? null,
         fromChrome: (deliveryId) => this.#fromChrome.has(deliveryId),
       },
     });
@@ -2004,7 +1901,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       drain: this.#drain,
       threads: this.#threads,
       turn: this.#turn,
-      hostedSites: this.#hostedSites,
       compaction: this.#compaction,
       apiKeys: options.agentApiKeys ?? null,
       deleteWithRevokedApproval: options.deleteWithRevokedApproval ?? ((_agentId, remove) => remove()),
@@ -2074,7 +1970,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       attachments: this.#attachments,
       channels: this.channels,
       messaging: this.messaging,
-      hostedSites: this.#hostedSites,
       routines: this.#routines,
       memories: this.#memories,
       waits: this.#waits,
@@ -2109,10 +2004,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       ...(options.passwordManagerConnected === undefined
         ? {}
         : { passwordManagerConnected: options.passwordManagerConnected }),
-      feedbackFacts: options.feedbackFacts ?? null,
-      feedback: options.feedback ?? null,
-      feedbackWithdrawal: this.#feedbackWithdrawal,
-      serverClaims: options.serverClaims ?? null,
       ...(options.browserProfiles === undefined ? {} : { browserProfiles: options.browserProfiles }),
       ...(options.clientBrowser === undefined ? {} : { clientBrowser: options.clientBrowser }),
       fromChrome: (deliveryId) => this.#fromChrome.has(deliveryId),
@@ -3099,21 +2990,9 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     only?: WorkflowCatalogSource,
   ) {
     if (this.#stopping) return { models: [] } satisfies WorkflowMediaCatalog;
-    const credit =
-      this.#creditMedia && (only === undefined || only === "openbot")
-        ? this.#creditMedia.catalog()
-        : Effect.succeed({ models: [], unavailable: [] } satisfies WorkflowMediaCatalog);
-    const services =
-      only === "openbot"
-        ? Effect.succeed({ models: [] } satisfies WorkflowMediaCatalog)
-        : this.#mediaCatalog.catalog(only);
-    const [listed, credits] = yield* Effect.all([services, credit], { concurrency: "unbounded" });
-    return {
-      models: [...credits.models, ...listed.models].slice(0, WORKFLOW_MEDIA_CATALOG_MAX),
-      ...(credits.unavailable.length > 0
-        ? { unavailable: credits.unavailable.slice(0, WORKFLOW_MEDIA_CATALOG_MAX) }
-        : {}),
-    } satisfies WorkflowMediaCatalog;
+    if (only === "openbot") return { models: [] } satisfies WorkflowMediaCatalog;
+    const listed = yield* this.#mediaCatalog.catalog(only);
+    return { models: listed.models.slice(0, WORKFLOW_MEDIA_CATALOG_MAX) } satisfies WorkflowMediaCatalog;
   }).bind(this);
 
   readonly workflowMediaPrice = Effect.fn("AgentService.workflowMediaPrice")(function* (
@@ -3121,17 +3000,14 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     request: WorkflowMediaPriceRequest,
   ) {
     if (this.#stopping) return { credits: null } satisfies WorkflowMediaPrice;
-    if (workflowCatalogSource(request.model) === "openbot")
-      return {
-        credits: this.#creditMedia ? yield* this.#creditMedia.price(request) : null,
-      } satisfies WorkflowMediaPrice;
+    if (workflowCatalogSource(request.model) === "openbot") return { credits: null } satisfies WorkflowMediaPrice;
     return yield* this.#mediaCatalog.price(request);
   }).bind(this);
 
   workflowMediaProviders(): WorkflowMediaProviders {
     return {
       ...workflowMediaProvidersOf(this.#mediaServiceAccounts().map(({ account }) => account)),
-      openbot: this.#creditMedia?.available() === true,
+      openbot: false,
     };
   }
 
@@ -3140,10 +3016,8 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     only?: WorkflowCatalogSource,
   ) {
     if (this.#stopping) return { sunra: null, higgsfield: null, accounts: null } satisfies WorkflowMediaCredits;
-    const openbot =
-      this.#creditMedia && (only === undefined || only === "openbot") ? yield* this.#creditMedia.credits() : null;
     if (only === "openbot")
-      return { sunra: null, higgsfield: null, accounts: null, openbot } satisfies WorkflowMediaCredits;
+      return { sunra: null, higgsfield: null, accounts: null, openbot: null } satisfies WorkflowMediaCredits;
     const all = this.#mediaServiceAccounts();
     const accounts = only ? all.filter((account) => account.provider === only).slice(0, 1) : all;
     const orNull = <A>(read: Effect.Effect<A, { readonly message: string }>, service: string) =>
@@ -3165,7 +3039,7 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     return {
       ...workflowMediaCreditsOf(listed),
       accounts: only ? null : listed,
-      ...(only ? {} : { openbot }),
+      ...(only ? {} : { openbot: null }),
     } satisfies WorkflowMediaCredits;
   }).bind(this);
 
@@ -3190,32 +3064,7 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       const pictures = input.images.filter(
         (image): image is { role: MediaPictureRole; attachmentId: string } => image.role !== "file",
       );
-      if (input.provider === "openbot") {
-        if (this.#stopping) return yield* failed(sourceText("error.backend.shuttingDown"));
-        if (!this.#creditMedia) return yield* failed(sourceText("error.billing.mediaSignInRequired"));
-        return yield* this.#creditMedia
-          .generate(
-            {
-              resolveAttachment: (attachmentId) => this.#mailbox.resolveAttachment(attachmentId),
-              store: (file) => this.#mailbox.storeGeneratedAttachment(file),
-            },
-            {
-              jobId: input.jobId,
-              earlierJobIds: input.earlierJobIds,
-              kind: input.kind,
-              model: input.catalogId,
-              prompt: input.prompt,
-              specs: input.specs,
-              images: pictures,
-            },
-          )
-          .pipe(
-            Effect.tapError((failure) =>
-              Effect.sync(() => logger.warn("Could not make workflow media with credits.", { error: failure.message })),
-            ),
-            Effect.mapError((failure) => failed(failure.message)),
-          );
-      }
+      if (input.provider === "openbot") return yield* failed(sourceText("error.workflow.modelUnavailable"));
       if (input.provider === "sunra") {
         if (this.#stopping) return yield* failed(sourceText("error.backend.shuttingDown"));
         const signIn = yield* this.#mediaStepSignIn("sunra", input.account);
@@ -5286,7 +5135,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       );
     yield* lifecycleStep("recover agent state", () => {
       this.#boot.recoverPersistedTurns();
-      this.#hostedSites.restore();
       const paused = this.#routines.pauseForAgentsHiddenBeforeWork();
       if (paused > 0)
         logger.info("Routines of agents hidden by an earlier version were turned off.", { count: paused });
@@ -5519,28 +5367,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
         (failure) => new AgentLifecycleFailed({ operation: "setProviderAccountPool", cause: failure.cause }),
       ),
     );
-  }
-
-  setLiveVoiceAccount(accountId: string | null): Effect.Effect<AgentStatus, AgentLifecycleFailed> {
-    return this.#providers.setLiveVoiceAccount(accountId).pipe(
-      Effect.map(() => this.getStatus()),
-      Effect.mapError(
-        (failure) => new AgentLifecycleFailed({ operation: "setLiveVoiceAccount", cause: failure.cause }),
-      ),
-    );
-  }
-
-  liveVoiceAccount(): string | null {
-    return this.#providers.liveVoiceAccount();
-  }
-
-  #liveVoiceAccountId(agent: Pick<AgentSummary, "provider" | "providerAccountId"> | undefined): string | undefined {
-    const agentAccount = agent?.provider === "codex" ? agent.providerAccountId : undefined;
-    const ownAccount = agentAccount === DEFAULT_PROVIDER_ACCOUNT_ID ? undefined : agentAccount;
-    const planAccount = this.#providers.codexPlanAccountInPlaceOfKey();
-    const chosen = this.#providers.liveVoiceAccount();
-    const usableChoice = planAccount && chosen === DEFAULT_PROVIDER_ACCOUNT_ID ? null : chosen;
-    return usableChoice ?? ownAccount ?? planAccount ?? agentAccount;
   }
 
   providerUsageResets(provider: AgentProvider): Effect.Effect<ProviderUsageResets[]> {
@@ -5934,10 +5760,8 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       { startImmediately: true },
     );
     this.#initialized = false;
-    yield* this.#liveVoice.dispose();
     this.#routineTimer.dispose();
     yield* this.#memoryHold.dispose();
-    this.#hostedSites.dispose();
     this.#compaction.dispose();
     this.#deltas.dispose();
     this.#conversation.dispose();
@@ -6106,22 +5930,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       );
   }
 
-  startLiveVoice(
-    input: VoiceLiveStart,
-    voice: CodexLiveVoice | null,
-    owner: LiveVoiceOwner | null = null,
-  ): Effect.Effect<VoiceLiveSession, AgentLifecycleFailed> {
-    return this.#liveVoice
-      .start(input, voice, owner)
-      .pipe(
-        Effect.mapError((failure) => new AgentLifecycleFailed({ operation: "startLiveVoice", cause: failure.cause })),
-      );
-  }
-
-  stopLiveVoice(sessionId: string, memberId: string | null = null): Effect.Effect<void> {
-    return this.#liveVoice.stop(sessionId, memberId);
-  }
-
   #sideCodexModel(): AgentModelOption | undefined {
     const models = this.#endpoints.available().filter((model) => model.provider === "codex");
     const model =
@@ -6129,21 +5937,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     if (!model) return undefined;
     return model.supportedReasoningEfforts.includes("low") ? { ...model, defaultReasoningEffort: "low" } : model;
   }
-
-  readonly #liveVoiceRelay = Effect.fn("AgentService.liveVoiceRelay")(function* (
-    this: AgentService,
-    agent: AgentSummary,
-  ) {
-    const signIn = () => ({ cause: new Error(sourceText("error.voice.live.signIn")) });
-    yield* this.#providers.ensureProvider("codex").pipe(Effect.mapError(signIn));
-    const model = this.#sideCodexModel();
-    if (!model) return yield* Effect.fail({ cause: new Error(sourceText("error.provider.noModel")) });
-    const client = yield* Effect.try({
-      try: () => this.#providers.createProfileClient("codex", this.#liveVoiceAccountId(agent)),
-      catch: signIn,
-    });
-    return { client, model: model.id, effort: model.defaultReasoningEffort };
-  }).bind(this);
 
   readonly #searchWeb = Effect.fn("AgentService.searchWeb")(function* (
     this: AgentService,
@@ -6194,32 +5987,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       );
   }).bind(this);
 
-  #liveVoiceReply(agentId: string, deliveryId: string): LiveVoiceReply | null {
-    const delivery = this.#mailbox.getDelivery(deliveryId)?.delivery;
-    if (!delivery) return { success: false, text: "The user removed the request." };
-    switch (delivery.status) {
-      case "queued":
-      case "starting":
-      case "running":
-        return null;
-      case "cancelled":
-        return { success: false, text: "The user cancelled the request." };
-      case "interrupted":
-        return { success: false, text: "The user stopped the agent before it finished." };
-      case "failed":
-        return { success: false, text: delivery.error ?? "The agent could not finish the request." };
-      case "completed": {
-        const turnId = delivery.turnId;
-        const answer = turnId ? this.#turnAnswer(agentId, turnId) : null;
-        return {
-          success: true,
-          text: answer ?? "The agent finished and gave no answer.",
-          ...(turnId ? { turnId } : {}),
-        };
-      }
-    }
-  }
-
   #turnAnswer(agentId: string, turnId: string, threadId?: string): string | null {
     const ofTurn = (messages: readonly ConversationMessage[]) =>
       messages.filter((message) => message.turnId === turnId);
@@ -6230,35 +5997,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     const messages = loaded.length > 0 ? loaded : this.#store.database.readTurnAssistantMessages(agentId, turnId);
     return messages.findLast(isAnswer)?.text ?? null;
   }
-
-  readonly #liveVoiceSummary = Effect.fn("AgentService.liveVoiceSummary")(function* (
-    this: AgentService,
-    agentId: string,
-    prompt: string,
-  ) {
-    const failed = (message: string) => ({ cause: new Error(message) });
-    if (this.#stopping || !this.#profileClients.hasSpare()) return yield* Effect.fail(failed("No generation slot."));
-    yield* this.#providers.ensureProvider("codex").pipe(Effect.mapError((failure) => ({ cause: failure })));
-    if (this.#stopping || !this.#profileClients.hasSpare()) return yield* Effect.fail(failed("No generation slot."));
-    const model = this.#sideCodexModel();
-    if (!model) return yield* Effect.fail(failed("No Codex model."));
-    const agent = this.#store.get(agentId);
-    const client = yield* Effect.try({
-      try: () => this.#providers.createProfileClient("codex", this.#liveVoiceAccountId(agent)),
-      catch: (cause) => ({ cause }),
-    });
-    return yield* this.#profileClients
-      .run(client, (cancelled) =>
-        generateTextWithoutTools(
-          client,
-          model,
-          prompt,
-          cancelled,
-          sideSessionUsageObserver("voice-summary", this.#store.database.usage, agentId, "codex", model.id),
-        ),
-      )
-      .pipe(Effect.mapError((failure) => ({ cause: failure.cause })));
-  }).bind(this);
 
   prepareVoiceRecording(audio: Uint8Array): Effect.Effect<DraftAttachment[], AgentLifecycleFailed> {
     return this.#mailbox
@@ -6662,18 +6400,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     );
   }
 
-  withdrawFeedback(input: WithdrawFeedbackInput): Effect.Effect<WithdrawFeedbackResult, AgentLifecycleFailed> {
-    return this.#feedbackWithdrawal.withdrawCard(input).pipe(
-      Effect.map(({ status }) => ({ status })),
-      Effect.catchTags({
-        StoredStateFailure: ({ cause }) =>
-          Effect.fail(new AgentLifecycleFailed({ operation: "withdrawFeedback", cause })),
-        ToolOperationFailed: ({ cause }) =>
-          Effect.fail(new AgentLifecycleFailed({ operation: "withdrawFeedback", cause })),
-      }),
-    );
-  }
-
   listPinnedMessages(agentId: string): PinnedMessagesSnapshot {
     return this.#messagePins.list(agentId);
   }
@@ -6835,7 +6561,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     idempotencyKey?: string,
     welcome = false,
     agentSetup = false,
-    relayed?: LiveVoiceRelayed,
     lateAnswer = false,
   ) {
     const validateRecipient = yield* lifecycleStep("prepare message delivery", () =>
@@ -6897,13 +6622,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
         operation: "send message",
         cause: new Error(sourceText("error.agent.queuedMessageCreateFailed")),
       });
-    if (relayed) {
-      this.#liveVoiceRelayed.set(delivery.delivery.id, relayed);
-      for (const deliveryId of this.#liveVoiceRelayed.keys()) {
-        if (this.#liveVoiceRelayed.size <= LIVE_VOICE_RELAYED_LIMIT) break;
-        this.#liveVoiceRelayed.delete(deliveryId);
-      }
-    }
     if (task && this.#tasks.threadId(task.taskId) === null) {
       yield* this.cancelQueuedMessage(agent.id, delivery.delivery.id);
       if (idempotencyKey) this.#mailbox.forgetIdempotencyKey(idempotencyKey);
@@ -7564,7 +7282,6 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
   #emit(event: AgentEvent, memberId?: string): void {
     recordAgentRestartActivity(event);
     if (event.type === "usage-changed") for (const provider of AGENT_PROVIDERS) this.#refreshPoolInUse(provider);
-    this.#liveVoice?.observe(event);
     if (event.type === "turn-started") this.#steerAfterTurnStart(event.agentId, event.threadId);
     if (this.channels?.event(event) || this.messaging?.event(event, this.#scope) || this.#tasks?.event(event)) return;
     this.emit("event", event, memberId);

@@ -27,7 +27,6 @@ declare class SpeechModule extends NativeModule<SpeechEvents> {
   finishCapture?(): void;
   cancelCapture?(): void;
   allowHapticsWhileRecording?(): void;
-  setCallAudio?(active: boolean): void;
 }
 
 export const speechNative = requireOptionalNativeModule<SpeechModule>("OpenBotSpeech");

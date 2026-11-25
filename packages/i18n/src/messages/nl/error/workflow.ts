@@ -87,7 +87,6 @@ export const messages = {
     "Deze workflow is te groot om op te slaan. Verwijder een paar tekeningen of lange teksten en probeer het opnieuw.",
   "error.workflow.tooLargeToSend":
     "Deze workflow is te groot om naar een andere computer te sturen. Open hem op de computer waarop de server draait.",
-  "error.workflow.webhookMissing": "Deze stap is geen webhooktrigger. Sla de workflow op en probeer het opnieuw.",
   "error.workflow.githubActionMissing": "Kies wat deze uitvoer op GitHub doet.",
   "error.workflow.githubRepositoryMissing": "Kies een repository voor deze uitvoer.",
   "error.workflow.githubItemMissing":
@@ -100,13 +99,6 @@ export const messages = {
   "error.workflow.githubChoiceMissing": "Kies de labels of de persoon voor deze uitvoer.",
   "error.workflow.githubChoseNothing": "Het model koos geen label of persoon van deze repository.",
   "error.workflow.githubNotConnected": "Verbind GitHub op de computer waarop deze workflow draait.",
-  "error.workflow.githubNoAccess":
-    "De OpenBot GitHub App kan deze repository of dit item niet zien. Open GitHub en geef de app toegang.",
-  "error.workflow.githubNoWrite":
-    "De OpenBot GitHub App kan deze repository niet wijzigen. Open GitHub en geef de app toegang.",
-  "error.workflow.githubLocked": "Dit gesprek is vergrendeld op GitHub.",
-  "error.workflow.githubRefused": "GitHub heeft de wijziging geweigerd: {detail}",
-  "error.workflow.githubUnreachable": "OpenBot kon GitHub niet bereiken. Voer de stap opnieuw uit.",
   "error.workflow.githubUncertain":
     "De wijziging is onderweg gestopt. Hij kan al op GitHub staan. Kijk daar voordat je de stap opnieuw uitvoert.",
   "error.workflow.githubNoEvent": "GitHub heeft geen issue of pull request waarop deze trigger start.",

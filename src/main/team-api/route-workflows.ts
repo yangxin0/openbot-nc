@@ -11,18 +11,6 @@ import {
   workflowNeedsAdmin,
 } from "@openbot/contracts/ipc";
 import {
-  WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_CAPABILITY,
-  WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_ROUTES,
-} from "@openbot/contracts/team-protocol/workflows-credit-media-unavailable-v1";
-import {
-  WORKFLOWS_CREDIT_MEDIA_CAPABILITY,
-  WORKFLOWS_CREDIT_MEDIA_ROUTES,
-} from "@openbot/contracts/team-protocol/workflows-credit-media-v1";
-import {
-  WORKFLOWS_GITHUB_CAPABILITY,
-  WORKFLOWS_GITHUB_ROUTES,
-} from "@openbot/contracts/team-protocol/workflows-github-v1";
-import {
   WORKFLOWS_HIGGSFIELD_CAPABILITY,
   WORKFLOWS_HIGGSFIELD_ROUTES,
 } from "@openbot/contracts/team-protocol/workflows-higgsfield-v1";
@@ -74,30 +62,25 @@ import {
   parseSaveWorkflowGraph,
   parseSetWorkflowPaused,
   parseStartWorkflowRun,
-  parseWorkflowGitHubLastEvent,
-  parseWorkflowGitHubRepository,
   parseWorkflowMediaPrice,
   parseWorkflowRuns,
-  parseWorkflowTrigger,
   parseWorkflowVersion,
 } from "../ipc/workflow-inputs";
 import type { TeamApiAgents, TeamApiWorkflows } from "./dependencies";
 import { HttpError } from "./http-error";
 import type { RouteOutcome, TeamApiRequestContext } from "./request-context";
 import { readJson, requireAdmin, requireAgentLevel, stringField, WEBRTC_FRAME_BODY_BUDGET } from "./request-helpers";
-import { runEventsEffect } from "./route-events";
 import { runWorkflowEffect as run, workflowMissing, workflowVisibility } from "./workflow-visibility";
 
-const WORKFLOW_PATHS = new Set<string>(Object.values(WORKFLOWS_ROUTES));
-const WORKFLOW_GITHUB_PATHS = new Set<string>(Object.values(WORKFLOWS_GITHUB_ROUTES));
+const WORKFLOW_PATHS = new Set<string>(
+  Object.values(WORKFLOWS_ROUTES).filter((path) => path !== WORKFLOWS_ROUTES.rotateWebhookSecret),
+);
 const WORKFLOW_MEDIA_PATHS = new Set<string>(Object.values(WORKFLOWS_MEDIA_ROUTES));
 const WORKFLOW_SUNRA_PATHS = new Set<string>(Object.values(WORKFLOWS_SUNRA_ROUTES));
 const WORKFLOW_HIGGSFIELD_PATHS = new Set<string>(Object.values(WORKFLOWS_HIGGSFIELD_ROUTES));
 const WORKFLOW_MEDIA_CATALOG_PATHS = new Set<string>(Object.values(WORKFLOWS_MEDIA_CATALOG_ROUTES));
 const WORKFLOW_MEDIA_CATALOG_V2_PATHS = new Set<string>(Object.values(WORKFLOWS_MEDIA_CATALOG_V2_ROUTES));
 const WORKFLOW_MEDIA_ACCOUNT_PATHS = new Set<string>(Object.values(WORKFLOWS_MEDIA_SERVICE_ACCOUNT_ROUTES));
-const WORKFLOW_CREDIT_MEDIA_PATHS = new Set<string>(Object.values(WORKFLOWS_CREDIT_MEDIA_ROUTES));
-const WORKFLOW_CREDIT_UNAVAILABLE_PATHS = new Set<string>(Object.values(WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_ROUTES));
 const WORKFLOW_STEP_SETTINGS_PATHS = new Set<string>(Object.values(WORKFLOWS_STEP_SETTINGS_ROUTES));
 const WORKFLOW_PAUSE_PATHS = new Set<string>(Object.values(WORKFLOWS_PAUSE_ROUTES));
 const WORKFLOW_PORTABLE_PATHS = new Set<string>(Object.values(WORKFLOWS_PORTABLE_ROUTES));
@@ -185,30 +168,24 @@ export async function routeWorkflows(
 ): Promise<RouteOutcome> {
   const { method, url, capabilities, member, request, json } = context;
   const path = url.pathname;
-  const githubPath = WORKFLOW_GITHUB_PATHS.has(path);
   const mediaPath = WORKFLOW_MEDIA_PATHS.has(path);
   const sunraPath = WORKFLOW_SUNRA_PATHS.has(path);
   const higgsfieldPath = WORKFLOW_HIGGSFIELD_PATHS.has(path);
   const catalogPath = WORKFLOW_MEDIA_CATALOG_PATHS.has(path);
   const catalogV2Path = WORKFLOW_MEDIA_CATALOG_V2_PATHS.has(path);
   const accountPath = WORKFLOW_MEDIA_ACCOUNT_PATHS.has(path);
-  const creditPath = WORKFLOW_CREDIT_MEDIA_PATHS.has(path);
-  const creditUnavailablePath = WORKFLOW_CREDIT_UNAVAILABLE_PATHS.has(path);
   const settingsPath = WORKFLOW_STEP_SETTINGS_PATHS.has(path);
   const pausePath = WORKFLOW_PAUSE_PATHS.has(path);
   const portablePath = WORKFLOW_PORTABLE_PATHS.has(path);
   if (
     method !== "POST" ||
     !(
-      githubPath ||
       mediaPath ||
       sunraPath ||
       higgsfieldPath ||
       catalogPath ||
       catalogV2Path ||
       accountPath ||
-      creditPath ||
-      creditUnavailablePath ||
       settingsPath ||
       pausePath ||
       portablePath ||
@@ -217,9 +194,6 @@ export async function routeWorkflows(
   )
     return "unmatched";
   if (!workflows || !capabilities.has(WORKFLOWS_CAPABILITY))
-    throw new HttpError(400, sourceText("error.workflow.serverTooOld"));
-  const github = workflows.github;
-  if (githubPath && (!github || !capabilities.has(WORKFLOWS_GITHUB_CAPABILITY)))
     throw new HttpError(400, sourceText("error.workflow.serverTooOld"));
   if (mediaPath && !capabilities.has(WORKFLOWS_MEDIA_CAPABILITY))
     throw new HttpError(400, sourceText("error.workflow.serverTooOld"));
@@ -230,10 +204,6 @@ export async function routeWorkflows(
   if (catalogPath && !capabilities.has(WORKFLOWS_MEDIA_CATALOG_CAPABILITY))
     throw new HttpError(400, sourceText("error.workflow.serverTooOld"));
   if (catalogV2Path && !capabilities.has(WORKFLOWS_MEDIA_CATALOG_V2_CAPABILITY))
-    throw new HttpError(400, sourceText("error.workflow.serverTooOld"));
-  if (creditPath && !capabilities.has(WORKFLOWS_CREDIT_MEDIA_CAPABILITY))
-    throw new HttpError(400, sourceText("error.workflow.serverTooOld"));
-  if (creditUnavailablePath && !capabilities.has(WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_CAPABILITY))
     throw new HttpError(400, sourceText("error.workflow.serverTooOld"));
   if (accountPath && !capabilities.has(WORKFLOWS_MEDIA_SERVICE_ACCOUNT_CAPABILITY))
     throw new HttpError(400, sourceText("error.workflow.serverTooOld"));
@@ -404,12 +374,6 @@ export async function routeWorkflows(
       await visibleDetail(workflowId);
       return json(200, fittedRun(await run(workflows.run(runId))));
     }
-    case WORKFLOWS_ROUTES.rotateWebhookSecret: {
-      requireAdmin(member);
-      const input = parse(parseWorkflowTrigger, body);
-      await usableDetail(input.workflowId, "manage");
-      return json(200, await runEventsEffect(workflows.rotateWorkflowSecret(input)));
-    }
   }
   if (path === WORKFLOWS_MEDIA_ROUTES.keepPicture) {
     return json(200, { fileId: await run(workflows.keepPicture(stringField(body, "draftId"))) });
@@ -445,34 +409,7 @@ export async function routeWorkflows(
   if (path === WORKFLOWS_MEDIA_CATALOG_ROUTES.catalog) return json(200, catalogV1(await run(workflows.mediaCatalog())));
   if (path === WORKFLOWS_MEDIA_CATALOG_V2_ROUTES.catalog)
     return json(200, serviceCatalog(await run(workflows.mediaCatalog())));
-  if (path === WORKFLOWS_CREDIT_MEDIA_ROUTES.catalog)
-    return json(200, { models: (await run(workflows.mediaCatalog("openbot"))).models });
-  if (path === WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_ROUTES.list)
-    return json(200, { models: (await run(workflows.mediaCatalog("openbot"))).unavailable ?? [] });
-  if (path === WORKFLOWS_CREDIT_MEDIA_ROUTES.credits)
-    return json(200, { openbot: (await run(workflows.mediaCredits("openbot"))).openbot ?? null });
   if (path === WORKFLOWS_MEDIA_CATALOG_ROUTES.price || path === WORKFLOWS_MEDIA_CATALOG_V2_ROUTES.price)
     return json(200, await run(workflows.mediaPrice(parse(parseWorkflowMediaPrice, body))));
-  if (!github) return "unmatched";
-  switch (path) {
-    case WORKFLOWS_GITHUB_ROUTES.catalog:
-      requireAdmin(member);
-      return json(200, fitted(await run(github.catalog())));
-    case WORKFLOWS_GITHUB_ROUTES.options: {
-      requireAdmin(member);
-      const input = parse(parseWorkflowGitHubRepository, body);
-      return json(200, fitted(await run(github.options(input.repository))));
-    }
-    case WORKFLOWS_GITHUB_ROUTES.history: {
-      const workflowId = stringField(body, "workflowId");
-      await visibleDetail(workflowId);
-      return json(200, fitted(await run(workflows.githubHistory(workflowId))));
-    }
-    case WORKFLOWS_GITHUB_ROUTES.runLastEvent: {
-      const input = parse(parseWorkflowGitHubLastEvent, body);
-      await usableDetail(input.workflowId, "chat");
-      return json(200, fittedRun(await run(workflows.githubLastEvent(input))));
-    }
-  }
   return "unmatched";
 }

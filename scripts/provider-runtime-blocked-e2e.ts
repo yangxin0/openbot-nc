@@ -12,7 +12,6 @@ import { parseAgentRuntimeLock } from "./agent-runtime-lock";
 const OUT = resolve(import.meta.dirname, "../.openbot-build/provider-runtime-blocked-e2e");
 const WAIT_MS = 15_000;
 const BLOCKED_VERSION = "2.3.2";
-const BLOCKLIST_URL = "https://raw.githubusercontent.com/nightly-labs/openbot/main/provider-runtime-blocklist.json";
 const LICENSE = "fake OpenCode license\n";
 
 interface Scenario {
@@ -56,14 +55,8 @@ function lockFor(target: OpencodeTarget) {
   return lock;
 }
 
-function blocklistFetch(blocked: string[]) {
-  return async (input: string | URL | Request) => {
-    const url = input instanceof Request ? input.url : String(input);
-    if (url !== BLOCKLIST_URL) throw new TypeError("fetch failed");
-    return new Response(JSON.stringify({ schemaVersion: 1, blocked: { opencode: blocked } }), {
-      headers: { "content-type": "application/json" },
-    });
-  };
+async function offlineFetch(): Promise<Response> {
+  throw new TypeError("fetch failed");
 }
 
 async function writeCopy(versionRoot: string, version: string, executable: string, recorded: boolean): Promise<void> {
@@ -125,7 +118,8 @@ async function startManager(name: string, blocked: string[]) {
       root: join(root, name),
       isProviderOn: (provider) => provider === "opencode",
       lock: lockFor(target),
-      fetchImpl: blocklistFetch(blocked),
+      fetchImpl: offlineFetch,
+      blockedVersions: new Map([["opencode", new Set(blocked)]]),
     });
     managers.push(manager);
     await runCauseEffect(manager.initialize());

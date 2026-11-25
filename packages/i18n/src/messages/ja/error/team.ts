@@ -71,7 +71,6 @@ export const messages = {
   "error.team.membersCannotArchiveChannels": "メンバーはチャンネルをアーカイブできません。",
   "error.team.membersCannotRestoreChannels": "メンバーはチャンネルを復元できません。",
   "error.team.sharedDataUnsupported": "この接続では共有データを利用できません。",
-  "error.team.agentInstallUnsupported": "この接続ではエージェントを追加できません。",
   "error.team.agentHideUnsupported": "この接続ではエージェントを非表示にできません。",
   "error.team.agentColorsUnsupported": "この接続ではエージェントの色を使用できません。",
   "error.team.chatColorsUnsupported": "この接続ではチャットの色を使用できません。",
@@ -96,8 +95,6 @@ export const messages = {
   "error.team.sidebarPinsUnsupported":
     "このサーバーは、ピン留めしたチャットをすべてのデバイスで共有できません。サーバーを実行しているコンピューターの OpenBot を更新してください。",
   "error.team.agentInstructionsUnsupported": "この接続ではエージェントの指示を編集できません。",
-  "error.team.agentPublishUnsupported": "この接続ではエージェントを公開できません。",
-  "error.team.agentUpdateUnsupported": "この接続ではエージェントを更新できません。",
   "error.team.contextResetUnsupported": "この接続では新しいチャットを始められません。",
   "error.team.contextCompactUnsupported": "この接続はコンテキストの圧縮に対応していません。",
   "error.team.messageDeleteUnsupported": "この接続はメッセージの削除に対応していません。",
@@ -105,8 +102,6 @@ export const messages = {
   "error.team.conversationFileSearchUnsupported": "この接続ではファイルを検索できません。",
   "error.team.threadMessageSearchUnsupported": "この接続ではサイドスレッドを検索できません。",
   "error.team.sideQuestionUnsupported": "この接続ではサイド質問を使えません。",
-  "error.team.liveVoiceUnsupported":
-    "このサーバーは Codex ライブ音声に対応していません。サーバーを実行しているコンピューターの OpenBot を更新してください。",
   "error.team.routineFlowsUnsupported":
     "このサーバーはルーティンフローに対応していません。サーバーを実行しているコンピューターの OpenBot を更新してください。",
   "error.team.routineCanvasTooLarge":
@@ -115,9 +110,6 @@ export const messages = {
     "この会話のメッセージは大きすぎるため、このデバイスに送信できません。サーバーを実行しているコンピューターで会話を開いてください。",
   "error.team.agentImportUnsupported": "この接続ではエージェントをインポートできません。",
   "error.team.instanceTransferUnsupported": "この接続ではエージェントを移行できません。",
-  "error.team.liveActivityUnsupported": "このホストはスマートフォンのライブアクティビティを更新できません。",
-  "error.team.pushNotificationsUnsupported": "このホストはスマートフォンに通知を送信できません。",
-  "error.team.agentUpdateTargetRequired": "更新するエージェントを指定してください。",
   "error.team.queueEditUnsupported": "このクライアントはキューの編集に対応していません。",
   "error.team.skillsUnsupported": "この接続ではスキルを利用できません。",
   "error.team.hostIdentityUnsupported": "この接続ではサーバーの ID を変更できません。",
@@ -159,9 +151,6 @@ export const messages = {
   "error.team.machineResourcesUnsupported": "この接続ではマシンの使用状況を利用できません。",
   "error.team.machineAlertMemberInvalid":
     "マシンのアラートを受け取れるのは、このサーバーのオーナーまたは管理者のみです。",
-  "error.team.hostedSitesUnsupported": "この接続ではサイトを利用できません。",
-  "error.team.hostedSitesUnregistered": "このサーバーは OpenBot に登録されていないため、サイトがありません。",
-  "error.team.hostedSiteNotFound": "サイトが見つかりません。",
   "error.team.markUnreadUnsupported": "このクライアントは会話を未読にする操作に対応していません。",
   "error.team.inviteServiceUnavailable": "招待サービスを利用できません。",
   "error.team.logoNotFound": "サーバーのロゴが見つかりません。",
@@ -188,9 +177,6 @@ export const messages = {
     "このサーバーはサインインを中継できません。ホストの OpenBot を更新してください。",
   "error.team.connectorsUnsupported":
     "このサーバーの接続はここから管理できません。ホストの OpenBot を更新してください。",
-  "error.team.discordAccessUnsupported":
-    "このサーバーでは Discord のロールを設定できません。サーバーの OpenBot を更新してください。",
-  "error.team.connectorPageRefused": "サーバーが OpenBot で開かないページを送信しました。",
   "error.team.signInRelayUnknown": "このサインインは終了したか、存在しません。",
   "error.team.signInRelayUsed": "このサインインはすでに送信されています。",
   "error.team.signInRelayMismatch": "このアドレスはこのサインインのものではありません。",
@@ -199,7 +185,6 @@ export const messages = {
   "error.team.agentWaitsUnsupported": "この接続では未完了の待機を使用できません。",
   "error.team.pendingApprovalUnsupported": "この接続では承認リクエスト全体を読み込めません。",
   "error.team.pendingPromptsUnsupported": "この接続では未回答の質問を読み込めません。",
-  "error.team.phoneFeedbackUnsupported": "この接続ではスマートフォンアプリからレポートを送信できません。",
   "error.team.messagePinsUnsupported": "この接続はピン留めしたメッセージに対応していません。",
   "error.team.queuedMessageThreadUnsupported":
     "この接続では、キュー内のメッセージを新しいスレッドとして実行できません。",

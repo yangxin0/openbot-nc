@@ -9,6 +9,4 @@ export const messages = {
   "error.app.macSecureStorageUnavailable": "Защищённое хранилище macOS недоступно.",
   "error.app.secretStorageUnavailable": "Системное хранилище секретов недоступно.",
   "error.app.remoteIdentityUnavailable": "Идентификатор удалённого хоста недоступен.",
-  "error.app.iceServersMissing": "Remote Signal ещё не передал ICE-серверы.",
-  "error.app.finishLocalTest": "Завершите локальную проверку, прежде чем переключать экраны.",
 } as const satisfies PartialTranslation<typeof source>;

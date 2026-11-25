@@ -1,5 +1,4 @@
 import { AGENT_MEMORY_CONTEXT_BUDGET_BYTES, essentialMemoryBytes } from "@openbot/contracts/agent-memory-context";
-import { feedbackSentIssue, feedbackWithdrawnItemType } from "@openbot/contracts/feedback";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type {
   AcpRegistryEntry,
@@ -33,11 +32,8 @@ import {
   type AgentProviderId,
   type AgentRuntimeSnapshot,
   type AgentStatus,
-  type AgentSubmission,
   type AgentTask,
   type AgentTasksSnapshot,
-  type AgentTemplatePublication,
-  type AnalyticsPreference,
   type AppAppearancePreference,
   type AppBehaviorPreference,
   type AppInfo,
@@ -122,7 +118,6 @@ import {
   type ExternalLinkPreference,
   type FilePreview,
   folderInside,
-  type HostedSiteSummary,
   type HostStatus,
   hostAgentMemoryLimit,
   hostBrowsingMemory,
@@ -133,7 +128,6 @@ import {
   isClaudeCompactWindowTokens,
   isMemoryReviewInterval,
   isPromptCacheTtl,
-  isReleasedRoutineSchedule,
   isSkillLearningMode,
   LOCAL_SERVER_ID,
   type MachineAlertSettings,
@@ -170,7 +164,6 @@ import {
   type QueuedMessageReceipt,
   type QueueHold,
   type QueueSnapshot,
-  type RemoteDesktopSession,
   type RemoteNetworkRouteState,
   type RemoteSessionReusePreference,
   type ReorderQueueInput,
@@ -211,21 +204,12 @@ import { INSTANCE_TRANSFER_PREVIEW } from "../../stories/instance-transfer-fixtu
 import { toggleChannelMember } from "../features/channels/channels-draft";
 import { readStateForMessages } from "../features/conversation/conversation-read-state";
 import {
-  STORY_AGENT_TEMPLATE_DETAIL,
-  STORY_AGENT_TEMPLATE_PUBLICATION,
-  storyAgentTemplatePreview,
-} from "./agent-template-fixtures";
-import {
   STORY_AGENT_STATUS,
-  STORY_AGENT_SUBMISSIONS,
   STORY_AGENT_SUMMARIES,
   STORY_APP_INFO,
   STORY_FOREIGN_AGENT,
   STORY_FOREIGN_MODEL,
   STORY_FOREIGN_SERVER_ID,
-  STORY_HOSTED_SITES,
-  STORY_MARKETPLACE_AGENT_DETAILS,
-  STORY_MARKETPLACE_AGENTS,
   STORY_MCP_SERVERS,
   STORY_MODELS,
   STORY_PRESENCE,
@@ -239,35 +223,30 @@ import {
 } from "./fixtures";
 import { mockAgentAnalytics, mockHostAnalytics } from "./mock-agent-analytics";
 import { createMockAuth, type MockAuthOptions } from "./mock-auth";
-import { createMockBilling, previewBillingServers } from "./mock-billing";
 import { createMockBitwardenConnector } from "./mock-bitwarden-connector";
 import { createMockBrowser, type MockBrowserOptions } from "./mock-browser";
 import { createMockChannels, type MockChannelSeed } from "./mock-channels";
-import { createMockCredits } from "./mock-credits";
 import { type MockCrmSeed, mockCrm } from "./mock-crm";
 import { createMockEvents } from "./mock-events";
-import { createMockGitHubConnector } from "./mock-github-connector";
 import { createMockHostPersonality } from "./mock-host-personality";
 import { createMockHostSignalHome } from "./mock-host-signal-home";
 import { createMockHostTimezone } from "./mock-host-timezone";
 import { createMockHostTurnLimits } from "./mock-host-turn-limits";
 import { createMockHostUpdate, type MockHostUpdateOptions } from "./mock-host-update";
 import { createMockHostVoiceModel } from "./mock-host-voice-model";
-import { createMockHostedServers } from "./mock-hosted-servers";
-import { createMockLicense } from "./mock-license";
 import { createMockLinkAccount } from "./mock-link-account";
 import { createMockMessaging } from "./mock-messaging";
 import { createMockOnePasswordConnector } from "./mock-onepassword-connector";
 import { createMockPasswordManagers } from "./mock-password-managers";
 import { createMockProviderRuntimes, type MockProviderRuntimeOptions } from "./mock-provider-runtimes";
-import { createMockReferral } from "./mock-referral";
+import { createMockRelay, type MockRelayOptions } from "./mock-relay";
 import { mockRoutineCalendar } from "./mock-routine-calendar";
 import { createMockRoutineFeed } from "./mock-routine-feed";
 import { type MockRoutineResultsOptions, mockRoutineResults } from "./mock-routine-results";
 import { applySidebarLayoutAction } from "./mock-sidebar-layout";
 import { createMockSkills, type MockSkillsOptions } from "./mock-skills";
 import { createMockStorage } from "./mock-storage";
-import { clone, type Listener, type MockRuntime, matchesQuery } from "./mock-support";
+import { clone, type Listener, type MockRuntime } from "./mock-support";
 import { createMockTeam, type MockTeamOptions } from "./mock-team";
 import { createMockVault } from "./mock-vault";
 import { createMockVoice, type MockVoiceOptions } from "./mock-voice";
@@ -279,12 +258,11 @@ export interface MockOpenBotOptions
     MockAuthOptions,
     MockBrowserOptions,
     MockTeamOptions,
+    MockRelayOptions,
     MockSkillsOptions,
     MockHostUpdateOptions,
     MockRoutineResultsOptions {
   appInfo?: AppInfo;
-  analyticsPreference?: AnalyticsPreference;
-  analyticsDefault?: boolean;
   languagePreference?: AppLanguagePreference;
   setupState?: AppSetupState;
   agentStatus?: AgentStatus;
@@ -401,7 +379,6 @@ export interface MockOpenBotControls {
   emitDirectTyping: (event: DirectTypingRealtimeEvent) => void;
   emitInvite: (inviteUrl: string) => void;
   emitHostStatus: (status: HostStatus) => void;
-  emitRemoteDesktopSessions: (sessions: RemoteDesktopSession[]) => void;
   dispose: () => void;
 }
 
@@ -501,7 +478,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       message: null,
     };
   };
-  let analyticsPreference = clone<AnalyticsPreference>(options.analyticsPreference ?? { enabled: true });
   let approvalAutomation = clone<ApprovalAutomationPreference>(DEFAULT_APPROVAL_AUTOMATION_PREFERENCE);
   let busyMessageMode: BusyMessageModePreference = { mode: DEFAULT_BUSY_MESSAGE_MODE };
   let agentDefaults: AgentDefaults = { ...DEFAULT_AGENT_DEFAULTS };
@@ -706,7 +682,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
   const usage = clone(options.usage ?? STORY_USAGE);
   const usageResets = new Map<string, number>();
   let agentCounter = agents.length;
-  let hostedSites = clone(STORY_HOSTED_SITES);
   let detectionSettings: ProviderDetectionSettings = clone(DEFAULT_PROVIDER_DETECTION_SETTINGS);
   let customAgents: CustomAgentSummary[] = [];
   const registryEntry: AcpRegistryEntry = {
@@ -742,8 +717,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       },
     ],
   );
-  let marketplaceAgentSubmissions = clone(STORY_AGENT_SUBMISSIONS);
-  const agentTemplatePublications = new Map<string, AgentTemplatePublication>();
   let messageCounter = 10;
   const sentReceipts = new Map<string, QueuedMessageReceipt>();
 
@@ -1284,7 +1257,7 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
   const mockVoice = createMockVoice(options, runtime);
   const mockAuth = createMockAuth(options, runtime);
   const mockSkills = createMockSkills(options, (agentId) => emitAgentEvent({ type: "skills-changed", agentId }));
-  const { installedSkills, readInstalledSkills } = mockSkills;
+  const { readInstalledSkills } = mockSkills;
   const mockBrowser = createMockBrowser(options, runtime, emitAgentEvent);
   const mockTeam = createMockTeam(options, runtime, emitAgentEvent, () => agents);
   const mockEvents = createMockEvents(({ owner, routineId, limit = 10 }) =>
@@ -1292,7 +1265,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       ? Promise.resolve(clone((routineRuns.get(routineId) ?? []).slice(0, limit)))
       : mockChannels.listChannelRoutineRuns({ channelId: owner.id, routineId, limit }),
   );
-  const billingPlans = previewBillingServers();
 
   async function createMockAgent(input: CreateAgentInput, welcome: boolean): Promise<ClientAgentSummary> {
     const agent = createAgentSummary({
@@ -1335,13 +1307,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       return clone(setupState);
     },
     onSetupState: () => () => undefined,
-    getAnalyticsPreference: async () => clone(analyticsPreference),
-    getAnalyticsDefault: async () => ({ enabled: options.analyticsDefault ?? false }),
-    setAnalyticsPreference: async ({ enabled }) => {
-      analyticsPreference = { enabled };
-      return clone(analyticsPreference);
-    },
-    onAnalyticsPreference: () => () => undefined,
     reportRendererTiming: async () => undefined,
     getApprovalAutomation: async () => clone(approvalAutomation),
     onApprovalAutomation: (listener) => {
@@ -1647,17 +1612,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       };
       return clone(agentStatus);
     },
-    setLiveVoiceAccount: async ({ accountId }) => {
-      agentStatus = {
-        ...agentStatus,
-        providers: agentStatus.providers?.map((row) => {
-          if (row.id !== "codex") return row;
-          const { liveVoiceAccount: _old, ...rest } = row;
-          return accountId ? { ...rest, liveVoiceAccount: accountId } : rest;
-        }),
-      };
-      return clone(agentStatus);
-    },
     signOutProvider: async (provider) => {
       agentStatus = {
         ...agentStatus,
@@ -1708,60 +1662,13 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
     ),
     auth: mockAuth.auth,
     skills: mockSkills.skills,
-    hostedSites: {
-      list: async () => ({
-        sites: clone(hostedSites),
-        limit: 3,
-        used: hostedSites.filter((site) => site.status === "active").length,
-      }),
-      chooseDirectory: async () => "/mock/OpenBot/Sites/launch-notes",
-      publish: async (input) => {
-        const hostname = `${input.title.toLowerCase().replaceAll(/[^a-z0-9]+/gu, "-")}.openbot.site`;
-        const site: HostedSiteSummary = {
-          id: `site-${hostedSites.length + 1}`,
-          hostname,
-          url: `https://${hostname}`,
-          title: input.title,
-          description: input.description,
-          framework: "vanilla",
-          status: "active",
-          fileCount: 12,
-          size: 786_432,
-          expiresAt: null,
-          updatedAt: new Date().toISOString(),
-          serverId: "host-preview",
-        };
-        hostedSites = [site, ...hostedSites];
-        return clone(site);
-      },
-      replace: async (input) => {
-        const existing = hostedSites.find((site) => site.id === input.siteId);
-        if (!existing) throw new Error("Site not found");
-        const replaced: HostedSiteSummary = {
-          ...existing,
-          title: input.title,
-          description: input.description,
-          updatedAt: new Date().toISOString(),
-        };
-        hostedSites = hostedSites.map((site) => (site.id === input.siteId ? replaced : site));
-        return clone(replaced);
-      },
-      delete: async ({ siteId }) => {
-        hostedSites = hostedSites.filter((site) => site.id !== siteId);
-      },
-    },
-    githubConnector: createMockGitHubConnector(),
     linkAccount: createMockLinkAccount(),
     onePasswordConnector: createMockOnePasswordConnector(),
     bitwardenConnector: createMockBitwardenConnector(),
     passwordManagers: createMockPasswordManagers(),
     vault: createMockVault(),
-    billing: createMockBilling(billingPlans),
-    referral: createMockReferral(),
-    license: createMockLicense(),
-    credits: createMockCredits(),
+    relay: createMockRelay(options),
     routineFeed: createMockRoutineFeed(),
-    hostedServers: createMockHostedServers(billingPlans),
     customProviders: {
       list: async () => clone(customProviders),
       save: async (input) => {
@@ -1914,7 +1821,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
         pools: (agentStatus.providers ?? []).flatMap((row) =>
           row.accounts && row.accountPool ? [{ provider: row.id, pool: clone(row.accountPool) }] : [],
         ),
-        liveVoiceAccount: agentStatus.providers?.find((row) => row.id === "codex")?.liveVoiceAccount ?? null,
         agents: [],
       }),
       accountUsage: async () => ({ limits: [] }),
@@ -1949,9 +1855,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       setAccountPool: async (input) => {
         await api.setProviderAccountPool(input);
       },
-      setLiveVoiceAccount: async (input) => {
-        await api.setLiveVoiceAccount(input);
-      },
       hostDefaultProvider: async () => ({
         preferredProvider: setupState.preferredProvider,
         preferredModel: setupState.preferredModel,
@@ -1985,194 +1888,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       providerUse: async () => (agentStatus.providers ?? []).filter((row) => row.off).map((row) => row.id),
       setProviderUse: async (input) =>
         ((await api.setProviderOn(input)).providers ?? []).filter((row) => row.off).map((row) => row.id),
-    },
-    agentTemplates: {
-      preview: async (agentId) => {
-        const agent = agents.find((candidate) => candidate.id === agentId);
-        if (!agent) throw new Error("Choose a local agent first.");
-        return clone({
-          ...storyAgentTemplatePreview(agent.id, agentTemplatePublications.get(agent.id) ?? null),
-          name: agent.name,
-          title: agent.title,
-          description: agent.description,
-          avatarSeed: agent.avatarSeed,
-          avatarHue: agent.avatarHue,
-          avatarUrl: agent.avatarUrl,
-          updatedAt: agent.updatedAt,
-        });
-      },
-      publish: async ({ agentId }) => {
-        if (!agents.some((candidate) => candidate.id === agentId)) throw new Error("Choose a local agent first.");
-        const publication = { ...STORY_AGENT_TEMPLATE_PUBLICATION, publishedAt: new Date().toISOString() };
-        agentTemplatePublications.set(agentId, publication);
-        return clone(publication);
-      },
-      unpublish: async (agentId) => {
-        agentTemplatePublications.delete(agentId);
-      },
-      get: async (templateId) => {
-        if (templateId !== STORY_AGENT_TEMPLATE_DETAIL.id) throw new Error("This shared agent is no longer published.");
-        return clone(STORY_AGENT_TEMPLATE_DETAIL);
-      },
-      install: async () => {
-        const agent = agents[0];
-        if (!agent) throw new Error("Agent not found");
-        return clone({ agent });
-      },
-      takePendingLink: async () => null,
-      onOpenLink: (listener) => {
-        void listener;
-        return () => undefined;
-      },
-    },
-    marketplaceAgents: {
-      list: async (query) => {
-        const matches = STORY_MARKETPLACE_AGENTS.filter(
-          (agent) =>
-            matchesQuery(`${agent.name} ${agent.title} ${agent.description} ${agent.creatorName}`, query?.query) &&
-            (!query?.category || (agent.category ?? "other") === query.category) &&
-            (query?.featured !== true || agent.featured) &&
-            (query?.verified === undefined || (agent.verified === true) === query.verified),
-        );
-        const start = Number(query?.cursor ?? 0);
-        const end = start + (query?.limit ?? 50);
-        return clone({
-          agents: matches.slice(start, end),
-          nextCursor: end < matches.length ? String(end) : null,
-        });
-      },
-      get: async (listingId) => {
-        const detail = STORY_MARKETPLACE_AGENT_DETAILS[listingId];
-        if (!detail) throw new Error("Agent not found");
-        return clone(detail);
-      },
-      getListing: async (agentId) => {
-        const detail = STORY_MARKETPLACE_AGENT_DETAILS[agentId];
-        if (!detail) throw new Error("Agent not found");
-        return clone(detail);
-      },
-      listMine: async () => clone(marketplaceAgentSubmissions),
-      preview: async (agentId) => {
-        const agent = agents.find((candidate) => candidate.id === agentId);
-        if (!agent) throw new Error("Agent not found");
-        return clone({
-          agentId: agent.id,
-          name: agent.name,
-          title: agent.title,
-          description: agent.description,
-          avatarSeed: agent.avatarSeed,
-          avatarHue: agent.avatarHue,
-          avatarUrl: agent.avatarUrl,
-          skills: readInstalledSkills(agent.id).map((skill) => ({
-            skillId: skill.skillId,
-            versionId: `${skill.skillId}-v${skill.installedVersion}`,
-            slug: skill.slug,
-            name: skill.name,
-            version: skill.installedVersion,
-          })),
-          routines: (routines.get(agent.id) ?? []).flatMap(({ name, instruction, active, trigger }) =>
-            isReleasedRoutineSchedule(trigger.schedule)
-              ? [{ name, instruction, active, schedule: trigger.schedule }]
-              : [],
-          ),
-        });
-      },
-      submit: async (input) => {
-        const agent = agents.find((candidate) => candidate.id === input.agentId);
-        if (!agent) throw new Error("Agent not found");
-        const submission: AgentSubmission = {
-          id: `agent-submission-${agent.id}-${marketplaceAgentSubmissions.length + 1}`,
-          showCreatorAvatar: input.showCreatorAvatar ?? false,
-          category: input.category ?? "other",
-          listingId: input.listingId ?? `listing-${agent.id}`,
-          name: agent.name,
-          title: agent.title,
-          description: agent.description,
-          version: 1,
-          status: "pending",
-          rejectionNote: null,
-          avatarSeed: agent.avatarSeed,
-          avatarHue: agent.avatarHue,
-          avatarUrl: agent.avatarUrl,
-          skillCount: readInstalledSkills(agent.id).length,
-          routineCount: (routines.get(agent.id) ?? []).length,
-          activeRoutineCount: (routines.get(agent.id) ?? []).filter((routine) => routine.active).length,
-          createdAt: new Date().toISOString(),
-        };
-        marketplaceAgentSubmissions = [submission, ...marketplaceAgentSubmissions];
-        return clone(submission);
-      },
-      install: async ({ listingId, agentId, timezone }) => {
-        const detail = STORY_MARKETPLACE_AGENT_DETAILS[listingId];
-        if (!detail) throw new Error("Agent not found");
-        const existing = agentId ? agents.find((candidate) => candidate.id === agentId) : undefined;
-        if (agentId && !existing) throw new Error("The installed agent no longer exists.");
-        if (existing && existing.marketplaceSource?.listingId !== detail.id) {
-          throw new Error("This local agent was installed from a different marketplace agent.");
-        }
-        const previousRoutineIds = existing?.marketplaceSource?.routineIds ?? [];
-        const previousSkillIds = existing?.marketplaceSource?.skillIds ?? [];
-        const target =
-          existing ??
-          createAgentSummary({
-            name: detail.name,
-            title: detail.title,
-            description: detail.description,
-            avatarSeed: detail.avatarSeed,
-            avatarHue: detail.avatarHue,
-          });
-        const created = detail.routines.map((routine) =>
-          createRoutineRecord({
-            agentId: target.id,
-            name: routine.name,
-            instruction: routine.instruction,
-            active: routine.active,
-            timezone,
-            schedule: routine.schedule,
-          }),
-        );
-        const agent: ClientAgentSummary = {
-          ...target,
-          name: detail.name,
-          title: detail.title,
-          description: detail.description,
-          avatarSeed: detail.avatarSeed,
-          avatarHue: detail.avatarHue,
-          marketplaceSource: {
-            listingId: detail.id,
-            versionId: detail.versionId,
-            version: detail.version,
-            skillIds: detail.skills.map((skill) => skill.skillId),
-            routineIds: created.map((routine) => routine.id),
-          },
-        };
-        agents = existing
-          ? agents.map((candidate) => (candidate.id === agent.id ? agent : candidate))
-          : [...agents, agent];
-        if (!existing) queues.set(agent.id, emptyQueue(agent.id));
-        const listingSkillIds = new Set(detail.skills.map((skill) => skill.skillId));
-        const kept = readInstalledSkills(agent.id).filter(
-          (skill) => !listingSkillIds.has(skill.skillId) && !previousSkillIds.includes(skill.skillId),
-        );
-        installedSkills.set(agent.id, [
-          ...detail.skills.map((skill) => ({
-            skillId: skill.skillId,
-            slug: skill.slug,
-            name: skill.name,
-            installedVersion: skill.version,
-            availableVersion: skill.version,
-            state: "installed" as const,
-          })),
-          ...kept,
-        ]);
-        routines.set(agent.id, [
-          ...created,
-          ...(routines.get(agent.id) ?? []).filter((routine) => !previousRoutineIds.includes(routine.id)),
-        ]);
-        emitAgentEvent({ type: "agents-changed", agents });
-        emitAgentEvent({ type: "routines-changed", agentId: agent.id });
-        return clone({ agent });
-      },
     },
     agent: {
       getStatus: async (serverId) =>
@@ -2356,9 +2071,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
         await api.agent.updateAgent(input);
         return api.agent.getAgentNewChat(input.agentId);
       },
-      previewAgentTemplate: (agentId) => api.agentTemplates.preview(agentId),
-      publishAgentTemplate: (input) => api.agentTemplates.publish(input),
-      unpublishAgentTemplate: (agentId) => api.agentTemplates.unpublish(agentId),
       getAgentPlanCard: async (agentId) => {
         const agent = agents.find((candidate) => candidate.id === agentId);
         if (!agent) throw new Error("Agent not found");
@@ -2529,14 +2241,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       uninstallAgentSkill: (input) => mockSkills.skills.uninstall(input),
       setAgentSkillEnabled: (input) => mockSkills.skills.setEnabled(input),
       readGithubSkills: (link) => mockSkills.readGithub(link),
-      addMarketplaceAgent: async (input) => {
-        const { agent } = await api.marketplaceAgents.install(input);
-        return { id: agent.id, name: agent.name };
-      },
-      addTemplateAgent: async (input) => {
-        const { agent } = await api.agentTemplates.install(input);
-        return { id: agent.id, name: agent.name };
-      },
       listMcpServers: async () => clone(mcpServers),
       saveMcpServer: async ({ config }) => {
         const normalized = normalizeMcpConfig(config);
@@ -3077,19 +2781,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
           snapshot.messages = snapshot.messages.filter((message) => message.id !== input.messageId);
         });
         emitAgentEvent({ type: "message-pins-changed", agentId: input.agentId });
-      },
-      withdrawFeedback: async (input) => {
-        const card = getSnapshot(input.agentId).messages.find((message) => message.id === input.messageId);
-        const issue = card ? feedbackSentIssue(card) : null;
-        if (!issue) return { status: "notFound" };
-        updateSnapshot(input.agentId, (snapshot) => {
-          snapshot.messages = snapshot.messages.map((message) =>
-            message.id === input.messageId
-              ? { ...message, itemType: feedbackWithdrawnItemType(issue.number) }
-              : message,
-          );
-        });
-        return { status: "withdrawn" };
       },
       chooseAttachments: async (_input) => [],
       importAttachmentData: async (data) =>
@@ -3667,13 +3358,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
         return () => undefined;
       },
     },
-    marketplace: {
-      takePendingListing: async () => null,
-      onOpenListing: (listener) => {
-        void listener;
-        return () => undefined;
-      },
-    },
     host: mockTeam.host,
     events: mockEvents,
     hostAdmin: {
@@ -3922,7 +3606,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
       },
       onUploadProgress: () => () => undefined,
     },
-    remoteDesktop: mockTeam.remoteDesktop,
   };
 
   return {
@@ -3957,7 +3640,6 @@ export function createMockOpenBot(options: MockOpenBotOptions = {}): MockOpenBot
     emitDirectTyping: mockTeam.emitDirectTyping,
     emitInvite: mockTeam.emitInvite,
     emitHostStatus: mockTeam.emitHostStatus,
-    emitRemoteDesktopSessions: mockTeam.emitRemoteDesktopSessions,
     dispose: () => {
       for (const timer of timers) clearTimeout(timer);
       timers.clear();

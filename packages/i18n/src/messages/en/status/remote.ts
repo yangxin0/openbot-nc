@@ -1,17 +1,6 @@
 import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("status.remote", {
-  "status.remote.setupMacOnly": "Permission setup is available on macOS.",
-  "status.remote.setupInstallHost": "Install the remote desktop host component, then check again.",
-  "status.remote.setupUpdateRuntime": "Update the remote desktop runtime to check macOS permissions.",
-  "status.remote.setupCheckFailed":
-    "Sunshine could not complete the permission check. Check the host session, then try again.",
-  "status.remote.setupServiceFailed":
-    "The remote desktop service could not start. Check that this macOS user has an active GUI session.",
-  "status.remote.connectingSunshine": "Connecting through Sunshine…",
-  "status.remote.switchingMonitor": "Switching the shared monitor…",
-  "status.remote.controlConnected": "Remote control connected.",
-  "status.remote.controlFailed": "Remote control failed.",
   "status.remote.stagePreferences": "Loading local chat preferences: {reason}",
   "status.remote.stageConnection": "Connecting to the desktop: {reason}",
   "status.remote.stageCompatibility": "Checking desktop compatibility: {reason}",

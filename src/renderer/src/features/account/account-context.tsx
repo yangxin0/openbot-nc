@@ -9,34 +9,10 @@ import {
 } from "@openbot/contracts/ipc";
 import { currentText } from "@openbot/ui/text";
 import { createMemo, createSignal, createStore, flush, onCleanup, onSettled } from "solid-js";
-import { type DesktopAnalyticsProperties, desktopAnalytics } from "../../analytics";
 import { createSimpleContext } from "../../simple-context";
 import { accountPort } from "./account-port";
 
-type MobileConnectAction = DesktopAnalyticsProperties<"mobile_connect_action">["action"];
-
 const AUTH_SUCCESS_HOLD_MS = 600;
-
-function authFailureCode(value: string | undefined): string {
-  switch (value) {
-    case "auth_api_error":
-    case "code_recently_sent":
-    case "email_delivery_failed":
-    case "email_delivery_not_configured":
-    case "email_delivery_rate_limited":
-    case "email_sign_in_failed":
-    case "email_sign_in_start_failed":
-    case "invalid_email":
-    case "invalid_sign_in_code":
-    case "rate_limited":
-    case "sign_in_code_expired":
-    case "too_many_code_attempts":
-    case "unauthorized":
-      return value;
-    default:
-      return "unknown";
-  }
-}
 
 const Auth = createSimpleContext({
   name: "Auth",
@@ -51,15 +27,12 @@ const Auth = createSimpleContext({
     let accountUsageRequestGeneration = 0;
     let accountUsageEventIds = new Set<string>();
     let authSuccessTimer: ReturnType<typeof setTimeout> | undefined;
-    let knownMobileDevices: ReadonlySet<string> | null = null;
 
     onCleanup(() => {
       if (authSuccessTimer !== undefined) clearTimeout(authSuccessTimer);
     });
 
     function applyCentralAuthState(state: CentralAuthState): void {
-      desktopAnalytics.setUser(state.status === "signed_in" ? state.user : null);
-      if (state.status !== "signed_in") knownMobileDevices = null;
       const completedCodeChallenge = centralAuth().status === "code_sent" && state.status === "signed_in";
       if (state.status !== "signed_in") {
         if (authSuccessTimer !== undefined) clearTimeout(authSuccessTimer);
@@ -96,25 +69,8 @@ const Auth = createSimpleContext({
     });
 
     async function requestEmailCode(email: string): Promise<void> {
-      const analytics = desktopAnalytics.anonymousScope();
-      try {
-        const state = await accountPort().auth.requestEmailCode(email);
-        analytics.track("account_sign_in_started", {
-          result: state.status === "code_sent" || state.status === "company_sign_in" ? state.status : "failed",
-          ...(state.status === "error" ? { failure_code: authFailureCode(state.issue.code) } : {}),
-        });
-        applyCentralAuthState(state);
-      } catch (error) {
-        analytics.track("account_sign_in_started", {
-          result: "failed",
-          failure_code: "request_failed",
-        });
-        throw error;
-      }
-    }
-
-    async function openCompanySignIn(): Promise<void> {
-      applyCentralAuthState(await accountPort().auth.openCompanySignIn());
+      const state = await accountPort().auth.requestEmailCode(email);
+      applyCentralAuthState(state);
     }
 
     async function retryCentralAccount(): Promise<void> {
@@ -123,40 +79,17 @@ const Auth = createSimpleContext({
     }
 
     async function verifyEmailCode(challengeId: string, code: string, referralCode?: string): Promise<void> {
-      const anonymousAnalytics = desktopAnalytics.anonymousScope();
-      try {
-        const state = await accountPort().auth.verifyEmailCode({
-          challengeId,
-          code,
-          ...(referralCode ? { referralCode } : {}),
-        });
-        applyCentralAuthState(state);
-        desktopAnalytics.track("account_sign_in_completed", {
-          result: state.status === "signed_in" ? "succeeded" : "failed",
-          ...("issue" in state ? { failure_code: authFailureCode(state.issue?.code) } : {}),
-        });
-      } catch (error) {
-        anonymousAnalytics.track("account_sign_in_completed", {
-          result: "failed",
-          failure_code: "verification_failed",
-        });
-        throw error;
-      }
+      const state = await accountPort().auth.verifyEmailCode({
+        challengeId,
+        code,
+        ...(referralCode ? { referralCode } : {}),
+      });
+      applyCentralAuthState(state);
     }
 
     async function logoutCentralAccount(): Promise<void> {
-      const analytics = desktopAnalytics.scope();
-      try {
-        const state = await accountPort().auth.logout();
-        analytics.track("account_sign_out", { result: "succeeded" });
-        applyCentralAuthState(state);
-      } catch (error) {
-        analytics.track("account_sign_out", {
-          result: "failed",
-          failure_code: "sign_out_failed",
-        });
-        throw error;
-      }
+      const state = await accountPort().auth.logout();
+      applyCentralAuthState(state);
     }
 
     async function updateAccountAvatar(image: AvatarImageInput | null): Promise<void> {
@@ -228,39 +161,16 @@ const Auth = createSimpleContext({
       return usage;
     }
 
-    function trackMobileConnect<Result>(action: MobileConnectAction, call: () => Promise<Result>): Promise<Result> {
-      return call().then(
-        (result) => {
-          desktopAnalytics.track("mobile_connect_action", { action, result: "succeeded" });
-          return result;
-        },
-        (error: unknown) => {
-          desktopAnalytics.track("mobile_connect_action", { action, result: "failed" });
-          throw error;
-        },
-      );
-    }
-
     function createMobileConnect() {
-      return trackMobileConnect("code_shown", () => accountPort().auth.createMobileConnect());
+      return accountPort().auth.createMobileConnect();
     }
 
-    async function listMobileConnectedDevices() {
-      const devices = await accountPort().auth.listMobileConnectedDevices();
-      const ids = new Set(devices.map((device) => device.sessionId));
-      const known = knownMobileDevices;
-      if (known) {
-        for (const id of ids) {
-          if (!known.has(id))
-            desktopAnalytics.track("mobile_connect_action", { action: "connected", result: "succeeded" });
-        }
-      }
-      knownMobileDevices = ids;
-      return devices;
+    function listMobileConnectedDevices() {
+      return accountPort().auth.listMobileConnectedDevices();
     }
 
     function revokeMobileConnectedDevice(sessionId: string) {
-      return trackMobileConnect("revoked", () => accountPort().auth.revokeMobileConnectedDevice(sessionId));
+      return accountPort().auth.revokeMobileConnectedDevice(sessionId);
     }
 
     const signedInAccount = createMemo(() => {
@@ -281,7 +191,6 @@ const Auth = createSimpleContext({
       applyAccountUsage,
       refreshAccountUsage,
       requestEmailCode,
-      openCompanySignIn,
       retryCentralAccount,
       verifyEmailCode,
       logoutCentralAccount,
@@ -289,12 +198,10 @@ const Auth = createSimpleContext({
       updateAccountAvatar,
       setChatColor,
       createMobileConnect,
-      cancelMobileConnect: () => trackMobileConnect("cancelled", () => accountPort().auth.cancelMobileConnect()),
+      cancelMobileConnect: () => accountPort().auth.cancelMobileConnect(),
       getMobileConnectLink: () => accountPort().auth.getMobileConnectLink(),
-      createMobileConnectLink: () =>
-        trackMobileConnect("link_created", () => accountPort().auth.createMobileConnectLink()),
-      revokeMobileConnectLink: () =>
-        trackMobileConnect("link_revoked", () => accountPort().auth.revokeMobileConnectLink()),
+      createMobileConnectLink: () => accountPort().auth.createMobileConnectLink(),
+      revokeMobileConnectLink: () => accountPort().auth.revokeMobileConnectLink(),
       listMobileConnectedDevices,
       revokeMobileConnectedDevice,
       listAccountSessions: () => accountPort().auth.listAccountSessions(),

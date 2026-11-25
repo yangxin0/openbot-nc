@@ -3,7 +3,11 @@ import { Alert, AlertContent, AlertDescription, Button } from "@openbot/ui";
 import { useText } from "@openbot/ui/text";
 import { For, Show } from "solid-js";
 
-export function RemoteCompatibilityScreen(props: { server: ServerSummary; onRetry: () => Promise<void> }) {
+export function RemoteCompatibilityScreen(props: {
+  server: ServerSummary;
+  onRetry: () => Promise<void>;
+  onOpenTeamSettings?: (() => void) | undefined;
+}) {
   const { t, sourceText } = useText();
   const title = () => {
     if (props.server.issue?.code === "client_update_required") return t("server.compatibility.updateClientTitle");
@@ -61,7 +65,16 @@ export function RemoteCompatibilityScreen(props: { server: ServerSummary; onRetr
           </For>
         </dl>
       </Show>
-      <Button onClick={() => void props.onRetry()}>{t("common.retry")}</Button>
+      <div class="remote-compatibility-actions">
+        <Button onClick={() => void props.onRetry()}>{t("common.retry")}</Button>
+        <Show when={props.onOpenTeamSettings}>
+          {(open) => (
+            <Button variant="outline" onClick={() => open()()}>
+              {t("server.compatibility.teamSettings")}
+            </Button>
+          )}
+        </Show>
+      </div>
     </main>
   );
 }

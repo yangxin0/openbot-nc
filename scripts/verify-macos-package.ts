@@ -33,10 +33,10 @@ const architecture = process.arch === "arm64" ? "arm64" : process.arch === "x64"
 if (!architecture) throw new Error(`OpenBot does not ship for macOS ${process.arch}.`);
 const machOArchitecture = architecture === "arm64" ? "arm64" : "x86_64";
 const appPath = resolve(
-  process.argv[2] ?? (architecture === "arm64" ? "dist/mac-arm64/OpenBot.app" : "dist/mac/OpenBot.app"),
+  process.argv[2] ?? (architecture === "arm64" ? "dist/mac-arm64/OpenBot-NC.app" : "dist/mac/OpenBot-NC.app"),
 );
 const contentsPath = resolve(appPath, "Contents");
-const executablePath = resolve(contentsPath, "MacOS/OpenBot");
+const executablePath = resolve(contentsPath, "MacOS/OpenBot-NC");
 const resourcesPath = resolve(contentsPath, "Resources");
 const packagedIconPath = resolve(resourcesPath, "icon.icns");
 const sourceIconPath = resolve("build/icon-production.icns");
@@ -46,7 +46,6 @@ const plistPath = resolve(contentsPath, "Info.plist");
 const voiceRuntimePath = resolve(resourcesPath, "voice/runtime");
 const voiceRuntimeLibraries = ["sherpa-onnx.node", "libsherpa-onnx-c-api.dylib", "libonnxruntime.dylib"];
 const voiceSessionSettingsPath = resolve(voiceRuntimePath, "no-arena.cfg");
-const remoteRuntimePath = resolve(resourcesPath, "remote-desktop-runtime/darwin", architecture);
 const cuaDriverPath = resolve(resourcesPath, "cua-driver/darwin", architecture);
 const databaseHostPath = resolve(resourcesPath, "app.asar.unpacked/out/main/agent-database-host.js");
 const voiceHostPath = resolve(resourcesPath, "app.asar.unpacked/out/main/voice-transcription-host.js");
@@ -80,43 +79,27 @@ await Promise.all([
   access(databaseHostPath),
   access(voiceHostPath),
   access(speechHostPath),
-  access(resolve(resourcesPath, "remote-desktop-runtime/licenses/Sunshine-GPL-3.0.txt")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/licenses/moonlight-web-stream-GPL-3.0.txt")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/source-manifest.json")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/DISTRIBUTION-SHA256SUMS.txt")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/Sunshine-v2026.516.143833-source.tar.gz")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/sunshine-v2026.516.143833-openbot.patch")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/moonlight-web-stream-v2.10.0-openbot-source.tar.gz")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/moonlight-web-stream-v2.10.0-openbot.patch")),
-  access(resolve(remoteRuntimePath, "Sunshine.app/Contents/MacOS/Sunshine")),
-  access(resolve(remoteRuntimePath, "web-server")),
-  access(resolve(remoteRuntimePath, "streamer")),
-  access(resolve(remoteRuntimePath, "static/stream.html")),
-  access(resolve(remoteRuntimePath, "SHA256SUMS.txt")),
   access(resolve(cuaDriverPath, "cua-driver")),
   access(resolve(cuaDriverPath, "LICENSE.md")),
 ]);
 await Promise.all(["win32", "linux"].map((name) => assertAbsent(resolve(resourcesPath, "cua-driver", name))));
 const otherArchitecture = architecture === "arm64" ? "x64" : "arm64";
-await Promise.all(
-  ["remote-desktop-runtime", "cua-driver"].map((name) =>
-    assertAbsent(resolve(resourcesPath, name, "darwin", otherArchitecture)),
-  ),
-);
+await assertAbsent(resolve(resourcesPath, "cua-driver", "darwin", otherArchitecture));
 assertCuaDriverSignature(resolve(cuaDriverPath, "cua-driver"));
 await verifyPackagedIcon(packagedIconPath, sourceIconPath);
 await verifyPackagedIconCatalog(packagedIconCatalogPath, sourceIconCatalogPath);
 await Promise.all(["codex", "claude", "grok"].map((name) => assertAbsent(resolve(resourcesPath, name))));
 await assertAbsent(resolve(resourcesPath, "cloudflared"));
+await assertAbsent(resolve(resourcesPath, "remote-desktop-runtime"));
 await assertAbsent(
   resolve(resourcesPath, `app.asar.unpacked/node_modules/@anthropic-ai/claude-agent-sdk-darwin-${architecture}`),
 );
 
 const plist = JSON.parse(run("plutil", ["-convert", "json", "-o", "-", plistPath]));
 if (!isDynamicRecord(plist)) throw new Error("Info.plist is not a JSON object.");
-expectEqual(plist.CFBundleDisplayName, "OpenBot", "display name");
-expectEqual(plist.CFBundleExecutable, "OpenBot", "executable name");
-expectEqual(plist.CFBundleIdentifier, "app.openbot.desktop", "bundle identifier");
+expectEqual(plist.CFBundleDisplayName, "OpenBot-NC", "display name");
+expectEqual(plist.CFBundleExecutable, "OpenBot-NC", "executable name");
+expectEqual(plist.CFBundleIdentifier, "app.openbotnc.desktop", "bundle identifier");
 expectEqual(plist.CFBundleIconFile, "icon.icns", "application icon");
 expectEqual(plist.CFBundleIconName, "Icon", "macOS 26 application icon");
 expectEqual(plist.LSMinimumSystemVersion, "13.0", "minimum macOS version");
@@ -127,9 +110,15 @@ if (!Array.isArray(plist.NSUserActivityTypes) || !plist.NSUserActivityTypes.incl
 if (!plist.ElectronAsarIntegrity) throw new Error("ASAR integrity metadata is missing.");
 expectEqual(
   plist.NSMicrophoneUsageDescription,
-  "OpenBot uses the microphone to transcribe voice prompts locally on this Mac.",
+  "OpenBot-NC uses the microphone to transcribe voice prompts locally on this Mac.",
   "microphone usage description",
 );
+const urlSchemes: unknown[] = Array.isArray(plist.CFBundleURLTypes)
+  ? plist.CFBundleURLTypes.flatMap((entry: unknown) =>
+      isDynamicRecord(entry) && Array.isArray(entry.CFBundleURLSchemes) ? entry.CFBundleURLSchemes : [],
+    )
+  : [];
+expectEqual(urlSchemes.join(","), "openbot-nc", "URL schemes");
 
 const packageJson = JSON.parse(await readFile("package.json", "utf8"));
 if (!isDynamicRecord(packageJson)) throw new Error("package.json is not a JSON object.");
@@ -175,10 +164,6 @@ if (
   throw new Error("The on-demand voice models must not be in the application.");
 }
 
-for (const name of ["Sunshine.app", "web-server", "streamer"]) {
-  run("codesign", ["--verify", "--strict", "--verbose=2", resolve(remoteRuntimePath, name)]);
-}
-
 const fuses = await getCurrentFuseWire(executablePath);
 const expectedFuses: Array<[FuseV1Options, number]> = [
   [FuseV1Options.RunAsNode, FUSE_DISABLED],
@@ -200,7 +185,7 @@ await verifyLaunch(executablePath);
 
 logger.info(`Verified ${appPath}`);
 logger.info(
-  `OpenBot ${String(packageJson.version)} · ${machOArchitecture} · icon · GPL remote runtime · WebRTC remote stack · ASAR integrity · hardened fuses · launch`,
+  `OpenBot-NC ${String(packageJson.version)} · ${machOArchitecture} · icon · WebRTC remote stack · ASAR integrity · hardened fuses · launch`,
 );
 
 function expectEqual(actual: unknown, expected: unknown, label: string): void {

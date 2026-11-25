@@ -1,10 +1,4 @@
-import {
-  type InstalledSkill,
-  isRemovableSkill,
-  type MarketplaceSkillSort,
-  type MarketplaceSkillSummary,
-  parseGithubSkillId,
-} from "@openbot/contracts/ipc";
+import { type InstalledSkill, isRemovableSkill, parseGithubSkillId } from "@openbot/contracts/ipc";
 import { useText } from "@openbot/ui/text";
 import type { MarketplaceAgent, MarketplaceModel } from "./marketplace-model";
 
@@ -28,34 +22,12 @@ export function matches(query: string, text: string): boolean {
   return search === "" || text.toLowerCase().includes(search);
 }
 
-export function userSkills(
-  model: MarketplaceModel,
-  catalog: readonly MarketplaceSkillSummary[],
-): readonly InstalledSkill[] {
+export function userSkills(model: MarketplaceModel): readonly InstalledSkill[] {
   const seen = new Map<string, InstalledSkill>();
-  const add = (skill: InstalledSkill | undefined) => {
-    if (skill && isRemovableSkill(skill) && !seen.has(skill.skillId)) seen.set(skill.skillId, skill);
-  };
-  for (const agent of model.agents()) {
-    const installed = model.installedSkills?.(agent.id);
-    if (installed) for (const skill of installed) add(skill);
-    else for (const listing of catalog) add(model.installedSkill(agent.id, listing.id));
-  }
+  for (const agent of model.agents())
+    for (const skill of model.installedSkills?.(agent.id) ?? [])
+      if (isRemovableSkill(skill) && !seen.has(skill.skillId)) seen.set(skill.skillId, skill);
   return [...seen.values()].sort((left, right) => left.name.localeCompare(right.name));
-}
-
-export interface SortKey {
-  name: string;
-  installs: number;
-  updatedAt: string;
-}
-
-export function bySort(sort: MarketplaceSkillSort) {
-  return (left: SortKey, right: SortKey) => {
-    if (sort === "installs") return right.installs - left.installs || left.name.localeCompare(right.name);
-    if (sort === "updated") return right.updatedAt.localeCompare(left.updatedAt) || left.name.localeCompare(right.name);
-    return left.name.localeCompare(right.name);
-  };
 }
 
 export function useSkillWords(model: () => MarketplaceModel) {

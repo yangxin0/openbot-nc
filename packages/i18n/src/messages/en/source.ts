@@ -16,7 +16,6 @@ import { messages as errorMessaging } from "./error/messaging";
 import { messages as errorProvider } from "./error/provider";
 import { messages as errorReference } from "./error/reference";
 import { messages as errorRemote } from "./error/remote";
-import { messages as errorSite } from "./error/site";
 import { messages as errorSkill } from "./error/skill";
 import { messages as errorStorage } from "./error/storage";
 import { messages as errorTeam } from "./error/team";
@@ -49,7 +48,6 @@ export const source = {
   ...errorBackend,
   ...errorSkill,
   ...errorMarketplace,
-  ...errorSite,
   ...errorBilling,
   ...errorAttachment,
   ...errorImport,

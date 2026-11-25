@@ -445,7 +445,6 @@ try {
     chatWindowTarget: () => null,
     getAgentService: () => agents ?? null,
     getHostService: () => host,
-    getHostAnalytics: () => null,
     getRemoteServerManager: () => manager,
     showMainWindow: () => undefined,
     getTranslate: () => english,

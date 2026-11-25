@@ -246,9 +246,4 @@ export const messages = {
   "sidebar.machine.alertTo": "Alert trafia do: {name}",
   "sidebar.machine.details": "Pokaż szczegóły",
   "sidebar.machine.dismiss": "Ukryj do następnego alertu",
-  "sidebar.community.title": "Dosiądź się.",
-  "sidebar.community.body": "W przyszłości AI jest miejsce dla Ciebie. Dołącz do społeczności na Discordzie i X.",
-  "sidebar.community.joinDiscord": "Dołącz do Discorda",
-  "sidebar.community.followX": "Obserwuj OpenBot na X",
-  "sidebar.community.dismiss": "Zamknij zaproszenie do społeczności",
 } as const satisfies PartialTranslation<typeof source>;

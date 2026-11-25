@@ -70,13 +70,10 @@ export const messages = {
   "update.whatsNew.empty.title": "Keine neuen Funktionen in dieser Version",
   "update.whatsNew.empty.body":
     "Für diese Version gibt es hier keine Hinweise. Das vollständige Änderungsprotokoll zeigt alle Änderungen.",
-  "update.whatsNew.changelog": "Alle Änderungen",
-  "update.whatsNew.changelogFailed": "OpenBot konnte das Änderungsprotokoll nicht öffnen.",
   "update.whatsNew.done": "Verstanden",
   "update.required.title": "Update erforderlich",
   "update.required.description":
     "OpenBot {version} wird nicht mehr unterstützt. Aktualisiere auf {minimum} oder neuer, um fortzufahren.",
-  "update.required.download": "OpenBot herunterladen",
   "update.required.continue": "Ohne Update fortfahren",
   "update.required.failed": "Das Update wurde nicht abgeschlossen.",
 } as const satisfies PartialTranslation<typeof source>;

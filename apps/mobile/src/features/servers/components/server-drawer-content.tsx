@@ -10,7 +10,6 @@ import ChevronRight from "lucide-react-native/icons/chevron-right";
 import Folder from "lucide-react-native/icons/folder";
 import GalleryVerticalEnd from "lucide-react-native/icons/gallery-vertical-end";
 import ListChecks from "lucide-react-native/icons/list-checks";
-import Monitor from "lucide-react-native/icons/monitor";
 import Pin from "lucide-react-native/icons/pin";
 import PinOff from "lucide-react-native/icons/pin-off";
 import Plus from "lucide-react-native/icons/plus";
@@ -723,9 +722,6 @@ function DrawerServerTools({
   const workflows = useDrawerWorkflows(serverId, open);
   const layout = useDrawerToolLayout();
   const [rowWidth, setRowWidth] = useState<number>();
-  const remoteDesktop = useMobileWorkspaceSelector((current) =>
-    serverRowState(current, serverId, (checks) => checks.canControlComputer(serverId)),
-  );
   const library = useMobileWorkspaceSelector((current) =>
     serverRowState(current, serverId, (checks) => checks.canReadServerStorage(serverId)),
   );
@@ -747,7 +743,6 @@ function DrawerServerTools({
       usage: { pathname: "/server-usage", params: { serverId } },
       library: { pathname: "/server-library", params: { serverId } },
       providers: { pathname: "/server-settings/providers", params: { serverId } },
-      remoteDesktop: { pathname: "/remote-desktop/[serverId]", params: { serverId } },
       members: { pathname: "/server-settings/members", params: { serverId } },
     }),
     [serverId],
@@ -784,10 +779,6 @@ function DrawerServerTools({
       providers === "hidden"
         ? null
         : { icon: Sparkles, label: t("mobile.server.route.providers"), disabled: providers === "disabled" },
-    remoteDesktop:
-      remoteDesktop === "hidden"
-        ? null
-        : { icon: Monitor, label: t("mobile.app.route.remoteDesktop"), disabled: remoteDesktop === "disabled" },
     members: { icon: UsersRound, label: t("mobile.app.route.members"), value: values.members },
   };
   const available = layout.order.filter((id) => tools[id] !== null);

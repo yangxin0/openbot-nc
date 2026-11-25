@@ -1,7 +1,7 @@
 abi <abi/4.0>,
 include <tunables/global>
 
-profile openbot-hosted /opt/OpenBot/app/openbot flags=(unconfined) {
+profile openbot-nc-hosted /opt/OpenBot-NC/app/openbot-nc flags=(unconfined) {
   userns,
   network,
 }

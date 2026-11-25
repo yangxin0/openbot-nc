@@ -58,38 +58,6 @@
   gap: var(--openbot-space-1);
 }
 
-.discord-roles {
-  display: grid;
-  max-height: 40vh;
-  margin: 0;
-  padding: var(--openbot-space-1);
-  overflow-y: auto;
-  border: 1px solid var(--openbot-border);
-  border-radius: var(--openbot-radius-lg);
-  background: var(--openbot-bg-surface);
-  list-style: none;
-}
-
-.discord-role-row {
-  display: flex;
-  gap: var(--openbot-space-2);
-  align-items: center;
-  padding: var(--openbot-space-1) var(--openbot-space-2);
-  border-radius: var(--openbot-radius-sm);
-  cursor: pointer;
-}
-
-.discord-role-row:hover {
-  background: var(--openbot-bg-control-hover);
-}
-
-.discord-role-name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .whatsapp-choice {
   display: grid;
   gap: var(--openbot-space-2);

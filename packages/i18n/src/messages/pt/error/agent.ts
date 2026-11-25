@@ -33,8 +33,6 @@ export const messages = {
   "error.agent.settingsLocalOnly":
     "As configurações do agente só podem ser alteradas no computador que executa o agente.",
   "error.agent.skillsLocalOnly": "As habilidades só podem ser alteradas no computador que executa o agente.",
-  "error.agent.addLocalOnly": "Os agentes só podem ser adicionados no computador que os executa.",
-  "error.agent.joinedServerUpdate": "Um agente de um servidor ao qual você se conectou não pode ser atualizado daqui.",
   "error.agent.searchQueryRequired": "É necessário informar um termo de busca.",
   "error.agent.messageTooLong": "A mensagem é muito longa.",
   "error.agent.messageOrAttachmentRequired": "É necessário incluir uma mensagem ou um anexo.",
@@ -173,8 +171,6 @@ export const messages = {
     "Scripts locais executaram as rotinas deste agente {limit} vezes na última hora. Tente de novo mais tarde.",
   "error.agent.workspaceOnlyMacOnly":
     "Para este provedor, o acesso Somente o espaço de trabalho existe apenas no macOS. Escolha Acesso completo nas configurações do agente.",
-  "error.agent.lowMemory":
-    "Este servidor está com pouca memória. Sua mensagem aguarda na fila e começa quando houver memória livre. Um plano maior oferece mais memória ao servidor.",
   "error.agent.lowMemoryServer":
     "Este servidor está com pouca memória. Sua mensagem aguarda na fila e começa quando houver memória livre.",
   "error.agent.workspaceOnlyToolMissing":

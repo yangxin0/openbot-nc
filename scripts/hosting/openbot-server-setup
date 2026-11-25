@@ -16,13 +16,13 @@ if [ -r "$INSTALL/hosted/mode" ] && [ "$(<"$INSTALL/hosted/mode")" = self ] && [
   installed_user=$(<"$INSTALL/hosted/service-user")
 fi
 if [ -z "$SERVICE_USER" ]; then
-  SERVICE_USER=${installed_user:-openbot}
+  SERVICE_USER=${installed_user:-openbot-nc}
 elif [ -n "$installed_user" ] && [ "$SERVICE_USER" != "$installed_user" ]; then
   fail "OpenBot is installed for the user $installed_user. Install again without --user, or with --user $installed_user."
 fi
 
 [[ $SERVICE_USER =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ ]] && [ "$SERVICE_USER" != root ] || fail "The service user is not valid."
-[ -x "$RELEASE/openbot" ] || fail "The release has no openbot executable."
+[ -x "$RELEASE/openbot-nc" ] || fail "The release has no openbot executable."
 if [ -n "$AUTH_API_URL" ]; then
   [[ $AUTH_API_URL =~ ^https://[^/?#[:space:]]+/?$ ]] || fail "The account server URL must be an HTTPS origin."
 fi
@@ -53,7 +53,7 @@ installed=$(version_of "$INSTALL/app")
 if [ -n "$installed" ] && newer "$installed" "$version"; then
   fail "OpenBot $installed is installed, and this release has an older version."
 fi
-systemctl stop openbot.service 2>/dev/null || true
+systemctl stop openbot-nc.service 2>/dev/null || true
 stage_release "$RELEASE"
 swap_in
 printf '%s\n' "$SERVICE_USER" >"$INSTALL/hosted/service-user"
@@ -62,7 +62,7 @@ chmod 0644 "$INSTALL/hosted/service-user" "$INSTALL/hosted/mode"
 install_hosting "$SOURCE"
 finish_swap
 
-install -d -o "$SERVICE_USER" -g "$(id -gn "$SERVICE_USER")" -m 0700 /srv/openbot-hosted
+install -d -o "$SERVICE_USER" -g "$(id -gn "$SERVICE_USER")" -m 0700 /srv/openbot-nc-hosted
 set_server_env() {
   local file="$INSTALL/hosted/openbot.env" temporary
   temporary=$(mktemp "$INSTALL/hosted/.openbot.env.XXXXXX")
@@ -74,6 +74,6 @@ set_server_env() {
 if [ -n "$AUTH_API_URL" ]; then set_server_env OPENBOT_AUTH_API_URL "${AUTH_API_URL%/}"; fi
 if [ -n "$DISPLAY_SIZE" ]; then set_server_env OPENBOT_DISPLAY_SIZE "$DISPLAY_SIZE"; fi
 flock -u 9
-systemctl start openbot.service
-systemctl start openbot-update.timer
+systemctl start openbot-nc.service
+systemctl start openbot-nc-update.timer
 echo "Installed OpenBot $version. It runs as the user $SERVICE_USER."

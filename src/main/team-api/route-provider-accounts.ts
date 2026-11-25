@@ -1,11 +1,6 @@
 import { isString } from "@openbot/contracts/runtime-values";
 import { CLAUDE_API_KEY_ACCOUNT_ID } from "@openbot/contracts/team-protocol/claude-api-key-v1";
 import {
-  decodeLiveVoiceAccount,
-  LIVE_VOICE_ACCOUNT_CAPABILITY,
-  LIVE_VOICE_ACCOUNT_ROUTES,
-} from "@openbot/contracts/team-protocol/live-voice-account-v1";
-import {
   PROVIDER_ACCOUNT_CODE_CAPABILITY,
   PROVIDER_ACCOUNT_CODE_ROUTES,
 } from "@openbot/contracts/team-protocol/provider-account-code-v1";
@@ -159,28 +154,6 @@ export async function routeProviderAccountPool(
   const body = await readJson(request);
   const leftOut = Array.isArray(body.leftOut) ? body.leftOut.filter(isString) : [];
   await runCauseEffect(accounts.setPool(parseProviderId(body.provider), body.enabled === true, leftOut));
-  return json(200, {});
-}
-
-const LIVE_VOICE_ACCOUNT_ROUTE_SET: ReadonlySet<string> = new Set(Object.values(LIVE_VOICE_ACCOUNT_ROUTES));
-
-export async function routeLiveVoiceAccount(
-  context: TeamApiRequestContext,
-  accounts: TeamApiProviderAccounts | undefined,
-): Promise<RouteOutcome> {
-  const { method, url, capabilities, member, request, json } = context;
-  if (method !== "POST" || !LIVE_VOICE_ACCOUNT_ROUTE_SET.has(url.pathname)) return "unmatched";
-  if (!accounts || !capabilities.has(LIVE_VOICE_ACCOUNT_CAPABILITY))
-    throw new HttpError(400, sourceText("error.team.providersUnsupported"));
-  requireAdmin(member);
-  if (url.pathname === LIVE_VOICE_ACCOUNT_ROUTES.settings) return json(200, accounts.liveVoiceAccount());
-  let accountId: string | null;
-  try {
-    accountId = decodeLiveVoiceAccount(await readJson(request));
-  } catch {
-    throw new HttpError(400, sourceText("error.team.requestFailed"));
-  }
-  await runCauseEffect(accounts.setLiveVoiceAccount(accountId));
   return json(200, {});
 }
 

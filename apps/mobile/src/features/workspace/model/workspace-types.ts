@@ -213,7 +213,6 @@ import type {
   WebhookSecret,
 } from "@openbot/contracts/ipc-events";
 import type { ServerAppearance } from "@openbot/contracts/team-protocol/host-appearance-v1";
-import type { LiveVoiceSessionResponse, LiveVoiceStartRequest } from "@openbot/contracts/team-protocol/live-voice-v1";
 import type { QueueEditRequest } from "@openbot/contracts/team-protocol/queue-edit-v1";
 import type { RemoteConnectionFailure, RemoteRecoveryStatus, RemoteTeamDirectoryClient } from "@openbot/team-client";
 import type { PlanLimits } from "@openbot/team-client/plan-limits";
@@ -230,7 +229,6 @@ import type { BrowserViewBridgeEvent, RemoteBrowserViewSession } from "@/feature
 import type { MobileChannelStore } from "@/features/channels/model/channel-store";
 import type { MessageFileTarget } from "@/features/chat/model/message-file-target";
 import type { ProviderAdmin } from "@/features/servers/model/provider-admin";
-import type { RemoteDesktopConnection } from "@/features/workspace/components/remote-team-transport";
 import type { MobileConversationStore } from "./conversation-store";
 import type { LiveWorkspaceStore } from "./live-workspace-store";
 import type { PendingApproval } from "./pending-approvals";
@@ -641,8 +639,6 @@ export interface MobileWorkspaceContextValue {
   canOrganizeLibrary: (serverId: string) => boolean;
   canReadMachineMetrics: (serverId: string) => boolean;
   loadMachineMetrics: (serverId: string) => Promise<MachineMetrics>;
-  canControlComputer: (serverId: string) => boolean;
-  remoteDesktopConnection: (serverId: string) => RemoteDesktopConnection | null;
   loadServerStorage: (serverId: string, force?: boolean) => Promise<StorageUsage>;
   loadLibraryFolders: (serverId: string) => Promise<LibraryFoldersSnapshot>;
   changeLibraryFolders: (action: LibraryFolderAction, serverId: string) => Promise<LibraryFoldersSnapshot>;
@@ -707,9 +703,6 @@ export interface MobileWorkspaceContextValue {
   removeChannelFolder: (input: ChannelFolderInput, serverId: string) => Promise<ChannelFolderChange>;
   browseChannelFolders: (channelId: string, path: string | null, serverId: string) => Promise<AgentFolderBrowse>;
   startNewChat: (agentId: string, serverId: string) => Promise<void>;
-  canUseLiveVoice: (serverId: string) => boolean;
-  startLiveVoice: (input: LiveVoiceStartRequest, serverId: string) => Promise<LiveVoiceSessionResponse>;
-  stopLiveVoice: (sessionId: string, serverId: string) => Promise<void>;
   canCompactContext: (serverId: string) => boolean;
   compactContext: (agentId: string, serverId: string, taskId?: string) => Promise<void>;
   canDeleteChatHistory: (serverId: string) => boolean;
@@ -849,7 +842,6 @@ export type MobileWorkspaceCapabilityCheck =
   | "canRetryMessage"
   | "canDeleteMessages"
   | "canMarkUnreadFrom"
-  | "canUseLiveVoice"
   | "attachmentSupport"
   | "canStartNewChat"
   | "canCompactContext"
@@ -874,7 +866,6 @@ export type MobileWorkspaceCapabilityCheck =
   | "canPauseWorkflows"
   | "canReadServerStorage"
   | "canOrganizeLibrary"
-  | "canControlComputer"
   | "canSetAgentNotificationLevel";
 
 type ServerCheckKey =

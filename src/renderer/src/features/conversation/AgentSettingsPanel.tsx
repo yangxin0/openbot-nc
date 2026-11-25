@@ -11,7 +11,7 @@ import {
   type TestRoutineInput,
   userAssignedSkills,
 } from "@openbot/contracts/ipc";
-import { Blocks, BookMarked, CalendarClock, FileText, Folder, Gauge, Puzzle, Table2, Upload } from "@openbot/ui";
+import { Blocks, BookMarked, CalendarClock, FileText, Folder, Gauge, Puzzle, Table2 } from "@openbot/ui";
 import { SettingsLinkGroup, SettingsLinkRow } from "@openbot/ui/components/SettingsPanel";
 import type { AgentProfile } from "@openbot/ui/data";
 import type { BrowserProfileSelectProfile } from "@openbot/ui/features/browser/BrowserProfileSelect";
@@ -35,7 +35,6 @@ import { useText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, createStore, Show, untrack } from "solid-js";
 import { actionToast } from "../../action-toast";
 import { createSidePanelWidth, readSidePanelWidth, saveSidePanelWidth } from "../../components/side-panel-width";
-import type { SkillCatalogCalls } from "../../skills-port";
 import { agentSkillCalls, skillsPort } from "../../skills-port";
 import type { BrowserProfileCalls } from "../browser/browser-profiles-port";
 import { createBrowserProfilesStore } from "../browser/stores/browser-profiles-store";
@@ -72,12 +71,10 @@ interface AgentSettingsPanelProps
     | "reveal"
   > {
   remoteClient?: boolean;
-  skillCatalog?: SkillCatalogCalls | undefined;
   localHost?: boolean;
   sessionSettingsEditable?: boolean;
   memoryLimit?: number | undefined;
   adminCalls?: ConversationRuntime["admin"] | undefined;
-  onPublish?: (() => void) | undefined;
   onOpenUsage?: ((trigger: HTMLButtonElement) => void) | undefined;
   onOpenApps?: (() => void) | undefined;
   onWidthChange: (width: number) => void;
@@ -239,7 +236,6 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
       : legacyRoutinesPort();
   });
   const skillsMode = () => props.skillsMode ?? "mutable";
-  const skillCatalog = () => (props.remoteClient ? (props.skillCatalog ?? null) : undefined);
   const tableCalls = (): SharedTableCalls => props.adminCalls?.sharedTables ?? conversationPort().agent;
   const skillCalls = () =>
     props.adminCalls?.skills ?? agentSkillCalls(skillsMode() === "host" ? props.skillsServerId : undefined);
@@ -575,7 +571,7 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
               </Show>
             </SettingsLinkGroup>
           </Show>
-          <Show when={routinesShown() || props.onOpenUsage || props.onOpenApps || props.onPublish}>
+          <Show when={routinesShown() || props.onOpenUsage || props.onOpenApps}>
             <SettingsLinkGroup inset title={t("agentSettings.groups.does")}>
               <Show when={routinesShown()}>
                 <SettingsLinkRow
@@ -602,13 +598,6 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
                   label={t("agentSettings.links.apps")}
                   value={t("agentSettings.links.appsScope")}
                   onClick={() => props.onOpenApps?.()}
-                />
-              </Show>
-              <Show when={props.onPublish}>
-                <SettingsLinkRow
-                  icon={<Upload aria-hidden="true" />}
-                  label={t("conversation.header.publish")}
-                  onClick={() => props.onPublish?.()}
                 />
               </Show>
             </SettingsLinkGroup>
@@ -715,7 +704,6 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
           skillsMode={skillsMode()}
           serverId={props.skillsServerId}
           calls={props.adminCalls?.skills}
-          catalog={skillCatalog()}
           onCreateSkill={props.onCreateSkill}
           onTrySkill={props.onTrySkill}
           previewWorkspaceFile={props.previewWorkspaceFile}

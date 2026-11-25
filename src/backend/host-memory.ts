@@ -5,5 +5,4 @@ export interface HostMemory {
   turnLimit(): number;
   reserveTurn(): () => void;
   subscribe(listener: () => void): () => void;
-  readonly hostedPlan: boolean;
 }

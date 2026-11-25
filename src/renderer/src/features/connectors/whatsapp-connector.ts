@@ -5,15 +5,21 @@ import type {
   WhatsAppOverview,
 } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
-import { WHATSAPP_LINK_IDLE } from "@openbot/ui/features/settings/WhatsAppIntegrationPanel";
+import type { AgentProfile } from "@openbot/ui/data";
+import {
+  WHATSAPP_LINK_IDLE,
+  type WhatsAppOrchestratorModels,
+} from "@openbot/ui/features/settings/WhatsAppIntegrationPanel";
 import { currentText } from "@openbot/ui/text";
 import { createSignal, onCleanup, untrack } from "solid-js";
-import {
-  type ConnectorAnalyticsAction,
-  type ConnectorController,
-  createConnectorActions,
-} from "./connector-controller";
-import type { MessagingConnectorOptions } from "./messaging-connector";
+import { type ConnectorController, createConnectorActions } from "./connector-controller";
+
+export interface MessagingConnectorOptions {
+  agents: () => AgentProfile[];
+  hostName?: () => string | undefined;
+  models?: () => WhatsAppOrchestratorModels | undefined;
+  onOrchestratorSection?: (sectionId: string) => void;
+}
 
 export type WhatsAppPort = Pick<
   MessagingDesktopApi,
@@ -96,7 +102,7 @@ export function createWhatsAppConnector(
   const [loaded, setLoaded] = createSignal<{ overview: WhatsAppOverview | null; error: string | null } | null>(null);
   const [link, setLink] = createSignal<WhatsAppLinkState>(WHATSAPP_LINK_IDLE);
   const overview = () => loaded()?.overview ?? null;
-  const actions = createConnectorActions("connector.whatsapp.actionFailed", "whatsapp");
+  const actions = createConnectorActions("connector.whatsapp.actionFailed");
   let reads = 0;
 
   const reload = () => {
@@ -113,8 +119,7 @@ export function createWhatsAppConnector(
         setLoaded({ overview: untrack(overview), error: errorMessage(error, t("connector.readFailed")) });
       });
   };
-  const run = (action: () => Promise<unknown>, track?: ConnectorAnalyticsAction) =>
-    actions.run(action, { settled: reload, ...(track ? { track } : {}) });
+  const run = (action: () => Promise<unknown>) => actions.run(action, { settled: reload });
 
   let links = 0;
   let linkStarted = false;
@@ -138,7 +143,6 @@ export function createWhatsAppConnector(
     setLink(WHATSAPP_LINK_IDLE);
     linkStarted = true;
     actions.run(() => port().startWhatsAppLink(input), {
-      track: "connect_started",
       done: (state) => {
         follow(state, current);
         if (state.status !== "waiting" || current !== links) return;
@@ -205,17 +209,15 @@ export function createWhatsAppConnector(
         onRetry: reload,
         onStartLink: startLink,
         onEndLink: endLink,
-        onDisconnectNumber: (workspaceId) =>
-          run(() => port().disconnectWhatsAppNumber({ workspaceId }), "disconnected"),
+        onDisconnectNumber: (workspaceId) => run(() => port().disconnectWhatsAppNumber({ workspaceId })),
         onDisconnectAll: () => {
           const workspaceIds = untrack(connections).map((connection) => connection.workspaceId);
           run(async () => {
             for (const workspaceId of workspaceIds) await port().disconnectWhatsAppNumber({ workspaceId });
-          }, "disconnected");
+          });
         },
-        onReconnect: (workspaceId) => run(() => port().reconnectWhatsAppNumber({ workspaceId }), "connect_started"),
-        onSetEnabled: (workspaceId, enabled) =>
-          run(() => port().setWhatsAppEnabled({ workspaceId, enabled }), enabled ? "enabled" : "disabled"),
+        onReconnect: (workspaceId) => run(() => port().reconnectWhatsAppNumber({ workspaceId })),
+        onSetEnabled: (workspaceId, enabled) => run(() => port().setWhatsAppEnabled({ workspaceId, enabled })),
         onSetOwnNumber: (workspaceId, ownNumber) => run(() => port().setWhatsAppOwnNumber({ workspaceId, ownNumber })),
         onSetWorkingMessage: (workspaceId, workingMessage) =>
           run(() => port().setWhatsAppWorkingMessage({ workspaceId, workingMessage })),

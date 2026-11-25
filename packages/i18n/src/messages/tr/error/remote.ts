@@ -2,52 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "Uzak masaüstü kurulumunu kullanmak için istemciyi güncelleyin.",
-  "error.remote.desktopSetupUnavailable": "Uzak masaüstü kurulumu kullanılamıyor.",
-  "error.remote.desktopTestUnavailable": "Uzak masaüstü testi kullanılamıyor.",
-  "error.remote.controlUnavailable": "Uzaktan kontrol kullanılamıyor.",
-  "error.remote.controlSessionNotFound": "Uzaktan kontrol oturumu bulunamadı.",
-  "error.remote.controlNotAllowed": "Bu bilgisayarın sahibi, rolünüzün onu kontrol etmesine izin vermiyor.",
-  "error.remote.controlDeclined": "Bu bilgisayarın başındaki kişi uzaktan kontrole izin vermedi.",
-  "error.remote.testRuntimeUpdate": "Bu testi çalıştırmak için macOS uzak masaüstü çalışma zamanını güncelleyin.",
-  "error.remote.testOtherSessions": "Bir teste başlamadan önce diğer uzak masaüstü oturumlarını sonlandırın.",
-  "error.remote.testPermissions": "Testi başlatmadan önce ana makinedeki izinleri ve GUI oturumunu kontrol edin.",
-  "error.remote.controlSessionEnded": "Uzaktan kontrol oturumu sona erdi.",
-  "error.remote.testPanelFailed": "Ana makine test panelini açamadı.",
-  "error.remote.sessionCapacity": "Ana makinede zaten dört etkin oturum var.",
-  "error.remote.linuxNeedsX11": "Linux'ta uzak masaüstü bir X11 oturumuna ihtiyaç duyar. Wayland desteklenmez.",
-  "error.remote.runtimeMissing":
-    "Sunshine ve Moonlight Web çalışma zamanı eksik veya bu ana makinede desteklenmiyor. Mac, Windows x64 veya Linux x64 ana makinesine tam OpenBot sürümünü yükleyin, ardından OpenBot'u yeniden başlatın.",
-  "error.remote.testActive": "Bir uzak masaüstü testi etkin. Bittiğinde tekrar deneyin.",
-  "error.remote.screenRecordingDenied":
-    "Ana makine OpenBot'un ekranını kaydetmesine izin vermedi. Ana makinede ekran kaydı izni verin, ardından tekrar deneyin.",
-  "error.remote.windowsSessionDisconnected":
-    "Ana makinedeki Windows oturumunun bağlantısı kesik, bu yüzden paylaşılacak ekran yok. Ana makinenin ekranında Windows'ta oturum açın, ardından tekrar deneyin.",
-  "error.remote.windowsCaptureDenied":
-    "Ana makinedeki Windows, OpenBot'un ekranı kaydetmesine izin vermiyor. Ana makinenin ekranında Windows'un kilidini açın, yönetici onay pencerelerini kapatın, ardından tekrar deneyin. Sorun devam ederse ana makineyi yeniden başlatın.",
-  "error.remote.macScreenLocked":
-    "Mac kilitli, bu yüzden ekranını paylaşamıyor. Mac'in kilidini kendi ekranında açın, ardından tekrar deneyin.",
-  "error.remote.streamTooSlowLowerQuality":
-    "Ana makineyle bağlantı görüntü için çok yavaş. Tekrar deneyin: sonraki bağlantı daha düşük bir kalite kullanır.",
-  "error.remote.streamTooSlow":
-    "Ana makineyle bağlantı görüntü için çok yavaş. Daha hızlı bir ağ kullanın, ardından tekrar deneyin.",
-  "error.remote.noPictureSwitchEncoder":
-    "Ana makine görüntü göndermedi. Tekrar deneyin: sonraki bağlantı daha fazla bilgisayarda çalışan bir video ayarı kullanır.",
-  "error.remote.teamSessionExpired": "Ekip oturumunun süresi doldu.",
-  "error.remote.finishTestBeforeSwitch": "Ekranları değiştirmeden önce uzak masaüstü testini tamamlayın.",
-  "error.remote.displayNotFound": "Uzak ekran bulunamadı.",
-  "error.remote.displaySwitchInProgress": "Ekran değişimi devam ediyor.",
-  "error.remote.localTestListenerUnavailable": "Yerel test dinleyicisi kullanılamıyor.",
-  "error.remote.localTestNotFound": "Yerel test oturumu bulunamadı.",
-  "error.remote.runtimeUnavailable": "Uzak masaüstü çalışma zamanı kullanılamıyor.",
-  "error.remote.sunshineStartFailed":
-    "Sunshine ana makinede başlamadı. Ana makinedeki uzak masaüstü günlüklerini kontrol edin, ardından tekrar deneyin.",
-  "error.remote.moonlightStartFailed":
-    "Moonlight Web ana makinede başlamadı. Ana makinedeki uzak masaüstü günlüklerini kontrol edin, ardından tekrar deneyin.",
-  "error.remote.pairingFailed":
-    "Moonlight, ana makinedeki Sunshine ile eşleşemedi. Tekrar deneyin. Sorun devam ederse ana makinede OpenBot'u yeniden başlatın.",
-  "error.remote.runtimeStartFailed":
-    "Uzak masaüstü çalışma zamanı ana makinede başlamadı. Ana makinedeki uzak masaüstü günlüklerini kontrol edin, ardından tekrar deneyin.",
   "error.remote.hostUnreachable": "Ana makineye ulaşılamıyor.",
   "error.remote.signInToHostAgain": "Bu ana makinede tekrar oturum açın.",
   "error.remote.invalidData": "Ana makine geçersiz veri döndürdü.",
@@ -71,12 +25,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "Hesap hizmeti farklı bir ana makineyi kabul etti.",
   "error.remote.inviteIdentityChanged": "Davet ana makine kimliği kabul edilirken değişti.",
   "error.remote.localServerRemove": "Yerel sunucu kaldırılamaz.",
-  "error.remote.desktopSetupHostUpdate":
-    "Uzak masaüstü kurulumunu kontrol etmek için ana makinedeki OpenBot'u güncelleyin.",
-  "error.remote.desktopTestHostUpdate":
-    "Uzak masaüstü kurulumunu test etmek için ana makinedeki OpenBot'u güncelleyin.",
   "error.remote.viewerProxyUnavailable": "Yerel uzak görüntüleyici vekili kullanılamıyor.",
-  "error.remote.viewerTransportInvalid": "Uzak görüntüleyici iletimi geçersiz.",
   "error.remote.viewerProxyNoPort": "Yerel uzak görüntüleyici vekili bir bağlantı noktası alamadı.",
   "error.remote.inviteNeedsConnection": "Ana makine davet oluşturabilmek için önce bir kez bağlanmalıdır.",
   "error.remote.permanentInviteUnsupported": "Bu sunucu bağlantısı kalıcı davet bağlantılarını desteklemiyor.",

@@ -1,3 +1,4 @@
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import type { AppTranslate } from "@openbot/i18n";
 import { sourceText } from "@openbot/i18n/source";
 import { Notification } from "electron";
@@ -30,7 +31,7 @@ export function notificationIpcHandlers({
       }),
       test: handler(() => {
         if (!Notification.isSupported()) throw new Error(sourceText("error.app.notificationsUnsupported"));
-        showRetainedNotification(new Notification({ title: "OpenBot", body: translate("notification.test") }));
+        showRetainedNotification(new Notification({ title: APP_NAME, body: translate("notification.test") }));
       }),
       openSettings: handler(async () => {
         const url = notificationSettingsUrl(process.platform);

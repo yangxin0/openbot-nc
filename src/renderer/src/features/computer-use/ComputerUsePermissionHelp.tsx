@@ -1,4 +1,4 @@
-import { type ComputerUsePermissionApp, LOCAL_SERVER_ID, type MacPermissionId } from "@openbot/contracts/ipc";
+import type { ComputerUsePermissionApp, MacPermissionId } from "@openbot/contracts/ipc";
 import type { AppTextKey } from "@openbot/i18n";
 import { Button, FolderOpen, GripVertical, Monitor, MousePointer2 } from "@openbot/ui";
 import { useText } from "@openbot/ui/text";
@@ -18,7 +18,6 @@ const PERMISSION_HELP: Record<MacPermissionId, { title: AppTextKey; pane: AppTex
   },
 };
 
-const SUNSHINE_APP_NAME = "Sunshine";
 const OPENBOT_APP_NAME = "OpenBot";
 
 const POLL_INTERVAL_MS = 1_000;
@@ -27,7 +26,7 @@ export function permissionFromQuery(search: string): MacPermissionId {
   return new URLSearchParams(search).get("permission") === "accessibility" ? "accessibility" : "screen-recording";
 }
 
-export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; sunshine?: boolean | undefined }) {
+export function ComputerUsePermissionHelp(props: { permission: MacPermissionId }) {
   const { t, errorMessage } = useText();
   const permission = props.permission;
   const help = PERMISSION_HELP[permission];
@@ -47,16 +46,9 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
     if (reading || disposed) return;
     reading = true;
     try {
-      if (props.sunshine) {
-        const state = await computerUsePort().remoteDesktop.checkSetup(LOCAL_SERVER_ID);
-        if (!disposed)
-          setGranted(state[permission === "screen-recording" ? "screenRecording" : "accessibility"] === "allowed");
-      } else {
-        const state = await computerUsePort().computerUse.getState();
-        if (!disposed) setGranted(state.permissions.some((entry) => entry.id === permission && entry.granted));
-      }
+      const state = await computerUsePort().computerUse.getState();
+      if (!disposed) setGranted(state.permissions.some((entry) => entry.id === permission && entry.granted));
     } catch {
-      if (!disposed && props.sunshine) setGranted(false);
     } finally {
       reading = false;
     }
@@ -83,9 +75,7 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
   };
 
   window.addEventListener("keydown", closeOnEscape);
-  const refreshOnFocus = () => void read();
-  const timer = props.sunshine ? undefined : setInterval(() => void read(), POLL_INTERVAL_MS);
-  if (props.sunshine) window.addEventListener("focus", refreshOnFocus);
+  const timer = setInterval(() => void read(), POLL_INTERVAL_MS);
 
   onSettled(() => {
     void read();
@@ -94,7 +84,6 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
   onCleanup(() => {
     disposed = true;
     clearInterval(timer);
-    window.removeEventListener("focus", refreshOnFocus);
     window.removeEventListener("keydown", closeOnEscape);
   });
 
@@ -146,12 +135,7 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
 
       <ol class="computer-use-help-steps">
         <li>
-          <Show
-            when={app()}
-            fallback={t("computerUse.help.findInList", {
-              name: props.sunshine ? SUNSHINE_APP_NAME : OPENBOT_APP_NAME,
-            })}
-          >
+          <Show when={app()} fallback={t("computerUse.help.findInList", { name: OPENBOT_APP_NAME })}>
             {(bundle) => t("computerUse.help.dragIntoList", { name: bundle().name })}
           </Show>
         </li>

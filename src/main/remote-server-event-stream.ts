@@ -16,7 +16,6 @@ import {
 } from "@openbot/contracts/team-protocol/current";
 import type { HostAppearanceEvent } from "@openbot/contracts/team-protocol/host-appearance-v1";
 import type { HostRestartEvent } from "@openbot/contracts/team-protocol/host-update-v1";
-import type { LiveVoiceEvent } from "@openbot/contracts/team-protocol/live-voice-v1";
 import type { MachineAlertEvent } from "@openbot/contracts/team-protocol/machine-resources-v1";
 import { optionalTeamEvent, optionalTeamEventToCurrent } from "@openbot/contracts/team-protocol/optional-events";
 import {
@@ -33,8 +32,10 @@ import { decodeTeamProtocolV8BaseCurrentEvent } from "@openbot/contracts/team-pr
 import { sourceText } from "@openbot/i18n/source";
 import { referenceFrom } from "@openbot/user-errors";
 import { Effect, Exit, Result, Scope } from "effect";
+import { isRelayAddress } from "./relay/fetch";
+import { RelaySocketError } from "./relay/socket";
 import { RemoteProtocolError, RemoteRequestError } from "./remote-server-errors";
-import { requestJson } from "./remote-server-http";
+import { type RemoteFetch, requestJson } from "./remote-server-http";
 import type { RemoteServerDirectory, StoredRemoteServerView } from "./remote-server-store";
 import { RemoteWorkflowError, remoteDecode } from "./remote-service-effects";
 
@@ -51,7 +52,20 @@ const REMOTE_EVENT_INITIAL_BUFFER_LIMIT = 1_000;
 const REMOTE_EVENT_PROTOCOL = "openbot-events";
 const REMOTE_EVENT_SNAPSHOT_PROTOCOL = "openbot-events-v2";
 
+export interface RemoteEventSocket {
+  readonly readyState: number;
+  readonly protocol: string;
+  send(data: string): void;
+  close(code?: number, reason?: string): void;
+  addEventListener(type: "open" | "error", listener: () => void, options?: { once?: boolean }): void;
+  addEventListener(type: "message", listener: (event: { data: unknown }) => void): void;
+  addEventListener(type: "close", listener: (event: { code: number }) => void, options?: { once?: boolean }): void;
+}
+
+type RemoteEventSocketOpener = (url: URL, protocols: string[]) => RemoteEventSocket;
+
 export interface RemoteEventCompatibilitySource {
+  fetchFor(url: string | URL): RemoteFetch | undefined;
   ensureCompatibility(
     server: StoredRemoteServerView,
     refresh?: boolean,
@@ -91,6 +105,7 @@ export interface RemoteEventStreamOptions {
   connections: RemoteEventConnectionSink;
   agents: RemoteEventAgentState;
   transport: RemoteEventLiveTransport | null;
+  openSocket?: RemoteEventSocketOpener | undefined;
   onServerIdentity: (serverId: string, identity: { serverName: string; logoVersion: string | null }) => void;
   onPresence: (serverId: string, snapshot: TeamPresenceSnapshot) => void;
   onDirectMessage: (serverId: string, event: DirectMessageRealtimeEvent) => void;
@@ -98,7 +113,6 @@ export interface RemoteEventStreamOptions {
   onHostRestart: (serverId: string, event: HostRestartEvent) => void;
   onHostAppearance: (serverId: string, event: HostAppearanceEvent) => void;
   onMachineAlert: (serverId: string, event: MachineAlertEvent) => void;
-  onLiveVoice: (serverId: string, event: LiveVoiceEvent) => void;
   onOffline: (serverId: string) => void;
   onChanged: () => void;
 }
@@ -112,6 +126,7 @@ export class RemoteEventStream {
   readonly #connections: RemoteEventConnectionSink;
   readonly #agents: RemoteEventAgentState;
   readonly #transport: RemoteEventLiveTransport | null;
+  readonly #openSocket: RemoteEventSocketOpener;
   readonly #onServerIdentity: RemoteEventStreamOptions["onServerIdentity"];
   readonly #onPresence: RemoteEventStreamOptions["onPresence"];
   readonly #onDirectMessage: RemoteEventStreamOptions["onDirectMessage"];
@@ -119,11 +134,10 @@ export class RemoteEventStream {
   readonly #onHostRestart: RemoteEventStreamOptions["onHostRestart"];
   readonly #onHostAppearance: RemoteEventStreamOptions["onHostAppearance"];
   readonly #onMachineAlert: RemoteEventStreamOptions["onMachineAlert"];
-  readonly #onLiveVoice: RemoteEventStreamOptions["onLiveVoice"];
   readonly #onOffline: RemoteEventStreamOptions["onOffline"];
   readonly #onChanged: RemoteEventStreamOptions["onChanged"];
   readonly #controllers = new Map<string, AbortController>();
-  readonly #sockets = new Map<string, WebSocket>();
+  readonly #sockets = new Map<string, RemoteEventSocket>();
   readonly #reconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
   readonly #reconnectAttempts = new Map<string, number>();
   readonly #transportAttempts = new Set<string>();
@@ -143,6 +157,7 @@ export class RemoteEventStream {
     this.#connections = options.connections;
     this.#agents = options.agents;
     this.#transport = options.transport;
+    this.#openSocket = options.openSocket ?? openDirectEventSocket;
     this.#onServerIdentity = options.onServerIdentity;
     this.#onPresence = options.onPresence;
     this.#onDirectMessage = options.onDirectMessage;
@@ -150,7 +165,6 @@ export class RemoteEventStream {
     this.#onHostRestart = options.onHostRestart;
     this.#onHostAppearance = options.onHostAppearance;
     this.#onMachineAlert = options.onMachineAlert;
-    this.#onLiveVoice = options.onLiveVoice;
     this.#onOffline = options.onOffline;
     this.#onChanged = options.onChanged;
   }
@@ -471,7 +485,7 @@ export class RemoteEventStream {
       const socketProtocols = this.#appVersion
         ? [TEAM_PROTOCOL_V1_WEBSOCKET, `openbot-token.${this.#servers.token(server)}`]
         : [REMOTE_EVENT_SNAPSHOT_PROTOCOL, REMOTE_EVENT_PROTOCOL, `openbot-token.${this.#servers.token(server)}`];
-      const socket = yield* remoteDecode(() => new WebSocket(eventsUrl, socketProtocols));
+      const socket = yield* remoteDecode(() => this.#openSocket(eventsUrl, socketProtocols));
       let agentEventsReady = false;
       const bufferedAgentEvents: AgentEvent[] = [];
       const abort = () => socket.close(1000, "Client stopped");
@@ -565,8 +579,6 @@ export class RemoteEventStream {
               this.#onHostAppearance(serverId, event);
             } else if (event.type === "machine-alert") {
               this.#onMachineAlert(serverId, event);
-            } else if (event.type === "live-voice") {
-              this.#onLiveVoice(serverId, event);
             } else if (event.type === "client-browser-command") {
             } else {
               if (!agentEventsReady) {
@@ -658,7 +670,7 @@ export class RemoteEventStream {
     if (!controller.signal.aborted && !authenticationFailed && !protocolFailed) this.scheduleReconnect(serverId);
   });
 
-  #sendEventScope(serverId: string, socket: WebSocket): void {
+  #sendEventScope(serverId: string, socket: RemoteEventSocket): void {
     if (socket.readyState !== WebSocket.OPEN) return;
     if (
       this.#appVersion
@@ -689,6 +701,7 @@ export class RemoteEventStream {
     return yield* Effect.gen({ self: this }, function* () {
       const compatibility = yield* this.#client.ensureCompatibility(server);
       yield* requestJson(server.apiUrl, TEAM_API_ROUTES.me, (value) => decodeRecord(value, "team member"), {
+        fetch: this.#client.fetchFor(server.apiUrl),
         token: this.#servers.token(server),
         ...this.#client.requestProtocol(compatibility),
       }).pipe(
@@ -716,9 +729,17 @@ export class RemoteEventStream {
     return capabilities ? supportsTeamCapability(capabilities, capability) : false;
   }
 
-  #supportsRuntimeSnapshots(serverId: string, socket: WebSocket): boolean {
+  #supportsRuntimeSnapshots(serverId: string, socket: RemoteEventSocket): boolean {
     return this.#appVersion
       ? this.#supportsCapability(serverId, "agent-runtime-snapshots")
       : socket.protocol === REMOTE_EVENT_SNAPSHOT_PROTOCOL;
   }
+}
+
+export function openDirectEventSocket(url: URL, protocols: string[]): RemoteEventSocket {
+  if (isRelayAddress(url))
+    throw new TypeError("WebSocket failed", {
+      cause: new RelaySocketError({ code: "identity_unavailable", message: "No relay connection is available." }),
+    });
+  return new WebSocket(url, protocols);
 }

@@ -82,8 +82,6 @@ export const messages = {
   "composer.attachment.adding": "{name} 추가 중",
   "composer.placeholder.hostSetup": "시작하려면 호스트에서 제공자 설정을 완료하세요",
   "composer.placeholder.connectHost": "시작하려면 호스트에 연결하세요",
-  "composer.placeholder.hostSleeping": "서버가 잠들어 있어요. 아무 키나 누르거나 클릭하면 깨워요",
-  "composer.placeholder.hostWaking": "서버를 깨우는 중…",
   "composer.placeholder.cliSetup": "시작하려면 에이전트 CLI 설정을 완료하세요",
   "composer.placeholder.reply": "답장…",
   "composer.placeholder.message": "{name}에게 메시지 보내기",

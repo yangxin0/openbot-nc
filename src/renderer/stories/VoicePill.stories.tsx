@@ -139,8 +139,6 @@ export const Thinking: Story = { args: { phase: "thinking" } };
 
 export const Speaking: Story = { args: { phase: "speaking", levels: SPEECH } };
 
-export const LiveVoice: Story = { args: { onCycleSpeed: undefined } };
-
 export const MicrophoneBlocked: Story = {
   args: { muted: true, error: "OpenBot cannot use the microphone. Allow it in System Settings." },
 };

@@ -40,7 +40,7 @@ SUID sandbox or a user namespace to the terminal.
 Install the AppArmor profile that ships with OpenBot, then reload AppArmor:
 
 ```bash
-sudo install -m 0644 build/linux/openbot.apparmor /etc/apparmor.d/openbot
+sudo install -m 0644 build/linux/openbot.apparmor /etc/apparmor.d/openbot-nc
 sudo systemctl reload apparmor
 ```
 
@@ -59,13 +59,6 @@ program. Install the `fuse3` package (`sudo pacman -S fuse3` on Arch Linux and O
 `sudo apt install fuse3` on Ubuntu and Debian), then start the AppImage again. With no FUSE, such
 as in a container, start it with `--appimage-extract-and-run`.
 
-## Remote desktop is missing on Linux
-
-Remote desktop on Linux needs the x64 AppImage and an X11 session. Sunshine captures the X11 screen
-and sends mouse and keyboard input through the XTest extension. Under Wayland, or with no `DISPLAY`,
-remote desktop reports that it needs an X11 session. Log in with an Xorg session, or start OpenBot
-under `xvfb-run` on a server. The arm64 AppImage does not include the runtime.
-
 ## Voice prompts fail on an older Linux
 
 The voice runtime of the x64 AppImage needs glibc 2.32 or later, such as Ubuntu 22.04 or Debian 12.
@@ -76,7 +69,7 @@ voice prompts show an error. Use a newer distribution. The arm64 AppImage needs 
 
 On Linux, OpenBot uses the GPU until the GPU fails on your computer. If the GPU process crashes, or a
 start stops in its first 30 seconds, OpenBot writes `gpu-crash.json` or `gpu-start.json` in
-`~/.config/OpenBot`. While one of these files is there, OpenBot renders on the CPU. A start that
+`~/.config/OpenBot-NC`. While one of these files is there, OpenBot renders on the CPU. A start that
 stops with no crash, for example a kill or a power loss, gets one more try with the GPU; a second
 stop in a row turns it off. An update with a new Chromium version tries the GPU again. OpenBot
 ignores these files when OpenBot 0.75.0 or earlier wrote them: those versions could write them by
@@ -183,7 +176,7 @@ If the chat is still missing, quit OpenBot and read the file directly. This repo
 agent currently claims, and the number of messages waiting in each:
 
 ```sh
-sqlite3 "$HOME/Library/Application Support/OpenBot/openbot.db" \
+sqlite3 "$HOME/Library/Application Support/OpenBot-NC/openbot.db" \
   "SELECT t.thread_id, t.agent_id, (SELECT count(*) FROM projection_thread_messages m
      WHERE m.thread_id = t.thread_id) AS messages
    FROM projection_threads t
@@ -206,11 +199,11 @@ workspace, while a release from before that repair refuses to start over the sam
 If the current version still stops, quit OpenBot and read the profile it names. On macOS:
 
 ```sh
-sqlite3 "$HOME/Library/Application Support/OpenBot/openbot.db" \
+sqlite3 "$HOME/Library/Application Support/OpenBot-NC/openbot.db" \
   "SELECT agent_json FROM projection_agents WHERE agent_id = '<id>';"
 ```
 
-On Windows, the same file is at `%APPDATA%\OpenBot\openbot.db`.
+On Windows, the same file is at `%APPDATA%\OpenBot-NC\openbot.db`.
 
 Report the field the message names, together with the details below. The output holds your own file
 paths, so review it before you publish it.
@@ -329,7 +322,7 @@ Quit OpenBot before moving data. To reset application state and the shared brows
 keeping agent workspaces, move this folder somewhere safe:
 
 ```text
-~/Library/Application Support/OpenBot
+~/Library/Application Support/OpenBot-NC
 ```
 
 To also reset agent workspaces, managed transfers, and downloads, move this folder as well:
@@ -344,8 +337,8 @@ remove `~/.codex` or `~/.claude` unless you intentionally want to manage CLI log
 ## Uninstall
 
 Quit OpenBot. On macOS remove `OpenBot.app` from Applications; on Windows use the installer's
-uninstaller; on Linux delete the AppImage, `~/.local/share/applications/openbot.desktop`,
-`~/.local/share/icons/openbot.png`, and `/etc/apparmor.d/openbot` if you installed the profile. If
+uninstaller; on Linux delete the AppImage, `~/.local/share/applications/openbot-nc.desktop`,
+`~/.local/share/icons/openbot-nc.png`, and `/etc/apparmor.d/openbot-nc` if you installed the profile. If
 you also want to remove local OpenBot data, follow the reset steps above. Agent CLIs and their data
 are independent and are not removed with OpenBot.
 
@@ -367,8 +360,8 @@ Never publish tokens, `~/.codex`,
 `~/.claude`, conversations, private files, Electron user data, or full unreviewed diagnostics.
 
 When the desktop app closes by itself, look in the `logs` folder of its user data
-(`%APPDATA%\OpenBot\logs` on Windows, `~/Library/Application Support/OpenBot/logs` on macOS,
-`~/.config/OpenBot/logs` on Linux):
+(`%APPDATA%\OpenBot-NC\logs` on Windows, `~/Library/Application Support/OpenBot-NC/logs` on macOS,
+`~/.config/OpenBot-NC/logs` on Linux):
 
 - `main/main.log` has a `Quitting: <reason>.` line when OpenBot quit by itself or was closed.
 - `trace.ndjson` has an `exit` line with the same reason, and a `crash` line for each renderer or

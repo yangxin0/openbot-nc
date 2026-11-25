@@ -28,8 +28,6 @@ export interface ChannelRoutineHost {
   onceSchedule: () => boolean;
   eventsServerId: () => string | undefined;
   routineRecovery: () => boolean;
-  webhookTests: () => boolean;
-  webhookSenderSecret: () => boolean;
 }
 
 function useOpenChannel(channelId: string) {
@@ -263,14 +261,7 @@ export function ChannelSettingsPane(
     const serverId = props.routines.eventsServerId();
     const eventApi =
       runtime().eventRoutines ??
-      (serverId
-        ? desktopEventRoutinesApi(
-            serverId,
-            props.routines.routineRecovery(),
-            props.routines.webhookTests(),
-            props.routines.webhookSenderSecret(),
-          )
-        : undefined);
+      (serverId ? desktopEventRoutinesApi(serverId, props.routines.routineRecovery()) : undefined);
     return eventApi ? eventRoutinesPort({ kind: "channel", id: props.channelId }, eventApi, legacy) : legacy;
   });
   createEffect(memoriesPort, (port) => {

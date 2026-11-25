@@ -10,6 +10,7 @@ import {
   LOCAL_SERVER_ID,
   type MacPermissionId,
   type QuitGuard,
+  type RelayState,
 } from "@openbot/contracts/ipc";
 import type { AppTextKey, AppTranslate, LayoutDirection } from "@openbot/i18n";
 import { Effect } from "effect";
@@ -83,6 +84,7 @@ interface MainWindowApplicationServices {
   host: { getStatus(): HostStatus };
   remoteServers: RemoteServerManager;
   interfaceSize: InterfaceSizeService;
+  relay: { state(): RelayState };
 }
 
 const CHAT_EDIT_ACTIONS = {
@@ -394,6 +396,7 @@ export function createMainWindowController({
         IPC_ENDPOINTS.servers.event,
         withLocalHostSummary(services.remoteServers.list(), services.host.getStatus()),
       );
+      sendToRenderer(window, IPC_ENDPOINTS.relay.state, services.relay.state());
     });
 
     return window;
@@ -866,13 +869,11 @@ function helperRendererUrl(developmentUrl: string | undefined): URL {
 export function loadComputerUsePermissionHelpRenderer(
   window: BrowserWindow,
   permission: MacPermissionId,
-  sunshine = false,
 ): Promise<void> {
   const developmentUrl = process.env.ELECTRON_RENDERER_URL;
   const url = helperRendererUrl(developmentUrl);
   url.searchParams.set("surface", "computer-use-permission-help");
   url.searchParams.set("permission", permission);
-  if (sunshine) url.searchParams.set("application", "sunshine");
   return window.loadURL(url.toString());
 }
 

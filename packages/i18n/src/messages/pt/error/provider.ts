@@ -221,7 +221,6 @@ export const messages = {
   "error.provider.codexModelProvider":
     "O Codex neste computador usa outro provedor de modelos, e esse provedor não usa login do ChatGPT nem chave de API da OpenAI. Os agentes do ChatGPT já podem usar esse provedor. Para usar sua conta do ChatGPT, volte o provedor de modelos do Codex para OpenAI.",
   "error.provider.signInExpired": "Seu login em {provider} expirou. Entre novamente para continuar.",
-  "error.provider.cliActivateFailed": "O OpenBot não conseguiu ativar a CLI gerenciada.",
   "error.provider.noMainlandChinaSignIn": "{provider} não tem login para a China continental.",
   "error.provider.cliNewVersionNotStarted": "A nova versão não foi iniciada.",
   "error.provider.cliBusyReconnect": "A CLI de {provider} está executando um turno. Aguarde o término e reconecte.",

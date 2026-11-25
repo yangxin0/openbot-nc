@@ -86,13 +86,6 @@ import type {
 } from "../vault-items";
 import { type ApprovalAutomationPolicy, NO_APPROVAL_AUTOMATION, shouldAutoApprove } from "./approval-automation";
 import type { ConversationRuntime } from "./conversation-runtime";
-import type { HostedSiteOperationFailed } from "./hosted-site-coordinator";
-import {
-  HOSTED_SITE_APPROVAL_METHOD,
-  type HostedSiteApprovalTarget,
-  type HostedSiteMutationContext,
-} from "./hosted-site-coordinator";
-import type { HostedSiteMutationTool } from "./hosted-site-events";
 import { ForbiddenAttentionAnswer, InactiveAttentionRequest } from "./inactive-attention-request";
 import {
   API_KEY_FIELD_ID,
@@ -191,7 +184,6 @@ interface PendingApproval {
   params: unknown;
   approval: AgentApproval;
   executionThreadId: string;
-  hostedSiteMutation?: HostedSiteMutationContext;
   decide?: (decision: ToolApprovalDecision, phone?: FeedbackPhone) => void;
   alwaysAsk?: boolean;
   ownerOnly?: boolean;
@@ -427,20 +419,6 @@ function takeoverCall() {
   return { completion, resolve };
 }
 
-export interface HostedSiteApprovals {
-  prepareApproval(
-    client: AgentClient,
-    request: AppServerRequest,
-    params: DynamicToolCallParams,
-    tool: HostedSiteMutationTool,
-  ): Effect.Effect<{ approval: AgentApproval; mutation: HostedSiteMutationContext } | null, HostedSiteOperationFailed>;
-  resolveApproval(
-    mutation: HostedSiteMutationContext,
-    target: HostedSiteApprovalTarget,
-    decision: "accept" | "decline",
-  ): Effect.Effect<void, HostedSiteOperationFailed>;
-}
-
 export interface RoutineAttention {
   markNeedsAttention(turnId: string | null): void;
   markRunningForTurn(turnId: string | null): void;
@@ -464,7 +442,6 @@ type AttentionConversation = Pick<
 export interface AttentionRegistryOptions {
   conversation: AttentionConversation;
   browser: AttentionBrowserHost;
-  hostedSites: HostedSiteApprovals;
   routines: RoutineAttention;
   approvalAutomation?: ApprovalAutomationPolicy | undefined;
   workspaceSandboxed?(agentId: string): boolean;
@@ -511,7 +488,6 @@ export class AttentionRegistry {
   readonly #localHandles = new WeakMap<PendingPrompt | PendingApproval | PendingBrowserTakeover, string>();
   readonly #conversation: AttentionConversation;
   readonly #browser: AttentionBrowserHost;
-  readonly #hostedSites: HostedSiteApprovals;
   readonly #routines: RoutineAttention;
   readonly #approvalAutomation: ApprovalAutomationPolicy;
   readonly #workspaceSandboxed: (agentId: string) => boolean;
@@ -540,7 +516,6 @@ export class AttentionRegistry {
   constructor(options: AttentionRegistryOptions) {
     this.#conversation = options.conversation;
     this.#browser = options.browser;
-    this.#hostedSites = options.hostedSites;
     this.#routines = options.routines;
     this.#approvalAutomation = options.approvalAutomation ?? NO_APPROVAL_AUTOMATION;
     this.#workspaceSandboxed = options.workspaceSandboxed ?? (() => false);
@@ -906,18 +881,8 @@ export class AttentionRegistry {
     });
     this.#routines.markRunningForTurn(getString(pending.params, "turnId"));
 
-    const mutation = pending.hostedSiteMutation;
     if (pending.decide) {
       pending.decide(input.decision, responder?.phone);
-    } else if (mutation) {
-      this.#approvals.delete(input.requestId);
-      yield* this.#hostedSites
-        .resolveApproval(
-          mutation,
-          { client: pending.client, id: pending.id, agentId: pending.approval.agentId },
-          input.decision,
-        )
-        .pipe(toAttentionOperationFailed);
     } else {
       pending.client.respond(
         pending.id,
@@ -1105,15 +1070,6 @@ export class AttentionRegistry {
     return (yield* this.#awaitToolAnswer(client, request, approval, options)).decision;
   }).bind(this);
 
-  readonly awaitPhoneFeedbackApproval = Effect.fn("AttentionRegistry.awaitPhoneFeedbackApproval")(function* (
-    this: AttentionRegistry,
-    client: AgentClient,
-    request: AppServerRequest,
-    approval: AgentApproval,
-  ) {
-    return yield* this.#awaitToolAnswer(client, request, approval, { ownerOnly: true, needsPhone: true });
-  }).bind(this);
-
   readonly #awaitToolAnswer = Effect.fn("AttentionRegistry.awaitToolAnswer")(function* (
     this: AttentionRegistry,
     client: AgentClient,
@@ -1139,33 +1095,6 @@ export class AttentionRegistry {
     });
     return yield* Deferred.await(answer);
   }).bind(this);
-
-  readonly surfaceHostedSiteApproval = Effect.fn("AttentionRegistry.surfaceHostedSiteApproval")(function* (
-    this: AttentionRegistry,
-    client: AgentClient,
-    request: AppServerRequest,
-    params: DynamicToolCallParams,
-    tool: HostedSiteMutationTool,
-  ) {
-    const prepared = yield* this.#hostedSites
-      .prepareApproval(client, request, params, tool)
-      .pipe(toAttentionOperationFailed);
-    if (!prepared || request.signal?.aborted) return;
-    if (this.#answersForAgent(prepared.approval.agentId)) {
-      yield* this.#hostedSites
-        .resolveApproval(prepared.mutation, { client, id: request.id, agentId: prepared.approval.agentId }, "accept")
-        .pipe(toAttentionOperationFailed);
-      return;
-    }
-    this.#holdApproval({
-      client,
-      id: request.id,
-      method: HOSTED_SITE_APPROVAL_METHOD,
-      params,
-      approval: prepared.approval,
-      hostedSiteMutation: prepared.mutation,
-    });
-  }, Effect.uninterruptible).bind(this);
 
   surfaceLegacyApproval(client: AgentClient, request: AppServerRequest): void {
     const threadId = getString(request.params, "conversationId");
@@ -2264,20 +2193,6 @@ export class AttentionRegistry {
     this.#emitInputResolved("approval", pending.id, pending.approval.agentId);
     pending.decide?.("cancel");
     if (pending.decide || !pending.client.running) return;
-    if (pending.hostedSiteMutation) {
-      const report = (error: unknown) =>
-        Effect.sync(() => this.#emitError("approval_cleanup_failed", error, pending.approval.agentId));
-      Effect.runFork(
-        this.#hostedSites
-          .resolveApproval(
-            pending.hostedSiteMutation,
-            { client: pending.client, id: pending.id, agentId: pending.approval.agentId },
-            "decline",
-          )
-          .pipe(Effect.catch(report), Effect.catchDefect(report)),
-      );
-      return;
-    }
     try {
       pending.client.respond(
         pending.id,

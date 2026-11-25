@@ -45,13 +45,6 @@ export const messages = {
   "status.agent.feedbackSameAs": "Wordt toegevoegd aan issue #{issue}",
   "status.agent.feedbackSent": "Naar het OpenBot-team gestuurd: {title}",
   "status.agent.feedbackWithdrawn": "Verwijderd van GitHub: {title}",
-  "status.agent.feedbackWithdrawCommand": "Melding #{issue} van GitHub verwijderen",
-  "status.agent.feedbackWithdrawReason":
-    "Niemand kan deze melding nog op GitHub zien. Je kunt dit niet ongedaan maken. Om de melding te verbeteren, kan de agent een verbeterde melding sturen.",
-  "status.agent.feedbackWithdrawing": "Je melding wordt van GitHub verwijderd…",
-  "status.agent.serverInstallCommand":
-    "Een eenmalige opdracht maken die OpenBot op een andere computer installeert als de server {name} en die aanmeldt bij je account. De agent voert hem daar uit.",
-  "status.agent.serverInstallCard": "Installatieopdracht voor de server {name}",
   "status.agent.browserProfileNamed":
     "Verplaats {agents} naar het browserprofiel {profile}. Ze krijgen de aanmeldingen en cookies ervan. Hun open tabbladen sluiten.",
   "status.agent.commitCoAuthorOff": "Stop met OpenBot als co-auteur toevoegen aan de commits van alle agenten.",
@@ -61,7 +54,6 @@ export const messages = {
   "status.agent.browserProfileShared":
     "Verplaats {agents} naar het gedeelde browserprofiel. Ze krijgen de aanmeldingen en cookies ervan. Hun open tabbladen sluiten.",
   "status.agent.browserProfileOwn": "Geef {agents} elk een eigen browserprofiel. Hun open tabbladen sluiten.",
-  "status.agent.feedbackSending": "Je feedback wordt naar het OpenBot-team gestuurd…",
   "status.agent.workflowDelete": "Verwijder de workflow {title} met zijn runs en versies. Zijn open stappen stoppen.",
   "status.agent.deleteAgents": "Verwijder {agents} met hun chats en bestanden. Je kunt dit niet ongedaan maken.",
   "status.agent.vaultCardFillFrames": "De kaartvelden staan in frames van {origins}.",

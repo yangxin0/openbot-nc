@@ -2,12 +2,9 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/dialog";
 
 export const messages = {
-  "dialog.chooseSiteDirectory": "정적 사이트 폴더 선택",
   "dialog.chooseAgentFolder": "{agent}의 폴더 선택",
   "dialog.chooseChannelFolder": "{channel}의 폴더 선택",
   "dialog.chooseAgentExclusion": "{agent}이(가) 변경하면 안 되는 폴더 선택",
-  "dialog.chooseSkill": "스킬 폴더 또는 ZIP 선택",
-  "dialog.filter.skillPackages": "스킬 패키지",
   "dialog.filter.images": "이미지",
   "dialog.filter.supportedFiles": "지원되는 파일",
   "dialog.filter.attachment": "첨부 파일",

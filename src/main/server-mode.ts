@@ -4,29 +4,25 @@ import type { Socket } from "node:net";
 import { dirname, isAbsolute, join } from "node:path";
 import { parseHostedServerName } from "@openbot/contracts/hosted-servers";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
-import type { CentralAuthState } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
-import { Deferred, Effect } from "effect";
-import QRCode from "qrcode";
+import { Deferred, Effect, Result } from "effect";
 import { runCauseEffect } from "../backend/effect-boundary";
-import type { CentralAuthManager } from "./central-auth-manager";
 import type { HostService } from "./host-service";
 import { readBodyWithin } from "./http-body";
-import { createHostedMobileConnect } from "./mobile-connect-host";
-import { RemoteWorkflowError, remoteCall, toRemoteWorkflowError } from "./remote-service-effects";
+import type { RelayService } from "./relay-service";
+import { RemoteWorkflowError, remoteCall } from "./remote-service-effects";
 import type { ServerMemory } from "./server-memory";
 
 const CONTROL_SOCKET_FILE = "control.sock";
 const MAX_BODY_BYTES = 4096;
-const MAX_EMAIL_LENGTH = 254;
-const DEFAULT_SERVER_NAME = "OpenBot";
+const MAX_PATH_LENGTH = 4096;
 
 export interface ServerModeEnvironment {
   controlSocketPath: string;
   setupPagePort: number | null;
 }
 
-export type ServerSetupAction = "status" | "login_start" | "login_verify" | "retry";
+export type ServerSetupAction = "status";
 
 export function takeServerModeEnvironment(
   environment: NodeJS.ProcessEnv,
@@ -53,23 +49,8 @@ function parseSetupPagePort(value: string | undefined): number | null {
 export interface ServerModeOptions {
   environment: ServerModeEnvironment;
   version: string;
-  centralAuth: Pick<
-    CentralAuthManager,
-    | "getState"
-    | "requestEmailCode"
-    | "cancelCompanySignIn"
-    | "verifyEmailCode"
-    | "hasSession"
-    | "retry"
-    | "canPersistSession"
-    | "redeemServerClaim"
-    | "logout"
-    | "createMobileConnect"
-  >;
-  host: Pick<
-    HostService,
-    "getStatus" | "configure" | "start" | "updateIdentity" | "getMobileConnectHost" | "refreshRegistration"
-  >;
+  relay: Pick<RelayService, "state" | "importFile" | "setHosting" | "resumeHosting">;
+  host: Pick<HostService, "getStatus" | "configure" | "updateIdentity">;
   memory: (Pick<ServerMemory, "level" | "sample"> & { turnLimit(): number | "unlimited" }) | null;
   onError: (message: string, error: unknown) => void;
   uid?: number;
@@ -85,7 +66,6 @@ export class ServerMode {
   readonly #options: ServerModeOptions;
   readonly #sockets = new Set<Socket>();
   #server: Server | null = null;
-  #pendingName: string | null = null;
   #publishError: string | null = null;
   #publishing: Deferred.Deferred<void> | null = null;
 
@@ -144,26 +124,21 @@ export class ServerMode {
   }).bind(this);
 
   readonly publish = Effect.fn("ServerMode.publish")(
-    function* (this: ServerMode, automatic = false) {
+    function* (this: ServerMode) {
       const previous = this.#publishing;
       const completed = Deferred.makeUnsafe<void>();
       this.#publishing = completed;
       return yield* Effect.gen({ self: this }, function* () {
         if (previous) yield* Deferred.await(previous);
         this.#publishError = null;
-        if (this.#options.centralAuth.getState().status !== "signed_in") return;
-        const { host } = this.#options;
-        const serverName = this.#pendingName;
-        if (!host.getStatus().configured) yield* host.configure({ serverName: serverName ?? DEFAULT_SERVER_NAME });
-        else if (serverName && host.getStatus().serverName !== serverName) yield* host.updateIdentity({ serverName });
-        this.#pendingName = null;
-        yield* host.start(automatic);
+        yield* this.#options.relay.resumeHosting();
       }).pipe(
         Effect.tapError(({ cause }) =>
           Effect.sync(() => {
             this.#publishError = cause instanceof Error ? cause.message : sourceText("error.host.publishFailed");
           }),
         ),
+        Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause })),
         Effect.ensuring(
           Effect.sync(() => {
             if (this.#publishing === completed) this.#publishing = null;
@@ -172,57 +147,15 @@ export class ServerMode {
         ),
       );
     },
-    (operation, _automatic?: boolean) => Effect.uninterruptible(operation),
+    (operation) => Effect.uninterruptible(operation),
   ).bind(this);
 
-  readonly setupRequest = (
-    action: ServerSetupAction,
-    body: URLSearchParams,
-  ): Effect.Effect<ServerModeAnswer, RemoteWorkflowError> => {
+  readonly setupRequest = (action: ServerSetupAction): Effect.Effect<ServerModeAnswer, RemoteWorkflowError> => {
     switch (action) {
       case "status":
         return Effect.sync(() => this.#status());
-      case "login_start":
-        return Effect.suspend(
-          () => this.#setupRefusal(["signed_out", "code_sent"]) ?? this.#startLogin(body.get("email") ?? "", null),
-        );
-      case "login_verify":
-        return Effect.suspend(
-          () =>
-            this.#setupRefusal(["code_sent"]) ??
-            this.#verifySetupLogin(body.get("challenge") ?? "", body.get("code") ?? ""),
-        );
-      case "retry":
-        return this.#retrySetup();
     }
   };
-
-  #setupRefusal(allowed: readonly CentralAuthState["status"][]): Effect.Effect<Answer> | null {
-    const { centralAuth } = this.#options;
-    const status = centralAuth.getState().status;
-    if (status === "signed_in") return Effect.succeed(failure(409, "signed_in"));
-    if (centralAuth.hasSession() || !allowed.includes(status)) return Effect.succeed(failure(409, `account_${status}`));
-    return null;
-  }
-
-  #verifySetupLogin(challenge: string, code: string): Effect.Effect<Answer, RemoteWorkflowError> {
-    const state = this.#options.centralAuth.getState();
-    if (state.status === "code_sent" && state.challengeId !== challenge.trim()) {
-      return Effect.succeed(failure(409, "challenge_replaced", sourceText("error.auth.codeNotVerified")));
-    }
-    return this.#verifyLogin(challenge, code, null);
-  }
-
-  #retrySetup(): Effect.Effect<Answer, RemoteWorkflowError> {
-    return Effect.suspend(() => {
-      const { centralAuth } = this.#options;
-      if (centralAuth.getState().status !== "error") return Effect.sync(() => this.#status());
-      return centralAuth.retry().pipe(
-        Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause })),
-        Effect.map(() => this.#status()),
-      );
-    });
-  }
 
   async #handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
     let answer: Answer;
@@ -244,40 +177,37 @@ export class ServerMode {
     switch (route) {
       case "GET /v1/status":
         return this.#status();
-      case "POST /v1/login/start":
-        return runCauseEffect(this.#startLogin(body.get("email") ?? "", body.get("name")));
-      case "POST /v1/login/verify":
-        return runCauseEffect(this.#verifyLogin(body.get("challenge") ?? "", body.get("code") ?? "", body.get("name")));
-      case "POST /v1/login/claim":
-        return runCauseEffect(this.#claimLogin(body.get("claim") ?? "", body.get("name")));
+      case "POST /v1/identity":
+        return runCauseEffect(this.#importIdentity(body.get("path") ?? "", body.get("replace") === "1"));
+      case "POST /v1/hosting":
+        return runCauseEffect(this.#setHosting(body.get("enabled") ?? ""));
       case "POST /v1/name":
         return runCauseEffect(this.#rename(body.get("name") ?? ""));
-      case "POST /v1/mobile-connect":
-        return runCauseEffect(this.#mobileConnect());
-      case "POST /v1/logout":
-        await runCauseEffect(
-          this.#options.centralAuth.logout().pipe(Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause }))),
-        );
-        return this.#status();
       default:
         return failure(404, "not_found");
     }
   }
 
   #status(): Answer {
-    const account = this.#options.centralAuth.getState();
+    const relay = this.#options.relay.state();
     const host = this.#options.host.getStatus();
+    const identity = relay.identity;
     return {
       status: 200,
       lines: {
         version: this.#options.version,
-        account: account.status,
-        email: account.status === "signed_in" ? account.user.email : null,
-        account_issue: account.status === "error" ? account.issue.code : null,
-        account_message: account.status === "error" ? account.issue.message : null,
+        identity: identity ? "ready" : relay.identityIssue === null ? "missing" : "unusable",
+        identity_message: relay.identityIssue,
+        team: identity?.team ?? null,
+        user: identity?.user ?? null,
+        device: identity?.device ?? null,
+        relay: relay.control.status,
+        relay_message: relay.control.status === "offline" ? relay.control.message : null,
+        hosting: relay.hosting ? "on" : "off",
+        hosting_state: relay.hostingState.status,
         server: host.phase,
-        server_name: host.serverName ?? this.#pendingName,
-        server_message: this.#publishError ?? host.message,
+        server_name: host.serverName,
+        server_message: this.#publishError ?? relay.hostingState.message ?? host.message,
         ...this.#memoryLines(),
       },
     };
@@ -295,88 +225,32 @@ export class ServerMode {
     };
   }
 
-  readonly #startLogin = Effect.fn("ServerMode.startLogin")(function* (
+  readonly #importIdentity = Effect.fn("ServerMode.importIdentity")(function* (
     this: ServerMode,
-    email: string,
-    name: string | null,
+    path: string,
+    replace: boolean,
   ): Effect.fn.Return<Answer, RemoteWorkflowError> {
-    const normalized = email.trim();
-    if (!normalized.includes("@") || normalized.length > MAX_EMAIL_LENGTH) return failure(400, "invalid_email");
-    if (name !== null && !parseHostedServerName(name)) return nameFailure(name);
-    if (this.#options.centralAuth.getState().status === "signed_in") return failure(409, "signed_in");
-    const state = yield* this.#options.centralAuth
-      .requestEmailCode(normalized)
-      .pipe(Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause })));
-    if (state.status === "code_sent" && !state.issue) {
-      return {
-        status: 200,
-        lines: { challenge: state.challengeId, expires_at: state.expiresAt, resend_at: state.resendAvailableAt },
-      };
-    }
-    if (state.status === "company_sign_in") {
-      yield* this.#options.centralAuth.cancelCompanySignIn();
-      return failure(409, "company_sign_in_required");
-    }
-    return issueFailure(state);
-  });
-
-  readonly #verifyLogin = Effect.fn("ServerMode.verifyLogin")(function* (
-    this: ServerMode,
-    challenge: string,
-    code: string,
-    name: string | null,
-  ): Effect.fn.Return<Answer, RemoteWorkflowError> {
-    if (!challenge.trim() || !code.trim()) return failure(400, "invalid_request");
-    if (this.#options.centralAuth.getState().status === "signed_in") return failure(409, "signed_in");
-    if (name !== null) {
-      const serverName = parseHostedServerName(name);
-      if (!serverName) return nameFailure(name);
-      this.#pendingName = serverName;
-    }
-    const state = yield* this.#options.centralAuth
-      .verifyEmailCode(challenge.trim(), code.trim())
-      .pipe(Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause })));
-    if (state.status === "signed_in") return this.#status();
-    return issueFailure(state);
-  });
-
-  readonly #claimLogin = Effect.fn("ServerMode.claimLogin")(function* (
-    this: ServerMode,
-    claim: string,
-    name: string | null,
-  ): Effect.fn.Return<Answer, RemoteWorkflowError> {
-    if (!claim.trim()) return failure(400, "invalid_request");
-    let serverName: string | null = null;
-    if (name !== null) {
-      serverName = parseHostedServerName(name);
-      if (!serverName) return nameFailure(name);
-    }
-    const { centralAuth } = this.#options;
-    const status = centralAuth.getState().status;
-    if (status === "signed_in") return failure(409, "signed_in");
-    if (status !== "signed_out" && status !== "code_sent") return failure(409, `account_${status}`);
-    if (!centralAuth.canPersistSession()) return failure(409, "session_not_storable");
-    const previousName = this.#pendingName;
-    if (serverName) this.#pendingName = serverName;
-    const issue = yield* centralAuth
-      .redeemServerClaim(claim.trim())
-      .pipe(Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause })));
-    if (issue) {
-      this.#pendingName = previousName;
-      return failure(issue.code === "server_claim_invalid" ? 400 : 502, issue.code, issue.message);
+    const trimmed = path.trim();
+    if (!isAbsolute(trimmed) || trimmed.length > MAX_PATH_LENGTH) return failure(400, "invalid_path");
+    const imported = yield* this.#options.relay.importFile(trimmed, replace).pipe(Effect.result);
+    if (Result.isFailure(imported)) {
+      const { cause } = imported.failure;
+      return failure(400, "identity_refused", cause instanceof Error ? cause.message : null);
     }
     return this.#status();
   });
 
-  readonly #mobileConnect = Effect.fn("ServerMode.mobileConnect")(function* (
+  readonly #setHosting = Effect.fn("ServerMode.setHosting")(function* (
     this: ServerMode,
+    value: string,
   ): Effect.fn.Return<Answer, RemoteWorkflowError> {
-    const account = this.#options.centralAuth.getState();
-    if (account.status !== "signed_in") return issueFailure(account);
-    yield* this.publish();
-    const ticket = yield* createHostedMobileConnect(this.#options).pipe(toRemoteWorkflowError);
-    const qr = yield* remoteCall(() => QRCode.toString(ticket.qrData, { type: "terminal", small: true }));
-    return { status: 200, lines: { qr: Buffer.from(qr).toString("base64"), expires_at: ticket.expiresAt } };
+    if (value !== "on" && value !== "off") return failure(400, "invalid_request");
+    const changed = yield* this.#options.relay.setHosting(value === "on").pipe(Effect.result);
+    if (Result.isFailure(changed)) {
+      const { cause } = changed.failure;
+      return failure(502, "hosting_failed", cause instanceof Error ? cause.message : null);
+    }
+    return this.#status();
   });
 
   readonly #rename = Effect.fn("ServerMode.rename")(function* (
@@ -386,12 +260,8 @@ export class ServerMode {
     const serverName = parseHostedServerName(name);
     if (!serverName) return nameFailure(name);
     const { host } = this.#options;
-    if (host.getStatus().configured) {
-      yield* host.updateIdentity({ serverName });
-    } else {
-      this.#pendingName = serverName;
-      yield* this.publish();
-    }
+    if (host.getStatus().configured) yield* host.updateIdentity({ serverName });
+    else yield* host.configure({ serverName });
     return this.#status();
   });
 }
@@ -412,14 +282,6 @@ function nameFailure(name: string): Answer {
       ? sourceText("error.team.serverNameLength", { min: INPUT_LIMITS.serverNameMin, max: INPUT_LIMITS.serverName })
       : sourceText("error.team.serverNameHostname");
   return failure(400, "invalid_name", message);
-}
-
-function issueFailure(state: CentralAuthState): Answer {
-  if ((state.status === "code_sent" || state.status === "error") && state.issue) {
-    const answer = failure(state.status === "error" ? 502 : 400, state.issue.code, state.issue.message);
-    return { ...answer, lines: { ...answer.lines, retry_after: state.issue.retryAfterSeconds ?? null } };
-  }
-  return failure(409, `account_${state.status}`);
 }
 
 function formatLines(lines: Answer["lines"]): string {

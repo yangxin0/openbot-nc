@@ -223,7 +223,6 @@ export const messages = {
   "error.provider.codexModelProvider":
     "Su questo computer Codex usa un altro fornitore di modelli, e quel fornitore non usa un accesso a ChatGPT o una chiave API di OpenAI. Gli agenti ChatGPT possono già usare quel fornitore. Per usare il tuo account ChatGPT, reimposta OpenAI come fornitore di modelli di Codex.",
   "error.provider.signInExpired": "L'accesso a {provider} è scaduto. Accedi di nuovo per continuare.",
-  "error.provider.cliActivateFailed": "OpenBot non è riuscito ad attivare la CLI gestita.",
   "error.provider.noMainlandChinaSignIn": "{provider} non ha un accesso per la Cina continentale.",
   "error.provider.cliNewVersionNotStarted": "La nuova versione non si è avviata.",
   "error.provider.cliBusyReconnect":

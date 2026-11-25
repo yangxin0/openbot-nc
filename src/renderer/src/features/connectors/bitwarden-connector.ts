@@ -2,12 +2,7 @@ import { type BitwardenConnectorStatus, DISCONNECTED_BITWARDEN_CONNECTOR } from 
 import { currentText } from "@openbot/ui/text";
 import { createSignal, onCleanup, onSettled } from "solid-js";
 import { type BitwardenConnectorPort, bitwardenConnectorPort } from "./bitwarden-connector-port";
-import {
-  type ConnectorAnalyticsAction,
-  type ConnectorController,
-  createConnectorActions,
-  NO_WATCH,
-} from "./connector-controller";
+import { type ConnectorController, createConnectorActions, NO_WATCH } from "./connector-controller";
 
 export function createBitwardenConnector(
   port: () => BitwardenConnectorPort = bitwardenConnectorPort,
@@ -16,7 +11,7 @@ export function createBitwardenConnector(
   const [status, setStatus] = createSignal<BitwardenConnectorStatus>(DISCONNECTED_BITWARDEN_CONNECTOR);
   const [read, setRead] = createSignal(false);
   const [statusError, setStatusError] = createSignal<string | null>(null);
-  const actions = createConnectorActions("connector.bitwarden.actionFailed", "bitwarden");
+  const actions = createConnectorActions("connector.bitwarden.actionFailed");
   let statuses = 0;
   const show = (next: BitwardenConnectorStatus) => {
     statuses += 1;
@@ -46,8 +41,7 @@ export function createBitwardenConnector(
   onSettled(reload);
   onCleanup(unsubscribe);
 
-  const run = (action: () => Promise<BitwardenConnectorStatus>, track: ConnectorAnalyticsAction) =>
-    actions.run(action, { done: show, track });
+  const run = (action: () => Promise<BitwardenConnectorStatus>) => actions.run(action, { done: show });
 
   return {
     id: "bitwarden",
@@ -72,9 +66,9 @@ export function createBitwardenConnector(
           return hostName?.();
         },
         onRetry: reload,
-        onConnect: (key) => run(() => port().connect(key), "connected"),
-        onConnectHost: (input) => run(() => port().connectHost(input), "connected"),
-        onDisconnect: () => run(() => port().disconnect(), "disconnected"),
+        onConnect: (key) => run(() => port().connect(key)),
+        onConnectHost: (input) => run(() => port().connectHost(input)),
+        onDisconnect: () => run(() => port().disconnect()),
       },
     },
   };

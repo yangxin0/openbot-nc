@@ -3,6 +3,8 @@ import type { messages as source } from "../../en/error/update";
 
 export const messages = {
   "error.update.unsupported": "Gli aggiornamenti sono disponibili nelle versioni desktop installate.",
+  "error.update.noSelfUpdate":
+    "Questa versione non si aggiorna da sola. Per aggiornare OpenBot, installa a mano una versione più recente.",
   "error.update.notReady": "Nessun aggiornamento è pronto da installare.",
   "error.update.restartFailed": "OpenBot non è riuscito a riavviarsi per installare l'aggiornamento.",
   "error.update.downloadStalled": "Il download dell'aggiornamento ha smesso di rispondere. Riprova.",
@@ -10,7 +12,7 @@ export const messages = {
   "error.update.notInstalled": "L'ultimo riavvio non ha installato l'aggiornamento. Riavvia per riprovare.",
   "error.update.downloadFailed": "Impossibile scaricare l'aggiornamento. Riprova.",
   "error.update.signatureNotConfirmed":
-    "OpenBot non è riuscito a verificare l'aggiornamento. Riprova. Se l'errore continua, scarica OpenBot da openbot.run/download.",
+    "OpenBot non è riuscito a verificare l'aggiornamento. Riprova. Se l'errore continua, reinstalla OpenBot dal posto in cui l'hai ottenuto.",
   "error.update.checkFailed": "Impossibile cercare aggiornamenti. Riprova.",
   "error.update.checkStalled": "La ricerca di aggiornamenti ha smesso di rispondere. Riprova.",
   "error.update.checkOffline":

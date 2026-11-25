@@ -22,7 +22,6 @@ import type { CustomEndpoints } from "./custom-endpoints";
 import { agentNamesById, deliveryPromptInput, type TagReferenceSource } from "./delivery-content";
 import { steerNote } from "./developer-instructions";
 import { type DrainScheduler, REMOVED_ENDPOINT_MESSAGE } from "./drain-scheduler";
-import type { LiveVoiceRelayed } from "./live-voice";
 import type { MailboxSync } from "./mailbox-sync";
 import type { ProviderRuntime } from "./provider-runtime";
 import { quietTeammateTurnDelivery } from "./routine-quiet-runs";
@@ -33,7 +32,6 @@ export interface QueueControlsHooks {
   channelAssignment(deliveryId: string): ChannelAssignment | null;
   taskThreadId(deliveryId: string): string | null;
   tagReferences(agentId: string, threadId: string | null): TagReferenceSource;
-  liveVoiceRelayed(deliveryId: string): LiveVoiceRelayed | null;
   fromChrome(deliveryId: string): boolean;
 }
 
@@ -330,7 +328,6 @@ export class QueueControls {
               taskReport: this.#drain.taskReport(context),
               taskReportWaiting: this.#drain.taskReportWaiting(context),
               tags: this.#hooks.tagReferences(agent.id, publicThreadId),
-              liveVoice: this.#hooks.liveVoiceRelayed(input.deliveryId),
               fromChrome: this.#hooks.fromChrome(input.deliveryId),
               steerFramedAsUser: providerForAgent(agent) === "claude",
               steersQuietTurn,

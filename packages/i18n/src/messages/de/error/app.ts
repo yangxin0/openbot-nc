@@ -9,6 +9,4 @@ export const messages = {
   "error.app.macSecureStorageUnavailable": "Der sichere Speicher von macOS ist nicht verfügbar.",
   "error.app.secretStorageUnavailable": "Der Systemspeicher für Geheimnisse ist nicht verfügbar.",
   "error.app.remoteIdentityUnavailable": "Die Identität des entfernten Hosts ist nicht verfügbar.",
-  "error.app.iceServersMissing": "Remote Signal hat noch keine ICE-Server bereitgestellt.",
-  "error.app.finishLocalTest": "Beende den lokalen Test, bevor du den Bildschirm wechselst.",
 } as const satisfies PartialTranslation<typeof source>;

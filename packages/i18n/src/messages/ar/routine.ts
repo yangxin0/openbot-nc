@@ -201,8 +201,6 @@ export const messages = {
   "routine.card.webhookUpdated": "حُدّثت المهمة الدورية بـ webhook",
   "routine.card.webhookChanged": "لم تُحفظ التغييرات",
   "routine.card.webhookSaveFailed": "تعذّر حفظ الأحداث.",
-  "routine.card.webhookFiltersInvalid": "يحتوي أحد عوامل التصفية على JSON Pointer غير صالح.",
-
   "routine.timezoneMove.title": "منطقتك الزمنية الآن {zone}",
   "routine.timezoneMove.description": {
     zero: "لا توجد مهام دورية على {server} تعمل بتوقيت {from}.",
@@ -331,13 +329,11 @@ export const messages = {
   "routine.settings.whenToRun": "وقت التشغيل",
   "routine.settings.nameRequired": "أعطِ المهمة الدورية اسمًا.",
   "routine.settings.instructionRequired": "صِف ما يجب فعله عند تشغيل المهمة الدورية.",
-  "routine.settings.triggerWebhook": "Webhook",
   "routine.settings.webhookSummary": "عند وصول {eventType}",
   "routine.settings.webhookSummaryAny": "عند وصول webhook",
 
   "routine.trigger.change": "تغيير المشغّل",
   "routine.trigger.groupSchedule": "الجدول",
-  "routine.trigger.kind": "ما الذي يبدأ المهمة الدورية",
   "routine.trigger.onceDescription": "في تاريخ ووقت محددين",
   "routine.trigger.hourlyDescription": "كل ساعة ضمن ساعات محددة",
   "routine.trigger.dailyDescription": "كل يوم في وقت محدد",

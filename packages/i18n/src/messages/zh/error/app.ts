@@ -9,6 +9,4 @@ export const messages = {
   "error.app.macSecureStorageUnavailable": "macOS 安全存储不可用。",
   "error.app.secretStorageUnavailable": "系统密钥存储不可用。",
   "error.app.remoteIdentityUnavailable": "远程主机身份不可用。",
-  "error.app.iceServersMissing": "Remote Signal 尚未提供 ICE 服务器。",
-  "error.app.finishLocalTest": "请先完成本地测试再切换显示器。",
 } as const satisfies PartialTranslation<typeof source>;

@@ -190,8 +190,6 @@ export const messages = {
   "routine.card.webhookUpdated": "Zaktualizowano rutynę webhook",
   "routine.card.webhookChanged": "Zmiany niezapisane",
   "routine.card.webhookSaveFailed": "Nie udało się zapisać zdarzeń.",
-  "routine.card.webhookFiltersInvalid": "Filtr ma nieprawidłowy JSON Pointer.",
-
   "routine.timezoneMove.title": "Twoja strefa czasowa to teraz {zone}",
   "routine.timezoneMove.description": {
     one: "{count} rutyna na {server} działa według czasu {from}. Przenieść ją na {zone}? Godzina się nie zmieni.",
@@ -307,7 +305,6 @@ export const messages = {
   "routine.settings.name": "Nazwa",
   "routine.settings.namePlaceholder": "Poranny przegląd",
   "routine.settings.whenToRun": "Kiedy uruchamiać",
-  "routine.settings.triggerWebhook": "Webhook",
   "routine.settings.webhookSummary": "Gdy nadejdzie {eventType}",
   "routine.settings.webhookSummaryAny": "Gdy nadejdzie webhook",
 

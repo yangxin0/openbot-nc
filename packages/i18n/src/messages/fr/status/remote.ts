@@ -2,18 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "La configuration des autorisations est disponible sous macOS.",
-  "status.remote.setupInstallHost": "Installez le composant d’hôte du bureau à distance, puis vérifiez à nouveau.",
-  "status.remote.setupUpdateRuntime":
-    "Mettez à jour le runtime du bureau à distance pour vérifier les autorisations macOS.",
-  "status.remote.setupCheckFailed":
-    "Sunshine n’a pas pu terminer la vérification des autorisations. Vérifiez la session de l’hôte, puis réessayez.",
-  "status.remote.setupServiceFailed":
-    "Le service de bureau à distance n’a pas pu démarrer. Vérifiez que cet utilisateur macOS a une session graphique active.",
-  "status.remote.connectingSunshine": "Connexion via Sunshine…",
-  "status.remote.switchingMonitor": "Changement de l’écran partagé…",
-  "status.remote.controlConnected": "Contrôle à distance connecté.",
-  "status.remote.controlFailed": "Le contrôle à distance a échoué.",
   "status.remote.stagePreferences": "Chargement des préférences de discussion locales : {reason}",
   "status.remote.stageConnection": "Connexion à l’ordinateur : {reason}",
   "status.remote.stageCompatibility": "Vérification de la compatibilité de l’ordinateur : {reason}",

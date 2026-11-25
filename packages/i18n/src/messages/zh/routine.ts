@@ -162,7 +162,6 @@ export const messages = {
   "routine.card.webhookUpdated": "更新了 Webhook 自动化任务",
   "routine.card.webhookChanged": "更改未保存",
   "routine.card.webhookSaveFailed": "无法保存事件。",
-  "routine.card.webhookFiltersInvalid": "某个筛选条件的 JSON Pointer 无效。",
   "routine.timezoneMove.title": "你的时区现在是 {zone}",
   "routine.timezoneMove.description": {
     other: "{server} 上有 {count} 个自动化任务按 {from} 时间运行。要改为 {zone} 吗？它们的钟点保持不变。",
@@ -257,13 +256,11 @@ export const messages = {
   "routine.settings.whenToRun": "运行时机",
   "routine.settings.nameRequired": "请为自动化任务命名。",
   "routine.settings.instructionRequired": "请描述自动化任务运行时要做什么。",
-  "routine.settings.triggerWebhook": "Webhook",
   "routine.settings.webhookSummary": "当收到 {eventType} 时",
   "routine.settings.webhookSummaryAny": "当收到 Webhook 请求时",
 
   "routine.trigger.change": "更改触发方式",
   "routine.trigger.groupSchedule": "计划",
-  "routine.trigger.kind": "自动化任务的启动方式",
   "routine.trigger.onceDescription": "在指定的日期和时间",
   "routine.trigger.hourlyDescription": "在选定时段内每小时一次",
   "routine.trigger.dailyDescription": "每天在指定时间",

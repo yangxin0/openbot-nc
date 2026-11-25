@@ -412,39 +412,21 @@ only when the smoke passes for it:
 | `auth` | The server must |
 | --- | --- |
 | None | Answer `initialize` with no credential. |
-| `link` | Refuse `initialize` with a 401 and a `Bearer` challenge. Publish protected-resource metadata that names an authorization server. That server's metadata lists a `registration_endpoint` or sets `client_id_metadata_document_supported`, and lists `S256` in `code_challenge_methods_supported` and the `code` response type. Its endpoints use https and public addresses. |
+| `link` | Refuse `initialize` with a 401 and a `Bearer` challenge. Publish protected-resource metadata that names an authorization server. That server's metadata lists a `registration_endpoint`, and lists `S256` in `code_challenge_methods_supported` and the `code` response type. Its endpoints use https and public addresses. |
 
 A `link` server with neither fails: each user would have to register a sign-in app first. Use a `key`
 flow for it, or leave it out. The smoke reads metadata only. It never registers a client and never
 sends a credential.
 
-A server with no `registration_endpoint` that sets `client_id_metadata_document_supported` gets
-OpenBot's client metadata document (CIMD, SEP-991) as the `client_id`:
-`https://openbot.run/oauth/mcp-client.json`, which `apps/auth-api` serves
-([`mcp-client[.]json.ts`](../../apps/auth-api/src/routes/oauth/mcp-client%5B.%5Djson.ts)). Its
-`redirect_uris` holds only `http://127.0.0.1:28417/mcp-auth`: ElevenLabs refuses a document that
-also lists a custom scheme such as `openbot://mcp-auth` (#5748). A server that
-offers registration keeps it. ElevenLabs accepts only the document. When port 28417 is in use, the
-loopback address has another port, and a server that compares ports refuses it.
-
-A server that registers only the clients it approved, and that approved OpenBot's own app, gets a
-**built-in client** (`BUILT_IN_MCP_CLIENTS` in
-[`mcp-oauth-provider.ts`](../../src/backend/mcp-oauth-provider.ts)), chosen by the MCP server
-address and the issuer that discovery finds. Both must match: any server can name an issuer in its
-metadata, and the token goes to the server that asked for it. Meta Ads (`https://www.facebook.com/ads`) is one: its registration endpoint answers
-"Dynamic registration is not available for this client", and it refuses every `http` redirect,
-loopback too. Its client is the OpenBot Meta app 1479376854168579, with no secret. Its redirect is
-`https://openbot.run/oauth/mcp-callback`
-([`mcp-callback.ts`](../../apps/auth-api/src/routes/oauth/mcp-callback.ts)), which answers 302 to
-`http://127.0.0.1:28417/mcp-auth` with the query unchanged. So the grant still arrives at the MCP
-listener of the computer where the browser runs, and a joined server uses the
-[callback relay](#remote-sign-in-the-callback-relay) as before. The relay always names port 28417:
-when another program holds that port, the sign-in cannot finish. A sign-in app that the admin saves
-replaces the built-in client, but it keeps the built-in client's redirect: Meta refuses the loopback
-address for every app (#13663). The "Sign-in app" section shows that redirect as its callback URL.
-The Meta app must list the relay address in "Valid OAuth Redirect URIs", and a user who has no role on the app can sign in only after Meta's
-App Review puts the app in Live mode. `bun run test:mcp-sign-in-https-relay` checks the Meta page,
-the relay, and that another server that names Meta's issuer does not get the app.
+The sign-in page sends the grant to the MCP listener on `127.0.0.1` (RFC 8252), and OpenBot
+registers itself with the `registration_endpoint` (RFC 7591). This build publishes no client
+metadata document (CIMD, SEP-991) and has no built-in clients. A server that accepts only a client
+metadata document, such as ElevenLabs, refuses the sign-in, and OpenBot shows
+`error.backend.mcpSignInNeedsClientDocument`. Meta Ads refuses every `http` redirect and has no
+registration, so it needs a sign-in app whose redirect it accepts. A saved client whose `client_id`
+is a document URL still refreshes its tokens, but a new sign-in registers again when the server
+allows it. When port 28417 is in use, the loopback address has another port, and a server that
+compares ports refuses it. `bun run test:mcp-sign-in-client-metadata-document` checks these cases.
 
 A server that does not register OpenBot by itself needs a **sign-in app**: an OAuth app that the
 admin registers with the provider. The user enters its client ID in the "Sign-in app" section of the

@@ -292,28 +292,28 @@ interface CheckCase {
 
 const CHECK_CASES: CheckCase[] = [
   {
-    name: "safe mode, no staged release: stage, stop and start",
+    name: "safe mode, no staged release: stop and start",
     activeState: "active",
     marker: true,
     stageFails: false,
     stagedVersion: "",
-    expected: { calls: ["stage", STOP, START], exitCode: 0 },
+    expected: { calls: [STOP, START], exitCode: 0 },
   },
   {
-    name: "safe mode, a release is staged: stage, stop, install it and start",
+    name: "safe mode, a release is staged: stop, install it and start",
     activeState: "active",
     marker: true,
     stageFails: false,
     stagedVersion: "99.0.0",
-    expected: { calls: ["stage", STOP, "apply", START], exitCode: 0 },
+    expected: { calls: [STOP, "apply", START], exitCode: 0 },
   },
   {
-    name: "safe mode, stage fails: stop and start all the same, and fail",
+    name: "safe mode, a stage would fail: stop and start, never stage",
     activeState: "active",
     marker: true,
     stageFails: true,
     stagedVersion: "",
-    expected: { calls: ["stage", STOP, START], exitCode: 1 },
+    expected: { calls: [STOP, START], exitCode: 0 },
   },
   {
     name: "running with no marker, staged 1 hour ago: nothing",
@@ -560,7 +560,6 @@ try {
           fingerprint: "",
           username: MEMBER.username,
           encryptedToken: "",
-          remoteDesktopAvailable: false,
           role: "member",
         },
         true,

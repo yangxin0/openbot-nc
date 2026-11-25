@@ -25,23 +25,9 @@ export const messages = {
   "status.messaging.onlyRequester": "Alleen {user} kan dit doen. De OpenBot-host kan ook antwoorden.",
   "status.messaging.hostOnly": "Alleen de OpenBot-host kan dit verzoek beantwoorden.",
   "status.messaging.filesSkipped": "Sommige bestanden zijn niet verstuurd: {names}.",
-  "status.messaging.orchestratorName": "Slack-orchestrator",
-  "status.messaging.orchestratorTitle": "Antwoordt in Slack en vraagt het team",
-  "status.messaging.discordNoAgent":
-    "Er kan hier nog geen agent antwoorden. Voeg de Discord-orchestrator toe in OpenBot.",
-  "status.messaging.discordOrchestratorName": "Discord-orchestrator",
-  "status.messaging.discordOrchestratorTitle": "Antwoordt in Discord en vraagt het team",
   "status.messaging.integrationsSection": "Integraties",
-  "status.messaging.signInReceived": "OpenBot heeft de Slack-installatie ontvangen. Je kunt dit tabblad sluiten.",
-  "status.messaging.signInUnknown": "OpenBot heeft deze Slack-installatie niet gestart. Start hem opnieuw in OpenBot.",
-  "status.messaging.telegramNoAgent":
-    "Er kan hier nog geen agent antwoorden. Open in OpenBot Marktplaats > Apps > Telegram en klik op Agent toevoegen.",
-  "status.messaging.telegramLinked":
-    "OpenBot is verbonden met deze chat. Noem {bot} of reageer op een bericht van OpenBot om de agents iets te vragen.",
   "status.messaging.telegramNotLinked":
     "OpenBot is niet verbonden met deze chat. Open de OpenBot-app, ga naar Marktplaats → Apps → Telegram en kies 'Toevoegen aan een groep' of 'Open een directe chat' om te verbinden.",
-  "status.messaging.telegramOrchestratorName": "Telegram-orchestrator",
-  "status.messaging.telegramOrchestratorTitle": "Antwoordt in Telegram en vraagt het team",
   "status.messaging.whatsappNoAgent":
     "Er kan hier nog geen agent antwoorden. Voeg de WhatsApp-orchestrator toe in OpenBot.",
   "status.messaging.whatsappApprovalMenu": "Antwoord 1 om goed te keuren of 2 om te weigeren.",

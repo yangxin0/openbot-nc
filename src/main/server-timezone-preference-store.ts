@@ -5,10 +5,18 @@ import { sourceText } from "@openbot/i18n/source";
 import { Effect, Result, Semaphore } from "effect";
 import { localTimezone } from "../backend/agent/routine-tools";
 import { isMissingFileError } from "../backend/file-errors";
-import { validTimezone } from "./agent-marketplace-service";
 import { type PreferenceFileFailure, readPreferenceFile, writePreferenceFile } from "./preference-file";
 
 export const SERVER_TIMEZONE_PREFERENCE_FILE = "openbot-server-timezone-v1.json";
+
+export function validTimezone(value: string): boolean {
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: value }).format();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export class ServerTimezonePreferenceStore {
   readonly #path: string;

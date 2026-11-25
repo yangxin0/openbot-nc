@@ -23,6 +23,7 @@ COPY --from=dependencies /app/remote/api/node_modules ./remote/api/node_modules
 COPY packages/contracts ./packages/contracts
 COPY packages/i18n ./packages/i18n
 COPY remote/api ./remote/api
+RUN mkdir -p /data && chown bun:bun /data
 USER bun
 WORKDIR /app/remote/api
 EXPOSE 8443

@@ -92,8 +92,6 @@ export const messages = {
   "sitePage.pricing.consent.statement": "Declaro que acepto {policy}, {terms}.",
   "sitePage.pricing.consent.policy": "la política de privacidad",
   "sitePage.pricing.consent.terms": "los términos y el derecho de desistimiento",
-  "sitePage.pricing.consent.earlyStart":
-    "Solicito que el servicio de alojamiento comience antes de que finalice el plazo de desistimiento de 14 días. Reconozco que, si desisto del contrato antes de que el servicio se haya prestado por completo, deberé pagar los servicios prestados hasta el momento del desistimiento, y que, una vez prestado por completo el servicio, perderé mi derecho de desistimiento.",
   "sitePage.teams.title": "OpenBot para equipos",
   "sitePage.teams.description":
     "Ejecuta OpenBot en infraestructura gestionada o deja que diseñemos un despliegue a medida de tu equipo, tus flujos de trabajo y tus sistemas actuales.",

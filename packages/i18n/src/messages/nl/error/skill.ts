@@ -20,9 +20,7 @@ export const messages = {
   "error.skill.frontmatterInvalid": "De frontmatter van SKILL.md is geen geldige YAML.",
   "error.skill.descriptionLength": "SKILL.md heeft een beschrijving van 1 tot {limit} tekens nodig.",
   "error.skill.nameMismatch": "SKILL.md heeft “name: {slug}” nodig, gelijk aan de mapnaam.",
-  "error.skill.draftExpired": "Het gekozen vaardigheidspakket is verlopen. Kies het opnieuw.",
   "error.skill.localHasNoVersion": "Een lokale vaardigheid heeft geen gepubliceerde versie.",
-  "error.skill.publishLocalFirst": "Publiceer lokale vaardigheden apart voordat je deze agent publiceert.",
   "error.skill.bundleMismatch": "De gedownloade vaardigheid kwam niet overeen met het ondertekende catalogusrecord.",
   "error.skill.metadataMismatch": "De metadata van de gedownloade vaardigheid komen niet overeen met de catalogus.",
   "error.skill.folderTaken": "Een andere geïnstalleerde vaardigheid gebruikt deze mapnaam.",
@@ -39,16 +37,10 @@ export const messages = {
   "error.skill.localLibraryUnavailable": "De lokale vaardighedenbibliotheek is niet beschikbaar.",
   "error.skill.lockInvalid": "Het record van de geïnstalleerde vaardigheid is ongeldig. Het is niet gewijzigd.",
   "error.skill.installPathSymlink": "Installatiepaden van vaardigheden kunnen geen symbolische links bevatten.",
-  "error.skill.duplicateSlug": "Twee vaardigheden heten “{slug}”. Geef er een een andere naam voordat je publiceert.",
-  "error.skill.publishNeedsRepair": "{name} heeft lokale wijzigingen of moet worden hersteld voordat je publiceert.",
-  "error.skill.publishUntracked":
-    "{name} is geïnstalleerd vóór het bijhouden van exacte versies. Werk de vaardigheid bij of herstel haar voordat je publiceert.",
   "error.skill.tooManySkills": "Een agent kan maximaal {limit} vaardigheden hebben.",
   "error.skill.unmanagedExists": "Er bestaat al een niet-beheerde vaardigheid op {path}.",
   "error.skill.managedSlug":
     "OpenBot geeft elke agent een eigen vaardigheid {slug}. Geef deze vaardigheid een andere naam.",
-  "error.skill.templateMarkdownTooLarge":
-    "{name}: SKILL.md is groter dan 64 KB. Maak het korter voordat je publiceert.",
   "error.skill.localNoRevisions": "De lokale vaardigheid heeft geen gepubliceerde revisies.",
   "error.skill.localNotFound":
     "Deze lokale vaardigheid bestaat niet. Controleer de ID in de lijst met lokale vaardigheden.",
@@ -72,6 +64,4 @@ export const messages = {
     "GitHub beperkt hoe vaak OpenBot het zonder account kan lezen. Probeer het over een uur opnieuw.",
   "error.skill.githubTooLarge": "OpenBot kan niet alle bestanden van {repository} lezen. De repository is te groot.",
   "error.skill.githubHostTooOld": "Werk deze server bij om vaardigheden van GitHub toe te voegen.",
-  "error.skill.publishGithub":
-    "{name} komt van GitHub. Je kunt alleen vaardigheden publiceren die je zelf hebt gemaakt.",
 } as const satisfies PartialTranslation<typeof source>;

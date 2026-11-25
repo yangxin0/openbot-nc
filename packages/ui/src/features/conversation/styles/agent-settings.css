@@ -296,15 +296,6 @@
   display: none;
 }
 
-.agent-routines-footer {
-  flex: none;
-  padding: 0 15px 15px;
-}
-
-.agent-routines-footer:empty {
-  display: none;
-}
-
 .agent-routine-editor {
   display: grid;
   gap: 14px;
@@ -404,22 +395,6 @@
 .agent-routine-field-error {
   margin-block: var(--openbot-space-1-5) 0;
   margin-inline: var(--openbot-space-2) 0;
-}
-
-.agent-routine-trigger-kind {
-  display: grid;
-  min-width: 0;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--openbot-space-1);
-  margin: 0 0 var(--openbot-space-2);
-  border: 1px solid var(--openbot-border);
-  border-radius: var(--openbot-radius-md);
-  padding: var(--openbot-space-0-5);
-}
-
-.agent-routine-trigger-kind-icon {
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
 }
 
 .agent-routine-when h3,

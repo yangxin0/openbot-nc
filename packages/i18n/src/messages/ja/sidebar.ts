@@ -178,9 +178,4 @@ export const messages = {
   "sidebar.machine.alertTo": "アラートは {name} に送信されます",
   "sidebar.machine.details": "詳細を表示",
   "sidebar.machine.dismiss": "次のアラートまで非表示",
-  "sidebar.community.title": "どうぞ、席へ。",
-  "sidebar.community.body": "AI の未来に、あなたの居場所があります。Discord と X のコミュニティに参加しましょう。",
-  "sidebar.community.joinDiscord": "Discord に参加",
-  "sidebar.community.followX": "X で OpenBot をフォロー",
-  "sidebar.community.dismiss": "コミュニティへの招待を閉じる",
 } as const satisfies PartialTranslation<typeof source>;

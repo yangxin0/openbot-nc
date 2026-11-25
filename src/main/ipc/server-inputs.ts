@@ -7,10 +7,6 @@ import type {
   LoginServerInput,
   MarkDirectReadInput,
   ReadDirectConversationPageInput,
-  RemoteDesktopConnectInput,
-  RemoteDesktopSelectDisplayInput,
-  RemoteDesktopSetupAction,
-  RemoteDesktopTestInput,
   ReorderServersInput,
   SendDirectMessageInput,
   SetServerHiddenInput,
@@ -20,12 +16,7 @@ import type {
   UpdateHostIdentityInput,
   UpdateTeamMemberInput,
 } from "@openbot/contracts/ipc";
-import {
-  isRemoteControlAccess,
-  type RemoteControlPolicy,
-  SERVER_MUTE_DURATIONS_MS,
-  SERVER_NOTIFICATION_LEVELS,
-} from "@openbot/contracts/ipc";
+import { SERVER_MUTE_DURATIONS_MS, SERVER_NOTIFICATION_LEVELS } from "@openbot/contracts/ipc";
 import { isBoolean, isNumber, isOneOf, isString } from "@openbot/contracts/runtime-values";
 import { type ServerAppearance, serverAppearanceOrNull } from "@openbot/contracts/team-protocol/host-appearance-v1";
 import { parseAvatarImage } from "./avatar-inputs";
@@ -204,19 +195,6 @@ export function parseDirectTyping(value: unknown): DirectTypingInput {
   };
 }
 
-export function parseRemoteDesktopConnect(input: unknown): RemoteDesktopConnectInput {
-  if (!isObject(input)) throw new Error("Remote control details are required.");
-  return { serverId: requireString(input.serverId, "serverId") };
-}
-
-export function parseRemoteDesktopDisplay(input: unknown): RemoteDesktopSelectDisplayInput {
-  if (!isObject(input)) throw new Error("Remote display details are required.");
-  return {
-    serverId: requireString(input.serverId, "serverId"),
-    displayId: requireString(input.displayId, "displayId"),
-  };
-}
-
 export function parseSetServerMuted(value: unknown): SetServerMutedInput {
   if (!isObject(value) || !isBoolean(value.muted)) throw new Error("Invalid server mute setting.");
   const serverId = requireString(value.serverId, "serverId", INPUT_LIMITS.identifier);
@@ -237,26 +215,4 @@ export function parseSetServerNotificationLevel(value: unknown): SetServerNotifi
     throw new Error("Invalid server notification level.");
   }
   return { serverId: requireString(value.serverId, "serverId", INPUT_LIMITS.identifier), level: value.level };
-}
-
-export function parseRemoteControlPolicy(value: unknown): RemoteControlPolicy {
-  if (!isObject(value) || !isRemoteControlAccess(value.access) || !isBoolean(value.askOnHost))
-    throw new Error("Invalid remote control policy.");
-  return { access: value.access, askOnHost: value.askOnHost };
-}
-
-export function parseRemoteDesktopSetupAction(value: unknown): RemoteDesktopSetupAction {
-  if (value !== "screen-recording" && value !== "accessibility" && value !== "reveal")
-    throw new Error("Unknown remote desktop setup action.");
-  return value;
-}
-
-export function parseRemoteDesktopTest(value: unknown): RemoteDesktopTestInput {
-  if (!isObject(value) || (value.action !== "start" && value.action !== "status" && value.action !== "stop"))
-    throw new Error("Invalid remote desktop test action.");
-  return {
-    serverId: requireString(value.serverId, "serverId", INPUT_LIMITS.identifier),
-    sessionId: requireString(value.sessionId, "sessionId", INPUT_LIMITS.identifier),
-    action: value.action,
-  };
 }

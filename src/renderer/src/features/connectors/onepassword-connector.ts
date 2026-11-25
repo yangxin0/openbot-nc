@@ -3,12 +3,7 @@ import { classifyFailure } from "@openbot/telemetry";
 import { currentText } from "@openbot/ui/text";
 import { createSignal, onCleanup, onSettled } from "solid-js";
 import { actionToast } from "../../action-toast";
-import {
-  type ConnectorAnalyticsAction,
-  type ConnectorController,
-  createConnectorActions,
-  NO_WATCH,
-} from "./connector-controller";
+import { type ConnectorController, createConnectorActions, NO_WATCH } from "./connector-controller";
 import { type OnePasswordConnectorPort, onePasswordConnectorPort } from "./onepassword-connector-port";
 
 export function createOnePasswordConnector(
@@ -18,7 +13,7 @@ export function createOnePasswordConnector(
   const [status, setStatus] = createSignal<OnePasswordConnectorStatus>(DISCONNECTED_ONEPASSWORD_CONNECTOR);
   const [read, setRead] = createSignal(false);
   const [statusError, setStatusError] = createSignal<string | null>(null);
-  const actions = createConnectorActions("connector.onePassword.actionFailed", "onepassword");
+  const actions = createConnectorActions("connector.onePassword.actionFailed");
   let statuses = 0;
   const show = (next: OnePasswordConnectorStatus) => {
     statuses += 1;
@@ -48,8 +43,8 @@ export function createOnePasswordConnector(
   onSettled(reload);
   onCleanup(unsubscribe);
 
-  const run = (action: () => Promise<OnePasswordConnectorStatus>, waits = true, track?: ConnectorAnalyticsAction) =>
-    actions.run(action, { waits, done: show, ...(track ? { track } : {}) });
+  const run = (action: () => Promise<OnePasswordConnectorStatus>, waits = true) =>
+    actions.run(action, { waits, done: show });
 
   const checkSetup = () => {
     void port()
@@ -103,10 +98,10 @@ export function createOnePasswordConnector(
         onCheckSetup: checkSetup,
         onInstallCli: () => run(() => port().installCli()),
         onOpenApp: openApp,
-        onConnect: (accountId) => run(() => port().connect({ accountId }), true, "connect_started"),
-        onConnectWithToken: (token) => run(() => port().connectWithToken(token), true, "connected"),
+        onConnect: (accountId) => run(() => port().connect({ accountId })),
+        onConnectWithToken: (token) => run(() => port().connectWithToken(token)),
         onCancel: () => run(() => port().cancel(), false),
-        onDisconnect: () => run(() => port().disconnect(), true, "disconnected"),
+        onDisconnect: () => run(() => port().disconnect()),
       },
     },
   };

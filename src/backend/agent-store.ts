@@ -17,6 +17,7 @@ import {
 } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { APP_HOME_FOLDER } from "@openbot/contracts/app-identity";
 import { avatarFileExtension, isAvatarMimeType, isValidAvatarImage } from "@openbot/contracts/avatar-images";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type { AgentProfileDraft } from "@openbot/contracts/ipc";
@@ -186,7 +187,7 @@ export class AgentStore {
     homePath: string,
     database: OpenBotDatabase,
     agentDefaults: () => AgentDefaults = () => DEFAULT_AGENT_DEFAULTS,
-    openbotRoot = join(homePath, "OpenBot"),
+    openbotRoot = join(homePath, APP_HOME_FOLDER),
   ) {
     this.#statePath = join(userDataPath, LEGACY_AGENTS_STATE_FILE);
     this.#agentsRoot = join(openbotRoot, "Agents");

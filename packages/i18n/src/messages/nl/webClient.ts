@@ -92,8 +92,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "Het uploaden van de bijlage is geannuleerd.",
   "webClient.error.duplication": "Deze server ondersteunt het dupliceren van agents niet.",
   "webClient.error.connectServerFirst": "Maak eerst verbinding met deze server.",
-  "webClient.error.agentInstallNotAllowed":
-    "Alleen een eigenaar of beheerder kan hier een agent toevoegen, en de server moet een actuele versie van OpenBot draaien.",
   "webClient.error.linkDesktopOnly": "Deze link opent alleen in de desktop-app.",
   "webClient.error.saveEndpointOffline": "Maak verbinding met je server om een endpoint op te slaan.",
   "webClient.error.removeEndpointOffline": "Maak verbinding met je server om een endpoint te verwijderen.",

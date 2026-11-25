@@ -90,8 +90,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "添付ファイルのアップロードはキャンセルされました。",
   "webClient.error.duplication": "このサーバーはエージェントの複製に対応していません。",
   "webClient.error.connectServerFirst": "先にこのサーバーに接続してください。",
-  "webClient.error.agentInstallNotAllowed":
-    "ここにエージェントを追加できるのはオーナーまたは管理者のみで、サーバーでは最新の OpenBot が動作している必要があります。",
   "webClient.error.linkDesktopOnly": "このリンクはデスクトップアプリでのみ開けます。",
   "webClient.error.saveEndpointOffline": "エンドポイントを保存するには、サーバーに接続してください。",
   "webClient.error.removeEndpointOffline": "エンドポイントを削除するには、サーバーに接続してください。",

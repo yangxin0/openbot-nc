@@ -28,20 +28,6 @@ export const messages = {
   "error.voice.speech.failed": "OpenBot לא הצליח להקריא את התשובה.",
   "error.voice.speech.providerRefused": "{provider} סירבה ליצור את השמע: {reason}",
   "error.voice.recordingNotKept": "OpenBot לא הצליח לשמור את הקלטת הקול.",
-  "error.voice.live.timedOut": "הקול החי של Codex לא התחיל בזמן. יש לנסות שוב.",
-  "error.voice.live.failed": "הקול החי נעצר: {reason}",
-  "error.voice.live.disconnected": "הקול החי התנתק.",
-  "error.voice.live.startFailed":
-    "לא ניתן היה להפעיל את הקול החי. עדכנו את Codex והיכנסו עם ChatGPT במחשב שמריץ את הסוכן, ואז נסו שוב. סיבה: {reason}",
-  "error.voice.live.hostFailed":
-    "Codex בשרת לא הצליח להפעיל את הקול החי. בקשו מהבעלים לעדכן את Codex במחשב הזה ולהיכנס עם ChatGPT, ואז נסו שוב.",
-  "error.voice.live.signIn": "יש להתחבר ל-Codex עם חשבון ChatGPT כדי להשתמש בקול חי.",
-  "error.voice.live.chooseAccount":
-    "חשבון ChatGPT זה לא יכול להשתמש בקול חי. בהגדרות ← קול יש לבחור חשבון שהמינוי שלו כולל קול.",
-  "error.voice.live.unavailable": "OpenAI לא הצליחה להפעיל קול חי. הבעיה היא בצד של OpenAI. יש לנסות שוב מאוחר יותר.",
-  "error.voice.live.refused":
-    "OpenAI סירבה להפעיל קול חי. יש לנסות שוב מאוחר יותר, או לכבות את הקול החי בהגדרות כדי לדבר בקול.",
-  "error.voice.live.off": "הקול החי של Codex כבוי. אפשר להפעיל אותו בהגדרות ← קול.",
   "error.voice.server.routeOff": "שרת הקול לא הוגדר לכך. יש לבדוק את הגדרות ← קול.",
   "error.voice.server.keyRefused": "{host} דחה את מפתח ה-API.",
   "error.voice.server.invalidAnswer": "{host} לא שלח תשובה תואמת OpenAI.",

@@ -36,10 +36,10 @@ export function computerUseIpcHandlers({
       closePermissionHelp: handler(async () => {
         permissionHelp.close();
       }),
-      getPermissionApp: eventHandler((event) => runCauseEffect(permissionHelp.permissionApp(event.sender.id))),
+      getPermissionApp: handler(() => runCauseEffect(permissionHelp.permissionApp())),
       startPermissionAppDrag: eventHandler((event) => runCauseEffect(permissionHelp.startDrag(event.sender))),
-      revealPermissionApp: eventHandler(async (event) => {
-        permissionHelp.reveal(event.sender.id);
+      revealPermissionApp: handler(async () => {
+        permissionHelp.reveal();
       }),
     },
   };

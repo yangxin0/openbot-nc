@@ -3,15 +3,16 @@ import { mkdir, readdir, readFile, realpath, writeFile } from "node:fs/promises"
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
+import { APP_LINK_SCHEME, APP_NAME } from "@openbot/contracts/app-identity";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 import { Effect, Schema } from "effect";
 import { causeHelpers } from "../backend/effect-boundary";
 
 const logger = createOpenBotLogger("linux-desktop-entry");
 
-const DESKTOP_FILE_NAME = "openbot.desktop";
-const ICON_FILE_NAME = "openbot.png";
-const WM_CLASS = "openbot";
+const DESKTOP_FILE_NAME = "openbot-nc.desktop";
+const ICON_FILE_NAME = "openbot-nc.png";
+const WM_CLASS = APP_NAME.toLowerCase();
 const LAUNCHER_READ_CONCURRENCY = 16;
 const GSETTINGS_TIMEOUT_MS = 2_000;
 const execFileAsync = promisify(execFile);
@@ -20,13 +21,13 @@ function linuxDesktopEntry(appImagePath: string, iconPath: string, ownsWindow: b
   return `${[
     "[Desktop Entry]",
     "Type=Application",
-    "Name=OpenBot",
+    `Name=${APP_NAME}`,
     "Comment=A local-first multi-agent desktop workspace.",
     `Exec=${quoteExecutable(appImagePath)} %U`,
     `Icon=${iconPath}`,
     "Terminal=false",
     ...(ownsWindow ? ["Categories=Development;", `StartupWMClass=${WM_CLASS}`] : ["NoDisplay=true"]),
-    "MimeType=x-scheme-handler/openbot;",
+    `MimeType=x-scheme-handler/${APP_LINK_SCHEME};`,
   ].join("\n")}\n`;
 }
 
@@ -143,7 +144,7 @@ export const installLinuxDesktopEntry = Effect.fn("LinuxDesktopEntry.install")(f
   );
   if (result._tag === "Success") return result.success;
   logger.warn(
-    "Unable to install the desktop entry, so openbot:// links stay unregistered.",
+    `Unable to install the desktop entry, so ${APP_LINK_SCHEME}:// links stay unregistered.`,
     toLogValue(result.failure.cause),
   );
   return null;

@@ -70,7 +70,6 @@ export const messages = {
     "توقف المنشور في الطريق. قد يكون جزء منه في المكان. تحقق هناك قبل أن تعيد المحاولة.",
   "error.workflow.tooLarge": "سير العمل هذا أكبر من أن يُحفَظ. أزل بعض الرسومات أو النصوص الطويلة، ثم أعد المحاولة.",
   "error.workflow.tooLargeToSend": "سير العمل هذا أكبر من أن يُرسَل إلى حاسوب آخر. افتحه على الحاسوب الذي يشغّل الخادم.",
-  "error.workflow.webhookMissing": "هذه الخطوة ليست مشغّل webhook. احفظ سير العمل، ثم أعد المحاولة.",
   "error.workflow.githubActionMissing": "اختر ما يفعله هذا المُخرَج على GitHub.",
   "error.workflow.githubRepositoryMissing": "اختر مستودعًا لهذا المُخرَج.",
   "error.workflow.githubItemMissing":
@@ -81,12 +80,6 @@ export const messages = {
   "error.workflow.githubChoiceMissing": "اختر التسميات أو الشخص لهذا المُخرَج.",
   "error.workflow.githubChoseNothing": "لم يختر النموذج أي تسمية أو شخص من هذا المستودع.",
   "error.workflow.githubNotConnected": "اربط GitHub على الحاسوب الذي يشغّل سير العمل هذا.",
-  "error.workflow.githubNoAccess":
-    "لا يستطيع تطبيق OpenBot على GitHub رؤية هذا المستودع أو العنصر. افتح GitHub وامنحه الوصول.",
-  "error.workflow.githubNoWrite": "لا يستطيع تطبيق OpenBot على GitHub تغيير هذا المستودع. افتح GitHub وامنحه الوصول.",
-  "error.workflow.githubLocked": "هذه المحادثة مقفلة على GitHub.",
-  "error.workflow.githubRefused": "رفض GitHub التغيير: {detail}",
-  "error.workflow.githubUnreachable": "تعذّر على OpenBot الوصول إلى GitHub. شغّل الخطوة مرة أخرى.",
   "error.workflow.githubUncertain":
     "توقف التغيير في الطريق. قد يكون على GitHub. تحقق هناك قبل أن تشغّل الخطوة مرة أخرى.",
   "error.workflow.githubNoEvent": "لا توجد على GitHub مشكلة أو طلب سحب يبدأ عليه هذا المشغّل.",

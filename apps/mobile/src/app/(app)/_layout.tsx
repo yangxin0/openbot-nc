@@ -364,18 +364,6 @@ function AuthenticatedStack() {
         }}
       />
       <Stack.Screen name="browser-tabs/[agentId]" options={formSheet([0.6])} />
-      <Stack.Screen
-        name="remote-desktop/[serverId]"
-        options={{
-          animation: pushAnimation,
-          contentStyle: { backgroundColor: background },
-          fullScreenGestureEnabled: false,
-          gestureEnabled: true,
-          ...nativeBarOptions,
-        }}
-      />
-      <Stack.Screen name="remote-desktop-stats" options={formSheet([0.6])} />
-      <Stack.Screen name="remote-desktop-help" options={formSheet([0.85])} />
       <Stack.Screen name="browser-help" options={formSheet([0.85])} />
       <Stack.Screen name="channel/[channelId]" options={chatPage} />
       <Stack.Screen name="channel-info/[channelId]" options={formSheet([0.85])} />

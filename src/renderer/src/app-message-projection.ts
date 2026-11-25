@@ -1,5 +1,4 @@
 import { feedbackSentIssue } from "@openbot/contracts/feedback";
-import { serverInstallEvent } from "@openbot/contracts/hosted-servers";
 import type { ConversationMessage, ConversationSearchPage, QueueDeliveryStatus } from "@openbot/contracts/ipc";
 import {
   AGENT_INSTRUCTIONS_CHANGE_ITEM_TYPE,
@@ -25,6 +24,7 @@ import {
   skillConversationEvent,
   skillSuggestionEvent,
 } from "@openbot/contracts/ipc";
+import { serverInstallEvent } from "@openbot/contracts/server-install";
 import { sourceText as englishSourceText } from "@openbot/i18n/source";
 import { cleanAgentMessageText } from "@openbot/team-client/agent-message-text";
 

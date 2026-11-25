@@ -1,4 +1,4 @@
-# Computer Use and remote desktop
+# Computer Use
 
 ## Computer Use
 
@@ -112,9 +112,9 @@ the rule can go.
 ### Agent display on a server
 
 A self-hosted server and the container start two Xvfb displays, and name the agent display in
-`OPENBOT_AGENT_DISPLAY`. The agent display has a white root (Xvfb `-wr`), because remote desktop
-shows a black root as if no video came. `xsetroot` gives it an arrow pointer, because the default
-"×" of an empty display looks like an error, and `-noreset` keeps the arrow.
+`OPENBOT_AGENT_DISPLAY`. The agent display has a white root (Xvfb `-wr`). `xsetroot` gives it an
+arrow pointer, because the default "×" of an empty display looks like an error, and `-noreset` keeps
+the arrow.
 
 `scripts/hosting/openbot-desktop` starts Openbox on the agent display, with the configuration and
 the flat light theme in `scripts/hosting/desktop/`. Before Openbox starts, `hsetroot` draws the
@@ -132,8 +132,7 @@ Openbox fails 5 times in a row. When the `openbox` package is missing, it does n
 with the old package list keeps the bare display.
 
 Programs from the menu run as the service user, as the agents do, so the Terminal item gives a shell
-as that user. Remote control of a computer gives this control on a desktop host too, and only the
-roles that the owner permits in Server settings › Remote desktop can use input on the display.
+as that user.
 Openbox and the menu programs get the OOM value (500) and the nice value (10) of agent processes, so
 a build in that terminal does not take memory or CPU from main. The menu labels are in the Openbox
 configuration and are not translated.
@@ -142,15 +141,15 @@ A boat hosted server names its desktop `:0`, and OpenBot
 runs on an Xvfb display. Electron keeps its own `DISPLAY`: the built-in browser draws its tabs in
 the OpenBot window, and under Xvfb a hidden view gives no capture and no clicks, so OpenBot cannot
 only hide its window. On Linux, `agent-display.ts` sets `DISPLAY` to the agent display for the
-driver daemon, for Sunshine, and in `agentEnvironment` for every agent process. The driver and
-Sunshine open the display that `DISPLAY` names, so a screenshot, an input event and the remote
-desktop stream all use the agent display, and a program that an agent starts opens there. The
+driver daemon and in `agentEnvironment` for every agent process. The driver opens the display that
+`DISPLAY` names, so a screenshot and an input event use the agent display, and a program that an
+agent starts opens there. The
 per-display overlays are OpenBot windows, so with an agent display they are not started: nothing
 draws the agent cursor or the rim there. `capture_screen` and `list_capture_sources` use Electron's
 `desktopCapturer`, which sees only the OpenBot display, so with an agent display they are not
 available, and agents take screenshots with the driver.
 
-`openbot.service` holds the Xvfb displays too, and a stop signals each process of the unit at the
+`openbot-nc.service` holds the Xvfb displays too, and a stop signals each process of the unit at the
 same time. An Xvfb that stops first ends OpenBot before it closes its database. So the unit's
 `ExecStop` runs `openbot-hosted-server --stop`: it sends `SIGTERM` to OpenBot only, whose PID the
 script writes to `$XDG_RUNTIME_DIR/openbot.pid`, and waits for it. Then it waits at most 10 s for
@@ -182,161 +181,6 @@ Every copy OpenBot starts gets `CUA_DRIVER_RS_TELEMETRY_ENABLED=0` and
 `CUA_DRIVER_RS_UPDATE_CHECK=0`. OpenBot ships the driver, so its vendor analytics are not something
 a user chose, and OpenBot pins the version, so a release check could only offer an update OpenBot
 would refuse.
-
-## Remote desktop permission checks and live tests
-
-`RemoteScreenGateway` owns setup checks and live-test session ownership. The optional
-`remote-desktop-setup` Team API capability uses separate v4 adapter routes; released codecs remain unchanged.
-Diagnostics contain host/account names and permission results and travel only to an authenticated member.
-They do not include Sunshine credentials or screen content. The renderer opens macOS settings only through
-fixed local IPC actions.
-
-Sunshine checks its own macOS permissions and hosts the temporary native test panel. During a test, native
-input is restricted to that panel and tagged for the test. The panel requires both the test tag and the
-Sunshine process ID before recording a click or keyboard result. The gateway rejects additional sessions
-and display switches during a test and closes the panel when its owning stream disconnects. It does not
-interrupt another member's session to start a test.
-
-Local tests use a temporary HTTP listener bound to `127.0.0.1`, without publishing the host or requiring an account. The same single-use viewer grant and cookie checks protect it. The gateway owns the listener and closes it with the test session; its lease expires after three minutes. Local test IPC can address only sessions created for this purpose.
-
-A local video-only test can run without native diagnostics. Its viewer iframe is inert and excluded from keyboard focus; it does not start a native input test or report input success. Local loopback test cookies use HttpOnly, Secure and SameSite=None so the embedded viewer works across the app origin.
-
-A paste in the viewer puts the member's text on the host's clipboard, and then presses the host's
-paste keys. Moonlight sends Cmd+V or Ctrl+V as keys and cancels them, so the browser fires no paste
-event and the host pastes its own clipboard. The gateway adds `openbot-paste.js` to Moonlight's
-`stream.html`. The script keeps the member's paste key from Moonlight, reads the paste event, and
-posts the text to `moonlight/openbot-clipboard`. Both routes are under `moonlight/` because the
-released Team API adapters forward only that family of viewer routes. The same viewer cookie or
-WebRTC session check protects them, and the clipboard route refuses a request from another site.
-At the paste event, the script presses the host's paste modifier, Cmd for a macOS host or Ctrl for
-other hosts, and releases the member's other held modifiers except Shift. A Win or Super key
-released with no key between would open the host's Start menu or Activities. After the upload, the
-script presses V. Text that the host
-already has from an earlier paste is not sent again, so a copy made on the host stays on its
-clipboard. A host with no clipboard writer serves neither route.
-
-The same script watches the stream. Moonlight's viewer says "connected" when the video track
-arrives, before a frame, and neither Moonlight Web nor Sunshine can lower the rate during a stream.
-On a connection slower than the stream, each lost frame makes the streamer wait for a full frame,
-which the connection loses again, so the picture stays black or frozen (#11271). The script counts
-the frames that the browser decodes (`framesDecoded` of Moonlight's peer connection). Sunshine
-sends at least half the frame rate, also for a still screen, so no frame for 20 s is a stall, or
-60 s before the first frame, as the viewer's own stream check waits. The script judges only while
-the page shows, a peer connection is up, and the browser reports video. It then reports `error`
-with a text that says the connection is too slow, and `connected` again when frames come back.
-When Moonlight already reported its own error, such as for a host that stopped, the script stays
-quiet, so that text stays and the quality does not change. In the desktop app and the browser, a
-stall also sets Moonlight's `bitrate` and `fps` to the phone app's Data saver values (3 Mbit/s,
-30 fps) for the streams of that server in the next 24 hours, so Retry shows a picture. The key holds
-the server ID, because one viewer origin shows all joined servers. The phone app keeps the quality
-from its menu. A Windows host lets Sunshine pick a hardware encoder, and some hardware encoders
-(AMD AMF on some drivers) pass Sunshine's start probe but never send a frame that the viewer can
-decode (#14210). When no frame came before the stall, the viewer is the only session of a Windows
-host, and that host does not use the software encoder yet, the text says that the next connection
-uses a different video setting, and the script sends `noPicture` with the `error` report. The host
-then writes the `sunshine-software-encoder` marker, with an expiry 7 days later, in the runtime
-state folder. Retry closes the only session, so the runtime stops, and the next Sunshine start
-writes `encoder = software`. The expiry lets a host go back to the hardware encoder after a false
-alarm, such as a slow link, or after a driver update. With more than one session, the host does not
-change the encoder: another member may see a picture, and Sunshine does not restart for them.
-`scripts/remote-desktop-no-picture-e2e.ts` checks this through the real gateway in a browser. The
-host serves this script also when it has no clipboard writer, but then without
-the paste part.
-
-The same script also keeps keys from staying down on the host when the viewer runs on a Mac or an
-iPad (#3766). macOS browsers often send no `keyup` for a key that is released while Cmd is held.
-Moonlight then keeps the key down, and Sunshine repeats it 25 times each second until another key
-goes down. The script sends a key pressed with Cmd as a tap: Moonlight gets the real `keydown`, and
-then a `keyup` at the next task. When Cmd is released, the script releases each other key that it
-still sees as held. When a held key goes down again without `repeat`, the script releases it
-first, so the new press reaches the host. A held Cmd shortcut still repeats, because each browser
-repeat is another tap. The script reads only trusted events and runs after the paste part, so the
-paste key keeps its path. Other viewers do not change.
-
-On Linux, the gateway accepts only an X11 session (`DISPLAY` set, no `WAYLAND_DISPLAY`, and
-`XDG_SESSION_TYPE` not `wayland`). Sunshine then runs with X11 capture and software encoding, and
-sends input through XTest, so a hosted server under Xvfb needs no uinput device and no extra
-capability. On a server with an agent display, Sunshine runs on that display (see
-[Agent display on a server](#agent-display-on-a-server)). Linux has no permission checks: an X11 session is ready.
-
-### Host controls
-
-The host owner chooses in Server settings › Remote desktop which roles may start a session
-(`owner`, `admins` or `members`; `members` by default) and whether the person at the computer must
-allow each session. The section shows for the local server on every platform; the client setup
-steps in it stay macOS only. `remote-control-policy-store.ts` keeps both settings in a JSON file in
-userData, as the Private network setting does. The route checks the role on `sessions`, `setup`,
-`test` and `display`: a new display restarts every open stream.
-
-`remote-control-question.ts` asks with a sheet on the main window. A request is refused when
-nobody allows it in 30 s, when a revoke or Stop all ends it, or when a client on a direct HTTP
-connection drops it. A WebRTC client has no cancel frame, so its question stays until an answer or
-the 30 s end. A released desktop client on direct HTTP stops waiting after 15 s. After Allow, the
-runtime can take seconds to start; a revoke or Stop all in that time also refuses the request. A
-host with no window refuses every session while the question is on. Both refusals are a 403 with a
-localized message and no code: every released protocol rejects an error code it does not know.
-
-The gateway's audit events show the sign: a notification at the first stream of a remote session,
-and the tray item with the member's name and **Stop all remote control** while the session exists.
-A session that a client leaves without a close stays until it is closed, revoked, or its team
-session ends. A local test session does not count.
-
-An extra server on the same computer (`local-server-child.ts`) runs its own gateway with its own
-policy file and no question, tray or notification. Its members are not covered by the desktop's
-settings.
-
-### Remote desktop on the phone
-
-The mobile app shows the host's own Moonlight Web viewer, as the desktop app does
-(`apps/mobile/src/features/remote-desktop`). The viewer is code from the host, so it runs in a
-plain `react-native-webview`, not in an Expo DOM component: the web view has no `onMessage`, loads
-only its loopback address, and cannot call the app. The app calls the page with `injectJavaScript`.
-
-- `modules/remote-viewer-proxy` is a native HTTP and WebSocket server on `127.0.0.1` (Swift and
-  Kotlin). It answers 404 to a path without the session's random token and reads only HTTP and
-  WebSocket frames. `viewer-proxy.ts` sends each request to the host as a Team API request, and
-  rewrites `/v1/remote-screen` in HTML and JavaScript as `RemoteViewerProxy` does on desktop. It
-  takes only the routes of its own session.
-- The viewer's signaling socket goes over the peer's desktop channel. The hidden peer page
-  (`remote-desktop-relay.ts`) relays it with the `remote-stream-v1` frames; the browser live view
-  reads the same channel and leaves frames of other streams alone.
-- The proxy reads the viewer's `viewer-state` reports on their way to the host, so the screen
-  knows when the first frame arrives (the desktop's 60 s limit) and whether the video is direct or
-  relayed. A failure report does not close the page: after a display change the host closes the
-  stream socket with 4410, and the viewer loads again by itself. During a display change the screen
-  says "Switching to <display>…" and keeps the old stream's end report. It shows that report, or a
-  switch failure, only when the new stream shows no picture within 30 s.
-- The app's page script sets Moonlight's `mlSettings` before the page starts: H.264, a stream no
-  wider than 1920 px (Fast, 120 fps, 20 Mbit/s; Smooth, 60 fps, 10 Mbit/s) or 1280 px (Data saver,
-  30 fps, 3 Mbit/s), and Moonlight's `mouseRelative` (Trackpad mode) or `pointAndDrag` touch mode.
-  Sunshine on macOS captures no faster than the display, so Fast sends more frames only from a
-  display of 120 Hz or more. The script also puts the app's background in place of Moonlight's blue
-  page, which is a `body::before` layer, and hides Moonlight's stats overlay.
-- Connection stats is a sheet. While it is open, the page posts Moonlight's stats once a second to
-  `moonlight/openbot-phone-stats`. The proxy answers that one path itself and sends it to no host,
-  so the page gets no other way to reach the app. Moonlight's WebRTC values named "…Ms" are running
-  totals in seconds, so the sheet shows the time per frame from the change between two samples. Copy
-  in the sheet's header copies the shown values and Moonlight's raw values.
-  OpenBot's patch hides Moonlight's sidebar, so the app adds a key bar above the phone keyboard.
-- Typing sends `keydown` and `keyup` of a US keyboard to the document, as the paste script does.
-  Sunshine on macOS does not type text ("Unicode input not yet implemented for MacOS"), so only a
-  character with no key goes through Moonlight's `sendText`, which Windows and Linux hosts type.
-- Zoom is a transform of Moonlight's `.video-stream` element. That element is `position: fixed`, so
-  a transform of a parent would move it out of view. Moonlight's page animates every transform for
-  0.25 s, so the script turns off the video's transition: each pan step reads the video's place,
-  and a place in mid-animation made the view drift. Moonlight maps a touch through the video's
-  bounding box, so a touch lands where the finger is.
-- Trackpad mode is Moonlight's `localCursor` touch mode: the finger moves the pointer as on a
-  trackpad, and Moonlight sends the pointer's position, so the page knows it. While zoomed in, the
-  view follows the pointer when the pointer moves near an edge or under the app's bars. A view that
-  the fingers moved away from the pointer stays there until the pointer moves. Moonlight's own pointer drawing is hidden, because
-  the computer's pointer is in the video. A pinch zooms and moves the view with the fingers; three
-  fingers move the view. For a gesture that the view takes, the script calls Moonlight's
-  `onTouchCancel`, so a finger that Moonlight saw first does not click. At any zoom, a two-finger
-  drag scrolls the computer and a two-finger tap right-clicks.
-- Before a session the phone asks for Face ID, Touch ID or the phone unlock. It ends the session
-  when the app leaves the foreground, covers the screen in the app switcher, keeps the phone awake,
-  and sets `FLAG_SECURE` on Android.
 
 ### Codex tool approvals
 

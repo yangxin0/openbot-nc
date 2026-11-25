@@ -527,7 +527,6 @@ function ServerProvidersStory(props: {
             onRemoveMember={fn(async () => undefined)}
             onRevokeInvite={fn(async () => undefined)}
             onOpenScreenRecordingSettings={fn(async () => undefined)}
-            onRecheckScreenRecording={fn(async () => undefined)}
             initialSection="providers"
             hostPromptCacheTtl={{}}
             claudeUserSetup={{}}

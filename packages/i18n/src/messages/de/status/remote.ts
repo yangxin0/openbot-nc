@@ -2,18 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "Die Einrichtung der Berechtigungen ist unter macOS verfügbar.",
-  "status.remote.setupInstallHost": "Installiere die Host-Komponente des Remote-Desktops und prüfe erneut.",
-  "status.remote.setupUpdateRuntime":
-    "Aktualisiere die Remote-Desktop-Laufzeit, um die macOS-Berechtigungen zu prüfen.",
-  "status.remote.setupCheckFailed":
-    "Sunshine konnte die Berechtigungsprüfung nicht abschließen. Prüfe die Host-Sitzung und versuche es erneut.",
-  "status.remote.setupServiceFailed":
-    "Der Remote-Desktop-Dienst konnte nicht starten. Prüfe, ob dieser macOS-Benutzer eine aktive grafische Sitzung hat.",
-  "status.remote.connectingSunshine": "Verbindung über Sunshine wird hergestellt…",
-  "status.remote.switchingMonitor": "Geteilter Monitor wird gewechselt…",
-  "status.remote.controlConnected": "Fernsteuerung verbunden.",
-  "status.remote.controlFailed": "Fernsteuerung fehlgeschlagen.",
   "status.remote.stagePreferences": "Lokale Chateinstellungen werden geladen: {reason}",
   "status.remote.stageConnection": "Verbindung zum Desktop wird hergestellt: {reason}",
   "status.remote.stageCompatibility": "Desktop-Kompatibilität wird geprüft: {reason}",

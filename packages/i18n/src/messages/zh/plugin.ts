@@ -5,7 +5,6 @@ export const messages = {
   "plugin.link.website": "网站",
   "plugin.link.privacyPolicy": "隐私政策",
   "plugin.link.terms": "服务条款",
-  "plugin.copyLink": "复制链接",
   "plugin.askPrompt": "向 {name} 提问：{prompt}",
   "plugin.section.skills": "技能",
   "plugin.section.information": "信息",

@@ -82,7 +82,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "附件上传已取消。",
   "webClient.error.duplication": "该服务器不支持复制助手。",
   "webClient.error.connectServerFirst": "请先连接该服务器。",
-  "webClient.error.agentInstallNotAllowed": "只有所有者或管理员可以在此添加助手，且服务器需运行较新的 OpenBot。",
   "webClient.error.linkDesktopOnly": "该链接仅在桌面应用中打开。",
   "webClient.error.saveEndpointOffline": "请连接服务器以保存端点。",
   "webClient.error.removeEndpointOffline": "请连接服务器以移除端点。",

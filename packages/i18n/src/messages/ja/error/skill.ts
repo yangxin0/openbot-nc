@@ -20,9 +20,7 @@ export const messages = {
   "error.skill.frontmatterInvalid": "SKILL.md のフロントマターが有効な YAML ではありません。",
   "error.skill.descriptionLength": "SKILL.md には 1〜{limit} 文字の説明が必要です。",
   "error.skill.nameMismatch": "SKILL.md にはフォルダー名と同じ「name: {slug}」が必要です。",
-  "error.skill.draftExpired": "選択したスキルパッケージの有効期限が切れました。もう一度選択してください。",
   "error.skill.localHasNoVersion": "公開済みのバージョンがないローカルスキルがあります。",
-  "error.skill.publishLocalFirst": "このエージェントを公開する前に、ローカルスキルを個別に公開してください。",
   "error.skill.bundleMismatch": "ダウンロードしたスキルが、署名済みのカタログ記録と一致しませんでした。",
   "error.skill.metadataMismatch": "ダウンロードしたスキルのメタデータがカタログと一致しません。",
   "error.skill.folderTaken": "このフォルダー名は、インストール済みの別のスキルが使用しています。",
@@ -39,16 +37,10 @@ export const messages = {
   "error.skill.localLibraryUnavailable": "ローカルスキルライブラリを利用できません。",
   "error.skill.lockInvalid": "インストール済みスキルの記録が無効です。変更せずにそのままにしました。",
   "error.skill.installPathSymlink": "スキルのインストールパスにシンボリックリンクを含めることはできません。",
-  "error.skill.duplicateSlug":
-    "「{slug}」という名前のスキルが 2 つあります。公開する前にどちらかの名前を変更してください。",
-  "error.skill.publishNeedsRepair": "{name} にはローカルの変更があるか、公開前に修復が必要です。",
-  "error.skill.publishUntracked":
-    "{name} は正確なバージョン追跡の導入前にインストールされました。公開する前にアップデートまたは修復してください。",
   "error.skill.tooManySkills": "エージェントに追加できるスキルは {limit} 個までです。",
   "error.skill.unmanagedExists": "管理されていないスキルが {path} にすでに存在します。",
   "error.skill.managedSlug":
     "OpenBot はすべてのエージェントに独自の {slug} スキルを提供します。このスキルには別の名前を付けてください。",
-  "error.skill.templateMarkdownTooLarge": "{name}: SKILL.md が 64 KB を超えています。公開する前に短くしてください。",
   "error.skill.localNoRevisions": "ローカルスキルに公開済みのリビジョンがありません。",
   "error.skill.localNotFound": "このローカルスキルは存在しません。ローカルスキルの一覧で ID を確認してください。",
   "error.skill.localRevisionNotFound":
@@ -74,5 +66,4 @@ export const messages = {
   "error.skill.githubTooLarge":
     "OpenBot は {repository} のすべてのファイルを読み取れません。リポジトリが大きすぎます。",
   "error.skill.githubHostTooOld": "GitHub からスキルを追加するには、このサーバーを更新してください。",
-  "error.skill.publishGithub": "{name} は GitHub のスキルです。公開できるのは自分で作成したスキルだけです。",
 } as const satisfies PartialTranslation<typeof source>;

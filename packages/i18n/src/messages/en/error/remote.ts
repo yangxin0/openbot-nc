@@ -1,52 +1,6 @@
 import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("error.remote", {
-  "error.remote.desktopSetupClientUpdate": "Update the client to use remote desktop setup.",
-  "error.remote.desktopSetupUnavailable": "Remote desktop setup is unavailable.",
-  "error.remote.desktopTestUnavailable": "Remote desktop testing is unavailable.",
-  "error.remote.controlUnavailable": "Remote control is unavailable.",
-  "error.remote.controlSessionNotFound": "Remote control session not found.",
-  "error.remote.controlNotAllowed": "The owner of this computer does not let your role control it.",
-  "error.remote.controlDeclined": "The person at this computer did not allow remote control.",
-  "error.remote.testRuntimeUpdate": "Update the macOS remote desktop runtime to run this test.",
-  "error.remote.testOtherSessions": "End other remote desktop sessions before you start a test.",
-  "error.remote.testPermissions": "Check permissions and the GUI session on the host before starting the test.",
-  "error.remote.controlSessionEnded": "Remote control session ended.",
-  "error.remote.testPanelFailed": "The host could not open the test panel.",
-  "error.remote.sessionCapacity": "The host already has four active sessions.",
-  "error.remote.linuxNeedsX11": "Remote desktop on Linux needs an X11 session. Wayland is not supported.",
-  "error.remote.runtimeMissing":
-    "The Sunshine and Moonlight Web runtime is missing or is not supported on this host. Install the full OpenBot release on a Mac, a Windows x64 host or a Linux x64 host, then restart OpenBot.",
-  "error.remote.testActive": "A remote desktop test is active. Try again when it ends.",
-  "error.remote.screenRecordingDenied":
-    "The host has not allowed OpenBot to record its screen. Grant screen recording on the host, then try again.",
-  "error.remote.windowsSessionDisconnected":
-    "The Windows session on the host is disconnected, so it has no screen to share. Sign in to Windows at the screen of the host, then try again.",
-  "error.remote.windowsCaptureDenied":
-    "Windows on the host does not let OpenBot record its screen. Unlock Windows at the screen of the host and close any administrator prompt, then try again. If this continues, restart the host.",
-  "error.remote.macScreenLocked":
-    "The Mac is locked, so it cannot share its screen. Unlock the Mac at its screen, then try again.",
-  "error.remote.streamTooSlowLowerQuality":
-    "The connection to the host is too slow for the picture. Try again: the next connection uses a lower quality.",
-  "error.remote.streamTooSlow":
-    "The connection to the host is too slow for the picture. Use a faster network, then try again.",
-  "error.remote.noPictureSwitchEncoder":
-    "The host did not send a picture. Try again: the next connection uses a video setting that works on more computers.",
-  "error.remote.teamSessionExpired": "The team session has expired.",
-  "error.remote.finishTestBeforeSwitch": "Finish the remote desktop test before switching displays.",
-  "error.remote.displayNotFound": "Remote display not found.",
-  "error.remote.displaySwitchInProgress": "A display switch is in progress.",
-  "error.remote.localTestListenerUnavailable": "The local test listener is unavailable.",
-  "error.remote.localTestNotFound": "Local test session not found.",
-  "error.remote.runtimeUnavailable": "Remote desktop runtime is not available.",
-  "error.remote.sunshineStartFailed":
-    "Sunshine did not start on the host. Check the remote desktop logs on the host, then try again.",
-  "error.remote.moonlightStartFailed":
-    "Moonlight Web did not start on the host. Check the remote desktop logs on the host, then try again.",
-  "error.remote.pairingFailed":
-    "Moonlight could not pair with Sunshine on the host. Try again. If the problem continues, restart OpenBot on the host.",
-  "error.remote.runtimeStartFailed":
-    "The remote desktop runtime did not start on the host. Check the remote desktop logs on the host, then try again.",
   "error.remote.hostUnreachable": "The host is not reachable.",
   "error.remote.signInToHostAgain": "Sign in to this host again.",
   "error.remote.invalidData": "The host returned invalid data.",
@@ -70,10 +24,7 @@ export const messages = defineMessages("error.remote", {
   "error.remote.inviteAcceptedOtherHost": "The account service accepted a different host.",
   "error.remote.inviteIdentityChanged": "The invitation host identity changed while it was accepted.",
   "error.remote.localServerRemove": "The local server cannot be removed.",
-  "error.remote.desktopSetupHostUpdate": "Update OpenBot on the host to check remote desktop setup.",
-  "error.remote.desktopTestHostUpdate": "Update OpenBot on the host to test remote desktop setup.",
   "error.remote.viewerProxyUnavailable": "The local remote viewer proxy is unavailable.",
-  "error.remote.viewerTransportInvalid": "The remote viewer transport is invalid.",
   "error.remote.viewerProxyNoPort": "The local remote viewer proxy did not get a port.",
   "error.remote.inviteNeedsConnection": "The host must connect once before it can create invitations.",
   "error.remote.permanentInviteUnsupported": "This server connection does not support permanent invitation links.",
@@ -230,4 +181,35 @@ export const messages = defineMessages("error.remote", {
     "You can have at most {limit} servers on this computer. Delete one to create another.",
   "error.remote.localServersReadOnly":
     "This version of OpenBot cannot read the list of servers on this computer. Update OpenBot.",
+  "error.remote.relayCertificateRevoked":
+    "Your certificate was revoked. Ask your team administrator for a new identity file.",
+  "error.remote.relayCertificateExpired":
+    "Your certificate has expired. Ask your team administrator for a new identity file.",
+  "error.remote.relayCertificateRefused": "The relay server did not accept your certificate.",
+  "error.remote.relayIdentityUnusable":
+    "This OpenBot has no identity file that can connect to the relay server. Import an identity file.",
+  "error.remote.relayOtherTeam": "This server is in a different team from your certificate.",
+  "error.remote.relayHostCertificateRefused": "The certificate of this server is not valid for your team.",
+  "error.remote.relayIdentityInvalid":
+    'This identity file is not valid. Use a file that the "ca issue" command of the relay server made.',
+  "error.remote.relayIdentityKeyUnsupported": "The identity file has a type of private key that OpenBot cannot use.",
+  "error.remote.relayIdentityKeyMismatch": "The private key in the identity file is not the key of its certificate.",
+  "error.remote.relayIdentityUntrusted": "The root certificate in the identity file did not issue its certificate.",
+  "error.remote.relayIdentityExists":
+    "This OpenBot has an identity already. Replace it to use a different identity file.",
+  "error.remote.relayIdentityLocked":
+    "OpenBot cannot use the secure storage of this computer, so it cannot keep the private key.",
+  "error.remote.relayIdentityStorage": "OpenBot cannot read or write its identity file.",
+  "error.remote.relayIdentityFileUnreadable": "OpenBot cannot read this file.",
+  "error.remote.relayIdentityFileTooLarge": "This file is too large to be an identity file.",
+  "error.remote.relayUrlMissing": "The identity file does not name a relay server.",
+  "error.remote.relayUrlInsecure":
+    "The relay server is on a different computer, so its address must start with wss://.",
+  "error.remote.relayReplaced":
+    "Another OpenBot connected with the same identity file, so this one disconnected. Use a different identity file on each device.",
+  "error.remote.relayRateLimited": "The relay server refused too many connections. OpenBot tries again soon.",
+  "error.remote.relayTeamFull": "The team on the relay server has the most members that it permits.",
+  "error.remote.relayProtocol": "The relay server sent data that OpenBot cannot read.",
+  "error.remote.relayUnreachable": "OpenBot cannot connect to the relay server. It tries again.",
+  "error.remote.relayHostingNotSaved": "OpenBot could not save the hosting choice. Try again.",
 });

@@ -527,8 +527,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "הסוכן מסיר את הדיווח הזה ושולח אותו שוב בלי החלקים שתבחרו.",
   "chat.feedbackSent.removeChoice": "להסיר אותו",
   "chat.feedbackSent.removeChoiceHint": "הסרה מ-GitHub. אי אפשר לבטל את הפעולה.",
-  "chat.feedbackSent.fixPrompt": "הסר את הדיווח שלי #{number} מ-GitHub ושלח אותו שוב בלי זה:",
-  "chat.feedbackSent.removePrompt": "הסר את הדיווח שלי #{number} מ-GitHub.",
   "chat.feedbackSent.composerFilled": "הבקשה נמצאת בתיבת ההודעה. השלימו אותה ושלחו.",
   "chat.feedbackSent.keep": "להשאיר",
   "chat.feedbackSent.removing": "מסיר…",

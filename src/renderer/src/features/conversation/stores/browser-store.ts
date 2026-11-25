@@ -10,7 +10,6 @@ import { MAIN_THREAD_ID } from "@openbot/ui/features/conversation/threads/thread
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, untrack } from "solid-js";
 import { actionToast } from "../../../action-toast";
-import { desktopAnalytics } from "../../../analytics";
 import {
   newestBrowserControlSession,
   ownsBrowserTab,
@@ -479,7 +478,6 @@ export function createBrowserStore(deps: BrowserStoreDeps) {
     const owner = channel && !deps.props.agent ? channel.browserOwner() : viewOwner();
     const targetAgentId = deps.props.agent?.id;
     const target = targetAgentId ? { agentId: targetAgentId, serverId: deps.props.server?.id ?? "local" } : undefined;
-    const analytics = desktopAnalytics.scope();
     const url = browserAddressUrl(value);
     const canNavigateCurrentTab = serverSupportsCapability(deps.props.server, TEAM_BROWSER_NAVIGATION_CAPABILITY);
     const currentTab = newTab || !canNavigateCurrentTab ? undefined : activeBrowserTab();
@@ -512,15 +510,9 @@ export function createBrowserStore(deps: BrowserStoreDeps) {
           focus: true,
         });
         deps.setBrowserAddress(tab.url);
-        analytics.track("browser_action", { action: "open", result: "succeeded" });
         return tab;
       } catch (error) {
         deps.setBrowserAddress(url);
-        analytics.track("browser_action", {
-          action: "open",
-          result: "failed",
-          failure_code: "browser_open_failed",
-        });
         const text = currentText();
         deps.setComposerError(text.errorMessage(error, text.t("browser.error.openAddress")), target, error);
         return undefined;
@@ -592,17 +584,10 @@ export function createBrowserStore(deps: BrowserStoreDeps) {
     }
     const agentId = deps.props.agent?.id;
     const target = agentId ? { agentId, serverId: deps.props.server?.id ?? "local" } : undefined;
-    const analytics = desktopAnalytics.scope();
     try {
       await conversationRuntime(deps.props).browser.reload(tabId);
-      analytics.track("browser_action", { action: "reload", result: "succeeded" });
     } catch (error) {
       deps.setComposerError(currentText().t("browser.error.reloadTab"), target, error);
-      analytics.track("browser_action", {
-        action: "reload",
-        result: "failed",
-        failure_code: "browser_reload_failed",
-      });
     }
   }
 

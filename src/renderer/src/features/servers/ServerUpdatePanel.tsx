@@ -1,9 +1,4 @@
-import type {
-  HostReleaseStatus,
-  HostUpdateSettingsChange,
-  HostUpdateStatus,
-  OpenBotDesktopApi,
-} from "@openbot/contracts/ipc";
+import type { HostUpdateSettingsChange, HostUpdateStatus, OpenBotDesktopApi } from "@openbot/contracts/ipc";
 import { classifyFailure } from "@openbot/telemetry";
 import {
   Alert,
@@ -35,8 +30,7 @@ import { openServerUpdate, serverUpdateStatus } from "./server-update-flow";
 export type HostUpdateCalls = Pick<
   OpenBotDesktopApi["hostAdmin"],
   "getUpdateStatus" | "checkForUpdate" | "startUpdate" | "cancelUpdate" | "setUpdateSettings"
-> &
-  Partial<Pick<OpenBotDesktopApi["hostAdmin"], "getReleaseStatus" | "checkRelease">>;
+>;
 
 export interface ServerUpdateOptions {
   canManage?: boolean;
@@ -51,7 +45,6 @@ export function ServerUpdatePanel(
 ) {
   const { t, format, errorMessage } = useText();
   const calls = (): HostUpdateCalls => props.calls ?? window.openbot.hostAdmin;
-  const [release, setRelease] = createSignal<HostReleaseStatus | null>(null);
   const [status, setStatus] = createSignal<HostUpdateStatus | null>(null);
   const [loadError, setLoadError] = createSignal<string | null>(null);
   const [busy, setBusy] = createSignal<string | null>(null);
@@ -68,7 +61,7 @@ export function ServerUpdatePanel(
     setStatus(next);
     setLoadError(null);
     stopPolling();
-    timer = setTimeout(() => void read(), running(next) || release()?.phase === "checking" ? POLL_MS : 15_000);
+    timer = setTimeout(() => void read(), running(next) ? POLL_MS : 15_000);
   }
 
   async function read(): Promise<void> {
@@ -76,14 +69,8 @@ export function ServerUpdatePanel(
     const request = ++revision;
     const serverId = props.serverId;
     try {
-      const [next, nextRelease] = await Promise.all([
-        calls().getUpdateStatus(serverId),
-        calls().getReleaseStatus?.(serverId) ?? Promise.resolve(null),
-      ]);
-      if (current === generation && request === revision) {
-        setRelease(nextRelease);
-        show(next);
-      }
+      const next = await calls().getUpdateStatus(serverId);
+      if (current === generation && request === revision) show(next);
     } catch (error) {
       if (current !== generation || request !== revision) return;
       setLoadError(errorMessage(error, t("server.update.loadFailed", { name: props.hostName })));
@@ -98,7 +85,6 @@ export function ServerUpdatePanel(
       generation += 1;
       stopPolling();
       setStatus(null);
-      setRelease(null);
       setBusy(null);
       setLoadError(null);
       void untrack(read);
@@ -149,46 +135,14 @@ export function ServerUpdatePanel(
     const remote = status()?.remoteUpdates;
     return remote === "disabled" || remote === "managed" || status()?.phase === "unsupported";
   };
-  const readOnlyRelease = () => (release()?.method !== "self-update" || blocked() ? release() : null);
-  const checkDisabled = () =>
-    !props.actionsAvailable ||
-    Boolean(busy()) ||
-    Boolean(loadError()) ||
-    (readOnlyRelease() ? readOnlyRelease()?.phase === "unavailable" || !calls().checkRelease : blocked());
   const disabled = () => !props.actionsAvailable || Boolean(busy()) || Boolean(loadError()) || blocked();
-  const check = () => {
-    const releaseCheck = calls().checkRelease;
-    const current = generation;
-    return act("check", async (serverId) => {
-      if (!readOnlyRelease() || !releaseCheck) return calls().checkForUpdate(serverId);
-      const next = await releaseCheck(serverId);
-      if (current === generation) setRelease(next);
-      return calls().getUpdateStatus(serverId);
-    });
-  };
+  const check = () => act("check", (serverId) => calls().checkForUpdate(serverId));
   const version = (current: HostUpdateStatus) => current.availableVersion ?? current.currentVersion;
   const waitingFor = (current: HostUpdateStatus) =>
     format.list(current.restart?.waitingFor.map((reason) => t(restartReasonKey(reason))) ?? []);
 
   function message(current: HostUpdateStatus): string {
     const name = props.hostName;
-    const checked = readOnlyRelease();
-    if (checked && !running(current) && current.phase !== "ready" && current.errorCode !== "install_failed") {
-      switch (checked.phase) {
-        case "checking":
-          return t("server.update.status.checking");
-        case "available":
-          return t("server.update.status.available", { version: checked.latestVersion ?? "" });
-        case "up-to-date":
-          return t("server.update.status.upToDate", { name });
-        case "error":
-          return t("server.update.releaseCheckFailed", { name });
-        case "unavailable":
-          return t("server.update.releaseUnavailable");
-        default:
-          return t("server.update.status.idle");
-      }
-    }
     if (current.phase === "unsupported") return t("server.update.releaseUnavailable");
     if (current.errorCode === "install_failed") return t("server.update.status.installFailed", { name });
     switch (current.phase) {
@@ -235,7 +189,7 @@ export function ServerUpdatePanel(
       <Show when={status()}>
         {(current) => (
           <>
-            <BlockedNotice status={current()} release={readOnlyRelease()} hostName={props.hostName} />
+            <BlockedNotice status={current()} hostName={props.hostName} />
             <ItemGroup class="settings-modal-card">
               <Item class="settings-modal-row">
                 <ItemContent>
@@ -255,10 +209,8 @@ export function ServerUpdatePanel(
                       type="button"
                       size="sm"
                       variant="outline"
-                      loading={
-                        busy() === "check" || current().phase === "checking" || readOnlyRelease()?.phase === "checking"
-                      }
-                      disabled={checkDisabled()}
+                      loading={busy() === "check" || current().phase === "checking"}
+                      disabled={disabled()}
                       onClick={() => void check()}
                     >
                       {t("server.update.check")}
@@ -350,21 +302,10 @@ export function ServerUpdatePanel(
   );
 }
 
-function BlockedNotice(props: { status: HostUpdateStatus; release: HostReleaseStatus | null; hostName: string }) {
+function BlockedNotice(props: { status: HostUpdateStatus; hostName: string }) {
   const { t } = useText();
   const notice = (): { title: string; description: string } | null => {
     const name = props.hostName;
-    if (props.release && props.release.method !== "self-update") {
-      const descriptions = {
-        "host-manager": "server.update.path.hostManager",
-        hosted: "server.update.path.hosted",
-        system: "server.update.path.system",
-        container: "server.update.path.container",
-        manual: "server.update.path.manual",
-        unavailable: "server.update.path.unavailable",
-      } as const;
-      return { title: t("server.update.externalTitle"), description: t(descriptions[props.release.method]) };
-    }
     if (props.status.remoteUpdates === "disabled")
       return { title: t("server.update.disabledTitle"), description: t("server.update.disabledDescription", { name }) };
     if (props.status.remoteUpdates === "managed")
@@ -379,7 +320,7 @@ function BlockedNotice(props: { status: HostUpdateStatus; release: HostReleaseSt
   return (
     <Show when={notice()}>
       {(current) => (
-        <Alert tone={props.release && props.release.method !== "unavailable" ? "neutral" : "warning"} role="status">
+        <Alert tone="warning" role="status">
           <AlertIcon>
             <Info />
           </AlertIcon>

@@ -1,4 +1,4 @@
-import type { HostReleaseStatus, HostUpdateStatus, ServerAppearance } from "@openbot/contracts/ipc";
+import type { HostUpdateStatus, ServerAppearance } from "@openbot/contracts/ipc";
 import { createSignal, onSettled, snapshot } from "solid-js";
 import { fn } from "storybook/test";
 import { ServerSettingsModal, type ServerSettingsModalProps } from "../src/features/servers/ServerSettingsModal";
@@ -43,20 +43,17 @@ export const serverSettingsArgs = () =>
     onRemoveMember: fn(async () => undefined),
     onRevokeInvite: fn(async () => undefined),
     onOpenScreenRecordingSettings: fn(async () => undefined),
-    onRecheckScreenRecording: fn(async () => undefined),
   }) satisfies Omit<ServerSettingsModalProps, "page">;
 
 export function ServerSettingsStory(props: {
   settings: Omit<ServerSettingsModalProps, "page">;
   hostUpdate?: HostUpdateStatus;
-  hostRelease?: HostReleaseStatus;
 }) {
   const previous = window.openbot;
   const hostStatus = props.settings.hostStatus;
   const mock = createMockOpenBot({
     ...(hostStatus ? { hostStatus: snapshot(hostStatus) } : {}),
     ...(props.hostUpdate ? { hostUpdate: props.hostUpdate } : {}),
-    ...(props.hostRelease ? { hostRelease: props.hostRelease } : {}),
   });
   window.openbot = mock.api;
   onSettled(() => () => {

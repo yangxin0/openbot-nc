@@ -130,13 +130,11 @@ and `remote-*-decoding` family. The manager connects those modules through callb
 path does not need to know about the event stream, and the event stream does not need to know about
 the error path. The callback connection preserves those dependency boundaries.
 
-Team API routes use the same narrow dependency style as IPC handlers. Four behavior rules explain
+Team API routes use the same narrow dependency style as IPC handlers. Three behavior rules explain
 the dispatch order:
 
 - Compatibility runs first so an old client can read how to update instead of receiving 426 on
   every request.
-- Remote-screen delegation precedes the protocol gate because a browser that loads the viewer
-  sends no protocol header or token.
 - Authentication precedes route selection so an unknown path without a token returns 401.
 - The dispatcher handles unmatched paths and methods. Released clients receive 404 for a wrong
   method on a known path.

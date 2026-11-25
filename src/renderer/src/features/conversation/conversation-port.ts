@@ -25,7 +25,6 @@ export interface ConversationPort {
     | "searchConversationMessages"
     | "sendMessage"
     | "setMessagePinned"
-    | "withdrawFeedback"
   >;
   browser: Pick<
     OpenBotDesktopApi["browser"],

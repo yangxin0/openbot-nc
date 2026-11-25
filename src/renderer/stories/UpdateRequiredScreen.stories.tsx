@@ -22,7 +22,6 @@ const meta = {
     status: BELOW_MINIMUM,
     logoVariant: "production",
     onUpdate: fn(async () => undefined),
-    onOpenDownloadPage: fn(),
     onDismiss: fn(),
   },
   parameters: { layout: "fullscreen", a11y: { test: "error" } },

@@ -139,7 +139,6 @@ function RailPreview(props: {
   customAgentUsage?: readonly CustomAgentUsageRailRow[];
   usageRows?: PageRailProps["usageRows"];
   mediaCredits?: readonly MediaCreditsRailRow[];
-  creditBalance?: number;
   crm?: boolean;
 }) {
   const { t } = useText();
@@ -152,10 +151,6 @@ function RailPreview(props: {
   function crmConnectorsAction(): (() => void) | undefined {
     if (!props.crm) return undefined;
     return () => setCurrent("crm");
-  }
-  function creditsAction(): (() => void) | undefined {
-    if (props.creditBalance === undefined) return undefined;
-    return () => setCurrent("credits");
   }
   return (
     <div class="app-window" style={{ height: "100vh" }}>
@@ -176,8 +171,6 @@ function RailPreview(props: {
           onUsage={() => setCurrent("usage")}
           onCrm={crmAction()}
           onCrmConnectors={crmConnectorsAction()}
-          onCredits={creditsAction()}
-          creditBalance={props.creditBalance}
           onMarketplace={fn()}
           onSettings={() => setCurrent("settings")}
           settingsNotice={props.updateReady ? t("account.update.ready") : undefined}
@@ -196,18 +189,7 @@ function RailPreview(props: {
               onOpenSettings={fn()}
             />
           }
-          help={
-            <HelpMenu
-              news={[]}
-              triggerClass="window-rail-button"
-              onOpenWhatsNew={fn()}
-              onOpenChangelog={fn()}
-              onOpenGuides={fn()}
-              onOpenDiscord={fn()}
-              onReportProblem={fn()}
-              onSendFeedback={fn()}
-            />
-          }
+          help={<HelpMenu news={[]} triggerClass="window-rail-button" onOpenWhatsNew={fn()} />}
         />
       </div>
     </div>
@@ -251,10 +233,6 @@ export const WebLogo: Story = {
 
 export const DesktopLogo: Story = {
   args: { logo: { variant: "production" } },
-};
-
-export const Credits: Story = {
-  args: { creditBalance: 1250 },
 };
 
 export const MediaCreditsQuota: Story = {

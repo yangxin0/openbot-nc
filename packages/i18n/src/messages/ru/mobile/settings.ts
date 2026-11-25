@@ -467,7 +467,6 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "Слушание",
   "mobile.settings.voice.tab.speaking": "Озвучивание",
-  "mobile.settings.voice.tab.gptLive": "GPT вживую",
   "mobile.settings.voice.pause.title": "Пауза перед отправкой",
   "mobile.settings.voice.pause.label": "Ждать новые слова",
   "mobile.settings.voice.pause.footer":
@@ -476,21 +475,6 @@ export const messages = {
   "mobile.settings.voice.speed.title": "Скорость ответов",
   "mobile.settings.voice.speed.footer": "Скорость ответов, которые OpenBot читает вслух, также в голосовом разговоре.",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT Live Voice",
-  "mobile.settings.voice.gptLive.footer":
-    "В голосовом разговоре с агентом GPT Live Voice слушает и говорит вместо этого телефона. Он использует вход Codex (ChatGPT) компьютера, на котором работает сервер. Ваш голос идёт между этим телефоном и OpenAI, а OpenAI произносит ответы агента. Нужен сервер с его поддержкой; другие серверы используют голос этого телефона.",
-  "mobile.settings.voice.gptLive.automatic": "Автоматически",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "OpenAI говорит этим голосом в следующем голосовом разговоре. При выборе «Автоматически» голос выбирает OpenAI.",
-  "mobile.settings.voice.gptLive.serversTitle": "Серверы",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "Нажмите на сервер, которому нужен вход, чтобы подключить Codex к аккаунту ChatGPT. Вход сервера видят только владелец и администратор.",
-  "mobile.settings.voice.gptLive.account": "Аккаунт для живого голоса GPT",
-  "mobile.settings.voice.gptLive.status.ready": "Готово",
-  "mobile.settings.voice.gptLive.status.supported": "Поддерживается",
-  "mobile.settings.voice.gptLive.status.offline": "Не в сети",
-  "mobile.settings.voice.gptLive.status.update": "На его компьютере нужна более новая версия OpenBot",
-  "mobile.settings.voice.gptLive.status.signIn": "Войдите в Codex через ChatGPT",
   "mobile.settings.voice.server.title": "Голосовой сервер",
   "mobile.settings.voice.server.row": "Сервер, совместимый с OpenAI",
   "mobile.settings.voice.server.notSetUp": "Не настроен",

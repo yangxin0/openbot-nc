@@ -29,8 +29,6 @@ export const messages = {
     "지금은 EU VAT 시스템에서 VAT ID를 확인할 수 없어요. 나중에 다시 시도하거나 VAT ID 없이 계속해 주세요.",
   "error.billing.vatUnavailable": "지금은 결제할 수 없어요. 나중에 다시 시도해 주세요.",
   "error.billing.invalidRequest": "결제 요청이 올바르지 않아요.",
-  "error.billing.invalidResponse": "결제 응답이 올바르지 않아요.",
-  "error.billing.notStripePage": "결제 페이지가 Stripe 페이지가 아니에요.",
   "error.billing.customServerOfferMissing": "이 서버에는 결제할 요금제가 없습니다.",
   "error.billing.checkoutUnavailable": "지금은 결제를 시작할 수 없습니다. 1분 후에 다시 시도하세요.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -437,7 +437,6 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "듣기",
   "mobile.settings.voice.tab.speaking": "말하기",
-  "mobile.settings.voice.tab.gptLive": "GPT 라이브",
   "mobile.settings.voice.pause.title": "보내기 전 멈춤",
   "mobile.settings.voice.pause.label": "새 단어 대기",
   "mobile.settings.voice.pause.footer":
@@ -446,21 +445,6 @@ export const messages = {
   "mobile.settings.voice.speed.title": "답장 속도",
   "mobile.settings.voice.speed.footer": "OpenBot이 소리 내어 읽는 답장의 속도입니다. 음성 대화에도 적용됩니다.",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT Live Voice",
-  "mobile.settings.voice.gptLive.footer":
-    "에이전트와 음성 대화를 할 때 이 휴대폰 대신 GPT Live Voice가 듣고 말합니다. 서버를 실행하는 컴퓨터의 Codex(ChatGPT) 로그인을 사용합니다. 음성은 이 휴대폰과 OpenAI 사이를 오가며, OpenAI가 에이전트의 답변을 말합니다. 이를 지원하는 서버가 필요하며, 다른 서버는 이 휴대폰의 음성을 사용합니다.",
-  "mobile.settings.voice.gptLive.automatic": "자동",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "다음 음성 대화에서 OpenAI가 이 음성으로 말합니다. 자동을 선택하면 OpenAI가 음성을 고릅니다.",
-  "mobile.settings.voice.gptLive.serversTitle": "서버",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "로그인이 필요한 서버를 탭하면 Codex를 ChatGPT 계정에 연결할 수 있습니다. 서버의 로그인은 소유자나 관리자만 볼 수 있습니다.",
-  "mobile.settings.voice.gptLive.account": "GPT 라이브 음성 계정",
-  "mobile.settings.voice.gptLive.status.ready": "준비됨",
-  "mobile.settings.voice.gptLive.status.supported": "지원됨",
-  "mobile.settings.voice.gptLive.status.offline": "오프라인",
-  "mobile.settings.voice.gptLive.status.update": "해당 컴퓨터에 더 새로운 OpenBot이 필요합니다",
-  "mobile.settings.voice.gptLive.status.signIn": "ChatGPT로 Codex에 로그인",
   "mobile.settings.voice.server.title": "음성 서버",
   "mobile.settings.voice.server.row": "OpenAI 호환 서버",
   "mobile.settings.voice.server.notSetUp": "설정 안 됨",

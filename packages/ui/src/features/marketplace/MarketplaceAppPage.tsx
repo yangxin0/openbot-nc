@@ -22,7 +22,6 @@ import {
   ItemGroup,
   ItemMedia,
   ItemTitle,
-  Link2,
   LogIn,
   Pencil,
   Plug,
@@ -43,7 +42,6 @@ import type { MarketplacePluginApp } from "../settings/marketplace-plugins";
 import { AppAccessSections } from "./MarketplaceAppAccess";
 import { AppAction } from "./MarketplaceCards";
 import { AppMark, TryCard } from "./MarketplaceParts";
-import { MarketplaceXAppPage } from "./MarketplaceXAppPage";
 import { CATEGORY_LABELS } from "./marketplace-listing";
 import {
   appSetup,
@@ -110,15 +108,9 @@ function PluginAppPage(props: { scope: MarketplaceScope; app: PluginApp }) {
       statusLabel={t(STATUS_LABEL[props.app.status])}
       subtitle={props.app.tagline}
       actions={
-        <>
-          <Button type="button" variant="outline" size="sm" onClick={() => model().copyLink(plugin().slug)}>
-            <Link2 aria-hidden="true" />
-            {t("plugin.copyLink")}
-          </Button>
-          <Show when={!refused() || plugin().apps.length === 1}>
-            <AppAction scope={props.scope} app={props.app} size="sm" variant="default" />
-          </Show>
-        </>
+        <Show when={!refused() || plugin().apps.length === 1}>
+          <AppAction scope={props.scope} app={props.app} size="sm" variant="default" />
+        </Show>
       }
       intro={
         <Show when={plugin().prompts.length > 0}>
@@ -579,19 +571,13 @@ function AppInformation(props: {
   );
 }
 
-const X_WEBSITE = "https://x.com";
-
 interface ConnectorLink {
   label: AppTextKey;
   url: string;
 }
 
 const CONNECTOR_LINKS: Readonly<Record<ConnectorId, readonly ConnectorLink[]>> = {
-  slack: [{ label: "plugin.link.website", url: "https://slack.com" }],
-  discord: [{ label: "plugin.link.website", url: "https://discord.com" }],
-  telegram: [{ label: "plugin.link.website", url: "https://telegram.org" }],
   whatsapp: [{ label: "plugin.link.website", url: "https://www.whatsapp.com" }],
-  github: [{ label: "plugin.link.website", url: "https://github.com" }],
   onepassword: [
     { label: "plugin.link.website", url: "https://1password.com" },
     { label: "plugin.link.privacyPolicy", url: "https://1password.com/legal/privacy" },
@@ -602,11 +588,7 @@ const CONNECTOR_LINKS: Readonly<Record<ConnectorId, readonly ConnectorLink[]>> =
 };
 
 const CONNECTOR_DEVELOPER = {
-  slack: "connector.slack.title",
-  discord: "connector.discord.title",
-  telegram: "connector.telegram.title",
   whatsapp: "connector.whatsapp.title",
-  github: "connector.github.title",
   onepassword: "connector.onePassword.title",
   bitwarden: "connector.bitwarden.title",
   protonpass: "connector.protonPass.title",
@@ -756,7 +738,7 @@ export function MarketplaceServerPage(props: { scope: MarketplaceScope; id: stri
   );
 }
 
-export function MarketplaceAppPage(props: { scope: MarketplaceScope; id: string; setup?: boolean }) {
+export function MarketplaceAppPage(props: { scope: MarketplaceScope; id: string }) {
   const { t } = useText();
   const model = () => props.scope.model;
   const app = () =>
@@ -776,10 +758,6 @@ export function MarketplaceAppPage(props: { scope: MarketplaceScope; id: string;
   const custom = () => {
     const current = app();
     return current?.kind === "custom" ? current : undefined;
-  };
-  const x = () => {
-    const current = app();
-    return current?.kind === "x" ? current : undefined;
   };
   return (
     <div class="marketplace-view marketplace-app-page">
@@ -807,24 +785,6 @@ export function MarketplaceAppPage(props: { scope: MarketplaceScope; id: string;
         </Match>
         <Match when={plugin()}>{(current) => <PluginAppPage scope={props.scope} app={current()} />}</Match>
         <Match when={custom()}>{(current) => <CustomServerPage scope={props.scope} app={current()} />}</Match>
-        <Match when={x()}>
-          {(current) => (
-            <MarketplaceXAppPage
-              scope={props.scope}
-              app={current()}
-              setup={props.setup === true}
-              details={
-                <AppInformation
-                  description={t("marketplace.xApp.description")}
-                  developer={t("marketplace.xApp.developer")}
-                  category={t(CATEGORY_LABELS[current().category])}
-                  links={[{ label: t("plugin.link.website"), url: X_WEBSITE, text: pluginLinkText(X_WEBSITE) }]}
-                  onOpenUrl={(url) => props.scope.model.openUrl(url)}
-                />
-              }
-            />
-          )}
-        </Match>
       </Switch>
     </div>
   );

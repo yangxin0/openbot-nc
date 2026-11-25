@@ -13,7 +13,6 @@ const args: Parameters<typeof AccountLogin>[0] = {
   onRequestEmailCode: async () => undefined,
   onVerifyEmailCode: async () => undefined,
   onReset: async () => undefined,
-  inviteField: true,
   language: "en",
   onChangeLanguage: fn(),
 };

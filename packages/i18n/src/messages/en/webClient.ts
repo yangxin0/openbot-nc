@@ -91,8 +91,6 @@ export const messages = defineMessages("webClient", {
   "webClient.error.uploadCancelled": "The attachment upload was cancelled.",
   "webClient.error.duplication": "This server does not support agent duplication.",
   "webClient.error.connectServerFirst": "Connect to this server first.",
-  "webClient.error.agentInstallNotAllowed":
-    "Only an owner or admin can add an agent here, and the server must run a current OpenBot.",
   "webClient.error.linkDesktopOnly": "This link opens only in the desktop app.",
   "webClient.error.saveEndpointOffline": "Connect to your server to save an endpoint.",
   "webClient.error.removeEndpointOffline": "Connect to your server to remove an endpoint.",

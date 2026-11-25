@@ -2,7 +2,7 @@
 set -euo pipefail
 export LC_ALL=C DEBIAN_FRONTEND=noninteractive
 
-INSTALL=/opt/OpenBot
+INSTALL=/opt/OpenBot-NC
 HELPER=/usr/local/sbin/openbot-egress-firewall
 UNIT_DIRECTORY=/etc/systemd/system
 OPERATOR_KEYS=/etc/ssh/openbot-operator-keys
@@ -62,18 +62,18 @@ EOF
 sshd -t
 systemctl try-reload-or-restart ssh.service
 
-install -d -m 0755 /etc/openbot
+install -d -m 0755 /etc/openbot-nc
 write_file 0755 "$HELPER" <<'EOF'
 #!/bin/bash
 # Loads the egress rules of an OpenBot server on a Leaseweb VPS. leaseweb-bootstrap.sh installs
 # this file and explains the rules.
 set -euo pipefail
 export LC_ALL=C
-STATE=/etc/openbot/egress-router
+STATE=/etc/openbot-nc/egress-router
 PRIVATE4="0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.168.0.0/16, 198.18.0.0/15, 224.0.0.0/4, 240.0.0.0/4"
 GOOGLE6="2001:4860::/32, 2404:6800::/32, 2404:f340::/32, 2605:ef80::/32, 2606:40::/32, 2606:73c0::/32, 2607:1c0:241:40::/60, 2607:1c0:300::/40, 2607:f8b0::/32, 2620:11a:a000::/40, 2620:120:e000::/40, 2800:3f0::/32, 2a00:1450::/32, 2a03:ace0::/32, 2c0f:fb50::/32"
 
-user=$(</opt/OpenBot/hosted/service-user)
+user=$(</opt/OpenBot-NC/hosted/service-user)
 uid=$(id -u "$user")
 # The DHCP servers of the current leases of systemd-networkd. None before the network starts.
 routers=$(sed -n 's/^SERVER_ADDRESS=//p' /run/systemd/netif/leases/* 2>/dev/null | sort -u | paste -sd, - || true)
@@ -121,12 +121,12 @@ RULES
 EOF
 
 changed=0
-write_file 0644 "$UNIT_DIRECTORY/openbot-egress-firewall.service" <<EOF
+write_file 0644 "$UNIT_DIRECTORY/openbot-nc-egress-firewall.service" <<EOF
 [Unit]
 Description=OpenBot egress rules
 DefaultDependencies=no
 Wants=network-pre.target
-Before=network-pre.target shutdown.target openbot.service
+Before=network-pre.target shutdown.target openbot-nc.service
 Conflicts=shutdown.target
 
 [Service]
@@ -138,19 +138,19 @@ ExecStop=/usr/sbin/nft delete table inet openbot_egress
 [Install]
 WantedBy=multi-user.target
 EOF
-install -d -m 0755 "$UNIT_DIRECTORY/openbot.service.d"
-write_file 0644 "$UNIT_DIRECTORY/openbot.service.d/10-egress-firewall.conf" <<EOF
+install -d -m 0755 "$UNIT_DIRECTORY/openbot-nc.service.d"
+write_file 0644 "$UNIT_DIRECTORY/openbot-nc.service.d/10-egress-firewall.conf" <<EOF
 [Unit]
-Requires=openbot-egress-firewall.service
-After=openbot-egress-firewall.service
+Requires=openbot-nc-egress-firewall.service
+After=openbot-nc-egress-firewall.service
 
 [Service]
 ExecStartPre=+$HELPER
 EOF
 if [ "$changed" -eq 1 ]; then systemctl daemon-reload; fi
-systemctl enable --quiet openbot-egress-firewall.service
+systemctl enable --quiet openbot-nc-egress-firewall.service
 "$HELPER"
-systemctl start openbot-egress-firewall.service
+systemctl start openbot-nc-egress-firewall.service
 
 missing_packages=()
 for package in unattended-upgrades age; do
@@ -198,4 +198,4 @@ EOF
   fi
 fi
 
-echo "The server is hardened. Router: $(<"/etc/openbot/egress-router"). Operator keys: $(grep -c . "$OPERATOR_KEYS/root" 2>/dev/null || true)."
+echo "The server is hardened. Router: $(<"/etc/openbot-nc/egress-router"). Operator keys: $(grep -c . "$OPERATOR_KEYS/root" 2>/dev/null || true)."

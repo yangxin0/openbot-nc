@@ -10,7 +10,7 @@ import {
   cuaDriverTargets,
   parseCuaDriverLock,
 } from "./cua-driver-lock";
-import { sha256 } from "./remote-desktop-runtime-release";
+import { sha256 } from "./runtime-file-checks";
 
 const REPOSITORY = "https://github.com/trycua/cua";
 

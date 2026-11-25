@@ -53,7 +53,7 @@ const appPathArgument = process.argv.slice(2).find((argument) => !argument.start
 const appPath = resolve(
   appPathArgument ?? (architecture === "x64" ? "dist/linux-unpacked" : "dist/linux-arm64-unpacked"),
 );
-const executablePath = resolve(appPath, "openbot");
+const executablePath = resolve(appPath, "openbot-nc");
 const resourcesPath = resolve(appPath, "resources");
 const asarPath = resolve(resourcesPath, "app.asar");
 const voiceRuntimePath = resolve(resourcesPath, "voice/runtime");
@@ -126,26 +126,9 @@ for (const [path, name] of [
     throw new Error(`The ${name} host must import nothing but node: builtins.`);
   }
 }
-if (architecture === "x64") {
-  await Promise.all(
-    ["sunshine", "web-server", "streamer", "static/stream.html"].map((name) =>
-      access(resolve(resourcesPath, "remote-desktop-runtime/linux/x64", name)),
-    ),
-  );
-  await Promise.all(
-    ["darwin", "win32"].map((name) =>
-      assertAbsent(resolve(resourcesPath, "remote-desktop-runtime", name), "Only this platform's runtime ships"),
-    ),
-  );
-} else {
-  await assertAbsent(
-    resolve(resourcesPath, "remote-desktop-runtime"),
-    "Remote desktop is not available on Linux arm64",
-  );
-}
 
 await Promise.all(
-  ["codex", "claude", "grok", "cloudflared"].map((name) =>
+  ["codex", "claude", "grok", "cloudflared", "remote-desktop-runtime"].map((name) =>
     assertAbsent(resolve(resourcesPath, name), "Runtimes must not be packaged"),
   ),
 );

@@ -2,8 +2,6 @@ function segment(value: string): string {
   return encodeURIComponent(value);
 }
 
-const REMOTE_SCREEN = "/v1/remote-screen";
-
 export const WORKSPACE_FILE_EXACT_PATH_QUERY = "exact";
 
 export const TEAM_API_ROUTES = {
@@ -25,6 +23,7 @@ export const TEAM_API_ROUTES = {
   },
   auth: {
     login: "/v1/auth/login",
+    relay: "/v1/auth/relay",
     account: "/v1/auth/account",
     logout: "/v1/auth/logout",
     password: "/v1/auth/password",
@@ -68,16 +67,6 @@ export const TEAM_API_ROUTES = {
     load: "/v1/browser/load",
     viewSessions: "/v1/browser/view/sessions",
     viewSession: (sessionId: string) => `/v1/browser/view/sessions/${segment(sessionId)}`,
-  },
-  remoteScreen: {
-    prefix: REMOTE_SCREEN,
-    capabilities: `${REMOTE_SCREEN}/capabilities`,
-    setup: `${REMOTE_SCREEN}/setup`,
-    test: `${REMOTE_SCREEN}/test`,
-    sessions: `${REMOTE_SCREEN}/sessions`,
-    session: (sessionId: string) => `${REMOTE_SCREEN}/sessions/${segment(sessionId)}`,
-    display: `${REMOTE_SCREEN}/display`,
-    viewer: (sessionId: string) => `${REMOTE_SCREEN}/sessions/${segment(sessionId)}/viewer`,
   },
   sidebarLayout: {
     state: "/v1/sidebar-layout",

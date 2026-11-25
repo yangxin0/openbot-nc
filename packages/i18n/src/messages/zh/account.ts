@@ -2,8 +2,6 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/account";
 
 export const messages = {
-  "account.menu.billing": "账单",
-  "account.menu.sendFeedback": "发送反馈",
   "account.menu.signOut": "退出登录",
   "account.menu.signingOut": "正在退出…",
   "account.menu.updateFailed": "无法更新 OpenBot。",

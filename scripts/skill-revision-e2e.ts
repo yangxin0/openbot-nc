@@ -85,9 +85,7 @@ async function main(): Promise<void> {
   await mkdir(otherWorkspace);
   const agents = [agent("caller", callerWorkspace), agent("other", otherWorkspace)];
   const library = new LocalSkillLibrary(join(base, "library"), () => agents);
-  const network = () => Effect.die(new Error("A local skill must not use the marketplace."));
   const service = new SkillMarketplaceService(
-    { requestAuthorized: network, downloadAuthorized: network, resolveApiUrl: (value) => value },
     () => agents,
     () => Effect.void,
     library,

@@ -52,10 +52,7 @@ render(() => {
   if (surface === "computer-use-permission-help")
     return (
       <I18nProvider waitForLanguage>
-        <ComputerUsePermissionHelp
-          permission={permissionFromQuery(window.location.search)}
-          sunshine={query.get("application") === "sunshine"}
-        />
+        <ComputerUsePermissionHelp permission={permissionFromQuery(window.location.search)} />
       </I18nProvider>
     );
   throw new Error(`Unknown helper surface: ${String(surface)}.`);

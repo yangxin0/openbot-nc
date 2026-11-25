@@ -2,7 +2,7 @@
 Description=OpenBot pool machine waits for a server
 Wants=network-online.target
 After=network-online.target
-ConditionPathExists=/etc/openbot-pool/token
+ConditionPathExists=/etc/openbot-nc-pool/token
 
 [Service]
 Type=simple

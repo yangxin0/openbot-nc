@@ -175,9 +175,4 @@ export const messages = {
   "sidebar.machine.alertTo": "警报将发送给 {name}",
   "sidebar.machine.details": "查看详情",
   "sidebar.machine.dismiss": "隐藏，直到下次警报",
-  "sidebar.community.title": "来坐坐吧。",
-  "sidebar.community.body": "AI 的未来里有你的位置。欢迎加入 Discord 和 X 上的社区。",
-  "sidebar.community.joinDiscord": "加入 Discord",
-  "sidebar.community.followX": "在 X 上关注 OpenBot",
-  "sidebar.community.dismiss": "关闭社区邀请",
 } as const satisfies PartialTranslation<typeof source>;

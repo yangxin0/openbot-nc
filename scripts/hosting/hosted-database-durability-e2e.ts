@@ -9,8 +9,8 @@ const BOAT_API_URL = "https://boat.dev/api/v1";
 const TTL_SECONDS = 7200;
 const REMOTE_DIRECTORY = "/home/user/openbot-durability";
 const REPORT_DIRECTORY = join(process.cwd(), ".openbot-build", "hosted-database-durability");
-const WRITER_UNIT = "openbot-durability-writer.service";
-const PRE_STOP_FLAG = "/run/openbot-durability-pre-stop";
+const WRITER_UNIT = "openbot-nc-durability-writer.service";
+const PRE_STOP_FLAG = "/run/openbot-nc-durability-pre-stop";
 const BOAT_PRE_STOP = "/home/user/.boat/pre-stop";
 const SAVED_PRE_STOP = `${REMOTE_DIRECTORY}/openbot-pre-stop`;
 const WRITER_PRE_STOP = `${REMOTE_DIRECTORY}/writer-pre-stop`;
@@ -243,7 +243,7 @@ async function checkDatabase(boat: BoatRequester, sandboxId: string): Promise<Dy
   const output = await command(
     boat,
     sandboxId,
-    `mkdir -p ${REMOTE_DIRECTORY} && python3 -I -c ${shellQuote(CHECK)} ${REMOTE_DIRECTORY} /tmp/openbot-durability-check ${PRE_STOP_FLAG}`,
+    `mkdir -p ${REMOTE_DIRECTORY} && python3 -I -c ${shellQuote(CHECK)} ${REMOTE_DIRECTORY} /tmp/openbot-nc-durability-check ${PRE_STOP_FLAG}`,
   );
   return parseJson(output);
 }
@@ -266,8 +266,8 @@ async function restoreOpenBotHook(boat: BoatRequester, sandboxId: string): Promi
 
 async function installHook(boat: BoatRequester, sandboxId: string, mode: Mode): Promise<void> {
   const writerHook = (await readFile(join(import.meta.dirname, "openbot-boat-pre-stop"), "utf8"))
-    .replaceAll("openbot.service", WRITER_UNIT)
-    .replaceAll("/run/openbot-pre-stop", PRE_STOP_FLAG);
+    .replaceAll("openbot-nc.service", WRITER_UNIT)
+    .replaceAll("/run/openbot-nc-pre-stop", PRE_STOP_FLAG);
   const hook = [
     "#!/bin/bash",
     "# Test hook of hosted-database-durability-e2e.ts.",

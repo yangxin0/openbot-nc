@@ -159,15 +159,11 @@ async function checkLink(url: string, requests: string[]): Promise<LinkDetails> 
   check(issuer, "the protected-resource metadata names no authorization server");
   const metadata = await discoverAuthorizationServerMetadata(issuer, { fetchFn: oauthFetch });
   check(metadata, `no authorization server metadata at ${issuer}`);
-  const clientIdMetadataDocument = metadata.client_id_metadata_document_supported === true;
   check(
-    metadata.registration_endpoint || clientIdMetadataDocument,
-    "no registration_endpoint and no client metadata document: the user would need a sign-in app",
-  );
-  const methods = metadata.token_endpoint_auth_methods_supported;
-  check(
-    metadata.registration_endpoint || methods?.includes("none"),
-    "the client metadata document needs the none token endpoint auth method",
+    metadata.registration_endpoint,
+    metadata.client_id_metadata_document_supported === true
+      ? "only a client metadata document, which this build does not provide: the user would need a sign-in app"
+      : "no registration_endpoint: the user would need a sign-in app",
   );
   check(metadata.code_challenge_methods_supported?.includes("S256"), "S256 PKCE is not listed");
   check(metadata.response_types_supported.includes("code"), "response type code is not supported");
@@ -190,7 +186,7 @@ async function checkLink(url: string, requests: string[]): Promise<LinkDetails> 
     resourceMetadataUrl: resourceMetadataUrl?.toString() ?? null,
     issuer,
     registrationEndpoint: metadata.registration_endpoint ?? null,
-    clientIdMetadataDocument,
+    clientIdMetadataDocument: metadata.client_id_metadata_document_supported === true,
     revocation: revocation !== undefined,
   };
 }

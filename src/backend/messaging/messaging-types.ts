@@ -1,14 +1,7 @@
 import { AGENT_PROVIDERS, agentProviderName } from "@openbot/contracts/agent-providers";
 import type { MessagingConnectionState, MessagingPlatform } from "@openbot/contracts/ipc";
-import type { DiscordApiRequest, DiscordDelivery, DiscordEmbed } from "@openbot/contracts/signal-protocol/discord-api";
-import type {
-  TelegramCallMethod,
-  TelegramCallParams,
-  TelegramCallResult,
-} from "@openbot/contracts/signal-protocol/telegram-route";
 import { isFixedSourceText, matchingSourceKeys, sourceText } from "@openbot/i18n/source";
 import { type Effect, Schema } from "effect";
-import type { MessagingOperationFailed } from "./messaging-service";
 import type { MessagingAnswerFile } from "./messaging-threads";
 
 export interface MessageTarget {
@@ -95,7 +88,6 @@ interface MessageButton {
 export interface MessageBody {
   text: string;
   buttons?: MessageButton[];
-  embeds?: DiscordEmbed[];
 }
 
 export type StatusReaction = "received" | "done" | "failed" | "stopped";
@@ -155,16 +147,10 @@ export interface MessagingAdapter {
     reaction: StatusReaction,
     on: boolean,
   ): Effect.Effect<void, MessagingAdapterError>;
-  addEmoji?(target: MessageTarget, messageId: string, emoji: string): Effect.Effect<void, MessagingAdapterError>;
   postAnswer(
     target: MessageTarget,
     markdown: string,
     replaceMessageId: string | null,
-  ): Effect.Effect<string, MessagingAdapterError>;
-  postEmbeds?(
-    target: MessageTarget,
-    markdown: string,
-    embeds: DiscordEmbed[],
   ): Effect.Effect<string, MessagingAdapterError>;
   rememberPost?(target: MessageTarget, postId: string, text: string): void;
   upload(
@@ -194,7 +180,6 @@ export interface MessagingAdapter {
   places(): Effect.Effect<MessagingPlaces, MessagingAdapterError>;
   placeId?(placeId: string): string;
   directChat?(target: MessageTarget): { userId: string; threadKey: string } | null;
-  roles?(): Effect.Effect<Array<{ id: string; name: string }>, MessagingAdapterError>;
   mention(userId: string): string;
   joinPublicPlaces?(): Effect.Effect<void, MessagingAdapterError>;
   joinPlace?(platformChannelId: string): Effect.Effect<void, MessagingAdapterError>;
@@ -212,52 +197,6 @@ export interface MessagingTransport {
   start(sink: TransportSink): void;
   reconnect(): void;
   stop(): Effect.Effect<void>;
-  deliver?(delivery: IngressDelivery): Effect.Effect<IngressAnswer>;
-}
-
-export type IngressDelivery = (
-  | { platform: "slack"; kind: "events" | "interactivity"; retryNum: number | null; body: Uint8Array }
-  | { platform: "discord"; delivery: DiscordDelivery }
-  | { platform: "telegram"; botId: string; body: Uint8Array; linked: boolean }
-) & {
-  queued?: boolean;
-};
-
-export interface IngressAnswer {
-  status: 200 | 400 | 401 | 404 | 503;
-  contentType?: "application/json" | "text/plain";
-  body?: string;
-}
-
-export type IngressState = "online" | "connecting" | "signed_out" | "no_host" | "unavailable";
-
-export type IngressHandler = (
-  workspaceId: string,
-  delivery: IngressDelivery,
-) => Effect.Effect<IngressAnswer, MessagingOperationFailed>;
-
-export interface TelegramGateway {
-  available(): boolean;
-  call<M extends TelegramCallMethod>(
-    botId: string,
-    method: M,
-    params: TelegramCallParams[M],
-  ): Effect.Effect<TelegramCallResult, MessagingAdapterError>;
-  download(fileToken: string, destination: string, maxBytes: number): Effect.Effect<void, MessagingAdapterError>;
-  upload(uploadToken: string, path: string): Effect.Effect<number, MessagingAdapterError>;
-}
-
-export class TelegramCallError extends Error {
-  readonly code: string;
-  constructor(
-    readonly errorCode: number,
-    description: string,
-    readonly retryAfter: number | null,
-  ) {
-    super(description);
-    this.name = "TelegramCallError";
-    this.code = `telegram_${errorCode}`;
-  }
 }
 
 export class WhatsAppRefusedError extends Error {
@@ -273,39 +212,6 @@ export class WhatsAppAnswerPartlySent extends Error {
   constructor(cause: unknown) {
     super("A part of the WhatsApp answer was sent.", { cause });
     this.name = "WhatsAppAnswerPartlySent";
-  }
-}
-
-export interface MessagingIngress {
-  acquire(platform: MessagingPlatform): () => void;
-  state(): IngressState;
-  onState(listener: (state: IngressState) => void): () => void;
-  handle(handler: IngressHandler | null): void;
-  readonly telegram: TelegramGateway;
-  reconnect(): void;
-  discord<A>(
-    request: DiscordApiRequest,
-    decode: (value: unknown) => A,
-    file?: DiscordUploadFile,
-  ): Effect.Effect<A, MessagingAdapterError>;
-  onDiscordRoutes(listener: (guildIds: ReadonlySet<string>) => void): () => void;
-  onLinkedRoutes(platform: LinkedRoutePlatform, listener: (ids: ReadonlySet<string> | null) => void): () => void;
-}
-
-export type LinkedRoutePlatform = "slack" | "telegram";
-
-export interface DiscordUploadFile {
-  bytes: Uint8Array;
-  mimeType: string;
-}
-
-export class DiscordApiError extends Error {
-  constructor(
-    readonly op: string,
-    readonly code: string,
-    readonly retryAfterMs?: number,
-  ) {
-    super(`Discord ${op} failed: ${code}`);
   }
 }
 

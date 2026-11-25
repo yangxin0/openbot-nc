@@ -33,8 +33,8 @@ import { useVoiceDictation, type VoiceDictation } from "./use-voice-dictation";
 
 const REPLY_GRACE_MS = 5_000;
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
-export const PRESENCE_OPEN = { duration: 460, easing: EASE_OUT, reduceMotion: ReduceMotion.System };
-export const PRESENCE_CLOSE = { duration: 400, easing: EASE_OUT, reduceMotion: ReduceMotion.System };
+const PRESENCE_OPEN = { duration: 460, easing: EASE_OUT, reduceMotion: ReduceMotion.System };
+const PRESENCE_CLOSE = { duration: 400, easing: EASE_OUT, reduceMotion: ReduceMotion.System };
 const SPEAKING_PULSE_MS = 420;
 
 interface PendingReply {

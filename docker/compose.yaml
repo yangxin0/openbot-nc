@@ -8,7 +8,7 @@ services:
     shm_size: 1g
     stop_grace_period: 60s
     volumes:
-      - openbot-data:/data
+      - openbot-nc-data:/data
 
 volumes:
-  openbot-data:
+  openbot-nc-data:

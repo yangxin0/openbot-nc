@@ -85,8 +85,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "첨부 파일 업로드가 취소되었어요.",
   "webClient.error.duplication": "이 서버는 에이전트 복제를 지원하지 않아요.",
   "webClient.error.connectServerFirst": "먼저 이 서버에 연결해 주세요.",
-  "webClient.error.agentInstallNotAllowed":
-    "소유자 또는 관리자만 여기에 에이전트를 추가할 수 있고, 서버에서 최신 OpenBot이 실행 중이어야 해요.",
   "webClient.error.linkDesktopOnly": "이 링크는 데스크톱 앱에서만 열 수 있어요.",
   "webClient.error.saveEndpointOffline": "엔드포인트를 저장하려면 서버에 연결해 주세요.",
   "webClient.error.removeEndpointOffline": "엔드포인트를 제거하려면 서버에 연결해 주세요.",

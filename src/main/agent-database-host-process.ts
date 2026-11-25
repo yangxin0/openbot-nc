@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 import { Effect } from "effect";
 import { utilityProcess } from "electron";
@@ -15,7 +16,7 @@ const OUTPUT_TAIL_CHARS = 1_900;
 
 export function spawnAgentDatabaseHost(): AgentDatabaseHostProcess {
   const child = utilityProcess.fork(join(__dirname, "agent-database-host.js"), [], {
-    serviceName: "OpenBot databases",
+    serviceName: `${APP_NAME} databases`,
     stdio: ["ignore", "ignore", "pipe"],
   });
   let output = "";

@@ -90,8 +90,6 @@ export const messages = {
   "sitePage.pricing.consent.statement": "{policy}、{terms}に同意します。",
   "sitePage.pricing.consent.policy": "プライバシーポリシー",
   "sitePage.pricing.consent.terms": "利用規約および撤回権",
-  "sitePage.pricing.consent.earlyStart":
-    "14日間の撤回期間が終わる前にホスティングサービスを開始することを請求します。サービスが完全に履行される前に契約を撤回した場合は撤回時までに提供されたサービスの料金を支払う必要があること、またサービスが完全に履行された後は契約を撤回する権利を失うことを了承します。",
   "sitePage.teams.title": "チーム向け OpenBot",
   "sitePage.teams.description":
     "OpenBot をマネージドインフラで運用するか、チームやワークフロー、既存のシステムに合わせたカスタム導入を私たちに設計させてください。",

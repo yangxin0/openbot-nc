@@ -3,6 +3,7 @@ import type { messages as source } from "../../en/error/update";
 
 export const messages = {
   "error.update.unsupported": "עדכונים זמינים בגרסאות שולחן עבודה מותקנות.",
+  "error.update.noSelfUpdate": "הגרסה הזו לא מתעדכנת בעצמה. כדי לעדכן את OpenBot, התקינו גרסה חדשה יותר באופן ידני.",
   "error.update.notReady": "עדכון אינו מוכן להתקנה.",
   "error.update.restartFailed": "OpenBot לא הצליח להפעיל את עצמו מחדש כדי להתקין את העדכון.",
   "error.update.downloadStalled": "הורדת העדכון הפסיקה להגיב. יש לנסות שוב.",
@@ -10,7 +11,7 @@ export const messages = {
   "error.update.notInstalled": "ההפעלה מחדש האחרונה לא התקינה את העדכון. יש להפעיל מחדש כדי לנסות שוב.",
   "error.update.downloadFailed": "לא ניתן להוריד את העדכון. יש לנסות שוב.",
   "error.update.signatureNotConfirmed":
-    "OpenBot לא הצליח לאמת את העדכון. יש לנסות שוב. אם השגיאה נמשכת, יש להוריד את OpenBot מ-openbot.run/download.",
+    "OpenBot לא הצליח לאמת את העדכון. יש לנסות שוב. אם השגיאה נמשכת, יש להתקין את OpenBot מחדש מהמקום שממנו קיבלת אותו.",
   "error.update.checkFailed": "לא ניתן לבדוק אם יש עדכונים. יש לנסות שוב.",
   "error.update.checkStalled": "בדיקת העדכונים הפסיקה להגיב. יש לנסות שוב.",
   "error.update.checkOffline": "לא ניתן להתחבר לשירות העדכונים. יש לבדוק את חיבור האינטרנט ולנסות שוב.",

@@ -81,8 +81,6 @@ export const messages = {
   "composer.attachment.adding": "מוסיף את {name}",
   "composer.placeholder.hostSetup": "יש להשלים את הגדרת הספק במארח כדי להתחיל",
   "composer.placeholder.connectHost": "יש להתחבר למארח כדי להתחיל",
-  "composer.placeholder.hostSleeping": "השרת במצב שינה. אפשר ללחוץ על מקש או ללחוץ כדי להעיר אותו",
-  "composer.placeholder.hostWaking": "מעיר את השרת…",
   "composer.placeholder.cliSetup": "יש להשלים את הגדרת ה-CLI של הסוכן כדי להתחיל",
   "composer.placeholder.reply": "תשובה…",
   "composer.placeholder.message": "הודעה אל {name}",

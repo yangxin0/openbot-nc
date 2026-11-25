@@ -147,7 +147,7 @@ export const createPiCustomEndpointExtension = Effect.fn("PiCustomEndpoints.crea
   if (usable.length === 0) return null;
   const root = directory ?? tmpdir();
   yield* providerCall(() => mkdir(root, { recursive: true, mode: 0o700 }));
-  const folder = yield* providerCall(() => mkdtemp(join(root, "openbot-pi-")));
+  const folder = yield* providerCall(() => mkdtemp(join(root, "openbot-nc-pi-")));
   const path = join(folder, "custom-endpoints.mjs");
   yield* providerCall(() => writeFile(path, SOURCE, { mode: 0o600 })).pipe(
     Effect.onError(() => providerCall(() => rm(folder, { recursive: true, force: true })).pipe(Effect.orDie)),

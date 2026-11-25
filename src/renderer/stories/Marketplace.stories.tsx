@@ -1,12 +1,6 @@
-import { X_APP_ID } from "@openbot/ui/features/marketplace/marketplace-model";
 import type { MarketplaceNavigation } from "@openbot/ui/features/marketplace/marketplace-view";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import {
-  STORY_MARKETPLACE_AGENTS,
-  STORY_MARKETPLACE_PLUGINS,
-  STORY_MARKETPLACE_SKILLS,
-  STORY_MCP_SERVERS,
-} from "../src/preview/fixtures";
+import { STORY_MARKETPLACE_PLUGINS, STORY_MCP_SERVERS } from "../src/preview/fixtures";
 import { LOCAL_SKILL, MarketplaceStory, type StoryProps } from "./marketplace-story-support";
 import { CONNECT_OUTCOMES } from "./mcp-connect-stage";
 
@@ -30,7 +24,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const tab = (value: "agents" | "skills") => (nav: MarketplaceNavigation) =>
+const tab = (value: "skills") => (nav: MarketplaceNavigation) =>
   nav.set((draft) => {
     draft.tab = value;
   });
@@ -42,8 +36,6 @@ const at = (start: (nav: MarketplaceNavigation) => void, props: Omit<StoryProps,
 export const Apps: Story = {};
 
 export const Narrow: Story = { parameters: { viewport: { defaultViewport: "marketplaceNarrow" } } };
-
-export const Agents = at(tab("agents"));
 
 export const PluginApp = at((nav) => {
   nav.go({ kind: "app", id: STORY_MARKETPLACE_PLUGINS[0]?.slug ?? "" });
@@ -100,33 +92,14 @@ export const Skills = at(tab("skills"));
 
 export const SkillsFirstUse = at(tab("skills"), { noSkills: true });
 
-export const SkillGroup = at((nav) => {
+export const YourSkills = at((nav) => {
   tab("skills")(nav);
-  nav.go({ kind: "skillGroup", group: "coding" });
+  nav.go({ kind: "yourSkills" });
 });
-
-const firstSkillPage = (nav: MarketplaceNavigation) => {
-  const listing = STORY_MARKETPLACE_SKILLS[0];
-  tab("skills")(nav);
-  if (listing) nav.go({ kind: "skill", listing });
-};
-
-export const SkillPage = at(firstSkillPage, { manyAgents: true });
 
 export const LocalSkillPage = at((nav) => {
   tab("skills")(nav);
   nav.go({ kind: "localSkill", skillId: LOCAL_SKILL.skillId });
-});
-
-export const SkillAgentsDialog = at(firstSkillPage, {
-  manyAgents: true,
-  dialogSkill: STORY_MARKETPLACE_SKILLS[0]?.id ?? "",
-});
-
-export const AgentPage = at((nav) => {
-  const listing = STORY_MARKETPLACE_AGENTS[0];
-  tab("agents")(nav);
-  if (listing) nav.go({ kind: "agent", listing });
 });
 
 export const NoMatch = at((nav) =>
@@ -134,8 +107,6 @@ export const NoMatch = at((nav) =>
     draft.query = "no listing has this name";
   }),
 );
-
-export const EmptyCatalog = at(tab("agents"), { empty: true });
 
 export const Member: Story = { args: { member: true } };
 
@@ -154,12 +125,6 @@ export const PluginAppChecking = at(plugin("cloudflare"), {
 });
 
 const connector = (id: string) => at((nav) => nav.go({ kind: "app", id }), { connected: true });
-
-export const XApp = at((nav) => nav.go({ kind: "app", id: X_APP_ID }));
-
-export const XAppSetup = at((nav) => nav.go({ kind: "app", id: X_APP_ID, setup: true }));
-
-export const XAppAdded = at((nav) => nav.go({ kind: "app", id: X_APP_ID }), { xAgent: true });
 
 export const SlackConnected = connector("slack");
 

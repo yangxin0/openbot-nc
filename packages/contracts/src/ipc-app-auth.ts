@@ -15,8 +15,6 @@ export interface AppInfo {
   version: string;
   platform: DesktopPlatform;
   variant: AppVariant;
-  analyticsCaptureUrl?: string;
-  analyticsInstallId?: string;
   softwareRendering?: boolean;
   hourCycle?: HourCycle;
   aboveAppsSupport?: AboveAppsSupport;
@@ -155,10 +153,6 @@ export interface SaveSetupInput {
 
 export type HostDefaultProvider = Pick<AppSetupState, "preferredProvider" | "preferredModel">;
 
-export interface AnalyticsPreference {
-  enabled: boolean;
-}
-
 export const RENDERER_TIMING_LIMITS = {
   longTasks: 10_000,
   inputs: 100_000,
@@ -171,11 +165,6 @@ export interface RendererTimingReport {
   longTasks: number;
   inputs: number;
   inputDelaysMs: number[];
-}
-
-export interface SetAnalyticsPreferenceInput {
-  enabled: boolean;
-  chosen?: boolean;
 }
 
 export interface CentralAuthUser {
@@ -399,31 +388,7 @@ export interface SentMessageStats {
 export type ExternalDestination =
   | "opencode-install"
   | "opencode-auth"
-  | "agent-setup"
   | "claude-install"
   | "hermes-install"
-  | "feedback"
-  | "report-problem"
-  | "message"
-  | "changelog"
-  | "guides"
-  | "discord"
-  | "github"
-  | "x"
-  | "threads"
-  | "instagram"
-  | "tiktok"
-  | "facebook"
-  | "linkedin"
-  | "reddit"
-  | "x-post"
-  | "threads-post"
-  | "linkedin-post"
-  | "reddit-post"
-  | "facebook-post"
-  | "instagram-post"
-  | "tiktok-post"
   | "grok-bot-export"
-  | "hosted-server-contact"
-  | "download"
   | "mac-screen-recording";

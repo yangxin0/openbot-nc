@@ -86,8 +86,6 @@ export const messages = {
   "composer.attachment.adding": "{name} wird hinzugefügt",
   "composer.placeholder.hostSetup": "Schließe die Einrichtung des Anbieters auf deinem Host ab, um zu beginnen",
   "composer.placeholder.connectHost": "Verbinde dich mit deinem Host, um zu beginnen",
-  "composer.placeholder.hostSleeping": "Dieser Server ruht. Drücke eine Taste oder klicke, um ihn aufzuwecken",
-  "composer.placeholder.hostWaking": "Server wird aufgeweckt…",
   "composer.placeholder.cliSetup": "Schließe die Einrichtung der Agenten-CLI ab, um zu beginnen",
   "composer.placeholder.reply": "Antworten…",
   "composer.placeholder.message": "Nachricht an {name}",

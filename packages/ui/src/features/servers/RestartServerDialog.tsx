@@ -5,7 +5,7 @@ import { createEffect, createSignal, For, onCleanup, Show, untrack } from "solid
 import { CircleCheck, CircleDot, RotateCcw, TriangleAlert } from "../../icons";
 import { useText } from "../../text";
 
-type RestartServer = Pick<ServerSummary, "id" | "name" | "state" | "hostedIssue">;
+type RestartServer = Pick<ServerSummary, "id" | "name" | "state">;
 type RestartPhase = "confirm" | "stopping" | "starting" | "online" | "failed";
 type StepStatus = "done" | "active" | "failed" | "pending";
 
@@ -31,7 +31,6 @@ export function RestartServerDialog(props: {
   let run = 0;
   let requestDone = false;
   let wentDown = false;
-  let lastIssue: RestartServer["hostedIssue"] = null;
   let clock: ReturnType<typeof setInterval> | undefined;
   let primaryButton: HTMLButtonElement | undefined;
 
@@ -90,17 +89,11 @@ export function RestartServerDialog(props: {
     reset();
   }
 
-  function follow(server: Pick<RestartServer, "state" | "hostedIssue"> | null): void {
+  function follow(server: Pick<RestartServer, "state"> | null): void {
     if (!restarting() || !server) return;
     const down = server.state !== "online" && server.state !== "incompatible";
     if (down) wentDown = true;
     if (!requestDone) return;
-    const issue = server.hostedIssue ?? null;
-    if (issue !== null && issue !== lastIssue) {
-      finish("failed");
-      return;
-    }
-    lastIssue = issue;
     if (down) {
       if (phase() === "stopping") setPhase("starting");
     } else if (wentDown) finish("online");
@@ -109,7 +102,7 @@ export function RestartServerDialog(props: {
   createEffect(
     () => {
       const server = restartServer();
-      return server ? { state: server.state, hostedIssue: server.hostedIssue ?? null } : null;
+      return server ? { state: server.state } : null;
     },
     (server) => untrack(() => follow(server)),
   );
@@ -148,7 +141,6 @@ export function RestartServerDialog(props: {
     }
     if (current !== run || !restarting()) return;
     requestDone = true;
-    lastIssue = restartServer()?.hostedIssue ?? null;
     follow(restartServer());
   }
 
@@ -162,10 +154,7 @@ export function RestartServerDialog(props: {
     props.onClose();
   }
 
-  const failedDescription = () =>
-    restartServer()?.hostedIssue === "plan_ended"
-      ? t("server.connection.planEnded", { name: name() })
-      : t("server.settings.restartFailedDescription");
+  const failedDescription = () => t("server.settings.restartFailedDescription");
 
   const title = () => {
     switch (phase()) {

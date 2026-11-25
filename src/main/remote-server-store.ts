@@ -46,7 +46,6 @@ export interface RemoteServerPatch {
   encryptedToken?: string;
   logoVersion?: string | null;
   appearance?: ServerAppearance | null;
-  remoteDesktopAvailable?: boolean;
 }
 
 export interface RemoteServerDirectory {
@@ -222,6 +221,15 @@ export class RemoteServerStore implements RemoteServerDirectory {
     );
     if (this.#state.unreadableActiveServerId === serverId) this.#state.unreadableActiveServerId = null;
   }
+
+  readonly hideHost = Effect.fn("RemoteStore.hideHost")(function* (
+    this: RemoteServerStore,
+    hostId: string,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    if (this.isHiddenHost(hostId)) return;
+    this.#state.hiddenHostIds = [...this.#state.hiddenHostIds, hostId];
+    yield* this.persist();
+  });
 
   readonly unhideHost = Effect.fn("RemoteStore.unhideHost")(function* (
     this: RemoteServerStore,

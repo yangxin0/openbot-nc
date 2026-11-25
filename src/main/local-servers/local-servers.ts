@@ -19,9 +19,7 @@ import {
   LOCAL_SERVER_READY_PREFIX,
   LOCAL_SERVER_WORKING_PREFIX,
   type LocalServerCommand,
-  type LocalServerMarketplaceRequest,
   type LocalServerReady,
-  parseLocalServerMarketplaceRequest,
 } from "../local-server-child";
 import type { LocalServerAttachInput, RemoteServerManager } from "../remote-server-manager";
 import type { TokenCipher } from "../remote-server-store";
@@ -148,86 +146,6 @@ interface LocalServerAccount {
   credential(hostId: string): string | null;
   listMembers(hostId: string): Effect.Effect<RemoteMemberRecord[], RemoteWorkflowError>;
   remove(hostId: string): Effect.Effect<void, RemoteWorkflowError>;
-  apiOrigin: string;
-  requestAuthorized(path: string, init: RequestInit): Effect.Effect<unknown, RemoteWorkflowError>;
-  downloadAuthorized(path: string): Effect.Effect<Uint8Array, RemoteWorkflowError>;
-}
-
-const MARKETPLACE_READS: ReadonlyArray<{ method: "GET" | "POST"; download: boolean; path: RegExp }> = [
-  { method: "GET", download: false, path: /^\/v1\/marketplace\/agents\/[^/]+\/listing$/u },
-  { method: "GET", download: true, path: /^\/v1\/marketplace\/agents\/[^/]+\/avatar$/u },
-  { method: "GET", download: false, path: /^\/v1\/skills\/(?!mine$)[^/]+$/u },
-  { method: "GET", download: true, path: /^\/v1\/skills\/[^/]+\/content$/u },
-  { method: "GET", download: false, path: /^\/v1\/skills\/[^/]+\/versions\/[^/]+$/u },
-  { method: "GET", download: true, path: /^\/v1\/skills\/[^/]+\/versions\/[^/]+\/content$/u },
-  { method: "GET", download: false, path: /^\/v1\/agent-templates\/(?!mine$)[^/]+$/u },
-  { method: "GET", download: true, path: /^\/v1\/agent-templates\/[^/]+\/avatar$/u },
-  { method: "POST", download: false, path: /^\/v1\/marketplace\/agents\/[^/]+\/install$/u },
-  { method: "POST", download: false, path: /^\/v1\/skills\/[^/]+\/install$/u },
-];
-
-const CONNECT_STARTS: ReadonlySet<string> = new Set(["/v2/slack/authorize", "/v2/discord/authorize"]);
-
-const installReceiptSchema = Schema.Struct({ receiptId: Schema.String });
-const decodeInstallReceipt = Schema.decodeUnknownSync(Schema.fromJsonString(installReceiptSchema));
-const connectStartSchema = Schema.Struct({
-  hostId: Schema.String,
-  hostNonce: Schema.String,
-  hostPublicKey: Schema.String,
-});
-const decodeConnectStart = Schema.decodeUnknownSync(Schema.fromJsonString(connectStartSchema));
-
-function allowedConnectStart(
-  request: LocalServerMarketplaceRequest,
-  path: string,
-  hostId: string | null,
-): { path: string; init: RequestInit } | null {
-  if (hostId === null || request.method !== "POST" || request.download) return null;
-  try {
-    const body = decodeConnectStart(request.body);
-    if (body.hostId.toLowerCase() !== hostId.toLowerCase()) return null;
-    return {
-      path,
-      init: {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hostId: body.hostId, hostNonce: body.hostNonce, hostPublicKey: body.hostPublicKey }),
-      },
-    };
-  } catch {
-    return null;
-  }
-}
-
-function allowedMarketplaceRead(
-  request: LocalServerMarketplaceRequest,
-  apiOrigin: string,
-  hostId: string | null,
-): { path: string; init: RequestInit } | null {
-  let url: URL;
-  try {
-    url = new URL(request.path, apiOrigin);
-  } catch {
-    return null;
-  }
-  if (url.origin !== apiOrigin || url.pathname.includes("%")) return null;
-  if (CONNECT_STARTS.has(url.pathname))
-    return url.search === "" ? allowedConnectStart(request, url.pathname, hostId) : null;
-  const allowed = MARKETPLACE_READS.some(
-    (read) => read.method === request.method && read.download === request.download && read.path.test(url.pathname),
-  );
-  if (!allowed) return null;
-  const path = `${url.pathname}${url.search}`;
-  if (request.method === "GET") return request.body === undefined ? { path, init: { method: "GET" } } : null;
-  try {
-    const { receiptId } = decodeInstallReceipt(request.body);
-    return {
-      path,
-      init: { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ receiptId }) },
-    };
-  } catch {
-    return null;
-  }
 }
 
 export interface LocalServerListing {
@@ -504,54 +422,6 @@ export class LocalServers {
     );
   }
 
-  #readMarketplace(id: string, running: RunningChild, request: LocalServerMarketplaceRequest): void {
-    const read = allowedMarketplaceRead(
-      request,
-      this.#options.account.apiOrigin,
-      this.#ready.get(id)?.serverId ?? null,
-    );
-    if (!read)
-      this.#options.log.warn("A server on this computer asked for an account read that is not allowed.", {
-        method: request.method,
-        path: request.path,
-      });
-    const answer: Effect.Effect<LocalServerCommand, RemoteWorkflowError> = !read
-      ? Effect.succeed({ type: "marketplace", id: request.id, error: sourceText("error.team.requestFailed") })
-      : request.download
-        ? this.#options.account.downloadAuthorized(read.path).pipe(
-            Effect.map(
-              (bytes): LocalServerCommand => ({
-                type: "marketplace",
-                id: request.id,
-                bytes: Buffer.from(bytes).toString("base64"),
-              }),
-            ),
-          )
-        : this.#options.account
-            .requestAuthorized(read.path, read.init)
-            .pipe(Effect.map((value): LocalServerCommand => ({ type: "marketplace", id: request.id, value })));
-    Effect.runFork(
-      Effect.forkIn(
-        answer.pipe(
-          Effect.catch(({ cause }) =>
-            Effect.succeed<LocalServerCommand>({
-              type: "marketplace",
-              id: request.id,
-              error: cause instanceof Error ? cause.message : sourceText("error.team.requestFailed"),
-            }),
-          ),
-          Effect.flatMap((command) =>
-            Effect.sync(() => {
-              if (this.#running.get(id) === running) this.#send(id, command);
-            }),
-          ),
-        ),
-        this.#scope,
-        { startImmediately: true },
-      ),
-    );
-  }
-
   #send(id: string, command: LocalServerCommand): void {
     const running = this.#running.get(id);
     const control = running && !running.stopping ? controlPipe(running.child, this.#options.platform) : null;
@@ -665,11 +535,6 @@ export class LocalServers {
       createInterface({ input: child.stdout }).on("line", (line) => {
         if (line === LOCAL_SERVER_MEMBERS_REQUEST) {
           this.#readMembers(entry.id);
-          return;
-        }
-        const marketplace = parseLocalServerMarketplaceRequest(line);
-        if (marketplace) {
-          this.#readMarketplace(entry.id, running, marketplace);
           return;
         }
         const working = parseWorkingLine(line);

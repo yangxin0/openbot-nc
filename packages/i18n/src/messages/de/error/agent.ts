@@ -36,9 +36,6 @@ export const messages = {
   "error.agent.settingsLocalOnly":
     "Die Agenteneinstellungen können nur auf dem Computer geändert werden, auf dem der Agent läuft.",
   "error.agent.skillsLocalOnly": "Fähigkeiten können nur auf dem Computer geändert werden, auf dem der Agent läuft.",
-  "error.agent.addLocalOnly": "Agenten können nur auf dem Computer hinzugefügt werden, auf dem sie laufen.",
-  "error.agent.joinedServerUpdate":
-    "Ein Agent auf einem Server, dem du beigetreten bist, kann hier nicht aktualisiert werden.",
   "error.agent.searchQueryRequired": "Eine Suchanfrage ist erforderlich.",
   "error.agent.messageTooLong": "Die Nachricht ist zu lang.",
   "error.agent.messageOrAttachmentRequired": "Eine Nachricht oder ein Anhang ist erforderlich.",
@@ -193,8 +190,6 @@ export const messages = {
     "Lokale Skripte haben die Routinen dieses Agenten in der letzten Stunde {limit}-mal ausgeführt. Versuche es später erneut.",
   "error.agent.workspaceOnlyMacOnly":
     "„Nur Arbeitsbereich“ ist für diesen Anbieter nur unter macOS verfügbar. Wähle „Voller Zugriff“ in den Agenteneinstellungen.",
-  "error.agent.lowMemory":
-    "Dieser Server hat wenig freien Arbeitsspeicher. Deine Nachricht wartet in der Warteschlange und startet, wenn Speicher frei ist. Ein größerer Tarif gibt dem Server mehr Arbeitsspeicher.",
   "error.agent.lowMemoryServer":
     "Dieser Server hat wenig freien Arbeitsspeicher. Deine Nachricht wartet in der Warteschlange und startet, wenn Speicher frei ist.",
   "error.agent.workspaceOnlyToolMissing":

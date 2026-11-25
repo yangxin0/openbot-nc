@@ -522,8 +522,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "Ajan bu raporu kaldırır ve seçtiğiniz kısımlar olmadan yeniden gönderir.",
   "chat.feedbackSent.removeChoice": "Kaldır",
   "chat.feedbackSent.removeChoiceHint": "GitHub'dan kaldırın. Bu işlem geri alınamaz.",
-  "chat.feedbackSent.fixPrompt": "#{number} numaralı raporumu GitHub'dan kaldır ve şu kısım olmadan yeniden gönder:",
-  "chat.feedbackSent.removePrompt": "#{number} numaralı raporumu GitHub'dan kaldır.",
   "chat.feedbackSent.composerFilled": "İstek mesaj kutunuzda. Tamamlayıp gönderin.",
   "chat.feedbackSent.keep": "Kalsın",
   "chat.feedbackSent.removing": "Kaldırılıyor…",

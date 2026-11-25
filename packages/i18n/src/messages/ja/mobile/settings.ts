@@ -446,7 +446,6 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "聞き取り",
   "mobile.settings.voice.tab.speaking": "読み上げ",
-  "mobile.settings.voice.tab.gptLive": "GPT ライブ",
   "mobile.settings.voice.pause.title": "送信までの間",
   "mobile.settings.voice.pause.label": "新しい言葉を待つ時間",
   "mobile.settings.voice.pause.footer":
@@ -455,21 +454,6 @@ export const messages = {
   "mobile.settings.voice.speed.title": "返信の速度",
   "mobile.settings.voice.speed.footer": "OpenBot が読み上げる返信の速度です。音声会話にも適用されます。",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT Live Voice",
-  "mobile.settings.voice.gptLive.footer":
-    "エージェントとの音声会話では、このスマートフォンの代わりに GPT Live Voice が聞き取り、話します。サーバーを実行しているコンピューターの Codex（ChatGPT）のサインインを使います。あなたの声はこのスマートフォンと OpenAI の間で送られ、OpenAI がエージェントの返信を話します。対応したサーバーが必要です。ほかのサーバーではこのスマートフォンの音声を使います。",
-  "mobile.settings.voice.gptLive.automatic": "自動",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "次の音声会話で OpenAI がこの声で話します。「自動」では OpenAI が声を選びます。",
-  "mobile.settings.voice.gptLive.serversTitle": "サーバー",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "サインインが必要なサーバーをタップすると、Codex を ChatGPT アカウントに接続できます。サーバーのサインインはオーナーと管理者にだけ表示されます。",
-  "mobile.settings.voice.gptLive.account": "GPT ライブ音声のアカウント",
-  "mobile.settings.voice.gptLive.status.ready": "準備完了",
-  "mobile.settings.voice.gptLive.status.supported": "対応",
-  "mobile.settings.voice.gptLive.status.offline": "オフライン",
-  "mobile.settings.voice.gptLive.status.update": "そのコンピューターに新しい OpenBot が必要です",
-  "mobile.settings.voice.gptLive.status.signIn": "ChatGPT で Codex にサインイン",
   "mobile.settings.voice.server.title": "音声サーバー",
   "mobile.settings.voice.server.row": "OpenAI 互換サーバー",
   "mobile.settings.voice.server.notSetUp": "未設定",

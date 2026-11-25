@@ -54,11 +54,7 @@ export function createServerOwnerTransferSection(
   const serverId = () => props.server.id;
   const owner = () => props.server.role === "owner";
   const available = () =>
-    Boolean(calls()) &&
-    props.server.kind === "remote" &&
-    props.server.hosted !== true &&
-    configured() &&
-    serverRoleCanAdminister(props.server);
+    Boolean(calls()) && props.server.kind === "remote" && configured() && serverRoleCanAdminister(props.server);
 
   async function load(id: string): Promise<void> {
     const api = calls();

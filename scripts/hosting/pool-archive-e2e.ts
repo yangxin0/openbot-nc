@@ -33,20 +33,20 @@ const AUTH_API = "https://openbot-auth-api-test.internal9671.workers.dev";
 const TEST_REFERENCE = /^pool-test-\d{2}$/u;
 const WAIT_MS = 15 * 60_000;
 const DOWNLOAD_URL_SECONDS = 60 * 60;
-const LEFT_BEHIND = "ls -d /var/tmp/openbot-restore.* /run/openbot-restore-key.* 2>/dev/null | wc -l";
+const LEFT_BEHIND = "ls -d /var/tmp/openbot-nc-restore.* /run/openbot-nc-restore-key.* 2>/dev/null | wc -l";
 
 const SEEDED_CACHES = [
   ".cache/e2e/models.json",
   ".npm/_npx/e2e/package.json",
-  ".config/OpenBot/Cache/Cache_Data/e2e",
-  ".config/OpenBot/Partitions/openbot-browser/Cache/Cache_Data/e2e",
-  ".config/OpenBot/Partitions/openbot-browser/Code Cache/js/e2e",
-  ".config/OpenBot/provider-runtimes/claude/linux-x64/e2e/bin/claude",
-  ".config/OpenBot/provider-runtimes/.downloads/claude-linux-x64-e2e.partial",
+  ".config/OpenBot-NC/Cache/Cache_Data/e2e",
+  ".config/OpenBot-NC/Partitions/openbot-browser/Cache/Cache_Data/e2e",
+  ".config/OpenBot-NC/Partitions/openbot-browser/Code Cache/js/e2e",
+  ".config/OpenBot-NC/provider-runtimes/claude/linux-x64/e2e/bin/claude",
+  ".config/OpenBot-NC/provider-runtimes/.downloads/claude-linux-x64-e2e.partial",
 ];
 const SEEDED_KEPT = [
-  ".config/OpenBot/Partitions/openbot-browser/Service Worker/CacheStorage/e2e",
-  ".config/OpenBot/provider-runtimes/bun/e2e",
+  ".config/OpenBot-NC/Partitions/openbot-browser/Service Worker/CacheStorage/e2e",
+  ".config/OpenBot-NC/provider-runtimes/bun/e2e",
 ];
 const CACHE_NAMES = [
   "Cache",
@@ -61,7 +61,7 @@ const CACHE_NAMES = [
   "component_crx_cache",
   "extensions_crx_cache",
 ];
-const NOT_ARCHIVED = ` home/user/(\\.cache|\\.npm/_npx|\\.config/OpenBot/(Partitions/[^/]+/)?(${CACHE_NAMES.join("|")})|\\.config/OpenBot/provider-runtimes/(\\.downloads|${MANAGED_RUNTIME_PROVIDERS.join("|")}))(/| |$)`;
+const NOT_ARCHIVED = ` home/user/(\\.cache|\\.npm/_npx|\\.config/OpenBot-NC/(Partitions/[^/]+/)?(${CACHE_NAMES.join("|")})|\\.config/OpenBot-NC/provider-runtimes/(\\.downloads|${MANAGED_RUNTIME_PROVIDERS.join("|")}))(/| |$)`;
 
 const FACTS = `
 set -euo pipefail
@@ -87,14 +87,14 @@ for path in ${SEEDED_KEPT.map((path) => `"${path}"`).join(" ")}; do [ -s "$path"
 const SEED = (hostId: string, extraGb: number) => `
 set -euo pipefail
 runuser -u user -- env HOME=/home/user OPENBOT_HOSTED_HOST_ID=${hostId} OPENBOT_HOSTED_CLAIM=e2e_claim_that_is_not_valid \\
-  /opt/OpenBot/hosted/openbot-hosted-env
-systemctl enable --now openbot.service
+  /opt/OpenBot-NC/hosted/openbot-hosted-env
+systemctl enable --now openbot-nc.service
 for _ in $(seq 1 180); do
-  [ -s /home/user/.config/OpenBot/openbot.db ] && [ -s /srv/openbot-hosted/keyrings/login.keyring ] &&
-    [ -s /home/user/.config/openbot-hosted/keyring-password ] && break
+  [ -s /home/user/.config/OpenBot-NC/openbot.db ] && [ -s /srv/openbot-nc-hosted/keyrings/login.keyring ] &&
+    [ -s /home/user/.config/openbot-nc-hosted/keyring-password ] && break
   sleep 1
 done
-[ -s /home/user/.config/OpenBot/openbot.db ] || { journalctl -u openbot.service -n 30 --no-pager >&2; exit 1; }
+[ -s /home/user/.config/OpenBot-NC/openbot.db ] || { journalctl -u openbot-nc.service -n 30 --no-pager >&2; exit 1; }
 runuser -u user -- bash -c 'set -e; cd ~
 mkdir -p projects/e2e .local/bin
 head -c 1048576 /dev/urandom >projects/e2e/data.bin
@@ -112,10 +112,10 @@ echo seeded
 
 const RUNS = `
 for _ in $(seq 1 120); do
-  if systemctl is-active --quiet openbot.service && pgrep -u user -x openbot >/dev/null; then echo runs; exit 0; fi
+  if systemctl is-active --quiet openbot-nc.service && pgrep -u user -x openbot >/dev/null; then echo runs; exit 0; fi
   sleep 1
 done
-echo "does not run: $(systemctl is-active openbot.service)"
+echo "does not run: $(systemctl is-active openbot-nc.service)"
 `;
 
 interface Vps {
@@ -406,7 +406,7 @@ async function main() {
     await step("reinstall and prepare the machine again", () => preparePool(machine, release, keys));
     const empty = remote(
       machine,
-      "test ! -e /home/user/.config/OpenBot && test ! -e /srv/openbot-hosted/keyrings && echo empty || echo data",
+      "test ! -e /home/user/.config/OpenBot-NC && test ! -e /srv/openbot-nc-hosted/keyrings && echo empty || echo data",
     ).trim();
     checks.push({ name: "the reinstall erased the server", pass: empty === "empty", detail: empty });
 
@@ -415,7 +415,7 @@ async function main() {
     const wrongSum = archiveSha256.replace(/^./u, (first) => (first === "0" ? "1" : "0"));
     const refused = remote(
       machine,
-      `bash ${MACHINE_HOSTING}/move-from-boat.sh restore ${wrongSum} >/dev/null 2>&1 && echo restored || echo refused; test -e /home/user/.config/OpenBot && echo data || echo empty; ${LEFT_BEHIND}`,
+      `bash ${MACHINE_HOSTING}/move-from-boat.sh restore ${wrongSum} >/dev/null 2>&1 && echo restored || echo refused; test -e /home/user/.config/OpenBot-NC && echo data || echo empty; ${LEFT_BEHIND}`,
       { input: download() },
     )
       .trim()

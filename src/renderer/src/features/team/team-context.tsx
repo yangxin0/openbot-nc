@@ -12,10 +12,16 @@ const Presence = createSimpleContext({
     const { centralAuth } = useAuth();
     const [teamPresence, setTeamPresence] = createSignal<TeamPresenceSnapshot>(EMPTY_TEAM_PRESENCE);
 
+    const { activeServer } = useServers();
     const currentTeamMember = createMemo(() => {
       const state = centralAuth();
       if (state.status !== "signed_in") return undefined;
       const email = state.user.email.trim().toLowerCase();
+      if (!email) {
+        return activeServer()?.kind === "local"
+          ? teamPresence().members.find((member) => member.role === "owner")
+          : undefined;
+      }
       return teamPresence().members.find(
         (member) => member.email?.trim().toLowerCase() === email || member.username.trim().toLowerCase() === email,
       );
@@ -27,7 +33,6 @@ const Presence = createSimpleContext({
       return teamPresence().members.filter((member) => member.id !== currentMemberId && !member.disabled);
     });
 
-    const { activeServer } = useServers();
     const readerMemberId = createMemo((): string | null => {
       const matched = currentTeamMember()?.id;
       if (matched) return matched;

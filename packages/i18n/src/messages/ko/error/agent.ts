@@ -32,8 +32,6 @@ export const messages = {
   "error.agent.commitEffectsFailed": "트랜잭션은 커밋되었지만 저장된 후속 작업이 실패했어요.",
   "error.agent.settingsLocalOnly": "에이전트 설정은 에이전트를 실행하는 컴퓨터에서만 변경할 수 있어요.",
   "error.agent.skillsLocalOnly": "스킬은 에이전트를 실행하는 컴퓨터에서만 변경할 수 있어요.",
-  "error.agent.addLocalOnly": "에이전트는 실행하는 컴퓨터에서만 추가할 수 있어요.",
-  "error.agent.joinedServerUpdate": "참여한 서버의 에이전트는 여기서 업데이트할 수 없어요.",
   "error.agent.searchQueryRequired": "검색어가 필요해요.",
   "error.agent.messageTooLong": "메시지가 너무 길어요.",
   "error.agent.messageOrAttachmentRequired": "메시지 또는 첨부 파일이 필요해요.",
@@ -165,8 +163,6 @@ export const messages = {
     "지난 1시간 동안 로컬 스크립트가 이 에이전트의 루틴을 {limit}번 실행했어요. 나중에 다시 시도해 주세요.",
   "error.agent.workspaceOnlyMacOnly":
     "이 제공자의 워크스페이스 전용 모드는 macOS에서만 사용할 수 있어요. 에이전트 설정에서 전체 접근 권한을 선택하세요.",
-  "error.agent.lowMemory":
-    "이 서버의 메모리가 부족해요. 메시지는 대기열에서 기다리다가 메모리가 확보되면 시작돼요. 더 큰 플랜을 쓰면 서버 메모리가 늘어나요.",
   "error.agent.lowMemoryServer":
     "이 서버의 메모리가 부족해요. 메시지는 대기열에서 기다리다가 메모리가 확보되면 시작돼요.",
   "error.agent.workspaceOnlyToolMissing":

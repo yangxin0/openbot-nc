@@ -2,13 +2,10 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.iceServersMissing": "Remote Signal heeft geen ICE-servers gegeven.",
   "error.host.keyRotationUnavailable": "Deze server kan de sleutel niet wijzigen zonder de accountservice.",
   "error.host.keyRotationRefused":
     "De accountservice heeft de nieuwe serversleutel niet geaccepteerd. De huidige sleutel blijft in gebruik.",
   "error.host.webRtcNotConfigured": "De WebRTC-hostservice is niet geconfigureerd.",
-  "error.host.runtimeNotInstalled": "De runtime voor extern bureaublad is niet geïnstalleerd.",
-  "error.host.setupUnavailable": "Instellen van toestemmingen is niet beschikbaar.",
   "error.host.accountChangedDuringUpdate": "Het ingelogde account is gewijzigd terwijl deze server werd bijgewerkt.",
   "error.host.nameBeforePublish": "Geef deze OpenBot een naam voordat je hem publiceert.",
   "error.host.memberNotFound": "Het externe lid bestaat niet.",

@@ -27,9 +27,8 @@ import { SkillGlyph } from "@openbot/ui/features/conversation/SkillGlyph";
 import { SkillLibraryToolbar } from "@openbot/ui/features/conversation/SkillLibraryToolbar";
 import { useText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, For, onSettled, Show, untrack } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { SkillPreview } from "../../components/SkillPreview";
-import { type AgentSkillCalls, agentSkillCalls, type SkillCatalogCalls, skillsPort } from "../../skills-port";
+import { type AgentSkillCalls, agentSkillCalls, skillsPort } from "../../skills-port";
 import { LocalSkillsLibrary } from "./LocalSkillsLibrary";
 
 export type AgentSkillsMode = "mutable" | "host" | "readonly" | "hidden";
@@ -45,7 +44,6 @@ interface AgentSkillsModalProps {
   skillsMode?: AgentSkillsMode;
   serverId?: string | undefined;
   calls?: AgentSkillCalls | undefined;
-  catalog?: SkillCatalogCalls | null | undefined;
   onCreateSkill?: (() => void) | undefined;
   onTrySkill?: ((skill: SkillDetail) => void) | undefined;
   previewWorkspaceFile?: ((path: string) => Promise<FilePreview>) | undefined;
@@ -87,7 +85,6 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
   const mutable = () => skillsMode() === "mutable" || skillsMode() === "host";
   const localLibrary = () => skillsMode() === "mutable";
   const calls = () => props.calls ?? agentSkillCalls(skillsMode() === "host" ? props.serverId : undefined);
-  const catalogCalls = () => (props.catalog === undefined ? skillsPort().skills : props.catalog);
   const assignmentCount = createMemo(() => assignedSkillCount(skills()));
   const atCap = createMemo(() => assignmentCount() >= INPUT_LIMITS.agentSkills);
   const canAdd = createMemo(() => mutable() && !atCap() && props.onAddFromMarketplace !== undefined && !loading());
@@ -159,24 +156,13 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
   );
 
   async function loadCatalog(): Promise<void> {
-    const catalogPort = catalogCalls();
-    if (!catalogPort) {
+    if (!localLibrary()) {
       setCatalog({});
       return;
     }
     try {
-      const [marketplace, local] = await Promise.allSettled([
-        catalogPort.list({ limit: 50 }),
-        localLibrary() ? skillsPort().skills.localList() : Promise.resolve([]),
-      ]);
-      const page = {
-        skills: [
-          ...(marketplace.status === "fulfilled" ? marketplace.value.skills : []),
-          ...(local.status === "fulfilled" ? local.value : []),
-        ],
-      };
       const hints: Record<string, { description: string; iconUrl: string | null }> = {};
-      for (const skill of page.skills) {
+      for (const skill of await skillsPort().skills.localList()) {
         hints[skill.id] = { description: skill.description, iconUrl: skill.iconUrl };
       }
       setCatalog(hints);
@@ -201,10 +187,7 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
   }
 
   function listingCall(skill: InstalledSkill): (() => Promise<SkillDetail>) | null {
-    const catalogPort = catalogCalls();
-    if (!catalogPort || isFolderSkill(skill)) return null;
-    if (!skill.skillId.startsWith("local-skill-")) return () => catalogPort.get(skill.skillId);
-    if (!localLibrary()) return null;
+    if (isFolderSkill(skill) || !skill.skillId.startsWith("local-skill-") || !localLibrary()) return null;
     return () => skillsPort().skills.localGet({ skillId: skill.skillId, revision: skill.installedVersion });
   }
 
@@ -243,26 +226,13 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
   }
 
   async function setEnabled(skill: InstalledSkill, enabled: boolean): Promise<boolean> {
-    const analytics = desktopAnalytics.scope();
-    const action = enabled ? "enable" : "disable";
-    let operationSucceeded = false;
     setSavingId(skill.skillId);
     setError(null);
     try {
       await calls().setEnabled({ agentId: props.agentId, skillId: skill.skillId, enabled });
-      analytics.track("marketplace_action", { entity: "skill", action, result: "succeeded" });
-      operationSucceeded = true;
       await loadSkills(false);
       return true;
     } catch (caught) {
-      if (!operationSucceeded) {
-        analytics.track("marketplace_action", {
-          entity: "skill",
-          action,
-          result: "failed",
-          failure_code: `${action}_failed`,
-        });
-      }
       setError(errorMessage(caught, enabled ? t("skill.enableFailed") : t("skill.disableFailed")));
       return false;
     } finally {
@@ -271,8 +241,6 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
   }
 
   async function uninstall(skill: InstalledSkill, removeModified: boolean): Promise<void> {
-    const analytics = desktopAnalytics.scope();
-    let operationSucceeded = false;
     setSavingId(skill.skillId);
     setError(null);
     try {
@@ -281,20 +249,10 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
         skillId: skill.skillId,
         ...(removeModified ? { removeModified: true } : {}),
       });
-      analytics.track("marketplace_action", { entity: "skill", action: "uninstall", result: "succeeded" });
-      operationSucceeded = true;
       setConfirm(null);
       if (selectedId() === skill.skillId) closeDetail();
       await loadSkills(false);
     } catch (caught) {
-      if (!operationSucceeded) {
-        analytics.track("marketplace_action", {
-          entity: "skill",
-          action: "uninstall",
-          result: "failed",
-          failure_code: "uninstall_failed",
-        });
-      }
       setError(errorMessage(caught, t("skill.removeFailed")));
     } finally {
       setSavingId(null);
@@ -302,8 +260,6 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
   }
 
   async function install(skill: InstalledSkill, replaceModified: boolean): Promise<void> {
-    const analytics = desktopAnalytics.scope();
-    let operationSucceeded = false;
     setSavingId(skill.skillId);
     setError(null);
     try {
@@ -312,21 +268,11 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
         skillId: skill.skillId,
         ...(replaceModified ? { replaceModified: true } : {}),
       });
-      analytics.track("marketplace_action", { entity: "skill", action: "update", result: "succeeded" });
-      operationSucceeded = true;
       setConfirm(null);
       await loadSkills(false);
       const updated = skills().find((item) => item.skillId === skill.skillId);
       if (selectedId() === skill.skillId && updated) await openDetail(updated);
     } catch (caught) {
-      if (!operationSucceeded) {
-        analytics.track("marketplace_action", {
-          entity: "skill",
-          action: "update",
-          result: "failed",
-          failure_code: "update_failed",
-        });
-      }
       setError(errorMessage(caught, t("skill.updateFailed")));
     } finally {
       setSavingId(null);
@@ -595,9 +541,7 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
                                       {t("skill.folderSkill", { location: skill().location ?? "" })}
                                     </p>
                                   </Show>
-                                  <Show
-                                    when={!catalogCalls() && !isFolderSkill(skill()) && !detail() && !detailLoading()}
-                                  >
+                                  <Show when={!isFolderSkill(skill()) && !detail() && !detailLoading()}>
                                     <p class="agent-memory-state">{skill().description ?? skillMeta(skill(), t)}</p>
                                   </Show>
                                   <Show when={detailLoading()}>

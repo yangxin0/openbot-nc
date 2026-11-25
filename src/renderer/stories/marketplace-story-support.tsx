@@ -1,30 +1,22 @@
-import { X_AGENT_LISTING_ID } from "@openbot/contracts/browser-extension-x";
 import {
   AVATAR_HUES,
   type ClientAgentSummary,
   DEFAULT_MCP_SERVER_ACCESS,
   type InstalledSkill,
-  type MarketplaceAgentDetail,
-  type MarketplaceAgentSummary,
-  type MarketplaceSkillQuery,
   type MarketplaceSkillSummary,
   type McpServerAccess,
   type McpServerConfig,
   type McpSignInState,
-  type SkillCategory,
 } from "@openbot/contracts/ipc";
 import type { McpConnectFlow } from "@openbot/contracts/mcp-connect-flows";
 import { CONNECTOR_LISTINGS } from "@openbot/ui/features/connectors/connector-catalog";
 import { Marketplace } from "@openbot/ui/features/marketplace/Marketplace";
-import { AgentsDialog } from "@openbot/ui/features/marketplace/MarketplaceAgentsDialog";
-import {
-  type MarketplaceAgent,
-  type MarketplaceApp,
-  type MarketplaceAppAccount,
-  type MarketplaceAppConnection,
-  type MarketplaceAppsBlock,
-  type MarketplaceModel,
-  X_APP_ID,
+import type {
+  MarketplaceApp,
+  MarketplaceAppAccount,
+  MarketplaceAppConnection,
+  MarketplaceAppsBlock,
+  MarketplaceModel,
 } from "@openbot/ui/features/marketplace/marketplace-model";
 import {
   createMarketplaceNavigation,
@@ -43,8 +35,6 @@ import type { McpServerTools } from "../src/features/servers/mcp-server-tools";
 import { MARKETPLACE_PLUGINS } from "../src/features/settings/marketplace-plugin-catalog";
 import {
   STORY_AGENT_SUMMARIES,
-  STORY_MARKETPLACE_AGENT_DETAILS,
-  STORY_MARKETPLACE_AGENTS,
   STORY_MARKETPLACE_PLUGINS,
   STORY_MARKETPLACE_SKILL_DETAILS,
   STORY_MARKETPLACE_SKILLS,
@@ -59,70 +49,6 @@ function connectFlows(entry: MarketplacePluginApp): ConnectFlows | null {
   const [first, ...rest] = entry.server.auth ?? [];
   return first ? [first, ...rest] : null;
 }
-
-function page<T extends { name: string; description: string; category?: string | undefined }>(
-  items: readonly T[],
-  query: MarketplaceSkillQuery,
-) {
-  const text = query.query?.toLowerCase() ?? "";
-  return {
-    items: items.filter(
-      (item) =>
-        (!query.category || (item.category ?? "other") === query.category) &&
-        (!text || item.name.toLowerCase().includes(text) || item.description.toLowerCase().includes(text)),
-    ),
-    nextCursor: null,
-  };
-}
-
-function skillPage(items: readonly MarketplaceSkillSummary[], query: MarketplaceSkillQuery) {
-  const found = page(items, query).items.filter(
-    (item) =>
-      (query.verified === undefined || (item.verified === true) === query.verified) &&
-      (query.featured !== true || item.featured),
-  );
-  const sort = query.sort ?? "installs";
-  found.sort((left, right) => {
-    if (sort === "name") return left.name.localeCompare(right.name);
-    if (sort === "updated") return right.updatedAt.localeCompare(left.updatedAt);
-    return right.installs - left.installs;
-  });
-  const start = Number(query.cursor ?? 0);
-  const end = start + (query.limit ?? 50);
-  return { items: found.slice(start, end), nextCursor: end < found.length ? String(end) : null };
-}
-
-const SKILL_WORDS: readonly (readonly [SkillCategory, readonly string[], readonly string[]])[] = [
-  [
-    "coding",
-    ["Review", "Test", "Lint", "Document", "Profile", "Refactor"],
-    ["pull requests", "SQL queries", "React components", "Go services", "shell scripts"],
-  ],
-  ["documents", ["Summarize", "Translate", "Proofread"], ["contracts", "meeting notes", "reports", "proposals"]],
-  ["design", ["Audit", "Critique"], ["color palettes", "landing pages", "forms"]],
-];
-
-const MORE_SKILLS: readonly MarketplaceSkillSummary[] = SKILL_WORDS.flatMap(([category, verbs, things]) =>
-  verbs.flatMap((verb) => things.map((thing) => ({ category, name: `${verb} ${thing}` }))),
-).map(({ category, name }, index): MarketplaceSkillSummary => {
-  const slug = name.toLowerCase().replaceAll(" ", "-");
-  return {
-    id: `skill-${slug}`,
-    slug,
-    name,
-    description: `${name.replace(/^\S+/, (verb) => `${verb}s`)} and reports what it found, one line for each.`,
-    category,
-    creatorName: index % 3 === 0 ? "OpenBot" : "Priya Raman",
-    version: 1 + (index % 4),
-    installs: 900 - index * 17,
-    featured: index % 9 === 0,
-    verified: index % 3 === 0,
-    iconUrl: null,
-    updatedAt: `2026-08-${String(1 + (index % 28)).padStart(2, "0")}T09:00:00.000Z`,
-  };
-});
-
-const CATALOG: readonly MarketplaceSkillSummary[] = [...STORY_MARKETPLACE_SKILLS, ...MORE_SKILLS];
 
 const MORE_AGENTS = [
   "Support Triage|Support lead",
@@ -249,7 +175,6 @@ type HeldState = "connected" | "signInNeeded";
 export interface StoryProps {
   member?: boolean;
   blocked?: MarketplaceAppsBlock;
-  empty?: boolean;
   outcome?: ConnectOutcome;
   start?: (nav: MarketplaceNavigation) => void;
   held?: Readonly<Record<string, HeldState>>;
@@ -259,56 +184,7 @@ export interface StoryProps {
   catalog?: readonly string[];
   manyAgents?: boolean;
   noSkills?: boolean;
-  dialogSkill?: string;
-  agentStates?: Readonly<Record<string, "added" | "update">>;
-  xAgent?: boolean;
   children?: (context: { model: MarketplaceModel; nav: MarketplaceNavigation }) => JSX.Element;
-}
-
-const X_LISTING: MarketplaceAgentDetail = {
-  id: X_AGENT_LISTING_ID,
-  category: "research",
-  name: "X",
-  title: "Does what you ask in an X reply that mentions @openbot_",
-  description: "Does what you ask in an X reply that mentions @openbot_.",
-  creatorName: "OpenBot",
-  version: 1,
-  installs: 412,
-  featured: false,
-  verified: true,
-  avatarSeed: "x-desk",
-  avatarHue: 280,
-  avatarUrl: null,
-  skillCount: 1,
-  routineCount: 0,
-  activeRoutineCount: 0,
-  updatedAt: "2026-11-20T09:00:00.000Z",
-  versionId: "x-desk-v1",
-  skills: [],
-  routines: [],
-};
-
-const X_AGENT: MarketplaceAgent = {
-  id: "agent-x",
-  name: X_LISTING.name,
-  title: X_LISTING.title,
-  avatarSeed: X_LISTING.avatarSeed,
-  avatarHue: X_LISTING.avatarHue,
-  avatarUrl: null,
-};
-
-function storyXApp(agent: MarketplaceAgent | null): MarketplaceApp {
-  const { t } = currentText();
-  return {
-    kind: "x",
-    id: X_APP_ID,
-    name: t("marketplace.xApp.title"),
-    tagline: t("marketplace.xApp.tagline"),
-    category: "productivity",
-    status: agent ? "connected" : "idle",
-    agent,
-    extensionUrl: "https://chromewebstore.google.com/detail/openbot",
-  };
 }
 
 const APPLE_APPS = MARKETPLACE_PLUGINS.filter((plugin) => plugin.slug === "apple-apps");
@@ -345,7 +221,6 @@ export function MarketplaceStory(props: StoryProps) {
   const {
     member,
     blocked,
-    empty,
     start,
     held = FIRST_HELD,
     accounts,
@@ -354,14 +229,9 @@ export function MarketplaceStory(props: StoryProps) {
     catalog = [],
     manyAgents,
     noSkills,
-    dialogSkill,
-    agentStates,
-    xAgent,
     children,
   } = untrack(() => ({ ...props }));
   const details = connected ? CONNECTED_CONNECTOR_DETAILS : STORY_CONNECTOR_DETAILS;
-  const agents = empty ? [] : STORY_MARKETPLACE_AGENTS;
-  const skills = empty ? [] : CATALOG;
   const userAgents = manyAgents ? MANY_AGENTS : STORY_AGENT_SUMMARIES;
   const connectors = storyConnectorSet(details);
   const connectorApps = untrack(() =>
@@ -373,23 +243,20 @@ export function MarketplaceStory(props: StoryProps) {
         connector: id,
         name: currentText().t(listing.title),
         tagline: currentText().t(listing.tagline),
-        status: connected || id === "github" ? "connected" : "idle",
+        status: connected ? "connected" : "idle",
         category: listing.category,
       };
     }),
   );
   const [state, setState] = createStore<{
-    added: Record<string, "added" | "update">;
     installed: Record<string, InstalledSkill[]>;
     apps: MarketplaceApp[];
     busy: Record<string, true>;
     notice: string;
   }>({
-    added: { ...(agentStates ?? { [STORY_MARKETPLACE_AGENTS[1]?.id ?? ""]: "added" }) },
     installed: noSkills ? {} : startSkills(userAgents),
     apps: [
       ...connectorApps,
-      storyXApp(xAgent ? X_AGENT : null),
       ...[
         ...STORY_MARKETPLACE_PLUGINS,
         ...(macOS ? APPLE_APPS : []),
@@ -499,8 +366,6 @@ export function MarketplaceStory(props: StoryProps) {
   };
 
   const skillFor = (skillId: string): InstalledSkill | undefined => {
-    const listing = CATALOG.find((entry) => entry.id === skillId);
-    if (listing) return installed(listing);
     const copy = Object.values(state.installed)
       .flat()
       .find((entry) => entry.skillId === skillId);
@@ -515,21 +380,6 @@ export function MarketplaceStory(props: StoryProps) {
         if (skill) draft.installed[agentId] = [...(draft.installed[agentId] ?? []), skill];
     });
   };
-  const skillDetail = (id: string) => {
-    const listing = CATALOG.find((entry) => entry.id === id);
-    return (
-      listing && {
-        ...listing,
-        versionId: `${listing.id}-v${listing.version}`,
-        bundleSha256: "0".repeat(64),
-        files: ["SKILL.md"],
-        instructions: `# ${listing.name}\n\n${listing.description}`,
-      }
-    );
-  };
-  const dialogListing = CATALOG.find((entry) => entry.id === dialogSkill);
-  const [dialogOpen, setDialogOpen] = createSignal(true);
-
   const [signIns, setSignIns] = createSignal<Record<string, McpSignInState>>({});
   const customServers = () => state.apps.flatMap((app) => (app.kind === "custom" ? [app.server] : []));
   const putServer = (server: McpServerConfig) =>
@@ -574,24 +424,7 @@ export function MarketplaceStory(props: StoryProps) {
     endSignInRequest: () => {},
   };
   const model: MarketplaceModel = {
-    listAgents: async (query) => page<MarketplaceAgentSummary>(agents, query),
-    loadAgent: async (id) => (id === X_AGENT_LISTING_ID ? X_LISTING : STORY_MARKETPLACE_AGENT_DETAILS[id]),
-    agentState: (listing) => (member ? null : (state.added[listing.id] ?? "add")),
-    agentBusy: (id) => Boolean(state.busy[id]),
-    addAgent: async (listing) => {
-      setState((draft) => {
-        if (listing.id === X_AGENT_LISTING_ID)
-          draft.apps = draft.apps.map((app) => (app.kind === "x" ? storyXApp(X_AGENT) : app));
-        draft.added[listing.id] = "added";
-        draft.notice = `${listing.name} added.`;
-      });
-      return true;
-    },
-    openChat: () => setOpen(false),
-
-    listSkills: async (query) => skillPage(skills, query),
-    loadSkill: async (id) => STORY_MARKETPLACE_SKILL_DETAILS[id] ?? skillDetail(id),
-    skillListing: async (id) => skills.find((skill) => skill.id === id),
+    loadSkill: async (id) => STORY_MARKETPLACE_SKILL_DETAILS[id],
     agents: () => (member ? [] : userAgents),
     activeAgentId: () => userAgents[0]?.id ?? "",
     readSkills: () => undefined,
@@ -726,8 +559,6 @@ export function MarketplaceStory(props: StoryProps) {
           controls: (controls) => <McpServerControls tools={serverTools} id={controls.id} />,
         },
     runPrompt: fn(),
-    copyLink: fn(),
-    copyListingLink: fn(),
     openUrl: fn(),
     connector: (id) => connectors[id],
     macAutomation: macOS
@@ -751,9 +582,6 @@ export function MarketplaceStory(props: StoryProps) {
   return (
     <>
       <Marketplace model={model} nav={nav} open={open()} onOpenChange={setOpen} />
-      <Show when={dialogOpen() && dialogListing}>
-        {(skill) => <AgentsDialog model={model} skill={skill()} onClose={() => setDialogOpen(false)} />}
-      </Show>
       <Show when={pending()} keyed>
         {(step) => (
           <McpConnectDialog

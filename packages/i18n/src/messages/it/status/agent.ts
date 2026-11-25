@@ -45,13 +45,6 @@ export const messages = {
   "status.agent.feedbackSameAs": "Si aggiunge alla issue #{issue}",
   "status.agent.feedbackSent": "Inviato al team di OpenBot: {title}",
   "status.agent.feedbackWithdrawn": "Rimosso da GitHub: {title}",
-  "status.agent.feedbackWithdrawCommand": "Rimuovi la segnalazione #{issue} da GitHub",
-  "status.agent.feedbackWithdrawReason":
-    "Nessuno potrà più vedere questa segnalazione su GitHub. Non puoi annullare l’operazione. Per correggerla, l’agente può inviare una segnalazione corretta.",
-  "status.agent.feedbackWithdrawing": "Rimozione della segnalazione da GitHub…",
-  "status.agent.serverInstallCommand":
-    "Crea un comando monouso che installa OpenBot su un altro computer come server {name} e lo collega al tuo account. L'agente lo esegue lì.",
-  "status.agent.serverInstallCard": "Comando di installazione per il server {name}",
   "status.agent.browserProfileNamed":
     "Sposta {agents} nel profilo del browser {profile}. Ricevono i suoi accessi e cookie. Le loro schede aperte si chiudono.",
   "status.agent.commitCoAuthorOff": "Non aggiungere più OpenBot come coautore nei commit di tutti gli agenti.",
@@ -62,7 +55,6 @@ export const messages = {
     "Sposta {agents} nel profilo del browser condiviso. Ricevono i suoi accessi e cookie. Le loro schede aperte si chiudono.",
   "status.agent.browserProfileOwn":
     "Dai a {agents} un profilo del browser proprio per ciascuno. Le loro schede aperte si chiudono.",
-  "status.agent.feedbackSending": "Invio del tuo feedback al team di OpenBot…",
   "status.agent.workflowDelete":
     "Elimina il flusso di lavoro {title} con le sue esecuzioni e versioni. I suoi passaggi aperti si fermano.",
   "status.agent.deleteAgents": "Elimina {agents} con le loro chat e i loro file. Non puoi annullare l'operazione.",

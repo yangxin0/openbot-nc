@@ -1,10 +1,11 @@
 import { join } from "node:path";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import { utilityProcess } from "electron";
 import type { VoiceTranscriptionHostProcess, VoiceTranscriptionResponse } from "./voice-transcription-protocol";
 
 export function spawnVoiceTranscriptionHost(): VoiceTranscriptionHostProcess {
   const child = utilityProcess.fork(join(__dirname, "voice-transcription-host.js"), [], {
-    serviceName: "OpenBot voice transcription",
+    serviceName: `${APP_NAME} voice transcription`,
     stdio: "ignore",
   });
   return {

@@ -20,10 +20,7 @@ export const messages = {
   "error.skill.frontmatterInvalid": "Das Frontmatter von SKILL.md ist kein gültiges YAML.",
   "error.skill.descriptionLength": "SKILL.md benötigt eine Beschreibung mit 1 bis {limit} Zeichen.",
   "error.skill.nameMismatch": "SKILL.md benötigt „name: {slug}“, passend zum Ordnernamen.",
-  "error.skill.draftExpired": "Das gewählte Fähigkeitspaket ist abgelaufen. Wähle es erneut.",
   "error.skill.localHasNoVersion": "Eine lokale Fähigkeit hat keine veröffentlichte Version.",
-  "error.skill.publishLocalFirst":
-    "Veröffentliche lokale Fähigkeiten einzeln, bevor du diesen Agenten veröffentlichst.",
   "error.skill.bundleMismatch":
     "Die heruntergeladene Fähigkeit stimmt nicht mit ihrem signierten Katalogeintrag überein.",
   "error.skill.metadataMismatch":
@@ -42,16 +39,10 @@ export const messages = {
   "error.skill.localLibraryUnavailable": "Die lokale Fähigkeitsbibliothek ist nicht verfügbar.",
   "error.skill.lockInvalid": "Der Eintrag der installierten Fähigkeit ist ungültig. Er wurde unverändert belassen.",
   "error.skill.installPathSymlink": "Installationspfade für Fähigkeiten dürfen keine symbolischen Links enthalten.",
-  "error.skill.duplicateSlug": "Zwei Fähigkeiten heißen „{slug}“. Benenne eine davon vor dem Veröffentlichen um.",
-  "error.skill.publishNeedsRepair": "{name} hat lokale Änderungen oder muss vor dem Veröffentlichen repariert werden.",
-  "error.skill.publishUntracked":
-    "{name} wurde vor der Einführung der genauen Versionserfassung installiert. Aktualisiere oder repariere sie vor dem Veröffentlichen.",
   "error.skill.tooManySkills": "Ein Agent kann bis zu {limit} Fähigkeiten haben.",
   "error.skill.unmanagedExists": "Unter {path} existiert bereits eine nicht verwaltete Fähigkeit.",
   "error.skill.managedSlug":
     "OpenBot gibt jedem Agenten eine eigene Fähigkeit {slug}. Gib dieser Fähigkeit einen anderen Namen.",
-  "error.skill.templateMarkdownTooLarge":
-    "{name}: SKILL.md ist größer als 64 KB. Kürze die Datei vor dem Veröffentlichen.",
   "error.skill.localNoRevisions": "Die lokale Fähigkeit hat keine veröffentlichten Überarbeitungen.",
   "error.skill.localNotFound":
     "Diese lokale Fähigkeit gibt es nicht. Prüfe ihre ID in der Liste der lokalen Fähigkeiten.",
@@ -78,6 +69,4 @@ export const messages = {
     "GitHub begrenzt, wie oft OpenBot es ohne Konto lesen kann. Versuche es in einer Stunde erneut.",
   "error.skill.githubTooLarge": "OpenBot kann nicht alle Dateien von {repository} lesen. Das Repository ist zu groß.",
   "error.skill.githubHostTooOld": "Aktualisiere diesen Server, um Fähigkeiten von GitHub hinzuzufügen.",
-  "error.skill.publishGithub":
-    "{name} stammt von GitHub. Du kannst nur Fähigkeiten veröffentlichen, die du selbst erstellt hast.",
 } as const satisfies PartialTranslation<typeof source>;

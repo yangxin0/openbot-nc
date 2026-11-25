@@ -1,20 +1,5 @@
-import {
-  type BrowserControlState,
-  type BrowserDisplayState,
-  type BrowserPreview,
-  type BrowserTab,
-  REMOTE_DESKTOP_ERROR_CODES,
-  type RemoteDesktopCapabilities,
-  type RemoteDesktopSession,
-} from "@openbot/contracts/ipc";
-import {
-  decodeRecord,
-  nullableString,
-  requiredBoolean,
-  requiredNumber,
-  requiredString,
-} from "@openbot/contracts/ipc-decoding";
-import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "@openbot/contracts/runtime-values";
+import type { BrowserControlState, BrowserDisplayState, BrowserPreview, BrowserTab } from "@openbot/contracts/ipc";
+import { isBoolean, isDynamicRecord, isNumber, isString } from "@openbot/contracts/runtime-values";
 
 export function decodeBrowserTabs(value: unknown): BrowserTab[] {
   if (!Array.isArray(value) || !value.every(isBrowserTabValue)) {
@@ -78,71 +63,4 @@ export function decodeBrowserControlState(value: unknown): BrowserControlState {
 
 function isBrowserControlStateValue(value: unknown): value is BrowserControlState {
   return isDynamicRecord(value) && Array.isArray(value.sessions);
-}
-
-export function decodeRemoteDesktopCapabilities(value: unknown): RemoteDesktopCapabilities {
-  const record = decodeRecord(value, "remote control capabilities");
-  const platform = requiredString(record, "platform");
-  if (!isOneOf(["darwin", "win32", "linux"] as const, platform)) throw new Error("Invalid remote platform.");
-  return {
-    ready: requiredBoolean(record, "ready"),
-    platform,
-    unattended: requiredBoolean(record, "unattended"),
-    runtime: requiredString(record, "runtime") === "sunshine-moonlight" ? "sunshine-moonlight" : invalidRuntime(),
-    protocolVersion: requiredNumber(record, "protocolVersion") === 2 ? 2 : invalidProtocolVersion(),
-    displays: decodeRemoteDesktopDisplays(record.displays),
-    selectedDisplayId: nullableString(record, "selectedDisplayId"),
-    activeSessions: requiredNumber(record, "activeSessions"),
-    maxSessions: requiredNumber(record, "maxSessions"),
-  };
-}
-
-function invalidRuntime(): never {
-  throw new Error("Invalid remote desktop runtime.");
-}
-
-function invalidProtocolVersion(): never {
-  throw new Error("Remote desktop update required.");
-}
-
-export function decodeRemoteDesktopSession(value: unknown): RemoteDesktopSession {
-  const record = decodeRecord(value, "remote control session");
-  const phase = requiredString(record, "phase");
-  const transport = requiredString(record, "transport");
-  const errorCode = nullableString(record, "errorCode");
-  if (!isOneOf(["starting_host", "connecting", "connected", "disconnecting", "error"] as const, phase)) {
-    throw new Error("Invalid remote control phase.");
-  }
-  if (!isOneOf(["unknown", "p2p", "relay"] as const, transport)) throw new Error("Invalid remote transport.");
-  if (errorCode !== null && !isOneOf(REMOTE_DESKTOP_ERROR_CODES, errorCode)) {
-    throw new Error("Invalid remote control error.");
-  }
-  return {
-    id: requiredString(record, "id"),
-    serverId: requiredString(record, "serverId"),
-    viewerUrl: requiredString(record, "viewerUrl"),
-    viewerGrant: requiredString(record, "viewerGrant"),
-    displays: decodeRemoteDesktopDisplays(record.displays),
-    selectedDisplayId: nullableString(record, "selectedDisplayId"),
-    phase,
-    transport,
-    errorCode,
-    message: nullableString(record, "message"),
-    createdAt: requiredString(record, "createdAt"),
-    grantExpiresAt: requiredString(record, "grantExpiresAt"),
-  };
-}
-
-function decodeRemoteDesktopDisplays(value: unknown): RemoteDesktopCapabilities["displays"] {
-  if (!Array.isArray(value)) throw new Error("Invalid remote display list.");
-  return value.map((item) => {
-    const display = decodeRecord(item, "remote display");
-    return {
-      id: requiredString(display, "id"),
-      label: requiredString(display, "label"),
-      width: requiredNumber(display, "width"),
-      height: requiredNumber(display, "height"),
-      primary: requiredBoolean(display, "primary"),
-    };
-  });
 }

@@ -1,6 +1,5 @@
 import {
   DEFAULT_SPEECH_SETTINGS,
-  isCodexLiveVoice,
   isElevenLabsSpeechVoice,
   isSpeechModelId,
   isSpeechSpeed,
@@ -40,8 +39,6 @@ export class SpeechPreferenceStore {
                   : DEFAULT_SPEECH_SETTINGS.elevenLabsVoice,
                 xaiVoice: isXaiSpeechVoice(parsed.xaiVoice) ? parsed.xaiVoice : DEFAULT_SPEECH_SETTINGS.xaiVoice,
                 speed: isSpeechSpeed(parsed.speed) ? parsed.speed : DEFAULT_SPEECH_SETTINGS.speed,
-                codexLive: parsed.codexLive === true,
-                codexLiveVoice: isCodexLiveVoice(parsed.codexLiveVoice) ? parsed.codexLiveVoice : null,
                 turnPauseMs: isVoiceTurnPause(parsed.turnPauseMs)
                   ? parsed.turnPauseMs
                   : DEFAULT_SPEECH_SETTINGS.turnPauseMs,
@@ -68,8 +65,6 @@ export class SpeechPreferenceStore {
       elevenLabsVoice: input.elevenLabsVoice,
       xaiVoice: input.xaiVoice,
       speed: input.speed,
-      codexLive: input.codexLive,
-      codexLiveVoice: input.codexLiveVoice,
       turnPauseMs: input.turnPauseMs,
     };
     yield* this.#writes.withPermit(

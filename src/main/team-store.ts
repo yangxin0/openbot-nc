@@ -13,7 +13,7 @@ import { basename, dirname, join } from "node:path";
 import { promisify } from "node:util";
 import { avatarFileExtension, isAvatarMimeType, isValidAvatarImage } from "@openbot/contracts/avatar-images";
 import { type HostKeyHandover, hostKeyHandoverStatement } from "@openbot/contracts/host-key-handover";
-import { DEFAULT_TEAM_MEMBER_LIMIT, INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import { permanentInviteExpiresAt } from "@openbot/contracts/invite-links";
 import {
   type AvatarColor,
@@ -25,6 +25,7 @@ import {
   type TeamRole,
   type TeamSessionSummary,
 } from "@openbot/contracts/ipc";
+import type { RelayPeer } from "@openbot/contracts/relay-protocol/messages";
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { type ServerAppearance, serverAppearanceOrNull } from "@openbot/contracts/team-protocol/host-appearance-v1";
 import { normalizeEmailAddress, slugifyTeamServerName } from "@openbot/contracts/validation";
@@ -37,6 +38,7 @@ import {
   type WriteJsonFileOptions,
   writeFileAtomically,
 } from "../backend/atomic-json-file";
+import type { LocalProfile } from "./local-profile-store";
 import { RemoteWorkflowError, remoteCall, remoteDecode } from "./remote-service-effects";
 
 class TeamStoreFiles extends Context.Service<
@@ -73,6 +75,7 @@ class TeamStoreFiles extends Context.Service<
 const scrypt = promisify(scryptCallback);
 export const TEAM_STORE_FILE = "openbot-team-server-v2.json";
 export const LEGACY_TEAM_STORE_FILE = "openbot-team-server-v1.json";
+const LOCAL_OWNER_USERNAME = "owner";
 const INVITE_TTL_MS = 24 * 60 * 60 * 1_000;
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1_000;
 
@@ -86,6 +89,7 @@ interface StoredMember extends TeamMemberSummary {
   accountId?: string;
   passwordSalt?: string;
   passwordHash?: string;
+  relayUser?: string;
 }
 
 interface StoredInvite {
@@ -298,7 +302,7 @@ export class TeamStore {
 
   readonly activateAccount = Effect.fn("TeamStore.activateAccount")(
     function* (this: TeamStore, user: CentralAuthUser): Effect.fn.Return<void, RemoteWorkflowError, TeamStoreFiles> {
-      const email = yield* remoteDecode(() => normalizeEmail(user.email));
+      const email = yield* remoteDecode(() => optionalEmail(user.email));
       const hosts = this.#file.hosts;
       const unbound = hosts.find((host) => {
         const owner = hostOwner(host);
@@ -307,11 +311,13 @@ export class TeamStore {
       const rollback = structuredClone(this.#file);
       this.#state =
         hosts.find((host) => ownerAccountId(host) === user.id) ??
-        hosts.find((host) => {
-          const owner = hostOwner(host);
-          if (!owner || owner.accountId) return false;
-          return owner.email ? normalizeEmail(owner.email) === email : false;
-        }) ??
+        (email === null
+          ? undefined
+          : hosts.find((host) => {
+              const owner = hostOwner(host);
+              if (!owner || owner.accountId) return false;
+              return owner.email ? normalizeEmail(owner.email) === email : false;
+            })) ??
         unbound ??
         null;
       this.#file.activeAccountId = user.id;
@@ -319,7 +325,7 @@ export class TeamStore {
         const owner = hostOwner(this.#state);
         if (owner) {
           owner.accountId = user.id;
-          owner.email = email;
+          if (email !== null) owner.email = email;
         }
       }
       if (this.#state) {
@@ -396,14 +402,39 @@ export class TeamStore {
     return owner?.accountId && owner.email ? { id: owner.accountId, email: owner.email } : null;
   }
 
+  localProfileSeed(): LocalProfile | null {
+    const activeAccountId = this.#file.activeAccountId;
+    const owners = this.#file.hosts.flatMap((host) => {
+      const owner = hostOwner(host);
+      return owner?.accountId ? [{ ...owner, accountId: owner.accountId }] : [];
+    });
+    const owner =
+      activeAccountId === null
+        ? owners.length === 1
+          ? owners[0]
+          : undefined
+        : owners.find((candidate) => candidate.accountId === activeAccountId);
+    if (!owner) return null;
+    return {
+      id: owner.accountId,
+      name: owner.name?.trim() || null,
+      chatColor: isAvatarColor(owner.chatColor) ? owner.chatColor : null,
+    };
+  }
+
+  accountMemberId(accountId: string): string | null {
+    const member = this.#state?.members.find((candidate) => candidate.accountId === accountId);
+    return member && !member.disabled ? member.id : null;
+  }
+
   assertOwnerAccount(user: CentralAuthUser): void {
     const owner = this.#state?.members.find((member) => member.role === "owner");
-    if (!owner?.email) {
+    if (!owner || (!owner.accountId && !owner.email)) {
       throw new TeamStoreError(sourceText("error.team.ownerNotLinked"));
     }
-    const matches = owner.accountId
-      ? owner.accountId === user.id
-      : normalizeEmail(user.email) === normalizeEmail(owner.email);
+    const email = optionalEmail(user.email);
+    const ownerEmail = owner.email ? normalizeEmail(owner.email) : null;
+    const matches = owner.accountId ? owner.accountId === user.id : email !== null && email === ownerEmail;
     if (!matches) {
       throw new TeamStoreError(sourceText("error.team.ownerEmailRequired"));
     }
@@ -496,7 +527,7 @@ export class TeamStore {
       logo?: AvatarImageInput | null,
       options: { serverId?: string } = {},
     ): Effect.fn.Return<TeamIdentity, RemoteWorkflowError, TeamStoreFiles> {
-      const email = yield* remoteDecode(() => normalizeEmail(user.email));
+      const email = yield* remoteDecode(() => optionalEmail(user.email));
       yield* remoteDecode(() => this.#assertNoHostFor(user.id, email));
       yield* remoteDecode(() => validateServerName(serverName));
       const activeAccountBefore = this.#file.activeAccountId;
@@ -532,7 +563,7 @@ export class TeamStore {
           {
             id: randomUUID(),
             accountId: user.id,
-            username: email,
+            username: email ?? LOCAL_OWNER_USERNAME,
             email,
             name: yield* remoteDecode(() => normalizeName(user.name)),
             avatarUrl: yield* remoteDecode(() => normalizeAvatarUrl(user.avatarUrl)),
@@ -1271,6 +1302,44 @@ export class TeamStore {
     Effect.uninterruptible,
   ).bind(this);
 
+  readonly bindRelayOwner = Effect.fn("TeamStore.bindRelayOwner")(
+    function* (this: TeamStore, user: string): Effect.fn.Return<void, RemoteWorkflowError, TeamStoreFiles> {
+      const state = yield* remoteDecode(() => this.#requireState());
+      const owner = hostOwner(state);
+      if (!owner)
+        return yield* new RemoteWorkflowError({ cause: new TeamStoreError(sourceText("error.team.ownerNotLinked")) });
+      const previous = owner.relayUser;
+      if (previous === user) return;
+      owner.relayUser = user;
+      const attempt = yield* this.#persistStateEffect(state).pipe(Effect.result);
+      if (Result.isFailure(attempt)) {
+        if (previous === undefined) delete owner.relayUser;
+        else owner.relayUser = previous;
+        return yield* attempt.failure;
+      }
+    },
+    Effect.provide(TeamStoreFiles.layer),
+    Effect.uninterruptible,
+  ).bind(this);
+
+  readonly loginWithRelayPeer = Effect.fn("TeamStore.loginWithRelayPeer")(
+    function* (
+      this: TeamStore,
+      peer: RelayPeer,
+    ): Effect.fn.Return<AuthenticatedMember, RemoteWorkflowError, TeamStoreFiles> {
+      const state = yield* remoteDecode(() => this.#requireState());
+      const existing = relayMember(state, peer.user);
+      if (existing?.disabled)
+        return yield* new RemoteWorkflowError({ cause: new TeamStoreError(sourceText("error.team.memberDisabled")) });
+      const member = existing ?? (yield* remoteDecode(() => addRelayMember(state, peer.user)));
+      const result = yield* remoteDecode(() => this.#createSession(member));
+      yield* this.#persistEffect();
+      return result;
+    },
+    Effect.provide(TeamStoreFiles.layer),
+    Effect.uninterruptible,
+  ).bind(this);
+
   authenticate(token: string): TeamMemberSummary | null {
     return this.authenticateSession(token)?.member ?? null;
   }
@@ -1338,7 +1407,6 @@ export class TeamStore {
         return yield* new RemoteWorkflowError({
           cause: new TeamStoreError(sourceText("error.team.ownerCannotChange")),
         });
-      if (patch.disabled === false && member.disabled) yield* remoteDecode(() => requireMemberSeat(state));
       if (patch.role !== undefined) {
         if (patch.role !== "admin" && patch.role !== "member")
           return yield* new RemoteWorkflowError({ cause: new TeamStoreError("Invalid role.") });
@@ -1407,18 +1475,22 @@ export class TeamStore {
 
   #applyAccount(user: CentralAuthUser): boolean {
     const state = this.#requireState();
-    const email = normalizeEmail(user.email);
+    const accountEmail = optionalEmail(user.email);
     const member =
       state.members.find((candidate) => candidate.accountId === user.id) ??
-      state.members.find((candidate) => candidate.email === email || candidate.username === email);
+      (accountEmail === null
+        ? undefined
+        : state.members.find((candidate) => candidate.email === accountEmail || candidate.username === accountEmail));
     if (!member) return false;
+    const email = accountEmail ?? member.email;
+    const username = accountEmail ?? member.username;
     const name = normalizeName(user.name);
     const avatarUrl = normalizeAvatarUrl(user.avatarUrl);
     const chatColor = user.chatColor === undefined ? member.chatColor : user.chatColor;
     if (
       member.email === email &&
       member.accountId === user.id &&
-      member.username === email &&
+      member.username === username &&
       member.name === name &&
       (member.avatarUrl ?? null) === avatarUrl &&
       (member.chatColor ?? null) === (chatColor ?? null)
@@ -1427,7 +1499,7 @@ export class TeamStore {
     }
     member.email = email;
     member.accountId = user.id;
-    member.username = email;
+    member.username = username;
     member.name = name;
     member.avatarUrl = avatarUrl;
     applyChatColor(member, user.chatColor);
@@ -1484,7 +1556,7 @@ export class TeamStore {
     }
   }
 
-  #assertNoHostFor(accountId: string, email: string): void {
+  #assertNoHostFor(accountId: string, email: string | null): void {
     const ownerless = this.#file.hosts.some((host) => {
       const owner = hostOwner(host);
       return owner !== undefined && !owner.accountId && !owner.email;
@@ -1494,12 +1566,12 @@ export class TeamStore {
     }
   }
 
-  #hostFor(accountId: string, email: string): StoredTeam | undefined {
+  #hostFor(accountId: string, email: string | null): StoredTeam | undefined {
     return this.#file.hosts.find((host) => {
       const owner = hostOwner(host);
       if (!owner) return false;
       if (owner.accountId) return owner.accountId === accountId;
-      return owner.email ? normalizeEmail(owner.email) === email : false;
+      return owner.email && email !== null ? normalizeEmail(owner.email) === email : false;
     });
   }
 
@@ -1613,6 +1685,10 @@ function normalizeEmail(value: string): string {
   return normalized;
 }
 
+function optionalEmail(value: string): string | null {
+  return value.trim() ? normalizeEmail(value) : null;
+}
+
 function normalizeName(value: string | null): string | null {
   const normalized = value?.trim() ?? "";
   if (normalized.length > INPUT_LIMITS.accountName)
@@ -1670,17 +1746,32 @@ function requireNewMemberSeat(host: StoredTeam): void {
   if (host.members.length >= INPUT_LIMITS.teamMembers) {
     throw new TeamStoreError(sourceText("error.team.memberLimit", { limit: INPUT_LIMITS.teamMembers }));
   }
-  requireMemberSeat(host);
-}
-
-function requireMemberSeat(host: StoredTeam): void {
-  if (host.members.filter((member) => !member.disabled).length >= DEFAULT_TEAM_MEMBER_LIMIT) {
-    throw new TeamStoreError(sourceText("error.team.memberLimit", { limit: DEFAULT_TEAM_MEMBER_LIMIT }));
-  }
 }
 
 function hostOwner(host: StoredTeam): StoredMember | undefined {
   return host.members.find((member) => member.role === "owner");
+}
+
+function relayMember(host: StoredTeam, user: string): StoredMember | undefined {
+  const owner = hostOwner(host);
+  return owner?.relayUser === user ? owner : host.members.find((member) => member.relayUser === user);
+}
+
+function addRelayMember(host: StoredTeam, user: string): StoredMember {
+  requireNewMemberSeat(host);
+  const member: StoredMember = {
+    id: randomUUID(),
+    username: user,
+    email: null,
+    name: user,
+    avatarUrl: null,
+    role: "member",
+    disabled: false,
+    relayUser: user,
+    createdAt: new Date().toISOString(),
+  };
+  host.members.push(member);
+  return member;
 }
 
 function ownerAccountId(host: StoredTeam): string | null {

@@ -57,7 +57,6 @@ export function SignInScreen(props: SignInScreenProps) {
           onRequestEmailCode={props.onRequestEmailCode}
           onVerifyEmailCode={props.onVerifyEmailCode}
           onReset={props.onReset}
-          inviteField
         />
       }
     >

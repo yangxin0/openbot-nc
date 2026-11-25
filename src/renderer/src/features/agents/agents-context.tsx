@@ -1,4 +1,3 @@
-import { isKnownAgentProvider } from "@openbot/contracts/agent-providers";
 import {
   type AgentNotificationLevelsSnapshot,
   type AgentStatus,
@@ -16,7 +15,6 @@ import type { AgentProfile } from "@openbot/ui/data";
 import type { CreationPreference, DevelopmentCreation } from "@openbot/ui/features/agents/agent-creation-model";
 import { createFirstAgentDraft, type FirstAgentDraft } from "@openbot/ui/features/agents/FirstAgentSetup";
 import { createEffect, createMemo, createSignal, untrack } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { FALLBACK_STATUS } from "../../app-defaults";
 import { agentProfilesEqual, toAgentProfile } from "../../app-message-projection";
 import { createStoredProfile, updateStored } from "../../app-stored-values";
@@ -75,8 +73,7 @@ const Agents = createSimpleContext({
       return (
         server?.kind === "remote" &&
         (server.state === "offline" || server.state === "connecting" || server.state === "online") &&
-        server.issue == null &&
-        server.hostedSleep !== "sleeping"
+        server.issue == null
       );
     });
     const [settingsRequest, setSettingsRequest] = createSignal<AgentSettingsRequest | null>(null);
@@ -151,17 +148,6 @@ const Agents = createSimpleContext({
 
     function setExplicitlyOpenedAgentChatId(agentId: string | null): void {
       openedAgentChatId = agentId;
-    }
-
-    function analyticsAgentProperties(agentId: string) {
-      const agent = agentList().find((candidate) => candidate.id === agentId);
-      if (!agent) return null;
-      return {
-        ...(isKnownAgentProvider(agent.provider) ? { provider: agent.provider } : {}),
-        model: agent.model,
-        reasoning_effort: agent.reasoningEffort,
-        server_kind: activeServer()?.kind ?? ("unknown" as const),
-      };
     }
 
     function applyStoredAgents(storedAgents: ClientAgentSummary[]): void {
@@ -243,69 +229,30 @@ const Agents = createSimpleContext({
     }
 
     async function updateAgent(agentId: string, updates: Omit<UpdateAgentInput, "agentId">): Promise<void> {
-      const analytics = desktopAnalytics.scope();
-      const properties = analyticsAgentProperties(agentId);
-      const changedFields = Object.keys(updates);
-      try {
-        const stored = await agentsPort().agent.updateAgent({
-          agentId,
-          ...updates,
-        });
-        const next = toAgentProfile(stored);
-        if (updates.provider !== undefined || updates.providerAccountId !== undefined) hostAccounts.schedule();
-        setAgentList((current) => {
-          const existingIndex = current.findIndex((agent) => agent.id === agentId);
-          if (existingIndex === -1) return [...current, createStoredProfile(next)];
-          const existing = current[existingIndex];
-          if (existing) updateStored(existing, next);
-          return [...current];
-        });
-        analytics.track("agent_action", {
-          action: "update",
-          changed_fields: changedFields,
-          result: "succeeded",
-          ...(properties ?? {}),
-        });
-      } catch (error) {
-        analytics.track("agent_action", {
-          action: "update",
-          changed_fields: changedFields,
-          result: "failed",
-          failure_code: "update_failed",
-          ...(properties ?? {}),
-        });
-        throw error;
-      }
+      const stored = await agentsPort().agent.updateAgent({
+        agentId,
+        ...updates,
+      });
+      const next = toAgentProfile(stored);
+      if (updates.provider !== undefined || updates.providerAccountId !== undefined) hostAccounts.schedule();
+      setAgentList((current) => {
+        const existingIndex = current.findIndex((agent) => agent.id === agentId);
+        if (existingIndex === -1) return [...current, createStoredProfile(next)];
+        const existing = current[existingIndex];
+        if (existing) updateStored(existing, next);
+        return [...current];
+      });
     }
 
     async function setAgentAvatar(agentId: string, image: AvatarImageInput | null): Promise<void> {
-      const analytics = desktopAnalytics.scope();
-      const properties = analyticsAgentProperties(agentId);
-      try {
-        const stored = await agentsPort().agent.setAvatar({ agentId, image });
-        const next = toAgentProfile(stored);
-        setAgentList((current) => {
-          const existing = current.find((agent) => agent.id === agentId);
-          if (!existing) return [...current, createStoredProfile(next)];
-          updateStored(existing, next);
-          return current;
-        });
-        analytics.track("agent_action", {
-          action: "update",
-          changed_fields: ["avatar"],
-          result: "succeeded",
-          ...(properties ?? {}),
-        });
-      } catch (error) {
-        analytics.track("agent_action", {
-          action: "update",
-          changed_fields: ["avatar"],
-          result: "failed",
-          failure_code: "avatar_update_failed",
-          ...(properties ?? {}),
-        });
-        throw error;
-      }
+      const stored = await agentsPort().agent.setAvatar({ agentId, image });
+      const next = toAgentProfile(stored);
+      setAgentList((current) => {
+        const existing = current.find((agent) => agent.id === agentId);
+        if (!existing) return [...current, createStoredProfile(next)];
+        updateStored(existing, next);
+        return current;
+      });
     }
 
     return {
@@ -347,7 +294,6 @@ const Agents = createSimpleContext({
       refreshHostAccountUsage: hostAccounts.refreshUsage,
       explicitlyOpenedAgentChatId,
       setExplicitlyOpenedAgentChatId,
-      analyticsAgentProperties,
       applyStoredAgents,
       applyFrameAgents,
       hideAgent,

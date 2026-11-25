@@ -750,16 +750,6 @@ try {
     unchangedWithoutAgent = ready !== true && (await reply.getAttribute("data-openbot-x")) === null;
     await shot(xPage, "6-x-without-agent");
     assert.ok(unchangedWithoutAgent, "The reply button changed with no X agent on the host.");
-    const seeded = spawnSync("bun", ["run", "marketplace:seed:local"], {
-      cwd: resolve(EXTENSION, "../.."),
-      stdio: "ignore",
-    });
-    assert.equal(seeded.status, 0, "The local Marketplace seed failed.");
-    await host.page.evaluate(
-      (listingId) =>
-        window.openbot.marketplaceAgents.install({ listingId, timezone: "UTC", receiptId: crypto.randomUUID() }),
-      X_AGENT_LISTING_ID,
-    );
   }
   const xAgentId = await xAgent();
   assert.ok(xAgentId, "The X agent is not on the host.");

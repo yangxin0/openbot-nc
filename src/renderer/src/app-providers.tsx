@@ -29,7 +29,7 @@ import { ProviderDetectionProvider } from "./features/custom-providers/provider-
 import { DynamicIslandBridge } from "./features/dynamic-island/dynamic-island-bridge";
 import { DynamicIslandProvider } from "./features/dynamic-island/dynamic-island-context";
 import { SetupProvider } from "./features/onboarding/onboarding-context";
-import { RemoteDesktopProvider } from "./features/remote-desktop/remote-desktop-context";
+import { RelayProvider } from "./features/relay/relay-context";
 import { ServerScopeProvider } from "./features/servers/server-scope";
 import { ServerSelectionProvider } from "./features/servers/server-selection";
 import { ServerSettingsProvider } from "./features/servers/server-settings";
@@ -81,9 +81,9 @@ export function AppProviders(props: ParentProps<AppProps>): JSX.Element {
                       <CustomAgentsProvider>
                         <ProviderDetectionProvider>
                           <ServersProvider>
-                            <DynamicIslandProvider>
-                              <ServerSettingsProvider>
-                                <RemoteDesktopProvider>
+                            <RelayProvider>
+                              <DynamicIslandProvider>
+                                <ServerSettingsProvider>
                                   <ServerSwitchProvider>
                                     <AnsweredPromptsProvider>
                                       <UiErrorsProvider>
@@ -102,9 +102,9 @@ export function AppProviders(props: ParentProps<AppProps>): JSX.Element {
                                       </UiErrorsProvider>
                                     </AnsweredPromptsProvider>
                                   </ServerSwitchProvider>
-                                </RemoteDesktopProvider>
-                              </ServerSettingsProvider>
-                            </DynamicIslandProvider>
+                                </ServerSettingsProvider>
+                              </DynamicIslandProvider>
+                            </RelayProvider>
                           </ServersProvider>
                         </ProviderDetectionProvider>
                       </CustomAgentsProvider>

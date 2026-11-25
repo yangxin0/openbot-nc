@@ -3,6 +3,8 @@ import type { messages as source } from "../../en/error/update";
 
 export const messages = {
   "error.update.unsupported": "Güncellemeler yüklü masaüstü derlemelerinde kullanılabilir.",
+  "error.update.noSelfUpdate":
+    "Bu derleme kendini güncellemez. OpenBot'u güncellemek için daha yeni bir derlemeyi elle yükleyin.",
   "error.update.notReady": "Bir güncelleme yüklenmeye hazır değil.",
   "error.update.restartFailed": "OpenBot güncellemeyi yüklemek için yeniden başlatılamadı.",
   "error.update.downloadStalled": "Güncelleme indirmesi yanıt vermeyi durdurdu. Tekrar deneyin.",
@@ -10,7 +12,7 @@ export const messages = {
   "error.update.notInstalled": "Son yeniden başlatma güncellemeyi yüklemedi. Tekrar denemek için yeniden başlatın.",
   "error.update.downloadFailed": "Güncelleme indirilemedi. Tekrar deneyin.",
   "error.update.signatureNotConfirmed":
-    "OpenBot güncellemeyi doğrulayamadı. Tekrar deneyin. Bu hata sürerse OpenBot'u openbot.run/download adresinden indirin.",
+    "OpenBot güncellemeyi doğrulayamadı. Tekrar deneyin. Bu hata sürerse OpenBot'u edindiğiniz yerden yeniden yükleyin.",
   "error.update.checkFailed": "Güncellemeler denetlenemedi. Tekrar deneyin.",
   "error.update.checkStalled": "Güncelleme denetimi yanıt vermeyi durdurdu. Tekrar deneyin.",
   "error.update.checkOffline":

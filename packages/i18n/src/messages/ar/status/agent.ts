@@ -40,13 +40,6 @@ export const messages = {
   "status.agent.feedbackSameAs": "يُضاف إلى المشكلة #{issue}",
   "status.agent.feedbackSent": "أُرسل إلى فريق OpenBot: {title}",
   "status.agent.feedbackWithdrawn": "أُزيل من GitHub: {title}",
-  "status.agent.feedbackWithdrawCommand": "إزالة البلاغ #{issue} من GitHub",
-  "status.agent.feedbackWithdrawReason":
-    "لن يتمكن أحد من رؤية هذا البلاغ على GitHub بعد الآن. لا يمكنك التراجع عن ذلك. لتصحيحه، يمكن للوكيل إرسال بلاغ مصحَّح.",
-  "status.agent.feedbackWithdrawing": "جارٍ إزالة بلاغك من GitHub…",
-  "status.agent.serverInstallCommand":
-    "إنشاء أمر لمرة واحدة يثبّت OpenBot على كمبيوتر آخر كالخادم {name} ويسجّل دخوله إلى حسابك. يشغّله الوكيل هناك.",
-  "status.agent.serverInstallCard": "أمر التثبيت للخادم {name}",
   "status.agent.browserProfileNamed":
     "انقل {agents} إلى ملف تعريف المتصفح {profile}. يحصلون على تسجيلات الدخول وملفات تعريف الارتباط الخاصة به. تُغلق علاماتهم المفتوحة.",
   "status.agent.commitCoAuthorOff": "إيقاف إضافة OpenBot كمؤلف مشارك في إيداعات جميع الوكلاء.",
@@ -56,7 +49,6 @@ export const messages = {
   "status.agent.browserProfileShared":
     "انقل {agents} إلى ملف تعريف المتصفح المشترك. يحصلون على تسجيلات الدخول وملفات تعريف الارتباط الخاصة به. تُغلق علاماتهم المفتوحة.",
   "status.agent.browserProfileOwn": "امنح كل واحد من {agents} ملف تعريف متصفح خاصًا به. تُغلق علاماتهم المفتوحة.",
-  "status.agent.feedbackSending": "جارٍ إرسال ملاحظاتك إلى فريق OpenBot…",
   "status.agent.workflowDelete": "احذف سير العمل {title} مع عمليات تشغيله وإصداراته. تتوقف خطواته المفتوحة.",
   "status.agent.deleteAgents": "احذف {agents} مع محادثاتهم وملفاتهم. لا يمكنك التراجع عن ذلك.",
   "status.agent.vaultCardFillFrames": "حقول البطاقة موجودة في إطارات من {origins}.",

@@ -29,7 +29,7 @@ export const messages = {
   "onboarding.setup.defaultProviderHint":
     "Utilisé pour les nouveaux agents locaux. Vous pourrez le changer pour chaque agent plus tard.",
   "onboarding.setup.invitation": "Invitation de l’hôte",
-  "onboarding.setup.invitationPlaceholder": "Collez un lien d’invitation https://openbot.run/join",
+  "onboarding.setup.invitationPlaceholder": "Collez un lien d’invitation openbot://join",
   "onboarding.setup.otherInvitation": "Utiliser une autre invitation",
   "onboarding.setup.joinNote":
     "Vous rejoindrez l’hôte en tant que {email}. Les invitations par e-mail ne fonctionnent que pour l’adresse qui les a reçues.",
@@ -96,11 +96,6 @@ export const messages = {
     "Créez une nouvelle équipe ici. Vos serveurs gardent leurs agents et leurs conversations.",
   "onboarding.existing.openFailed": "OpenBot n’a pas pu ouvrir {name}.",
   "onboarding.consent.notice": "En continuant, vous acceptez les {terms} et prenez connaissance de la {privacy}.",
-  "onboarding.consent.analyticsTitle": "Aidez-nous à améliorer OpenBot",
-  "onboarding.consent.analyticsDetail": "Partagez l’usage avec votre compte. Jamais vos chats ni fichiers.",
-  "onboarding.consent.thanksTitle": "Merci ! L’équipe vous en doit une.",
-  "onboarding.consent.thanksToast": "Merci de nous aider à améliorer OpenBot 💜",
-  "onboarding.consent.thanksToastDetail": "Vous pouvez modifier ce choix à tout moment dans les Réglages.",
   "onboarding.consent.termsLink": "Conditions d’utilisation",
   "onboarding.consent.privacyLink": "Politique de confidentialité",
   "onboarding.plan.title": "Connectez votre forfait",

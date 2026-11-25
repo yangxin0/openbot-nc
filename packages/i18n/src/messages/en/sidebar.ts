@@ -175,9 +175,4 @@ export const messages = defineMessages("sidebar", {
   "sidebar.machine.alertTo": "The alert goes to {name}",
   "sidebar.machine.details": "View details",
   "sidebar.machine.dismiss": "Hide until the next alert",
-  "sidebar.community.title": "Pull up a chair.",
-  "sidebar.community.body": "There’s a place for you in the AI future. Join the community on Discord and X.",
-  "sidebar.community.joinDiscord": "Join the Discord",
-  "sidebar.community.followX": "Follow OpenBot on X",
-  "sidebar.community.dismiss": "Dismiss the community invitation",
 });

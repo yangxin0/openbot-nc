@@ -3,16 +3,11 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "Events zijn niet beschikbaar op deze host.",
+  "error.backend.webhooksRemoved": "Webhook-triggers zijn niet beschikbaar in deze versie van OpenBot.",
   "error.backend.databaseIntegrity": "De database van OpenBot heeft de integriteitscontrole niet doorstaan.",
-  "error.backend.webhookRouteLimit": "Een host kan maximaal {limit} webhookroutines hebben.",
   "error.backend.webhookSettingsInvalid": "Controleer de webhookinstellingen en probeer het opnieuw.",
   "error.backend.webhookSenderSecretInvalid":
     "Plak het volledige ondertekeningsgeheim van de afzender. Het heeft 16 tot 1024 tekens en geen spaties.",
-  "error.backend.webhookRouteUnavailable":
-    "De openbare webhookroute is niet klaar. Controleer de verbinding met de host en probeer het opnieuw.",
-  "error.backend.webhookTestUnavailable":
-    "De host kan het testevent nu niet aannemen. Zorg dat de host is ingelogd en probeer het opnieuw.",
-  "error.backend.webhookTestFailed": "Het testevent heeft de routine niet bereikt. Probeer het opnieuw.",
   "error.backend.browserViewRemoteOnly": "Een live browserweergave is alleen voor een externe host.",
   "error.backend.browserViewUnsupported": "Deze externe host ondersteunt geen live browserweergave.",
   "error.backend.browserViewLimit": "Er zijn te veel browserweergaven open op deze host.",
@@ -20,30 +15,6 @@ export const messages = {
   "error.backend.browserViewFailed": "De live weergave van deze pagina is mislukt.",
   "error.backend.windowTemporarilyUnavailable": "Het venster van OpenBot is tijdelijk niet beschikbaar.",
   "error.backend.windowUnavailable": "Het venster van OpenBot is niet beschikbaar.",
-  "error.backend.sunshineApiHttp": "Sunshine-API is mislukt met HTTP {status}.",
-  "error.backend.sunshinePortsUnavailable": "Kan geen vrije Sunshine-poortgroep reserveren voor extern bureaublad.",
-  "error.backend.moonlightPortsUnavailable":
-    "Kan geen vrij Moonlight WebRTC-poortbereik reserveren voor extern bureaublad.",
-  "error.backend.iceServerNoPort": "De ICE-server van extern bureaublad heeft geen poort gekregen.",
-  "error.backend.remoteDesktopStoppedWhileStarting": "De runtime van extern bureaublad is gestopt tijdens het starten.",
-  "error.backend.sunshineNotStarted": "Sunshine is niet gestart op een gereserveerde poortgroep.",
-  "error.backend.moonlightNoHost": "Moonlight heeft geen gekoppelde lokale host.",
-  "error.backend.sunshineNoDesktop": "Sunshine heeft de Desktop-app niet gepubliceerd.",
-  "error.backend.sunshineAmbiguousPairing": "Sunshine gaf onduidelijke lokale koppelverzoeken terug.",
-  "error.backend.sunshineNoPairingRequest": "Sunshine heeft het verwachte lokale koppelverzoek niet ontvangen.",
-  "error.backend.moonlightPairingHttp": "Koppelen met Moonlight is mislukt met HTTP {status}.",
-  "error.backend.moonlightRejectedPairing": "Moonlight heeft het koppelen met Sunshine geweigerd.",
-  "error.backend.moonlightNoPin": "Moonlight heeft geen koppelpincode teruggegeven.",
-  "error.backend.moonlightPairingIncomplete": "Koppelen met Moonlight is niet voltooid.",
-  "error.backend.moonlightWebNotEmbedded": "Moonlight Web is geen ingebouwde build van OpenBot.",
-  "error.backend.moonlightEmptyResponse": "Moonlight gaf een leeg antwoord terug.",
-  "error.backend.remoteDesktopTimeout": "Het verzoek voor extern bureaublad duurde te lang.",
-  "error.backend.moonlightApiHttp": "Moonlight-API is mislukt met HTTP {status}.",
-  "error.backend.sunshineExited": "Sunshine is gestopt voordat de HTTPS-API op poort {port} klaar was.",
-  "error.backend.sunshineNoAnswer": "Sunshine reageerde niet.",
-  "error.backend.sunshineTlsUnexpected": "Sunshine gaf een onverwacht TLS-certificaat terug.",
-  "error.backend.moonlightWebExited": "Moonlight Web is gestopt voordat {url} klaar was.",
-  "error.backend.moonlightWebNotReady": "Moonlight Web is niet klaar geworden.",
   "error.backend.channelDeleteUnsupported": "Deze server ondersteunt het verwijderen van kanalen niet.",
   "error.backend.browserNavigateUnsupported":
     "Deze externe host ondersteunt geen navigatie via de adresbalk in een bestaand tabblad.",
@@ -63,8 +34,6 @@ export const messages = {
   "error.backend.browserStopUnsupported": "Deze externe host kan het laden van een pagina niet stoppen.",
   "error.backend.sharedDataLocalOnly": "Gedeelde gegevens worden beheerd op de computer waarop deze agents draaien.",
   "error.backend.browserUrlProtocol": "Alleen HTTP(S)-URL’s zijn toegestaan in de browser.",
-  "error.backend.sunshineNotReady": "Sunshine is niet klaar geworden.",
-  "error.backend.sunshineNotReadyReason": "Sunshine is niet klaar geworden. {reason}",
   "error.backend.channelLeadModelUnavailable": "Het model van de kanaalleider is niet beschikbaar.",
   "error.backend.contextCompactionIneffective":
     "Comprimeren maakt deze chat niet kleiner: na twee keer comprimeren gebruikt hij nog {percent}% van het contextvenster van het model, dus OpenBot stopt met comprimeren. Tools en instructies gebruiken het grootste deel van het venster. Zet de MCP-servers of computerbediening uit die deze agent niet nodig heeft, of kies een model met een groter venster. Start daarna een nieuwe chat.",
@@ -280,6 +249,8 @@ export const messages = {
     "De inlogserver accepteert OpenBot nog niet als app. Dit ligt niet aan je account. Gebruik een andere manier om te verbinden, zoals een lokale MCP-server.",
   "error.backend.mcpRegistrationUnavailable":
     "De inlogserver kan OpenBot niet als app registreren. Dit ligt niet aan je account. Sla deze server op in Marktplaats, Apps, en voeg er daarna een inlog-app aan toe om te verbinden.",
+  "error.backend.mcpSignInNeedsClientDocument":
+    "Deze inlogserver accepteert alleen apps die een client-ID-document publiceren, en deze versie van OpenBot publiceert er geen. Heb je een eigen inlog-app voor deze server, sla de server dan op in Marktplaats, Apps en voeg er daarna de inlog-app aan toe.",
   "error.backend.mcpSignInAbandonedGeneric": "Het inloggen is afgebroken.",
   "error.backend.mcpSignInForgotten": "De MCP-inlog is vergeten terwijl deze bezig was.",
   "error.backend.mcpSignInAbandoned": "Het inloggen bij MCP is afgebroken.",
@@ -485,7 +456,6 @@ export const messages = {
   "error.backend.branchSourceBusy": "Stop de huidige beurt voordat je een aftakking van deze chat maakt.",
   "error.backend.branchMessageNotFound": "Je kunt alleen aftakken vanaf een voltooid antwoord van de agent.",
   "error.backend.branchRemoteUnsupported": "Aftakkingen zijn alleen beschikbaar voor agents op deze computer.",
-  "error.backend.feedbackWithdrawRemoteUnsupported": "Vraag de agent om deze melding te verwijderen.",
   "error.backend.threadMoveRefused":
     "Alleen een bericht dat je alleen naar deze agent hebt gestuurd, kan in een nieuwe thread draaien.",
   "error.backend.taskTitleRequired": "Geef de taak een korte titel.",

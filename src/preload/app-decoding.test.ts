@@ -14,29 +14,24 @@ import type {
 import { describe, expect, it } from "vitest";
 import {
   decodeAccountSessions,
-  decodeAnalyticsPreference,
   decodeAppAppearancePreference,
   decodeAppBehaviorPreference,
   decodeAppInfo,
   decodeAppLanguagePreference,
   decodeApprovalAutomationPreference,
   decodeAppSetupState,
-  decodeBillingState,
   decodeCentralAuthState,
   decodeChatWindowTargets,
   decodeCustomAgentResult,
   decodeCustomAgents,
   decodeCustomAgentUsage,
-  decodeCustomServerCheckoutResult,
   decodeDetectedModelServers,
   decodeDiscoverModelsResult,
-  decodeHostedServer,
   decodeInstalledFonts,
   decodeMobileConnectedDevices,
   decodeMobileConnectTicket,
   decodeNotificationOpenedEvent,
   decodeNotificationPreference,
-  decodePendingMarketplaceListing,
   decodeProviderDetectionSettings,
   decodeSentMessageStats,
   decodeUpdatePreference,
@@ -114,8 +109,6 @@ const voiceServer = {
 };
 
 const valid: [string, (value: unknown) => unknown, unknown][] = [
-  ["an opened custom server checkout", decodeCustomServerCheckoutResult, { opened: true }],
-  ["a custom server checkout with no link", decodeCustomServerCheckoutResult, { opened: false }],
   [
     "app behavior with a quit guard",
     decodeAppBehaviorPreference,
@@ -148,17 +141,6 @@ const valid: [string, (value: unknown) => unknown, unknown][] = [
     "app info",
     decodeAppInfo,
     { name: "OpenBot", version: "1.0.0", platform: "darwin", variant: "dev" } satisfies AppInfo,
-  ],
-  [
-    "app info with an install ID",
-    decodeAppInfo,
-    {
-      name: "OpenBot",
-      version: "1.0.0",
-      platform: "darwin",
-      variant: "production",
-      analyticsInstallId: "install-0b5c7c9e-8d55-4a3f-9d0e-2f7c1a6b4e21",
-    } satisfies AppInfo,
   ],
   [
     "app info drawn on the CPU",
@@ -200,7 +182,6 @@ const valid: [string, (value: unknown) => unknown, unknown][] = [
     decodeAppSetupState,
     { completed: true, preferredProvider: "codex", preferredModel: null } satisfies AppSetupState,
   ],
-  ["analytics preference", decodeAnalyticsPreference, { enabled: false }],
   [
     "approval automation",
     decodeApprovalAutomationPreference,
@@ -386,8 +367,6 @@ const valid: [string, (value: unknown) => unknown, unknown][] = [
 ];
 
 const malformed: [string, (value: unknown) => unknown, unknown][] = [
-  ["a custom server checkout without a result", decodeCustomServerCheckoutResult, {}],
-  ["a custom server checkout with a text result", decodeCustomServerCheckoutResult, { opened: "yes" }],
   [
     "an unknown quit guard",
     decodeAppBehaviorPreference,
@@ -405,11 +384,6 @@ const malformed: [string, (value: unknown) => unknown, unknown][] = [
     { launchAtLogin: true, keepRunningInBackground: false, keepAwake: null, keepAwakeOnBattery: null },
   ],
   ["sent message stats with a negative count", decodeSentMessageStats, { firstSentAt: null, sentCount: -1 }],
-  [
-    "app info with an install ID that is not text",
-    decodeAppInfo,
-    { name: "OpenBot", version: "1.0.0", platform: "darwin", variant: "production", analyticsInstallId: 1 },
-  ],
   [
     "app info with a software rendering flag that is not a boolean",
     decodeAppInfo,
@@ -452,7 +426,6 @@ const malformed: [string, (value: unknown) => unknown, unknown][] = [
     decodeAppSetupState,
     { completed: true, preferredProvider: "other", preferredModel: null },
   ],
-  ["analytics preference without a switch", decodeAnalyticsPreference, {}],
   ["approval automation without overrides", decodeApprovalAutomationPreference, { defaultAutoApprove: true }],
   ["language preference with an unknown tag", decodeAppLanguagePreference, { language: "xx" }],
   ["appearance preference with no transparent window", decodeAppAppearancePreference, { appearance: "dark" }],
@@ -621,96 +594,5 @@ describe("app decoding", () => {
 
   it.each(malformed)("rejects %s", (_name, decode, value) => {
     expect(() => decode(value)).toThrow(/^Invalid /);
-  });
-});
-
-const AGENT_ID = "0f8fad5b-d9cb-469f-a165-70867728950e";
-
-describe("pending Marketplace listing", () => {
-  it.each([
-    ["an agent", { kind: "agent", id: AGENT_ID }],
-    ["a curated agent", { kind: "agent", id: "openbot-curated-agent-copy-editor" }],
-    ["a skill", { kind: "skill", id: "release-notes" }],
-  ])("keeps %s", (_name, value) => {
-    expect(decodePendingMarketplaceListing(value)).toEqual(value);
-  });
-
-  it("drops a field main did not name", () => {
-    expect(decodePendingMarketplaceListing({ kind: "skill", id: "release-notes", install: true })).toEqual({
-      kind: "skill",
-      id: "release-notes",
-    });
-  });
-
-  it.each([
-    ["no link", null],
-    ["a bare slug", "release-notes"],
-    ["an unknown kind", { kind: "plugin", id: "release-notes" }],
-    ["an agent id in upper case", { kind: "agent", id: AGENT_ID.toUpperCase() }],
-    ["an agent with a path", { kind: "agent", id: "../account" }],
-    ["an agent with a dot", { kind: "agent", id: "agent.md" }],
-    ["an agent id over 128 characters", { kind: "agent", id: "a".repeat(129) }],
-    ["a skill with a path", { kind: "skill", id: "../account" }],
-    ["a skill with a dot", { kind: "skill", id: "notes.md" }],
-    ["a skill slug over 64 characters", { kind: "skill", id: "a".repeat(65) }],
-    ["an empty id", { kind: "skill", id: "" }],
-    ["an id that is not text", { kind: "agent", id: 42 }],
-  ])("refuses %s", (_name, value) => {
-    expect(decodePendingMarketplaceListing(value)).toBeNull();
-  });
-});
-
-describe("server storage", () => {
-  const server = {
-    deletionScheduledAt: null,
-    serverId: "server-1",
-    name: "Server",
-    size: "small",
-    plan: "starter",
-    interval: "month",
-    currency: "eur",
-    state: "running",
-    error: null,
-    createdAt: "2026-11-11T12:00:00.000Z",
-    updatedAt: "2026-11-11T12:00:00.000Z",
-  };
-  const plan = {
-    subscriptionId: "sub_1",
-    serverId: "server-1",
-    serverName: "Server",
-    plan: "starter",
-    interval: "month",
-    currency: "eur",
-    amount: 900,
-    status: "active",
-    currentPeriodEnd: null,
-    cancelAtPeriodEnd: false,
-  };
-  const state = (storageGb?: unknown) => ({
-    available: true,
-    hasCustomer: true,
-    servers: [storageGb === undefined ? plan : { ...plan, storageGb }],
-  });
-
-  it("keeps the storage of a hosted server and of a plan", () => {
-    expect(decodeHostedServer({ ...server, storageGb: 25 })).toEqual({ ...server, storageGb: 25 });
-    expect(decodeBillingState(state(25))).toEqual(state(25));
-  });
-
-  it("keeps a server and a plan from an account server that sends no storage", () => {
-    expect(decodeHostedServer(server)).toEqual(server);
-    expect(decodeBillingState(state())).toEqual(state());
-  });
-
-  it.each([
-    ["zero", 0],
-    ["a negative number", -25],
-    ["a fraction", 25.5],
-    ["text", "25"],
-    ["null", null],
-    ["a number that is not safe", 2 ** 60],
-  ])("leaves out a storage that is %s", (_name, storageGb) => {
-    expect(decodeHostedServer({ ...server, storageGb })).toEqual(server);
-    expect(decodeBillingState(state(storageGb))).toEqual(state());
   });
 });

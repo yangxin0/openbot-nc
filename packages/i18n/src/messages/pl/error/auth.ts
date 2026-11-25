@@ -19,8 +19,6 @@ export const messages = {
     "OpenBot nie może połączyć się z usługą kont. Sprawdź połączenie i spróbuj ponownie.",
   "error.auth.serviceTimeout": "Usługa kont nie odpowiedziała na czas. Spróbuj ponownie.",
   "error.auth.serviceStatus": "Usługa kont zwróciła błąd ({status}). Spróbuj ponownie później.",
-  "error.auth.invalidHostedServer": "Usługa kont zwróciła nieprawidłowy serwer hostowany.",
-  "error.auth.invalidServerClaim": "Usługa kont zwróciła nieprawidłowy kod serwera.",
   "error.auth.codeNotSent": "OpenBot nie mógł wysłać kodu logowania.",
   "error.auth.deliveryTimeout":
     "OpenBot nie zdołał na czas potwierdzić dostarczenia. Kod może jeszcze dotrzeć; sprawdź skrzynkę, zanim wyślesz go ponownie.",

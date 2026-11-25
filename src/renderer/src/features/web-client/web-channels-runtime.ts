@@ -31,8 +31,6 @@ export function createWebChannelsPort(
   hostId: () => string,
   eventsEnabled: () => boolean,
   routineRecoveryEnabled: () => boolean,
-  webhookTestsEnabled: () => boolean,
-  webhookSenderSecretEnabled: () => boolean,
   routinesOnceEnabled: () => boolean,
 ): ChannelsPort {
   const attachmentMedia = createWebAttachmentMedia(remote, hostId);
@@ -41,14 +39,7 @@ export function createWebChannelsPort(
   const channels = remote.channels;
   const admin = remote.admin;
   const eventRoutines = admin
-    ? webEventRoutinesApi(
-        admin.request,
-        routineRecoveryEnabled,
-        webhookTestsEnabled,
-        webhookSenderSecretEnabled,
-        undefined,
-        routinesOnceEnabled,
-      )
+    ? webEventRoutinesApi(admin.request, routineRecoveryEnabled, undefined, routinesOnceEnabled)
     : undefined;
   async function importAttachments(chosen: File[]): Promise<AttachmentSummary[]> {
     if (chosen.length > INPUT_LIMITS.attachments)

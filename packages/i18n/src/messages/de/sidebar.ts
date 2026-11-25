@@ -199,9 +199,4 @@ export const messages = {
   "sidebar.machine.alertTo": "Die Warnung geht an {name}",
   "sidebar.machine.details": "Details ansehen",
   "sidebar.machine.dismiss": "Bis zur nächsten Warnung ausblenden",
-  "sidebar.community.title": "Setz dich zu uns.",
-  "sidebar.community.body": "In der KI-Zukunft ist ein Platz für dich frei. Komm in die Community auf Discord und X.",
-  "sidebar.community.joinDiscord": "Zum Discord",
-  "sidebar.community.followX": "OpenBot auf X folgen",
-  "sidebar.community.dismiss": "Community-Einladung ausblenden",
 } as const satisfies PartialTranslation<typeof source>;

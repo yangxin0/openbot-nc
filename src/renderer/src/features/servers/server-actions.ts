@@ -1,21 +1,17 @@
 import type { ServerSummary } from "@openbot/contracts/ipc";
+import type { AppTextKey } from "@openbot/i18n";
 import { classifyFailure } from "@openbot/telemetry";
 import type { ServerActionCallbacks } from "@openbot/ui/features/servers/ServerActionItems";
 import type { HiddenServer } from "@openbot/ui/features/servers/ServerRail";
 import { useText } from "@openbot/ui/text";
 import { actionToast } from "../../action-toast";
 import { usePlatform } from "../../platform";
+import { useRelay } from "../relay/relay-context";
 import { useSettings } from "../settings/settings-context";
-import { openServerPlanCheckout } from "./ServerPlanReminder";
 import { serverSupportsCapability } from "./server-capabilities";
 import { useServerSelection } from "./server-selection";
 import { useServerSettings } from "./server-settings";
 import { useServers } from "./servers-context";
-import { serversPort } from "./servers-port";
-
-export function renewServerPlan(serverId: string): Promise<void> {
-  return openServerPlanCheckout((id) => serversPort().hostedServers.openCheckout(id), serverId);
-}
 
 export function useServerActions() {
   const platform = usePlatform();
@@ -23,15 +19,7 @@ export function useServerActions() {
   const {
     servers,
     setServerMuted,
-    setJoinServerOpen,
-    setAddServerOpen,
     setCreateLocalServerOpen,
-    setInstallServerOpen,
-    hostedServersAvailable,
-    hostedServerIds,
-    hostedServersLoaded,
-    planDeletesAt,
-    refreshHostedServersAvailable,
     localServerHidden,
     setLocalServerHidden,
     setServerHidden,
@@ -39,7 +27,8 @@ export function useServerActions() {
   } = useServers();
   const { selectServer } = useServerSelection();
   const { openServerSettings, requestLeaveServer, requestRestartServer } = useServerSettings();
-  const { openHostedServerDelete, openNotificationLevels } = useSettings();
+  const { openAppSettings, openNotificationLevels } = useSettings();
+  const relay = useRelay();
 
   function remoteServers(): ServerSummary[] {
     return servers().filter((server) => server.kind === "remote");
@@ -86,22 +75,14 @@ export function useServerActions() {
 
   function add(): void {
     if (platform.landingPreview) return;
-    if (hostedServersAvailable()) setAddServerOpen(true, "server_rail");
-    else setJoinServerOpen(true);
-    void refreshHostedServersAvailable();
+    openAppSettings(undefined, "team");
+  }
+
+  function addLabel(): AppTextKey {
+    return relay.hasIdentity() ? "server.rail.teamServers" : "server.rail.connectTeam";
   }
 
   const createLocal = platform.landingPreview ? undefined : () => setCreateLocalServerOpen(true);
-
-  function addMenuCreateLocal(): (() => void) | undefined {
-    return hostedServersAvailable() ? undefined : createLocal;
-  }
-
-  const installServer = platform.landingPreview ? undefined : () => setInstallServerOpen(true);
-
-  function addMenuInstallServer(): (() => void) | undefined {
-    return hostedServersAvailable() ? undefined : installServer;
-  }
 
   function hideFailed(server: ServerSummary, hidden: boolean, error: unknown): void {
     actionToast.error(t(hidden ? "server.rail.hideFailed" : "server.rail.showFailed", { name: server.name }), {
@@ -169,20 +150,17 @@ export function useServerActions() {
     onOpenSettings: openServerSettings,
     onLeave: requestLeaveServer,
     onRemove: requestLeaveServer,
-    canRemove: (serverId) => hostedServersLoaded() && !hostedServerIds().has(serverId) && !onThisComputer(serverId),
-    onDelete: (serverId, trigger) =>
-      onThisComputer(serverId) ? requestLeaveServer(serverId, trigger) : openHostedServerDelete(serverId, trigger),
-    canDelete: (serverId) => hostedServerIds().has(serverId) || onThisComputer(serverId),
+    canRemove: (serverId) => !onThisComputer(serverId),
+    onDelete: requestLeaveServer,
+    canDelete: onThisComputer,
     onRestart: requestRestartServer,
     canRestart: (serverId) => {
-      if (hostedServerIds().has(serverId) || onThisComputer(serverId)) return true;
+      if (onThisComputer(serverId)) return true;
       const server = servers().find((candidate) => candidate.id === serverId);
       return server?.state === "online" && serverSupportsCapability(server, "host-restart-v1");
     },
     onHide: (serverId) => void hide(serverId),
     canHide,
-    planDeletesAt,
-    onRenewPlan: renewServerPlan,
   } satisfies ServerActionCallbacks;
 
   return {
@@ -191,11 +169,8 @@ export function useServerActions() {
     reorder,
     select,
     add,
+    addLabel,
     createLocal,
-    addMenuCreateLocal,
-    installServer,
-    addMenuInstallServer,
-    addCreatesServer: hostedServersAvailable,
     hiddenServers,
     callbacks,
   };

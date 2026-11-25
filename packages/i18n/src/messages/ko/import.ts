@@ -41,17 +41,12 @@ export const messages = {
   "import.guide.hermesSetupLabel": "프로필 가져오는 방법",
   "import.guide.setupFolder": "이 컴퓨터에서 읽기",
   "import.guide.setupServer": "서버에서 읽기",
-  "import.guide.setupCommand": "명령으로 설치",
   "import.guide.hermesStepFolder": "Hermes 폴더 읽기",
   "import.guide.hermesStep1": "Hermes에 내보내기 스킬 추가",
   "import.guide.readFolder": "Hermes 폴더 읽기",
   "import.guide.readFolderMeta": "OpenBot은 ~/.hermes를 읽기만 하고 아무것도 변경하지 않아요.",
   "import.guide.readFolderNote":
     "변경하기 전에 모든 프로필의 모든 항목을 확인할 수 있어요. MCP 서버도 함께 오지만 꺼진 상태예요.",
-  "import.guide.copyCommand": "명령 복사",
-  "import.guide.commandCopied": "명령을 복사했어요",
-  "import.guide.commandNote":
-    "Hermes 채팅에 입력하세요. 터미널에서는 같은 이름으로 hermes skills install을 실행하세요. Hermes는 스킬을 설치하기 전에 검사해요.",
   "import.guide.hermesSkillNote":
     "~/.hermes/skills/openbot-export/SKILL.md로 저장하세요. Hermes가 다음 채팅에서 찾아요. 내보내기에는 포함되지 않아요.",
   "import.guide.hermesMessageNote":

@@ -160,18 +160,6 @@ export function ConversationHeader() {
         ultrafast: ultrafast(),
         onFastModeChange: fastModeChange(),
       }}
-      remoteControl={
-        props.remoteDesktopEnabled !== false && props.server?.kind === "remote"
-          ? {
-              enabled: Boolean(props.remoteDesktopSessionActive || props.server.state === "online"),
-              active: Boolean(props.remoteDesktopSessionActive),
-              visible: Boolean(props.remoteDesktopVisible),
-              onOpen: (trigger) => {
-                if (props.server) void props.onOpenRemoteDesktop(props.server.id, trigger);
-              },
-            }
-          : undefined
-      }
       threads={
         <Show when={props.threads}>
           {(threads) => <ThreadHeader {...threads().header} onNew={startNewThread} onMoveToSide={moveThreadToPanel} />}

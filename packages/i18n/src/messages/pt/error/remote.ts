@@ -2,55 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "Atualize o cliente para usar a configuração da área de trabalho remota.",
-  "error.remote.desktopSetupUnavailable": "A configuração da área de trabalho remota está indisponível.",
-  "error.remote.desktopTestUnavailable": "O teste de área de trabalho remota está indisponível.",
-  "error.remote.controlUnavailable": "O controle remoto está indisponível.",
-  "error.remote.controlSessionNotFound": "Sessão de controle remoto não encontrada.",
-  "error.remote.controlNotAllowed": "O proprietário deste computador não permite que sua função o controle.",
-  "error.remote.controlDeclined": "A pessoa neste computador não permitiu o controle remoto.",
-  "error.remote.testRuntimeUpdate":
-    "Atualize o ambiente de execução da área de trabalho remota do macOS para executar este teste.",
-  "error.remote.testOtherSessions": "Encerre as outras sessões de área de trabalho remota antes de iniciar um teste.",
-  "error.remote.testPermissions":
-    "Verifique as permissões e a sessão gráfica no computador anfitrião antes de iniciar o teste.",
-  "error.remote.controlSessionEnded": "A sessão de controle remoto terminou.",
-  "error.remote.testPanelFailed": "O computador anfitrião não conseguiu abrir o painel de teste.",
-  "error.remote.sessionCapacity": "O computador anfitrião já tem quatro sessões ativas.",
-  "error.remote.linuxNeedsX11":
-    "A área de trabalho remota no Linux precisa de uma sessão X11. Não há suporte para Wayland.",
-  "error.remote.runtimeMissing":
-    "O ambiente de execução do Sunshine e do Moonlight Web está ausente ou não é compatível com este computador anfitrião. Instale a versão completa do OpenBot em um Mac, um computador anfitrião Windows x64 ou Linux x64 e reinicie o OpenBot.",
-  "error.remote.testActive": "Um teste de área de trabalho remota está ativo. Tente novamente quando terminar.",
-  "error.remote.screenRecordingDenied":
-    "O computador anfitrião não permitiu que o OpenBot grave a tela. Conceda a permissão de gravação de tela no computador anfitrião e tente novamente.",
-  "error.remote.windowsSessionDisconnected":
-    "A sessão do Windows no computador anfitrião está desconectada, então não há tela para compartilhar. Entre no Windows na tela do computador anfitrião e tente novamente.",
-  "error.remote.windowsCaptureDenied":
-    "O Windows no computador anfitrião não permite que o OpenBot grave a tela. Desbloqueie o Windows na tela do computador anfitrião, feche qualquer aviso de administrador e tente novamente. Se o problema continuar, reinicie o computador anfitrião.",
-  "error.remote.macScreenLocked":
-    "O Mac está bloqueado, então não pode compartilhar a tela. Desbloqueie o Mac na tela dele e tente novamente.",
-  "error.remote.streamTooSlowLowerQuality":
-    "A conexão com o computador anfitrião está lenta demais para a imagem. Tente novamente: a próxima conexão usará uma qualidade mais baixa.",
-  "error.remote.streamTooSlow":
-    "A conexão com o computador anfitrião está lenta demais para a imagem. Use uma rede mais rápida e tente novamente.",
-  "error.remote.noPictureSwitchEncoder":
-    "O computador anfitrião não enviou nenhuma imagem. Tente novamente: a próxima conexão usa uma configuração de vídeo que funciona em mais computadores.",
-  "error.remote.teamSessionExpired": "A sessão da equipe expirou.",
-  "error.remote.finishTestBeforeSwitch": "Conclua o teste de área de trabalho remota antes de trocar de tela.",
-  "error.remote.displayNotFound": "Tela remota não encontrada.",
-  "error.remote.displaySwitchInProgress": "Uma troca de tela está em andamento.",
-  "error.remote.localTestListenerUnavailable": "O serviço de escuta do teste local está indisponível.",
-  "error.remote.localTestNotFound": "Sessão de teste local não encontrada.",
-  "error.remote.runtimeUnavailable": "O ambiente de execução da área de trabalho remota não está disponível.",
-  "error.remote.sunshineStartFailed":
-    "O Sunshine não iniciou no computador anfitrião. Verifique os logs da área de trabalho remota no computador anfitrião e tente novamente.",
-  "error.remote.moonlightStartFailed":
-    "O Moonlight Web não iniciou no computador anfitrião. Verifique os logs da área de trabalho remota no computador anfitrião e tente novamente.",
-  "error.remote.pairingFailed":
-    "O Moonlight não conseguiu parear com o Sunshine no computador anfitrião. Tente novamente. Se o problema continuar, reinicie o OpenBot no computador anfitrião.",
-  "error.remote.runtimeStartFailed":
-    "O ambiente de execução da área de trabalho remota não iniciou no computador anfitrião. Verifique os logs da área de trabalho remota no computador anfitrião e tente novamente.",
   "error.remote.hostUnreachable": "Não é possível acessar o computador anfitrião.",
   "error.remote.signInToHostAgain": "Entre neste computador anfitrião novamente.",
   "error.remote.invalidData": "O computador anfitrião retornou dados inválidos.",
@@ -75,12 +26,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "O serviço de contas aceitou outro computador anfitrião.",
   "error.remote.inviteIdentityChanged": "A identidade do computador anfitrião mudou durante a aceitação do convite.",
   "error.remote.localServerRemove": "O servidor local não pode ser removido.",
-  "error.remote.desktopSetupHostUpdate":
-    "Atualize o OpenBot no computador anfitrião para verificar a configuração da área de trabalho remota.",
-  "error.remote.desktopTestHostUpdate":
-    "Atualize o OpenBot no computador anfitrião para testar a configuração da área de trabalho remota.",
   "error.remote.viewerProxyUnavailable": "O proxy local do visualizador remoto está indisponível.",
-  "error.remote.viewerTransportInvalid": "O transporte do visualizador remoto é inválido.",
   "error.remote.viewerProxyNoPort": "O proxy local do visualizador remoto não obteve uma porta.",
   "error.remote.inviteNeedsConnection": "O computador anfitrião deve se conectar uma vez antes de criar convites.",
   "error.remote.permanentInviteUnsupported":

@@ -6,7 +6,6 @@ import type { AgentSummary } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
 import { Effect, Result } from "effect";
 import { zipSync } from "fflate";
-import { CentralAuthManager } from "../src/main/central-auth-manager";
 import { LocalSkillLibrary } from "../src/main/local-skill-library";
 import { localSkillTools } from "../src/main/local-skill-tools";
 import { SkillMarketplaceService } from "../src/main/skill-marketplace-service";
@@ -75,14 +74,7 @@ async function scenario(name: string, run: (context: Context) => Promise<Record<
     };
     const agents = () => [agent];
     const library = new LocalSkillLibrary(join(root, "library"), agents);
-    const auth = new CentralAuthManager({
-      apiUrl: "https://example.invalid",
-      storagePath: join(root, "auth.json"),
-      canPersist: () => false,
-      encrypt: (value) => Buffer.from(value),
-      decrypt: (value) => value.toString("utf8"),
-    });
-    const service = new SkillMarketplaceService(auth, agents, () => Effect.void, library);
+    const service = new SkillMarketplaceService(agents, () => Effect.void, library);
     const tools = localSkillTools(service);
     await writeFile(join(workspace, "source/SKILL.md"), skillMarkdown("First.", "Revision 1."));
     const created = await Effect.runPromise(tools.create({ agentId: AGENT_ID, sourcePath: "source" }));

@@ -178,9 +178,4 @@ export const messages = {
   "sidebar.machine.alertTo": "알림은 {name}에게 전송돼요",
   "sidebar.machine.details": "세부정보 보기",
   "sidebar.machine.dismiss": "다음 알림까지 숨기기",
-  "sidebar.community.title": "의자를 하나 끌어당겨 앉으세요.",
-  "sidebar.community.body": "AI의 미래에 여러분의 자리가 있어요. Discord와 X에서 커뮤니티에 참여해 보세요.",
-  "sidebar.community.joinDiscord": "Discord 참여",
-  "sidebar.community.followX": "X에서 OpenBot 팔로우",
-  "sidebar.community.dismiss": "커뮤니티 초대 닫기",
 } as const satisfies PartialTranslation<typeof source>;

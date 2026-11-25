@@ -3,6 +3,8 @@ import type { messages as source } from "../../en/error/update";
 
 export const messages = {
   "error.update.unsupported": "Обновления доступны в установленных сборках для компьютера.",
+  "error.update.noSelfUpdate":
+    "Эта сборка не обновляется сама. Чтобы обновить OpenBot, установите более новую сборку вручную.",
   "error.update.notReady": "Обновление не готово к установке.",
   "error.update.restartFailed": "OpenBot не смог перезапуститься для установки обновления.",
   "error.update.downloadStalled": "Загрузка обновления перестала отвечать. Повторите попытку.",
@@ -11,7 +13,7 @@ export const messages = {
   "error.update.notInstalled": "Последний перезапуск не установил обновление. Перезапустите, чтобы повторить попытку.",
   "error.update.downloadFailed": "Не удалось загрузить обновление. Повторите попытку.",
   "error.update.signatureNotConfirmed":
-    "OpenBot не удалось проверить обновление. Повторите попытку. Если ошибка повторяется, скачайте OpenBot на openbot.run/download.",
+    "OpenBot не удалось проверить обновление. Повторите попытку. Если ошибка повторяется, установите OpenBot заново из того места, где вы его получили.",
   "error.update.checkFailed": "Не удалось проверить обновления. Повторите попытку.",
   "error.update.checkStalled": "Проверка обновлений перестала отвечать. Повторите попытку.",
   "error.update.checkOffline":

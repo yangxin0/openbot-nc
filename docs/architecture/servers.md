@@ -242,31 +242,6 @@ no such thread. A host without the capability drops the field and reads the chat
 question actions in a side thread. A question pane that is already open there shows the chat's side
 question.
 
-### Live voice
-
-`live-voice-v1` (`team-protocol/live-voice-v1.ts`) lets a member talk to an agent of the host by Codex
-live voice. `POST /v1/live-voice/start` takes `{ agentId, sdp, voice? }`: the client's WebRTC offer of
-one audio track and the `oai-events` data channel. The host starts a Codex process with its own Codex
-sign-in, or the Codex account of the agent, and answers `{ sessionId, sdp }` with the answer of OpenAI.
-Audio goes between the client and OpenAI, never through the host. The member must be able to chat with
-the agent, because each spoken request goes to the agent as the member's message. The start needs an
-open event connection of the same logical session, or it answers 409. A missing Codex sign-in, a
-timeout or a refused call also answers 409 with a sentence for the member. Any other Codex failure
-answers 409 with `error.voice.live.startFailed`: the next step and at most 160 characters of the
-redacted reason. The host log keeps the longer redacted reason. A phone that gets 500 from an older
-host shows `error.voice.live.hostFailed`.
-
-Each member has at most one session; a new start ends the earlier one of that member, and the local
-user's session stays. The host sends the `live-voice` event (transcript parts and the end) only to the
-connections of that member. `POST /v1/live-voice/stop` with `{ sessionId }` stops a session of the
-caller only. The host also stops it when the last event connection of the logical session that started
-it closes. The capability is advertised only to protocol 9 clients. The desktop on a joined server
-uses live voice only when the host advertises it and the user turned it on in Settings → Voice;
-otherwise the voice transcribes. The mobile app uses it in the voice conversation of an agent chat
-when the host advertises it, the user turned on GPT live voice in Settings → Voice, and the app binary
-has WebRTC (`react-native-webrtc`); otherwise the phone's own voice conversation runs. The phone sends
-a voice name only when it is one of the contract. The web client does not use it yet.
-
 ### Dictation for a member
 
 `voice-transcription-v1` (`team-protocol/voice-transcription-v1.ts`) lets any member have the host turn
@@ -1168,7 +1143,6 @@ host advertises a capability only when its `TeamApiAdmin` member exists.
 | `feedback-withdraw-v1` | Remove on a feedback thank-you card in an agent's own chat (the owner only, who approves each report). The host takes the report off GitHub with its own OpenBot account, which sent it, and changes the card for every member. Protocol 9 only | `agent.withdrawFeedback` |
 | `agent-notification-levels-v1` | Read and set the member's own notification level of the server and of each agent | none: each member, own levels only |
 | `sidebar-pins-v1` | Read, replace and seed the member's own ordered list of pinned agents and channels | none: each member, own pins only |
-| `live-voice-v1` | Start and stop Codex live voice with an agent, with the host's Codex sign-in; the `live-voice` event goes to the member who started it. Protocol 9 only | none: each member who can chat with the agent |
 | `machine-resources-v1` | Read the disk, memory and CPU use of the host machine; read and set the alert levels and the owner or admin who gets the `machine-alert` event | `storage`, `hostAdmin` |
 | `prompt-cache-ttl-v1` | Read and set how long Claude keeps the prompt cache of the host's agents | `hostAdmin` |
 | `claude-compact-window-v1` | Read and set the size at which Claude Code compacts the chats of the host's agents. Protocol 9 only | `hostAdmin` |
@@ -1273,7 +1247,7 @@ zone of the computer from before that change.
 the memory of a server, no limit on a desktop computer. `automaticTurnLimit` gives that value. A chosen
 value can be above it; low memory still holds a new turn. `agentTaskLimit` is the task limit of an
 agent with no limit of its own; `null` is `defaultAgentTaskLimit` (4). A save starts the turns that a
-higher limit lets start. `openbot status` shows the limit that runs.
+higher limit lets start. `openbot-nc status` shows the limit that runs.
 
 `host-personality-v1` reads and sets how the agents of a server talk while they work
 (`openbot-server-personality-v1.json`, Server settings → Personality). `natural`, the default, tells
@@ -1286,11 +1260,11 @@ agents' threads, so the next turn uses the new prompt. A host without the capabi
 `host-restart-v1` lets an owner or admin restart a self-hosted server from Restart server in the
 server menu (desktop and web client) or in Server settings (mobile). Only a host in server mode
 (`OPENBOT_SERVER=1`, not a hosted server) advertises it, because only there does a service manager
-start the app again: systemd (`Restart=always` in `openbot.service`) or the Docker restart policy.
+start the app again: systemd (`Restart=always` in `openbot-nc.service`) or the Docker restart policy.
 The host answers, then quits; it does not use `app.relaunch`, which would start the app outside
 `xvfb-run`. Running agent turns stop, as on any restart. A hosted server still restarts through the
 account service, and a server on this computer through `localServers`. A host that does not answer
-cannot get the request; then the owner runs `sudo openbot restart`.
+cannot get the request; then the owner runs `sudo openbot-nc restart`.
 
 `owner-transfer-v1` lets the owner give the server to another OpenBot account from Server Settings ›
 Members (desktop, web client and mobile). The owner enters an email; the account service stores a
@@ -1931,7 +1905,7 @@ change.
 
 Each extra server is a headless child process of the same binary (`src/main/local-server-child.ts`).
 `LocalServers` (`src/main/local-servers/local-servers.ts`) starts it with its own `--user-data-dir`
-(`<userData>/local-servers/<id>`) and its own agent root (`~/OpenBot/Servers/<id>`). The child
+(`<userData>/local-servers/<id>`) and its own agent root (`~/OpenBot-NC/Servers/<id>`). The child
 sets up a password host whose one member is the owner, starts the Team API on loopback only, and
 writes one ready line to stdout with the API address and its identity. The line has no secret. The
 desktop pins the identity at the first start, signs in as the owner with the password, and attaches
@@ -2060,7 +2034,7 @@ turns while it is low and limits the turns that run at the same time. See
 [hosted servers](../hosted-servers.md) for the flow, the configuration, the memory guards and the template.
 
 A self-hosted server uses the same Linux build, scripts and units on the owner's own computer, with
-`/opt/OpenBot/hosted/mode` set to `self`. It has no claim: main starts in server mode
+`/opt/OpenBot-NC/hosted/mode` set to `self`. It has no claim: main starts in server mode
 (`src/main/server-mode.ts`, `OPENBOT_SERVER=1`), and the `openbot` terminal command signs it in over
 a Unix socket in the 0700 runtime directory of the service user. Main publishes the host after each
 sign-in. See [self-hosted servers](../self-hosted-server.md).

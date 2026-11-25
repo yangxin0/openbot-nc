@@ -1,16 +1,8 @@
-import type {
-  AddedAgent,
-  InstallMarketplaceAgentInput,
-  McpAccessSnapshot,
-  McpSignInRelayPage,
-  SetMcpAccessInput,
-} from "@openbot/contracts/ipc";
+import type { McpAccessSnapshot, McpSignInRelayPage, SetMcpAccessInput } from "@openbot/contracts/ipc";
 import { appPort } from "../../app-port";
 import { type AgentSkillCalls, agentSkillCalls, type SkillsPort, skillsPort } from "../../skills-port";
 
 export interface MarketplaceCalls {
-  skills: Pick<SkillsPort["skills"], "get" | "getBySlug" | "list">;
-  agents: Pick<SkillsPort["marketplaceAgents"], "get" | "getListing" | "list">;
   agentSkills: (hostServerId?: string) => AgentSkillCalls;
   mcp: Pick<
     SkillsPort["agent"],
@@ -28,12 +20,10 @@ export interface MarketplaceCalls {
     | "testMcpServer"
   >;
   mcpAccess?: MarketplaceMcpAccessCalls | undefined;
-  addAgent: (input: InstallMarketplaceAgentInput, serverId: string | undefined) => Promise<AddedAgent>;
   openUrl: (url: string) => Promise<void>;
   signInRelay?: MarketplaceSignInRelay | undefined;
   copySignInLink?: ((url: string, serverId: string) => Promise<void>) | undefined;
   macAutomation?: SkillsPort["macAutomation"]["request"] | undefined;
-  shareOrigin?: string | undefined;
 }
 
 interface MarketplaceMcpAccessCalls {
@@ -52,8 +42,6 @@ export interface MarketplaceSignInRelay {
 export function desktopMarketplaceCalls(): MarketplaceCalls {
   const port = skillsPort();
   return {
-    skills: port.skills,
-    agents: port.marketplaceAgents,
     agentSkills: agentSkillCalls,
     mcp: port.agent,
     mcpAccess: {
@@ -61,8 +49,6 @@ export function desktopMarketplaceCalls(): MarketplaceCalls {
       set: (input, serverId) => port.agent.setMcpAccess(input, serverId),
       roles: async (serverId) => (await port.hostAdmin.getAgentAccess(serverId)).roles ?? [],
     },
-    addAgent: async (input, serverId) =>
-      serverId ? port.agent.addMarketplaceAgent(input, serverId) : (await port.marketplaceAgents.install(input)).agent,
     openUrl: (url) => appPort().openUrl(url),
     signInRelay: {
       page: (url, serverId) => port.agent.mcpSignInRelay({ url }, serverId),

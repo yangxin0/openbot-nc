@@ -13,16 +13,8 @@ import type { TeamStore } from "./team-store";
 export type DevelopmentRemoteRole = "host" | "client";
 export type DevelopmentClientTransport = "http" | "webrtc";
 
-const DEVELOPMENT_HOST_EMAIL = "openbot-dev-host@example.com";
-const DEVELOPMENT_CLIENT_EMAIL = "openbot-dev-client@example.com";
-
 export function readDevelopmentClientTransport(value: string | undefined): DevelopmentClientTransport {
   return value === "webrtc" ? "webrtc" : "http";
-}
-
-export function readDevelopmentHostEmail(value: string | undefined): string {
-  const email = value?.trim().toLowerCase();
-  return email && /^[a-z0-9.-]{1,64}@example\.com$/u.test(email) ? email : DEVELOPMENT_HOST_EMAIL;
 }
 
 const developmentRemoteServerConnectionSchema: z.ZodType<DevelopmentRemoteServerConnection> = z.object({
@@ -39,9 +31,7 @@ const developmentRemoteServerConnectionSchema: z.ZodType<DevelopmentRemoteServer
 export interface DevelopmentRemoteAccountOptions {
   role: DevelopmentRemoteRole;
   testClientEnabled: boolean;
-  clientTransport: DevelopmentClientTransport;
-  hostEmail: string;
-  centralAuth: CentralAuthManager;
+  centralAuth: Pick<CentralAuthManager, "getSignedInUser">;
   teamStore: TeamStore;
   setupFile: string;
   setupCompleted: boolean;
@@ -50,20 +40,12 @@ export interface DevelopmentRemoteAccountOptions {
 export const applyDevelopmentRemoteAccount = Effect.fn("DevelopmentRemote.applyAccount")(function* ({
   role,
   testClientEnabled,
-  clientTransport,
-  hostEmail,
   centralAuth,
   teamStore,
   setupFile,
   setupCompleted,
 }: DevelopmentRemoteAccountOptions) {
-  const email =
-    role === "host"
-      ? (teamStore.getOwnerEmail() ?? hostEmail)
-      : clientTransport === "webrtc"
-        ? DEVELOPMENT_HOST_EMAIL
-        : DEVELOPMENT_CLIENT_EMAIL;
-  const user = yield* ensureDevelopmentAccount(centralAuth, email);
+  const user = yield* remoteDecode(() => centralAuth.getSignedInUser());
   yield* teamStore.activateAccount(user);
   if (role === "host" && !teamStore.configured) {
     yield* teamStore.configureWithAccount("OpenBot Local Dev Host", user);
@@ -98,46 +80,12 @@ export const startDevelopmentRemoteRole = Effect.fn("DevelopmentRemote.startRole
 }: DevelopmentRemoteRoleOptions) {
   if (role === "host") {
     yield* remoteCall(() => rm(developmentRemoteConnectionPath(), { force: true }));
-    const status = yield* host.start();
-    if (status.phase !== "online") yield* host.startLoopbackOnly();
+    yield* host.startLoopbackOnly();
     if (testClientEnabled) yield* writeDevelopmentRemoteConnection(yield* host.createDevelopmentConnection());
     return;
   }
   if (clientTransport === "webrtc") return;
   yield* connectDevelopmentRemoteServer(remoteServers);
-});
-
-const ensureDevelopmentAccount = Effect.fn("DevelopmentRemote.ensureAccount")(function* (
-  manager: Pick<CentralAuthManager, "initialize" | "logout" | "requestEmailCode" | "verifyEmailCode">,
-  email: string,
-) {
-  const initialized = yield* manager.initialize().pipe(toRemoteWorkflowError);
-  if (initialized.status === "signed_in" && initialized.user.email === email) return initialized.user;
-  if (initialized.status === "signed_in") yield* manager.logout().pipe(toRemoteWorkflowError);
-  let challenge = yield* manager.requestEmailCode(email).pipe(toRemoteWorkflowError);
-  if (
-    challenge.status === "error" &&
-    challenge.issue.code === "code_recently_sent" &&
-    challenge.issue.retryAfterSeconds !== undefined &&
-    challenge.issue.retryAfterSeconds > 0 &&
-    challenge.issue.retryAfterSeconds <= 60
-  ) {
-    yield* Effect.sleep(challenge.issue.retryAfterSeconds * 1000);
-    challenge = yield* manager.requestEmailCode(email).pipe(toRemoteWorkflowError);
-  }
-  if (challenge.status === "error")
-    return yield* new RemoteWorkflowError({ cause: new Error(challenge.issue.message) });
-  if (challenge.status !== "code_sent" || !challenge.developmentCode)
-    return yield* new RemoteWorkflowError({
-      cause: new Error("The local account API did not return a development sign-in code."),
-    });
-  const verified = yield* manager
-    .verifyEmailCode(challenge.challengeId, challenge.developmentCode)
-    .pipe(toRemoteWorkflowError);
-  if (verified.status === "error") return yield* new RemoteWorkflowError({ cause: new Error(verified.issue.message) });
-  if (verified.status !== "signed_in")
-    return yield* new RemoteWorkflowError({ cause: new Error("The local development account could not sign in.") });
-  return verified.user;
 });
 
 const writeDevelopmentRemoteConnection = Effect.fn("DevelopmentRemote.writeConnection")(

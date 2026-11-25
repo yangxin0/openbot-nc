@@ -1,5 +1,14 @@
+import { sourceText } from "@openbot/i18n/source";
 import { Context, Effect, Layer, Schema } from "effect";
 import { causeHelpers } from "../backend/effect-boundary";
+
+export class AccountServiceRemoved extends Schema.TaggedError<AccountServiceRemoved>()("AccountServiceRemoved", {
+  message: Schema.String,
+}) {
+  constructor() {
+    super({ message: sourceText("error.auth.accountServiceRemoved") });
+  }
+}
 
 export class CentralAuthOperationError extends Schema.TaggedError<CentralAuthOperationError>()(
   "CentralAuthOperationError",

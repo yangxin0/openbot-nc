@@ -18,7 +18,6 @@ import type {
   BusyMessageModePreference,
   ChatBackgroundColor,
   ChatWindowTarget,
-  DeleteHostedSiteInput,
   DynamicIslandAction,
   DynamicIslandPreference,
   DynamicIslandPresentation,
@@ -26,32 +25,23 @@ import type {
   ExternalLinkPreference,
   HostUpdateSettingsChange,
   IdleRestartTarget,
-  InstallMarketplaceAgentInput,
   InstallSkillInput,
   MacAutomationTarget,
   MacPermissionId,
-  MarketplaceAgentQuery,
-  MarketplaceSkillQuery,
-  MarketplaceSkillSort,
   MemoryReviewPreference,
   NotificationPreference,
-  PublishHostedSiteInput,
   RemoteNetworkRoutePreference,
   RemoteSessionReusePreference,
   RendererTimingReport,
-  ReplaceHostedSiteInput,
   SaveSetupInput,
   SetAgentDockInteractiveInput,
   SetAgentDockXWaylandInput,
-  SetAnalyticsPreferenceInput,
   SetAppAppearancePreferenceInput,
   SetAppInterfaceSizePreferenceInput,
   SetAppLanguagePreferenceInput,
   SetAppLogoColorPreferenceInput,
   SetDynamicIslandInteractiveInput,
   SetEnabledSkillInput,
-  SubmitMarketplaceAgentInput,
-  SubmitSkillInput,
   UninstallSkillInput,
   UpdatePreferenceChange,
   VerifyEmailCodeInput,
@@ -90,22 +80,13 @@ import {
   isDynamicIslandPresentation,
   isMemoryReviewInterval,
   isRemoteNetworkRoute,
-  isSkillCategory,
   MAC_AUTOMATION_TARGETS,
   QUIT_GUARDS,
   RENDERER_TIMING_LIMITS,
 } from "@openbot/contracts/ipc";
 import { isReferralCode } from "@openbot/contracts/referral";
-import {
-  type DynamicRecord,
-  isBoolean,
-  isDynamicRecord,
-  isNumber,
-  isOneOf,
-  isString,
-} from "@openbot/contracts/runtime-values";
+import { isBoolean, isDynamicRecord, isNumber, isOneOf } from "@openbot/contracts/runtime-values";
 import { validateProfileName } from "@openbot/contracts/validation";
-import { parseAvatarImage } from "./avatar-inputs";
 import { isObject, optionalBoolean, requireString } from "./validation";
 
 export function parseSetup(input: unknown): SaveSetupInput {
@@ -120,12 +101,6 @@ export function parseSetup(input: unknown): SaveSetupInput {
 export function parseProviderId(input: unknown): AgentProviderId {
   if (!isAgentProvider(input)) throw new Error("Unknown provider.");
   return input;
-}
-
-export function parseAnalyticsPreference(input: unknown): SetAnalyticsPreferenceInput {
-  if (!isDynamicRecord(input) || !isBoolean(input.enabled)) throw new Error("Analytics preference is required.");
-  if (input.chosen !== undefined && !isBoolean(input.chosen)) throw new Error("Analytics choice is not valid.");
-  return { enabled: input.enabled, ...(input.chosen ? { chosen: true } : {}) };
 }
 
 function isCount(value: unknown, max: number): value is number {
@@ -408,45 +383,13 @@ export function parseMacAutomationTargets(input: unknown): readonly MacAutomatio
   return [...new Set(input)];
 }
 
-const SOCIAL_DESTINATIONS = [
-  "threads",
-  "instagram",
-  "tiktok",
-  "facebook",
-  "linkedin",
-  "reddit",
-  "x-post",
-  "threads-post",
-  "linkedin-post",
-  "reddit-post",
-  "facebook-post",
-  "instagram-post",
-  "tiktok-post",
-] as const satisfies readonly ExternalDestination[];
-
-function isSocialDestination(input: unknown): input is (typeof SOCIAL_DESTINATIONS)[number] {
-  return SOCIAL_DESTINATIONS.some((destination) => destination === input);
-}
-
 export function parseExternalDestination(input: unknown): ExternalDestination {
   if (
-    input !== "agent-setup" &&
     input !== "claude-install" &&
     input !== "hermes-install" &&
     input !== "opencode-install" &&
     input !== "opencode-auth" &&
-    input !== "feedback" &&
-    input !== "report-problem" &&
-    input !== "message" &&
-    input !== "changelog" &&
-    input !== "guides" &&
-    input !== "discord" &&
-    input !== "github" &&
-    input !== "x" &&
-    !isSocialDestination(input) &&
     input !== "grok-bot-export" &&
-    input !== "hosted-server-contact" &&
-    input !== "download" &&
     input !== "mac-screen-recording"
   ) {
     throw new Error("Unknown external destination.");
@@ -475,62 +418,6 @@ export function parseChatColor(input: unknown): AvatarColor | null {
   if (input === null) return null;
   if (!isAvatarColor(input)) throw new Error("chatColor must be null or a lower-case #rrggbb color.");
   return input;
-}
-
-function parseMarketplaceQueryFields(input: DynamicRecord) {
-  return {
-    ...(isString(input.query) ? { query: input.query.slice(0, 100) } : {}),
-    ...(input.featured === true ? { featured: true } : {}),
-    ...(isString(input.cursor) ? { cursor: input.cursor } : {}),
-    ...(isNumber(input.limit) ? { limit: input.limit } : {}),
-  };
-}
-
-function parseMarketplaceSort<T extends string>(value: unknown, sorts: readonly T[], error: string): { sort?: T } {
-  if (value === undefined) return {};
-  if (!isOneOf(sorts, value)) throw new Error(error);
-  return { sort: value };
-}
-
-const SKILL_SORTS = ["installs", "updated", "name"] as const satisfies readonly MarketplaceSkillSort[];
-
-export function parseMarketplaceSkillQuery(input: unknown): MarketplaceSkillQuery {
-  if (!isObject(input)) throw new Error("Invalid marketplace query.");
-  const category = input.category;
-  if (category !== undefined && !isSkillCategory(category)) throw new Error("Unknown skill category.");
-  const verified = input.verified;
-  if (verified !== undefined && !isBoolean(verified)) throw new Error("Invalid skill source filter.");
-  return {
-    ...parseMarketplaceQueryFields(input),
-    ...parseMarketplaceSort(input.sort, SKILL_SORTS, "Unknown skill sort order."),
-    ...(verified === undefined ? {} : { verified }),
-    ...(category ? { category } : {}),
-  };
-}
-
-export function parseMarketplaceAgentQuery(input: unknown): MarketplaceAgentQuery {
-  if (!isObject(input)) throw new Error("Invalid agent marketplace query.");
-  const category = input.category;
-  if (category !== undefined && !isSkillCategory(category)) throw new Error("Unknown agent category.");
-  const verified = input.verified;
-  if (verified !== undefined && !isBoolean(verified)) throw new Error("Invalid agent source filter.");
-  return {
-    ...parseMarketplaceQueryFields(input),
-    ...parseMarketplaceSort(input.sort, ["installs"] as const, "Unknown agent sort order."),
-    ...(category ? { category } : {}),
-    ...(verified === undefined ? {} : { verified }),
-  };
-}
-
-export function parseSubmitSkill(input: unknown): SubmitSkillInput {
-  if (!isObject(input) || !isSkillCategory(input.category)) throw new Error("Invalid skill submission.");
-  return {
-    draftId: requireString(input.draftId, "draftId"),
-    ...creatorAvatarOption(input),
-    category: input.category,
-    icon: parseAvatarImage(input.icon),
-    ...(input.skillId === undefined ? {} : { skillId: requireString(input.skillId, "skillId") }),
-  };
 }
 
 export function requireSkillId(value: unknown): string {
@@ -565,61 +452,4 @@ export function parseSetEnabledSkill(input: unknown): SetEnabledSkillInput {
     skillId: requireSkillId(input.skillId),
     enabled,
   };
-}
-
-export function parsePublishHostedSite(input: unknown): PublishHostedSiteInput {
-  if (!isObject(input)) throw new Error("Invalid site publication.");
-  const spaFallback = optionalBoolean(input.spaFallback, "spaFallback");
-  return {
-    sourcePath: requireString(input.sourcePath, "sourcePath", INPUT_LIMITS.path),
-    title: requireString(input.title, "title", 120),
-    description: requireString(input.description, "description", 500),
-    ...(spaFallback !== undefined ? { spaFallback } : {}),
-  };
-}
-
-export function parseReplaceHostedSite(input: unknown): ReplaceHostedSiteInput {
-  if (!isObject(input)) throw new Error("Invalid site replacement.");
-  const spaFallback = optionalBoolean(input.spaFallback, "spaFallback");
-  return {
-    siteId: requireString(input.siteId, "siteId", INPUT_LIMITS.identifier),
-    sourcePath: requireString(input.sourcePath, "sourcePath", INPUT_LIMITS.path),
-    title: requireString(input.title, "title", 120),
-    description: requireString(input.description, "description", 500),
-    ...(spaFallback !== undefined ? { spaFallback } : {}),
-  };
-}
-
-export function parseDeleteHostedSite(input: unknown): DeleteHostedSiteInput {
-  if (!isObject(input)) throw new Error("Invalid site deletion.");
-  return { siteId: requireString(input.siteId, "siteId", INPUT_LIMITS.identifier) };
-}
-
-export function parseSubmitMarketplaceAgent(input: unknown): SubmitMarketplaceAgentInput {
-  if (!isObject(input)) throw new Error("Invalid agent submission.");
-  const category = input.category;
-  if (category !== undefined && !isSkillCategory(category)) throw new Error("Unknown agent category.");
-  return {
-    agentId: requireString(input.agentId, "agentId"),
-    ...(input.listingId === undefined ? {} : { listingId: requireString(input.listingId, "listingId") }),
-    ...(category ? { category } : {}),
-    ...creatorAvatarOption(input),
-  };
-}
-
-export function parseInstallMarketplaceAgent(input: unknown): InstallMarketplaceAgentInput {
-  if (!isObject(input)) throw new Error("Invalid agent installation.");
-  return {
-    listingId: requireString(input.listingId, "listingId"),
-    ...(input.agentId === undefined
-      ? {}
-      : { agentId: requireString(input.agentId, "agentId", INPUT_LIMITS.identifier) }),
-    timezone: requireString(input.timezone, "timezone", 255),
-    receiptId: requireString(input.receiptId, "receiptId", INPUT_LIMITS.identifier),
-  };
-}
-
-function creatorAvatarOption(input: DynamicRecord): { showCreatorAvatar?: boolean } {
-  const showCreatorAvatar = optionalBoolean(input.showCreatorAvatar, "showCreatorAvatar");
-  return showCreatorAvatar === undefined ? {} : { showCreatorAvatar };
 }

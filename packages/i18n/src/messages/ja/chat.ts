@@ -501,8 +501,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "エージェントがこのレポートを削除し、選んだ部分を除いて再送信します。",
   "chat.feedbackSent.removeChoice": "削除する",
   "chat.feedbackSent.removeChoiceHint": "GitHub から削除します。元に戻せません。",
-  "chat.feedbackSent.fixPrompt": "レポート #{number} を GitHub から削除し、次の部分を除いて再送信してください:",
-  "chat.feedbackSent.removePrompt": "レポート #{number} を GitHub から削除してください。",
   "chat.feedbackSent.composerFilled": "依頼をメッセージ欄に入れました。内容を仕上げてから送信してください。",
   "chat.feedbackSent.keep": "残す",
   "chat.feedbackSent.removing": "削除しています…",

@@ -11,13 +11,13 @@ import { DEFAULT_GENERAL_SETTINGS, type GeneralSettingsValue } from "@openbot/ui
 import { createSignal, onCleanup } from "solid-js";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { RelayProvider } from "../src/features/relay/relay-context";
 import { SettingsModal } from "../src/features/settings/SettingsModal";
 import type { SettingsTab } from "../src/features/settings/settings-tabs";
-import type { CodexLiveAccess } from "../src/features/speech/codex-live-access";
 import { LayoutProvider } from "../src/layout";
 import { PlatformProvider } from "../src/platform";
 import { STORY_AGENTS, STORY_SERVERS } from "../src/preview/fixtures";
-import { createMockBilling } from "../src/preview/mock-billing";
+import type { MockRelayScenario } from "../src/preview/mock-relay";
 import type { MockVoiceOptions } from "../src/preview/mock-voice";
 import { createMockOpenBot } from "./mock-openbot";
 import { SettingsPageStory } from "./settings-page-story";
@@ -87,33 +87,23 @@ const storyAgentDock = {
 
 function SettingsModalStory(props: {
   initialOpen: boolean;
-  hostedServers?: boolean;
-  hostedServersDelayMs?: number;
   initialTab?: SettingsTab;
   openTab?: SettingsTab;
   scheduledRestart?: UpdateStatus["scheduledRestart"];
   stagedVersion?: string;
   notInstalled?: boolean;
   voice?: MockVoiceOptions;
-  codexLiveAccess?: CodexLiveAccess;
   agentDock?: boolean;
+  relay?: MockRelayScenario;
 }) {
   const previousApi = window.openbot;
-  const billingApi = createMockBilling();
-  const mock = createMockOpenBot(props.voice);
+  const mock = createMockOpenBot({ ...props.voice, relay: props.relay ?? "none" });
   window.openbot = mock.api;
   onCleanup(() => {
     mock.dispose();
     toast.dismiss();
     if (window.openbot === mock.api) window.openbot = previousApi;
   });
-  const hostedServersApi = {
-    ...mock.api.hostedServers,
-    list: async () => {
-      await new Promise((resolve) => window.setTimeout(resolve, props.hostedServersDelayMs ?? 0));
-      return mock.api.hostedServers.list();
-    },
-  };
   const [open, setOpen] = createSignal(props.initialOpen);
   const [value, setValue] = createSignal({ ...storyGeneralSettings });
   const [updateStatus, setUpdateStatus] = createSignal<UpdateStatus>(storyInitialUpdateStatus(props));
@@ -180,84 +170,80 @@ function SettingsModalStory(props: {
     }, 6_000);
     return {
       qrData:
-        "openbot://mobile-connect?api=https%3A%2F%2Fapi.openbot.run&ticket=storybook-mobile-ticket_1234567890abcdef",
+        "openbot://mobile-connect?api=https%3A%2F%2Fapi.example.com&ticket=storybook-mobile-ticket_1234567890abcdef",
       expiresAt: Date.now() + 120_000,
     };
   }
 
   return (
     <PlatformProvider>
-      <LayoutProvider>
-        <SettingsPageStory
-          title="Settings"
-          controls={
-            <Button variant="outline" type="button" onClick={() => setOpen(true)}>
-              Open settings
-            </Button>
-          }
-          onEscape={() => setOpen(false)}
-        >
-          {(page) => (
-            <SettingsModal
-              page={page()}
-              initialTab={props.initialTab}
-              openTab={props.openTab}
-              codexLiveAccess={props.codexLiveAccess}
-              onConnectCodex={() => setOpen(false)}
-              open={open()}
-              value={value()}
-              onValueChange={(next) => {
-                previewStorySoundSettings(value(), next);
-                setValue(next);
-              }}
-              appInfo={storyAppInfo}
-              servers={servers()}
-              onSetServerNotificationLevel={async (serverId, level) =>
-                updateServer(serverId, { notificationLevel: level })
-              }
-              onSetServerMuted={async (serverId, muted, durationMs) =>
-                updateServer(serverId, {
-                  notificationsMuted: muted,
-                  notificationsMutedUntil: muted && durationMs !== undefined ? Date.now() + durationMs : null,
-                })
-              }
-              updateStatus={updateStatus()}
-              onCancelScheduledRestart={async () => {
-                const { scheduledRestart: _cancelled, ...rest } = updateStatus();
-                setUpdateStatus(rest);
-              }}
-              account={account()}
-              onUpdateAccountName={updateAccountName}
-              onUpdateAccountAvatar={updateAccountAvatar}
-              onSetChatColor={async (chatColor) => {
-                setAccount((current) => ({ ...current, chatColor }));
-              }}
-              onCreateMobileConnect={createMobileConnect}
-              onCancelMobileConnect={async () => {
-                window.clearTimeout(scanTimer);
-                await mock.api.auth.cancelMobileConnect();
-              }}
-              onGetMobileConnectLink={mock.api.auth.getMobileConnectLink}
-              onCreateMobileConnectLink={mock.api.auth.createMobileConnectLink}
-              onRevokeMobileConnectLink={mock.api.auth.revokeMobileConnectLink}
-              onListMobileConnectedDevices={async () => mobileDevices()}
-              onListAccountSessions={mock.api.auth.listAccountSessions}
-              onRevokeAccountSession={mock.api.auth.revokeAccountSession}
-              onRevokeMobileConnectedDevice={async (sessionId) => {
-                setMobileDevices((current) => current.filter((device) => device.sessionId !== sessionId));
-              }}
-              onGetRemoteNetworkRoute={mock.api.getRemoteNetworkRoute}
-              onSetRemoteNetworkRoute={(route) => mock.api.setRemoteNetworkRoute({ route })}
-              onUpdateAction={runUpdateAction}
-              billingApi={billingApi}
-              referralApi={mock.api.referral}
-              hostedServersApi={props.hostedServers ? hostedServersApi : undefined}
-              onAddHostedServer={props.hostedServers ? fn() : undefined}
-              agentDock={props.agentDock ? storyAgentDock : undefined}
-            />
-          )}
-        </SettingsPageStory>
-      </LayoutProvider>
+      <RelayProvider>
+        <LayoutProvider>
+          <SettingsPageStory
+            title="Settings"
+            controls={
+              <Button variant="outline" type="button" onClick={() => setOpen(true)}>
+                Open settings
+              </Button>
+            }
+            onEscape={() => setOpen(false)}
+          >
+            {(page) => (
+              <SettingsModal
+                page={page()}
+                initialTab={props.initialTab}
+                openTab={props.openTab}
+                open={open()}
+                value={value()}
+                onValueChange={(next) => {
+                  previewStorySoundSettings(value(), next);
+                  setValue(next);
+                }}
+                appInfo={storyAppInfo}
+                servers={servers()}
+                onSetServerNotificationLevel={async (serverId, level) =>
+                  updateServer(serverId, { notificationLevel: level })
+                }
+                onSetServerMuted={async (serverId, muted, durationMs) =>
+                  updateServer(serverId, {
+                    notificationsMuted: muted,
+                    notificationsMutedUntil: muted && durationMs !== undefined ? Date.now() + durationMs : null,
+                  })
+                }
+                updateStatus={updateStatus()}
+                onCancelScheduledRestart={async () => {
+                  const { scheduledRestart: _cancelled, ...rest } = updateStatus();
+                  setUpdateStatus(rest);
+                }}
+                account={account()}
+                onUpdateAccountName={updateAccountName}
+                onUpdateAccountAvatar={updateAccountAvatar}
+                onSetChatColor={async (chatColor) => {
+                  setAccount((current) => ({ ...current, chatColor }));
+                }}
+                onCreateMobileConnect={createMobileConnect}
+                onCancelMobileConnect={async () => {
+                  window.clearTimeout(scanTimer);
+                  await mock.api.auth.cancelMobileConnect();
+                }}
+                onGetMobileConnectLink={mock.api.auth.getMobileConnectLink}
+                onCreateMobileConnectLink={mock.api.auth.createMobileConnectLink}
+                onRevokeMobileConnectLink={mock.api.auth.revokeMobileConnectLink}
+                onListMobileConnectedDevices={async () => mobileDevices()}
+                onListAccountSessions={mock.api.auth.listAccountSessions}
+                onRevokeAccountSession={mock.api.auth.revokeAccountSession}
+                onRevokeMobileConnectedDevice={async (sessionId) => {
+                  setMobileDevices((current) => current.filter((device) => device.sessionId !== sessionId));
+                }}
+                onGetRemoteNetworkRoute={mock.api.getRemoteNetworkRoute}
+                onSetRemoteNetworkRoute={(route) => mock.api.setRemoteNetworkRoute({ route })}
+                onUpdateAction={runUpdateAction}
+                agentDock={props.agentDock ? storyAgentDock : undefined}
+              />
+            )}
+          </SettingsPageStory>
+        </LayoutProvider>
+      </RelayProvider>
       <Toaster />
     </PlatformProvider>
   );
@@ -279,7 +265,7 @@ const meta = {
     onSetChatColor: fn(async () => undefined),
     onCreateMobileConnect: fn(async () => ({
       qrData:
-        "openbot://mobile-connect?api=https%3A%2F%2Fapi.openbot.run&ticket=storybook-mobile-ticket_1234567890abcdef",
+        "openbot://mobile-connect?api=https%3A%2F%2Fapi.example.com&ticket=storybook-mobile-ticket_1234567890abcdef",
       expiresAt: Date.now() + 120_000,
     })),
   },
@@ -382,36 +368,32 @@ export const VoiceModelsDownloaded: Story = {
   ),
 };
 
-export const VoiceCodexSignIn: Story = {
-  render: () => <SettingsModalStory initialOpen initialTab="voice" codexLiveAccess="signIn" />,
-};
-
 export const MobileConnect: Story = {
   render: () => <SettingsModalStory initialOpen initialTab="mobile-connect" />,
 };
 
+export const TeamNoIdentity: Story = {
+  render: () => <SettingsModalStory initialOpen initialTab="team" relay="none" />,
+};
+
+export const TeamOnline: Story = {
+  render: () => <SettingsModalStory initialOpen initialTab="team" relay="online" />,
+};
+
+export const TeamOffline: Story = {
+  render: () => <SettingsModalStory initialOpen initialTab="team" relay="offline" />,
+};
+
+export const TeamExpiringSoon: Story = {
+  render: () => <SettingsModalStory initialOpen initialTab="team" relay="expiring" />,
+};
+
+export const TeamHosting: Story = {
+  render: () => <SettingsModalStory initialOpen initialTab="team" relay="hosting" />,
+};
+
 export const AgentDock: Story = {
   render: () => <SettingsModalStory initialOpen agentDock initialTab="agent-dock" />,
-};
-
-export const Billing: Story = {
-  render: () => <SettingsModalStory initialOpen initialTab="billing" />,
-};
-
-export const InviteFriends: Story = {
-  render: () => <SettingsModalStory initialOpen initialTab="referral" />,
-};
-
-export const HostedServers: Story = {
-  render: () => <SettingsModalStory initialOpen hostedServers initialTab="hosted-servers" />,
-};
-
-export const HostedServersFastList: Story = {
-  render: () => <SettingsModalStory initialOpen hostedServers hostedServersDelayMs={300} openTab="hosted-servers" />,
-};
-
-export const HostedServersSlowList: Story = {
-  render: () => <SettingsModalStory initialOpen hostedServers hostedServersDelayMs={3_000} openTab="hosted-servers" />,
 };
 
 export const ScheduledRemoteUpdate: Story = {

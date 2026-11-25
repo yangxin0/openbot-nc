@@ -47,8 +47,6 @@ index-*.css
 /build/codex/
 /build/claude/
 /build/grok/
-/build/remote-desktop-runtime/
-/build/remote-desktop-release/
 Bots
 /Agents/
 !apps/mobile/src/features/bots/

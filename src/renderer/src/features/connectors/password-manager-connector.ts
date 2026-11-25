@@ -6,12 +6,7 @@ import {
 import type { ProtonPassConnectorPanelProps } from "@openbot/ui/features/settings/ProtonPassConnectorPanel";
 import { currentText } from "@openbot/ui/text";
 import { createSignal, onCleanup, onSettled } from "solid-js";
-import {
-  type ConnectorAnalyticsAction,
-  type ConnectorController,
-  createConnectorActions,
-  NO_WATCH,
-} from "./connector-controller";
+import { type ConnectorController, createConnectorActions, NO_WATCH } from "./connector-controller";
 import { type PasswordManagerPort, passwordManagerPort } from "./password-manager-port";
 
 export type EnginePasswordManagerId = "protonpass";
@@ -29,7 +24,7 @@ export function createPasswordManagerConnector(
   const [read, setRead] = createSignal(false);
   const [offered, setOffered] = createSignal(true);
   const [statusError, setStatusError] = createSignal<string | null>(null);
-  const actions = createConnectorActions("connector.protonPass.actionFailed", manager);
+  const actions = createConnectorActions("connector.protonPass.actionFailed");
   let statuses = 0;
   let openWhenReady = false;
 
@@ -77,14 +72,11 @@ export function createPasswordManagerConnector(
   onSettled(reload);
   onCleanup(unsubscribe);
 
-  const connectWith = (method: PasswordManagerConnectMethod, track?: ConnectorAnalyticsAction) => {
+  const connectWith = (method: PasswordManagerConnectMethod) => {
     openWhenReady = method.kind === "browser";
-    actions.run(() => port().connect({ manager, method }), {
-      done: show,
-      ...(track ? { track } : {}),
-    });
+    actions.run(() => port().connect({ manager, method }), { done: show });
   };
-  const connect = () => connectWith({ kind: "browser" }, "connect_started");
+  const connect = () => connectWith({ kind: "browser" });
 
   return {
     id: manager,
@@ -111,13 +103,13 @@ export function createPasswordManagerConnector(
         },
         onRetry: reload,
         onConnect: connect,
-        onConnectWithKey: (key) => connectWith({ kind: "key", key }, "connected"),
+        onConnectWithKey: (key) => connectWith({ kind: "key", key }),
         onSubmitExtraPassword: (password) => connectWith({ kind: "extra-password", password }),
         onCancel: () => {
           openWhenReady = false;
           actions.run(() => port().cancel(manager), { waits: false, done: show });
         },
-        onDisconnect: () => actions.run(() => port().disconnect(manager), { done: show, track: "disconnected" }),
+        onDisconnect: () => actions.run(() => port().disconnect(manager), { done: show }),
         onOpenSignIn: openSignIn,
       },
     },

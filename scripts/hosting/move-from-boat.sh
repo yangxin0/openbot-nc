@@ -5,16 +5,16 @@ umask 077
 
 SERVICE_USER=user
 USER_HOME=/home/$SERVICE_USER
-KEYRING_HOME=/srv/openbot-hosted
+KEYRING_HOME=/srv/openbot-nc-hosted
 MANIFEST=$KEYRING_HOME/move-manifest
-IMPORT_STATE=/var/lib/openbot-move-import
-OFFER=/etc/openbot-pool
+IMPORT_STATE=/var/lib/openbot-nc-move-import
+OFFER=/etc/openbot-nc-pool
 OFFER_INSTALL=/usr/local/lib/openbot-pool
-DATABASE=$USER_HOME/.config/OpenBot/openbot.db
+DATABASE=$USER_HOME/.config/OpenBot-NC/openbot.db
 CHECKED=(
   "$DATABASE"
-  "$USER_HOME/OpenBot/Shared/Data/agent-data.db"
-  "$USER_HOME/.config/openbot-hosted/keyring-password"
+  "$USER_HOME/OpenBot-NC/Shared/Data/agent-data.db"
+  "$USER_HOME/.config/openbot-nc-hosted/keyring-password"
   "$KEYRING_HOME/keyrings/login.keyring"
 )
 EXCLUDED=(
@@ -36,13 +36,13 @@ for browser in $BROWSER_HOMES; do
   done
 done
 for cache in "${BROWSER_CACHES[@]}"; do
-  EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/OpenBot/$cache"
-    "--exclude=./home/$SERVICE_USER/.config/OpenBot/Partitions/*/$cache")
+  EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/OpenBot-NC/$cache"
+    "--exclude=./home/$SERVICE_USER/.config/OpenBot-NC/Partitions/*/$cache")
 done
 MANAGED_PROVIDERS="codex claude grok opencode antigravity cursor cline kimi devin copilot mistral pi muse"
-EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/OpenBot/provider-runtimes/.downloads")
+EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/OpenBot-NC/provider-runtimes/.downloads")
 for provider in $MANAGED_PROVIDERS; do
-  EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/OpenBot/provider-runtimes/$provider")
+  EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/OpenBot-NC/provider-runtimes/$provider")
 done
 unset browser cache provider
 BASE_IMAGES=" c4ed68db-513f-4b6d-a61a-64b99b0c2a2c 5f37c910-7706-423d-b524-5c66b09885d2
@@ -93,15 +93,15 @@ checksums() {
 }
 
 openbot_runs() {
-  systemctl is-active --quiet openbot.service || pgrep -u "$SERVICE_USER" -x openbot >/dev/null
+  systemctl is-active --quiet openbot-nc.service || pgrep -u "$SERVICE_USER" -x openbot >/dev/null
 }
 
 installed_version() {
-  sed -n 's/^X-AppImage-Version=//p' /opt/OpenBot/app/*.desktop 2>/dev/null | head -n 1
+  sed -n 's/^X-AppImage-Version=//p' /opt/OpenBot-NC/app/*.desktop 2>/dev/null | head -n 1
 }
 
 is_hosted_install() {
-  [ "$(cat /opt/OpenBot/hosted/service-user 2>/dev/null)" = "$SERVICE_USER" ] && [ ! -e /opt/OpenBot/hosted/mode ]
+  [ "$(cat /opt/OpenBot-NC/hosted/service-user 2>/dev/null)" = "$SERVICE_USER" ] && [ ! -e /opt/OpenBot-NC/hosted/mode ]
 }
 
 system_clis() {
@@ -353,7 +353,7 @@ import_state() {
 }
 
 openbot_is_off() {
-  ! systemctl is-enabled --quiet openbot.service 2>/dev/null && ! openbot_runs
+  ! systemctl is-enabled --quiet openbot-nc.service 2>/dev/null && ! openbot_runs
 }
 
 database_is_unchanged() {
@@ -364,8 +364,8 @@ database_is_unchanged() {
 
 stop_offer() {
   rm -f "$OFFER/token"
-  if [ -z "${OPENBOT_POOL_RESTORE:-}" ] && [ -e /etc/systemd/system/openbot-pool-wait.service ]; then
-    systemctl disable --quiet --now openbot-pool-wait.service
+  if [ -z "${OPENBOT_POOL_RESTORE:-}" ] && [ -e /etc/systemd/system/openbot-nc-pool-wait.service ]; then
+    systemctl disable --quiet --now openbot-nc-pool-wait.service
   fi
 }
 
@@ -387,21 +387,21 @@ offer() {
   stop_offer
   is_hosted_install || fail "This machine is not prepared. Run \"$0 prepare\" first."
   openbot_is_off || fail "OpenBot is enabled or runs on this machine. It is not a prepared pool server."
-  [ ! -e "$USER_HOME/.config/OpenBot" ] && [ ! -e "$USER_HOME/.config/openbot-hosted" ] &&
+  [ ! -e "$USER_HOME/.config/OpenBot-NC" ] && [ ! -e "$USER_HOME/.config/openbot-nc-hosted" ] &&
     [ ! -e "$KEYRING_HOME/keyrings" ] && [ ! -e "$IMPORT_STATE" ] ||
     fail "This machine has the data of a server. It cannot take a new one."
-  grep -q '^OPENBOT_AUTH_API_URL=https://' /opt/OpenBot/hosted/openbot.env ||
+  grep -q '^OPENBOT_AUTH_API_URL=https://' /opt/OpenBot-NC/hosted/openbot.env ||
     fail "This machine names no account service."
   install -d -m 0755 "$OFFER_INSTALL"
   install -m 0755 "$source/openbot-pool-wait" "$OFFER_INSTALL/openbot-pool-wait"
   install -m 0755 "$0" "$OFFER_INSTALL/move-from-boat.sh"
-  install -m 0644 "$source/openbot-pool-wait.service" /etc/systemd/system/openbot-pool-wait.service
+  install -m 0644 "$source/openbot-pool-wait.service" /etc/systemd/system/openbot-nc-pool-wait.service
   install -d -m 0700 "$OFFER"
   printf '%s\n' "$host" >"$OFFER/host"
   printf '%s\n' "$token" >"$OFFER/token"
   systemctl daemon-reload
-  systemctl enable --quiet openbot-pool-wait.service
-  systemctl restart openbot-pool-wait.service
+  systemctl enable --quiet openbot-nc-pool-wait.service
+  systemctl restart openbot-nc-pool-wait.service
   echo "Machine $host waits for the server of a new customer."
 }
 
@@ -414,7 +414,7 @@ prepare() {
     fail "The user and group IDs must be numbers above 0."
   source=$(cd "$(dirname "$0")" && pwd)
   [ -f "$source/provision.sh" ] || fail "Run this file from a copy of scripts/hosting."
-  [ ! -e /opt/OpenBot ] || fail "OpenBot is installed on this machine. Use a free pool server."
+  [ ! -e /opt/OpenBot-NC ] || fail "OpenBot is installed on this machine. Use a free pool server."
   [ ! -e "$USER_HOME" ] && [ ! -e "$KEYRING_HOME" ] ||
     fail "This machine has data in $USER_HOME or $KEYRING_HOME."
   ! id "$SERVICE_USER" >/dev/null 2>&1 || fail "This machine has a user $SERVICE_USER."
@@ -427,14 +427,14 @@ prepare() {
   hostnamectl set-hostname "$hostname"
   groupadd --gid "$gid" "$SERVICE_USER"
   useradd --uid "$uid" --gid "$gid" --create-home --home-dir "$USER_HOME" --shell /bin/bash "$SERVICE_USER"
-  copy=$(mktemp -d /run/openbot-move.XXXXXX)
+  copy=$(mktemp -d /run/openbot-nc-move.XXXXXX)
   # shellcheck disable=SC2064
   trap "rm -rf '$copy'" EXIT
   cp -R "$source/." "$copy/"
   chmod -R u=rwX,go=rX "$copy"
   bash "$copy/provision.sh" "$SERVICE_USER" "$appimage_url" "$appimage_sha256" "$auth_api_url"
   is_hosted_install || fail "The install is not a hosted server of the user $SERVICE_USER."
-  systemctl disable --quiet openbot.service
+  systemctl disable --quiet openbot-nc.service
   if openbot_runs; then fail "OpenBot runs. Stop it."; fi
   echo "Installed OpenBot $(installed_version) on $hostname for the user $SERVICE_USER ($uid:$gid). It is disabled."
   echo "Next: run leaseweb-bootstrap.sh, restart this machine one time, and then export the sandbox."
@@ -447,16 +447,16 @@ upgrade() {
   [ -f "$source/provision.sh" ] || fail "Run this file from a copy of scripts/hosting."
   stop_offer
   is_hosted_install || fail "This machine is not prepared. Run \"$0 prepare\" first."
-  [ ! -e "$USER_HOME/.config/OpenBot" ] && [ ! -e "$KEYRING_HOME/keyrings" ] && [ ! -e "$IMPORT_STATE" ] ||
+  [ ! -e "$USER_HOME/.config/OpenBot-NC" ] && [ ! -e "$KEYRING_HOME/keyrings" ] && [ ! -e "$IMPORT_STATE" ] ||
     fail "This machine has the data of a server. Do not upgrade it here."
   if openbot_runs; then fail "OpenBot runs. Stop it."; fi
-  copy=$(mktemp -d /run/openbot-move.XXXXXX)
+  copy=$(mktemp -d /run/openbot-nc-move.XXXXXX)
   # shellcheck disable=SC2064
   trap "rm -rf '$copy'" EXIT
   cp -R "$source/." "$copy/"
   chmod -R u=rwX,go=rX "$copy"
   bash "$copy/provision.sh" "$SERVICE_USER" "$1" "$2" "$3"
-  systemctl disable --quiet openbot.service
+  systemctl disable --quiet openbot-nc.service
   if openbot_runs; then fail "OpenBot runs. Stop it."; fi
   echo "Installed OpenBot $(installed_version). It is disabled."
 }
@@ -493,8 +493,8 @@ export_data() {
   fi
   id "$SERVICE_USER" >/dev/null 2>&1 || fail "This machine has no user $SERVICE_USER. It is not a boat sandbox."
   is_hosted_install || fail "This machine is not a hosted server of the user $SERVICE_USER."
-  [ -s "$USER_HOME/.config/OpenBot/openbot.db" ] || fail "The home of $SERVICE_USER has no OpenBot database."
-  [ -s "$USER_HOME/.config/openbot-hosted/keyring-password" ] && [ -s "$KEYRING_HOME/keyrings/login.keyring" ] ||
+  [ -s "$USER_HOME/.config/OpenBot-NC/openbot.db" ] || fail "The home of $SERVICE_USER has no OpenBot database."
+  [ -s "$USER_HOME/.config/openbot-nc-hosted/keyring-password" ] && [ -s "$KEYRING_HOME/keyrings/login.keyring" ] ||
     fail "The server keyring or its password file is missing. The server could not sign in after the move."
   local waited=0
   while [ -e /var/lib/ascii-lazy/active ] && [ ! -e /var/lib/ascii-lazy/hydration-done ]; do
@@ -507,9 +507,9 @@ export_data() {
   version=$(installed_version)
   [ -n "$version" ] || fail "The version of the installed OpenBot is not known."
 
-  touch /run/openbot-pre-stop
-  systemctl stop openbot-pre-stop-restart.timer 2>/dev/null || true
-  systemctl stop openbot.service
+  touch /run/openbot-nc-pre-stop
+  systemctl stop openbot-nc-pre-stop-restart.timer 2>/dev/null || true
+  systemctl stop openbot-nc.service
   if openbot_runs; then fail "OpenBot still runs. Nothing was archived."; fi
 
   local tree trees="" members=() commands name notes
@@ -699,14 +699,14 @@ add_node_command() {
   runuser -u "$SERVICE_USER" -- bash -c 'umask 022 && cat >"$1" && chmod 0755 "$1"' _ "$node" <<'EOF'
 #!/bin/bash
 # The move from boat added this command. It starts the Bun of OpenBot as Node.
-bun=$(printf '%s\n' "$HOME"/.config/OpenBot/provider-runtimes/bun/*/*/bin/bun | sort -V | tail -n 1)
+bun=$(printf '%s\n' "$HOME"/.config/OpenBot-NC/provider-runtimes/bun/*/*/bin/bun | sort -V | tail -n 1)
 if [ ! -x "$bun" ]; then
   echo "node: OpenBot has not downloaded Bun. OpenBot downloads it when an MCP server is on." >&2
   exit 127
 fi
 exec -a node "$bun" "$@"
 EOF
-  if ! compgen -G "$USER_HOME/.config/OpenBot/provider-runtimes/bun/*/*/bin/bun" >/dev/null; then
+  if ! compgen -G "$USER_HOME/.config/OpenBot-NC/provider-runtimes/bun/*/*/bin/bun" >/dev/null; then
     echo "The moved npm commands need Bun, and OpenBot did not download Bun in the sandbox. OpenBot downloads it when an MCP server is on."
   fi
 }
@@ -793,7 +793,7 @@ import_data() {
   openbot_is_off || fail "OpenBot is enabled or runs on this machine. It is not a prepared pool server."
   [ ! -e "$IMPORT_STATE" ] ||
     fail "An import did not get to its start on this machine. Run \"$0 discard $(hostname)\", then run the import again."
-  [ ! -e "$USER_HOME/.config/OpenBot" ] && [ ! -e "$KEYRING_HOME/keyrings" ] ||
+  [ ! -e "$USER_HOME/.config/OpenBot-NC" ] && [ ! -e "$KEYRING_HOME/keyrings" ] ||
     fail "This machine has the data of a server."
   shift
   for folder in "$@"; do
@@ -902,7 +902,7 @@ start() {
   openbot_is_off || fail "OpenBot is enabled or runs on this machine."
   database_is_unchanged || fail "The database is not the file that the import checked. Do not start OpenBot."
   rm -f "$IMPORT_STATE"
-  systemctl enable --now openbot.service
+  systemctl enable --now openbot-nc.service
   echo "OpenBot $(installed_version) is enabled and started. The host is online when its first sign-in ends."
 }
 
@@ -945,8 +945,8 @@ restore() {
   command -v age >/dev/null || fail "This machine has no age. Run leaseweb-bootstrap.sh again."
   is_hosted_install || fail "This machine is not prepared. Run \"$0 prepare\" first."
   openbot_is_off || fail "OpenBot is enabled or runs on this machine. It is not a prepared pool server."
-  dir=$(mktemp -d /var/tmp/openbot-restore.XXXXXX)
-  key=$(mktemp /run/openbot-restore-key.XXXXXX)
+  dir=$(mktemp -d /var/tmp/openbot-nc-restore.XXXXXX)
+  key=$(mktemp /run/openbot-nc-restore-key.XXXXXX)
   trap "rm -rf '$dir' '$key'" EXIT
   printf '%s\n' "$identity" >"$key"
   unset identity

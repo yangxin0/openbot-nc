@@ -148,7 +148,7 @@ export const IMAGE_COLLAGE = `<!doctype html>
 </style>
 </head><body>
 <div class="grid">
-  <figure class="wide"><img src="${macMockUrl}" alt="Remote desktop on a Mac"><figcaption>Remote desktop, full screen</figcaption></figure>
+  <figure class="wide"><img src="${macMockUrl}" alt="Desktop of a Mac"><figcaption>Desktop, full screen</figcaption></figure>
   <figure><img src="${takeoverUrl}" alt="Browser takeover"><figcaption>Browser takeover</figcaption></figure>
   <figure><img src="${logoUrl}" alt="OpenBot logo" style="object-fit: contain"><figcaption>App logo</figcaption></figure>
 </div>

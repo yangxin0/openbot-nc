@@ -17,14 +17,14 @@ const TEMPLATE_FILES = [
   "openbot",
   "openbot-boat-pre-stop",
   "openbot-hosted.apparmor",
-  "openbot.service",
-  "openbot-update.service",
-  "openbot-update.timer",
-  "openbot-update-apply.service",
-  "openbot-update-request.path",
-  "openbot-update-request.service",
+  "openbot-nc.service",
+  "openbot-nc-update.service",
+  "openbot-nc-update.timer",
+  "openbot-nc-update-apply.service",
+  "openbot-nc-update-request.path",
+  "openbot-nc-update-request.service",
 ];
-const REMOTE_DIRECTORY = "/tmp/openbot-template";
+const REMOTE_DIRECTORY = "/tmp/openbot-nc-template";
 const PRODUCTION_PREFIX = "openbot-server-production-";
 const SNAPSHOT_NAME = /^[a-z0-9][a-z0-9-]{0,62}$/u;
 const READY_STATES = new Set(["ready", "idle", "running"]);
@@ -102,17 +102,17 @@ async function main(): Promise<void> {
       boat,
       builderId,
       [
-        "test -x /opt/OpenBot/app/openbot",
-        `test "$(sed -n 's/^X-AppImage-Version=//p' /opt/OpenBot/app/*.desktop)" = ${shellQuote(options.version)}`,
-        "systemctl is-enabled --quiet openbot.service",
-        "! systemctl is-active --quiet openbot.service",
-        "systemctl is-enabled --quiet openbot-update.timer",
-        "systemctl is-enabled --quiet openbot-update-apply.service",
-        "systemctl is-enabled --quiet openbot-update-request.path",
-        "! systemctl is-active --quiet openbot-update.timer",
-        'test ! -e "$HOME/.config/OpenBot"',
-        'test ! -e "$HOME/.config/openbot-hosted"',
-        'test -z "$(ls -A /srv/openbot-hosted)"',
+        "test -x /opt/OpenBot-NC/app/openbot-nc",
+        `test "$(sed -n 's/^X-AppImage-Version=//p' /opt/OpenBot-NC/app/*.desktop)" = ${shellQuote(options.version)}`,
+        "systemctl is-enabled --quiet openbot-nc.service",
+        "! systemctl is-active --quiet openbot-nc.service",
+        "systemctl is-enabled --quiet openbot-nc-update.timer",
+        "systemctl is-enabled --quiet openbot-nc-update-apply.service",
+        "systemctl is-enabled --quiet openbot-nc-update-request.path",
+        "! systemctl is-active --quiet openbot-nc-update.timer",
+        'test ! -e "$HOME/.config/OpenBot-NC"',
+        'test ! -e "$HOME/.config/openbot-nc-hosted"',
+        'test -z "$(ls -A /srv/openbot-nc-hosted)"',
         `rm -rf ${REMOTE_DIRECTORY}`,
       ].join(" && "),
     );

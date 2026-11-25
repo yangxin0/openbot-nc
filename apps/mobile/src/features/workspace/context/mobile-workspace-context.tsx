@@ -64,7 +64,6 @@ import { HOST_VOICE_MODEL_CAPABILITY } from "@openbot/contracts/team-protocol/ho
 import { HOSTED_SITES_CAPABILITY } from "@openbot/contracts/team-protocol/hosted-sites-v1";
 import { INSTANCE_TRANSFER_CAPABILITY } from "@openbot/contracts/team-protocol/instance-transfer-v1";
 import { LIVE_ACTIVITY_PUSH_CAPABILITY } from "@openbot/contracts/team-protocol/live-activity-push-v1";
-import { LIVE_VOICE_EVENT } from "@openbot/contracts/team-protocol/live-voice-v1";
 import { LOCAL_SERVERS_CAPABILITY } from "@openbot/contracts/team-protocol/local-servers-v1";
 import { MAC_APPS_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/mac-apps-limit-v1";
 import { MACHINE_RESOURCES_CAPABILITY } from "@openbot/contracts/team-protocol/machine-resources-v1";
@@ -250,7 +249,6 @@ import {
   restoreDrawerSnapshot,
   startDrawerSnapshots,
 } from "@/features/workspace/model/drawer-snapshot";
-import { publishLiveVoiceEvent } from "@/features/workspace/model/live-voice-events";
 import { LiveWorkspaceStore } from "@/features/workspace/model/live-workspace-store";
 import {
   dropApproval,
@@ -1648,10 +1646,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
   const handleTeamEvent = useCallback(
     (serverId: string, event: RemoteTeamEvent) => {
       if (removedServers.current.has(serverId)) return;
-      if (event.type === LIVE_VOICE_EVENT) {
-        publishLiveVoiceEvent(serverId, event);
-        return;
-      }
       applyLiveActivityEvent(serverId, event);
       liveState.update("approvalRequests", (current) => {
         const previous = current[serverId] ?? [];
@@ -1940,7 +1934,6 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
     const workspace: MobileWorkspaceActions = {
       ...workflows,
       openBrowserView: browser.openBrowserView,
-      remoteDesktopConnection: (serverId) => connections.current.get(serverId)?.client ?? null,
       controlBrowserTab: browser.controlBrowserTab,
       mutateSidebarLayout: async (serverId, action) => {
         requireCapability(

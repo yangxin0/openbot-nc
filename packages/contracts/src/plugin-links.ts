@@ -1,3 +1,5 @@
+import { APP_LINK_SCHEME, isReadableAppLinkProtocol } from "./app-identity";
+
 export const OPENBOT_PLUGIN_ORIGIN = "https://openbot.run";
 export const OPENBOT_PLUGIN_PATH_PREFIX = "/plugins/";
 export const OPENBOT_PLUGIN_HOST = "plugins";
@@ -26,7 +28,7 @@ export function pluginSlugFromWebAppSearch(search: string): string | null {
 
 export function createOpenBotPluginUrl(slug: string): string {
   assertPluginSlug(slug);
-  return `openbot://${OPENBOT_PLUGIN_HOST}/${slug}`;
+  return `${APP_LINK_SCHEME}://${OPENBOT_PLUGIN_HOST}/${slug}`;
 }
 
 export function pluginLinkText(url: string): string {
@@ -50,7 +52,7 @@ export function parsePluginUrl(value: string): string {
     url.protocol === "https:" &&
     url.origin === OPENBOT_PLUGIN_ORIGIN &&
     url.pathname.startsWith(OPENBOT_PLUGIN_PATH_PREFIX);
-  const customScheme = url.protocol === "openbot:" && url.hostname === OPENBOT_PLUGIN_HOST;
+  const customScheme = isReadableAppLinkProtocol(url.protocol) && url.hostname === OPENBOT_PLUGIN_HOST;
   if (
     (!canonical && !customScheme) ||
     url.username !== "" ||

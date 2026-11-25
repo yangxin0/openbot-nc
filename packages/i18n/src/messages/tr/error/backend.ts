@@ -3,13 +3,11 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "Bu ana makinede etkinlikler kullanılamıyor.",
+  "error.backend.webhooksRemoved": "Webhook tetikleyicileri OpenBot'un bu sürümünde kullanılamıyor.",
   "error.backend.databaseIntegrity": "OpenBot veritabanı bütünlük denetiminden geçemedi.",
-  "error.backend.webhookRouteLimit": "Bir ana makinede en fazla {limit} webhook rutini olabilir.",
   "error.backend.webhookSettingsInvalid": "Webhook ayarlarını kontrol edin ve tekrar deneyin.",
   "error.backend.webhookSenderSecretInvalid":
     "Gönderenin tam imza gizli anahtarını yapıştırın. 16 ile 1024 karakter arasıdır ve boşluk içermez.",
-  "error.backend.webhookRouteUnavailable":
-    "Herkese açık webhook yolu hazır değil. Ana makine bağlantısını kontrol edin ve tekrar deneyin.",
   "error.backend.browserViewRemoteOnly": "Canlı tarayıcı görünümü yalnızca uzak bir ana makine içindir.",
   "error.backend.browserViewUnsupported": "Bu uzak ana makine canlı tarayıcı görünümünü desteklemiyor.",
   "error.backend.browserViewLimit": "Bu ana makinede çok fazla tarayıcı görünümü açık.",
@@ -17,30 +15,6 @@ export const messages = {
   "error.backend.browserViewFailed": "Bu sayfanın canlı görünümü başarısız oldu.",
   "error.backend.windowTemporarilyUnavailable": "OpenBot penceresi geçici olarak kullanılamıyor.",
   "error.backend.windowUnavailable": "OpenBot penceresi kullanılamıyor.",
-  "error.backend.sunshineApiHttp": "Sunshine API HTTP {status} ile başarısız oldu.",
-  "error.backend.sunshinePortsUnavailable": "Uzak Masaüstü için boş bir Sunshine bağlantı noktası ailesi ayrılamadı.",
-  "error.backend.moonlightPortsUnavailable":
-    "Uzak Masaüstü için boş bir Moonlight WebRTC bağlantı noktası aralığı ayrılamadı.",
-  "error.backend.iceServerNoPort": "Uzak Masaüstü ICE sunucusu bir bağlantı noktası almadı.",
-  "error.backend.remoteDesktopStoppedWhileStarting": "Uzak masaüstü çalışma zamanı başlatılırken durduruldu.",
-  "error.backend.sunshineNotStarted": "Sunshine ayrılmış bir bağlantı noktası ailesinde başlamadı.",
-  "error.backend.moonlightNoHost": "Moonlight eşleştirilmiş yerel bir ana makineye sahip değil.",
-  "error.backend.sunshineNoDesktop": "Sunshine Masaüstü uygulamasını yayımlamadı.",
-  "error.backend.sunshineAmbiguousPairing": "Sunshine belirsiz yerel eşleştirme istekleri döndürdü.",
-  "error.backend.sunshineNoPairingRequest": "Sunshine beklenen yerel eşleştirme isteğini almadı.",
-  "error.backend.moonlightPairingHttp": "Moonlight eşleştirmesi HTTP {status} ile başarısız oldu.",
-  "error.backend.moonlightRejectedPairing": "Moonlight Sunshine eşleştirmesini reddetti.",
-  "error.backend.moonlightNoPin": "Moonlight bir eşleştirme PIN'i döndürmedi.",
-  "error.backend.moonlightPairingIncomplete": "Moonlight eşleştirmesi tamamlanmadı.",
-  "error.backend.moonlightWebNotEmbedded": "Moonlight Web gömülü bir OpenBot derlemesi değil.",
-  "error.backend.moonlightEmptyResponse": "Moonlight boş bir yanıt döndürdü.",
-  "error.backend.remoteDesktopTimeout": "Uzak masaüstü isteği zaman aşımına uğradı.",
-  "error.backend.moonlightApiHttp": "Moonlight API HTTP {status} ile başarısız oldu.",
-  "error.backend.sunshineExited": "{port} bağlantı noktasındaki HTTPS API'si hazır olmadan önce Sunshine kapandı.",
-  "error.backend.sunshineNoAnswer": "Sunshine yanıt vermedi.",
-  "error.backend.sunshineTlsUnexpected": "Sunshine beklenmeyen bir TLS sertifikası döndürdü.",
-  "error.backend.moonlightWebExited": "{url} hazır olmadan önce Moonlight Web kapandı.",
-  "error.backend.moonlightWebNotReady": "Moonlight Web hazır hale gelmedi.",
   "error.backend.channelDeleteUnsupported": "Kanal silme bu sunucu tarafından desteklenmiyor.",
   "error.backend.browserNavigateUnsupported":
     "Bu uzak ana makine mevcut bir sekmede adres çubuğuyla gezinmeyi desteklemiyor.",
@@ -60,8 +34,6 @@ export const messages = {
   "error.backend.browserStopUnsupported": "Bu uzak ana makine sayfa yüklemesini durduramaz.",
   "error.backend.sharedDataLocalOnly": "Paylaşılan veriler bu ajanları çalıştıran bilgisayarda yönetilir.",
   "error.backend.browserUrlProtocol": "Yalnızca HTTP(S) tarayıcı URL'lerine izin verilir.",
-  "error.backend.sunshineNotReady": "Sunshine hazır hale gelmedi.",
-  "error.backend.sunshineNotReadyReason": "Sunshine hazır hale gelmedi. {reason}",
   "error.backend.channelLeadModelUnavailable": "Kanal lideri modeli kullanılamıyor.",
   "error.backend.contextCompactionIneffective":
     "Sıkıştırma bu sohbeti küçültmüyor: iki sıkıştırmadan sonra hâlâ modelin bağlam penceresinin %{percent} kadarını kullanıyor, bu yüzden OpenBot sıkıştırmayı durduruyor. Pencerenin çoğunu araçlar ve talimatlar kullanıyor. Bu ajanın ihtiyaç duymadığı MCP sunucularını veya bilgisayar kullanımını kapatın ya da daha büyük pencereli bir model seçin. Ardından yeni bir sohbet başlatın.",
@@ -265,6 +237,8 @@ export const messages = {
     "Oturum açma sunucusu OpenBot'u henüz bir uygulama olarak kabul etmiyor. Hesabınız bunun nedeni değildir. Yerel bir MCP sunucusu gibi bağlanmanın başka bir yolunu kullanın.",
   "error.backend.mcpRegistrationUnavailable":
     "Oturum açma sunucusu OpenBot'u uygulama olarak kaydedemiyor. Hesabınız bunun nedeni değildir. Bağlanmak için bu sunucuyu Pazaryeri, Uygulamalar bölümünde kaydedin, ardından ona bir oturum açma uygulaması ekleyin.",
+  "error.backend.mcpSignInNeedsClientDocument":
+    "Bu oturum açma sunucusu yalnızca istemci kimliği belgesi yayımlayan uygulamaları kabul ediyor ve OpenBot'un bu sürümü böyle bir belge yayımlamıyor. Bu sunucu için kendi oturum açma uygulamanız varsa sunucuyu Pazaryeri, Uygulamalar bölümünde kaydedin, ardından oturum açma uygulamasını ona ekleyin.",
   "error.backend.mcpSignInAbandonedGeneric": "Oturum açma yarıda bırakıldı.",
   "error.backend.mcpSignInForgotten": "MCP oturum açma işlemi çalışırken unutuldu.",
   "error.backend.mcpSignInAbandoned": "MCP oturum açma işlemi yarıda bırakıldı.",
@@ -461,7 +435,6 @@ export const messages = {
   "error.backend.branchSourceBusy": "Bu sohbeti dallandırmadan önce geçerli turu durdurun.",
   "error.backend.branchMessageNotFound": "Yalnızca ajanın tamamlanmış bir yanıtından dallandırabilirsiniz.",
   "error.backend.branchRemoteUnsupported": "Dallar yalnızca bu bilgisayardaki ajanlar için kullanılabilir.",
-  "error.backend.feedbackWithdrawRemoteUnsupported": "Bu raporu kaldırmak için ajandan kaldırmasını isteyin.",
   "error.backend.threadMoveRefused":
     "Yeni bir mesaj dizisinde yalnızca, doğrudan ve tek başına bu ajana gönderdiğiniz bir mesaj çalışabilir.",
   "error.backend.taskTitleRequired": "Göreve kısa bir başlık verin.",

@@ -28,7 +28,7 @@ export const messages = {
   "onboarding.setup.defaultProviderHint":
     "Używany dla nowych agentów lokalnych. Później możesz go zmienić dla każdego agenta.",
   "onboarding.setup.invitation": "Zaproszenie do hosta",
-  "onboarding.setup.invitationPlaceholder": "Wklej link zaproszenia https://openbot.run/join",
+  "onboarding.setup.invitationPlaceholder": "Wklej link zaproszenia openbot://join",
   "onboarding.setup.otherInvitation": "Użyj innego zaproszenia",
   "onboarding.setup.joinNote":
     "Dołączysz jako {email}. Zaproszenia e-mail działają tylko dla adresu, który je otrzymał.",
@@ -94,11 +94,6 @@ export const messages = {
   "onboarding.existing.startNewDetail": "Utwórz tutaj nowy zespół. Twoje serwery zachowają swoich agentów i czaty.",
   "onboarding.existing.openFailed": "OpenBot nie mógł otworzyć {name}.",
   "onboarding.consent.notice": "Kontynuując, akceptujesz {terms}. Przeczytaj też: {privacy}.",
-  "onboarding.consent.analyticsTitle": "Pomóż nam ulepszać OpenBot",
-  "onboarding.consent.analyticsDetail": "Udostępniaj użycie z kontem. Nigdy czaty ani pliki.",
-  "onboarding.consent.thanksTitle": "Dzięki! Zespół jest ci winien przysługę.",
-  "onboarding.consent.thanksToast": "Dzięki za pomoc w ulepszaniu OpenBot 💜",
-  "onboarding.consent.thanksToastDetail": "Możesz to zmienić w każdej chwili w Ustawieniach.",
   "onboarding.consent.termsLink": "Warunki korzystania",
   "onboarding.consent.privacyLink": "Polityka prywatności",
   "onboarding.plan.title": "Połącz swój plan",

@@ -1,3 +1,4 @@
+import { APP_HOME_FOLDER } from "@openbot/contracts/app-identity";
 import { attachmentReferences } from "@openbot/contracts/attachment-references";
 import type { AttachmentSummary } from "@openbot/contracts/ipc";
 
@@ -108,7 +109,9 @@ function isSharedFilePath(value: string): boolean {
   const normalized = value.replaceAll("\\", "/");
   const segments = normalized.split("/").filter(Boolean);
   if (segments[0] === "Shared" && segments.length > 1) return true;
-  return segments.some((segment, index) => segment === "OpenBot" && segments[index + 1] === "Shared");
+  return segments.some(
+    (segment, index) => (segment === APP_HOME_FOLDER || segment === "OpenBot") && segments[index + 1] === "Shared",
+  );
 }
 
 function sharedPathCandidates(body: string): TextRange[] {

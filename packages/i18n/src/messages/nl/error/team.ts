@@ -74,7 +74,6 @@ export const messages = {
   "error.team.membersCannotArchiveChannels": "Leden kunnen geen kanalen archiveren.",
   "error.team.membersCannotRestoreChannels": "Leden kunnen geen kanalen herstellen.",
   "error.team.sharedDataUnsupported": "Deze verbinding ondersteunt geen gedeelde gegevens.",
-  "error.team.agentInstallUnsupported": "Deze verbinding ondersteunt het toevoegen van agents niet.",
   "error.team.agentHideUnsupported": "Deze verbinding ondersteunt het verbergen van agents niet.",
   "error.team.agentColorsUnsupported": "Deze verbinding ondersteunt geen agentkleuren.",
   "error.team.chatColorsUnsupported": "Deze verbinding ondersteunt geen chatkleuren.",
@@ -101,8 +100,6 @@ export const messages = {
   "error.team.sidebarPinsUnsupported":
     "Deze server kan je vastgezette chats niet voor al je apparaten bewaren. Werk OpenBot bij op de computer waarop hij draait.",
   "error.team.agentInstructionsUnsupported": "Deze verbinding ondersteunt het bewerken van agentinstructies niet.",
-  "error.team.agentPublishUnsupported": "Deze verbinding ondersteunt het publiceren van agents niet.",
-  "error.team.agentUpdateUnsupported": "Deze verbinding ondersteunt het bijwerken van agents niet.",
   "error.team.contextResetUnsupported": "Deze verbinding ondersteunt het starten van een nieuwe chat niet.",
   "error.team.contextCompactUnsupported": "Deze verbinding ondersteunt het comprimeren van de context niet.",
   "error.team.messageDeleteUnsupported": "Deze verbinding ondersteunt het verwijderen van berichten niet.",
@@ -110,8 +107,6 @@ export const messages = {
   "error.team.conversationFileSearchUnsupported": "Deze verbinding ondersteunt het zoeken in bestanden niet.",
   "error.team.threadMessageSearchUnsupported": "Deze verbinding ondersteunt het zoeken in zijthreads niet.",
   "error.team.sideQuestionUnsupported": "Deze verbinding ondersteunt geen zijvragen.",
-  "error.team.liveVoiceUnsupported":
-    "Deze server ondersteunt geen Codex live spraak. Werk OpenBot bij op de computer waarop de server draait.",
   "error.team.routineFlowsUnsupported":
     "Deze server ondersteunt geen routineflows. Werk OpenBot bij op de computer waarop de server draait.",
   "error.team.routineCanvasTooLarge":
@@ -120,9 +115,6 @@ export const messages = {
     "Een bericht in dit gesprek is te groot om naar dit apparaat te sturen. Open het gesprek op de computer waarop de server draait.",
   "error.team.agentImportUnsupported": "Deze verbinding ondersteunt het importeren van agents niet.",
   "error.team.instanceTransferUnsupported": "Deze verbinding ondersteunt het overdragen van agents niet.",
-  "error.team.liveActivityUnsupported": "Deze host kan de Live Activity van een telefoon niet bijwerken.",
-  "error.team.pushNotificationsUnsupported": "Deze host kan geen meldingen naar een telefoon sturen.",
-  "error.team.agentUpdateTargetRequired": "Een agent om bij te werken is verplicht.",
   "error.team.queueEditUnsupported": "Deze client ondersteunt het bewerken van de wachtrij niet.",
   "error.team.skillsUnsupported": "Deze verbinding ondersteunt geen vaardigheden.",
   "error.team.hostIdentityUnsupported": "Deze verbinding ondersteunt het wijzigen van de serveridentiteit niet.",
@@ -171,9 +163,6 @@ export const messages = {
   "error.team.machineResourcesUnsupported": "Deze verbinding ondersteunt geen machinegebruik.",
   "error.team.machineAlertMemberInvalid":
     "Alleen een eigenaar of beheerder van deze server kan machinealarmen krijgen.",
-  "error.team.hostedSitesUnsupported": "Deze verbinding ondersteunt geen sites.",
-  "error.team.hostedSitesUnregistered": "Deze server is niet geregistreerd bij OpenBot, dus hij heeft geen sites.",
-  "error.team.hostedSiteNotFound": "Site niet gevonden.",
   "error.team.markUnreadUnsupported": "Deze client ondersteunt het markeren van gesprekken als ongelezen niet.",
   "error.team.inviteServiceUnavailable": "De uitnodigingsservice is niet beschikbaar.",
   "error.team.logoNotFound": "Serverlogo niet gevonden.",
@@ -202,8 +191,6 @@ export const messages = {
     "Deze server kan de verbindingen niet vanaf hier beheren. Werk OpenBot bij op de host.",
   "error.team.vaultUnsupported": "Deze server kan zijn kluis niet vanaf hier openen. Werk OpenBot bij op de host.",
   "error.team.vaultResetReadable": "De kluis op deze server is leesbaar en is daarom niet gereset.",
-  "error.team.discordAccessUnsupported": "Deze server kan geen Discord-rollen instellen. Werk OpenBot erop bij.",
-  "error.team.connectorPageRefused": "De server stuurde een pagina die OpenBot niet opent.",
   "error.team.signInRelayUnknown": "Deze inlog is afgelopen of bestaat niet.",
   "error.team.signInRelayUsed": "Deze inlog is al verstuurd.",
   "error.team.signInRelayMismatch": "Dit adres hoort niet bij deze inlog.",
@@ -212,7 +199,6 @@ export const messages = {
   "error.team.agentWaitsUnsupported": "Deze verbinding ondersteunt geen open wachtpunten.",
   "error.team.pendingApprovalUnsupported": "Deze verbinding kan geen volledige goedkeuring lezen.",
   "error.team.pendingPromptsUnsupported": "Deze verbinding kan de open vragen niet lezen.",
-  "error.team.phoneFeedbackUnsupported": "Deze verbinding kan geen rapport vanuit de telefoon-app sturen.",
   "error.team.messagePinsUnsupported": "Deze verbinding ondersteunt geen vastgemaakte berichten.",
   "error.team.queuedMessageThreadUnsupported":
     "Deze verbinding ondersteunt het uitvoeren van een bericht in de wachtrij als nieuwe thread niet.",

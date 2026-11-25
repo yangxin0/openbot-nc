@@ -2,19 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "権限の設定は macOS で利用できます。",
-  "status.remote.setupInstallHost":
-    "リモートデスクトップのホストコンポーネントをインストールしてから、もう一度確認してください。",
-  "status.remote.setupUpdateRuntime":
-    "macOS の権限を確認するには、リモートデスクトップのランタイムを更新してください。",
-  "status.remote.setupCheckFailed":
-    "Sunshine が権限の確認を完了できませんでした。ホストのセッションを確認してから、再試行してください。",
-  "status.remote.setupServiceFailed":
-    "リモートデスクトップのサービスを起動できませんでした。この macOS ユーザーに有効な GUI セッションがあることを確認してください。",
-  "status.remote.connectingSunshine": "Sunshine 経由で接続しています…",
-  "status.remote.switchingMonitor": "共有するモニターを切り替えています…",
-  "status.remote.controlConnected": "リモート操作に接続しました。",
-  "status.remote.controlFailed": "リモート操作に失敗しました。",
   "status.remote.stagePreferences": "ローカルのチャット設定を読み込んでいます: {reason}",
   "status.remote.stageConnection": "デスクトップに接続しています: {reason}",
   "status.remote.stageCompatibility": "デスクトップの互換性を確認しています: {reason}",

@@ -2,51 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "حدّث العميل لاستخدام إعداد سطح المكتب البعيد.",
-  "error.remote.desktopSetupUnavailable": "إعداد سطح المكتب البعيد غير متاح.",
-  "error.remote.desktopTestUnavailable": "اختبار سطح المكتب البعيد غير متاح.",
-  "error.remote.controlUnavailable": "التحكم عن بُعد غير متاح.",
-  "error.remote.controlSessionNotFound": "جلسة التحكم عن بُعد غير موجودة.",
-  "error.remote.controlNotAllowed": "لا يسمح مالك هذا الحاسوب لدورك بالتحكم فيه.",
-  "error.remote.controlDeclined": "لم يسمح الشخص الموجود عند هذا الحاسوب بالتحكم عن بُعد.",
-  "error.remote.testRuntimeUpdate": "حدّث بيئة تشغيل سطح المكتب البعيد على macOS لإجراء هذا الاختبار.",
-  "error.remote.testOtherSessions": "أنهِ جلسات سطح المكتب البعيد الأخرى قبل بدء الاختبار.",
-  "error.remote.testPermissions": "تحقق من الأذونات ومن جلسة الواجهة الرسومية على المضيف قبل بدء الاختبار.",
-  "error.remote.controlSessionEnded": "انتهت جلسة التحكم عن بُعد.",
-  "error.remote.testPanelFailed": "تعذّر على المضيف فتح لوحة الاختبار.",
-  "error.remote.sessionCapacity": "لدى المضيف بالفعل أربع جلسات نشطة.",
-  "error.remote.linuxNeedsX11": "يحتاج سطح المكتب البعيد على Linux إلى جلسة X11. Wayland غير مدعوم.",
-  "error.remote.runtimeMissing":
-    "بيئة تشغيل Sunshine وMoonlight Web مفقودة أو غير مدعومة على هذا المضيف. ثبّت إصدار OpenBot الكامل على Mac أو مضيف Windows x64 أو مضيف Linux x64، ثم أعد تشغيل OpenBot.",
-  "error.remote.testActive": "يوجد اختبار نشط لسطح المكتب البعيد. أعد المحاولة عند انتهائه.",
-  "error.remote.screenRecordingDenied":
-    "لم يسمح المضيف لـ OpenBot بتسجيل شاشته. امنح إذن تسجيل الشاشة على المضيف، ثم أعد المحاولة.",
-  "error.remote.windowsSessionDisconnected":
-    "جلسة Windows على المضيف غير متصلة، لذلك لا توجد شاشة لمشاركتها. سجّل الدخول إلى Windows على شاشة المضيف، ثم أعد المحاولة.",
-  "error.remote.windowsCaptureDenied":
-    "لا يسمح Windows على المضيف لـ OpenBot بتسجيل شاشته. افتح قفل Windows على شاشة المضيف وأغلق أي طلب إذن من المسؤول، ثم أعد المحاولة. إذا استمرت المشكلة، فأعد تشغيل المضيف.",
-  "error.remote.macScreenLocked":
-    "جهاز Mac مقفل، لذلك لا يمكنه مشاركة شاشته. افتح قفل جهاز Mac من شاشته، ثم أعد المحاولة.",
-  "error.remote.streamTooSlowLowerQuality":
-    "الاتصال بالمضيف بطيء جدًا لعرض الصورة. أعد المحاولة: سيستخدم الاتصال التالي جودة أقل.",
-  "error.remote.streamTooSlow": "الاتصال بالمضيف بطيء جدًا لعرض الصورة. استخدم شبكة أسرع، ثم أعد المحاولة.",
-  "error.remote.noPictureSwitchEncoder":
-    "لم يرسل المضيف أي صورة. أعد المحاولة: يستخدم الاتصال التالي إعداد فيديو يعمل على أجهزة كمبيوتر أكثر.",
-  "error.remote.teamSessionExpired": "انتهت صلاحية جلسة الفريق.",
-  "error.remote.finishTestBeforeSwitch": "أنهِ اختبار سطح المكتب البعيد قبل تبديل الشاشات.",
-  "error.remote.displayNotFound": "الشاشة البعيدة غير موجودة.",
-  "error.remote.displaySwitchInProgress": "يجري تبديل الشاشة.",
-  "error.remote.localTestListenerUnavailable": "مستمع الاختبار المحلي غير متاح.",
-  "error.remote.localTestNotFound": "جلسة الاختبار المحلية غير موجودة.",
-  "error.remote.runtimeUnavailable": "بيئة تشغيل سطح المكتب البعيد غير متاحة.",
-  "error.remote.sunshineStartFailed":
-    "لم يبدأ Sunshine على المضيف. راجع سجلات سطح المكتب البعيد على المضيف، ثم أعد المحاولة.",
-  "error.remote.moonlightStartFailed":
-    "لم يبدأ Moonlight Web على المضيف. راجع سجلات سطح المكتب البعيد على المضيف، ثم أعد المحاولة.",
-  "error.remote.pairingFailed":
-    "تعذّر على Moonlight الاقتران مع Sunshine على المضيف. أعد المحاولة. إذا استمرت المشكلة، فأعد تشغيل OpenBot على المضيف.",
-  "error.remote.runtimeStartFailed":
-    "لم تبدأ بيئة تشغيل سطح المكتب البعيد على المضيف. راجع سجلات سطح المكتب البعيد على المضيف، ثم أعد المحاولة.",
   "error.remote.hostUnreachable": "يتعذّر الوصول إلى المضيف.",
   "error.remote.signInToHostAgain": "سجّل الدخول إلى هذا المضيف مرة أخرى.",
   "error.remote.invalidData": "أعاد المضيف بيانات غير صالحة.",
@@ -70,10 +25,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "قبلت خدمة الحسابات مضيفًا مختلفًا.",
   "error.remote.inviteIdentityChanged": "تغيّرت هوية مضيف الدعوة أثناء قبولها.",
   "error.remote.localServerRemove": "لا يمكن إزالة الخادم المحلي.",
-  "error.remote.desktopSetupHostUpdate": "حدّث OpenBot على المضيف للتحقق من إعداد سطح المكتب البعيد.",
-  "error.remote.desktopTestHostUpdate": "حدّث OpenBot على المضيف لاختبار إعداد سطح المكتب البعيد.",
   "error.remote.viewerProxyUnavailable": "وكيل العارض البعيد المحلي غير متاح.",
-  "error.remote.viewerTransportInvalid": "نقل العارض البعيد غير صالح.",
   "error.remote.viewerProxyNoPort": "لم يحصل وكيل العارض البعيد المحلي على منفذ.",
   "error.remote.inviteNeedsConnection": "يجب أن يتصل المضيف مرة واحدة قبل أن يتمكن من إنشاء دعوات.",
   "error.remote.permanentInviteUnsupported": "اتصال الخادم هذا لا يدعم روابط الدعوة الدائمة.",

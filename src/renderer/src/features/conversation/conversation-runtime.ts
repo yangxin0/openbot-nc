@@ -10,11 +10,9 @@ import type {
   SaveSkillSuggestionResult,
   SetAgentSessionSettingInput,
   TestRoutineInput,
-  WithdrawFeedbackResult,
 } from "@openbot/contracts/ipc";
 import type { AttachmentMediaSource } from "@openbot/ui/features/conversation/AttachmentCards";
-import type { AgentSkillCalls, SkillCatalogCalls } from "../../skills-port";
-import type { AgentTemplatePublishCalls } from "../agent-templates/agent-templates-port";
+import type { AgentSkillCalls } from "../../skills-port";
 import type { BrowserProfileCalls } from "../browser/browser-profiles-port";
 import type { FilesPort } from "../files/files-port";
 import type { AgentFoldersApi, AgentInstructionsApi } from "./agent-folders-port";
@@ -23,7 +21,6 @@ import type { ConversationProps } from "./conversation-types";
 import type { AgentMemoriesApi } from "./memories-port";
 import type { EventRoutinesApi } from "./routine-webhooks-api";
 import type { AgentRoutinesApi, RoutineResultsCalls } from "./routines-port";
-import type { CodexLivePort } from "./stores/codex-live-conversation-store";
 
 export interface ConversationRuntime {
   agent: Pick<
@@ -85,9 +82,6 @@ export interface ConversationRuntime {
   openUrl: OpenBotDesktopApi["openUrl"];
   askSideQuestion?: ((input: AskSideQuestionInput) => Promise<string>) | undefined;
   sideQuestionThreads?: boolean | undefined;
-  liveVoice?: CodexLivePort | undefined;
-  skillCatalog?: SkillCatalogCalls | undefined;
-  withdrawFeedback?: ((input: { agentId: string; messageId: string }) => Promise<WithdrawFeedbackResult>) | undefined;
   saveSkillSuggestion?: ((input: SaveSkillSuggestionInput) => Promise<SaveSkillSuggestionResult>) | undefined;
   previewAttachment?: (attachment: AttachmentSummary) => Promise<FilePreview>;
   attachmentMedia?: AttachmentMediaSource;
@@ -108,7 +102,6 @@ export interface ConversationRuntime {
     | {
         skills: AgentSkillCalls;
         sharedTables: SharedTableCalls;
-        agentTemplates: AgentTemplatePublishCalls;
         eventRoutines?: EventRoutinesApi | undefined;
         sessionSettings?:
           | {

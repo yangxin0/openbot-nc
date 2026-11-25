@@ -1,8 +1,5 @@
-import { bugReportFormUrl } from "@openbot/contracts/feedback";
-import { HOSTED_SERVER_CONTACT_URL } from "@openbot/contracts/hosted-servers";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import {
-  type AnalyticsPreference,
   type AppInfo,
   type AppSetupState,
   type AppVariant,
@@ -12,8 +9,6 @@ import {
   externalLinkAppName,
   GROK_BOT_EXPORT_URL,
 } from "@openbot/contracts/ipc";
-import type { AppTranslate } from "@openbot/i18n";
-import { analyticsOnByDefault } from "@openbot/telemetry";
 import { Effect } from "effect";
 import { app, type BrowserWindow, dialog, type OpenDialogOptions, type WebContents } from "electron";
 import { version as developmentVersion } from "../../../package.json";
@@ -22,13 +17,11 @@ import type { BrowserHost } from "../../backend/browser-host";
 import type { MailboxStore } from "../../backend/mailbox-store";
 import type { AgentDefaultsPreferenceStore } from "../agent-defaults-preference-store";
 import type { AgentMemoryLimitSetting } from "../agent-memory-limit-preference-store";
-import type { AnalyticsPreferenceService } from "../analytics-preference-service";
 import type { AppBehaviorService } from "../app-behavior-service";
 import type { AppearanceService } from "../appearance-service";
 import type { ApprovalAutomation } from "../approval-automation-store";
 import type { BusyMessageModePreferenceStore } from "../busy-message-mode-preference-store";
 import type { ExternalLinkOpener, ExternalLinkPreferenceStore } from "../external-link-opener";
-import { feedbackFacts } from "../feedback";
 import { listInstalledFonts } from "../installed-fonts";
 import type { InterfaceSizeService } from "../interface-size-service";
 import type { LanguageService } from "../language-service";
@@ -44,7 +37,6 @@ import { readSetupState, writeSetupState } from "../setup-store";
 import { systemHourCycle } from "../system-hour-cycle";
 import type { UpdateService } from "../update-service";
 import {
-  parseAnalyticsPreference,
   parseAppAppearancePreference,
   parseAppBehaviorPreferenceChange,
   parseAppInterfaceSizePreference,
@@ -60,48 +52,16 @@ import {
 } from "./app-inputs";
 import { stringPayload } from "./validation";
 
-const OPENBOT_SITE = "https://openbot.run";
-
-function draftPost(translate: AppTranslate): string {
-  return encodeURIComponent(translate("app.socialFollow.draftPost", { site: "openbot.run" }));
-}
-
-const EXTERNAL_DESTINATIONS: Record<ExternalDestination, string | ((translate: AppTranslate) => string)> = {
-  "agent-setup": "https://github.com/nightly-labs/openbot/blob/main/docs/TROUBLESHOOTING.md",
+const EXTERNAL_DESTINATIONS: Record<ExternalDestination, string> = {
   "opencode-install": "https://opencode.ai/docs/",
   "opencode-auth": "https://opencode.ai/auth",
   "claude-install": "https://code.claude.com/docs",
   "hermes-install": "https://hermes-agent.nousresearch.com/docs/getting-started/installation",
-  feedback: "https://x.com/intent/post?text=Feedback%20for%20OpenBot%20%40norbertbodziony%3A%20",
-  "report-problem": () => bugReportFormUrl(feedbackFacts()),
-  message: "https://x.com/norbertbodziony",
-  changelog: "https://openbot.run/changelog",
-  guides: "https://openbot.run/guides",
-  discord: "https://discord.openbot.run",
-  github: "https://github.com/nightly-labs/openbot",
-  x: "https://x.com/OpenBot_",
-  threads: "https://www.threads.com/@openbot.run",
-  instagram: "https://www.instagram.com/openbot.run/",
-  tiktok: "https://www.tiktok.com/@openbot.run",
-  facebook: "https://www.facebook.com/profile.php?id=61595425259628",
-  linkedin: "https://www.linkedin.com/company/openbot-si/",
-  reddit: "https://www.reddit.com/r/OpenBot_/",
-  "x-post": (translate) => `https://x.com/intent/post?text=${draftPost(translate)}`,
-  "threads-post": (translate) => `https://www.threads.com/intent/post?text=${draftPost(translate)}`,
-  "linkedin-post": `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(OPENBOT_SITE)}`,
-  "reddit-post": (translate) =>
-    `https://www.reddit.com/r/OpenBot_/submit?type=TEXT&title=${encodeURIComponent(translate("app.socialFollow.redditTitle"))}&text=${draftPost(translate)}`,
-  "facebook-post": `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(OPENBOT_SITE)}`,
-  "instagram-post": "https://www.instagram.com/",
-  "tiktok-post": "https://www.tiktok.com/upload",
   "grok-bot-export": GROK_BOT_EXPORT_URL,
-  "hosted-server-contact": HOSTED_SERVER_CONTACT_URL,
-  download: DOWNLOAD_URL,
   "mac-screen-recording": MAC_PERMISSION_URLS["screen-recording"],
 };
 
 import { runCauseEffect } from "../../backend/effect-boundary";
-import { DOWNLOAD_URL } from "../download-url";
 import { openHttpLink } from "../message-link-relay";
 import type { ResourceMonitor } from "../resource-monitor";
 import type { StartupTiming } from "../startup-timing";
@@ -114,7 +74,6 @@ export interface AppIpcDependencies {
   browser: BrowserHost;
   updater: UpdateService;
   setupFile: string;
-  analyticsPreferences: AnalyticsPreferenceService;
   approvalAutomation: ApprovalAutomation;
   busyMessageMode: BusyMessageModePreferenceStore;
   agentDefaults: AgentDefaultsPreferenceStore;
@@ -133,8 +92,6 @@ export interface AppIpcDependencies {
   interfaceSize: InterfaceSizeService;
   initializeAgent: () => Promise<void>;
   appVariant: AppVariant;
-  analyticsCaptureUrl: string | null;
-  analyticsInstallId: string | null;
   dynamicIslandAvailable: boolean;
   getMainWindow: () => BrowserWindow | null;
   isMainWindow: (sender: WebContents) => boolean;
@@ -151,7 +108,6 @@ export function appIpcHandlers({
   browser,
   updater,
   setupFile,
-  analyticsPreferences,
   approvalAutomation,
   busyMessageMode,
   agentDefaults,
@@ -170,8 +126,6 @@ export function appIpcHandlers({
   interfaceSize,
   initializeAgent,
   appVariant,
-  analyticsCaptureUrl,
-  analyticsInstallId,
   dynamicIslandAvailable,
   getMainWindow,
   isMainWindow,
@@ -197,8 +151,6 @@ export function appIpcHandlers({
           version,
           platform,
           variant: appVariant,
-          ...(analyticsCaptureUrl ? { analyticsCaptureUrl } : {}),
-          ...(analyticsInstallId ? { analyticsInstallId } : {}),
           ...(softwareRendering ? { softwareRendering } : {}),
           ...(hourCycle ? { hourCycle } : {}),
           ...(aboveAppsSupport ? { aboveAppsSupport } : {}),
@@ -206,21 +158,6 @@ export function appIpcHandlers({
         };
       }),
       getSetupState: handler(() => runCauseEffect(readSetupState(setupFile))),
-      getAnalyticsPreference: handler(() =>
-        runCauseEffect(
-          readSetupState(setupFile).pipe(Effect.flatMap((setup) => analyticsPreferences.read(setup.completed))),
-        ),
-      ),
-      getAnalyticsDefault: handler(
-        (): AnalyticsPreference => ({
-          enabled:
-            analyticsPreferences.accountAnswer() ??
-            analyticsOnByDefault(app.getLocaleCountryCode(), Intl.DateTimeFormat().resolvedOptions().timeZone),
-        }),
-      ),
-      setAnalyticsPreference: payloadHandler(parseAnalyticsPreference, (parsed) =>
-        runCauseEffect(analyticsPreferences.set(parsed.enabled, parsed.chosen === true)),
-      ),
       reportRendererTiming: eventPayloadHandler(parseRendererTimingReport, (event, report) => {
         if (report.workspaceReady && isMainWindow(event.sender)) startup?.workspaceReady();
         resources.observeRendererTiming(report);
@@ -270,17 +207,12 @@ export function appIpcHandlers({
         runCauseEffect(interfaceSize.set(parsed)),
       ),
       saveSetup: payloadHandler(parseSetup, async (input): Promise<AppSetupState> => {
-        const before = await runCauseEffect(readSetupState(setupFile));
-        await runCauseEffect(analyticsPreferences.saveDefault(before.completed));
         const state = await runCauseEffect(writeSetupState(setupFile, input));
         await runCauseEffect(service.setPreferredProvider(input.preferredProvider, input.preferredModel));
         await initializeAgent();
         return state;
       }),
-      openExternal: payloadHandler(parseExternalDestination, (parsed) => {
-        const target = EXTERNAL_DESTINATIONS[parsed];
-        return openLink(typeof target === "string" ? target : target(language.translate));
-      }),
+      openExternal: payloadHandler(parseExternalDestination, (parsed) => openLink(EXTERNAL_DESTINATIONS[parsed])),
       getSentMessageStats: handler(() => service.readSentMessageStats()),
       openUrl: payloadHandler(stringPayload("URL", INPUT_LIMITS.browserUrl), (url) => openHttpLink(url, openLink)),
       getExternalLinkPreference: handler(() => externalLinkPreference.get()),

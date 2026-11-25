@@ -234,7 +234,7 @@ export function instanceTransferIpcHandlers({
     serverId: string,
   ): Promise<InstanceTransferResult> => {
     if (fromServerId === serverId) throw new Error("Invalid copy request: the servers are the same.");
-    const directory = await mkdtemp(join(app.getPath("temp"), "openbot-copy-"));
+    const directory = await mkdtemp(join(app.getPath("temp"), "openbot-nc-copy-"));
     try {
       const path = join(directory, "agents.zip");
       const sharedSkills = sourceText("error.import.transferSharedSkillsSkipped");

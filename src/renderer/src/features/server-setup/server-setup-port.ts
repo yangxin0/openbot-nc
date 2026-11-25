@@ -12,36 +12,18 @@ export function setupStatus(): Promise<SetupAnswer> {
   return call("GET", SERVER_SETUP_ROUTES.status);
 }
 
-export function setupLoginStart(email: string): Promise<SetupAnswer> {
-  return call("POST", SERVER_SETUP_ROUTES.loginStart, { email });
-}
-
-export function setupLoginVerify(challenge: string, code: string): Promise<SetupAnswer> {
-  return call("POST", SERVER_SETUP_ROUTES.loginVerify, { challenge, code });
-}
-
-export function setupRetry(): Promise<SetupAnswer> {
-  return call("POST", SERVER_SETUP_ROUTES.retry, {});
-}
-
 export function text(answer: SetupAnswer, key: string): string | null {
   const value = answer.values[key];
   return isString(value) && value ? value : null;
 }
 
-export function number(answer: SetupAnswer, key: string): number | null {
-  const value = answer.values[key];
-  return isNumber(value) ? value : null;
-}
-
-async function call(method: "GET" | "POST", path: string, fields?: Record<string, string>): Promise<SetupAnswer> {
-  const init: RequestInit = { method, credentials: "same-origin", cache: "no-store" };
-  const headers: Record<string, string> = { [SERVER_SETUP_HEADER]: "1" };
-  if (fields) {
-    headers["content-type"] = "application/x-www-form-urlencoded";
-    init.body = new URLSearchParams(fields).toString();
-  }
-  init.headers = headers;
+async function call(method: "GET", path: string): Promise<SetupAnswer> {
+  const init: RequestInit = {
+    method,
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: { [SERVER_SETUP_HEADER]: "1" },
+  };
   try {
     const response = await fetch(path, init);
     return { ok: response.ok, values: answerValues(await response.json()) };

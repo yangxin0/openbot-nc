@@ -93,8 +93,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "Das Hochladen des Anhangs wurde abgebrochen.",
   "webClient.error.duplication": "Dieser Server unterstützt das Duplizieren von Agenten nicht.",
   "webClient.error.connectServerFirst": "Verbinde dich zuerst mit diesem Server.",
-  "webClient.error.agentInstallNotAllowed":
-    "Nur Eigentümer oder Administratoren können hier einen Agenten hinzufügen. Der Server muss eine aktuelle OpenBot-Version ausführen.",
   "webClient.error.linkDesktopOnly": "Dieser Link öffnet sich nur in der Desktop-App.",
   "webClient.error.saveEndpointOffline": "Verbinde dich mit deinem Server, um einen Endpunkt zu speichern.",
   "webClient.error.removeEndpointOffline": "Verbinde dich mit deinem Server, um einen Endpunkt zu entfernen.",

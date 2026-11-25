@@ -207,15 +207,6 @@ export const HermesSteps: Story = {
   },
 };
 
-export const HermesInstallCommand: Story = {
-  name: "Hermes: Install with a command",
-  render: () => (
-    <Stage>
-      <AgentImportView {...hermesGuideArgs({ setup: "command" })} />
-    </Stage>
-  ),
-};
-
 export const HermesSkillYourself: Story = {
   name: "Hermes: Set it up yourself",
   render: () => (
@@ -229,7 +220,7 @@ export const HermesStepsJoinedServer: Story = {
   name: "Hermes: Steps on a joined server",
   render: () => (
     <Stage>
-      <AgentImportView {...hermesGuideArgs({ setup: "command", onReadFolder: undefined })} />
+      <AgentImportView {...hermesGuideArgs({ setup: "skill", onReadFolder: undefined })} />
     </Stage>
   ),
 };

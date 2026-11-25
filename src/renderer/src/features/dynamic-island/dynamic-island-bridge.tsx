@@ -134,7 +134,7 @@ export function DynamicIslandBridge() {
     if (activeServerId() !== action.serverId) {
       publishedAction = action;
       setPendingIslandAction(action);
-      if (!(await selectServer(action.serverId, false)) && pendingIslandAction() === action) {
+      if (!(await selectServer(action.serverId)) && pendingIslandAction() === action) {
         setPendingIslandAction(null);
       }
       return;

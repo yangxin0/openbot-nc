@@ -14,7 +14,6 @@ import type {
 } from "@openbot/ui/features/transfer/InstanceTransferView";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createStore, onCleanup } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 
 export type ServerTransferCalls = Omit<
   OpenBotDesktopApi["instanceTransfer"],
@@ -118,10 +117,6 @@ export function createServerTransferStore(serverId: string, calls: ServerTransfe
     void calls
       .export(options, serverId)
       .then((result) => {
-        desktopAnalytics.track("server_transfer_action", {
-          action: "export",
-          result: result.saved ? "succeeded" : "cancelled",
-        });
         setState((draft) => {
           draft.exportPhase = result.saved ? "saved" : "options";
           draft.exportFileName = result.fileName;
@@ -129,11 +124,6 @@ export function createServerTransferStore(serverId: string, calls: ServerTransfe
         });
       })
       .catch((error: unknown) => {
-        desktopAnalytics.track("server_transfer_action", {
-          action: "export",
-          result: "failed",
-          failure_code: "export_failed",
-        });
         setState((draft) => {
           draft.exportPhase = "options";
           draft.exportError = message(error, "settings.transfer.export.failed");
@@ -205,7 +195,6 @@ export function createServerTransferStore(serverId: string, calls: ServerTransfe
         serverId,
       )
       .then((result) => {
-        desktopAnalytics.track("server_transfer_action", { action: "import", result: "succeeded" });
         setState((draft) => {
           draft.importPhase = "done";
           draft.preview = null;
@@ -213,11 +202,6 @@ export function createServerTransferStore(serverId: string, calls: ServerTransfe
         });
       })
       .catch((error: unknown) => {
-        desktopAnalytics.track("server_transfer_action", {
-          action: "import",
-          result: "failed",
-          failure_code: "import_failed",
-        });
         setState((draft) => {
           draft.importPhase = "idle";
           draft.preview = null;

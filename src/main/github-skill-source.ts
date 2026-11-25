@@ -19,7 +19,6 @@ import { sourceText } from "@openbot/i18n/source";
 import { Effect, Result, Schema } from "effect";
 import { zipSync } from "fflate";
 import { causeHelpers } from "../backend/effect-boundary";
-import { GITHUB_REQUEST_TIMEOUT_MS, type GitHubFetch } from "./github-device-flow";
 import {
   inspectSkillMarkdown,
   isUnsafeArchivePath,
@@ -28,6 +27,9 @@ import {
   skillZippable,
 } from "./skill-package";
 
+export type GitHubFetch = (url: string, init: RequestInit) => Promise<Response>;
+
+const GITHUB_REQUEST_TIMEOUT_MS = 30_000;
 const API = "https://api.github.com";
 const RAW = "https://raw.githubusercontent.com";
 const MAX_FILES = 200;

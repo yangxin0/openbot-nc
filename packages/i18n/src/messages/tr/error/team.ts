@@ -71,7 +71,6 @@ export const messages = {
   "error.team.membersCannotArchiveChannels": "Üyeler kanalları arşivleyemez.",
   "error.team.membersCannotRestoreChannels": "Üyeler kanalları geri yükleyemez.",
   "error.team.sharedDataUnsupported": "Paylaşılan veriler bu bağlantı tarafından desteklenmiyor.",
-  "error.team.agentInstallUnsupported": "Ajan ekleme bu bağlantı tarafından desteklenmiyor.",
   "error.team.agentHideUnsupported": "Ajan gizleme bu bağlantı tarafından desteklenmiyor.",
   "error.team.agentColorsUnsupported": "Ajan renkleri bu bağlantı tarafından desteklenmiyor.",
   "error.team.chatColorsUnsupported": "Sohbet renkleri bu bağlantı tarafından desteklenmiyor.",
@@ -98,8 +97,6 @@ export const messages = {
   "error.team.sidebarPinsUnsupported":
     "Bu sunucu sabitlenmiş sohbetlerinizi tüm cihazlarınız için saklayamaz. Sunucuyu çalıştıran bilgisayarda OpenBot'u güncelleyin.",
   "error.team.agentInstructionsUnsupported": "Ajan talimatlarını düzenleme bu bağlantı tarafından desteklenmiyor.",
-  "error.team.agentPublishUnsupported": "Ajan yayımlama bu bağlantı tarafından desteklenmiyor.",
-  "error.team.agentUpdateUnsupported": "Ajan güncelleme bu bağlantı tarafından desteklenmiyor.",
   "error.team.contextResetUnsupported": "Yeni bir sohbet başlatma bu bağlantı tarafından desteklenmiyor.",
   "error.team.contextCompactUnsupported": "Bu bağlantı bağlamı sıkıştırmayı desteklemiyor.",
   "error.team.messageDeleteUnsupported": "Bu bağlantı mesaj silmeyi desteklemiyor.",
@@ -107,8 +104,6 @@ export const messages = {
   "error.team.conversationFileSearchUnsupported": "Dosya arama bu bağlantı tarafından desteklenmiyor.",
   "error.team.threadMessageSearchUnsupported": "Yan konularda arama bu bağlantı tarafından desteklenmiyor.",
   "error.team.sideQuestionUnsupported": "Yan sorular bu bağlantı tarafından desteklenmiyor.",
-  "error.team.liveVoiceUnsupported":
-    "Bu sunucu Codex canlı sesi desteklemiyor. Sunucuyu çalıştıran bilgisayardaki OpenBot'u güncelleyin.",
   "error.team.routineFlowsUnsupported":
     "Bu sunucu rutin akışlarını desteklemiyor. Sunucuyu çalıştıran bilgisayardaki OpenBot'u güncelleyin.",
   "error.team.routineCanvasTooLarge":
@@ -117,9 +112,6 @@ export const messages = {
     "Bu konuşmadaki bir mesaj bu cihaza gönderilemeyecek kadar büyük. Konuşmayı sunucuyu çalıştıran bilgisayarda açın.",
   "error.team.agentImportUnsupported": "Ajan içe aktarma bu bağlantı tarafından desteklenmiyor.",
   "error.team.instanceTransferUnsupported": "Bu bağlantı ajan aktarımını desteklemiyor.",
-  "error.team.liveActivityUnsupported": "Bu ana makine bir telefonun Canlı Etkinliğini güncelleyemez.",
-  "error.team.pushNotificationsUnsupported": "Bu ana makine bir telefona bildirim gönderemez.",
-  "error.team.agentUpdateTargetRequired": "Güncellenecek bir ajan gereklidir.",
   "error.team.queueEditUnsupported": "Bu istemci kuyruk düzenlemeyi desteklemiyor.",
   "error.team.skillsUnsupported": "Beceriler bu bağlantı tarafından desteklenmiyor.",
   "error.team.hostIdentityUnsupported": "Sunucu kimliği değişiklikleri bu bağlantı tarafından desteklenmiyor.",
@@ -160,9 +152,6 @@ export const messages = {
   "error.team.storageUnsupported": "Depolama bu bağlantı tarafından desteklenmiyor.",
   "error.team.machineResourcesUnsupported": "Makine kullanımı bu bağlantı tarafından desteklenmiyor.",
   "error.team.machineAlertMemberInvalid": "Makine uyarılarını yalnızca bu sunucunun sahibi veya yöneticisi alabilir.",
-  "error.team.hostedSitesUnsupported": "Siteler bu bağlantı tarafından desteklenmiyor.",
-  "error.team.hostedSitesUnregistered": "Bu sunucu OpenBot'a kayıtlı değil, bu nedenle sitesi yok.",
-  "error.team.hostedSiteNotFound": "Site bulunamadı.",
   "error.team.markUnreadUnsupported": "Bu istemci konuşmaları okunmadı olarak işaretlemeyi desteklemiyor.",
   "error.team.inviteServiceUnavailable": "Davet hizmeti kullanılamıyor.",
   "error.team.logoNotFound": "Sunucu logosu bulunamadı.",
@@ -188,8 +177,6 @@ export const messages = {
   "error.team.signInRelayUnsupported": "Bu sunucu oturum açmaları aktaramaz. Ana makinedeki OpenBot'u güncelleyin.",
   "error.team.connectorsUnsupported":
     "Bu sunucunun bağlantıları buradan yönetilemez. Ana makinedeki OpenBot'u güncelleyin.",
-  "error.team.discordAccessUnsupported": "Bu sunucu Discord rollerini ayarlayamıyor. Sunucudaki OpenBot'u güncelleyin.",
-  "error.team.connectorPageRefused": "Sunucu, OpenBot'un açmadığı bir sayfa gönderdi.",
   "error.team.signInRelayUnknown": "Bu oturum açma sona erdi veya mevcut değil.",
   "error.team.signInRelayUsed": "Bu oturum açma zaten gönderildi.",
   "error.team.signInRelayMismatch": "Bu adres bu oturum açmaya ait değil.",
@@ -198,7 +185,6 @@ export const messages = {
   "error.team.agentWaitsUnsupported": "Bu bağlantı açık beklemeleri desteklemiyor.",
   "error.team.pendingApprovalUnsupported": "Bu bağlantı onay isteğinin tamamını okumayı desteklemiyor.",
   "error.team.pendingPromptsUnsupported": "Bu bağlantı açık soruları okumayı desteklemiyor.",
-  "error.team.phoneFeedbackUnsupported": "Bu bağlantı telefon uygulamasından rapor göndermeyi desteklemiyor.",
   "error.team.messagePinsUnsupported": "Bu bağlantı sabitlenen mesajları desteklemiyor.",
   "error.team.queuedMessageThreadUnsupported":
     "Bu bağlantı kuyruktaki bir mesajı yeni bir ileti dizisi olarak çalıştırmayı desteklemiyor.",

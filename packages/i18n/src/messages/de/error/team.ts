@@ -76,7 +76,6 @@ export const messages = {
   "error.team.membersCannotArchiveChannels": "Mitglieder können keine Kanäle archivieren.",
   "error.team.membersCannotRestoreChannels": "Mitglieder können keine Kanäle wiederherstellen.",
   "error.team.sharedDataUnsupported": "Diese Verbindung unterstützt keine geteilten Daten.",
-  "error.team.agentInstallUnsupported": "Diese Verbindung unterstützt das Hinzufügen von Agenten nicht.",
   "error.team.agentHideUnsupported": "Diese Verbindung unterstützt das Ausblenden von Agenten nicht.",
   "error.team.agentColorsUnsupported": "Diese Verbindung unterstützt keine Agentenfarben.",
   "error.team.chatColorsUnsupported": "Diese Verbindung unterstützt keine Chatfarben.",
@@ -107,8 +106,6 @@ export const messages = {
     "Dieser Server kann deine angehefteten Chats nicht für alle deine Geräte speichern. Aktualisiere OpenBot auf dem Computer, auf dem er läuft.",
   "error.team.agentInstructionsUnsupported":
     "Diese Verbindung unterstützt das Bearbeiten von Agentenanweisungen nicht.",
-  "error.team.agentPublishUnsupported": "Diese Verbindung unterstützt das Veröffentlichen von Agenten nicht.",
-  "error.team.agentUpdateUnsupported": "Diese Verbindung unterstützt das Aktualisieren von Agenten nicht.",
   "error.team.contextResetUnsupported": "Diese Verbindung unterstützt das Starten eines neuen Chats nicht.",
   "error.team.contextCompactUnsupported": "Das Komprimieren des Kontexts wird von dieser Verbindung nicht unterstützt.",
   "error.team.messageDeleteUnsupported": "Diese Verbindung unterstützt das Löschen von Nachrichten nicht.",
@@ -116,8 +113,6 @@ export const messages = {
   "error.team.conversationFileSearchUnsupported": "Diese Verbindung unterstützt das Suchen von Dateien nicht.",
   "error.team.threadMessageSearchUnsupported": "Diese Verbindung unterstützt das Suchen in Nebenthreads nicht.",
   "error.team.sideQuestionUnsupported": "Diese Verbindung unterstützt keine Nebenfragen.",
-  "error.team.liveVoiceUnsupported":
-    "Dieser Server unterstützt keine Codex-Live-Sprache. Aktualisiere OpenBot auf dem Computer, auf dem er läuft.",
   "error.team.routineFlowsUnsupported":
     "Dieser Server unterstützt keine Routinenabläufe. Aktualisiere OpenBot auf dem Computer, auf dem er läuft.",
   "error.team.routineCanvasTooLarge":
@@ -126,9 +121,6 @@ export const messages = {
     "Eine Nachricht in dieser Unterhaltung ist zu groß, um sie an dieses Gerät zu senden. Öffne die Unterhaltung auf dem Computer, auf dem der Server läuft.",
   "error.team.agentImportUnsupported": "Diese Verbindung unterstützt das Importieren von Agenten nicht.",
   "error.team.instanceTransferUnsupported": "Diese Verbindung unterstützt keine Übertragung von Agenten.",
-  "error.team.liveActivityUnsupported": "Dieser Host kann die Live Activity eines Telefons nicht aktualisieren.",
-  "error.team.pushNotificationsUnsupported": "Dieser Host kann keine Mitteilungen an ein Telefon senden.",
-  "error.team.agentUpdateTargetRequired": "Ein Agent zum Aktualisieren ist erforderlich.",
   "error.team.queueEditUnsupported": "Dieser Client unterstützt das Bearbeiten der Warteschlange nicht.",
   "error.team.skillsUnsupported": "Diese Verbindung unterstützt keine Fähigkeiten.",
   "error.team.hostIdentityUnsupported": "Diese Verbindung unterstützt keine Änderungen der Serveridentität.",
@@ -173,9 +165,6 @@ export const messages = {
   "error.team.machineResourcesUnsupported": "Diese Verbindung unterstützt keine Maschinennutzung.",
   "error.team.machineAlertMemberInvalid":
     "Nur Eigentümer oder Administratoren dieses Servers können Maschinenwarnungen erhalten.",
-  "error.team.hostedSitesUnsupported": "Diese Verbindung unterstützt keine Websites.",
-  "error.team.hostedSitesUnregistered": "Dieser Server ist nicht bei OpenBot registriert und hat daher keine Websites.",
-  "error.team.hostedSiteNotFound": "Website nicht gefunden.",
   "error.team.markUnreadUnsupported": "Dieser Client unterstützt das Markieren von Unterhaltungen als ungelesen nicht.",
   "error.team.inviteServiceUnavailable": "Der Einladungsdienst ist nicht verfügbar.",
   "error.team.logoNotFound": "Serverlogo nicht gefunden.",
@@ -204,9 +193,6 @@ export const messages = {
     "Dieser Server kann keine Anmeldungen weiterleiten. Aktualisiere OpenBot auf dem Host.",
   "error.team.connectorsUnsupported":
     "Die Verbindungen dieses Servers lassen sich hier nicht verwalten. Aktualisiere OpenBot auf dem Host.",
-  "error.team.discordAccessUnsupported":
-    "Dieser Server kann keine Discord-Rollen festlegen. Aktualisiere OpenBot auf dem Server.",
-  "error.team.connectorPageRefused": "Der Server hat eine Seite gesendet, die OpenBot nicht öffnet.",
   "error.team.signInRelayUnknown": "Diese Anmeldung ist beendet oder existiert nicht.",
   "error.team.signInRelayUsed": "Diese Anmeldung wurde bereits gesendet.",
   "error.team.signInRelayMismatch": "Diese Adresse gehört nicht zu dieser Anmeldung.",
@@ -215,7 +201,6 @@ export const messages = {
   "error.team.agentWaitsUnsupported": "Offene Wartevorgänge werden von dieser Verbindung nicht unterstützt.",
   "error.team.pendingApprovalUnsupported": "Diese Verbindung kann keine vollständige Freigabe lesen.",
   "error.team.pendingPromptsUnsupported": "Diese Verbindung kann die offenen Fragen nicht lesen.",
-  "error.team.phoneFeedbackUnsupported": "Diese Verbindung kann keinen Bericht aus der Telefon-App senden.",
   "error.team.messagePinsUnsupported": "Diese Verbindung unterstützt angeheftete Nachrichten nicht.",
   "error.team.queuedMessageThreadUnsupported":
     "Das Ausführen einer wartenden Nachricht als neuer Thread wird von dieser Verbindung nicht unterstützt.",

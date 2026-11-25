@@ -129,7 +129,6 @@ const registry = new AttentionRegistry({
     },
   },
   browser: { listTabs: () => [], toolCanUseTab: () => false, beginTakeover: () => Effect.void, endTakeover: () => {} },
-  hostedSites: { prepareApproval: () => Effect.succeed(null), resolveApproval: () => Effect.void },
   routines: { markNeedsAttention: () => {}, markRunningForTurn: () => {}, runsTurn: () => false },
   emit: (event) => events.push(event),
   emitError: (code) => {

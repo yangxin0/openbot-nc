@@ -1600,7 +1600,7 @@ async function readSeedTransferDirectories(profilePath: string): Promise<string[
 }
 
 async function removeTransferDirectories(homeDirectory: string, directories: string[]): Promise<string[]> {
-  const root = resolve(homeDirectory, "OpenBot", "Shared", "Transfers");
+  const root = resolve(homeDirectory, "OpenBot-NC", "Shared", "Transfers");
   const generatedRoot = resolve(root, "generated");
   const removed: string[] = [];
   for (const relativePath of directories) {

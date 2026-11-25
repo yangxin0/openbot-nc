@@ -2,18 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/connector";
 
 export const messages = {
-  "error.connector.githubUnavailable": "Cette version d’OpenBot n’a pas d’application GitHub.",
-  "error.connector.githubDenied": "La connexion à GitHub a été refusée.",
-  "error.connector.githubCodeExpired": "Le code GitHub a expiré. Connectez GitHub à nouveau.",
-  "error.connector.githubDeviceFlowDisabled": "L’application GitHub n’autorise pas la connexion par appareil.",
-  "error.connector.githubClientUnknown": "GitHub ne connaît pas le Client ID de cette application GitHub.",
-  "error.connector.githubUnexpected": "GitHub a envoyé une réponse inattendue : {detail}",
-  "error.connector.githubUnreachable": "OpenBot ne peut pas joindre GitHub : {detail}",
-  "error.connector.githubOffline":
-    "OpenBot ne peut pas joindre GitHub. Vérifiez la connexion internet et les réglages DNS de l’ordinateur ou du serveur qui exécute OpenBot, puis réessayez.",
-  "error.connector.githubExpired": "La connexion GitHub a expiré. Connectez GitHub à nouveau.",
-  "error.connector.githubFileUnreadable": "Le fichier de connexion GitHub est illisible.",
-  "error.connector.githubFileTooLarge": "Le fichier de connexion GitHub est trop volumineux.",
   "error.connector.onePasswordCliMissing":
     "OpenBot ne trouve pas la CLI 1Password. Installez-la et activez son intégration dans l’application 1Password, ou utilisez un jeton de compte de service.",
   "error.connector.onePasswordCliInstallFailed":

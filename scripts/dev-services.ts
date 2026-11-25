@@ -97,9 +97,9 @@ const DEFAULT_REMOTE_DEBUGGING_PORTS = {
 
 export function servicesForTarget(target: DevelopmentTarget): DevelopmentService[] {
   if (target === "all") return ["api", "remote", "app"];
-  if (target === "test-client") return ["api", "remote", "app", "test-client"];
+  if (target === "test-client") return ["app", "test-client"];
   if (target === "api") return ["api"];
-  return ["api", "remote", "app"];
+  return ["app"];
 }
 
 export function createDevelopmentServiceSpec(
@@ -133,7 +133,15 @@ export function createDevelopmentServiceSpec(
   return {
     name,
     executable: electronVite,
-    args: ["dev", "--watch", "--outDir", outputDirectory, "--entry", join(outputDirectory, "main", "start.js")],
+    args: [
+      "dev",
+      "--watch",
+      "--outDir",
+      outputDirectory,
+      "--entry",
+      join(outputDirectory, "main", "start.js"),
+      ...electronSwitches(ELECTRON_SWITCH_VARIABLES[name], childEnvironment),
+    ],
     cwd: projectRoot,
     env: {
       ...childEnvironment,
@@ -145,9 +153,30 @@ export function createDevelopmentServiceSpec(
       OPENBOT_DEV_REMOTE_DEBUGGING_PORT:
         childEnvironment.OPENBOT_DEV_REMOTE_DEBUGGING_PORT ??
         String(isTestClient ? DEFAULT_REMOTE_DEBUGGING_PORTS["test-client"] : DEFAULT_REMOTE_DEBUGGING_PORTS.app),
-      OPENBOT_DEV_REMOTE_ROLE: childEnvironment.OPENBOT_DEV_REMOTE_ROLE ?? (isTestClient ? "client" : "host"),
+      OPENBOT_DEV_REMOTE_ROLE: childEnvironment.OPENBOT_DEV_REMOTE_ROLE ?? "none",
     },
   };
+}
+
+const ELECTRON_SWITCH_VARIABLES: Record<Extract<DevelopmentService, "app" | "test-client">, string> = {
+  app: "OPENBOT_DEV_ELECTRON_ARGS",
+  "test-client": "OPENBOT_DEV_TEST_CLIENT_ELECTRON_ARGS",
+};
+
+function electronSwitches(variable: string, environment: NodeJS.ProcessEnv): string[] {
+  const value = environment[variable];
+  if (value === undefined || value.trim() === "") return [];
+  const switches = switchList(variable, JSON.parse(value));
+  return switches.length === 0 ? [] : ["--", ...switches];
+}
+
+function switchList(variable: string, value: unknown): string[] {
+  if (
+    !Array.isArray(value) ||
+    !value.every((item): item is string => typeof item === "string" && item.startsWith("--"))
+  )
+    throw new Error(`${variable} must be a JSON list of switches that start with --.`);
+  return value;
 }
 
 export function createDevInstanceRecord(
@@ -266,12 +295,13 @@ async function main(): Promise<void> {
   const { target, dryRun, force, shared, hostingTest, slack, foreground } = parseDevelopmentTarget(
     process.argv.slice(2),
   );
-  if (!dryRun && prepareDevelopmentEnvironment() === "created") {
+  const services = servicesForTarget(target);
+  const startsAccountServices = services.includes("api") || services.includes("remote");
+  if (!dryRun && prepareDevelopmentEnvironment({ migrateAccountDatabase: startsAccountServices }) === "created") {
     logger.info("Prepared local development state.");
   }
-  const services = servicesForTarget(target);
   if (!dryRun && services.includes("app")) prepareVoiceRuntime();
-  const developmentEnvironment = dryRun ? {} : await loadDevelopmentEnvironment(projectRoot);
+  const developmentEnvironment = dryRun || !startsAccountServices ? {} : await loadDevelopmentEnvironment(projectRoot);
   const sharedEnvironment = developmentEnvironmentForTarget(target);
   if (hostingTest) {
     sharedEnvironment.OPENBOT_AUTH_API_URL = TEST_ACCOUNT_API_URL;
@@ -305,7 +335,7 @@ async function main(): Promise<void> {
     });
     if (instanceId !== sharedEnvironment.OPENBOT_DEV_INSTANCE_ID) {
       sharedEnvironment.OPENBOT_DEV_INSTANCE_ID = instanceId;
-      logger.info("This worktree opens its own dev profile. Pass --shared to open the shared OpenBot Dev profile.");
+      logger.info("This worktree opens its own dev profile. Pass --shared to open the shared OpenBot-NC Dev profile.");
     }
     const allocated = await allocateDevelopmentPorts(
       services,

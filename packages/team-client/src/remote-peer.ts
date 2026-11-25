@@ -34,7 +34,6 @@ import {
   teamProtocolV2AuthenticationTranscript,
   teamWebRtcClientProtocol,
 } from "@openbot/contracts/team-protocol";
-import type { LiveVoiceEvent } from "@openbot/contracts/team-protocol/live-voice-v1";
 import { optionalTeamEvent, optionalTeamEventToCurrent } from "@openbot/contracts/team-protocol/optional-events";
 import { addPromptQuestionDetails } from "@openbot/contracts/team-protocol/prompt-detail-v1";
 import { teamSideRouteCodec } from "@openbot/contracts/team-protocol/side-routes";
@@ -101,7 +100,7 @@ import { startRemoteRequestDeadline } from "./remote-recovery";
 import { createTeamRequestId } from "./request-id";
 import { encodeTeamWebRtcPayload, TeamWebRtcPayloadDecoder } from "./webrtc-framing";
 
-export type RemoteTeamEvent = AgentEvent | TeamRealtimeEvent | LiveVoiceEvent;
+export type RemoteTeamEvent = AgentEvent | TeamRealtimeEvent;
 
 export type RemoteLargeDownload = {
   maxBytes: number;

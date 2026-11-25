@@ -8,7 +8,6 @@ import {
   type ListEventRoutineRunsInput,
   type ListEventRoutinesInput,
   type SaveEventRoutineInput,
-  type SetWebhookSecretInput,
 } from "@openbot/contracts/ipc-events";
 import { type DynamicRecord, isDynamicRecord } from "@openbot/contracts/runtime-values";
 import { sourceText } from "@openbot/i18n/source";
@@ -37,11 +36,6 @@ export function parseListEventRoutines(value: unknown): ListEventRoutinesInput {
 export function parseEventRoutineRef(value: unknown): EventRoutineRef {
   const input = record(value);
   return { id: requiredString(input.id, 128), owner: owner(input.owner) };
-}
-
-export function parseSetWebhookSecret(value: unknown): SetWebhookSecretInput {
-  const input = record(value);
-  return { id: requiredString(input.id, 128), owner: owner(input.owner), secret: requiredString(input.secret, 1024) };
 }
 
 export function parseSaveEventRoutine(value: unknown): SaveEventRoutineInput {

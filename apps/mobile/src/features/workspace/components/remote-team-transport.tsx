@@ -1,12 +1,11 @@
 import { BROWSER_SECRET_RESPONSE_PATH } from "@openbot/contracts/ipc";
-import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
+import { isDynamicRecord } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import { BROWSER_SECRET_VAULT_ROUTES } from "@openbot/contracts/team-protocol/browser-secret-vault-v1";
 import {
   INSTANCE_TRANSFER_REMOTE_BYTES,
   INSTANCE_TRANSFER_ROUTES,
 } from "@openbot/contracts/team-protocol/instance-transfer-v1";
-import { LIVE_VOICE_ROUTES } from "@openbot/contracts/team-protocol/live-voice-v1";
 import { PENDING_APPROVAL_ROUTES } from "@openbot/contracts/team-protocol/pending-approval-v1";
 import { PHONE_FEEDBACK_ROUTES } from "@openbot/contracts/team-protocol/phone-feedback-v1";
 import { isQueueEditRoute, QueueEditRejectedError } from "@openbot/contracts/team-protocol/queue-edit-v1";
@@ -41,10 +40,6 @@ import type {
   BrowserViewBridgeOpen,
   RemoteBrowserViewSession,
 } from "@/features/browser/model/browser-view-bridge";
-import type {
-  RemoteDesktopRelayCommand,
-  RemoteDesktopRelayEvent,
-} from "@/features/remote-desktop/model/remote-desktop-relay";
 import { supportLog, supportLogUrl } from "@/features/support/model/support-log";
 import { InactiveRequestError } from "@/features/workspace/model/pending-approvals";
 import { referencedError } from "@/features/workspace/model/referenced-error";
@@ -77,21 +72,6 @@ export interface RemoteTeamTransportRef {
     options: Omit<BrowserViewBridgeOpen, "viewId">,
     listener: (event: BrowserViewBridgeEvent) => void,
   ): RemoteBrowserViewSession | null;
-  fetchRaw(
-    method: string,
-    path: string,
-    body?: TeamProtocolV2Json,
-    upload?: RemoteFileUpload,
-  ): Promise<{ status: number; body: unknown }>;
-  openRemoteDesktopStream(path: string, listener: (event: RemoteDesktopRelayEvent) => void): RemoteDesktopStream | null;
-}
-
-export type RemoteDesktopConnection = Pick<RemoteTeamTransportRef, "fetchRaw" | "openRemoteDesktopStream">;
-
-export interface RemoteDesktopStream {
-  sendText(data: string): void;
-  sendBinary(base64: string): void;
-  close(code: number, reason: string): void;
 }
 
 interface RemoteTeamTransportProps {
@@ -145,18 +125,6 @@ function savedTo(result: RemoteTeamCommandResult, uri: string) {
   return result.ok && isDynamicRecord(file) && file.ref === uri;
 }
 
-function liveVoiceErrorText(path: string, status: number, body: unknown): string | null {
-  if (path === LIVE_VOICE_ROUTES.start && status >= 500) return sourceText("error.voice.live.hostFailed");
-  if (path !== LIVE_VOICE_ROUTES.start && path !== LIVE_VOICE_ROUTES.stop) return null;
-  return isDynamicRecord(body) && isString(body.error) && body.error ? body.error : null;
-}
-
-function liveVoiceHostFailure(path: string, reference: string | undefined): string | null {
-  return path === LIVE_VOICE_ROUTES.start && reference?.startsWith("host/500/")
-    ? sourceText("error.voice.live.hostFailed")
-    : null;
-}
-
 const BRIDGE_DOM: DOMProps = {
   ...expoGoDomOptions,
   containerStyle: {
@@ -205,14 +173,6 @@ export const RemoteTeamTransport = memo(
       const browserView = bridge.current?.browserView;
       if (typeof browserView !== "function") return false;
       browserView(command);
-      return true;
-    }, []);
-
-    const desktopListeners = useRef(new Map<string, (event: RemoteDesktopRelayEvent) => void>());
-    const sendDesktopCommand = useCallback((command: RemoteDesktopRelayCommand) => {
-      const remoteDesktop = bridge.current?.remoteDesktop;
-      if (typeof remoteDesktop !== "function") return false;
-      remoteDesktop(command);
       return true;
     }, []);
 
@@ -342,12 +302,7 @@ export const RemoteTeamTransport = memo(
               `${request} -> ${result.status ?? "no status"} ${time}`,
             );
           if (!result.ok)
-            throw referencedError(
-              liveVoiceHostFailure(path, result.reference) ??
-                result.error ??
-                sourceText("error.remote.serverRequestFailed"),
-              result.reference,
-            );
+            throw referencedError(result.error ?? sourceText("error.remote.serverRequestFailed"), result.reference);
           if (result.status === 409 && isQueueEditRoute(method, path))
             throw new QueueEditRejectedError(currentText().t("mobile.workspace.error.queueEditRejected"));
           if (
@@ -367,10 +322,7 @@ export const RemoteTeamTransport = memo(
           )
             throw new InactiveRequestError(currentText().t("mobile.chat.browserSecret.ended"));
           if (result.status !== undefined && result.status >= 400)
-            throw referencedError(
-              liveVoiceErrorText(path, result.status, result.body) ?? sourceText("error.remote.serverRequestFailed"),
-              referenceFrom("http", result.status),
-            );
+            throw referencedError(sourceText("error.remote.serverRequestFailed"), referenceFrom("http", result.status));
           return decode(result.body);
         },
         openBrowserView: (options, listener) => {
@@ -391,34 +343,8 @@ export const RemoteTeamTransport = memo(
             },
           };
         },
-        fetchRaw: async (method, path, body = {}, upload) => {
-          const result = await enqueue({ type: "request", method, path, body, upload });
-          if (!result.ok)
-            throw referencedError(result.error ?? sourceText("error.remote.serverRequestFailed"), result.reference);
-          return { status: result.status ?? 200, body: result.body };
-        },
-        openRemoteDesktopStream: (path, listener) => {
-          const streamId = Crypto.randomUUID();
-          desktopListeners.current.set(streamId, listener);
-          if (!sendDesktopCommand({ type: "open", streamId, path })) {
-            desktopListeners.current.delete(streamId);
-            return null;
-          }
-          return {
-            sendText: (data) => {
-              if (desktopListeners.current.has(streamId)) sendDesktopCommand({ type: "text", streamId, data });
-            },
-            sendBinary: (base64) => {
-              if (desktopListeners.current.has(streamId)) sendDesktopCommand({ type: "binary", streamId, base64 });
-            },
-            close: (code, reason) => {
-              if (!desktopListeners.current.delete(streamId)) return;
-              sendDesktopCommand({ type: "close", streamId, code, reason });
-            },
-          };
-        },
       }),
-      [enqueue, sendViewCommand, sendDesktopCommand, backgroundLane],
+      [enqueue, sendViewCommand, backgroundLane],
     );
 
     const pageLoads = useRef(0);
@@ -506,11 +432,6 @@ export const RemoteTeamTransport = memo(
       onBrowserViewEvent: async (event: BrowserViewBridgeEvent) => {
         const listener = viewListeners.current.get(event.viewId);
         if (event.type === "ended") viewListeners.current.delete(event.viewId);
-        listener?.(event);
-      },
-      onRemoteDesktopEvent: async (event: RemoteDesktopRelayEvent) => {
-        const listener = desktopListeners.current.get(event.streamId);
-        if (event.type === "closed") desktopListeners.current.delete(event.streamId);
         listener?.(event);
       },
       onAccountServersChanged: async () => latest.current.props.onMembershipChanged?.(),

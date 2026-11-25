@@ -30,8 +30,6 @@ export const messages = {
   "error.agent.commitEffectsFailed": "事务已提交，但保存的副作用执行失败。",
   "error.agent.settingsLocalOnly": "助手设置只能在运行该助手的电脑上更改。",
   "error.agent.skillsLocalOnly": "技能只能在运行该助手的电脑上更改。",
-  "error.agent.addLocalOnly": "助手只能在运行它们的电脑上添加。",
-  "error.agent.joinedServerUpdate": "无法从这里更新已加入服务器上的助手。",
   "error.agent.searchQueryRequired": "需要提供搜索关键词。",
   "error.agent.messageTooLong": "消息过长。",
   "error.agent.messageOrAttachmentRequired": "需要提供消息或附件。",
@@ -144,8 +142,6 @@ export const messages = {
   "error.agent.automationPayloadTooLong": "载荷超过 {limit} 个字符。",
   "error.agent.automationRateLimited": "过去一小时内本地脚本运行了该助手的自动化任务 {limit} 次，请稍后再试。",
   "error.agent.workspaceOnlyMacOnly": "该服务商的“仅工作区”仅在 macOS 上可用，请在助手设置中选择完全访问。",
-  "error.agent.lowMemory":
-    "该服务器内存不足。你的消息会在队列中等待，内存释放后自动开始。更大的套餐可为服务器提供更多内存。",
   "error.agent.lowMemoryServer": "该服务器内存不足。你的消息会在队列中等待，内存释放后自动开始。",
   "error.agent.workspaceOnlyToolMissing":
     "“仅工作区”需要 {tool}，但 OpenBot 没有找到它。请安装它，或在助手设置中选择完全访问。",

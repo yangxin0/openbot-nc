@@ -180,9 +180,4 @@ export const messages = {
   "sidebar.machine.alertTo": "O alerta vai para {name}",
   "sidebar.machine.details": "Ver detalhes",
   "sidebar.machine.dismiss": "Ocultar até o próximo alerta",
-  "sidebar.community.title": "Puxe uma cadeira.",
-  "sidebar.community.body": "Há um lugar para você no futuro da IA. Participe da comunidade no Discord e no X.",
-  "sidebar.community.joinDiscord": "Entrar no Discord",
-  "sidebar.community.followX": "Seguir o OpenBot no X",
-  "sidebar.community.dismiss": "Dispensar o convite para a comunidade",
 } as const satisfies PartialTranslation<typeof source>;

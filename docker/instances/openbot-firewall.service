@@ -6,7 +6,7 @@ Before=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/opt/openbot-docker/instances/openbot-firewall
+ExecStart=/opt/openbot-nc-docker/instances/openbot-firewall
 
 [Install]
 WantedBy=multi-user.target docker.service

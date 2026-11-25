@@ -3,9 +3,6 @@ import type { AppLanguage } from "@openbot/contracts/app-language";
 import type { AvatarColor, CentralAuthUser } from "@openbot/contracts/ipc";
 import type { AppTextKey } from "@openbot/i18n";
 import {
-  Button,
-  CreditCard,
-  Gift,
   Item,
   ItemActions,
   ItemContent,
@@ -21,8 +18,6 @@ import {
   UserRound,
 } from "@openbot/ui";
 import { documentColorScheme } from "@openbot/ui/document-color-scheme";
-import { ReferralPanel } from "@openbot/ui/features/referral/ReferralPanel";
-import { createReferralStore, type ReferralCalls } from "@openbot/ui/features/referral/referral-store";
 import { AppearanceSelect } from "@openbot/ui/features/settings/AppearanceSelect";
 import { ACTION_SOUND_CHOICES, TASK_SOUND_CHOICES } from "@openbot/ui/features/settings/app-settings";
 import { ChatBackgroundSetting } from "@openbot/ui/features/settings/ChatBackgroundSetting";
@@ -36,29 +31,23 @@ import { SettingsProfileTab } from "@openbot/ui/features/settings/SettingsProfil
 import { SidebarChatOrderSelect } from "@openbot/ui/features/settings/SidebarChatOrderSelect";
 import { SoundChoiceSelect } from "@openbot/ui/features/settings/SoundChoiceSelect";
 import { createSettingsProfileStore } from "@openbot/ui/features/settings/stores/profile-store";
-import { TalkKeyRecorder } from "@openbot/ui/features/settings/TalkKeyRecorder";
 import { useText } from "@openbot/ui/text";
-import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup } from "solid-js";
 import { readActionSoundChoice, setActionSoundChoice } from "../../action-sounds";
 import { setShowAgentSteps, useShowAgentSteps } from "../../agent-steps-preference";
 import { setChatBubbleStyle, useChatBubbleStyle } from "../../chat-bubble-style-preference";
 import { setCompactMessageActions, useCompactMessageActions } from "../../compact-message-actions-preference";
 import { playSoundChoice, readTaskSound, setTaskSound } from "../../completion-sound";
-import { webReportsEnabled } from "../../error-reports";
 import { useLayout } from "../../layout";
 import { currentDevicePlatform, setSendShortcutMode, useSendShortcutMode } from "../../send-shortcut-preference";
-import { setVoiceTalkKey, useVoiceTalkKey } from "../conversation/voice-talk-key";
 import { ChatBackdropSetting } from "../settings/ChatBackdropSetting";
-import { type LiveVoiceAccountChoice, LiveVoiceAccountRow } from "../settings/LiveVoiceAccountRow";
 import { MotionSwitches } from "../settings/MotionSwitches";
 import { SettingsKeyboardTab } from "../settings/SettingsKeyboardTab";
 import type { WebAccountCalls } from "./web-account";
-import { sendWebAnalyticsChoice, setWebAnalyticsEnabled } from "./web-analytics";
 import { setWebChatBackground, useWebChatBackground } from "./web-chat-background";
-import { setWebLiveVoice, useWebLiveVoice } from "./web-live-voice";
 import type { WebNotificationSettings } from "./web-notification-settings";
 
-const TABS = ["profile", "preferences", "keyboard", "referral"] as const;
+const TABS = ["profile", "preferences", "keyboard"] as const;
 type WebAccountSettingsTab = (typeof TABS)[number];
 
 const TAB_ITEMS = {
@@ -77,11 +66,6 @@ const TAB_ITEMS = {
     descriptionKey: "settings.tab.keyboard.description",
     icon: Keyboard,
   },
-  referral: {
-    titleKey: "settings.tab.referral.title",
-    descriptionKey: "settings.tab.referral.description",
-    icon: Gift,
-  },
 } as const satisfies Record<
   WebAccountSettingsTab,
   { titleKey: AppTextKey; descriptionKey: AppTextKey; icon: typeof UserRound }
@@ -93,13 +77,10 @@ export interface WebAccountSettingsProps {
   page: SettingsPagePlacement | undefined;
   account: CentralAuthUser;
   calls: WebAccountCalls;
-  liveVoiceAccount?: LiveVoiceAccountChoice | undefined;
   language: AppLanguage;
   onChangeLanguage: (language: AppLanguage) => void;
   appearance: AppAppearance;
   onChangeAppearance: (appearance: AppAppearance) => void;
-  onOpenBilling: () => void;
-  referral: ReferralCalls;
   onSignOut: () => Promise<void>;
   notifications: WebNotificationSettings;
   notificationFocusRequest?: { serverId: string; nonce: number } | null | undefined;
@@ -107,7 +88,6 @@ export interface WebAccountSettingsProps {
 }
 
 export default function WebAccountSettings(props: WebAccountSettingsProps) {
-  const [reportsEnabled, setReportsEnabled] = createSignal(webReportsEnabled());
   const { t, errorMessage } = useText();
   const saveChatColor = (color: AvatarColor | null) =>
     void props.calls
@@ -121,8 +101,6 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
   const compactMessageActions = useCompactMessageActions();
   const bubbleStyle = useChatBubbleStyle();
   const chatBackground = useWebChatBackground();
-  const webLiveVoice = useWebLiveVoice();
-  const talkKey = useVoiceTalkKey();
   const [soundChoice, setSoundChoice] = createSignal(readActionSoundChoice());
   const readSoundSettings = () => {
     setTaskSoundChoice(readTaskSound());
@@ -146,10 +124,6 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
       onRevokeAccountSession: (sessionId) => props.calls.revokeSession(sessionId),
     },
     () => activeTab() === "profile",
-  );
-  const referral = createReferralStore(
-    () => props.referral,
-    () => props.open && activeTab() === "referral",
   );
   const navItem = () => TAB_ITEMS[activeTab()];
   createEffect(
@@ -185,38 +159,22 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
         contentKey={activeTab()}
         onContentElement={(element) => (modalElement = element)}
         sidebar={
-          <>
-            <Tabs.List class="settings-modal-nav" aria-label={t("settings.sections.label")}>
-              {TABS.map((tab) => {
-                const item = TAB_ITEMS[tab];
-                const NavIcon = item.icon;
-                return (
-                  <Tabs.Trigger
-                    class="settings-modal-nav-item"
-                    value={tab}
-                    aria-current={activeTab() === tab ? "page" : undefined}
-                  >
-                    <NavIcon aria-hidden="true" />
-                    <span>{t(item.titleKey)}</span>
-                  </Tabs.Trigger>
-                );
-              })}
-            </Tabs.List>
-            <div class="settings-modal-nav">
-              <Button
-                variant="ghost"
-                type="button"
-                class="settings-modal-nav-item"
-                onClick={() => {
-                  props.onOpenChange(false);
-                  props.onOpenBilling();
-                }}
-              >
-                <CreditCard aria-hidden="true" />
-                <span>{t("account.menu.billing")}</span>
-              </Button>
-            </div>
-          </>
+          <Tabs.List class="settings-modal-nav" aria-label={t("settings.sections.label")}>
+            {TABS.map((tab) => {
+              const item = TAB_ITEMS[tab];
+              const NavIcon = item.icon;
+              return (
+                <Tabs.Trigger
+                  class="settings-modal-nav-item"
+                  value={tab}
+                  aria-current={activeTab() === tab ? "page" : undefined}
+                >
+                  <NavIcon aria-hidden="true" />
+                  <span>{t(item.titleKey)}</span>
+                </Tabs.Trigger>
+              );
+            })}
+          </Tabs.List>
         }
       >
         <Tabs.Content value="profile" class="settings-modal-tab-panel profile-panel" data-tab="profile">
@@ -231,10 +189,6 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
 
         <Tabs.Content value="keyboard" class="settings-modal-tab-panel" data-tab="keyboard">
           <SettingsKeyboardTab />
-        </Tabs.Content>
-
-        <Tabs.Content value="referral" class="settings-modal-tab-panel" data-tab="referral">
-          <ReferralPanel store={referral} available />
         </Tabs.Content>
 
         <Tabs.Content value="preferences" class="settings-modal-tab-panel" data-tab="preferences">
@@ -353,49 +307,6 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
                 </ItemActions>
               </Item>
               <MotionSwitches />
-            </ItemGroup>
-          </SettingsSection>
-          <SettingsSection title={t("settings.voice.talk.section")}>
-            <ItemGroup class="settings-modal-card">
-              <Item class="settings-modal-row">
-                <ItemContent>
-                  <ItemTitle>{t("settings.voice.talkKey.title")}</ItemTitle>
-                  <ItemDescription>{t("settings.voice.talkKey.description")}</ItemDescription>
-                </ItemContent>
-                <ItemActions>
-                  <TalkKeyRecorder binding={talkKey()} onChange={(key) => setVoiceTalkKey(key, talkKey().platform)} />
-                </ItemActions>
-              </Item>
-            </ItemGroup>
-          </SettingsSection>
-          <SettingsSection title={t("settings.voice.live.section")}>
-            <ItemGroup class="settings-modal-card">
-              <SwitchField
-                checked={webLiveVoice()}
-                onChange={(checked) => setWebLiveVoice(checked)}
-                label={t("settings.voice.speech.codexLive.title")}
-                description={t("settings.voice.speech.codexLive.serverDescription")}
-              />
-              <Show when={props.liveVoiceAccount}>
-                {(choice) => (
-                  <LiveVoiceAccountRow choice={choice()} disabled={!webLiveVoice()} selectMount={modalElement} />
-                )}
-              </Show>
-            </ItemGroup>
-          </SettingsSection>
-          <SettingsSection title={t("settings.analytics.title")}>
-            <ItemGroup class="settings-modal-card">
-              <SwitchField
-                checked={reportsEnabled()}
-                onChange={(value) => {
-                  setReportsEnabled(setWebAnalyticsEnabled(value));
-                  sendWebAnalyticsChoice(props.calls)
-                    .then(() => setReportsEnabled(webReportsEnabled()))
-                    .catch(() => undefined);
-                }}
-                label={t("settings.analytics.title")}
-                description={t("settings.analytics.webDescription")}
-              />
             </ItemGroup>
           </SettingsSection>
           <SettingsSection

@@ -57,7 +57,6 @@ class StagedReleaseUpdater extends EventEmitter {
 interface HostState {
   agentTurn: boolean;
   browserView: boolean;
-  remoteDesktop: boolean;
   browserControls: number;
   providerIdleWait: boolean;
   providerOperation: boolean;
@@ -70,7 +69,7 @@ function readinessInput(state: HostState): RestartReadinessInput {
       ...(state.agentTurn ? ["agent-turn"] : []),
       ...(state.providerIdleWait || state.providerOperation ? ["provider-process"] : []),
     ],
-    hostBlockers: [...(state.remoteDesktop ? ["remote-desktop"] : []), ...(state.browserView ? ["browser-view"] : [])],
+    hostBlockers: state.browserView ? ["browser-view"] : [],
     activeBrowserControls: state.browserControls,
     activeFileTransfers: false,
     updaterBusy: false,
@@ -128,19 +127,18 @@ const hasLine = (log: string[], text: string) => log.some((line) => line.include
 const softAndHard: HostState = {
   agentTurn: true,
   browserView: true,
-  remoteDesktop: true,
   browserControls: 1,
   providerIdleWait: true,
   providerOperation: false,
   clientInUse: true,
 };
 const hosted = hostedServer(softAndHard, MAXIMUM_WAIT_MS);
-const allReasons = "agent-turn, provider-process, remote-desktop, browser-view, browser-control, client-use";
+const allReasons = "agent-turn, provider-process, browser-view, browser-control, client-use";
 await until("the logged wait reasons", () => hasLine(hosted.log, `waits for: ${allReasons}.`));
 assert.deepEqual(hosted.updater.status.scheduledRestart?.waitingFor, allReasons.split(", "));
 softAndHard.clientInUse = false;
 await until("the logged change of wait reasons", () =>
-  hasLine(hosted.log, "waits for: agent-turn, provider-process, remote-desktop, browser-view, browser-control."),
+  hasLine(hosted.log, "waits for: agent-turn, provider-process, browser-view, browser-control."),
 );
 softAndHard.clientInUse = true;
 await until("the end of the maximum wait", () => hasLine(hosted.log, "It now waits only for"));
@@ -151,7 +149,7 @@ assert.ok(hasLine(hosted.log, "waits for: agent-turn."), "The reduced wait reaso
 softAndHard.agentTurn = false;
 await until("the install that ignores soft blockers", () => hosted.updater.installs === 1);
 assert.ok(
-  hasLine(hosted.log, "It ignored: provider-process, remote-desktop, browser-view, browser-control, client-use."),
+  hasLine(hosted.log, "It ignored: provider-process, browser-view, browser-control, client-use."),
   "The end of the wait was not logged with the ignored reasons.",
 );
 assert.ok(hosted.log.some((line) => /stopped waiting after \d+ s\./.test(line)));
@@ -161,7 +159,6 @@ await Effect.runPromise(hosted.requested.dispose());
 const providerState: HostState = {
   agentTurn: false,
   browserView: true,
-  remoteDesktop: false,
   browserControls: 0,
   providerIdleWait: false,
   providerOperation: true,

@@ -93,9 +93,9 @@ OpenBot quits, OpenBot stops listening and deletes the files.
 
 `<userData>` is the OpenBot application data folder:
 
-- macOS: `~/Library/Application Support/OpenBot`
-- Linux: `~/.config/OpenBot`
-- Windows: `%APPDATA%\OpenBot`
+- macOS: `~/Library/Application Support/OpenBot-NC`
+- Linux: `~/.config/OpenBot-NC`
+- Windows: `%APPDATA%\OpenBot-NC`
 
 ## Routes
 

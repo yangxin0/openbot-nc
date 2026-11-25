@@ -5,11 +5,6 @@ import { AppLogo, Done } from "./MarketplaceParts";
 import { customServerStatus, type MarketplaceApp, pluginNeedsMac } from "./marketplace-model";
 import type { MarketplaceScope } from "./marketplace-view";
 
-export function useInstalls() {
-  const { t, format } = useText();
-  return (count: number) => t("marketplace.installs", { count, installs: format.number(count) });
-}
-
 export function AppAction(props: {
   scope: MarketplaceScope;
   app: MarketplaceApp;
@@ -40,10 +35,6 @@ export function AppAction(props: {
   };
   const connect = () => {
     const app = props.app;
-    if (app.kind === "x") {
-      props.scope.nav.go({ kind: "app", id: app.id, setup: true });
-      return;
-    }
     if (app.kind === "connector") {
       const view = props.scope.nav.state.stack.at(-1);
       if (view?.kind !== "app" || view.id !== app.id) props.scope.nav.go({ kind: "app", id: app.id });
@@ -75,7 +66,6 @@ export function AppAction(props: {
       <Show
         when={
           props.app.kind === "connector" ||
-          props.app.kind === "x" ||
           (props.app.kind === "plugin" &&
             !pluginNeedsMac(model(), props.app.plugin) &&
             (model().canConnectApps() || (!list() && checking())))

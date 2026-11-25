@@ -3,13 +3,11 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "События недоступны на этом хосте.",
+  "error.backend.webhooksRemoved": "Триггеры webhook недоступны в этой версии OpenBot.",
   "error.backend.databaseIntegrity": "База данных OpenBot не прошла проверку целостности.",
-  "error.backend.webhookRouteLimit": "На хосте может быть не более {limit} регулярных задач с вебхуком.",
   "error.backend.webhookSettingsInvalid": "Проверьте настройки вебхука и повторите попытку.",
   "error.backend.webhookSenderSecretInvalid":
     "Вставьте полный секрет подписи отправителя. В нём от 16 до 1024 символов и нет пробелов.",
-  "error.backend.webhookRouteUnavailable":
-    "Публичный маршрут вебхука не готов. Проверьте подключение хоста и повторите попытку.",
   "error.backend.browserViewRemoteOnly": "Просмотр браузера в реальном времени доступен только для удалённого хоста.",
   "error.backend.browserViewUnsupported": "Этот удалённый хост не поддерживает просмотр браузера в реальном времени.",
   "error.backend.browserViewLimit": "На этом хосте открыто слишком много видов браузера.",
@@ -17,32 +15,6 @@ export const messages = {
   "error.backend.browserViewFailed": "Не удалось показать эту страницу в реальном времени.",
   "error.backend.windowTemporarilyUnavailable": "Окно OpenBot временно недоступно.",
   "error.backend.windowUnavailable": "Окно OpenBot недоступно.",
-  "error.backend.sunshineApiHttp": "API Sunshine вернул ошибку HTTP {status}.",
-  "error.backend.sunshinePortsUnavailable":
-    "Не удалось зарезервировать свободное семейство портов Sunshine для удалённого рабочего стола.",
-  "error.backend.moonlightPortsUnavailable":
-    "Не удалось зарезервировать свободный диапазон портов Moonlight WebRTC для удалённого рабочего стола.",
-  "error.backend.iceServerNoPort": "ICE-сервер удалённого рабочего стола не получил порт.",
-  "error.backend.remoteDesktopStoppedWhileStarting":
-    "Среда удалённого рабочего стола была остановлена во время запуска.",
-  "error.backend.sunshineNotStarted": "Sunshine не запустился на зарезервированном семействе портов.",
-  "error.backend.moonlightNoHost": "У Moonlight нет сопряжённого локального хоста.",
-  "error.backend.sunshineNoDesktop": "Sunshine не опубликовал приложение Desktop.",
-  "error.backend.sunshineAmbiguousPairing": "Sunshine вернул неоднозначные локальные запросы на сопряжение.",
-  "error.backend.sunshineNoPairingRequest": "Sunshine не получил ожидаемый локальный запрос на сопряжение.",
-  "error.backend.moonlightPairingHttp": "Сопряжение Moonlight не удалось: HTTP {status}.",
-  "error.backend.moonlightRejectedPairing": "Moonlight отклонил сопряжение с Sunshine.",
-  "error.backend.moonlightNoPin": "Moonlight не вернул PIN-код сопряжения.",
-  "error.backend.moonlightPairingIncomplete": "Сопряжение Moonlight не завершено.",
-  "error.backend.moonlightWebNotEmbedded": "Moonlight Web — не встроенная сборка OpenBot.",
-  "error.backend.moonlightEmptyResponse": "Moonlight вернул пустой ответ.",
-  "error.backend.remoteDesktopTimeout": "Время запроса к удалённому рабочему столу истекло.",
-  "error.backend.moonlightApiHttp": "API Moonlight вернул ошибку HTTP {status}.",
-  "error.backend.sunshineExited": "Sunshine завершился до того, как его HTTPS API на порту {port} стал готов.",
-  "error.backend.sunshineNoAnswer": "Sunshine не ответил.",
-  "error.backend.sunshineTlsUnexpected": "Sunshine вернул неожиданный сертификат TLS.",
-  "error.backend.moonlightWebExited": "Moonlight Web завершился до того, как {url} стал готов.",
-  "error.backend.moonlightWebNotReady": "Moonlight Web не стал готов.",
   "error.backend.channelDeleteUnsupported": "Этот сервер не поддерживает удаление каналов.",
   "error.backend.browserNavigateUnsupported":
     "Этот удалённый хост не поддерживает переход через адресную строку в существующей вкладке.",
@@ -60,8 +32,6 @@ export const messages = {
   "error.backend.browserStopUnsupported": "Этот удалённый хост не может остановить загрузку страницы.",
   "error.backend.sharedDataLocalOnly": "Общими данными управляют на компьютере, где работают эти агенты.",
   "error.backend.browserUrlProtocol": "Допускаются только URL браузера с HTTP(S).",
-  "error.backend.sunshineNotReady": "Sunshine не стал готов.",
-  "error.backend.sunshineNotReadyReason": "Sunshine не стал готов. {reason}",
   "error.backend.channelLeadModelUnavailable": "Модель ведущего канала недоступна.",
   "error.backend.contextCompactionIneffective":
     "Сжатие не уменьшает этот чат: после двух сжатий он всё ещё занимает {percent}% окна контекста модели, поэтому OpenBot перестаёт его сжимать. Большую часть окна занимают инструменты и инструкции. Отключите MCP-серверы или управление компьютером, которые не нужны этому агенту, или выберите модель с большим окном. Затем начните новый чат.",
@@ -273,6 +243,8 @@ export const messages = {
     "Сервер входа пока не принимает OpenBot как приложение. Дело не в вашем аккаунте. Подключитесь другим способом, например через локальный сервер MCP.",
   "error.backend.mcpRegistrationUnavailable":
     "Сервер входа не может зарегистрировать OpenBot как приложение. Дело не в вашем аккаунте. Чтобы подключиться, сохраните этот сервер в разделе Каталог, Приложения, затем добавьте к нему приложение входа.",
+  "error.backend.mcpSignInNeedsClientDocument":
+    "Этот сервер входа принимает только приложения, которые публикуют документ идентификатора клиента, а эта сборка OpenBot его не публикует. Если у вас есть своё приложение входа для этого сервера, сохраните сервер в разделе Каталог, Приложения, затем добавьте к нему это приложение входа.",
   "error.backend.mcpSignInAbandonedGeneric": "Вход прерван.",
   "error.backend.mcpSignInForgotten": "Вход в MCP был забыт, пока выполнялся.",
   "error.backend.mcpSignInAbandoned": "Вход в MCP прерван.",
@@ -471,7 +443,6 @@ export const messages = {
   "error.backend.branchSourceBusy": "Остановите текущий ход, прежде чем создать ответвление этого чата.",
   "error.backend.branchMessageNotFound": "Ответвление можно создать только от завершённого ответа агента.",
   "error.backend.branchRemoteUnsupported": "Ответвления доступны только для агентов на этом компьютере.",
-  "error.backend.feedbackWithdrawRemoteUnsupported": "Чтобы удалить этот отчёт, попросите агента удалить его.",
   "error.backend.threadMoveRefused":
     "В новой ветке можно запустить только сообщение, которое вы отправили одному этому агенту.",
   "error.backend.taskTitleRequired": "Дайте задаче короткое название.",

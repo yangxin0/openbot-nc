@@ -7,7 +7,6 @@ import type {
   CustomAgentSummary,
   CustomProviderSummary,
   MessagingConnection,
-  MessagingPlatform,
 } from "@openbot/contracts/ipc";
 import type { AppTextKey } from "@openbot/i18n";
 import {
@@ -71,14 +70,14 @@ export interface ChannelText {
   title: AppTextKey;
   description: AppTextKey;
   connect: AppTextKey;
-  attentionTitle: `connector.${MessagingPlatform}.attentionTitle`;
+  attentionTitle: "connector.whatsapp.attentionTitle";
   attentionDescription: AppTextKey;
   disconnectAllTitle: AppTextKey;
   disconnect: AppTextKey;
   reconnect: AppTextKey;
   pause: AppTextKey;
   resume: AppTextKey;
-  rowAction: `connector.${MessagingPlatform}.rowAction`;
+  rowAction: "connector.whatsapp.rowAction";
   addAgent: AppTextKey;
   orchestratorTitle: AppTextKey;
   orchestratorDescription: AppTextKey;

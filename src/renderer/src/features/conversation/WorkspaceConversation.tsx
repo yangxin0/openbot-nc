@@ -44,7 +44,6 @@ import { useChannels } from "../channels/channels-context";
 import { useConnectors } from "../connectors/connectors-context";
 import { useCustomAgents } from "../custom-agents/custom-agents-context";
 import { useCustomProviders } from "../custom-providers/custom-providers-context";
-import { useRemoteDesktop } from "../remote-desktop/remote-desktop-context";
 import { useServerActions } from "../servers/server-actions";
 import { remoteMcpSignIn, serverCanAdminister, serverSupportsCapability } from "../servers/server-capabilities";
 import { createServerResponseStyle } from "../servers/server-personality";
@@ -179,7 +178,6 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
     activateBrowserTab,
     closeBrowserTab,
   } = useBrowserTabs();
-  const { activeRemoteDesktopSession, remoteDesktopWorkspaceVisible, openRemoteDesktopWorkspace } = useRemoteDesktop();
   const remoteLoading = () =>
     activeServer()?.kind === "remote" && (!serverScope.loaded() || !conversations[activeAgent()?.id ?? ""]?.loaded);
   const panelAgentStatus = () => (remoteLoading() ? { ...agentStatus(), phase: "starting" as const } : agentStatus());
@@ -562,11 +560,6 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
           !platform.landingPreview && !platform.chatWindow && activeServerSupportsCapability("browser-control")
         }
         openLinksInBrowser={generalSettings().externalLinkTarget.kind === "openbot"}
-        remoteDesktopSessionActive={Boolean(activeRemoteDesktopSession())}
-        remoteDesktopVisible={remoteDesktopWorkspaceVisible()}
-        remoteDesktopEnabled={
-          !platform.landingPreview && !platform.chatWindow && activeServerSupportsCapability("remote-desktop")
-        }
         prompt={activePrompt()}
         promptUiBlock={activePromptUiBlock()}
         approval={activeApproval()}
@@ -661,7 +654,6 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
         onReorderQueue={reorderQueue}
         onActivateBrowserTab={activateBrowserTab}
         onCloseBrowserTab={closeBrowserTab}
-        onOpenRemoteDesktop={openRemoteDesktopWorkspace}
         onStop={stopActiveTurn}
       />
       <ProviderSignInDialogs api={connection} opener="composer" />

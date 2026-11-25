@@ -17,14 +17,6 @@ export function readDevelopmentRemoteDebuggingPort(value: string | undefined): s
   return Number.isInteger(port) && port >= 1_024 && port <= 65_535 ? String(port) : null;
 }
 
-export function readAnalyticsCaptureUrl(value: string | undefined): string | null {
-  const trimmed = value?.trim();
-  if (!trimmed || !URL.canParse(trimmed)) return null;
-  const url = new URL(trimmed);
-  const loopback = url.hostname === "127.0.0.1" || url.hostname === "localhost";
-  return url.protocol === "http:" && loopback && url.pathname === "/" ? url.origin : null;
-}
-
 export function developmentInstanceIdForWorktree(projectRoot: string): string {
   return `wt-${createHash("sha256").update(projectRoot).digest("hex")}`;
 }
@@ -55,16 +47,8 @@ function hslToHex(hue: number, saturation: number, lightness: number): string {
 }
 
 export function developmentUserDataName(profile: DevelopmentProfile, instanceId: string | null = null): string {
-  const base = profile === "test-client" ? "OpenBot Dev Test Client" : "OpenBot Dev";
+  const base = profile === "test-client" ? "OpenBot-NC Dev Test Client" : "OpenBot-NC Dev";
   return instanceId ? `${base} ${instanceId}` : base;
-}
-
-export function shouldAutoStartHost(input: {
-  configured: boolean;
-  enabledOnLaunch: boolean;
-  remoteRole?: "host" | "client" | null;
-}): boolean {
-  return input.remoteRole !== "client" && input.configured && input.enabledOnLaunch;
 }
 
 export function shouldShowDevelopmentWindow(input: {

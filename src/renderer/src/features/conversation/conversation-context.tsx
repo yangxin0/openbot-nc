@@ -14,7 +14,6 @@ import type { AgentMessage, ComposerThreadMessageMatch } from "@openbot/ui/data"
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createMemo, createStore, onCleanup, untrack } from "solid-js";
 import { noteAgentRequest } from "../../agent-requests";
-import { desktopAnalytics } from "../../analytics";
 import {
   agentMessagesEqual,
   collectThreadMessageMatches,
@@ -39,7 +38,6 @@ import { useChannels } from "../channels/channels-context";
 import { useServers } from "../servers/servers-context";
 import { notifyTeamTyping } from "../team/team-typing";
 import { useWindowPage } from "../window/window-page-context";
-import { takeAttachmentKinds } from "./attachment-analytics";
 import {
   agentConversationKey,
   agentMessageKey,
@@ -59,8 +57,6 @@ import {
 } from "./conversation-read-state";
 import type { ConversationMessagePins, SendMessageResult } from "./conversation-types";
 import { useDirectMessages } from "./direct-messages-context";
-import { noteAgentMessageSent } from "./github-star-prompt";
-import { noteSocialFollowMessageSent } from "./social-follow-prompt";
 
 type ConversationDeltaEvent = Extract<AgentEvent, { type: "conversation-delta" }>;
 
@@ -129,7 +125,6 @@ const Conversation = createSimpleContext({
       agentChatOpenRevision,
       setAgentChatOpenRevision,
       appendUiError,
-      analyticsAgentProperties,
       agentSetupOpen,
       explicitlyOpenedAgentChatId,
       uiErrors,
@@ -885,15 +880,8 @@ const Conversation = createSimpleContext({
       agentId: string,
       query: string,
     ): Promise<{ messageIds: string[]; total: number }> {
-      const analytics = desktopAnalytics.scope();
-      try {
-        const page = await conversationPort().agent.searchConversationMessages({ query, agentId, limit: 100 });
-        analytics.track("search_action", { scope: "agent", result: "succeeded", result_count: page.total });
-        return { messageIds: page.results.map((result) => result.message.id), total: page.total };
-      } catch (error) {
-        analytics.track("search_action", { scope: "agent", result: "failed", failure_code: "search_failed" });
-        throw error;
-      }
+      const page = await conversationPort().agent.searchConversationMessages({ query, agentId, limit: 100 });
+      return { messageIds: page.results.map((result) => result.message.id), total: page.total };
     }
 
     function searchAgentThreadMessages(agentId: string, query: string): Promise<ComposerThreadMessageMatch[]> {
@@ -990,9 +978,6 @@ const Conversation = createSimpleContext({
       clientMessageId?: string,
       voiceRecordingDraftId?: string,
     ): Promise<SendMessageResult> {
-      const analytics = desktopAnalytics.scope();
-      const properties = analyticsAgentProperties(agentId);
-      const attachmentKinds = takeAttachmentKinds(attachmentDraftIds);
       try {
         const input = {
           agentId,
@@ -1006,32 +991,12 @@ const Conversation = createSimpleContext({
         const receipt = await conversationPort().agent.sendMessage(input, serverId);
         const errorKey = agentConversationKey(serverId, agentId);
         setUiErrors((current) => ({ ...current, [errorKey]: [] }));
-        analytics.track("message_send", {
-          ...(properties ?? {}),
-          channel: "agent",
-          attachment_count: attachmentDraftIds.length,
-          attachment_kinds: attachmentKinds,
-          is_reply: replyToMessageId !== null,
-          result: "succeeded",
-          delivery_count: receipt.deliveries.length,
-        });
-        noteAgentMessageSent();
-        noteSocialFollowMessageSent();
         const messageId = receipt.deliveries[0]?.id ?? receipt.messageId;
         markAgentMessagesRead(agentId, messageId, serverId).catch((error: unknown) => {
           reportAutomaticReadFailure(agentId, error, serverId);
         });
         return { messageId };
       } catch (error) {
-        analytics.track("message_send", {
-          ...(properties ?? {}),
-          channel: "agent",
-          attachment_count: attachmentDraftIds.length,
-          attachment_kinds: attachmentKinds,
-          is_reply: replyToMessageId !== null,
-          result: "failed",
-          failure_code: "send_failed",
-        });
         const { t, errorMessage } = currentText();
         return { error: errorMessage(error, t("chat.errorStatus.send")) };
       }

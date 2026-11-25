@@ -14,7 +14,6 @@ export interface UpdateRequiredScreenProps {
   status: UpdateStatus;
   logoVariant: AppLogoVariant;
   onUpdate: () => Promise<void>;
-  onOpenDownloadPage: () => void;
   onDismiss?: () => void;
 }
 
@@ -78,29 +77,13 @@ export function UpdateRequiredScreen(props: UpdateRequiredScreenProps) {
           <Show
             when={presentation().supported}
             fallback={
-              <>
-                <Button
-                  variant="default"
-                  type="button"
-                  class="account-login-primary"
-                  onClick={props.onOpenDownloadPage}
-                >
-                  {t("update.required.download")}
-                </Button>
-                <Show when={props.onDismiss}>
-                  {(dismiss) => (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      type="button"
-                      class="update-required-secondary"
-                      onClick={dismiss()}
-                    >
-                      {t("update.required.continue")}
-                    </Button>
-                  )}
-                </Show>
-              </>
+              <Show when={props.onDismiss}>
+                {(dismiss) => (
+                  <Button variant="ghost" size="sm" type="button" class="update-required-secondary" onClick={dismiss()}>
+                    {t("update.required.continue")}
+                  </Button>
+                )}
+              </Show>
             }
           >
             <Show
@@ -134,15 +117,6 @@ export function UpdateRequiredScreen(props: UpdateRequiredScreenProps) {
                 />
               </div>
             </Show>
-            <Button
-              variant="ghost"
-              size="sm"
-              type="button"
-              class="update-required-secondary"
-              onClick={props.onOpenDownloadPage}
-            >
-              {t("update.required.download")}
-            </Button>
             <Show when={failure() !== null && props.onDismiss}>
               {(dismiss) => (
                 <Button variant="ghost" size="sm" type="button" class="update-required-secondary" onClick={dismiss()}>

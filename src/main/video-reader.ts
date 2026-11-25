@@ -377,7 +377,7 @@ export class VideoReader implements VideoReaderHost {
     return yield* this.#lock.withPermit(
       Effect.acquireUseRelease(
         Effect.tryPromise({
-          try: () => mkdtemp(join(tmpdir(), "openbot-video-")),
+          try: () => mkdtemp(join(tmpdir(), "openbot-nc-video-")),
           catch: () => failure("OpenBot could not make a temporary folder for the video."),
         }),
         (directory) => this.#readInto(directory, request),

@@ -6,8 +6,7 @@ import { promisify } from "node:util";
 import type { AppTranslate } from "@openbot/i18n";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 import { Option, Schema } from "effect";
-import { dialog, shell } from "electron";
-import { DOWNLOAD_URL } from "./download-url";
+import { dialog } from "electron";
 
 const logger = createOpenBotLogger("app-archive");
 const SETTLE_MS = 2_000;
@@ -58,15 +57,12 @@ async function readPlistHash(resourcesPath: string): Promise<string | null> {
 }
 
 async function showArchiveChanged(translate: AppTranslate): Promise<void> {
-  const { response } = await dialog.showMessageBox({
+  await dialog.showMessageBox({
     type: "warning",
     message: translate("startup.archiveChangedTitle"),
     detail: translate("startup.archiveChangedBody"),
-    buttons: [translate("startup.archiveChangedDownload"), translate("common.close")],
-    defaultId: 0,
-    cancelId: 1,
+    buttons: [translate("common.close")],
   });
-  if (response === 0) await shell.openExternal(DOWNLOAD_URL);
 }
 
 export function watchAppArchive(resourcesPath: string, translate: AppTranslate): () => void {

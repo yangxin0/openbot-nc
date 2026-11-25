@@ -672,8 +672,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "يزيل الوكيل هذا البلاغ ويرسله مرة أخرى دون الأجزاء التي تختارها.",
   "chat.feedbackSent.removeChoice": "إزالته",
   "chat.feedbackSent.removeChoiceHint": "إزالته من GitHub. لا يمكنك التراجع عن ذلك.",
-  "chat.feedbackSent.fixPrompt": "أزل بلاغي #{number} من GitHub وأرسله مرة أخرى دون هذا:",
-  "chat.feedbackSent.removePrompt": "أزل بلاغي #{number} من GitHub.",
   "chat.feedbackSent.composerFilled": "الطلب في مربع الرسالة. أكمله، ثم أرسله.",
   "chat.feedbackSent.keep": "الإبقاء عليه",
   "chat.feedbackSent.removing": "جارٍ الإزالة…",

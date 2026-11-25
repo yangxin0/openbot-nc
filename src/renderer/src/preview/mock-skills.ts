@@ -5,20 +5,10 @@ import {
   type InstalledSkill,
   isGithubSkillId,
   type MarketplaceSkillDetail,
-  type MarketplaceSkillPage,
-  type MarketplaceSkillQuery,
-  type MarketplaceSkillSummary,
   type OpenBotDesktopApi,
-  type SkillSubmission,
 } from "@openbot/contracts/ipc";
-import {
-  STORY_INSTALLED_SKILLS,
-  STORY_MARKETPLACE_SKILL_DETAILS,
-  STORY_MARKETPLACE_SKILLS,
-  STORY_SKILL_PACKAGE_PREVIEW,
-  STORY_SKILL_SUBMISSIONS,
-} from "./fixtures";
-import { clone, matchesQuery } from "./mock-support";
+import { STORY_INSTALLED_SKILLS, STORY_MARKETPLACE_SKILL_DETAILS } from "./fixtures";
+import { clone } from "./mock-support";
 
 export interface MockSkillsOptions {
   localSkills?: MarketplaceSkillDetail[];
@@ -30,35 +20,6 @@ function storyReleaseNotesSkill(): MarketplaceSkillDetail {
   if (!skill) throw new Error("The release notes skill fixture is missing.");
   return skill;
 }
-function byUpdate(a: MarketplaceSkillSummary, b: MarketplaceSkillSummary): number {
-  return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
-}
-
-const SKILL_ORDERS: Record<NonNullable<MarketplaceSkillQuery["sort"]>, typeof byUpdate> = {
-  installs: (a, b) => b.installs - a.installs,
-  updated: byUpdate,
-  name: (a, b) => a.name.localeCompare(b.name),
-};
-
-export function mockSkillPage(
-  skills: readonly MarketplaceSkillSummary[],
-  query: MarketplaceSkillQuery = {},
-): MarketplaceSkillPage {
-  const matches = skills.filter(
-    (skill) =>
-      matchesQuery(`${skill.name} ${skill.description} ${skill.creatorName}`, query.query) &&
-      (!query.category || skill.category === query.category) &&
-      (query.featured !== true || skill.featured) &&
-      (query.verified === undefined || (skill.verified === true) === query.verified),
-  );
-  const ordered = matches.sort(
-    query.sort ? SKILL_ORDERS[query.sort] : (a, b) => Number(b.featured) - Number(a.featured) || byUpdate(a, b),
-  );
-  const start = Number(query.cursor ?? 0);
-  const end = start + (query.limit ?? 50);
-  return clone({ skills: ordered.slice(start, end), nextCursor: end < ordered.length ? String(end) : null });
-}
-
 const GITHUB_COMMIT = "c5d8b1e2f4a6c8e0b2d4f6a8c0e2b4d6f8a0c2e4";
 const GITHUB_SKILLS: readonly (readonly [string, string])[] = [
   ["docx", "Creates, edits and reads Word documents, with tracked changes and comments."],
@@ -112,7 +73,6 @@ function mockGithubDetail(skillId: string): MarketplaceSkillDetail | undefined {
 }
 
 export function createMockSkills(options: MockSkillsOptions, onChanged: (agentId: string) => void = () => {}) {
-  const marketplaceSkills = clone(STORY_MARKETPLACE_SKILLS);
   const localSkills = clone(
     options.localSkills ?? [
       {
@@ -127,7 +87,6 @@ export function createMockSkills(options: MockSkillsOptions, onChanged: (agentId
     ],
   );
   const localRevisions = new Map(localSkills.map((skill) => [`${skill.id}:${skill.version}`, skill]));
-  let skillSubmissions = clone(STORY_SKILL_SUBMISSIONS);
   const installedSkills = new Map(Object.entries(clone(options.installedSkills ?? STORY_INSTALLED_SKILLS)));
 
   function readInstalledSkills(agentId: string): InstalledSkill[] {
@@ -195,39 +154,6 @@ export function createMockSkills(options: MockSkillsOptions, onChanged: (agentId
       writeInstalled(agentId, [...readInstalledSkills(agentId).filter((item) => item.skillId !== skillId), installed]);
       return clone(installed);
     },
-    list: async (query) => mockSkillPage(marketplaceSkills, query),
-    get: async (skillId) => {
-      if (skillId.startsWith("local-skill-")) return skills.localGet({ skillId });
-      const detail = STORY_MARKETPLACE_SKILL_DETAILS[skillId];
-      if (!detail) throw new Error("Skill not found");
-      return clone(detail);
-    },
-    getBySlug: async (slug) => {
-      const detail = Object.values(STORY_MARKETPLACE_SKILL_DETAILS).find((skill) => skill.slug === slug);
-      if (!detail) throw new Error("Skill not found");
-      return clone(detail);
-    },
-    listMine: async () => clone(skillSubmissions),
-    choosePackage: async () => clone(STORY_SKILL_PACKAGE_PREVIEW),
-    submit: async (input) => {
-      const preview = STORY_SKILL_PACKAGE_PREVIEW;
-      const submission: SkillSubmission = {
-        id: `submission-${preview.slug}-${skillSubmissions.length + 1}`,
-        showCreatorAvatar: input.showCreatorAvatar ?? false,
-        skillId: input.skillId ?? `skill-${preview.slug}`,
-        slug: preview.slug,
-        name: preview.name,
-        description: preview.description,
-        category: input.category,
-        version: 1,
-        status: "pending",
-        rejectionNote: null,
-        iconUrl: null,
-        createdAt: new Date().toISOString(),
-      };
-      skillSubmissions = [submission, ...skillSubmissions];
-      return clone(submission);
-    },
     listInstalled: async (agentId) =>
       clone(
         readInstalledSkills(agentId).map((skill) => {
@@ -249,9 +175,7 @@ export function createMockSkills(options: MockSkillsOptions, onChanged: (agentId
         const skill = await skills.localGet({ skillId });
         return skills.localInstall({ agentId, skillId, revision: skill.version });
       }
-      const skill = isGithubSkillId(skillId)
-        ? mockGithubDetail(skillId)
-        : marketplaceSkills.find((candidate) => candidate.id === skillId);
+      const skill = isGithubSkillId(skillId) ? mockGithubDetail(skillId) : undefined;
       if (!skill) throw new Error("Skill not found");
       const previous = readInstalledSkills(agentId).find((item) => item.skillId === skillId);
       const installed: InstalledSkill = {

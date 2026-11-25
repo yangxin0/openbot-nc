@@ -3,6 +3,8 @@ import type { messages as source } from "../../en/error/update";
 
 export const messages = {
   "error.update.unsupported": "설치된 데스크톱 빌드에서만 업데이트할 수 있어요.",
+  "error.update.noSelfUpdate":
+    "이 빌드는 스스로 업데이트하지 않아요. OpenBot을 업데이트하려면 새 빌드를 직접 설치하세요.",
   "error.update.notReady": "설치할 업데이트가 아직 준비되지 않았어요.",
   "error.update.restartFailed": "OpenBot이 업데이트를 설치하기 위해 다시 시작하지 못했어요.",
   "error.update.downloadStalled": "업데이트 다운로드가 응답하지 않아요. 다시 시도해 주세요.",
@@ -10,7 +12,7 @@ export const messages = {
   "error.update.notInstalled": "마지막 재시작에서 업데이트가 설치되지 않았어요. 다시 시작해서 다시 시도해 주세요.",
   "error.update.downloadFailed": "업데이트를 다운로드할 수 없었어요. 다시 시도해 주세요.",
   "error.update.signatureNotConfirmed":
-    "OpenBot이 업데이트를 확인할 수 없었어요. 다시 시도해 주세요. 이 오류가 계속되면 openbot.run/download에서 OpenBot을 다운로드하세요.",
+    "OpenBot이 업데이트를 확인할 수 없었어요. 다시 시도해 주세요. 이 오류가 계속되면 OpenBot을 받은 곳에서 다시 설치하세요.",
   "error.update.checkFailed": "업데이트를 확인할 수 없었어요. 다시 시도해 주세요.",
   "error.update.checkStalled": "업데이트 확인이 응답하지 않아요. 다시 시도해 주세요.",
   "error.update.checkOffline": "업데이트 서비스에 연결할 수 없어요. 인터넷 연결을 확인한 후 다시 시도해 주세요.",

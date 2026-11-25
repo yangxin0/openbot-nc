@@ -2,6 +2,7 @@ import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("error.update", {
   "error.update.unsupported": "Updates are available in installed desktop builds.",
+  "error.update.noSelfUpdate": "This build does not update itself. To update OpenBot, install a newer build by hand.",
   "error.update.notReady": "An update is not ready to install.",
   "error.update.restartFailed": "OpenBot could not restart to install the update.",
   "error.update.downloadStalled": "The update download stopped responding. Try again.",
@@ -9,7 +10,7 @@ export const messages = defineMessages("error.update", {
   "error.update.notInstalled": "The last restart did not install the update. Restart to try again.",
   "error.update.downloadFailed": "Could not download the update. Try again.",
   "error.update.signatureNotConfirmed":
-    "OpenBot could not verify the update. Try again. If this error continues, download OpenBot from openbot.run/download.",
+    "OpenBot could not verify the update. Try again. If this error continues, install OpenBot again from the place where you got it.",
   "error.update.checkFailed": "Could not check for updates. Try again.",
   "error.update.checkStalled": "The update check stopped responding. Try again.",
   "error.update.checkOffline": "Could not reach the update service. Check your internet connection, then try again.",

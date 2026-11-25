@@ -209,7 +209,6 @@ const memory: HostMemory = {
     listeners.add(listener);
     return () => listeners.delete(listener);
   },
-  hostedPlan: false,
 };
 function sample(next: HostMemoryLevel): void {
   level = next;

@@ -5,7 +5,6 @@ export const messages = {
   "plugin.link.website": "Site",
   "plugin.link.privacyPolicy": "Política de privacidade",
   "plugin.link.terms": "Termos de serviço",
-  "plugin.copyLink": "Copiar link",
   "plugin.askPrompt": "Pergunte a {name}: {prompt}",
   "plugin.section.skills": "Habilidades",
   "plugin.section.information": "Informações",

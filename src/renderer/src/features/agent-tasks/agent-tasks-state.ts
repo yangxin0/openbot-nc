@@ -11,7 +11,6 @@ import { retryOperationIds } from "@openbot/team-client/retry-operation-id";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createMemo, createStore, untrack } from "solid-js";
 import { actionToast } from "../../action-toast";
-import { desktopAnalytics } from "../../analytics";
 import { isQuietSteerRefusal } from "../../quiet-steer-refusal";
 import { createScopeGuard } from "../../scope-lifetime";
 import type { AgentTasksPort } from "./agent-tasks-port";
@@ -666,12 +665,10 @@ export function createAgentTasks(options: AgentTasksOptions) {
   ): Promise<AgentTask | null> {
     const branch = port().branchTask;
     if (!branch || !branchable()) return null;
-    const analytics = desktopAnalytics.scope();
     const task = await runAction(
       () => branch({ agentId, taskId: sourceTaskId, messageId, requestId: crypto.randomUUID() }),
       "conversation.threads.error.branch",
     );
-    analytics.track("agent_action", { action: "branch", result: task ? "succeeded" : "failed" });
     if (task && scopeIsCurrent()) rememberTask(task);
     return task;
   }

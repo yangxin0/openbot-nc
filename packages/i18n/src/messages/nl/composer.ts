@@ -87,8 +87,6 @@ export const messages = {
   "composer.attachment.adding": "{name} toevoegen",
   "composer.placeholder.hostSetup": "Rond de configuratie van de aanbieder op je host af om te beginnen",
   "composer.placeholder.connectHost": "Maak verbinding met je host om te beginnen",
-  "composer.placeholder.hostSleeping": "Deze server slaapt. Druk op een toets of klik om hem te wekken",
-  "composer.placeholder.hostWaking": "Server wekken…",
   "composer.placeholder.cliSetup": "Rond de configuratie van de agent-CLI af om te beginnen",
   "composer.placeholder.reply": "Antwoorden…",
   "composer.placeholder.message": "Bericht aan {name}",

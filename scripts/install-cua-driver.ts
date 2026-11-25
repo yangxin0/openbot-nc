@@ -14,7 +14,7 @@ import {
   cuaDriverTarget,
   loadCuaDriverLock,
 } from "./cua-driver-lock";
-import { sha256 } from "./remote-desktop-runtime-release";
+import { sha256 } from "./runtime-file-checks";
 import { download, isCurrentInstallation } from "./runtime-install";
 
 const logger = createOpenBotLogger("install-cua-driver");

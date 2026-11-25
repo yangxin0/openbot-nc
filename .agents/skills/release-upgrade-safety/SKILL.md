@@ -127,7 +127,7 @@ a gate can be selected without opening anything:
 - **A. SQLite schema** → [gate-a-sqlite.md](references/gate-a-sqlite.md)
   `src/backend/openbot-database-schema.ts`, `src/backend/database/`.
 - **B. On-disk state outside SQLite** → [gate-b-on-disk-state.md](references/gate-b-on-disk-state.md)
-  `src/main/index.ts`, `src/backend/workspace-paths.ts`, `src/main/sunshine-moonlight-runtime.ts`,
+  `src/main/index.ts`, `src/backend/workspace-paths.ts`,
   `electron-builder.yml`, **any file that decodes a versioned payload**, and **any file that reads
   or writes a client-side store or its keys** — `localStorage` under `src/renderer/src/**`,
   `SecureStore` and `AsyncStorage` under `apps/mobile/src/**`, and `packages/team-client/src/**`.

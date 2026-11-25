@@ -1,27 +1,16 @@
 import { HelpMenu, type HelpMenuNews } from "@openbot/ui/features/updates/HelpMenu";
 import { whatsNewEntry } from "@openbot/ui/features/updates/whats-new";
 import { createSignal } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { useI18n } from "../../i18n-context";
 import { compareReleaseVersions } from "../updates/whats-new-history";
 import { loadWhatsNewReleases } from "../updates/whats-new-releases";
 
-type HelpLink = "changelog" | "guides" | "discord" | "report-problem" | "feedback";
-
 const HELP_NEWS_COUNT = 3;
 
-export function RailHelpMenu(props: {
-  version: string | null;
-  onOpenWhatsNew: () => void;
-  onOpenLink: (destination: HelpLink) => void;
-}) {
+export function RailHelpMenu(props: { version: string | null; onOpenWhatsNew: () => void }) {
   const i18n = useI18n();
   const [news, setNews] = createSignal<readonly HelpMenuNews[]>([]);
   let newsLocale: string | null = null;
-  const openLink = (destination: HelpLink) => {
-    desktopAnalytics.track("help_link_opened", { destination });
-    props.onOpenLink(destination);
-  };
   let loadingLocale: string | null = null;
 
   async function loadNews() {
@@ -56,11 +45,6 @@ export function RailHelpMenu(props: {
       triggerClass="window-rail-button"
       onOpen={() => void loadNews()}
       onOpenWhatsNew={props.onOpenWhatsNew}
-      onOpenChangelog={() => openLink("changelog")}
-      onOpenGuides={() => openLink("guides")}
-      onOpenDiscord={() => openLink("discord")}
-      onReportProblem={() => openLink("report-problem")}
-      onSendFeedback={() => openLink("feedback")}
     />
   );
 }

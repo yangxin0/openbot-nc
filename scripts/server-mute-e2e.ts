@@ -96,7 +96,6 @@ plugin({
   },
 });
 const { RemoteServerManager } = await import("../src/main/remote-server-manager");
-const { RemoteDesktopManager } = await import("../src/main/remote-desktop-manager");
 const { HostService } = await import("../src/main/host-service");
 const { TeamStore } = await import("../src/main/team-store");
 const { teamIpcHandlers } = await import("../src/main/ipc/team-handlers");
@@ -276,7 +275,7 @@ try {
       host,
       localServers: null,
       ownerTransfers: { pendingOwnerTransfer: unused, startOwnerTransfer: unused, cancelOwnerTransfer: unused },
-      remoteDesktop: new RemoteDesktopManager(manager),
+      relayHosting: { publishHost: unused, unpublishHost: unused },
       remoteServers: manager,
       takePendingInvite: () => null,
     }).servers.setMuted(channel);
@@ -300,7 +299,6 @@ try {
       chatWindowTarget: () => null,
       getAgentService: () => agents ?? null,
       getHostService: () => null,
-      getHostAnalytics: () => null,
       getRemoteServerManager: () => manager,
       showMainWindow: () => undefined,
       getTranslate: () => translateFor("en"),

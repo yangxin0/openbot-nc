@@ -1,18 +1,7 @@
-import {
-  githubSkillUrl,
-  type InstalledSkill,
-  type MarketplaceSkillSort,
-  type MarketplaceSkillSummary,
-  SKILL_CATEGORIES,
-  type SkillCategory,
-} from "@openbot/contracts/ipc";
-import type { AppTextKey } from "@openbot/i18n";
+import { githubSkillUrl, type InstalledSkill } from "@openbot/contracts/ipc";
 import {
   Button,
-  buttonVariants,
-  ChevronDown,
   ChevronRight,
-  DropdownMenu,
   ExternalLink,
   Heading,
   IconButton,
@@ -20,135 +9,36 @@ import {
   Plus,
   RefreshCw,
   Search,
-  ShieldCheck,
-  SlidingTabs,
   Text,
 } from "@openbot/ui";
-import { SkillGradient } from "@openbot/ui/skill-gradient";
 import { useText } from "@openbot/ui/text";
 import type { JSX } from "@solidjs/web";
-import { createEffect, createMemo, createStore, For, Match, onCleanup, Show, Switch, untrack } from "solid-js";
+import { createMemo, createStore, For, Match, onSettled, Show, Switch } from "solid-js";
 import { DialogAgents, type DialogSkill } from "./MarketplaceAgentsDialog";
-import { useInstalls } from "./MarketplaceCards";
-import { ListingPanel, MenuCheck, MissingNotice, SkillMark } from "./MarketplaceParts";
+import { SkillMark } from "./MarketplaceParts";
 import { createGithubRead, GithubTrustNote, githubLinkOf, githubListings } from "./marketplace-github";
-import { CATEGORY_LABELS, createMarketplaceListing } from "./marketplace-listing";
 import type { MarketplaceModel } from "./marketplace-model";
-import { moveView } from "./marketplace-motion";
-import {
-  agentsWith,
-  bySort,
-  matches,
-  outdated,
-  type SortKey,
-  userSkills,
-  useSkillWords,
-} from "./marketplace-skill-state";
-import {
-  type MarketplaceNavigation,
-  type MarketplaceScope,
-  type SkillGroup,
-  type SkillSource,
-  sourceVerified,
-} from "./marketplace-view";
+import { agentsWith, matches, outdated, userSkills, useSkillWords } from "./marketplace-skill-state";
+import type { MarketplaceNavigation, MarketplaceScope } from "./marketplace-view";
 
 const GROUP_LIMIT = 6;
 const PAGE_SIZE = 24;
-const FEATURED_LIMIT = 3;
 
-const SORTS: readonly MarketplaceSkillSort[] = ["installs", "updated", "name"];
-const SORT_LABEL = {
-  installs: "marketplace.skills.sort.installs",
-  updated: "marketplace.skills.sort.updated",
-  name: "marketplace.skills.sort.name",
-} as const satisfies Record<MarketplaceSkillSort, AppTextKey>;
-
-const SOURCES: readonly SkillSource[] = ["verified", "public"];
-const SOURCE_LABEL = {
-  verified: "marketplace.skills.source.verified",
-  public: "marketplace.skills.source.public",
-} as const satisfies Record<SkillSource, AppTextKey>;
-
-function sourceOfValue(value: string): SkillSource | null {
-  return SOURCES.find((source) => source === value) ?? null;
-}
-
-function groupLabel(group: SkillGroup): AppTextKey {
-  return group === "yours" ? "marketplace.skills.yours" : CATEGORY_LABELS[group];
-}
-
-function createSkillRows(scope: MarketplaceScope, items: () => readonly MarketplaceSkillSummary[]) {
-  const model = () => scope.model;
-  const state = () => scope.nav.state;
-  const seen = new Map<string, MarketplaceSkillSummary>();
-  const [read, setRead] = createStore<{ listings: Record<string, MarketplaceSkillSummary> }>({ listings: {} });
-  const listings = createMemo(() => {
-    for (const listing of Object.values(read.listings)) seen.set(listing.id, listing);
-    for (const listing of scope.skills.items()) seen.set(listing.id, listing);
-    for (const listing of items()) seen.set(listing.id, listing);
-    return new Map(seen);
-  });
-  const listingOf = (skillId: string) => listings().get(skillId);
-  const fromSource = (skillId: string) => {
-    const source = state().skillSource;
-    if (source === null) return true;
-    const listing = listingOf(skillId);
-    return listing !== undefined && (listing.verified === true) === (source === "verified");
-  };
-  const owned = (skillId: string) => agentsWith(model(), skillId).length > 0;
-  const all = createMemo(() => userSkills(model(), scope.skills.items()));
-  const asked = new Set<string>();
-  createEffect(
-    () => all().filter((skill) => skill.origin !== "local" && !asked.has(skill.skillId) && !listingOf(skill.skillId)),
-    (missing) => {
-      for (const skill of missing) {
-        asked.add(skill.skillId);
-        void model()
-          .skillListing(skill.skillId)
-          .then((listing) => {
-            if (!listing) return;
-            setRead((draft) => {
-              draft.listings[listing.id] = listing;
-            });
-          });
-      }
-    },
-  );
+function createSkillRows(scope: MarketplaceScope) {
+  const all = createMemo(() => userSkills(scope.model));
   const mine = createMemo(() =>
-    all().filter(
-      (skill) => fromSource(skill.skillId) && matches(state().query, `${skill.name} ${skill.description ?? ""}`),
-    ),
+    all().filter((skill) => matches(scope.nav.state.query, `${skill.name} ${skill.description ?? ""}`)),
   );
-  const available = createMemo(() => items().filter((skill) => !owned(skill.id)));
-  const byCategory = createMemo(() => {
-    const groups = new Map<SkillCategory, MarketplaceSkillSummary[]>();
-    for (const skill of available()) {
-      const list = groups.get(skill.category);
-      if (list) list.push(skill);
-      else groups.set(skill.category, [skill]);
-    }
-    return SKILL_CATEGORIES.flatMap((category) => {
-      const skills = groups.get(category);
-      return skills ? [{ category, skills }] : [];
-    });
-  });
-  const sortKey = (skill: InstalledSkill): SortKey => {
-    const listing = listingOf(skill.skillId);
-    return { name: skill.name, installs: listing?.installs ?? 0, updatedAt: listing?.updatedAt ?? "" };
-  };
-  const open = (skillId: string) => {
-    const listing = listingOf(skillId);
-    scope.nav.go(listing ? { kind: "skill", listing } : { kind: "localSkill", skillId });
-  };
-  return { listingOf, all, mine, available, byCategory, sortKey, open };
+  const open = (skillId: string) => scope.nav.go({ kind: "localSkill", skillId });
+  return { all, mine, open };
 }
 type SkillRows = ReturnType<typeof createSkillRows>;
 
-function UpdateButton(props: { model: MarketplaceModel; skill: DialogSkill; version: number | undefined }) {
+function UpdateButton(props: { model: MarketplaceModel; skill: DialogSkill }) {
   const { t } = useText();
   const old = () =>
     agentsWith(props.model, props.skill.id).filter((agent) =>
-      outdated(props.model.installedSkill(agent.id, props.skill.id), props.version),
+      outdated(props.model.installedSkill(agent.id, props.skill.id)),
     );
   return (
     <Show when={old().length > 0}>
@@ -170,20 +60,9 @@ function UpdateButton(props: { model: MarketplaceModel; skill: DialogSkill; vers
   );
 }
 
-export function VerifiedMark(props: { on: boolean }) {
-  const { t } = useText();
-  return (
-    <Show when={props.on}>
-      <ShieldCheck class="marketplace-skill-verified" aria-hidden="true" />
-      <span class="marketplace-visually-hidden">{t("marketplace.skills.source.verified")}</span>
-    </Show>
-  );
-}
-
 function LibraryRow(props: {
   name: string;
   iconUrl: string | null | undefined;
-  verified: boolean;
   line: string | undefined;
   fallback: string;
   onOpen: () => void;
@@ -204,7 +83,6 @@ function LibraryRow(props: {
       <span class="marketplace-app-row-copy">
         <span class="marketplace-skill-name">
           <span class="marketplace-app-row-name">{props.name}</span>
-          <VerifiedMark on={props.verified} />
         </span>
         <span class={{ "marketplace-app-row-tagline": true, "marketplace-skill-attention": props.line !== undefined }}>
           {props.line ?? props.fallback}
@@ -217,94 +95,26 @@ function LibraryRow(props: {
 
 function OwnRows(props: { scope: MarketplaceScope; rows: SkillRows; skills: readonly InstalledSkill[] }) {
   const words = useSkillWords(() => props.scope.model);
-  const version = (skillId: string) => props.rows.listingOf(skillId)?.version;
   return (
     <ul class="marketplace-app-list marketplace-skill-list">
       <For each={props.skills} keyed={(skill) => skill.skillId}>
         {(skill) => (
           <LibraryRow
             name={skill().name}
-            iconUrl={props.rows.listingOf(skill().skillId)?.iconUrl}
-            verified={props.rows.listingOf(skill().skillId)?.verified === true}
-            line={words.stateOn(skill().skillId, version(skill().skillId))}
+            iconUrl={null}
+            line={words.stateOn(skill().skillId)}
             fallback={words.restingLine(skill())}
             onOpen={() => props.rows.open(skill().skillId)}
           >
-            <UpdateButton
-              model={props.scope.model}
-              skill={{ id: skill().skillId, name: skill().name }}
-              version={version(skill().skillId)}
-            />
+            <UpdateButton model={props.scope.model} skill={{ id: skill().skillId, name: skill().name }} />
             <DialogAgents
               model={props.scope.model}
-              skill={{
-                id: skill().skillId,
-                name: skill().name,
-                iconUrl: props.rows.listingOf(skill().skillId)?.iconUrl,
-              }}
+              skill={{ id: skill().skillId, name: skill().name, iconUrl: null }}
             />
           </LibraryRow>
         )}
       </For>
     </ul>
-  );
-}
-
-function CatalogRows(props: { scope: MarketplaceScope; rows: SkillRows; skills: readonly MarketplaceSkillSummary[] }) {
-  return (
-    <ul class="marketplace-app-list marketplace-skill-list">
-      <For each={props.skills} keyed={(skill) => skill.id}>
-        {(skill) => (
-          <LibraryRow
-            name={skill().name}
-            iconUrl={skill().iconUrl}
-            verified={skill().verified === true}
-            line={undefined}
-            fallback={skill().description}
-            onOpen={() => props.rows.open(skill().id)}
-          >
-            <DialogAgents model={props.scope.model} skill={skill()} />
-          </LibraryRow>
-        )}
-      </For>
-    </ul>
-  );
-}
-
-export function SourceSwitch(props: { value: SkillSource | null; onChange: (source: SkillSource | null) => void }) {
-  const { t } = useText();
-  return (
-    <SlidingTabs.Root
-      value={props.value ?? "all"}
-      onChange={(value: string) => moveView("swap", () => props.onChange(sourceOfValue(value)))}
-    >
-      <SlidingTabs.List class="marketplace-skill-source" aria-label={t("marketplace.skills.sourceLabel")}>
-        <SlidingTabs.Trigger value="all">{t("marketplace.skills.source.all")}</SlidingTabs.Trigger>
-        <For each={SOURCES}>
-          {(source) => (
-            <SlidingTabs.Trigger value={source}>
-              <Show when={source === "verified"}>
-                <ShieldCheck aria-hidden="true" />
-              </Show>
-              {t(SOURCE_LABEL[source])}
-            </SlidingTabs.Trigger>
-          )}
-        </For>
-      </SlidingTabs.List>
-    </SlidingTabs.Root>
-  );
-}
-
-function SkillSourceSwitch(props: { nav: MarketplaceNavigation }) {
-  return (
-    <SourceSwitch
-      value={props.nav.state.skillSource}
-      onChange={(source) =>
-        props.nav.set((draft) => {
-          draft.skillSource = source;
-        })
-      }
-    />
   );
 }
 
@@ -452,7 +262,6 @@ function GithubSkills(props: { scope: MarketplaceScope; link: string }) {
                     <LibraryRow
                       name={skill().name}
                       iconUrl={null}
-                      verified={false}
                       line={undefined}
                       fallback={skill().description}
                       onOpen={() => props.scope.nav.go({ kind: "skill", listing: skill() })}
@@ -479,7 +288,7 @@ export function SkillLibrary(props: { scope: MarketplaceScope; noMatch: JSX.Elem
   const { t } = useText();
   const nav = () => props.scope.nav;
   const model = () => props.scope.model;
-  const rows = createSkillRows(props.scope, () => props.scope.skills.items());
+  const rows = createSkillRows(props.scope);
   const githubLink = () => githubLinkOf(model(), nav().state.query);
   const searchHint = () => (model().readGithubSkills ? t("marketplace.skills.github.search") : undefined);
 
@@ -495,7 +304,6 @@ export function SkillLibrary(props: { scope: MarketplaceScope; noMatch: JSX.Elem
               {t("marketplace.description.skills")}
             </Text>
           </div>
-          <SkillSourceSwitch nav={nav()} />
         </div>
         <div class="marketplace-toolbar">
           <MarketplaceSearch nav={nav()} placeholder={searchHint()} />
@@ -516,252 +324,32 @@ export function SkillLibrary(props: { scope: MarketplaceScope; noMatch: JSX.Elem
 function SkillCatalog(props: { scope: MarketplaceScope; rows: SkillRows; noMatch: JSX.Element }) {
   const { t } = useText();
   const nav = () => props.scope.nav;
-  const model = () => props.scope.model;
-  const rows = props.rows;
   const searching = () => nav().state.query.trim() !== "";
-  const showYours = () =>
-    model().agents().length > 0 && (rows.mine().length > 0 || (!searching() && rows.all().length === 0));
-  const seeAll = (group: SkillGroup) => nav().go({ kind: "skillGroup", group });
-  const more = (skills: readonly MarketplaceSkillSummary[]) =>
-    skills.length > GROUP_LIMIT || props.scope.skills.hasMore();
-  const shown = () => (showYours() ? rows.mine().length : 0) + rows.available().length;
+  const showYours = () => props.scope.model.agents().length > 0 && (props.rows.mine().length > 0 || !searching());
   return (
     <div class="marketplace-stack">
-      <Show when={nav().state.missingListing === "skill"}>
-        <MissingNotice>{t("marketplace.skills.missing")}</MissingNotice>
-      </Show>
-      <Show when={showYours()}>
+      <Show when={showYours()} fallback={props.noMatch}>
         <section class="marketplace-app-group" aria-labelledby="marketplace-skills-yours">
           <GroupHead
             id="marketplace-skills-yours"
             label={t("marketplace.skills.yours")}
-            count={rows.mine().length}
-            more={rows.mine().length > GROUP_LIMIT}
-            onSeeAll={() => seeAll("yours")}
+            count={props.rows.mine().length}
+            more={props.rows.mine().length > GROUP_LIMIT}
+            onSeeAll={() => nav().go({ kind: "yourSkills" })}
           />
-          <Show when={rows.mine().length > 0} fallback={<NoSkills />}>
-            <OwnRows scope={props.scope} rows={rows} skills={rows.mine().slice(0, GROUP_LIMIT)} />
+          <Show when={props.rows.mine().length > 0} fallback={<NoSkills />}>
+            <OwnRows scope={props.scope} rows={props.rows} skills={props.rows.mine().slice(0, GROUP_LIMIT)} />
           </Show>
         </section>
       </Show>
-      <ListingPanel
-        listing={props.scope.skills}
-        loadingLabel={t("marketplace.loading.skills")}
-        count={shown()}
-        paged={false}
-        empty={props.noMatch}
-      >
-        <For each={rows.byCategory()} keyed={(group) => group.category}>
-          {(group) => (
-            <section class="marketplace-app-group" aria-labelledby={`marketplace-skills-${group().category}`}>
-              <GroupHead
-                id={`marketplace-skills-${group().category}`}
-                label={t(CATEGORY_LABELS[group().category])}
-                more={more(group().skills)}
-                onSeeAll={() => seeAll(group().category)}
-              />
-              <CatalogRows scope={props.scope} rows={rows} skills={group().skills.slice(0, GROUP_LIMIT)} />
-            </section>
-          )}
-        </For>
-      </ListingPanel>
     </div>
   );
 }
 
-function SortMenu(props: { value: MarketplaceSkillSort; onChange: (value: MarketplaceSkillSort) => void }) {
+function YoursList(props: { scope: MarketplaceScope; rows: SkillRows }) {
   const { t } = useText();
-  return (
-    <DropdownMenu.Root placement="bottom-end" gutter={4}>
-      <DropdownMenu.Trigger
-        class={buttonVariants({ variant: "ghost", size: "sm" })}
-        aria-label={t("marketplace.skills.sortName", { name: t(SORT_LABEL[props.value]) })}
-      >
-        {t(SORT_LABEL[props.value])}
-        <ChevronDown aria-hidden="true" />
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content class="marketplace-menu">
-          <DropdownMenu.RadioGroup
-            aria-label={t("marketplace.skills.sortLabel")}
-            value={props.value}
-            onChange={(value: string) => {
-              const sort = SORTS.find((one) => one === value);
-              if (sort) props.onChange(sort);
-            }}
-          >
-            <For each={SORTS}>
-              {(sort) => (
-                <DropdownMenu.RadioItem value={sort} closeOnSelect>
-                  <MenuCheck on={props.value === sort} />
-                  {t(SORT_LABEL[sort])}
-                </DropdownMenu.RadioItem>
-              )}
-            </For>
-          </DropdownMenu.RadioGroup>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
-  );
-}
-
-function FeaturedSkills(props: {
-  scope: MarketplaceScope;
-  rows: SkillRows;
-  skills: readonly MarketplaceSkillSummary[];
-}) {
-  const { t } = useText();
-  const installs = useInstalls();
-  return (
-    <section class="marketplace-skill-featured" aria-labelledby="marketplace-skills-featured">
-      <h4 id="marketplace-skills-featured" class="marketplace-app-group-title">
-        {t("marketplace.skills.featured")}
-      </h4>
-      <div class="marketplace-skill-featured-grid">
-        <For each={props.skills} keyed={(skill) => skill.id}>
-          {(skill) => (
-            <article
-              class="marketplace-card marketplace-skill-feature"
-              aria-labelledby={`marketplace-skill-feature-${skill().id}`}
-            >
-              <Button
-                type="button"
-                variant="ghost"
-                class="marketplace-hitarea"
-                aria-label={t("marketplace.open", { name: skill().name })}
-                onClick={() => props.rows.open(skill().id)}
-              />
-              <div class="marketplace-skill-feature-art">
-                <SkillGradient name={skill().name} />
-                <SkillMark skill={skill()} size="md" />
-              </div>
-              <div class="marketplace-card-head">
-                <Heading as="h5" size="sm" class="marketplace-card-name" id={`marketplace-skill-feature-${skill().id}`}>
-                  {skill().name}
-                  <VerifiedMark on={skill().verified === true} />
-                </Heading>
-                <div class="marketplace-card-action">
-                  <DialogAgents model={props.scope.model} skill={skill()} />
-                </div>
-              </div>
-              <Text as="p" variant="body-sm" class="marketplace-card-body">
-                {skill().description}
-              </Text>
-              <div class="marketplace-card-foot">
-                <Text as="span" variant="caption" tone="muted">
-                  {`${skill().creatorName} · ${installs(skill().installs)}`}
-                </Text>
-              </div>
-            </article>
-          )}
-        </For>
-      </div>
-    </section>
-  );
-}
-
-function createFeatured(
-  scope: MarketplaceScope,
-  category: SkillCategory,
-  available: () => readonly MarketplaceSkillSummary[],
-) {
-  const [state, setState] = createStore<{ picks: MarketplaceSkillSummary[] }>({ picks: [] });
-  let version = 0;
-  onCleanup(() => {
-    version++;
-  });
-  createEffect(
-    () => sourceVerified(scope.nav.state.skillSource),
-    (verified) => {
-      const current = ++version;
-      void untrack(() =>
-        scope.model.listSkills({
-          featured: true,
-          category,
-          ...(verified === undefined ? {} : { verified }),
-          sort: "installs",
-          limit: FEATURED_LIMIT,
-        }),
-      ).then(
-        (page) => {
-          if (current === version)
-            setState((draft) => {
-              draft.picks = page.items;
-            });
-        },
-        () => {
-          if (current === version)
-            setState((draft) => {
-              draft.picks = [];
-            });
-        },
-      );
-    },
-  );
-  return createMemo(() => {
-    const owned = (skillId: string) => agentsWith(scope.model, skillId).length > 0;
-    const picks = state.picks.filter((skill) => !owned(skill.id));
-    if (picks.length > 0) return picks.slice(0, FEATURED_LIMIT);
-    return [...available()].sort(bySort("installs")).slice(0, FEATURED_LIMIT);
-  });
-}
-
-function CategoryPage(props: { scope: MarketplaceScope; category: SkillCategory }) {
-  const { t } = useText();
-  const category = untrack(() => props.category);
-  const nav = () => props.scope.nav;
-  const listing = createMarketplaceListing({
-    list: (query) => props.scope.model.listSkills(query),
-    query: () => nav().state.query,
-    category: () => category,
-    sort: () => nav().state.skillSort,
-    verified: () => sourceVerified(nav().state.skillSource),
-  });
-  const rows = createSkillRows(props.scope, () => listing.items());
-  const pickedFeatured = createFeatured(props.scope, category, rows.available);
-  const featured = () => (nav().state.query.trim() === "" ? pickedFeatured() : []);
-  const listed = createMemo(() => {
-    const above = new Set(featured().map((skill) => skill.id));
-    return rows.available().filter((skill) => !above.has(skill.id));
-  });
-  return (
-    <ListingPanel
-      listing={listing}
-      loadingLabel={t("marketplace.loading.skills")}
-      count={rows.available().length}
-      empty={
-        <Text as="p" variant="body" tone="muted">
-          {t("marketplace.noMatch.skills")}
-        </Text>
-      }
-    >
-      <Show when={featured().length > 0}>
-        <FeaturedSkills scope={props.scope} rows={rows} skills={featured()} />
-      </Show>
-      <Show when={listed().length > 0}>
-        <section class="marketplace-skill-group-list" aria-label={t(CATEGORY_LABELS[category])}>
-          <Show when={featured().length > 0}>
-            <h4 class="marketplace-app-group-title">{t("marketplace.skills.all")}</h4>
-          </Show>
-          <CatalogRows scope={props.scope} rows={rows} skills={listed()} />
-        </section>
-      </Show>
-    </ListingPanel>
-  );
-}
-
-function YoursPage(props: { scope: MarketplaceScope; rows: SkillRows }) {
-  const { t } = useText();
-  const rows = untrack(() => props.rows);
   const [page, setPage] = createStore({ shown: PAGE_SIZE });
-  const sorted = createMemo(() => {
-    const order = bySort(props.scope.nav.state.skillSort);
-    return rows
-      .mine()
-      .map((skill) => ({ skill, key: rows.sortKey(skill) }))
-      .sort((left, right) => order(left.key, right.key))
-      .map((one) => one.skill);
-  });
+  const sorted = () => props.rows.mine();
   return (
     <Show
       when={sorted().length > 0}
@@ -772,7 +360,7 @@ function YoursPage(props: { scope: MarketplaceScope; rows: SkillRows }) {
       }
     >
       <section class="marketplace-skill-group-list" aria-label={t("marketplace.skills.yours")}>
-        <OwnRows scope={props.scope} rows={rows} skills={sorted().slice(0, page.shown)} />
+        <OwnRows scope={props.scope} rows={props.rows} skills={sorted().slice(0, page.shown)} />
         <Show when={sorted().length > page.shown}>
           <Button
             type="button"
@@ -793,23 +381,12 @@ function YoursPage(props: { scope: MarketplaceScope; rows: SkillRows }) {
   );
 }
 
-export function SkillGroupPage(props: { scope: MarketplaceScope; group: SkillGroup }) {
+export function YourSkillsPage(props: { scope: MarketplaceScope }) {
   const { t } = useText();
-  const group = untrack(() => props.group);
   const nav = () => props.scope.nav;
-  const label = () => t(groupLabel(group));
-  const category = (): SkillCategory | undefined => (group === "yours" ? undefined : group);
-  const yours = createSkillRows(props.scope, () => props.scope.skills.items());
-  const sortBy = (sort: MarketplaceSkillSort) =>
-    moveView("swap", () =>
-      nav().set((draft) => {
-        draft.skillSort = sort;
-      }),
-    );
-  createEffect(
-    () => props.group,
-    () => props.scope.model.readSkills(),
-  );
+  const label = () => t("marketplace.skills.yours");
+  const rows = createSkillRows(props.scope);
+  onSettled(() => props.scope.model.readSkills());
 
   return (
     <div class="marketplace-view marketplace-browse marketplace-skill-group-page">
@@ -818,21 +395,15 @@ export function SkillGroupPage(props: { scope: MarketplaceScope; group: SkillGro
           <Heading as="h3" size="lg" class="marketplace-browse-title">
             {label()}
           </Heading>
-          <Show when={group === "yours"}>
-            <Text as="p" variant="body" tone="muted">
-              {t("marketplace.skills.count", { count: yours.mine().length })}
-            </Text>
-          </Show>
+          <Text as="p" variant="body" tone="muted">
+            {t("marketplace.skills.count", { count: rows.mine().length })}
+          </Text>
         </div>
-        <SkillSourceSwitch nav={nav()} />
       </header>
       <div class="marketplace-toolbar marketplace-skill-group-bar">
         <MarketplaceSearch nav={nav()} label={t("marketplace.skills.searchIn", { name: label() })} />
-        <SortMenu value={nav().state.skillSort} onChange={sortBy} />
       </div>
-      <Show when={category()} keyed fallback={<YoursPage scope={props.scope} rows={yours} />}>
-        {(chosen) => <CategoryPage scope={props.scope} category={chosen} />}
-      </Show>
+      <YoursList scope={props.scope} rows={rows} />
     </div>
   );
 }

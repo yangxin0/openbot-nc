@@ -2,16 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "إعداد الأذونات متاح على macOS.",
-  "status.remote.setupInstallHost": "ثبّت مكوّن مضيف سطح المكتب البعيد، ثم تحقّق مرة أخرى.",
-  "status.remote.setupUpdateRuntime": "حدّث بيئة تشغيل سطح المكتب البعيد للتحقق من أذونات macOS.",
-  "status.remote.setupCheckFailed": "تعذّر على Sunshine إكمال التحقق من الأذونات. تحقّق من جلسة المضيف، ثم أعد المحاولة.",
-  "status.remote.setupServiceFailed":
-    "تعذّر بدء خدمة سطح المكتب البعيد. تحقّق من أن لمستخدم macOS هذا جلسة واجهة رسومية نشطة.",
-  "status.remote.connectingSunshine": "جارٍ الاتصال عبر Sunshine…",
-  "status.remote.switchingMonitor": "جارٍ تبديل الشاشة المشتركة…",
-  "status.remote.controlConnected": "تم الاتصال بالتحكم عن بُعد.",
-  "status.remote.controlFailed": "فشل التحكم عن بُعد.",
   "status.remote.stagePreferences": "جارٍ تحميل تفضيلات الدردشة المحلية: {reason}",
   "status.remote.stageConnection": "جارٍ الاتصال بسطح المكتب: {reason}",
   "status.remote.stageCompatibility": "جارٍ التحقق من توافق سطح المكتب: {reason}",

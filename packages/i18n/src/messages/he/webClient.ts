@@ -82,8 +82,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "העלאת הקובץ המצורף בוטלה.",
   "webClient.error.duplication": "השרת הזה לא תומך בשכפול סוכנים.",
   "webClient.error.connectServerFirst": "יש להתחבר קודם לשרת הזה.",
-  "webClient.error.agentInstallNotAllowed":
-    "רק בעלים או מנהל יכולים להוסיף כאן סוכן, והשרת צריך להריץ גרסה עדכנית של OpenBot.",
   "webClient.error.linkDesktopOnly": "הקישור הזה נפתח רק באפליקציית שולחן העבודה.",
   "webClient.error.saveEndpointOffline": "יש להתחבר לשרת כדי לשמור נקודת קצה.",
   "webClient.error.removeEndpointOffline": "יש להתחבר לשרת כדי להסיר נקודת קצה.",

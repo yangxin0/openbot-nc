@@ -40,12 +40,6 @@ export const QuietLoading: Story = {
   render: () => <AppLoadingScreen scene="quiet" title="Loading OpenBot" />,
 };
 
-export const QuietStartingServer: Story = {
-  render: () => (
-    <ServerConnectionNotice name="My server" phase="waking" initial loadingScene="quiet" onRetry={() => {}} />
-  ),
-};
-
 export const Seeded: StoryObj<{ seed: number }> = {
   args: { seed: 7 },
   argTypes: { seed: { control: { type: "number", min: 0, step: 1 } } },
@@ -56,49 +50,8 @@ export const HistoryLoading: Story = {
   render: () => <ConversationLoadNotice name="Research agent" loading error={null} onRetry={() => {}} />,
 };
 
-export const StartingServer: Story = {
-  render: () => <ServerConnectionNotice name="My server" phase="waking" initial onRetry={() => {}} />,
-};
-export const StartingOpenBot: Story = {
-  render: () => (
-    <ServerConnectionNotice
-      name="My server"
-      phase="waking"
-      start={{ step: "openbot", startedAt: Date.now() - 4 * 60_000 }}
-      initial
-      onRetry={() => {}}
-    />
-  ),
-};
-export const StartRestoring: Story = {
-  render: () => (
-    <ServerConnectionNotice
-      name="My server"
-      phase="waking"
-      start={{ step: "restore", startedAt: Date.now() - 3 * 60_000 }}
-      initial
-      onRetry={() => {}}
-    />
-  ),
-};
-export const StartRateLimited: Story = {
-  render: () => (
-    <ServerConnectionNotice
-      name="My server"
-      phase="waking"
-      start={{ step: "provider_limit", startedAt: Date.now() - 45_000 }}
-      initial={false}
-      onRetry={() => {}}
-    />
-  ),
-};
 export const UpdatingServer: Story = {
   render: () => <ServerConnectionNotice name="My server" phase="updating" initial={false} onRetry={() => {}} />,
-};
-export const StartFailed: Story = {
-  render: () => (
-    <ServerConnectionNotice name="My server" phase="blocked" issue="start_timeout" initial onRetry={() => {}} />
-  ),
 };
 export const Reconnecting: Story = {
   render: () => (

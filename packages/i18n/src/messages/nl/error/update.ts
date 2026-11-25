@@ -3,6 +3,8 @@ import type { messages as source } from "../../en/error/update";
 
 export const messages = {
   "error.update.unsupported": "Updates zijn beschikbaar in geïnstalleerde desktopbuilds.",
+  "error.update.noSelfUpdate":
+    "Deze build werkt zichzelf niet bij. Installeer zelf een nieuwere build om OpenBot bij te werken.",
   "error.update.notReady": "Er is geen update klaar om te installeren.",
   "error.update.restartFailed": "OpenBot kon niet herstarten om de update te installeren.",
   "error.update.downloadStalled": "De download van de update reageert niet meer. Probeer het opnieuw.",
@@ -12,7 +14,7 @@ export const messages = {
     "Bij de laatste herstart is de update niet geïnstalleerd. Start opnieuw om het nog eens te proberen.",
   "error.update.downloadFailed": "Kan de update niet downloaden. Probeer het opnieuw.",
   "error.update.signatureNotConfirmed":
-    "OpenBot kan de update niet verifiëren. Probeer het opnieuw. Blijft deze fout terugkomen, download OpenBot dan via openbot.run/download.",
+    "OpenBot kan de update niet verifiëren. Probeer het opnieuw. Blijft deze fout terugkomen, installeer OpenBot dan opnieuw vanaf de plek waar je het hebt gekregen.",
   "error.update.checkFailed": "Kan niet controleren op updates. Probeer het opnieuw.",
   "error.update.checkStalled": "De controle op updates reageert niet meer. Probeer het opnieuw.",
   "error.update.checkOffline":

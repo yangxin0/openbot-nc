@@ -39,7 +39,7 @@ const INSTALL_OVERRIDES = [
 const electronRoot = join(dirname(dirname(fileURLToPath(import.meta.url))), "node_modules", "electron");
 const distPath = join(electronRoot, "dist");
 const pathFile = join(electronRoot, "path.txt");
-const cacheRoot = join(homedir(), "Library", "Caches", "OpenBot", "electron-dist");
+const cacheRoot = join(homedir(), "Library", "Caches", "OpenBot-NC", "electron-dist");
 
 function isInstalled(dist: string, version: string): boolean {
   try {

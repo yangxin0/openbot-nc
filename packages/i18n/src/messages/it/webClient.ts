@@ -89,8 +89,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "Il caricamento dell'allegato è stato annullato.",
   "webClient.error.duplication": "Questo server non supporta la duplicazione degli agenti.",
   "webClient.error.connectServerFirst": "Connettiti prima a questo server.",
-  "webClient.error.agentInstallNotAllowed":
-    "Solo un proprietario o un amministratore può aggiungere un agente qui, e il server deve usare una versione aggiornata di OpenBot.",
   "webClient.error.linkDesktopOnly": "Questo link si apre solo nell'app desktop.",
   "webClient.error.saveEndpointOffline": "Connettiti al tuo server per salvare un endpoint.",
   "webClient.error.removeEndpointOffline": "Connettiti al tuo server per rimuovere un endpoint.",

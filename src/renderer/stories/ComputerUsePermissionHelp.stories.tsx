@@ -12,12 +12,7 @@ function state(granted: readonly MacPermissionId[]): ComputerUseState {
   };
 }
 
-function MockedHelp(props: {
-  permission: MacPermissionId;
-  granted?: readonly MacPermissionId[];
-  app?: string | null;
-  sunshine?: boolean;
-}) {
+function MockedHelp(props: { permission: MacPermissionId; granted?: readonly MacPermissionId[]; app?: string | null }) {
   const previousApi = window.openbot;
   const mock = createMockOpenBot();
   mock.api.computerUse.getState = async () => state(props.granted ?? []);
@@ -28,7 +23,7 @@ function MockedHelp(props: {
     mock.dispose();
     window.openbot = previousApi;
   });
-  return <ComputerUsePermissionHelp permission={props.permission} sunshine={props.sunshine} />;
+  return <ComputerUsePermissionHelp permission={props.permission} />;
 }
 
 const meta = {
@@ -54,8 +49,4 @@ export const Granted: Story = {
 
 export const WithoutApplication: Story = {
   render: () => <MockedHelp permission="screen-recording" app={null} />,
-};
-
-export const Sunshine: Story = {
-  render: () => <MockedHelp permission="accessibility" app="Sunshine" sunshine />,
 };

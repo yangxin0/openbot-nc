@@ -101,7 +101,7 @@ export const createPiMcpExtension = Effect.fn("PiMcp.createExtension")(function*
 ) {
   const root = directory ?? tmpdir();
   yield* providerCall(() => mkdir(root, { recursive: true, mode: 0o700 }));
-  const folder = yield* providerCall(() => mkdtemp(join(root, "openbot-pi-")));
+  const folder = yield* providerCall(() => mkdtemp(join(root, "openbot-nc-pi-")));
   const path = join(folder, "mcp.mjs");
   const environment: Record<string, string> = {};
   const secrets: string[] = [];

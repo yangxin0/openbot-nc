@@ -41,13 +41,6 @@ export const messages = {
   "status.agent.feedbackSameAs": "Se añade al issue #{issue}",
   "status.agent.feedbackSent": "Enviado al equipo de OpenBot: {title}",
   "status.agent.feedbackWithdrawn": "Eliminado de GitHub: {title}",
-  "status.agent.feedbackWithdrawCommand": "Eliminar el informe #{issue} de GitHub",
-  "status.agent.feedbackWithdrawReason":
-    "Nadie podrá ver este informe en GitHub. No puedes deshacerlo. Para corregirlo, el agente puede enviar un informe corregido.",
-  "status.agent.feedbackWithdrawing": "Eliminando tu informe de GitHub…",
-  "status.agent.serverInstallCommand":
-    "Crear un comando de un solo uso que instala OpenBot en otro ordenador como el servidor {name} y lo conecta a tu cuenta. El agente lo ejecuta allí.",
-  "status.agent.serverInstallCard": "Comando de instalación para el servidor {name}",
   "status.agent.browserProfileNamed":
     "Mover {agents} al perfil del navegador {profile}. Reciben sus inicios de sesión y cookies. Sus pestañas abiertas se cierran.",
   "status.agent.commitCoAuthorOff": "Dejar de añadir a OpenBot como coautor en los commits de todos los agentes.",
@@ -58,7 +51,6 @@ export const messages = {
     "Mover {agents} al perfil del navegador compartido. Reciben sus inicios de sesión y cookies. Sus pestañas abiertas se cierran.",
   "status.agent.browserProfileOwn":
     "Dar a {agents} un perfil del navegador propio para cada uno. Sus pestañas abiertas se cierran.",
-  "status.agent.feedbackSending": "Enviando tus comentarios al equipo de OpenBot…",
   "status.agent.workflowDelete":
     "Eliminar el flujo de trabajo {title} con sus ejecuciones y versiones. Sus pasos abiertos se detienen.",
   "status.agent.deleteAgents": "Eliminar {agents} con sus chats y archivos. No se puede deshacer.",

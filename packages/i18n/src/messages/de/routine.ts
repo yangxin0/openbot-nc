@@ -163,8 +163,6 @@ export const messages = {
   "routine.card.webhookUpdated": "Webhook-Routine aktualisiert",
   "routine.card.webhookChanged": "Änderungen nicht gespeichert",
   "routine.card.webhookSaveFailed": "Die Ereignisse konnten nicht gespeichert werden.",
-  "routine.card.webhookFiltersInvalid": "Ein Filter hat einen ungültigen JSON Pointer.",
-
   "routine.timezoneMove.title": "Ihre Zeitzone ist jetzt {zone}",
   "routine.timezoneMove.description": {
     one: "{count} Routine auf {server} läuft nach Zeit {from}. In {zone} verschieben? Die Uhrzeit bleibt gleich.",
@@ -270,7 +268,6 @@ export const messages = {
   "routine.settings.name": "Name",
   "routine.settings.namePlaceholder": "Morgenübersicht",
   "routine.settings.whenToRun": "Ausführungszeit",
-  "routine.settings.triggerWebhook": "Webhook",
   "routine.settings.webhookSummary": "Wenn {eventType} eintrifft",
   "routine.settings.webhookSummaryAny": "Wenn ein Webhook eintrifft",
   "routine.trigger.change": "Auslöser ändern",

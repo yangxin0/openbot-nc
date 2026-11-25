@@ -238,8 +238,6 @@ try {
       renameProviderAccount: unused("renameProviderAccount"),
       removeProviderAccount: unused("removeProviderAccount"),
       setProviderAccountPool: unused("setProviderAccountPool"),
-      setLiveVoiceAccount: unused("setLiveVoiceAccount"),
-      liveVoiceAccount: () => null,
     },
     browser: { openPrivate: unused("openPrivate"), privateTab: unused("privateTab"), close: unused("close") },
   });

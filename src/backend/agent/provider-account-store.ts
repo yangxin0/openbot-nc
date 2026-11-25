@@ -42,7 +42,6 @@ const ProviderAccountsFile = Schema.Struct({
       }),
     ),
   ),
-  liveVoiceAccount: Schema.optionalKey(Schema.String.check(Schema.isPattern(POOL_ACCOUNT_ID))),
 });
 type ProviderAccountsFile = typeof ProviderAccountsFile.Type;
 const decodeProviderAccountsFile = Schema.decodeUnknownSync(ProviderAccountsFile);
@@ -108,23 +107,6 @@ export class ProviderAccountStore {
       const { [provider]: _previous, ...pools } = file.pools ?? {};
       return Effect.succeed({
         file: { ...file, pools: pool ? { ...pools, [provider]: { leftOut: [...new Set(pool.leftOut)] } } : pools },
-        result: undefined,
-      });
-    });
-  }).bind(this);
-
-  liveVoiceAccount(): string | null {
-    return this.#file.liveVoiceAccount ?? null;
-  }
-
-  readonly setLiveVoiceAccount = Effect.fn("ProviderAccountStore.setLiveVoiceAccount")(function* (
-    this: ProviderAccountStore,
-    accountId: string | null,
-  ) {
-    return yield* this.#change((file) => {
-      const { liveVoiceAccount: _previous, ...rest } = file;
-      return Effect.succeed({
-        file: accountId ? { ...rest, liveVoiceAccount: accountId } : rest,
         result: undefined,
       });
     });
@@ -207,18 +189,16 @@ export class ProviderAccountStore {
     account: StoredProviderAccount,
   ) {
     const home = this.home(account);
-    yield* this.#change((file) => {
-      const { liveVoiceAccount, ...rest } = file;
-      return Effect.succeed({
+    yield* this.#change((file) =>
+      Effect.succeed({
         file: {
-          ...rest,
+          ...file,
           accounts: file.accounts.filter((candidate) => candidate.id !== account.id),
           ...(file.pools ? { pools: withoutPoolAccount(file.pools, account.id) } : {}),
-          ...(liveVoiceAccount && liveVoiceAccount !== account.id ? { liveVoiceAccount } : {}),
         },
         result: undefined,
-      });
-    });
+      }),
+    );
     yield* Effect.tryPromise({
       try: () => rm(home, { recursive: true, force: true }),
       catch: (cause) => new ProviderAccountStoreFailed({ cause }),

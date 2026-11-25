@@ -7,7 +7,7 @@ import { runCauseEffect } from "../../backend/effect-boundary";
 import type { CentralAuthManager } from "../central-auth-manager";
 import type { HostService } from "../host-service";
 import type { LocalServers } from "../local-servers/local-servers";
-import type { RemoteDesktopManager } from "../remote-desktop-manager";
+import type { RelayService } from "../relay-service";
 import type { RemoteServerManager } from "../remote-server-manager";
 import { agentRequest } from "./agent-inputs";
 import { handler, type IpcGroupHandlers, payloadHandler } from "./define-ipc-group";
@@ -22,11 +22,6 @@ import {
   parseLoginServer,
   parseMarkDirectRead,
   parseReadDirectConversationPage,
-  parseRemoteControlPolicy,
-  parseRemoteDesktopConnect,
-  parseRemoteDesktopDisplay,
-  parseRemoteDesktopSetupAction,
-  parseRemoteDesktopTest,
   parseReorderServers,
   parseSendDirectMessage,
   parseSetServerHidden,
@@ -41,7 +36,7 @@ interface TeamIpcDependencies {
   host: HostService;
   localServers: LocalServers | null;
   ownerTransfers: Pick<CentralAuthManager, "pendingOwnerTransfer" | "startOwnerTransfer" | "cancelOwnerTransfer">;
-  remoteDesktop: RemoteDesktopManager;
+  relayHosting: Pick<RelayService, "publishHost" | "unpublishHost">;
   remoteServers: RemoteServerManager;
   takePendingInvite: () => string | null;
 }
@@ -50,10 +45,10 @@ export function teamIpcHandlers({
   host,
   localServers,
   ownerTransfers,
-  remoteDesktop,
+  relayHosting,
   remoteServers,
   takePendingInvite,
-}: TeamIpcDependencies): Pick<IpcGroupHandlers, "servers" | "host" | "remoteDesktop"> {
+}: TeamIpcDependencies): Pick<IpcGroupHandlers, "servers" | "host"> {
   const ownerTransferUnsupported = (): never => {
     throw new Error(sourceText("error.team.ownerTransferUnsupported"));
   };
@@ -197,9 +192,8 @@ export function teamIpcHandlers({
       updateIdentity: payloadHandler(parseHostIdentity, (identity) => runCauseEffect(host.updateIdentity(identity))),
       rotateIdentityKey: handler(() => runCauseEffect(host.rotateIdentityKey())),
       getPresence: handler(() => host.getPresence()),
-      start: handler(() => runCauseEffect(host.start())),
-      stop: handler(() => runCauseEffect(host.stop())),
-      recheckScreenRecording: handler(() => runCauseEffect(host.recheckScreenRecording())),
+      start: handler(() => runCauseEffect(relayHosting.publishHost())),
+      stop: handler(() => runCauseEffect(relayHosting.unpublishHost())),
       listMembers: handler(() => runCauseEffect(host.listMembers())),
       updateMember: payloadHandler(parseUpdateTeamMember, (update) => runCauseEffect(host.updateMember(update))),
       removeMember: payloadHandler(stringPayload("memberId"), (memberId) =>
@@ -209,41 +203,11 @@ export function teamIpcHandlers({
       revokeSession: payloadHandler(stringPayload("sessionId"), (sessionId) =>
         runCauseEffect(host.revokeSession(sessionId)),
       ),
-      getRemoteControlPolicy: handler(() => host.getRemoteControlPolicy()),
-      setRemoteControlPolicy: payloadHandler(parseRemoteControlPolicy, (policy) =>
-        runCauseEffect(host.setRemoteControlPolicy(policy)),
-      ),
-      stopRemoteControl: handler(() => runCauseEffect(host.stopRemoteControl())),
       listInvites: handler(() => runCauseEffect(host.listInvites())),
       revokeInvite: payloadHandler(stringPayload("inviteId"), (inviteId) =>
         runCauseEffect(host.revokeInvite(inviteId)),
       ),
       createInvite: payloadHandler(parseCreateTeamInvite, (invite) => runCauseEffect(host.createInvite(invite))),
-    },
-    remoteDesktop: {
-      checkSetup: payloadHandler(stringPayload("serverId"), (serverId) =>
-        routeToServer(serverId, {
-          local: () => runCauseEffect(host.checkRemoteDesktopSetup()),
-          remote: (target) => runCauseEffect(remoteServers.checkRemoteDesktopSetup(target)),
-        }),
-      ),
-      openSetup: payloadHandler(parseRemoteDesktopSetupAction, (action) =>
-        runCauseEffect(host.openRemoteDesktopSetup(action)),
-      ),
-      test: payloadHandler(parseRemoteDesktopTest, (input) =>
-        routeToServer(input.serverId, {
-          local: () => runCauseEffect(host.testLocalRemoteDesktop(input.sessionId, input.action)),
-          remote: () => runCauseEffect(remoteServers.testRemoteDesktop(input)),
-        }),
-      ),
-      list: handler(() => remoteDesktop.list()),
-      connect: payloadHandler(parseRemoteDesktopConnect, (request) => runCauseEffect(remoteDesktop.connect(request))),
-      selectDisplay: payloadHandler(parseRemoteDesktopDisplay, (request) =>
-        runCauseEffect(remoteDesktop.selectDisplay(request.serverId, request.displayId)),
-      ),
-      disconnect: payloadHandler(stringPayload("sessionId"), (sessionId) =>
-        runCauseEffect(remoteDesktop.disconnect(sessionId)),
-      ),
     },
   };
 }
@@ -257,7 +221,6 @@ export function withLocalHostSummary(servers: ServerSummary[], status: HostStatu
           logoUrl: status.logoUrl,
           appearance: status.appearance,
           apiUrl: status.apiUrl,
-          remoteDesktopAvailable: status.remoteDesktopReady,
           state: status.phase === "error" ? "error" : "online",
           role: status.configured ? "owner" : null,
         }

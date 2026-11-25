@@ -3,13 +3,11 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "このホストではイベントを利用できません。",
+  "error.backend.webhooksRemoved": "このバージョンの OpenBot では Webhook トリガーを利用できません。",
   "error.backend.databaseIntegrity": "OpenBot のデータベースが整合性チェックに失敗しました。",
-  "error.backend.webhookRouteLimit": "1 つのホストの Webhook ルーティンは最大 {limit} 個です。",
   "error.backend.webhookSettingsInvalid": "Webhook の設定を確認して、もう一度お試しください。",
   "error.backend.webhookSenderSecretInvalid":
     "送信元の署名シークレットをすべて貼り付けてください。16〜1024 文字で、空白は含みません。",
-  "error.backend.webhookRouteUnavailable":
-    "公開 Webhook ルートの準備ができていません。ホストの接続を確認して、もう一度お試しください。",
   "error.backend.browserViewRemoteOnly": "ライブブラウザービューはリモートホスト専用です。",
   "error.backend.browserViewUnsupported": "このリモートホストはライブブラウザービューに対応していません。",
   "error.backend.browserViewLimit": "このホストで開いているブラウザービューが多すぎます。",
@@ -17,31 +15,6 @@ export const messages = {
   "error.backend.browserViewFailed": "このページのライブビューは失敗しました。",
   "error.backend.windowTemporarilyUnavailable": "OpenBot ウィンドウは一時的に使用できません。",
   "error.backend.windowUnavailable": "OpenBot ウィンドウを使用できません。",
-  "error.backend.sunshineApiHttp": "Sunshine API が HTTP {status} で失敗しました。",
-  "error.backend.sunshinePortsUnavailable":
-    "リモートデスクトップ用に空いている Sunshine のポート群を確保できませんでした。",
-  "error.backend.moonlightPortsUnavailable":
-    "リモートデスクトップ用に空いている Moonlight WebRTC のポート範囲を確保できませんでした。",
-  "error.backend.iceServerNoPort": "リモートデスクトップの ICE サーバーにポートが割り当てられませんでした。",
-  "error.backend.remoteDesktopStoppedWhileStarting": "リモートデスクトップのランタイムは起動中に停止されました。",
-  "error.backend.sunshineNotStarted": "Sunshine は確保したポート群で起動しませんでした。",
-  "error.backend.moonlightNoHost": "Moonlight にペアリング済みのローカルホストがありません。",
-  "error.backend.sunshineNoDesktop": "Sunshine が Desktop アプリケーションを公開しませんでした。",
-  "error.backend.sunshineAmbiguousPairing": "Sunshine があいまいなローカルペアリング要求を返しました。",
-  "error.backend.sunshineNoPairingRequest": "Sunshine は予期したローカルペアリング要求を受信しませんでした。",
-  "error.backend.moonlightPairingHttp": "Moonlight のペアリングが HTTP {status} で失敗しました。",
-  "error.backend.moonlightRejectedPairing": "Moonlight が Sunshine とのペアリングを拒否しました。",
-  "error.backend.moonlightNoPin": "Moonlight がペアリング PIN を返しませんでした。",
-  "error.backend.moonlightPairingIncomplete": "Moonlight のペアリングが完了しませんでした。",
-  "error.backend.moonlightWebNotEmbedded": "Moonlight Web は OpenBot 組み込みビルドではありません。",
-  "error.backend.moonlightEmptyResponse": "Moonlight が空の応答を返しました。",
-  "error.backend.remoteDesktopTimeout": "リモートデスクトップの要求がタイムアウトしました。",
-  "error.backend.moonlightApiHttp": "Moonlight API が HTTP {status} で失敗しました。",
-  "error.backend.sunshineExited": "Sunshine は、ポート {port} の HTTPS API の準備ができる前に終了しました。",
-  "error.backend.sunshineNoAnswer": "Sunshine が応答しませんでした。",
-  "error.backend.sunshineTlsUnexpected": "Sunshine が予期しない TLS 証明書を返しました。",
-  "error.backend.moonlightWebExited": "Moonlight Web は {url} の準備ができる前に終了しました。",
-  "error.backend.moonlightWebNotReady": "Moonlight Web の準備ができませんでした。",
   "error.backend.channelDeleteUnsupported": "このサーバーはチャンネルの削除に対応していません。",
   "error.backend.browserNavigateUnsupported":
     "このリモートホストは、既存のタブでのアドレスバーによる移動に対応していません。",
@@ -61,8 +34,6 @@ export const messages = {
   "error.backend.browserStopUnsupported": "このリモートホストはページの読み込みを停止できません。",
   "error.backend.sharedDataLocalOnly": "共有データは、これらのエージェントを実行しているコンピューターで管理されます。",
   "error.backend.browserUrlProtocol": "HTTP(S) のブラウザー URL のみ使用できます。",
-  "error.backend.sunshineNotReady": "Sunshine の準備ができませんでした。",
-  "error.backend.sunshineNotReadyReason": "Sunshine の準備ができませんでした。{reason}",
   "error.backend.channelLeadModelUnavailable": "チャンネルリードのモデルを使用できません。",
   "error.backend.contextCompactionIneffective":
     "圧縮してもこのチャットは小さくなりません。2回圧縮しても、モデルのコンテキストウィンドウの{percent}%を使っているため、OpenBotは自動圧縮を止めます。ウィンドウの大部分はツールと指示が使っています。このエージェントに不要なMCPサーバーやコンピューター操作をオフにするか、より大きなウィンドウのモデルを選んでください。その後、新しいチャットを開始してください。",
@@ -282,6 +253,8 @@ export const messages = {
     "サインインサーバーはまだ OpenBot をアプリとして受け付けていません。原因はお使いのアカウントではありません。ローカル MCP サーバーなど、別の方法で接続してください。",
   "error.backend.mcpRegistrationUnavailable":
     "サインインサーバーは OpenBot をアプリとして登録できません。原因はお使いのアカウントではありません。接続するには、マーケットプレイス、アプリでこのサーバーを保存してから、サインインアプリを追加してください。",
+  "error.backend.mcpSignInNeedsClientDocument":
+    "このサインインサーバーは、クライアント ID ドキュメントを公開するアプリのみを受け付けます。この OpenBot のビルドはそのドキュメントを公開していません。このサーバー用の独自のサインインアプリがある場合は、マーケットプレイス、アプリでサーバーを保存してから、そのサインインアプリを追加してください。",
   "error.backend.mcpSignInAbandonedGeneric": "サインインは中止されました。",
   "error.backend.mcpSignInForgotten": "MCP のサインインは実行中に破棄されました。",
   "error.backend.mcpSignInAbandoned": "MCP のサインインは中止されました。",
@@ -482,8 +455,6 @@ export const messages = {
   "error.backend.branchSourceBusy": "このチャットを分岐する前に、現在のターンを停止してください。",
   "error.backend.branchMessageNotFound": "分岐できるのは、エージェントの完了した回答からのみです。",
   "error.backend.branchRemoteUnsupported": "分岐は、このコンピューター上のエージェントでのみ利用できます。",
-  "error.backend.feedbackWithdrawRemoteUnsupported":
-    "このレポートを削除するには、エージェントに削除を依頼してください。",
   "error.backend.threadMoveRefused":
     "新しいスレッドで実行できるのは、このエージェントだけに送信したメッセージのみです。",
   "error.backend.taskTitleRequired": "タスクに短いタイトルを付けてください。",

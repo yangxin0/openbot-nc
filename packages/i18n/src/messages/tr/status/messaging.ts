@@ -25,23 +25,9 @@ export const messages = {
   "status.messaging.onlyRequester": "Bunu yalnızca {user} yapabilir. OpenBot ana makinesi de yanıt verebilir.",
   "status.messaging.hostOnly": "Bu isteği yalnızca OpenBot ana makinesi yanıtlayabilir.",
   "status.messaging.filesSkipped": "Bazı dosyalar gönderilmedi: {names}.",
-  "status.messaging.orchestratorName": "Slack Düzenleyicisi",
-  "status.messaging.orchestratorTitle": "Slack'te yanıt verir ve ekibe sorar",
-  "status.messaging.discordNoAgent":
-    "Henüz burada yanıt verebilecek bir ajan yok. OpenBot'ta Discord Düzenleyicisini ekleyin.",
-  "status.messaging.discordOrchestratorName": "Discord Düzenleyicisi",
-  "status.messaging.discordOrchestratorTitle": "Discord'da yanıt verir ve ekibe sorar",
   "status.messaging.integrationsSection": "Entegrasyonlar",
-  "status.messaging.signInReceived": "OpenBot Slack kurulumunu aldı. Bu sekmeyi kapatabilirsiniz.",
-  "status.messaging.signInUnknown": "OpenBot bu Slack kurulumunu başlatmadı. OpenBot içinde tekrar başlatın.",
-  "status.messaging.telegramNoAgent":
-    "Henüz burada yanıt verebilecek bir ajan yok. OpenBot'ta Pazar yeri > Uygulamalar > Telegram'ı açın ve Ajan ekle'ye tıklayın.",
-  "status.messaging.telegramLinked":
-    "OpenBot bu sohbete bağlandı. Ajanlara sormak için {bot} adını anın veya OpenBot'un bir mesajını yanıtlayın.",
   "status.messaging.telegramNotLinked":
     'OpenBot bu sohbete bağlı değil. Bağlamak için OpenBot uygulamasını açın, Pazaryeri → Uygulamalar → Telegram\'a gidin ve "Bir gruba ekle" veya "Doğrudan sohbet aç" seçeneğini seçin.',
-  "status.messaging.telegramOrchestratorName": "Telegram Düzenleyicisi",
-  "status.messaging.telegramOrchestratorTitle": "Telegram'da yanıt verir ve ekibe sorar",
   "status.messaging.whatsappNoAgent":
     "Henüz burada yanıt verebilecek bir ajan yok. OpenBot'ta WhatsApp Düzenleyicisini ekleyin.",
   "status.messaging.whatsappApprovalMenu": "Onaylamak için 1, reddetmek için 2 yazın.",

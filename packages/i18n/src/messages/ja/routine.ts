@@ -160,8 +160,6 @@ export const messages = {
   "routine.card.webhookUpdated": "Webhook ルーティンを更新しました",
   "routine.card.webhookChanged": "変更は保存されていません",
   "routine.card.webhookSaveFailed": "イベントを保存できませんでした。",
-  "routine.card.webhookFiltersInvalid": "フィルターの JSON Pointer が無効です。",
-
   "routine.timezoneMove.title": "タイムゾーンが {zone} に変わりました",
   "routine.timezoneMove.description": {
     other:
@@ -258,7 +256,6 @@ export const messages = {
   "routine.settings.name": "名前",
   "routine.settings.namePlaceholder": "朝のブリーフィング",
   "routine.settings.whenToRun": "実行するタイミング",
-  "routine.settings.triggerWebhook": "Webhook",
   "routine.settings.webhookSummary": "{eventType} を受信したとき",
   "routine.settings.webhookSummaryAny": "Webhook を受信したとき",
   "routine.trigger.change": "トリガーを変更",

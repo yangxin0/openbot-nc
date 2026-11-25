@@ -2,12 +2,9 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.iceServersMissing": "Remote Signal 尚未提供 ICE 服务器。",
   "error.host.keyRotationUnavailable": "没有账号服务，该服务器无法更改密钥。",
   "error.host.keyRotationRefused": "账号服务没有接受新的服务器密钥，仍继续使用当前密钥。",
   "error.host.webRtcNotConfigured": "WebRTC 主机服务未配置。",
-  "error.host.runtimeNotInstalled": "远程桌面运行时未安装。",
-  "error.host.setupUnavailable": "权限设置不可用。",
   "error.host.accountChangedDuringUpdate": "更新该服务器期间，已登录的账号发生了变更。",
   "error.host.nameBeforePublish": "发布前请先为该 OpenBot 命名。",
   "error.host.memberNotFound": "该远程成员不存在。",

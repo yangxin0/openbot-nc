@@ -68,12 +68,9 @@ export const messages = {
   "update.whatsNew.failed.body": "请确认网络已连接后重试。完整更新日志也会列出所有改动。",
   "update.whatsNew.empty.title": "该版本没有新功能",
   "update.whatsNew.empty.body": "该版本没有可在此展示的更新说明。完整更新日志会列出所有改动。",
-  "update.whatsNew.changelog": "完整更新日志",
-  "update.whatsNew.changelogFailed": "OpenBot 无法打开更新日志。",
   "update.whatsNew.done": "知道了",
   "update.required.title": "需要更新",
   "update.required.description": "OpenBot {version} 已不再受支持。请更新到 {minimum} 或更高版本以继续使用。",
-  "update.required.download": "下载 OpenBot",
   "update.required.continue": "不更新并继续",
   "update.required.failed": "更新未完成。",
 } as const satisfies PartialTranslation<typeof source>;

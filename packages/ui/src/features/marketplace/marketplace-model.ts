@@ -2,8 +2,6 @@ import type {
   ClientAgentSummary,
   GithubSkillSource,
   InstalledSkill,
-  MarketplaceAgentDetail,
-  MarketplaceAgentSummary,
   MarketplaceSkillDetail,
   MarketplaceSkillSummary,
   McpAccessChange,
@@ -11,7 +9,6 @@ import type {
   McpServerConfig,
   SkillCategory,
 } from "@openbot/contracts/ipc";
-import type { MarketplaceListingLink } from "@openbot/contracts/marketplace-links";
 import type { McpConnectFlow } from "@openbot/contracts/mcp-connect-flows";
 import type { JSX } from "@solidjs/web";
 import type { ConnectorDetail } from "../connectors/ConnectorDetailPanel";
@@ -21,7 +18,6 @@ import type {
   MarketplacePluginDetail,
   MarketplacePluginPrompt,
 } from "../settings/marketplace-plugins";
-import type { CatalogList, MarketplaceHomeCache } from "./marketplace-listing";
 
 export type MarketplaceAgent = Pick<
   ClientAgentSummary,
@@ -34,10 +30,6 @@ export interface MarketplaceSkillChange {
   add: readonly string[];
   remove: readonly string[];
 }
-
-export type AgentListingState = "add" | "added" | "update";
-
-export const X_APP_ID = "x";
 
 export type SkillRead = "idle" | "loading" | "loaded" | "failed";
 
@@ -78,20 +70,15 @@ export type MarketplaceApp =
       connections: Readonly<Record<string, MarketplaceAppConnection>>;
     })
   | (AppBase & { kind: "connector"; connector: ConnectorId; category: SkillCategory })
-  | (AppBase & { kind: "x"; category: SkillCategory; agent: MarketplaceAgent | null; extensionUrl: string })
   | (AppBase & { kind: "custom"; server: McpServerConfig });
 
 export type AppSetup = "channel" | "vault" | "account" | "key" | "desktop" | "open" | "custom";
 
 const CONNECTOR_SETUP = {
-  slack: "channel",
-  discord: "channel",
-  telegram: "channel",
   whatsapp: "channel",
   onepassword: "vault",
   bitwarden: "vault",
   protonpass: "vault",
-  github: "account",
 } as const satisfies Record<ConnectorId, AppSetup>;
 
 const FLOW_SETUP = {
@@ -128,8 +115,6 @@ export function appSetup(app: MarketplaceApp): AppSetup {
     }
     case "custom":
       return "custom";
-    case "x":
-      return "channel";
   }
 }
 
@@ -158,18 +143,7 @@ export interface MarketplaceServerSlots {
 }
 
 export interface MarketplaceModel {
-  listAgents: CatalogList<MarketplaceAgentSummary>;
-  agentHomeCache?: MarketplaceHomeCache<MarketplaceAgentSummary> | undefined;
-  loadAgent: (id: string) => Promise<MarketplaceAgentDetail | undefined>;
-  agentState: (listing: MarketplaceAgentSummary) => AgentListingState | null;
-  agentBusy: (listingId: string) => boolean;
-  addAgent: (listing: MarketplaceAgentDetail | MarketplaceAgentSummary, update?: boolean) => Promise<boolean>;
-  openChat: (listingId: string) => void;
-
-  listSkills: CatalogList<MarketplaceSkillSummary>;
-  skillHomeCache?: MarketplaceHomeCache<MarketplaceSkillSummary> | undefined;
   loadSkill: (id: string) => Promise<MarketplaceSkillDetail | undefined>;
-  skillListing: (id: string) => Promise<MarketplaceSkillSummary | undefined>;
   agents: () => readonly MarketplaceAgent[];
   activeAgentId: () => string;
   readSkills: () => void;
@@ -209,8 +183,6 @@ export interface MarketplaceModel {
   mcpAccess?: MarketplaceMcpAccess | undefined;
   servers?: MarketplaceServerSlots | undefined;
   runPrompt?: ((prompt: MarketplacePluginPrompt) => void) | undefined;
-  copyLink: (slug: string) => void;
-  copyListingLink: (link: MarketplaceListingLink) => void;
   openUrl: (url: string) => void;
   connector: (id: ConnectorId) => MarketplaceConnector | undefined;
 

@@ -23,8 +23,8 @@ Those two skills are vendored and re-synced from upstream, so their code samples
 cannot be corrected here. Where a skill and the cheatsheet disagree, the cheatsheet wins. Read the
 skills for the component patterns, not the imports.
 
-- `bun run dev` for integrated work — it starts the local Auth API and the Electron dev app
-  together. `bun run dev:api` is for API-only debugging.
+- `bun run dev` for integrated work — it starts only the Electron dev app, which opens with the
+  local profile and no sign-in. `bun run dev:api` is for API-only debugging.
 - `bun run storybook` verifies isolated components. CI builds it; do not run `build-storybook`.
 - `bun run check:ui` is the design-system guard for this directory: shared primitives over native
   controls, Kobalte and Lucide only inside `@openbot/ui`, and palette tokens instead of colour,

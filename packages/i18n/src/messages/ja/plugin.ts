@@ -5,7 +5,6 @@ export const messages = {
   "plugin.link.website": "ウェブサイト",
   "plugin.link.privacyPolicy": "プライバシーポリシー",
   "plugin.link.terms": "利用規約",
-  "plugin.copyLink": "リンクをコピー",
   "plugin.askPrompt": "{name} に質問: {prompt}",
   "plugin.section.skills": "スキル",
   "plugin.section.information": "情報",

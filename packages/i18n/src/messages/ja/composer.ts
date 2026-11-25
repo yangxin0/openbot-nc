@@ -85,8 +85,6 @@ export const messages = {
   "composer.attachment.adding": "{name} を追加中",
   "composer.placeholder.hostSetup": "開始するには、ホストでプロバイダーの設定を完了してください",
   "composer.placeholder.connectHost": "開始するには、ホストに接続してください",
-  "composer.placeholder.hostSleeping": "このサーバーはスリープ中です。キーを押すかクリックして起動してください",
-  "composer.placeholder.hostWaking": "サーバーを起動しています…",
   "composer.placeholder.cliSetup": "開始するには、エージェント CLI の設定を完了してください",
   "composer.placeholder.reply": "返信…",
   "composer.placeholder.message": "{name} にメッセージを送る",

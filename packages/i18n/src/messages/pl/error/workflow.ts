@@ -78,7 +78,6 @@ export const messages = {
     "Ten workflow jest za duży, aby go zapisać. Usuń część rysunków lub długich tekstów i spróbuj ponownie.",
   "error.workflow.tooLargeToSend":
     "Ten workflow jest za duży, aby wysłać go na inny komputer. Otwórz go na komputerze, na którym działa serwer.",
-  "error.workflow.webhookMissing": "Ten krok nie jest wyzwalaczem webhook. Zapisz przepływ pracy i spróbuj ponownie.",
   "error.workflow.githubActionMissing": "Wybierz, co to wyjście robi w GitHub.",
   "error.workflow.githubRepositoryMissing": "Wybierz repozytorium dla tego wyjścia.",
   "error.workflow.githubItemMissing":
@@ -90,13 +89,6 @@ export const messages = {
   "error.workflow.githubChoiceMissing": "Wybierz etykiety lub osobę dla tego wyjścia.",
   "error.workflow.githubChoseNothing": "Model nie wybrał żadnej etykiety ani osoby z tego repozytorium.",
   "error.workflow.githubNotConnected": "Połącz GitHub na komputerze, na którym działa ten przepływ pracy.",
-  "error.workflow.githubNoAccess":
-    "OpenBot GitHub App nie widzi tego repozytorium ani elementu. Otwórz GitHub i daj jej dostęp.",
-  "error.workflow.githubNoWrite":
-    "OpenBot GitHub App nie może zmieniać tego repozytorium. Otwórz GitHub i daj jej dostęp.",
-  "error.workflow.githubLocked": "Ta rozmowa jest zablokowana w GitHub.",
-  "error.workflow.githubRefused": "GitHub odrzucił zmianę: {detail}",
-  "error.workflow.githubUnreachable": "OpenBot nie mógł połączyć się z GitHub. Uruchom krok ponownie.",
   "error.workflow.githubUncertain":
     "Zmiana zatrzymała się w drodze. Może już być w GitHub. Sprawdź tam, zanim ponownie uruchomisz krok.",
   "error.workflow.githubNoEvent": "W GitHub nie ma zgłoszenia ani pull requestu, dla którego startuje ten wyzwalacz.",

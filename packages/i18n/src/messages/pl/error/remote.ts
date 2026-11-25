@@ -2,52 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "Zaktualizuj klienta, aby używać konfiguracji zdalnego pulpitu.",
-  "error.remote.desktopSetupUnavailable": "Konfiguracja zdalnego pulpitu jest niedostępna.",
-  "error.remote.desktopTestUnavailable": "Testowanie zdalnego pulpitu jest niedostępne.",
-  "error.remote.controlUnavailable": "Zdalne sterowanie jest niedostępne.",
-  "error.remote.controlSessionNotFound": "Nie znaleziono sesji zdalnego sterowania.",
-  "error.remote.controlNotAllowed": "Właściciel tego komputera nie pozwala twojej roli na sterowanie nim.",
-  "error.remote.controlDeclined": "Osoba przy tym komputerze nie zezwoliła na zdalne sterowanie.",
-  "error.remote.testRuntimeUpdate": "Zaktualizuj środowisko zdalnego pulpitu macOS, aby uruchomić ten test.",
-  "error.remote.testOtherSessions": "Zakończ inne sesje zdalnego pulpitu, zanim rozpoczniesz test.",
-  "error.remote.testPermissions": "Przed rozpoczęciem testu sprawdź uprawnienia i sesję GUI na hoście.",
-  "error.remote.controlSessionEnded": "Sesja zdalnego sterowania zakończyła się.",
-  "error.remote.testPanelFailed": "Host nie mógł otworzyć panelu testowego.",
-  "error.remote.sessionCapacity": "Host ma już cztery aktywne sesje.",
-  "error.remote.linuxNeedsX11": "Zdalny pulpit w systemie Linux wymaga sesji X11. Wayland nie jest obsługiwany.",
-  "error.remote.runtimeMissing":
-    "Brakuje środowiska Sunshine i Moonlight Web lub nie jest ono obsługiwane na tym hoście. Zainstaluj pełne wydanie OpenBot na Macu, hoście Windows x64 lub hoście Linux x64, a następnie uruchom ponownie OpenBot.",
-  "error.remote.testActive": "Test zdalnego pulpitu jest aktywny. Spróbuj ponownie po jego zakończeniu.",
-  "error.remote.screenRecordingDenied":
-    "Host nie zezwolił OpenBot na nagrywanie ekranu. Przyznaj na hoście uprawnienie do nagrywania ekranu, a następnie spróbuj ponownie.",
-  "error.remote.windowsSessionDisconnected":
-    "Sesja Windows na hoście jest rozłączona, więc nie ma ekranu do udostępnienia. Zaloguj się do Windows na ekranie hosta, a następnie spróbuj ponownie.",
-  "error.remote.windowsCaptureDenied":
-    "Windows na hoście nie pozwala OpenBot nagrywać ekranu. Odblokuj Windows na ekranie hosta, zamknij wszystkie monity administratora, a następnie spróbuj ponownie. Jeśli problem nie ustąpi, uruchom ponownie host.",
-  "error.remote.macScreenLocked":
-    "Mac jest zablokowany, więc nie może udostępnić ekranu. Odblokuj Maca na jego ekranie, a następnie spróbuj ponownie.",
-  "error.remote.streamTooSlowLowerQuality":
-    "Połączenie z hostem jest zbyt wolne, aby pokazać obraz. Spróbuj ponownie: następne połączenie użyje niższej jakości.",
-  "error.remote.streamTooSlow":
-    "Połączenie z hostem jest zbyt wolne, aby pokazać obraz. Użyj szybszej sieci, a następnie spróbuj ponownie.",
-  "error.remote.noPictureSwitchEncoder":
-    "Host nie wysłał obrazu. Spróbuj ponownie: następne połączenie użyje ustawienia wideo, które działa na większej liczbie komputerów.",
-  "error.remote.teamSessionExpired": "Sesja zespołu wygasła.",
-  "error.remote.finishTestBeforeSwitch": "Zakończ test zdalnego pulpitu, zanim przełączysz ekran.",
-  "error.remote.displayNotFound": "Nie znaleziono zdalnego ekranu.",
-  "error.remote.displaySwitchInProgress": "Trwa przełączanie ekranu.",
-  "error.remote.localTestListenerUnavailable": "Lokalny odbiornik testowy jest niedostępny.",
-  "error.remote.localTestNotFound": "Nie znaleziono lokalnej sesji testowej.",
-  "error.remote.runtimeUnavailable": "Środowisko zdalnego pulpitu jest niedostępne.",
-  "error.remote.sunshineStartFailed":
-    "Sunshine nie uruchomił się na hoście. Sprawdź logi zdalnego pulpitu na hoście, a następnie spróbuj ponownie.",
-  "error.remote.moonlightStartFailed":
-    "Moonlight Web nie uruchomił się na hoście. Sprawdź logi zdalnego pulpitu na hoście, a następnie spróbuj ponownie.",
-  "error.remote.pairingFailed":
-    "Moonlight nie mógł sparować się z Sunshine na hoście. Spróbuj ponownie. Jeśli problem nie ustąpi, uruchom ponownie OpenBot na hoście.",
-  "error.remote.runtimeStartFailed":
-    "Środowisko zdalnego pulpitu nie uruchomiło się na hoście. Sprawdź logi zdalnego pulpitu na hoście, a następnie spróbuj ponownie.",
   "error.remote.hostUnreachable": "Host jest nieosiągalny.",
   "error.remote.signInToHostAgain": "Zaloguj się ponownie do tego hosta.",
   "error.remote.invalidData": "Host zwrócił nieprawidłowe dane.",
@@ -71,11 +25,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "Usługa kont zaakceptowała inny host.",
   "error.remote.inviteIdentityChanged": "Tożsamość hosta zaproszenia zmieniła się podczas akceptacji.",
   "error.remote.localServerRemove": "Nie można usunąć lokalnego serwera.",
-  "error.remote.desktopSetupHostUpdate": "Zaktualizuj OpenBot na hoście, aby sprawdzić konfigurację zdalnego pulpitu.",
-  "error.remote.desktopTestHostUpdate":
-    "Zaktualizuj OpenBot na hoście, aby przetestować konfigurację zdalnego pulpitu.",
   "error.remote.viewerProxyUnavailable": "Lokalny serwer proxy zdalnego podglądu jest niedostępny.",
-  "error.remote.viewerTransportInvalid": "Transport zdalnego podglądu jest nieprawidłowy.",
   "error.remote.viewerProxyNoPort": "Lokalny serwer proxy zdalnego podglądu nie otrzymał portu.",
   "error.remote.inviteNeedsConnection":
     "Host musi połączyć się przynajmniej raz, zanim będzie mógł tworzyć zaproszenia.",

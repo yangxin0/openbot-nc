@@ -4,9 +4,9 @@ import { RestartServerDialog } from "@openbot/ui/features/servers/RestartServerD
 import { createSignal, onCleanup } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 
-type StoryServer = Pick<ServerSummary, "id" | "name" | "state" | "hostedIssue">;
+type StoryServer = Pick<ServerSummary, "id" | "name" | "state">;
 
-const SERVER: StoryServer = { id: "research-hosted", name: "Research server", state: "online", hostedIssue: null };
+const SERVER: StoryServer = { id: "research-hosted", name: "Research server", state: "online" };
 
 function RestartStory(props: { outcome: "online" | "failed" | "request-failed" }) {
   const [server, setServer] = createSignal<StoryServer>(SERVER);
@@ -23,9 +23,9 @@ function RestartStory(props: { outcome: "online" | "failed" | "request-failed" }
     await new Promise((resolve) => setTimeout(resolve, 600));
     if (props.outcome === "request-failed")
       throw new Error("The server cannot restart now. Wait a moment, then try again.");
-    later(1500, { state: "connecting", hostedIssue: null });
+    later(1500, { state: "connecting" });
     if (props.outcome === "online") later(5500, { state: "online" });
-    else later(5500, { state: "offline", hostedIssue: "start_timeout" });
+    else later(5500, { state: "offline" });
   }
   return (
     <>

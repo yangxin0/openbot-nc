@@ -162,8 +162,6 @@ export const messages = {
   "routine.card.webhookUpdated": "Webhook rutini güncellendi",
   "routine.card.webhookChanged": "Değişiklikler kaydedilmedi",
   "routine.card.webhookSaveFailed": "Olaylar kaydedilemedi.",
-  "routine.card.webhookFiltersInvalid": "Bir filtrenin JSON Pointer değeri geçersiz.",
-
   "routine.timezoneMove.title": "Saat diliminiz artık {zone}",
   "routine.timezoneMove.description": {
     one: "{server} üzerindeki {count} rutin {from} saatine göre çalışıyor. {zone} saatine taşınsın mı? Saati aynı kalır.",
@@ -267,7 +265,6 @@ export const messages = {
   "routine.settings.name": "Ad",
   "routine.settings.namePlaceholder": "Sabah özeti",
   "routine.settings.whenToRun": "Ne zaman çalıştırılacak",
-  "routine.settings.triggerWebhook": "Webhook",
   "routine.settings.webhookSummary": "{eventType} geldiğinde",
   "routine.settings.webhookSummaryAny": "Bir webhook geldiğinde",
   "routine.trigger.change": "Tetikleyiciyi değiştir",

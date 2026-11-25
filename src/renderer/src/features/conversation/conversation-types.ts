@@ -181,9 +181,6 @@ export interface ConversationProps {
   isOwnSender: (senderId: string) => boolean;
   browserEnabled?: boolean | undefined;
   openLinksInBrowser?: boolean | undefined;
-  remoteDesktopEnabled?: boolean | undefined;
-  remoteDesktopSessionActive: boolean;
-  remoteDesktopVisible: boolean;
   prompt: Extract<AgentEvent, { type: "prompt" }> | undefined;
   promptUiBlock?: ConversationUiBlock | undefined;
   approval: Extract<AgentEvent, { type: "approval" }>["approval"] | undefined;
@@ -251,7 +248,6 @@ export interface ConversationProps {
   onReorderQueue: (deliveryIds: string[]) => void;
   onActivateBrowserTab: (tabId: string) => void;
   onCloseBrowserTab: (tabId: string) => void | Promise<void>;
-  onOpenRemoteDesktop: (serverId: string, trigger: HTMLElement) => Promise<void>;
   onStop: () => void;
 }
 

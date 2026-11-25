@@ -115,7 +115,7 @@ export const generateTextWithoutTools = Effect.fn("Agent.generateTextWithoutTool
   return result.success.text;
 });
 
-export const makeToollessDirectory = () => profileIo(() => mkdtemp(join(tmpdir(), "openbot-profile-")));
+export const makeToollessDirectory = () => profileIo(() => mkdtemp(join(tmpdir(), "openbot-nc-profile-")));
 
 export const removeToollessDirectory = (cwd: string) =>
   profileIo(() => rm(cwd, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }));

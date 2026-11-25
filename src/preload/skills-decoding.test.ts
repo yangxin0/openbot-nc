@@ -1,47 +1,34 @@
 import { describe, expect, it } from "vitest";
-import { decodeMarketplaceAgentDetail, decodeMarketplaceAgentPage } from "./skills-decoding";
+import { decodeSkillDetail, decodeSkillDetails } from "./skills-decoding";
 
-const SUMMARY = {
+const DETAIL = {
   category: "coding",
-  id: "0f8fad5b-d9cb-469f-a165-70867728950e",
+  id: "local-skill-0f8fad5b-d9cb-469f-a165-70867728950e",
+  slug: "release-scout",
   name: "Release Scout",
-  title: "Release manager",
   description: "Checks every release.",
   creatorName: "Ada",
   creatorAvatarUrl: null,
   version: 1,
   installs: 0,
-  featured: true,
-  avatarSeed: "scout",
-  avatarHue: null,
-  avatarUrl: null,
-  skillCount: 0,
-  routineCount: 0,
-  activeRoutineCount: 0,
+  featured: false,
+  iconUrl: null,
   updatedAt: "2026-10-31T00:00:00.000Z",
+  versionId: "1",
+  bundleSha256: "0".repeat(64),
+  files: ["SKILL.md"],
+  instructions: "Check every release.",
 };
 
-const DETAIL = { ...SUMMARY, versionId: "av-1", skills: [], routines: [] };
-
-describe("Marketplace agent decoding", () => {
-  it.each([true, false])("keeps verified %s in a catalog page", (verified) => {
-    const page = decodeMarketplaceAgentPage({ agents: [{ ...SUMMARY, verified }], nextCursor: null });
-    expect(page.agents[0]?.verified).toBe(verified);
-  });
-
-  it("keeps verified and pending in a listing", () => {
-    expect(decodeMarketplaceAgentDetail({ ...DETAIL, verified: true, pending: true })).toMatchObject({
-      verified: true,
-      pending: true,
-    });
+describe("Skill detail decoding", () => {
+  it.each([true, false])("keeps verified %s in a skill list", (verified) => {
+    expect(decodeSkillDetails([{ ...DETAIL, verified }])[0]?.verified).toBe(verified);
   });
 
   it.each([
     ["absent", {}],
-    ["not booleans", { verified: "yes", pending: 1 }],
-  ])("leaves out flags that are %s", (_name, flags) => {
-    const detail = decodeMarketplaceAgentDetail({ ...DETAIL, ...flags });
-    expect(detail).not.toHaveProperty("verified");
-    expect(detail).not.toHaveProperty("pending");
+    ["not a boolean", { verified: "yes" }],
+  ])("leaves out a verified flag that is %s", (_name, flags) => {
+    expect(decodeSkillDetail({ ...DETAIL, ...flags })).not.toHaveProperty("verified");
   });
 });

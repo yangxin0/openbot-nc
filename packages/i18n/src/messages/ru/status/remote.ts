@@ -2,17 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "Настройка разрешений доступна в macOS.",
-  "status.remote.setupInstallHost": "Установите компонент хоста удалённого рабочего стола и проверьте снова.",
-  "status.remote.setupUpdateRuntime": "Обновите среду удалённого рабочего стола, чтобы проверить разрешения macOS.",
-  "status.remote.setupCheckFailed":
-    "Sunshine не смог завершить проверку разрешений. Проверьте сессию хоста и повторите попытку.",
-  "status.remote.setupServiceFailed":
-    "Не удалось запустить службу удалённого рабочего стола. Убедитесь, что у этого пользователя macOS есть активная графическая сессия.",
-  "status.remote.connectingSunshine": "Подключение через Sunshine…",
-  "status.remote.switchingMonitor": "Переключение общего монитора…",
-  "status.remote.controlConnected": "Удалённое управление подключено.",
-  "status.remote.controlFailed": "Сбой удалённого управления.",
   "status.remote.stagePreferences": "Загрузка локальных настроек чата: {reason}",
   "status.remote.stageConnection": "Подключение к компьютеру: {reason}",
   "status.remote.stageCompatibility": "Проверка совместимости компьютера: {reason}",

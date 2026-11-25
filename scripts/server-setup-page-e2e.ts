@@ -1,14 +1,16 @@
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
+import { request as httpRequest } from "node:http";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import type { CentralAuthState, HostStatus } from "@openbot/contracts/ipc";
+import type { HostStatus, RelayState } from "@openbot/contracts/ipc";
 import { createOpenBotLogger } from "@openbot/logging";
 import { Effect } from "effect";
 import { chromium, type Page } from "playwright-core";
 import { runCauseEffect } from "../src/backend/effect-boundary";
+import { RelaySetupError } from "../src/main/relay-service";
 import { ServerMode, type ServerModeOptions } from "../src/main/server-mode";
 import { ServerSetupPage } from "../src/main/server-setup-page";
 
@@ -23,63 +25,55 @@ if (!existsSync(join(rendererRoot, "server-setup.html"))) {
   throw new Error(`${rendererRoot} has no server-setup.html. Build the renderer first: bun run build.`);
 }
 
-const EMAIL = "owner@example.com";
-const CODE = "K7PQ-R2MX";
-const WRONG_CODE = "22222222";
-const CHALLENGE = "challenge-e2e";
-const SERVER_NAME = "OpenBot";
+const IDENTITY_PATH = "/srv/openbot/server.json";
+const INVALID_IDENTITY =
+  'This identity file is not valid. Use a file that the "ca issue" command of the relay server made.';
+const SERVER_NAME = "Build";
+const IMPORT_COMMAND = "openbot import-identity <file>";
 
-let account: CentralAuthState = { status: "signed_out" };
-let session = false;
-const sentCodes: string[] = [];
-const verifiedCodes: string[] = [];
-const centralAuth: ServerModeOptions["centralAuth"] = {
-  getState: () => structuredClone(account),
-  requestEmailCode: (email: string) =>
-    Effect.sync(() => {
-      sentCodes.push(email);
-      account = {
-        status: "code_sent",
-        challengeId: CHALLENGE,
-        email,
-        expiresAt: Date.now() + 600_000,
-        resendAvailableAt: Date.now() + 30_000,
+const offline: RelayState = {
+  identity: null,
+  identityIssue: null,
+  control: { status: "offline", code: "stopped", message: null, retryInMs: null },
+  members: [],
+  hosting: false,
+  hostingState: { status: "off", message: null },
+};
+let relayState: RelayState = structuredClone(offline);
+const importedPaths: string[] = [];
+const relay: ServerModeOptions["relay"] = {
+  state: () => structuredClone(relayState),
+  importFile: (path: string, replace: boolean) =>
+    Effect.suspend(() => {
+      importedPaths.push(path);
+      if (path !== IDENTITY_PATH || (relayState.identity && !replace))
+        return Effect.fail(new RelaySetupError({ cause: new Error(INVALID_IDENTITY) }));
+      relayState = {
+        ...relayState,
+        identity: {
+          team: "Acme",
+          user: "server",
+          device: "rack-1",
+          keyId: "k".repeat(43),
+          relayUrl: "wss://relay.example.com/v1/relay",
+          expiresAt: Date.now() + 86_400_000,
+        },
+        control: { status: "online" },
       };
-      return structuredClone(account);
+      return Effect.succeed(structuredClone(relayState));
     }),
-  verifyEmailCode: (challengeId: string, code: string) =>
+  setHosting: (enabled: boolean) =>
     Effect.sync(() => {
-      verifiedCodes.push(code);
-      if (account.status !== "code_sent") return structuredClone(account);
-      if (challengeId !== CHALLENGE || code !== CODE) {
-        account = { ...account, issue: { code: "invalid_sign_in_code", message: "The code is not valid." } };
-        return structuredClone(account);
-      }
-      account = { status: "signed_in", user: { id: "user-e2e", email: account.email, name: null, avatarUrl: null } };
-      session = true;
-      setTimeout(() => void runCauseEffect(serverMode.publish()), 0);
-      return structuredClone(account);
+      relayState = {
+        ...relayState,
+        hosting: enabled,
+        hostingState: enabled
+          ? { status: "online", message: "Your team can connect to this OpenBot through the relay server." }
+          : { status: "off", message: null },
+      };
+      return structuredClone(relayState);
     }),
-  hasSession: () => session,
-  retry: () =>
-    Effect.sync(() => {
-      if (account.status === "error" && session) {
-        account = { status: "signed_in", user: { id: "user-e2e", email: EMAIL, name: null, avatarUrl: null } };
-      } else if (account.status === "error") {
-        account = { status: "signed_out" };
-      }
-      return structuredClone(account);
-    }),
-  cancelCompanySignIn: () => Effect.sync(() => structuredClone(account)),
-  canPersistSession: () => true,
-  redeemServerClaim: () => Effect.succeed(null),
-  logout: () =>
-    Effect.sync(() => {
-      account = { status: "signed_out" };
-      session = false;
-      return structuredClone(account);
-    }),
-  createMobileConnect: () => Effect.die(new Error("The setup page must not make a Mobile Connect code.")),
+  resumeHosting: () => Effect.void,
 };
 
 let hostStatus: HostStatus = {
@@ -92,12 +86,6 @@ let hostStatus: HostStatus = {
   logoUrl: null,
   appearance: null,
   apiOnline: false,
-  remoteDesktopReady: false,
-  remoteDesktopScreenRecordingDenied: false,
-  remoteDesktopNeedsX11Session: false,
-  remoteDesktopUnattended: false,
-  remoteDesktopActiveSessions: 0,
-  remoteDesktopMaxSessions: 0,
   message: null,
 };
 const host: ServerModeOptions["host"] = {
@@ -112,27 +100,19 @@ const host: ServerModeOptions["host"] = {
       hostStatus = { ...hostStatus, serverName: input.serverName ?? hostStatus.serverName };
       return structuredClone(hostStatus);
     }),
-  start: () =>
-    Effect.sync(() => {
-      hostStatus = { ...hostStatus, phase: "starting" };
-      setTimeout(() => {
-        hostStatus = { ...hostStatus, phase: "online", apiOnline: true };
-      }, 1000);
-      return structuredClone(hostStatus);
-    }),
-  getMobileConnectHost: () => null,
-  refreshRegistration: () => Effect.void,
 };
 
 const runtime = await mkdtemp(join(tmpdir(), "openbot-setup-page-"));
+const controlSocketPath = join(runtime, "control.sock");
 const serverMode = new ServerMode({
-  environment: { controlSocketPath: join(runtime, "control.sock"), setupPagePort: null },
+  environment: { controlSocketPath, setupPagePort: null },
   version: "0.0.0-e2e",
-  centralAuth,
+  relay,
   host,
   memory: null,
   onError: (message, error) => logger.warn(message, error),
 });
+await runCauseEffect(serverMode.listen());
 const port = await freePort();
 const page = new ServerSetupPage({
   port,
@@ -146,21 +126,14 @@ const origin = `http://127.0.0.1:${port}`;
 
 interface Checks {
   page?: { status: number; policy: string };
-  refusals?: Record<
-    "noHeader" | "crossSite" | "textPlainPost" | "logout" | "claim" | "mobileConnect" | "pathEscape" | "sourceFile",
-    number
-  >;
-  signIn?: {
-    email: string;
-    serverName: string | null;
-    phase: HostStatus["phase"];
-    appLink: string | null;
-    language: string;
-  };
-  signedInRefusesSignIn?: number;
-  oldChallengeRefused?: number;
-  signedInRefusesCode?: number;
-  unconfirmedSessionRefuses?: { start: number; verify: number; retry: string | number | undefined };
+  refusals?: Record<string, number>;
+  controlRefusals?: Record<string, number>;
+  identityMissing?: { heading: string; command: boolean };
+  invalidImport?: { status: number; error: string | undefined; message: string | undefined };
+  imported?: { status: number; identity: string | undefined; team: string | undefined; user: string | undefined };
+  notShared?: string;
+  shared?: { hosting: string | undefined; heading: string };
+  language?: string;
 }
 const checks: Checks = {};
 rmSync(OUT, { recursive: true, force: true });
@@ -175,38 +148,55 @@ try {
   assert.match(policy, /form-action 'none'/u);
   checks.page = { status: pageResponse.status, policy };
 
+  const post = (path: string) => fetch(`${origin}${path}`, { method: "POST", headers: { "x-openbot-setup": "1" } });
   const refusals = {
     noHeader: (await fetch(`${origin}/api/status`)).status,
     crossSite: (
       await fetch(`${origin}/api/status`, { headers: { "x-openbot-setup": "1", "sec-fetch-site": "cross-site" } })
     ).status,
-    textPlainPost: (
-      await fetch(`${origin}/api/login/start`, {
-        method: "POST",
-        headers: { "x-openbot-setup": "1", "content-type": "text/plain" },
-        body: `email=${EMAIL}`,
-      })
-    ).status,
-    logout: (await fetch(`${origin}/api/logout`, { method: "POST", headers: { "x-openbot-setup": "1" } })).status,
-    claim: (await fetch(`${origin}/api/login/claim`, { method: "POST", headers: { "x-openbot-setup": "1" } })).status,
-    mobileConnect: (
-      await fetch(`${origin}/api/mobile-connect`, { method: "POST", headers: { "x-openbot-setup": "1" } })
-    ).status,
+    loginStart: (await post("/api/login/start")).status,
+    loginVerify: (await post("/api/login/verify")).status,
+    retry: (await post("/api/retry")).status,
+    logout: (await post("/api/logout")).status,
+    claim: (await post("/api/login/claim")).status,
+    mobileConnect: (await post("/api/mobile-connect")).status,
     pathEscape: (await fetch(`${origin}/assets/..%2F..%2Fpackage.json`)).status,
     sourceFile: (await fetch(`${origin}/index.html`)).status,
   };
   assert.deepEqual(refusals, {
     noHeader: 403,
     crossSite: 403,
-    textPlainPost: 403,
+    loginStart: 404,
+    loginVerify: 404,
+    retry: 404,
     logout: 404,
     claim: 404,
     mobileConnect: 404,
     pathEscape: 404,
     sourceFile: 404,
   });
-  assert.equal(sentCodes.length, 0, "A refused request sent a sign-in code.");
   checks.refusals = refusals;
+
+  const controlRefusals = {
+    loginStart: (await control("POST", "/v1/login/start", { email: "owner@example.com" })).status,
+    loginVerify: (await control("POST", "/v1/login/verify", { challenge: "c", code: "1" })).status,
+    claim: (await control("POST", "/v1/login/claim", { claim: "x" })).status,
+    logout: (await control("POST", "/v1/logout", {})).status,
+    mobileConnect: (await control("POST", "/v1/mobile-connect", {})).status,
+    relativePath: (await control("POST", "/v1/identity", { path: "server.json" })).status,
+    hostingValue: (await control("POST", "/v1/hosting", { enabled: "yes" })).status,
+  };
+  assert.deepEqual(controlRefusals, {
+    loginStart: 404,
+    loginVerify: 404,
+    claim: 404,
+    logout: 404,
+    mobileConnect: 404,
+    relativePath: 400,
+    hostingValue: 400,
+  });
+  assert.deepEqual(importedPaths, [], "A refused request reached the identity import.");
+  checks.controlRefusals = controlRefusals;
 
   const browser = await chromium.launch(
     browserExecutable ? { executablePath: browserExecutable } : { channel: "chrome" },
@@ -222,98 +212,67 @@ try {
       }
     });
     await tab.goto(`${origin}/`);
-    await tab.getByRole("heading", { name: "Sign in to OpenBot" }).waitFor();
-    await tab.getByLabel("Email").fill(EMAIL);
-    await settledScreenshot(tab, join(OUT, "1-email.png"));
-    await tab.getByRole("button", { name: "Send sign-in code" }).click();
-    await tab.getByRole("heading", { name: "Check your inbox" }).waitFor();
-    assert.deepEqual(sentCodes, [EMAIL]);
+    await tab.getByRole("heading", { name: "Import an identity file" }).waitFor();
+    await tab.getByText(IMPORT_COMMAND, { exact: true }).waitFor();
+    assert.equal(await tab.getByLabel("Email").count(), 0, "The page still asks for an email.");
+    await settledScreenshot(tab, join(OUT, "1-identity-missing.png"));
+    checks.identityMissing = { heading: "Import an identity file", command: true };
 
-    const oldChallenge = await postForm("/api/login/verify", { challenge: "old-challenge", code: CODE });
-    assert.equal(oldChallenge.status, 409);
-    assert.deepEqual(await oldChallenge.json(), {
-      error: "challenge_replaced",
-      message: "The sign-in code could not be verified.",
-    });
-    assert.deepEqual(verifiedCodes, []);
-    checks.oldChallengeRefused = oldChallenge.status;
+    const invalid = await control("POST", "/v1/identity", { path: "/srv/openbot/other.json" });
+    assert.equal(invalid.status, 400);
+    assert.equal(invalid.lines.error, "identity_refused");
+    assert.equal(invalid.lines.message, INVALID_IDENTITY);
+    checks.invalidImport = { status: invalid.status, error: invalid.lines.error, message: invalid.lines.message };
 
-    const codeInput = tab.getByLabel("One-time code", { exact: true });
-    await codeInput.fill(WRONG_CODE);
-    await tab.getByText("The code is not valid.").waitFor();
-    await settledScreenshot(tab, join(OUT, "2-wrong-code.png"));
+    const imported = await control("POST", "/v1/identity", { path: IDENTITY_PATH });
+    assert.equal(imported.status, 200);
+    assert.equal(imported.lines.identity, "ready");
+    assert.equal(imported.lines.team, "Acme");
+    assert.equal(imported.lines.user, "server");
+    assert.equal(imported.lines.hosting, "off");
+    checks.imported = {
+      status: imported.status,
+      identity: imported.lines.identity,
+      team: imported.lines.team,
+      user: imported.lines.user,
+    };
 
-    await codeInput.fill(CODE.replace("-", ""));
-    await tab.getByRole("heading", { name: `${SERVER_NAME} is online` }).waitFor({ timeout: 30_000 });
-    await tab.getByText(`Signed in as ${EMAIL}`).waitFor();
-    const appLink = await tab.getByRole("link", { name: "Open OpenBot" }).getAttribute("href");
-    assert.equal(appLink, "https://openbot.run/app");
-    await settledScreenshot(tab, join(OUT, "3-online.png"));
+    const renamed = await control("POST", "/v1/name", { name: SERVER_NAME });
+    assert.equal(renamed.status, 200);
     assert.equal(hostStatus.serverName, SERVER_NAME);
+    const notShared = `${SERVER_NAME} does not share its agents`;
+    await tab.getByRole("heading", { name: notShared }).waitFor({ timeout: 30_000 });
+    await tab.getByText("Team Acme, user server").waitFor();
+    await tab.getByText("openbot hosting on", { exact: true }).waitFor();
+    await settledScreenshot(tab, join(OUT, "2-not-shared.png"));
+    checks.notShared = notShared;
 
-    await tab.reload();
-    await tab.getByRole("heading", { name: `${SERVER_NAME} is online` }).waitFor();
-    assert.equal(await tab.getByLabel("Email").count(), 0);
-
-    const dark = await browser.newContext({ colorScheme: "dark", viewport: { width: 390, height: 760 } });
-    const phone = await dark.newPage();
-    await phone.goto(`${origin}/`);
-    await phone.getByRole("heading", { name: `${SERVER_NAME} is online` }).waitFor();
-    await settledScreenshot(phone, join(OUT, "4-online-dark-phone.png"));
-    const overflow = await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
-    assert.equal(overflow, false, "The page scrolls sideways at phone width.");
-    await dark.close();
+    const shared = await control("POST", "/v1/hosting", { enabled: "on" });
+    assert.equal(shared.status, 200);
+    assert.equal(shared.lines.hosting, "on");
+    const online = `${SERVER_NAME} is online`;
+    await tab.getByRole("heading", { name: online }).waitFor({ timeout: 30_000 });
+    await settledScreenshot(tab, join(OUT, "3-online.png"));
+    checks.shared = { hosting: shared.lines.hosting, heading: online };
 
     const polish = await browser.newContext({ locale: "pl-PL" });
     const polishTab = await polish.newPage();
     await polishTab.goto(`${origin}/`);
-    await polishTab.getByRole("heading", { name: `${SERVER_NAME} is online` }).waitFor();
+    await polishTab.getByRole("heading", { name: online }).waitFor();
     const language = await polishTab.evaluate(() => document.documentElement.lang);
     assert.equal(language, "pl");
     await polish.close();
+    checks.language = language;
 
     assert.deepEqual(pageErrors, [], "The page wrote errors.");
-    checks.signIn = { email: EMAIL, serverName: hostStatus.serverName, phase: hostStatus.phase, appLink, language };
   } finally {
     await browser.close();
   }
 
-  const codesBefore = [...verifiedCodes];
-  const again = await postForm("/api/login/start", { email: "other@example.com" });
-  assert.equal(again.status, 409);
-  assert.deepEqual(await again.json(), { error: "signed_in" });
-  assert.deepEqual(sentCodes, [EMAIL]);
-  checks.signedInRefusesSignIn = again.status;
-  const code = await postForm("/api/login/verify", { challenge: "other-challenge", code: WRONG_CODE });
-  assert.equal(code.status, 409);
-  assert.deepEqual(await code.json(), { error: "signed_in" });
-  assert.deepEqual(verifiedCodes, codesBefore);
-  assert.equal(account.status, "signed_in");
-  checks.signedInRefusesCode = code.status;
-
-  const signedIn = account;
-  account = { status: "error", issue: { code: "auth_api_unavailable", message: "The account service is down." } };
-  const unconfirmedStart = await postForm("/api/login/start", { email: "other@example.com" });
-  assert.deepEqual(await unconfirmedStart.json(), { error: "account_error" });
-  const unconfirmedVerify = await postForm("/api/login/verify", { challenge: CHALLENGE, code: CODE });
-  assert.deepEqual(await unconfirmedVerify.json(), { error: "account_error" });
-  assert.deepEqual(sentCodes, [EMAIL]);
-  assert.deepEqual(verifiedCodes, codesBefore);
-  assert.equal(session, true);
-  const retried = await postForm("/api/retry", {});
-  const retriedValues = await retried.json();
-  assert.equal(retriedValues.account, "signed_in");
-  assert.deepEqual(account, signedIn);
-  checks.unconfirmedSessionRefuses = {
-    start: unconfirmedStart.status,
-    verify: unconfirmedVerify.status,
-    retry: retriedValues.account,
-  };
-
   const report = {
     ok: true,
     checks,
-    screenshots: ["1-email.png", "2-wrong-code.png", "3-online.png", "4-online-dark-phone.png"],
+    screenshots: ["1-identity-missing.png", "2-not-shared.png", "3-online.png"],
   };
   writeFileSync(join(OUT, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
   logger.info(`Setup page e2e passed. Report: ${join(OUT, "report.json")}`);
@@ -322,14 +281,39 @@ try {
   throw error;
 } finally {
   await runCauseEffect(page.close());
+  await runCauseEffect(serverMode.close());
   rmSync(runtime, { recursive: true, force: true });
 }
 
-function postForm(path: string, fields: Record<string, string>): Promise<Response> {
-  return fetch(`${origin}${path}`, {
-    method: "POST",
-    headers: { "x-openbot-setup": "1", "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams(fields).toString(),
+function control(
+  method: "GET" | "POST",
+  path: string,
+  fields: Record<string, string>,
+): Promise<{ status: number; lines: Record<string, string> }> {
+  const body = new URLSearchParams(fields).toString();
+  return new Promise((resolveAnswer, reject) => {
+    const outgoing = httpRequest(
+      {
+        socketPath: controlSocketPath,
+        method,
+        path,
+        headers: { "content-type": "application/x-www-form-urlencoded", "content-length": Buffer.byteLength(body) },
+      },
+      (response) => {
+        const chunks: Buffer[] = [];
+        response.on("data", (chunk: Buffer) => chunks.push(chunk));
+        response.on("end", () => {
+          const lines: Record<string, string> = {};
+          for (const line of Buffer.concat(chunks).toString("utf8").split("\n")) {
+            const separator = line.indexOf("=");
+            if (separator > 0) lines[line.slice(0, separator)] = line.slice(separator + 1);
+          }
+          resolveAnswer({ status: response.statusCode ?? 0, lines });
+        });
+      },
+    );
+    outgoing.once("error", reject);
+    outgoing.end(body);
   });
 }
 

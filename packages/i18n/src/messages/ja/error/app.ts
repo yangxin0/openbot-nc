@@ -9,6 +9,4 @@ export const messages = {
   "error.app.macSecureStorageUnavailable": "macOS のセキュアストレージを利用できません。",
   "error.app.secretStorageUnavailable": "システムのシークレットストレージを利用できません。",
   "error.app.remoteIdentityUnavailable": "リモートホストの ID を利用できません。",
-  "error.app.iceServersMissing": "Remote Signal からまだ ICE サーバーが提供されていません。",
-  "error.app.finishLocalTest": "ディスプレイを切り替える前に、ローカルテストを終了してください。",
 } as const satisfies PartialTranslation<typeof source>;

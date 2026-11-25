@@ -27,6 +27,7 @@ export interface DevelopmentPreparationInput {
   mainCheckoutRoot?: string;
   executable?: string;
   bunVersion?: string;
+  migrateAccountDatabase?: boolean;
   run?: DevelopmentCommandRunner;
 }
 
@@ -46,11 +47,12 @@ export function prepareDevelopmentEnvironment(input: DevelopmentPreparationInput
     () => installFingerprint(projectRoot),
     () => run(executable, ["install", "--frozen-lockfile"], options),
   );
-  runUnlessStamped(
-    join(projectRoot, MIGRATION_STAMP),
-    () => (existsSync(join(projectRoot, LOCAL_D1_STATE)) ? migrationFingerprint(projectRoot) : null),
-    () => run(executable, ["run", "api:migrate:local"], options),
-  );
+  if (input.migrateAccountDatabase !== false)
+    runUnlessStamped(
+      join(projectRoot, MIGRATION_STAMP),
+      () => (existsSync(join(projectRoot, LOCAL_D1_STATE)) ? migrationFingerprint(projectRoot) : null),
+      () => run(executable, ["run", "api:migrate:local"], options),
+    );
   return stateOutcome;
 }
 

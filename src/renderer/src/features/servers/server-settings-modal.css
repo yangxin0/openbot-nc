@@ -264,45 +264,6 @@
   text-align: center;
 }
 
-.server-settings-desktop-icon {
-  width: 40px;
-  height: 40px;
-  justify-content: center;
-  border: 1px solid var(--openbot-border);
-  border-radius: var(--openbot-radius-md);
-  background: var(--openbot-bg-control);
-  color: var(--openbot-text-secondary);
-}
-
-.server-settings-desktop-icon svg {
-  width: var(--openbot-icon-lg);
-  height: var(--openbot-icon-lg);
-}
-
-.server-settings-desktop-description {
-  max-width: 360px;
-  overflow: visible;
-  text-overflow: clip;
-  white-space: normal;
-}
-
-.server-settings-desktop-meta {
-  max-width: 260px;
-  display: grid;
-  justify-items: end;
-  gap: var(--openbot-space-1);
-  text-align: end;
-}
-
-.server-settings-desktop-hint {
-  max-width: 220px;
-  text-align: end;
-}
-
-.server-settings-desktop-status {
-  margin-top: var(--openbot-space-1);
-}
-
 @media (max-width: 720px) {
   .server-settings-readonly-name {
     align-items: flex-start;
@@ -337,19 +298,6 @@
   .server-settings-invite-composer > .ui-button,
   .server-settings-invite-share {
     grid-column: 1 / -1;
-  }
-
-  .server-settings-desktop-card .ui-item {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .server-settings-desktop-meta,
-  .server-settings-desktop-hint {
-    max-width: none;
-    margin-inline-start: 52px;
-    justify-items: start;
-    text-align: start;
   }
 }
 

@@ -20,7 +20,7 @@ export interface PermissionAppDragSender {
 
 export interface ComputerUsePermissionHelpWindowOptions<W extends PermissionHelpWindow = BrowserWindow> {
   createWindow: () => W;
-  loadWindow: (window: W, permission: MacPermissionId, sunshine: boolean) => Promise<void>;
+  loadWindow: (window: W, permission: MacPermissionId) => Promise<void>;
   bundlePath: () => string | null;
   bundleIcon: (path: string) => Promise<NativeImage | string>;
   revealPath: (path: string) => void;
@@ -30,7 +30,6 @@ export class ComputerUsePermissionHelpWindowController<W extends PermissionHelpW
   readonly #options: ComputerUsePermissionHelpWindowOptions<W>;
   #window: W | null = null;
   #generation = 0;
-  #sunshineAppPath: string | null = null;
 
   constructor(options: ComputerUsePermissionHelpWindowOptions<W>) {
     this.#options = options;
@@ -43,21 +42,18 @@ export class ComputerUsePermissionHelpWindowController<W extends PermissionHelpW
   readonly show = Effect.fn("PermissionHelpWindow.show")(function* (
     this: ComputerUsePermissionHelpWindowController<W>,
     permission: MacPermissionId,
-    sunshineAppPath?: string,
   ): Effect.fn.Return<void, PermissionHelpFailed> {
     const generation = ++this.#generation;
     const window = this.#ensureWindow();
-    this.#sunshineAppPath = sunshineAppPath ?? null;
-    yield* helpCall(() => this.#options.loadWindow(window, permission, sunshineAppPath !== undefined));
+    yield* helpCall(() => this.#options.loadWindow(window, permission));
     if (generation !== this.#generation || window.isDestroyed()) return;
     window.show();
   }).bind(this);
 
   readonly permissionApp = Effect.fn("PermissionHelpWindow.permissionApp")(function* (
     this: ComputerUsePermissionHelpWindowController<W>,
-    senderId?: number,
   ): Effect.fn.Return<ComputerUsePermissionApp | null> {
-    const path = this.#bundlePath(senderId);
+    const path = this.#options.bundlePath();
     if (!path) return null;
     const icon = yield* helpCall(() => this.#options.bundleIcon(path)).pipe(Effect.orElseSucceed(() => null));
     return {
@@ -75,7 +71,7 @@ export class ComputerUsePermissionHelpWindowController<W extends PermissionHelpW
         cause: new Error("The Computer Use drag must start in the help window."),
       });
     const generation = this.#generation;
-    const path = this.#bundlePath(sender.id);
+    const path = this.#options.bundlePath();
     if (!path)
       return yield* new PermissionHelpFailed({ cause: new Error(sourceText("error.computerUse.noAppToDrag")) });
     const icon = yield* helpCall(() => this.#options.bundleIcon(path));
@@ -87,14 +83,10 @@ export class ComputerUsePermissionHelpWindowController<W extends PermissionHelpW
     sender.startDrag({ file: path, icon });
   }).bind(this);
 
-  reveal(senderId?: number): void {
-    const path = this.#bundlePath(senderId);
+  reveal(): void {
+    const path = this.#options.bundlePath();
     if (!path) throw new Error(sourceText("error.computerUse.noAppToShow"));
     this.#options.revealPath(path);
-  }
-
-  #bundlePath(senderId?: number): string | null {
-    return senderId === this.#rendererId && this.#sunshineAppPath ? this.#sunshineAppPath : this.#options.bundlePath();
   }
 
   get #rendererId(): number | null {
@@ -105,7 +97,6 @@ export class ComputerUsePermissionHelpWindowController<W extends PermissionHelpW
     this.#generation += 1;
     const window = this.#window;
     this.#window = null;
-    this.#sunshineAppPath = null;
     if (window && !window.isDestroyed()) window.close();
   }
 

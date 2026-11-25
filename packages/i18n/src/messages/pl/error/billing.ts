@@ -31,8 +31,6 @@ export const messages = {
     "System VAT UE nie może teraz sprawdzić numeru VAT. Spróbuj później lub kontynuuj bez numeru VAT.",
   "error.billing.vatUnavailable": "Płatność jest teraz niedostępna. Spróbuj później.",
   "error.billing.invalidRequest": "Żądanie rozliczeniowe jest nieprawidłowe.",
-  "error.billing.invalidResponse": "Odpowiedź rozliczeniowa jest nieprawidłowa.",
-  "error.billing.notStripePage": "Strona rozliczeń nie jest stroną Stripe.",
   "error.billing.customServerOfferMissing": "Ten serwer nie ma planu do opłacenia.",
   "error.billing.checkoutUnavailable": "Nie można teraz rozpocząć płatności. Spróbuj ponownie za minutę.",
 } as const satisfies PartialTranslation<typeof source>;

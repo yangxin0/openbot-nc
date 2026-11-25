@@ -39,8 +39,6 @@ import {
   type PinnedMessagesSnapshot,
   type QueuedMessageReceipt,
   type QueueSnapshot,
-  WITHDRAW_FEEDBACK_STATUSES,
-  type WithdrawFeedbackResult,
 } from "@openbot/contracts/ipc";
 import {
   decodeRecord,
@@ -51,7 +49,7 @@ import {
   requiredNumber,
   requiredString,
 } from "@openbot/contracts/ipc-decoding";
-import { isDynamicRecord, isNumber, isOneOf, isString } from "@openbot/contracts/runtime-values";
+import { isDynamicRecord, isNumber, isString } from "@openbot/contracts/runtime-values";
 import {
   type AgentActiveQueues,
   decodeAgentActiveQueues,
@@ -182,12 +180,6 @@ function decodeConversationReferencesFromMain(value: unknown): Record<string, Co
 export function decodeReadState(value: unknown): ConversationReadState {
   if (!isConversationReadState(value)) throw new Error("Invalid conversation read state.");
   return value;
-}
-
-export function decodeWithdrawFeedbackResult(value: unknown): WithdrawFeedbackResult {
-  const result = decodeRecord(value, "feedback withdraw result");
-  if (!isOneOf(WITHDRAW_FEEDBACK_STATUSES, result.status)) throw new Error("Invalid feedback withdraw result.");
-  return { status: result.status };
 }
 
 export function decodeReadStates(value: unknown): Record<string, ConversationReadState> {

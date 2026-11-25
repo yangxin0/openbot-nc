@@ -511,8 +511,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "에이전트가 이 보고서를 삭제하고, 선택한 부분을 뺀 뒤 다시 보내요.",
   "chat.feedbackSent.removeChoice": "삭제하기",
   "chat.feedbackSent.removeChoiceHint": "GitHub에서 삭제해요. 되돌릴 수 없어요.",
-  "chat.feedbackSent.fixPrompt": "GitHub에서 내 보고서 #{number}을(를) 삭제하고, 다음 내용을 빼고 다시 보내 줘:",
-  "chat.feedbackSent.removePrompt": "GitHub에서 내 보고서 #{number}을(를) 삭제해 줘.",
   "chat.feedbackSent.composerFilled": "요청을 메시지 입력란에 넣었어요. 내용을 완성한 뒤 보내세요.",
   "chat.feedbackSent.keep": "유지",
   "chat.feedbackSent.removing": "삭제하는 중…",

@@ -165,8 +165,6 @@ export const messages = {
   "routine.card.webhookUpdated": "Routine webhook mise à jour",
   "routine.card.webhookChanged": "Modifications non enregistrées",
   "routine.card.webhookSaveFailed": "Impossible d’enregistrer les événements.",
-  "routine.card.webhookFiltersInvalid": "Un filtre a un JSON Pointer non valide.",
-
   "routine.timezoneMove.title": "Votre fuseau horaire est maintenant {zone}",
   "routine.timezoneMove.description": {
     one: "{count} routine sur {server} suit l’heure de {from}. La passer à {zone} ? Son heure reste la même.",
@@ -269,7 +267,6 @@ export const messages = {
   "routine.settings.name": "Nom",
   "routine.settings.namePlaceholder": "Briefing du matin",
   "routine.settings.whenToRun": "Quand l’exécuter",
-  "routine.settings.triggerWebhook": "Webhook",
   "routine.settings.webhookSummary": "Quand {eventType} arrive",
   "routine.settings.webhookSummaryAny": "Quand un webhook arrive",
   "routine.trigger.change": "Changer de déclencheur",

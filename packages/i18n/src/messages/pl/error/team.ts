@@ -72,7 +72,6 @@ export const messages = {
   "error.team.membersCannotArchiveChannels": "Członkowie nie mogą archiwizować kanałów.",
   "error.team.membersCannotRestoreChannels": "Członkowie nie mogą przywracać kanałów.",
   "error.team.sharedDataUnsupported": "To połączenie nie obsługuje wspólnych danych.",
-  "error.team.agentInstallUnsupported": "To połączenie nie obsługuje dodawania agentów.",
   "error.team.agentHideUnsupported": "To połączenie nie obsługuje ukrywania agentów.",
   "error.team.agentColorsUnsupported": "To połączenie nie obsługuje kolorów agentów.",
   "error.team.chatColorsUnsupported": "To połączenie nie obsługuje kolorów czatu.",
@@ -97,8 +96,6 @@ export const messages = {
   "error.team.sidebarPinsUnsupported":
     "Ten serwer nie może zapisać przypiętych czatów dla wszystkich Twoich urządzeń. Zaktualizuj OpenBot na komputerze, na którym działa.",
   "error.team.agentInstructionsUnsupported": "To połączenie nie obsługuje edytowania instrukcji agentów.",
-  "error.team.agentPublishUnsupported": "To połączenie nie obsługuje publikowania agentów.",
-  "error.team.agentUpdateUnsupported": "To połączenie nie obsługuje aktualizowania agentów.",
   "error.team.contextResetUnsupported": "To połączenie nie obsługuje rozpoczynania nowego czatu.",
   "error.team.contextCompactUnsupported": "To połączenie nie obsługuje kompaktowania kontekstu.",
   "error.team.messageDeleteUnsupported": "To połączenie nie obsługuje usuwania wiadomości.",
@@ -106,8 +103,6 @@ export const messages = {
   "error.team.conversationFileSearchUnsupported": "To połączenie nie obsługuje wyszukiwania plików.",
   "error.team.threadMessageSearchUnsupported": "To połączenie nie obsługuje wyszukiwania w wątkach pobocznych.",
   "error.team.sideQuestionUnsupported": "To połączenie nie obsługuje pytań pobocznych.",
-  "error.team.liveVoiceUnsupported":
-    "Ten serwer nie obsługuje głosu na żywo Codex. Zaktualizuj OpenBot na komputerze, na którym działa.",
   "error.team.routineFlowsUnsupported":
     "Ten serwer nie obsługuje przepływów rutyn. Zaktualizuj OpenBot na komputerze, na którym działa.",
   "error.team.routineCanvasTooLarge":
@@ -116,9 +111,6 @@ export const messages = {
     "Wiadomość w tej rozmowie jest za duża, aby wysłać ją na to urządzenie. Otwórz rozmowę na komputerze, na którym działa serwer.",
   "error.team.agentImportUnsupported": "To połączenie nie obsługuje importowania agentów.",
   "error.team.instanceTransferUnsupported": "To połączenie nie obsługuje przenoszenia agentów.",
-  "error.team.liveActivityUnsupported": "Ten host nie może aktualizować Live Activity telefonu.",
-  "error.team.pushNotificationsUnsupported": "Ten host nie może wysyłać powiadomień na telefon.",
-  "error.team.agentUpdateTargetRequired": "Wymagany jest agent do zaktualizowania.",
   "error.team.queueEditUnsupported": "Ten klient nie obsługuje edycji kolejki.",
   "error.team.skillsUnsupported": "To połączenie nie obsługuje umiejętności.",
   "error.team.hostIdentityUnsupported": "To połączenie nie obsługuje zmian tożsamości serwera.",
@@ -161,9 +153,6 @@ export const messages = {
   "error.team.machineResourcesUnsupported": "To połączenie nie obsługuje użycia maszyny.",
   "error.team.machineAlertMemberInvalid":
     "Alerty maszyny może otrzymywać tylko właściciel lub administrator tego serwera.",
-  "error.team.hostedSitesUnsupported": "To połączenie nie obsługuje witryn.",
-  "error.team.hostedSitesUnregistered": "Ten serwer nie jest zarejestrowany w OpenBot, więc nie ma witryn.",
-  "error.team.hostedSiteNotFound": "Nie znaleziono witryny.",
   "error.team.markUnreadUnsupported": "Ten klient nie obsługuje oznaczania rozmów jako nieprzeczytane.",
   "error.team.inviteServiceUnavailable": "Usługa zaproszeń jest niedostępna.",
   "error.team.logoNotFound": "Nie znaleziono logo serwera.",
@@ -189,8 +178,6 @@ export const messages = {
   "error.team.signInRelayUnsupported": "Ten serwer nie może przekazywać logowań. Zaktualizuj OpenBot na hoście.",
   "error.team.connectorsUnsupported":
     "Połączeniami tego serwera nie można zarządzać stąd. Zaktualizuj OpenBot na hoście.",
-  "error.team.discordAccessUnsupported": "Ten serwer nie może ustawić ról Discorda. Zaktualizuj na nim OpenBot.",
-  "error.team.connectorPageRefused": "Serwer wysłał stronę, której OpenBot nie otwiera.",
   "error.team.signInRelayUnknown": "To logowanie się zakończyło albo nie istnieje.",
   "error.team.signInRelayUsed": "To logowanie zostało już wysłane.",
   "error.team.signInRelayMismatch": "Ten adres nie pochodzi z tego logowania.",
@@ -199,7 +186,6 @@ export const messages = {
   "error.team.agentWaitsUnsupported": "To połączenie nie obsługuje otwartych oczekiwań.",
   "error.team.pendingApprovalUnsupported": "To połączenie nie pozwala odczytać całej prośby o zgodę.",
   "error.team.pendingPromptsUnsupported": "To połączenie nie obsługuje odczytu otwartych pytań.",
-  "error.team.phoneFeedbackUnsupported": "To połączenie nie pozwala wysłać zgłoszenia z aplikacji na telefon.",
   "error.team.messagePinsUnsupported": "To połączenie nie obsługuje przypiętych wiadomości.",
   "error.team.queuedMessageThreadUnsupported":
     "To połączenie nie obsługuje uruchamiania wiadomości z kolejki jako nowego wątku.",

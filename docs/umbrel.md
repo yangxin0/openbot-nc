@@ -32,15 +32,15 @@ The server gets the name `OpenBot`. To change it, open Server Settings in the ap
 
 The setup page can only show the status and sign the server in. To sign out, or to use another
 account, open a terminal of the app in Umbrel (Settings › Advanced settings › Terminal) and run
-`openbot logout`. The other commands of [Commands](docker.md#commands), such as
-`openbot mobile-connect` and `openbot login --claim`, are also there.
+`openbot-nc logout`. The other commands of [Commands](docker.md#commands), such as
+`openbot-nc mobile-connect` and `openbot-nc login --claim`, are also there.
 
 ## The setup page
 
 `OPENBOT_SETUP_PAGE_PORT` starts the page in the container. The page is part of OpenBot:
 `src/main/server-setup-page.ts` serves the `server-setup` entry of the renderer build
 (`out/renderer/server-setup.html` and its `assets/`). The entry,
-`src/renderer/src/features/server-setup/`, shows the shared `AccountLogin` screen of the app. It starts only in the OpenBot image, where `/opt/OpenBot/hosted/mode`
+`src/renderer/src/features/server-setup/`, shows the shared `AccountLogin` screen of the app. It starts only in the OpenBot image, where `/opt/OpenBot-NC/hosted/mode`
 is `container`. A self-hosted server that systemd runs writes a warning and does not start it.
 
 Umbrel asks for the Umbrel password before it sends a request to the page. The `app_proxy` service
@@ -133,7 +133,7 @@ Desktop on macOS), with the setup page of this branch on the 0.71.0 image:
 - Without an Umbrel sign-in, the app port sends the browser to the Umbrel sign-in. After it, the setup
   page shows the sign-in screen of OpenBot.
 - After a restart of the app in umbreld, the data and `openbot.db` stay.
-- `openbot logout` runs in the app container.
+- `openbot-nc logout` runs in the app container.
 - Umbrel's linter (`lint:apps`) shows no errors on the `--official` app with a submission URL.
 
 ## Not confirmed
@@ -144,7 +144,7 @@ Desktop on macOS), with the setup page of this branch on the 0.71.0 image:
 - AppArmor was not checked. The kernel of the test has no AppArmor. On a host with AppArmor rules that
   refuse user namespaces, the container stops at its start, as on Ubuntu 23.10 or newer (see
   [Not confirmed](docker.md#not-confirmed)).
-- The Terminal page of Umbrel was not opened. `openbot logout` was run with `docker exec` in the app
+- The Terminal page of Umbrel was not opened. `openbot-nc logout` was run with `docker exec` in the app
   container.
 - The store was added with the API of umbreld, not in the App Store page. The store has no app before
   the first release with the setup page, so the test copied the app into the clone of the store.

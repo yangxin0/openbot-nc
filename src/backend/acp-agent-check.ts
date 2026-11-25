@@ -40,7 +40,7 @@ export interface AgentCheckTarget {
 
 export const checkAcpAgent = Effect.fn("AcpAgent.check")((target: AgentCheckTarget) =>
   Effect.acquireUseRelease(
-    providerCall(() => mkdtemp(join(tmpdir(), "openbot-agent-check-"))),
+    providerCall(() => mkdtemp(join(tmpdir(), "openbot-nc-agent-check-"))),
     (folder) =>
       Effect.gen(function* () {
         const secrets = Object.values(target.env).filter((value) => value.length >= 4);

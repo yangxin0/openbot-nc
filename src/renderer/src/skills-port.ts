@@ -11,7 +11,6 @@ import {
 export interface SkillsPort {
   agent: Pick<
     OpenBotDesktopApi["agent"],
-    | "addMarketplaceAgent"
     | "cancelMcpSignIn"
     | "completeMcpSignInRelay"
     | "copyMcpSignInLink"
@@ -40,28 +39,16 @@ export interface SkillsPort {
     | "uninstallAgentSkill"
   >;
   hostAdmin: Pick<OpenBotDesktopApi["hostAdmin"], "getAgentAccess">;
-  marketplaceAgents: Pick<OpenBotDesktopApi["marketplaceAgents"], "get" | "getListing" | "install" | "list">;
   macAutomation: Pick<OpenBotDesktopApi["macAutomation"], "request">;
   skills: Pick<
     OpenBotDesktopApi["skills"],
-    | "get"
-    | "getBySlug"
-    | "install"
-    | "list"
-    | "listInstalled"
-    | "localGet"
-    | "localInstall"
-    | "localList"
-    | "setEnabled"
-    | "uninstall"
+    "install" | "listInstalled" | "localGet" | "localInstall" | "localList" | "setEnabled" | "uninstall"
   >;
 }
 
 export function skillsPort(): SkillsPort {
   return window.openbot;
 }
-
-export type SkillCatalogCalls = Pick<SkillsPort["skills"], "get" | "list">;
 
 export interface AgentSkillCalls {
   listInstalled(agentId: string): Promise<InstalledSkill[]>;

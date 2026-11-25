@@ -14,16 +14,11 @@ import { createTeamRequestId } from "@openbot/team-client/request-id";
 import { type DOMImperativeFactory, useDOMImperativeHandle } from "expo/dom";
 import { type Ref, useEffect, useRef } from "react";
 import { type BrowserViewBridgeEvent, createBrowserViewBridge } from "@/features/browser/model/browser-view-bridge";
-import {
-  createRemoteDesktopRelay,
-  type RemoteDesktopRelayEvent,
-} from "@/features/remote-desktop/model/remote-desktop-relay";
 
 type BridgeJson = Parameters<DOMImperativeFactory[string]>[0];
 
 export type RemoteTeamBridgeHandle = {
   browserView: (command: BridgeJson) => void;
-  remoteDesktop: (command: BridgeJson) => void;
   teamCommands: (commands: BridgeJson) => void;
   setActive: (active: BridgeJson) => void;
   networkChanged: (value: BridgeJson) => void;
@@ -37,7 +32,6 @@ interface RemoteTeamBridgeProps extends Omit<RemoteTeamPeerActions, "onTeamEvent
   onCommandResult: (result: RemoteTeamCommandResult) => Promise<void>;
   onReady?: () => Promise<void>;
   onBrowserViewEvent?: (event: BrowserViewBridgeEvent) => Promise<void>;
-  onRemoteDesktopEvent?: (event: RemoteDesktopRelayEvent) => Promise<void>;
   dom?: import("expo/dom").DOMProps;
 }
 
@@ -80,7 +74,6 @@ export default function RemoteTeamBridge({
   onCommandResult,
   onReady,
   onBrowserViewEvent,
-  onRemoteDesktopEvent,
   onTeamEvents,
   ...callbacks
 }: RemoteTeamBridgeProps) {
@@ -95,10 +88,7 @@ export default function RemoteTeamBridge({
   const pendingEvents = eventBatch.current;
   const browserViewEvent = useRef(onBrowserViewEvent);
   browserViewEvent.current = onBrowserViewEvent;
-  const remoteDesktopEvent = useRef(onRemoteDesktopEvent);
-  remoteDesktopEvent.current = onRemoteDesktopEvent;
   const browserView = useRef<ReturnType<typeof createBrowserViewBridge> | null>(null);
-  const remoteDesktop = useRef<ReturnType<typeof createRemoteDesktopRelay> | null>(null);
   const queueTeamEvent = async (hostId: string, event: RemoteTeamEvent) => pendingEvents.push(hostId, event);
   const afterTeamEvents = <Args extends unknown[]>(callback: ((...args: Args) => Promise<void>) | undefined) =>
     callback &&
@@ -116,13 +106,11 @@ export default function RemoteTeamBridge({
     onAccountServersChanged: afterTeamEvents(callbacks.onAccountServersChanged),
     onHostStreamData: (data) => {
       browserView.current?.receive(data);
-      remoteDesktop.current?.receive(data);
     },
     onConnectionUpdate: async (update) => {
       pendingEvents.flush();
       if (update.state !== "online") {
         browserView.current?.disconnect(update.message);
-        remoteDesktop.current?.disconnect(update.message);
       }
       await callbacks.onConnectionUpdate(update);
     },
@@ -147,12 +135,6 @@ export default function RemoteTeamBridge({
       (event) => void browserViewEvent.current?.(event),
     );
   const views = browserView.current;
-  if (!remoteDesktop.current)
-    remoteDesktop.current = createRemoteDesktopRelay(
-      (data) => peer.sendHostStreamData(data),
-      (event) => void remoteDesktopEvent.current?.(event),
-    );
-  const desktopStreams = remoteDesktop.current;
   const commandResult = useRef(onCommandResult);
   commandResult.current = onCommandResult;
   const runCommands = useRef<((commands: unknown) => void) | null>(null);
@@ -197,13 +179,12 @@ export default function RemoteTeamBridge({
     ref ?? null,
     () => ({
       browserView: views.command,
-      remoteDesktop: desktopStreams.command,
       teamCommands,
       setActive,
       networkChanged,
       cancelUpload,
     }),
-    [views, desktopStreams, teamCommands, setActive, networkChanged, cancelUpload],
+    [views, teamCommands, setActive, networkChanged, cancelUpload],
   );
 
   const readySent = useRef(false);
@@ -227,7 +208,6 @@ export default function RemoteTeamBridge({
     () => () => {
       pendingEvents.flush();
       browserView.current?.disconnect(null);
-      remoteDesktop.current?.disconnect(null);
       void peer.dispose();
     },
     [peer, pendingEvents],

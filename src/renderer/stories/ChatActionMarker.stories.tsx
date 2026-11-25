@@ -218,7 +218,7 @@ function FeedbackSentStory(props: { withdrawn: boolean; result?: WithdrawFeedbac
             messageId: "feedback-card",
             title: "The chat stops scrolling after a long reply",
             number: 5712,
-            url: "https://github.com/nightly-labs/openbot/issues/5712",
+            url: "https://github.com/example/openbot/issues/5712",
             withdrawn: props.withdrawn,
             timestamp: "2026-11-08T10:02:00.000Z",
           }}

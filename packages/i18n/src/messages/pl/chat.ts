@@ -613,8 +613,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "Agent usunie to zgłoszenie i wyśle je ponownie bez wybranych fragmentów.",
   "chat.feedbackSent.removeChoice": "Usuń je",
   "chat.feedbackSent.removeChoiceHint": "Usuń z GitHuba. Tego nie można cofnąć.",
-  "chat.feedbackSent.fixPrompt": "Usuń moje zgłoszenie #{number} z GitHuba i wyślij je ponownie bez tego:",
-  "chat.feedbackSent.removePrompt": "Usuń moje zgłoszenie #{number} z GitHuba.",
   "chat.feedbackSent.composerFilled": "Prośba jest w polu wiadomości. Uzupełnij ją, a potem wyślij.",
   "chat.feedbackSent.keep": "Zostaw",
   "chat.feedbackSent.removing": "Usuwanie…",

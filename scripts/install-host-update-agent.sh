@@ -10,7 +10,7 @@ shift
 HELPER=$1
 shift
 ASSETS=$(cd "$(dirname "$0")/../build/macos/host-updates" && pwd)
-ROOT='/Library/Application Support/OpenBot/HostManager'
+ROOT='/Library/Application Support/OpenBot-NC/HostManager'
 
 check_dir() {
   [ ! -L "$1" ] && [ -d "$1" ] && [ "$(stat -f %u "$1")" = 0 ] || exit 1
@@ -22,7 +22,7 @@ check_dir() {
   fi
 }
 for path in / /Library '/Library/Application Support' /Library/LaunchAgents /Library/LaunchDaemons; do check_dir "$path"; done
-for path in '/Library/Application Support/OpenBot' "$ROOT"; do
+for path in '/Library/Application Support/OpenBot-NC' "$ROOT"; do
   if [ ! -e "$path" ] && [ ! -L "$path" ]; then mkdir -m 755 "$path"; fi
   check_dir "$path"
 done
@@ -53,19 +53,19 @@ for tenant in "$@"; do
   UIDS="$UIDS $tenant_uid"
 done
 [ -f "$HELPER" ] && [ ! -L "$HELPER" ] || exit 1
-for destination in "$ROOT/host-manager" "$ROOT/openbot-relaunch.sh" /Library/LaunchAgents/app.openbot.desktop.relaunch.plist /Library/LaunchDaemons/app.openbot.host-manager.plist; do
+for destination in "$ROOT/host-manager" "$ROOT/openbot-relaunch.sh" /Library/LaunchAgents/app.openbotnc.desktop.relaunch.plist /Library/LaunchDaemons/app.openbotnc.host-manager.plist; do
   [ ! -e "$destination" ] && [ ! -L "$destination" ] || { echo "Existing installation asset: $destination" >&2; exit 1; }
 done
 install -o root -g wheel -m 755 "$HELPER" "$ROOT/host-manager"
 install -o root -g wheel -m 755 "$ASSETS/openbot-relaunch.sh" "$ROOT/openbot-relaunch.sh"
 # shellcheck disable=SC2086
 "$ROOT/host-manager" --setup $UIDS
-install -o root -g wheel -m 644 "$ASSETS/app.openbot.desktop.relaunch.plist" /Library/LaunchAgents/app.openbot.desktop.relaunch.plist
-install -o root -g wheel -m 644 "$ASSETS/app.openbot.host-manager.plist" /Library/LaunchDaemons/app.openbot.host-manager.plist
-launchctl bootstrap system /Library/LaunchDaemons/app.openbot.host-manager.plist
+install -o root -g wheel -m 644 "$ASSETS/app.openbot.desktop.relaunch.plist" /Library/LaunchAgents/app.openbotnc.desktop.relaunch.plist
+install -o root -g wheel -m 644 "$ASSETS/app.openbot.host-manager.plist" /Library/LaunchDaemons/app.openbotnc.host-manager.plist
+launchctl bootstrap system /Library/LaunchDaemons/app.openbotnc.host-manager.plist
 for tenant in "$@"; do
   tenant_uid=$(id -u "$tenant")
-  if ! launchctl bootstrap "gui/$tenant_uid" /Library/LaunchAgents/app.openbot.desktop.relaunch.plist; then
+  if ! launchctl bootstrap "gui/$tenant_uid" /Library/LaunchAgents/app.openbotnc.desktop.relaunch.plist; then
     echo "LaunchAgent for $tenant will load at the next GUI login."
   fi
 done

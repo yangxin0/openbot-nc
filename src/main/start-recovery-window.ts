@@ -3,21 +3,13 @@ import { localeDirection } from "@openbot/i18n";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 import { app, BrowserWindow, nativeTheme, session, shell } from "electron";
 import { runCauseEffect } from "../backend/effect-boundary";
-import { DOWNLOAD_URL, RELEASES_URL } from "./download-url";
 import { exportStartDiagnostics } from "./maintenance-service";
 import type { StartAttemptsSummary } from "./start-attempts";
 import { recoveryPlushSvg } from "./start-recovery-plush";
 
 const logger = createOpenBotLogger("start-recovery");
 const ACTION_ORIGIN = "https://openbot.invalid";
-const ACTIONS = [
-  "retry",
-  "previous-version",
-  "latest-version",
-  "export-diagnostics",
-  "open-data-folder",
-  "quit",
-] as const;
+const ACTIONS = ["retry", "export-diagnostics", "open-data-folder", "quit"] as const;
 type RecoveryAction = (typeof ACTIONS)[number];
 const PARTITION = "openbot-start-recovery";
 
@@ -93,7 +85,7 @@ export function openStartRecoveryWindow(options: StartRecoveryOptions): StartRec
   contents.on("will-navigate", (event) => {
     event.preventDefault();
     if (!event.isMainFrame || event.frame !== contents.mainFrame) return;
-    const action = readAction(event.url, options.previousRelease);
+    const action = readAction(event.url);
     if (!action || busy || settled) return;
     if (action === "retry" || action === "quit") {
       if (action === "retry") window.hide();
@@ -125,16 +117,10 @@ type Notice = "diagnosticsSaved" | "actionFailed";
 
 async function runAction(
   action: Exclude<RecoveryAction, "retry" | "quit">,
-  { summary, previousRelease, translate }: StartRecoveryOptions,
+  { summary, translate }: StartRecoveryOptions,
   window: BrowserWindow,
 ): Promise<Notice | null> {
   try {
-    if (action === "previous-version" || action === "latest-version") {
-      await shell.openExternal(
-        previousRelease ? `${RELEASES_URL}/tag/v${encodeURIComponent(previousRelease)}` : DOWNLOAD_URL,
-      );
-      return null;
-    }
     if (action === "open-data-folder") {
       const failure = await shell.openPath(app.getPath("userData"));
       if (!failure) return null;
@@ -151,9 +137,8 @@ async function runAction(
   }
 }
 
-function readAction(url: string, previousRelease: string | null): RecoveryAction | null {
-  const hidden: RecoveryAction = previousRelease ? "latest-version" : "previous-version";
-  for (const action of ACTIONS) if (action !== hidden && url === actionUrl(action)) return action;
+function readAction(url: string): RecoveryAction | null {
+  for (const action of ACTIONS) if (url === actionUrl(action)) return action;
   return null;
 }
 
@@ -221,11 +206,6 @@ ${plush ?? ""}
 ${noticeText ? `<p class="notice" role="status">${text(noticeText)}</p>` : ""}
 <div class="actions">
 ${link("retry", t("startup.recoveryRetry"), true)}
-${
-  options.previousRelease
-    ? link("previous-version", t("startup.recoveryPreviousVersion"))
-    : link("latest-version", t("startup.recoveryLatestVersion"))
-}
 ${link("export-diagnostics", t("startup.recoveryExportDiagnostics"))}
 ${link("open-data-folder", t("startup.recoveryOpenDataFolder"))}
 ${link("quit", t("startup.recoveryQuit"))}

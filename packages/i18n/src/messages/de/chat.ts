@@ -533,8 +533,6 @@ export const messages = {
     "Der Agent entfernt diesen Bericht und sendet ihn ohne die Teile, die du wählst, erneut.",
   "chat.feedbackSent.removeChoice": "Entfernen",
   "chat.feedbackSent.removeChoiceHint": "Von GitHub entfernen. Das kannst du nicht rückgängig machen.",
-  "chat.feedbackSent.fixPrompt": "Entferne meinen Bericht #{number} von GitHub und sende ihn erneut ohne Folgendes:",
-  "chat.feedbackSent.removePrompt": "Entferne meinen Bericht #{number} von GitHub.",
   "chat.feedbackSent.composerFilled":
     "Die Anfrage steht in deinem Nachrichtenfeld. Vervollständige sie und sende sie dann.",
   "chat.feedbackSent.keep": "Behalten",

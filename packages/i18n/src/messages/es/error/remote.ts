@@ -2,53 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "Actualiza el cliente para usar la configuración del escritorio remoto.",
-  "error.remote.desktopSetupUnavailable": "La configuración del escritorio remoto no está disponible.",
-  "error.remote.desktopTestUnavailable": "Las pruebas del escritorio remoto no están disponibles.",
-  "error.remote.controlUnavailable": "El control remoto no está disponible.",
-  "error.remote.controlSessionNotFound": "No se encontró la sesión de control remoto.",
-  "error.remote.controlNotAllowed": "El propietario de este equipo no permite que tu rol lo controle.",
-  "error.remote.controlDeclined": "La persona en este equipo no permitió el control remoto.",
-  "error.remote.testRuntimeUpdate":
-    "Actualiza el entorno de ejecución del escritorio remoto de macOS para ejecutar esta prueba.",
-  "error.remote.testOtherSessions": "Finaliza las otras sesiones de escritorio remoto antes de iniciar una prueba.",
-  "error.remote.testPermissions": "Comprueba los permisos y la sesión gráfica del host antes de iniciar la prueba.",
-  "error.remote.controlSessionEnded": "La sesión de control remoto terminó.",
-  "error.remote.testPanelFailed": "El host no pudo abrir el panel de prueba.",
-  "error.remote.sessionCapacity": "El host ya tiene cuatro sesiones activas.",
-  "error.remote.linuxNeedsX11": "El escritorio remoto en Linux necesita una sesión X11. Wayland no es compatible.",
-  "error.remote.runtimeMissing":
-    "El entorno de ejecución de Sunshine y Moonlight Web falta o no es compatible con este host. Instala la versión completa de OpenBot en un Mac, un host Windows x64 o un host Linux x64 y reinicia OpenBot.",
-  "error.remote.testActive": "Hay una prueba de escritorio remoto activa. Inténtalo de nuevo cuando termine.",
-  "error.remote.screenRecordingDenied":
-    "El host no ha permitido que OpenBot grabe su pantalla. Concede permiso de grabación de pantalla en el host e inténtalo de nuevo.",
-  "error.remote.windowsSessionDisconnected":
-    "La sesión de Windows del host está desconectada, así que no hay pantalla para compartir. Inicia sesión en Windows en la pantalla del host e inténtalo de nuevo.",
-  "error.remote.windowsCaptureDenied":
-    "Windows en el host no permite que OpenBot grabe su pantalla. Desbloquea Windows en la pantalla del host, cierra cualquier aviso de administrador e inténtalo de nuevo. Si sigue pasando, reinicia el host.",
-  "error.remote.macScreenLocked":
-    "El Mac está bloqueado, así que no puede compartir su pantalla. Desbloquea el Mac en su pantalla e inténtalo de nuevo.",
-  "error.remote.streamTooSlowLowerQuality":
-    "La conexión con el host es demasiado lenta para la imagen. Inténtalo de nuevo: la próxima conexión usará una calidad más baja.",
-  "error.remote.streamTooSlow":
-    "La conexión con el host es demasiado lenta para la imagen. Usa una red más rápida e inténtalo de nuevo.",
-  "error.remote.noPictureSwitchEncoder":
-    "El host no envió ninguna imagen. Inténtalo de nuevo: la próxima conexión usa un ajuste de vídeo que funciona en más ordenadores.",
-  "error.remote.teamSessionExpired": "La sesión del equipo caducó.",
-  "error.remote.finishTestBeforeSwitch": "Termina la prueba de escritorio remoto antes de cambiar de pantalla.",
-  "error.remote.displayNotFound": "No se encontró la pantalla remota.",
-  "error.remote.displaySwitchInProgress": "Se está cambiando de pantalla.",
-  "error.remote.localTestListenerUnavailable": "El receptor de la prueba local no está disponible.",
-  "error.remote.localTestNotFound": "No se encontró la sesión de prueba local.",
-  "error.remote.runtimeUnavailable": "El entorno de ejecución del escritorio remoto no está disponible.",
-  "error.remote.sunshineStartFailed":
-    "Sunshine no se inició en el host. Comprueba los registros del escritorio remoto en el host e inténtalo de nuevo.",
-  "error.remote.moonlightStartFailed":
-    "Moonlight Web no se inició en el host. Comprueba los registros del escritorio remoto en el host e inténtalo de nuevo.",
-  "error.remote.pairingFailed":
-    "Moonlight no pudo vincularse con Sunshine en el host. Inténtalo de nuevo. Si el problema continúa, reinicia OpenBot en el host.",
-  "error.remote.runtimeStartFailed":
-    "El entorno de ejecución del escritorio remoto no se inició en el host. Comprueba los registros del escritorio remoto en el host e inténtalo de nuevo.",
   "error.remote.hostUnreachable": "No se puede acceder al host.",
   "error.remote.signInToHostAgain": "Inicia sesión en este host de nuevo.",
   "error.remote.invalidData": "El host devolvió datos no válidos.",
@@ -73,12 +26,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "El servicio de cuentas aceptó otro host.",
   "error.remote.inviteIdentityChanged": "La identidad del host de la invitación cambió mientras se aceptaba.",
   "error.remote.localServerRemove": "No se puede eliminar el servidor local.",
-  "error.remote.desktopSetupHostUpdate":
-    "Actualiza OpenBot en el host para comprobar la configuración del escritorio remoto.",
-  "error.remote.desktopTestHostUpdate":
-    "Actualiza OpenBot en el host para probar la configuración del escritorio remoto.",
   "error.remote.viewerProxyUnavailable": "El proxy local del visor remoto no está disponible.",
-  "error.remote.viewerTransportInvalid": "El transporte del visor remoto no es válido.",
   "error.remote.viewerProxyNoPort": "El proxy local del visor remoto no recibió un puerto.",
   "error.remote.inviteNeedsConnection": "El host debe conectarse una vez antes de poder crear invitaciones.",
   "error.remote.permanentInviteUnsupported": "Esta conexión al servidor no admite enlaces de invitación permanentes.",

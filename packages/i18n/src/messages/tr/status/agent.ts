@@ -40,13 +40,6 @@ export const messages = {
   "status.agent.feedbackSameAs": "#{issue} numaralı issue'ya eklenir",
   "status.agent.feedbackSent": "OpenBot ekibine gönderildi: {title}",
   "status.agent.feedbackWithdrawn": "GitHub'dan kaldırıldı: {title}",
-  "status.agent.feedbackWithdrawCommand": "#{issue} numaralı raporu GitHub'dan kaldır",
-  "status.agent.feedbackWithdrawReason":
-    "Bu raporu artık kimse GitHub'da göremez. Bu işlem geri alınamaz. Düzeltmek için ajan düzeltilmiş bir rapor gönderebilir.",
-  "status.agent.feedbackWithdrawing": "Raporunuz GitHub'dan kaldırılıyor…",
-  "status.agent.serverInstallCommand":
-    "OpenBot'u başka bir bilgisayara {name} sunucusu olarak kuran ve hesabınızda oturum açan tek kullanımlık bir komut oluştur. Ajan onu orada çalıştırır.",
-  "status.agent.serverInstallCard": "{name} sunucusu için kurulum komutu",
   "status.agent.browserProfileNamed":
     "{agents} ajanlarını {profile} tarayıcı profiline taşı. Onun oturum açma bilgilerini ve çerezlerini alırlar. Açık sekmeleri kapanır.",
   "status.agent.commitCoAuthorOff": "Tüm ajanların commit'lerine OpenBot'u ortak yazar olarak eklemeyi durdur.",
@@ -57,7 +50,6 @@ export const messages = {
     "{agents} ajanlarını paylaşılan tarayıcı profiline taşı. Onun oturum açma bilgilerini ve çerezlerini alırlar. Açık sekmeleri kapanır.",
   "status.agent.browserProfileOwn":
     "{agents} ajanlarının her birine kendi tarayıcı profilini ver. Açık sekmeleri kapanır.",
-  "status.agent.feedbackSending": "Geri bildiriminiz OpenBot ekibine gönderiliyor…",
   "status.agent.workflowDelete":
     "{title} iş akışını çalıştırmaları ve sürümleriyle birlikte silin. Açık adımları durur.",
   "status.agent.deleteAgents": "{agents} ajanlarını sohbetleri ve dosyalarıyla birlikte silin. Bu işlem geri alınamaz.",

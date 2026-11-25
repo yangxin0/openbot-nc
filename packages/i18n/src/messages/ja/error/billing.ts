@@ -32,8 +32,6 @@ export const messages = {
     "EU の VAT システムで現在 VAT ID を確認できません。後でもう一度お試しいただくか、VAT ID なしで続行してください。",
   "error.billing.vatUnavailable": "現在お支払いはご利用いただけません。後でもう一度お試しください。",
   "error.billing.invalidRequest": "お支払いのリクエストが無効です。",
-  "error.billing.invalidResponse": "お支払いの応答が無効です。",
-  "error.billing.notStripePage": "お支払いページが Stripe のページではありません。",
   "error.billing.customServerOfferMissing": "このサーバーには支払うプランがありません。",
   "error.billing.checkoutUnavailable": "今は支払いを開始できません。1 分後にもう一度お試しください。",
 } as const satisfies PartialTranslation<typeof source>;

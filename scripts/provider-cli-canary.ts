@@ -16,9 +16,9 @@ import { providerRuntimeDescriptor, type RuntimeTarget } from "../src/main/provi
 import { ProviderRuntimeManager, runtimeTarget } from "../src/main/provider-runtime-manager";
 import {
   type BlockedVersions,
-  fetchBlockedVersions,
   type LatestReleaseContext,
   latestRelease,
+  readBlockedVersions,
 } from "../src/main/provider-runtime-releases";
 import { parseAgentRuntimeLock } from "./agent-runtime-lock";
 import { runTurn, startThread, stopClients } from "./provider-fakes/host";
@@ -199,7 +199,7 @@ async function expectedVersion(provider: ManagedProviderId): Promise<string> {
   if (!target) throw new Error(`No provider runtime exists for ${process.platform}-${process.arch}.`);
   const newest = await runCauseEffect(latestRelease(provider, { target, lock, fetch }));
   const blocked = await Effect.runPromise(
-    fetchBlockedVersions(fetch).pipe(Effect.catch(() => Effect.succeed<BlockedVersions>(new Map()))),
+    readBlockedVersions().pipe(Effect.catch(() => Effect.succeed<BlockedVersions>(new Map()))),
   );
   const pinned = providerRuntimeDescriptor(provider).spec(target, lock).version;
   return blocked.get(provider)?.has(newest.version) || !olderVersion(pinned, newest.version) ? pinned : newest.version;

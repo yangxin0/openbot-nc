@@ -33,7 +33,6 @@ import { useConversation } from "../conversation/conversation-context";
 import { useConversationController } from "../conversation/conversation-controller-context";
 import { agentConversationKey, composerDraftKey, promptRequestKey } from "../conversation/conversation-keys";
 import { latestIncomingConversationMessage } from "../conversation/conversation-read-state";
-import { noteSocialFollowReplyCompleted } from "../conversation/social-follow-prompt";
 import { appendTurnStepLine } from "../conversation/turn-step-lines";
 import { serverCanManageMcp } from "../servers/server-capabilities";
 import { useServers } from "../servers/servers-context";
@@ -390,7 +389,6 @@ export function AgentEventBridge() {
           markReplyCompleted(event.agentId);
           if (soundLevel(event.agentId) === "all" && !platform.chatWindow)
             playCompletionSoundForAgentEvent(event, agentList());
-          if (!platform.chatWindow && !event.quiet && !event.continues) noteSocialFollowReplyCompleted();
         }
         return;
       }

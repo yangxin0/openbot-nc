@@ -190,7 +190,7 @@ export function workflowUsageObserver(
 }
 
 export function sideSessionUsageObserver(
-  kind: "memory-review" | "finish-check" | "web-search" | "voice-summary",
+  kind: "memory-review" | "finish-check" | "web-search",
   usage: AgentUsage,
   agentId: string,
   provider: ProviderSession["provider"],

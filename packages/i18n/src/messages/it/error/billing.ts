@@ -32,8 +32,6 @@ export const messages = {
     "Il sistema IVA dell’UE non può verificare la partita IVA ora. Riprova più tardi o continua senza partita IVA.",
   "error.billing.vatUnavailable": "Il pagamento non è disponibile ora. Riprova più tardi.",
   "error.billing.invalidRequest": "La richiesta di fatturazione non è valida.",
-  "error.billing.invalidResponse": "La risposta di fatturazione non è valida.",
-  "error.billing.notStripePage": "La pagina di fatturazione non è una pagina Stripe.",
   "error.billing.customServerOfferMissing": "Questo server non ha un piano da pagare.",
   "error.billing.checkoutUnavailable": "Il pagamento non può iniziare ora. Riprova tra un minuto.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -513,8 +513,6 @@ export const messages = defineMessages("chat", {
     "The agent removes this report and sends it again without the parts that you choose.",
   "chat.feedbackSent.removeChoice": "Remove it",
   "chat.feedbackSent.removeChoiceHint": "Take it off GitHub. You cannot undo this.",
-  "chat.feedbackSent.fixPrompt": "Remove my report #{number} from GitHub, and send it again without this:",
-  "chat.feedbackSent.removePrompt": "Remove my report #{number} from GitHub.",
   "chat.feedbackSent.composerFilled": "The request is in your message box. Complete it, then send it.",
   "chat.feedbackSent.keep": "Keep it",
   "chat.feedbackSent.removing": "Removing…",

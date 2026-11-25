@@ -11,7 +11,7 @@ const OUT = join(REPO, ".openbot-build/hermes-server-e2e");
 const REPLY = "HERMES_SERVER_E2E_OK";
 const MODEL = "mock-model";
 const BUN_VERSION = "1.4.2";
-const PROVIDERS_LOG = "/data/.config/OpenBot/logs/providers/providers.log";
+const PROVIDERS_LOG = "/data/.config/OpenBot-NC/logs/providers/providers.log";
 
 if (process.argv.includes("--install")) {
   await install();

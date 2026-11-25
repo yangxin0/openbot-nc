@@ -14,9 +14,7 @@ The host's network route preference (`openbot-remote-network-route-v1.json`) app
 remote connection to the computer. With `private`, the host gives WebRTC no ICE servers, and the
 hidden page removes each local, remote, and SDP candidate that is not a `host` candidate on a private
 address (RFC 1918, 100.64.0.0/10, `fc00::/7`, or `.local`). A change to `private` closes the
-connected peers, so each one connects again without the relay. The Remote Desktop runtime reads its
-ICE servers from main for each stream and sends them to the viewer, so its media also has no relay.
-Its candidates are not filtered; a direct public IPv6 path stays possible.
+connected peers, so each one connects again without the relay.
 Mobile server labels in the drawer and connection settings describe the authenticated application
 connection, not membership or Signal presence. Each membership has its own transport and recovery controller while mobile is active.
 On a return to the app, the selected server connects first; the others become active when it is
@@ -486,7 +484,7 @@ The phone draws a question card from the chat messages, so it does not read this
 The optional `phone-feedback-v1` capability (protocol 9 only) adds
 `POST /v1/agent-approvals/send-phone-feedback` (`requestId`, `phone`). `phone` is what only the phone
 has: `platform` (`iOS` or `Android`), `appVersion`, `system`, `network` (the kind of connection and
-the name of the VPN or mesh network that is on, never an address) and `log`, the last redacted lines
+whether a VPN is on, never an address; an older phone also sends the name of the VPN) and `log`, the last redacted lines
 of its support log. An agent's bug report with the surface `Phone app` (`openbot.send_feedback`) waits on an
 approval whose notice is `status.agent.reportPhoneProblem`. This route answers that approval with
 "accept" and gives the phone's data to the report. The agent service refuses a plain "accept" of such

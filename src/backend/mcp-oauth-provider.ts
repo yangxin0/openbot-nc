@@ -48,48 +48,7 @@ import {
 } from "./network-address";
 import { withTimeout } from "./with-timeout";
 
-const MCP_CLIENT_METADATA_URL = "https://openbot.run/oauth/mcp-client.json";
-
 const MCP_CLIENT_NAME = "OpenBot";
-
-export const MCP_OAUTH_RELAY_URL = "https://openbot.run/oauth/mcp-callback";
-
-interface BuiltInMcpClient {
-  resource: string;
-  issuer: string;
-  clientId: string;
-  redirectUrl: string;
-}
-
-const BUILT_IN_MCP_CLIENTS: readonly BuiltInMcpClient[] = [
-  {
-    resource: "https://mcp.facebook.com/ads",
-    issuer: "https://www.facebook.com/ads",
-    clientId: "1479376854168579",
-    redirectUrl: MCP_OAUTH_RELAY_URL,
-  },
-];
-
-function builtInResourceKey(url: string): string | null {
-  const resource = normalizeResource(url);
-  if (!resource) return null;
-  const parsed = new URL(resource);
-  return `${parsed.origin}${parsed.pathname.replace(/\/+$/, "")}`;
-}
-
-function builtInMcpClients(resource: string): readonly BuiltInMcpClient[] {
-  const key = builtInResourceKey(resource);
-  return key === null ? [] : BUILT_IN_MCP_CLIENTS.filter((client) => builtInResourceKey(client.resource) === key);
-}
-
-function builtInMcpClient(resource: string, issuer: string | undefined): BuiltInMcpClient | undefined {
-  if (!issuer) return undefined;
-  return builtInMcpClients(resource).find((client) => issuersMatch(client.issuer, issuer));
-}
-
-function signInAppRedirectUrl(resource: string, own: string): string {
-  return builtInMcpClients(resource)[0]?.redirectUrl ?? own;
-}
 
 export const MCP_OAUTH_CALLBACK_PATH = "/callback";
 
@@ -155,7 +114,13 @@ const TOKEN_REFRESH_MARGIN_MS = 60_000;
 
 const MCP_REVOCATION_TIMEOUT_MS = 5_000;
 
-export type McpSignInOffer = "none" | "offered" | "refused";
+export type McpSignInOffer = "none" | "offered" | "refused" | "needsClientDocument";
+
+export function refusedSignInOfferText(offer: McpSignInOffer): string | null {
+  if (offer === "refused") return sourceText("error.backend.mcpRegistrationUnavailable");
+  if (offer === "needsClientDocument") return sourceText("error.backend.mcpSignInNeedsClientDocument");
+  return null;
+}
 
 export interface McpSignIn {
   readonly provider: OAuthClientProvider;
@@ -165,6 +130,7 @@ export interface McpSignIn {
   secrets: () => string[];
   registrationFailed: () => boolean;
   registrationUnsupported: () => boolean;
+  clientDocumentRequired: () => boolean;
   signInServerMissing: () => boolean;
   otherAddress: () => string | null;
   registrationStatus: () => number | null;
@@ -193,7 +159,6 @@ export interface McpOAuthAuthority {
   signOut: (url: string) => Effect.Effect<void, McpOperationError>;
   forget: (url: string) => Effect.Effect<void, McpOperationError>;
   readonly redirectUrl: string;
-  signInAppRedirectUrl: (url: string) => string;
   signInApp: (url: string) => McpOAuthAppSummary | null;
   saveSignInApp: (url: string, app: McpOAuthAppInput) => Effect.Effect<boolean, McpOperationError>;
   removeSignInApp: (url: string) => Effect.Effect<boolean, McpOperationError>;
@@ -437,6 +402,7 @@ export class McpOAuth implements McpOAuthAuthority {
       secrets: () => provider.secrets(),
       registrationFailed: () => provider.registrationPending,
       registrationUnsupported: () => provider.registrationUnsupported,
+      clientDocumentRequired: () => provider.clientDocumentRequired,
       signInServerMissing: () => provider.signInServerMissing,
       otherAddress: () => provider.otherAddress,
       registrationStatus: () => provider.registrationStatus,
@@ -543,18 +509,19 @@ export class McpOAuth implements McpOAuthAuthority {
       );
       if (!issuer) return "none";
       const client = record?.client;
-      if (record?.app || (client && (typeof client.issuer !== "string" || issuersMatch(client.issuer, issuer))))
+      if (
+        record?.app ||
+        (client &&
+          !isClientDocumentId(client.client_id) &&
+          (typeof client.issuer !== "string" || issuersMatch(client.issuer, issuer)))
+      )
         return "offered";
-      return (yield* acceptsNewClient(issuer, fetchFn, timeoutMs)) ? "offered" : "refused";
+      return yield* newClientOffer(issuer, fetchFn, timeoutMs);
     }).pipe(Effect.ensuring(Effect.sync(() => controller.abort())));
   });
 
   get redirectUrl(): string {
     return this.#options.redirectUrl;
-  }
-
-  signInAppRedirectUrl(url: string): string {
-    return signInAppRedirectUrl(url, this.#options.redirectUrl);
   }
 
   readonly forget = Effect.fn("McpOAuth.forget")(function* (this: McpOAuth, url: string) {
@@ -752,7 +719,6 @@ class McpOAuthClientProvider implements OAuthClientProvider {
   #registeredClient: OAuthClientInformationFull | undefined;
   #activeIssuer: string | undefined;
   #discoveryState: OAuthDiscoveryState | undefined;
-  clientMetadataUrl?: string;
   #registrationPending = false;
   #registrationStatus: number | null = null;
   #redirectRefused = false;
@@ -784,9 +750,7 @@ class McpOAuthClientProvider implements OAuthClientProvider {
     if (this.#exchangingCode && this.#openedRedirectUrl) return this.#openedRedirectUrl;
     const record = this.#record();
     const own = this.#options.redirectUrl;
-    if (record.app) return signInAppRedirectUrl(this.#options.resource, own);
-    const builtIn = builtInMcpClient(this.#options.resource, this.#activeIssuer);
-    if (builtIn) return builtIn.redirectUrl;
+    if (record.app) return own;
     const client = this.#registeredClient ?? record.client;
     if (!client) return own;
     const deepLink = this.#deepLinkRedirectUrl;
@@ -807,8 +771,6 @@ class McpOAuthClientProvider implements OAuthClientProvider {
     const methods = this.#discoveryState?.authorizationServerMetadata?.token_endpoint_auth_methods_supported;
     return {
       client_name: MCP_CLIENT_NAME,
-      client_uri: "https://openbot.run",
-      logo_uri: "https://openbot.run/icon-512x512.png",
       redirect_uris: [this.#retryRedirectUrl ?? this.#options.redirectUrl],
       application_type: "native",
       grant_types: ["authorization_code", "refresh_token"],
@@ -841,18 +803,10 @@ class McpOAuthClientProvider implements OAuthClientProvider {
       return {
         client_id: record.app.clientId,
         ...(record.app.clientSecret ? { client_secret: record.app.clientSecret } : {}),
-        redirect_uris: [signInAppRedirectUrl(this.#options.resource, this.#options.redirectUrl)],
+        redirect_uris: [this.#options.redirectUrl],
         ...(issuer ? { issuer } : {}),
       };
     }
-    const builtIn = builtInMcpClient(this.#options.resource, this.#activeIssuer);
-    if (builtIn)
-      return {
-        client_id: builtIn.clientId,
-        redirect_uris: [builtIn.redirectUrl],
-        token_endpoint_auth_method: "none",
-        issuer: builtIn.issuer,
-      };
     const authorized = this.#exchangingCode ? this.#authorizedClient : undefined;
     const client = this.#registeredClient ?? authorized ?? this.#credential(record.client);
     this.recordSecret(record.client?.client_secret);
@@ -862,11 +816,9 @@ class McpOAuthClientProvider implements OAuthClientProvider {
     }
     if (!this.#options.state || this.#exchangingCode) return client;
     const discovery = this.#discoveryState;
-    if (client.client_id === MCP_CLIENT_METADATA_URL && discovery?.authorizationServerMetadata?.registration_endpoint)
-      return this.#register();
+    if (isClientDocumentId(client.client_id)) return this.#register();
     const retry = this.#retryRedirectUrl;
-    if (retry && client.client_id !== MCP_CLIENT_METADATA_URL && !registersAddress(client.redirect_uris, retry))
-      return this.#register();
+    if (retry && !registersAddress(client.redirect_uris, retry)) return this.#register();
     const scopeAllowed =
       !client.scope ||
       !discovery?.resourceMetadata?.scopes_supported?.length ||
@@ -890,6 +842,12 @@ class McpOAuthClientProvider implements OAuthClientProvider {
   get registrationUnsupported(): boolean {
     const metadata = this.#discoveryState?.authorizationServerMetadata;
     return this.#registrationPending && metadata !== undefined && !metadata.registration_endpoint;
+  }
+
+  get clientDocumentRequired(): boolean {
+    const metadata = this.#discoveryState?.authorizationServerMetadata;
+    if (!this.#registrationPending || metadata?.client_id_metadata_document_supported !== true) return false;
+    return !metadata.registration_endpoint || this.#registrationStatus === 401 || this.#registrationStatus === 403;
   }
 
   get signInServerMissing(): boolean {
@@ -950,19 +908,8 @@ class McpOAuthClientProvider implements OAuthClientProvider {
       const retried = callback ? await fetch(input, callback) : null;
       if (retried?.ok) response = retried;
       this.#registrationStatus = response.status;
-      const redirectRefused = (await registrationErrorCode(response)) === "invalid_redirect_uri";
-      this.#redirectRefused = redirectRefused;
-      if (!this.#documentReplacesRefusal(response.status)) return response;
-      this.#redirectRefused = false;
-      await response.body?.cancel();
-      return Response.json(
-        {
-          client_id: MCP_CLIENT_METADATA_URL,
-          redirect_uris: [this.#options.redirectUrl],
-          token_endpoint_auth_method: "none",
-        },
-        { status: 201 },
-      );
+      this.#redirectRefused = (await registrationErrorCode(response)) === "invalid_redirect_uri";
+      return response;
     };
   }
 
@@ -973,15 +920,6 @@ class McpOAuthClientProvider implements OAuthClientProvider {
     const own = sent === this.#options.redirectUrl || sent === this.#localhostRedirectUrl;
     const callback = sent && own ? callbackRedirectUrl(sent) : null;
     return callback ? { ...init, body: JSON.stringify({ ...body, redirect_uris: [callback] }) } : null;
-  }
-
-  #documentReplacesRefusal(status: number): boolean {
-    if (status !== 401 && status !== 403) return false;
-    const metadata = this.#discoveryState?.authorizationServerMetadata;
-    return (
-      metadata?.client_id_metadata_document_supported === true &&
-      (metadata.token_endpoint_auth_methods_supported?.includes("none") ?? false)
-    );
   }
 
   #withOtherRedirectNames(init: RequestInit): RequestInit[] {
@@ -1034,14 +972,12 @@ class McpOAuthClientProvider implements OAuthClientProvider {
           return;
         }
         const client: OAuthClientInformationFull =
-          information.client_id === MCP_CLIENT_METADATA_URL
-            ? { ...information, redirect_uris: [this.#options.redirectUrl], token_endpoint_auth_method: "none" }
-            : information.client_id === stored?.client_id
-              ? information
-              : withIssuedSecretMethod(
-                  information,
-                  this.#discoveryState?.authorizationServerMetadata?.token_endpoint_auth_methods_supported,
-                );
+          information.client_id === stored?.client_id
+            ? information
+            : withIssuedSecretMethod(
+                information,
+                this.#discoveryState?.authorizationServerMetadata?.token_endpoint_auth_methods_supported,
+              );
         if (this.#options.state && !this.#exchangingCode && this.#record().tokens) {
           this.#registeredClient = client;
           return;
@@ -1179,8 +1115,6 @@ class McpOAuthClientProvider implements OAuthClientProvider {
       Effect.gen({ self: this }, function* () {
         this.#activeIssuer = discovery.authorizationServerUrl;
         this.#discoveryState = discovery;
-        const metadata = discovery.authorizationServerMetadata;
-        if (metadata && !metadata.registration_endpoint) this.clientMetadataUrl = MCP_CLIENT_METADATA_URL;
         if (
           this.#options.hasUnboundCredentials &&
           (!this.#options.legacyIssuer || !issuersMatch(this.#options.legacyIssuer, discovery.authorizationServerUrl))
@@ -1331,15 +1265,22 @@ export const namesAuthorizationServer = Effect.fnUntraced(function* (resource: s
   );
 });
 
-const acceptsNewClient = Effect.fnUntraced(function* (issuer: string, fetchFn: FetchLike, timeoutMs: number) {
+const newClientOffer = Effect.fnUntraced(function* (
+  issuer: string,
+  fetchFn: FetchLike,
+  timeoutMs: number,
+): Effect.fn.Return<McpSignInOffer> {
   const metadata = yield* mcpCall(() => discoverAuthorizationServerMetadata(issuer, { fetchFn })).pipe(
     Effect.timeoutOrElse({ duration: timeoutMs, orElse: () => Effect.succeed(undefined) }),
     Effect.catch(() => Effect.succeed(undefined)),
   );
-  return (
-    !metadata || Boolean(metadata.registration_endpoint) || metadata.client_id_metadata_document_supported === true
-  );
+  if (!metadata || metadata.registration_endpoint) return "offered";
+  return metadata.client_id_metadata_document_supported === true ? "needsClientDocument" : "refused";
 });
+
+function isClientDocumentId(clientId: string): boolean {
+  return URL.parse(clientId)?.protocol === "https:";
+}
 
 function legacyIssuer(record: McpOAuthRecord | null): string | undefined {
   const issuer = record?.discovery?.authorizationServerUrl;

@@ -116,12 +116,6 @@ import {
   INSTANCE_TRANSFER_REMOTE_BYTES,
   INSTANCE_TRANSFER_ROUTES,
 } from "@openbot/contracts/team-protocol/instance-transfer-v1";
-import {
-  decodeLiveVoiceSessionResponse,
-  LIVE_VOICE_ROUTES,
-  type LiveVoiceSessionResponse,
-  type LiveVoiceStartRequest,
-} from "@openbot/contracts/team-protocol/live-voice-v1";
 import { decodeMessagePinsResponse, MESSAGE_PINS_ROUTES } from "@openbot/contracts/team-protocol/message-pins-v1";
 import {
   decodePendingApprovalResponse,
@@ -245,20 +239,6 @@ export const clearAgentContext = Effect.fn("TeamClient.clearAgentContext")(funct
   agentId: string,
 ): Effect.fn.Return<void, TeamRequestError> {
   return yield* teamCall(() => request("POST", CONTEXT_RESET_ROUTES.clear, ignoreResponse, { agentId }));
-});
-
-export const startLiveVoice = Effect.fn("TeamClient.startLiveVoice")(function* (
-  request: TeamApiRequest,
-  input: LiveVoiceStartRequest,
-): Effect.fn.Return<LiveVoiceSessionResponse, TeamRequestError> {
-  return yield* teamCall(() => request("POST", LIVE_VOICE_ROUTES.start, decodeLiveVoiceSessionResponse, { ...input }));
-});
-
-export const stopLiveVoice = Effect.fn("TeamClient.stopLiveVoice")(function* (
-  request: TeamApiRequest,
-  sessionId: string,
-): Effect.fn.Return<void, TeamRequestError> {
-  return yield* teamCall(() => request("POST", LIVE_VOICE_ROUTES.stop, ignoreResponse, { sessionId }));
 });
 
 const decodeAgentTasks = guardedDecoder(isAgentTasksSnapshot, "agent tasks response");

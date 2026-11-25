@@ -1,6 +1,5 @@
 import type {
   AvatarImageInput,
-  HostedSitesDesktopApi,
   HostStatus,
   InviteSummary,
   ServerAppearance,
@@ -27,12 +26,10 @@ import {
   CalendarClock,
   Download,
   FlaskConical,
-  Globe2,
   HardDrive,
   History,
   ItemGroup,
   KeyRound,
-  Monitor,
   RefreshCw,
   Settings,
   SettingsSection,
@@ -44,7 +41,6 @@ import {
   Text,
   UsersRound,
 } from "@openbot/ui";
-import type { LicenseCalls } from "@openbot/ui/features/billing/license-store";
 import type { ProviderSettingsDetail } from "@openbot/ui/features/settings/ProviderSettingsPage";
 import {
   SaveBarDock,
@@ -52,18 +48,12 @@ import {
   SettingsNavGroupLabel,
   type SettingsPagePlacement,
 } from "@openbot/ui/features/settings/SettingsDialogShell";
-import { SettingsHostedSitesTab } from "@openbot/ui/features/settings/SettingsHostedSitesTab";
-import {
-  createSettingsHostedSitesStore,
-  type HostedSiteDeleteResult,
-} from "@openbot/ui/features/settings/stores/hosted-sites-store";
 import { useText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, For, onCleanup, Show, untrack } from "solid-js";
 import { actionToast } from "../../action-toast";
 import { type ServerBrowserProfilesOptions, ServerBrowserProfilesPanel } from "../browser/ServerBrowserProfilesPanel";
 import type { CrmHost } from "../crm/crm-port";
 import { type ServerStorageOptions, ServerStoragePanel } from "../files/ServerStoragePanel";
-import { hostedPlanStorageGb } from "../files/storage-usage";
 import { type HostProviderSettings, HostProviderSettingsPanel } from "../settings/ProviderSettingsSection";
 import type {
   HostClaudeCompactWindowOptions,
@@ -78,9 +68,7 @@ import { type ServerVaultOptions, ServerVaultPanel } from "../vault/ServerVaultP
 import { createServerAgentsSection, type ServerAgentDefaultsOptions } from "./ServerAgentsSection";
 import { createServerAuditSection, type ServerAuditOptions } from "./ServerAuditSection";
 import type { ServerBrowsingMemoryOptions } from "./ServerBrowsingMemorySetting";
-import { type CompanySignInCalls, createServerCompanySignInSection } from "./ServerCompanySignInSection";
 import { ServerCrmSetting } from "./ServerCrmSetting";
-import { ServerDesktopPanel } from "./ServerDesktopPanel";
 import { createServerGeneralSection } from "./ServerGeneralSection";
 import {
   type HermesFolderPlace,
@@ -103,13 +91,12 @@ import { type ServerTransferOptions, ServerTransferPanel } from "./ServerTransfe
 import type { ServerTurnLimitsOptions } from "./ServerTurnLimitsSetting";
 import { type ServerUpdateOptions, ServerUpdatePanel } from "./ServerUpdatePanel";
 import type { ServerVoiceModelOptions } from "./ServerVoiceModelSetting";
-import { serverCanAdminister, serverRoleCanAdminister } from "./server-capabilities";
+import { serverCanAdminister } from "./server-capabilities";
 import type { ServerSettingsSectionHost } from "./server-settings-section";
 
 export interface ServerSettingsModalProps {
   open: boolean;
   platform: "darwin" | "win32" | "linux";
-  remoteDesktopSupported?: boolean;
   server: ServerSummary;
   hostStatus?: HostStatus | null;
   members: TeamPresenceMember[];
@@ -123,10 +110,7 @@ export interface ServerSettingsModalProps {
   onSetPublished: (published: boolean) => Promise<void>;
   onRotateHostKey?: (() => Promise<void>) | undefined;
   onCreateInvite: (input: { role: "admin" | "member"; email?: string; permanent?: boolean }) => Promise<InviteSummary>;
-  license?: Pick<LicenseCalls, "getState" | "setUsers" | "changePlan"> | undefined;
-  companySignIn?: CompanySignInCalls | undefined;
   ownerTransfer?: OwnerTransferCalls | undefined;
-  onDownloadDesktopApp?: (() => void) | undefined;
   onContactUs?: () => void;
   onUpdateMember: (input: UpdateTeamMemberInput) => Promise<void>;
   onRemoveMember: (memberId: string) => Promise<void>;
@@ -134,9 +118,7 @@ export interface ServerSettingsModalProps {
   onLeaveServer?: () => Promise<void>;
   onRemoveServer?: (() => Promise<void>) | undefined;
   onOpenScreenRecordingSettings: () => Promise<void>;
-  onRecheckScreenRecording: () => Promise<void>;
   storage?: ServerStorageOptions | undefined;
-  hostedSites?: ServerHostedSitesOptions | undefined;
   providers?: HostProviderSettings | undefined;
   onSwitchToManageProviders?: (() => void) | undefined;
   agentImport?: ServerImportOptions | undefined;
@@ -174,13 +156,6 @@ export interface ServerSettingsModalProps {
   onOpenMarketplaceApps?: (() => void) | undefined;
 }
 
-export interface ServerHostedSitesOptions {
-  api: Pick<HostedSitesDesktopApi, "list" | "delete">;
-  onOpenSite: (url: string) => void;
-  trackDelete?: () => (result: HostedSiteDeleteResult) => void;
-  onSeePlans?: (() => void) | undefined;
-}
-
 export type ServerSettingsSection =
   | "general"
   | "personality"
@@ -190,9 +165,7 @@ export type ServerSettingsSection =
   | "members"
   | "roles"
   | "audit"
-  | "desktop"
   | "storage"
-  | "sites"
   | "providers"
   | "updates"
   | "import"
@@ -211,9 +184,7 @@ const sections = {
   members: { title: "server.settings.membersTitle", description: "server.settings.membersDescription" },
   roles: { title: "server.settings.rolesTitle", description: "server.settings.rolesDescription" },
   audit: { title: "server.settings.auditTitle", description: "server.settings.auditDescription" },
-  desktop: { title: "server.settings.desktopTitle", description: "server.settings.desktopDescription" },
   storage: { title: "server.settings.storageTitle", description: "server.settings.storageDescription" },
-  sites: { title: "server.settings.hostedSitesTitle", description: "server.settings.hostedSitesDescription" },
   providers: { title: "server.settings.providersTitle", description: "server.settings.providersDescription" },
   updates: { title: "server.settings.updatesTitle", description: "server.settings.updatesDescription" },
   import: { title: "server.settings.importTitle", description: "server.settings.importDescription" },
@@ -251,13 +222,7 @@ const SECTION_ROWS: Partial<Record<Section, readonly AppTextKey[]>> = {
     "server.settings.skillLearning",
     "server.settings.browsingMemory",
   ],
-  members: [
-    "server.settings.publish",
-    "server.companySignIn.title",
-    "server.companySignIn.sso",
-    "server.companySignIn.scim",
-    "server.ownerTransfer.title",
-  ],
+  members: ["server.settings.publish", "server.ownerTransfer.title"],
   storage: ["settings.backgroundProcesses.title"],
   experimental: ["server.settings.experimentalCrm"],
 };
@@ -271,13 +236,11 @@ const NAV_SECTIONS: ReadonlyArray<{ value: Section; icon: typeof Settings; group
   { value: "vault", icon: KeyRound, group: "server.settings.group.agents" },
   { value: "browser-profiles", icon: AppWindow, group: "server.settings.group.agents" },
   { value: "routines", icon: CalendarClock, group: "server.settings.group.agents" },
-  { value: "sites", icon: Globe2, group: "server.settings.group.agents" },
   { value: "members", icon: UsersRound, group: "server.settings.group.people" },
   { value: "roles", icon: ShieldCheck, group: "server.settings.group.people" },
   { value: "audit", icon: History, group: "server.settings.group.people" },
   { value: "storage", icon: HardDrive, group: "server.settings.group.server" },
   { value: "updates", icon: RefreshCw, group: "server.settings.group.server" },
-  { value: "desktop", icon: Monitor, group: "server.settings.group.server" },
   { value: "import", icon: Download, group: "server.settings.group.server" },
   { value: "transfer", icon: ArrowLeftRight, group: "server.settings.group.server" },
   { value: "experimental", icon: FlaskConical, group: "server.settings.group.server" },
@@ -307,7 +270,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
 
   const local = () => props.server.kind === "local";
   const hostName = () => (local() ? undefined : props.server.name);
-  const remoteDesktopSection = () => props.remoteDesktopSupported !== false && (props.platform === "darwin" || local());
   const configured = () => (local() ? Boolean(props.hostStatus?.configured) : true);
   const actionsAvailable = () => local() || props.server.state === "online";
   const hermesFolderPlace = (): HermesFolderPlace | undefined => {
@@ -423,12 +385,8 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
         return roles.available();
       case "audit":
         return audit.available();
-      case "desktop":
-        return remoteDesktopSection();
       case "storage":
         return Boolean(props.storage);
-      case "sites":
-        return Boolean(props.hostedSites);
       case "providers":
         return Boolean(props.providers || props.onSwitchToManageProviders);
       case "updates":
@@ -487,38 +445,14 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
   const members = createServerMembersSection(
     host,
     {
-      onSetUpDesktop: () => setSection("desktop"),
       saveIdentityDraft: general.saveIdentityDraft,
     },
     roles,
-  );
-  const companySignIn = createServerCompanySignInSection(
-    host,
-    () => props.companySignIn,
-    () => props.onDownloadDesktopApp,
-    () => props.open && section() === "members",
   );
   const ownerTransfer = createServerOwnerTransferSection(
     host,
     () => props.ownerTransfer,
     () => props.open && section() === "members",
-  );
-  const hostedSites = createSettingsHostedSitesStore(
-    {
-      get open() {
-        return props.open;
-      },
-      get serverId() {
-        return props.server.id;
-      },
-      get hostedSitesApi() {
-        return props.hostedSites?.api;
-      },
-      get trackDelete() {
-        return props.hostedSites?.trackDelete;
-      },
-    },
-    () => section() === "sites",
   );
 
   createEffect(
@@ -527,15 +461,21 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
       element?.style.setProperty("--settings-modal-floating-space", `${height}px`);
     },
   );
+  const errorToastShown = () => Boolean(props.loadError) && (section() === "general" || section() === "members");
+  let toastObserver: ResizeObserver | undefined;
   function measureToast(element: HTMLElement): void {
-    const observer = new ResizeObserver(() => setToastHeight(element.offsetHeight));
-    observer.observe(element);
+    toastObserver?.disconnect();
+    toastObserver = new ResizeObserver(() => setToastHeight(element.offsetHeight));
+    toastObserver.observe(element);
     setToastHeight(element.offsetHeight);
-    onCleanup(() => {
-      observer.disconnect();
-      setToastHeight(0);
-    });
   }
+  createEffect(errorToastShown, (shown) => {
+    if (shown) return;
+    toastObserver?.disconnect();
+    toastObserver = undefined;
+    setToastHeight(0);
+  });
+  onCleanup(() => toastObserver?.disconnect());
   const saveBarDocked = () => section() === "general" && general.identityDirty();
 
   createEffect(
@@ -553,7 +493,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
         setSection(untrack(availableInitialSection) ?? "general");
         general.resetForServer();
         members.resetForServer();
-        companySignIn.resetForServer();
         ownerTransfer.resetForServer();
         roles.resetForServer();
         audit.resetForServer();
@@ -629,9 +568,7 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
         value === "members" ||
         value === "roles" ||
         value === "audit" ||
-        value === "desktop" ||
         value === "storage" ||
-        value === "sites" ||
         value === "providers" ||
         value === "updates" ||
         value === "import" ||
@@ -657,7 +594,7 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
         restoreFocusTarget={props.restoreFocusTarget}
         onContentElement={(element) => setModalElement(element)}
         floatingContent={
-          <Show when={props.loadError && (section() === "general" || section() === "members")}>
+          <Show when={errorToastShown()}>
             <Alert
               ref={measureToast}
               class="server-settings-error-toast"
@@ -810,7 +747,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
         </Show>
         <Tabs.Content value="members" class="settings-modal-tab-panel server-settings-panel" data-tab="members">
           <members.Panel />
-          <companySignIn.Panel />
           <ownerTransfer.Panel />
         </Tabs.Content>
         <Show when={roles.available()}>
@@ -823,38 +759,10 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
             <audit.Panel />
           </Tabs.Content>
         </Show>
-        <Show when={remoteDesktopSection()}>
-          <Tabs.Content value="desktop" class="settings-modal-tab-panel server-settings-panel" data-tab="desktop">
-            <ServerDesktopPanel
-              server={props.server}
-              platform={props.platform}
-              hostStatus={props.hostStatus}
-              menuMount={modalElement()}
-            />
-          </Tabs.Content>
-        </Show>
         <Show when={props.storage}>
           {(storage) => (
             <Tabs.Content value="storage" class="settings-modal-tab-panel server-settings-panel" data-tab="storage">
-              <ServerStoragePanel
-                serverId={props.server.id}
-                storageGb={hostedPlanStorageGb(props.server)}
-                members={props.members}
-                {...storage()}
-              />
-            </Tabs.Content>
-          )}
-        </Show>
-        <Show when={props.hostedSites}>
-          {(sites) => (
-            <Tabs.Content value="sites" class="settings-modal-tab-panel server-settings-panel" data-tab="sites">
-              <SettingsHostedSitesTab
-                store={hostedSites}
-                available
-                canDelete={serverRoleCanAdminister(props.server)}
-                onOpenSite={sites().onOpenSite}
-                onSeePlans={sites().onSeePlans}
-              />
+              <ServerStoragePanel serverId={props.server.id} storageGb={null} members={props.members} {...storage()} />
             </Tabs.Content>
           )}
         </Show>

@@ -327,7 +327,6 @@ const fakeAgents: TeamApiAgents = {
   generateProfile: unused("generateProfile"),
   askSideQuestion: unused("askSideQuestion"),
   saveSkillSuggestion: unused("saveSkillSuggestion"),
-  withdrawFeedback: unused("withdrawFeedback"),
   saveProfile: unused("saveProfile"),
   createAgent: unused("createAgent"),
   committedAgentDuplication: unused("committedAgentDuplication"),

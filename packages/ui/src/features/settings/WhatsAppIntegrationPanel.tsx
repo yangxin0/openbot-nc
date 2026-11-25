@@ -69,8 +69,6 @@ import {
   WizardDialog,
   type WizardLink,
 } from "./IntegrationLayout";
-import { messagingStateUnknown } from "./SlackIntegrationPanel";
-import { telegramOrchestrator } from "./TelegramIntegrationPanel";
 
 export type WhatsAppIntegrationAgent = ChannelAgent;
 export type WhatsAppOrchestratorChoice = ChannelOrchestratorChoice;
@@ -182,7 +180,23 @@ function numberName(connection: MessagingConnection): string {
   return connection.workspaceName || phoneNumber(connection.workspaceId);
 }
 
-export const whatsappOrchestrator = telegramOrchestrator;
+export function messagingStateUnknown(props: {
+  connections: readonly MessagingConnection[];
+  loadError?: string | null | undefined;
+}): boolean {
+  return Boolean(props.loadError) && props.connections.length === 0;
+}
+
+export function whatsappOrchestrator<Agent extends { id: string }>(
+  connections: readonly MessagingConnection[],
+  agents: readonly Agent[],
+): Agent | null {
+  for (const connection of connections) {
+    const agent = agents.find((candidate) => candidate.id === connection.orchestratorAgentId);
+    if (agent) return agent;
+  }
+  return null;
+}
 
 export function whatsappIntegrationState(
   connections: readonly MessagingConnection[],

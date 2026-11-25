@@ -1,19 +1,11 @@
-import { X_AGENT_LISTING_ID, X_EXTENSION_URL } from "@openbot/contracts/browser-extension-x";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type {
-  AddedAgent,
   ClientAgentSummary,
   GithubSkillSource,
   InstalledSkill,
   MacAutomationResult,
   MacAutomationTarget,
-  MarketplaceAgentDetail,
-  MarketplaceAgentQuery,
-  MarketplaceAgentSkill,
-  MarketplaceAgentSummary,
   MarketplaceSkillDetail,
-  MarketplaceSkillQuery,
-  MarketplaceSkillSummary,
   McpServerAccess,
   McpServerConfig,
   McpSignInAppState,
@@ -25,16 +17,13 @@ import {
   assignedSkillCount,
   DEFAULT_MCP_SERVER_ACCESS,
   githubSkillDetail,
-  isGithubSkillId,
   isOtherGithubCommit,
   isRemovableSkill,
   isSkillEnabled,
   mcpConfigErrors,
 } from "@openbot/contracts/ipc";
-import { createMarketplaceShareUrl, type MarketplaceListingLink } from "@openbot/contracts/marketplace-links";
 import { mcpAccountFragment, mcpAccountUrl } from "@openbot/contracts/mcp-accounts";
 import { type McpConnectFlow, mcpFlowFields, savedKeyFlow } from "@openbot/contracts/mcp-connect-flows";
-import { createPluginShareUrl } from "@openbot/contracts/plugin-links";
 import { TOAST_DURATION, toast } from "@openbot/ui";
 import type { BrowserViewRuntime } from "@openbot/ui/features/browser/BrowserLiveView";
 import { connectorSummary } from "@openbot/ui/features/connectors/ConnectorDetailPanel";
@@ -42,9 +31,7 @@ import { CONNECTOR_LISTINGS } from "@openbot/ui/features/connectors/connector-ca
 import { isConnectorId } from "@openbot/ui/features/connectors/connectors";
 import { safeBrowserUrl } from "@openbot/ui/features/conversation/RichMessageText";
 import type {
-  AgentListingState,
   GithubSkillRead,
-  MarketplaceAgent,
   MarketplaceApp,
   MarketplaceAppConnection,
   MarketplaceAppStatus,
@@ -57,7 +44,7 @@ import type {
   MarketplaceSkillRef,
   SkillRead,
 } from "@openbot/ui/features/marketplace/marketplace-model";
-import { pluginNeedsMac, X_APP_ID } from "@openbot/ui/features/marketplace/marketplace-model";
+import { pluginNeedsMac } from "@openbot/ui/features/marketplace/marketplace-model";
 import { serverAddress } from "@openbot/ui/features/marketplace/marketplace-view";
 import type { McpConnectSubject } from "@openbot/ui/features/settings/McpConnectShell";
 import {
@@ -72,8 +59,6 @@ import { currentText, useText } from "@openbot/ui/text";
 import { errorReference } from "@openbot/user-errors";
 import { createEffect, createMemo, createSignal, createStore, onCleanup, untrack } from "solid-js";
 import { actionToast } from "../../action-toast";
-import { desktopAnalytics } from "../../analytics";
-import { writeClipboardText } from "../../clipboard";
 import type { AgentSkillCalls } from "../../skills-port";
 import type { ConnectorRegistry } from "../connectors/connector-registry";
 import type { McpServerSignIn, McpServerTools } from "../servers/mcp-server-tools";
@@ -81,7 +66,7 @@ import { mcpSignInRecord } from "../servers/mcp-servers";
 import { desktopMarketplaceCalls, type MarketplaceCalls, type MarketplaceSignInRelay } from "./marketplace-calls";
 import { createPluginAppConfig } from "./marketplace-plugin-catalog";
 import { localizedPlugin } from "./marketplace-plugin-text";
-import { agentHomeCache, marketplaceErrorMessage, skillHomeCache } from "./marketplace-shared";
+import { marketplaceErrorMessage } from "./marketplace-shared";
 import {
   cancelRemoval,
   type HeldRemoval,
@@ -100,10 +85,6 @@ export type MarketplaceAgentRow = Pick<
   marketplaceSource?: ClientAgentSummary["marketplaceSource"];
 };
 
-export type LinkedListing =
-  | { kind: "agent"; detail: MarketplaceAgentDetail }
-  | { kind: "skill"; skill: MarketplaceSkillSummary };
-
 export interface MarketplaceControllerProps {
   open: boolean;
   agents: readonly MarketplaceAgentRow[];
@@ -111,7 +92,6 @@ export interface MarketplaceControllerProps {
   onOpenChange: (open: boolean) => void;
   onTrySkill?: ((agentId: string, skill: MarketplaceSkillDetail) => void) | undefined;
   onCreateSkill?: ((agentId: string) => void) | undefined;
-  onAgentInstalled?: ((agent: AddedAgent, serverId?: string) => void | Promise<void>) | undefined;
   plugins?: readonly MarketplacePluginDetail[] | undefined;
   pluginServerId?: string | undefined;
   pluginsBlocked?: MarketplaceAppsBlock | undefined;
@@ -121,9 +101,6 @@ export interface MarketplaceControllerProps {
   pluginAccounts?: boolean | undefined;
   pluginAccess?: boolean | undefined;
   hostServerId?: string | undefined;
-  agentServerId?: string | undefined;
-  agentUpdateServerId?: string | undefined;
-  xApp?: boolean | undefined;
   githubSkills?: boolean | undefined;
   onRunPluginPrompt?: ((agentId: string, prompt: MarketplacePluginPrompt) => void) | undefined;
   connectors?: ConnectorRegistry | undefined;
@@ -164,13 +141,6 @@ export interface PendingServerReplace {
   settle: (confirmed: boolean) => void;
 }
 
-export interface PendingAgentUpdate {
-  agentName: string;
-  changed: readonly { skillId: string; name: string }[];
-  othersCount: number;
-  settle: (replaceSkillIds: string[] | null) => void;
-}
-
 interface ChangeRemoval {
   agentId: string;
   modified: boolean;
@@ -183,26 +153,6 @@ function takesUpdate(skill: InstalledSkill): boolean {
     skill.state === "installed" ||
     (skill.state === "modified" && skill.availableVersion > skill.installedVersion)
   );
-}
-
-function agentQuery({
-  query,
-  category,
-  featured,
-  verified,
-  sort,
-  cursor,
-  limit,
-}: MarketplaceSkillQuery): MarketplaceAgentQuery {
-  return {
-    query,
-    cursor,
-    ...(category ? { category } : {}),
-    ...(featured === undefined ? {} : { featured }),
-    ...(verified === undefined ? {} : { verified }),
-    ...(sort === "installs" ? { sort } : {}),
-    ...(limit === undefined ? {} : { limit }),
-  };
 }
 
 const MAC_AUTOMATION_APP_NAME = {
@@ -222,13 +172,6 @@ export interface MarketplaceSignInRelayState {
   url: string;
   page: McpSignInRelayPage;
 }
-
-interface AddedRecord {
-  agent: AddedAgent;
-  serverId: string | undefined;
-}
-
-const skillSlug = (id: string) => (isGithubSkillId(id) ? "github" : id);
 
 export function createMarketplaceController(
   props: MarketplaceControllerProps,
@@ -263,120 +206,6 @@ export function createMarketplaceController(
       setError(marketplaceErrorMessage(cause), cause);
       return undefined;
     }
-  }
-
-  const [added, setAdded] = createStore<Record<string, AddedRecord>>({});
-  function installation(listing: MarketplaceAgentSummary) {
-    const copies = agents().filter((agent) => agent.marketplaceSource?.listingId === listing.id);
-    return copies.find((agent) => (agent.marketplaceSource?.version ?? 0) < listing.version) ?? copies[0];
-  }
-  const canUpdate = () => !props.hostServerId || props.agentUpdateServerId === props.hostServerId;
-  function agentState(listing: MarketplaceAgentSummary): AgentListingState {
-    if (added[listing.id]) return "added";
-    const copy = installation(listing);
-    if (!copy) return "add";
-    return canUpdate() && (copy.marketplaceSource?.version ?? 0) < listing.version ? "update" : "added";
-  }
-
-  const [agentUpdate, setAgentUpdate] = createSignal<PendingAgentUpdate | null>(null);
-  async function askChangedSkills(
-    listing: MarketplaceAgentDetail | MarketplaceAgentSummary,
-    copy: MarketplaceAgentRow,
-  ): Promise<MarketplaceAgentSkill[] | null> {
-    const detail = "skills" in listing ? listing : await calls().agents.getListing(listing.id);
-    const installed = new Map((await skillCalls().listInstalled(copy.id)).map((skill) => [skill.skillId, skill]));
-    const updates = detail.skills.filter((skill) => installed.get(skill.skillId)?.installedVersion !== skill.version);
-    const changed = updates.filter((skill) => installed.get(skill.skillId)?.state === "modified");
-    if (changed.length === 0) return [];
-    untrack(agentUpdate)?.settle(null);
-    const replaceIds = await new Promise<string[] | null>((resolve) =>
-      setAgentUpdate({
-        agentName: copy.name,
-        changed: changed.map(({ skillId, name }) => ({ skillId, name })),
-        othersCount: updates.length - changed.length,
-        settle: (ids) => {
-          setAgentUpdate(null);
-          resolve(ids);
-        },
-      }),
-    );
-    return replaceIds && changed.filter((skill) => replaceIds.includes(skill.skillId));
-  }
-
-  async function addAgent(listing: MarketplaceAgentDetail | MarketplaceAgentSummary, update = false) {
-    const copy = update ? installation(listing) : undefined;
-    if (copy && "versionId" in listing && copy.marketplaceSource?.versionId === listing.versionId) return true;
-    const key = `agent:${listing.id}`;
-    if (busy[key]) return false;
-    const serverId = copy ? (props.hostServerId ? props.agentUpdateServerId : undefined) : props.agentServerId;
-    const analytics = desktopAnalytics.scope();
-    mark(key, true);
-    const replace = copy ? await run(() => askChangedSkills(listing, copy)) : [];
-    if (replace === null) {
-      mark(key, false);
-      return false;
-    }
-    const agent =
-      replace &&
-      (await run(() =>
-        calls().addAgent(
-          {
-            listingId: listing.id,
-            ...(copy ? { agentId: copy.id } : {}),
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-            receiptId: crypto.randomUUID(),
-          },
-          serverId,
-        ),
-      ));
-    analytics.track("marketplace_action", {
-      entity: "agent",
-      action: copy ? "update" : "install",
-      listing_slug: listing.id,
-      result: agent ? "succeeded" : "failed",
-      ...(agent ? {} : { failure_code: copy ? "update_failed" : "install_failed" }),
-    });
-    if (agent && copy && replace?.length) {
-      await run(async () => {
-        for (const skill of replace)
-          await skillCalls().install({
-            agentId: copy.id,
-            skillId: skill.skillId,
-            versionId: skill.versionId,
-            replaceModified: true,
-          });
-      });
-      await readInstalled(copy.id);
-    }
-    mark(key, false);
-    if (!agent) return false;
-    setAdded((draft) => {
-      draft[listing.id] = { agent, serverId };
-    });
-    setNotice(t(copy ? "marketplace.notice.agentUpdated" : "marketplace.notice.agentAdded", { name: agent.name }));
-    return true;
-  }
-
-  function openChat(listingId: string) {
-    const record = added[listingId];
-    const copy = agents().find((agent) => agent.marketplaceSource?.listingId === listingId);
-    const target: AddedRecord | undefined =
-      record ?? (copy ? { agent: { id: copy.id, name: copy.name }, serverId: props.hostServerId } : undefined);
-    props.onOpenChange(false);
-    if (target) void props.onAgentInstalled?.(target.agent, target.serverId);
-  }
-
-  async function loadAgent(id: string) {
-    const analytics = desktopAnalytics.scope();
-    const value = await run(() => calls().agents.get(id));
-    analytics.track("marketplace_action", {
-      entity: "agent",
-      action: "view",
-      listing_slug: id,
-      result: value ? "succeeded" : "failed",
-      ...(value ? {} : { failure_code: "load_failed" }),
-    });
-    return value;
   }
 
   const [skills, setSkills] = createStore<{
@@ -566,27 +395,13 @@ export function createMarketplaceController(
     const hostCalls = skillCalls();
     const added: string[] = [];
     for (const agentId of installs) {
-      const analytics = desktopAnalytics.scope();
       try {
         await hostCalls.install({ agentId, skillId: skill.id, replaceModified: false });
         added.push(agentId);
-        analytics.track("marketplace_action", {
-          entity: "skill",
-          action: "install",
-          listing_slug: skillSlug(skill.id),
-          result: "succeeded",
-        });
       } catch (cause) {
         failed.push(nameOf(agentId));
         reasons.add(marketplaceErrorMessage(cause));
         lastCause = cause;
-        analytics.track("marketplace_action", {
-          entity: "skill",
-          action: "install",
-          listing_slug: skillSlug(skill.id),
-          result: "failed",
-          failure_code: "install_failed",
-        });
       }
     }
     if (alive && host === skillHost) {
@@ -625,7 +440,6 @@ export function createMarketplaceController(
       const counted = alive;
       if (counted) countSettling(skill.id, 1);
       for (const entry of entries) {
-        const analytics = desktopAnalytics.scope();
         let removed = false;
         try {
           await hostCalls.uninstall({
@@ -634,23 +448,10 @@ export function createMarketplaceController(
             ...(entry.modified ? { removeModified: true } : {}),
           });
           removed = true;
-          analytics.track("marketplace_action", {
-            entity: "skill",
-            action: "uninstall",
-            listing_slug: skillSlug(skill.id),
-            result: "succeeded",
-          });
         } catch (cause) {
           failed.push(nameOf(entry.agentId));
           reasons.add(marketplaceErrorMessage(cause));
           lastCause = cause;
-          analytics.track("marketplace_action", {
-            entity: "skill",
-            action: "uninstall",
-            listing_slug: skillSlug(skill.id),
-            result: "failed",
-            failure_code: "uninstall_failed",
-          });
         }
         heldChangeSettled({ host, agentId: entry.agentId, skillId: skill.id, removed });
         afterEach(entry.agentId, removed);
@@ -705,26 +506,12 @@ export function createMarketplaceController(
     const reasons = new Set<string>();
     let lastCause: unknown;
     for (const { agentId, modified: replaceModified } of targets) {
-      const analytics = desktopAnalytics.scope();
       try {
         await skillCalls().install({ agentId, skillId: skill.id, replaceModified });
-        analytics.track("marketplace_action", {
-          entity: "skill",
-          action: "update",
-          listing_slug: skillSlug(skill.id),
-          result: "succeeded",
-        });
       } catch (cause) {
         failed.push(agentName(agentId));
         reasons.add(marketplaceErrorMessage(cause));
         lastCause = cause;
-        analytics.track("marketplace_action", {
-          entity: "skill",
-          action: "update",
-          listing_slug: skillSlug(skill.id),
-          result: "failed",
-          failure_code: "update_failed",
-        });
       }
       await readInstalled(agentId);
     }
@@ -738,8 +525,6 @@ export function createMarketplaceController(
     const key = `skill:${skillId}`;
     const copy = installedSkill(agentId, skillId);
     if (!copy || isSkillEnabled(copy) === on || skillBusy(skillId)) return;
-    const action = on ? "enable" : "disable";
-    const analytics = desktopAnalytics.scope();
     mark(key, true);
     setError(null);
     try {
@@ -748,21 +533,8 @@ export function createMarketplaceController(
         const list = draft.installed[agentId];
         if (list) draft.installed[agentId] = list.map((item) => (item.skillId === skillId ? next : item));
       });
-      analytics.track("marketplace_action", {
-        entity: "skill",
-        action,
-        listing_slug: skillSlug(skillId),
-        result: "succeeded",
-      });
     } catch (cause) {
       setError(marketplaceErrorMessage(cause), cause);
-      analytics.track("marketplace_action", {
-        entity: "skill",
-        action,
-        listing_slug: skillSlug(skillId),
-        result: "failed",
-        failure_code: `${action}_failed`,
-      });
     }
     mark(key, false);
   }
@@ -787,15 +559,7 @@ export function createMarketplaceController(
   }
 
   async function loadSkill(id: string) {
-    const analytics = desktopAnalytics.scope();
-    const value = githubDetails.get(id) ?? (await run(() => calls().skills.get(id)));
-    analytics.track("marketplace_action", {
-      entity: "skill",
-      action: "view",
-      listing_slug: skillSlug(id),
-      result: value ? "succeeded" : "failed",
-      ...(value ? {} : { failure_code: "load_failed" }),
-    });
+    const value = githubDetails.get(id);
     return value;
   }
 
@@ -859,20 +623,6 @@ export function createMarketplaceController(
     return entry?.access === "available" ? entry.controller : undefined;
   };
 
-  const xAgent = createMemo((): MarketplaceAgent | null => {
-    const copy = agents().find((agent) => agent.marketplaceSource?.listingId === X_AGENT_LISTING_ID);
-    return copy
-      ? {
-          id: copy.id,
-          name: copy.name,
-          title: copy.title,
-          avatarSeed: copy.avatarSeed,
-          avatarHue: copy.avatarHue,
-          avatarUrl: copy.avatarUrl,
-        }
-      : null;
-  });
-
   const apps = createMemo((): MarketplaceApp[] => {
     const plugins = localPlugins();
     return [
@@ -889,20 +639,6 @@ export function createMarketplaceController(
           status: status === "unavailable" ? "idle" : status,
         };
       }),
-      ...(props.xApp && X_EXTENSION_URL
-        ? [
-            {
-              kind: "x",
-              id: X_APP_ID,
-              name: t("marketplace.xApp.title"),
-              tagline: t("marketplace.xApp.tagline"),
-              category: "productivity",
-              status: xAgent() ? "connected" : "idle",
-              agent: xAgent(),
-              extensionUrl: X_EXTENSION_URL,
-            } satisfies MarketplaceApp,
-          ]
-        : []),
       ...plugins.map(
         (plugin): MarketplaceApp => ({
           kind: "plugin",
@@ -1186,28 +922,12 @@ export function createMarketplaceController(
     if (!serverId) throw new Error(t("marketplace.error.connectNoServer"));
     return serverId;
   }
-  const mcpServerKind = () => (props.pluginHostName ? "remote" : "local");
 
   async function changeMcpServers(
-    action: "mcp_server_saved" | "mcp_server_removed" | "mcp_server_toggled",
-    failureCode: string,
     change: (serverId: string) => Promise<McpServerConfig[]>,
   ): Promise<McpServerConfig[]> {
     const serverId = mcpServerId();
-    const analytics = desktopAnalytics.scope();
-    let next: McpServerConfig[];
-    try {
-      next = await change(serverId);
-    } catch (cause) {
-      analytics.track("team_action", {
-        action,
-        result: "failed",
-        server_kind: mcpServerKind(),
-        failure_code: failureCode,
-      });
-      throw cause;
-    }
-    analytics.track("team_action", { action, result: "succeeded", server_kind: mcpServerKind() });
+    const next = await change(serverId);
     if (props.pluginServerId !== serverId) return next;
     serversRead += 1;
     setServers(next);
@@ -1227,29 +947,18 @@ export function createMarketplaceController(
     servers,
     signIns,
     save: async (config) => {
-      const next = await changeMcpServers("mcp_server_saved", "mcp_server_save_failed", (serverId) =>
-        calls().mcp.saveMcpServer({ config }, serverId),
-      );
+      const next = await changeMcpServers((serverId) => calls().mcp.saveMcpServer({ config }, serverId));
       const saved = next.find((row) => (config.id ? row.id === config.id : row.name === config.name));
       if (!saved) throw new Error(t("mcp.panel.saveFailed"));
       return saved;
     },
     test: async (config) => {
       const serverId = mcpServerId();
-      const analytics = desktopAnalytics.scope();
       const result = await calls().mcp.testMcpServer({ config }, serverId);
-      analytics.track("team_action", {
-        action: "mcp_server_tested",
-        result: result.error ? "failed" : "succeeded",
-        server_kind: mcpServerKind(),
-        ...(result.error ? { failure_code: "mcp_server_test_failed" } : {}),
-      });
       return result;
     },
     setEnabled: async (id, enabled) => {
-      await changeMcpServers("mcp_server_toggled", "mcp_server_toggle_failed", (serverId) =>
-        calls().mcp.setMcpServerEnabled({ mcpServerId: id, enabled }, serverId),
-      );
+      await changeMcpServers((serverId) => calls().mcp.setMcpServerEnabled({ mcpServerId: id, enabled }, serverId));
     },
     toolRuntimeNote: () => props.mcpToolRuntimeNote ?? null,
     signIn: () => {
@@ -1402,7 +1111,6 @@ export function createMarketplaceController(
     const key = `app:${plugin.slug}`;
     if (busy[key]) return false;
     mark(key, true);
-    const analytics = desktopAnalytics.scope();
     const installed = await run(async () => {
       const replacing = new Map<string, McpServerConfig>();
       for (const app of plugin.apps) {
@@ -1440,15 +1148,6 @@ export function createMarketplaceController(
       }
       return true;
     });
-    if (installed !== false) {
-      analytics.track("marketplace_action", {
-        entity: "plugin",
-        action: "install",
-        result: installed ? "succeeded" : "failed",
-        listing_slug: plugin.slug,
-        ...(installed ? {} : { failure_code: "install_failed" }),
-      });
-    }
     if (installed && plugin.skills.length > 0) await readInstalled(agentId);
     if (installed) await readSignIns(serverId);
     mark(key, false);
@@ -1512,22 +1211,12 @@ export function createMarketplaceController(
     const key = `app:${plugin.slug}`;
     if (busy[key]) return false;
     mark(key, true);
-    const analytics = desktopAnalytics.scope();
     const saved = await run(async () => {
       const connected = await connectStep(app, currentPluginAppConfig(row, app), row);
       if (!connected) return false;
       setServers(await calls().mcp.saveMcpServer({ config: connected }, serverId));
       return true;
     });
-    if (saved !== false) {
-      analytics.track("marketplace_action", {
-        entity: "plugin",
-        action: "update",
-        result: saved ? "succeeded" : "failed",
-        listing_slug: plugin.slug,
-        ...(saved ? {} : { failure_code: "update_failed" }),
-      });
-    }
     if (saved) await readSignIns(serverId);
     mark(key, false);
     if (saved) setNotice(t("marketplace.notice.appConnected", { name: app.name }));
@@ -1615,7 +1304,6 @@ export function createMarketplaceController(
     const key = `app:${plugin.slug}`;
     mark(key, true);
     setError(null);
-    const analytics = desktopAnalytics.scope();
     const failures: string[] = [];
     let lastCause: unknown;
     for (const [app, config] of plugin.apps.flatMap((app) => heldApps(app).map((row) => [app, row] as const))) {
@@ -1638,13 +1326,6 @@ export function createMarketplaceController(
       }
     }
     setUninstalling(null);
-    analytics.track("marketplace_action", {
-      entity: "plugin",
-      action: "uninstall",
-      result: failures.length > 0 ? "failed" : "succeeded",
-      listing_slug: plugin.slug,
-      ...(failures.length > 0 ? { failure_code: "uninstall_failed" } : {}),
-    });
     await readServers(serverId);
     if (agentId && plugin.skills.length > 0) await readInstalled(agentId);
     mark(key, false);
@@ -1661,9 +1342,7 @@ export function createMarketplaceController(
     }
     const name = servers().find((server) => server.id === id)?.name ?? "";
     const next = await run(() =>
-      changeMcpServers("mcp_server_removed", "mcp_server_remove_failed", (target) =>
-        calls().mcp.removeMcpServer({ mcpServerId: id }, target),
-      ),
+      changeMcpServers((target) => calls().mcp.removeMcpServer({ mcpServerId: id }, target)),
     );
     if (!next) return false;
     setNotice(t("marketplace.notice.serverRemoved", { name }));
@@ -1678,42 +1357,10 @@ export function createMarketplaceController(
       .catch((cause) => setError(t("marketplace.error.openLink"), cause));
   }
 
-  function copyLink(slug: string) {
-    void Promise.resolve()
-      .then(() => writeClipboardText(createPluginShareUrl(slug)))
-      .catch((cause) => setError(t("marketplace.error.copyLink"), cause));
-  }
-
-  function copyListingLink(link: MarketplaceListingLink) {
-    void Promise.resolve()
-      .then(() => writeClipboardText(createMarketplaceShareUrl(link, calls().shareOrigin)))
-      .catch((cause) => setError(t("marketplace.error.copyLink"), cause));
-  }
-
-  async function readListing(link: MarketplaceListingLink): Promise<LinkedListing | undefined> {
-    const analytics = desktopAnalytics.scope();
-    const listing: LinkedListing | undefined = await (link.kind === "agent"
-      ? calls()
-          .agents.getListing(link.id)
-          .then((detail) => ({ kind: "agent" as const, detail }))
-      : calls()
-          .skills.getBySlug(link.id)
-          .then((skill) => ({ kind: "skill" as const, skill }))
-    ).catch(() => undefined);
-    analytics.track("marketplace_action", {
-      entity: link.kind,
-      action: "view",
-      result: listing ? "succeeded" : "failed",
-      ...(listing ? {} : { failure_code: "load_failed" }),
-    });
-    return listing;
-  }
-
   const stopDialogs = () => {
     untrack(connecting)?.settle(null);
     untrack(skillConfirm)?.settle(false);
     untrack(serverReplace)?.settle(false);
-    untrack(agentUpdate)?.settle(null);
     setUninstalling(null);
   };
   createEffect(
@@ -1726,39 +1373,10 @@ export function createMarketplaceController(
     untrack(connecting)?.settle(null);
     untrack(skillConfirm)?.settle(false);
     untrack(serverReplace)?.settle(false);
-    untrack(agentUpdate)?.settle(null);
   });
 
   const model: MarketplaceModel = {
-    listAgents: async (query) => {
-      const page = await calls().agents.list(agentQuery(query));
-      return { items: page.agents.filter((agent) => agent.id !== X_AGENT_LISTING_ID), nextCursor: page.nextCursor };
-    },
-    get agentHomeCache() {
-      return agentHomeCache(calls());
-    },
-    loadAgent,
-    agentState,
-    agentBusy: (listingId) => Boolean(busy[`agent:${listingId}`]),
-    addAgent,
-    openChat,
-
-    listSkills: async (query) => {
-      const page = await calls().skills.list(query);
-      return { items: page.skills, nextCursor: page.nextCursor };
-    },
-    get skillHomeCache() {
-      return skillHomeCache(calls());
-    },
     loadSkill,
-    skillListing: (id) => {
-      const github = githubDetails.get(id);
-      if (github) return Promise.resolve(github);
-      if (isGithubSkillId(id)) return Promise.resolve(undefined);
-      return calls()
-        .skills.get(id)
-        .catch(() => undefined);
-    },
     agents,
     activeAgentId,
     readSkills,
@@ -1819,8 +1437,6 @@ export function createMarketplaceController(
       const agentId = pluginAgentId();
       return run && agentId ? (prompt: MarketplacePluginPrompt) => run(agentId, prompt) : undefined;
     },
-    copyLink,
-    copyListingLink,
     openUrl: openPluginUrl,
     connector,
 
@@ -1832,13 +1448,11 @@ export function createMarketplaceController(
 
   return {
     model,
-    readListing,
     appStatesRead,
     connecting,
     uninstalling,
     skillConfirm,
     serverReplace,
-    agentUpdate,
     uninstallPlan,
     uninstallPlugin,
     uninstallBusy: (plugin: MarketplacePluginDetail) => Boolean(busy[`app:${plugin.slug}`]),

@@ -14,12 +14,12 @@ export function devRuntimeDirectory(
   }
   if (platform === "win32") {
     const localAppData = environment.LOCALAPPDATA?.trim() || win32.join(homeDirectory, "AppData", "Local");
-    return win32.join(localAppData, "OpenBot", "openbot-dev-instances");
+    return win32.join(localAppData, "OpenBot-NC", "openbot-nc-dev-instances");
   }
-  if (platform === "darwin") return posix.join(homeDirectory, "Library", "Caches", "OpenBot", "dev");
+  if (platform === "darwin") return posix.join(homeDirectory, "Library", "Caches", "OpenBot-NC", "dev");
   const runtimeDirectory = environment.XDG_RUNTIME_DIR?.trim();
-  if (runtimeDirectory && posix.isAbsolute(runtimeDirectory)) return posix.join(runtimeDirectory, "openbot-dev");
-  return posix.join(homeDirectory, ".cache", "openbot", "dev");
+  if (runtimeDirectory && posix.isAbsolute(runtimeDirectory)) return posix.join(runtimeDirectory, "openbot-nc-dev");
+  return posix.join(homeDirectory, ".cache", "openbot-nc", "dev");
 }
 
 export function developmentRemoteConnectionPath(

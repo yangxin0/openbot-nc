@@ -94,7 +94,7 @@ export const createPiKeyExtension = Effect.fn("PiKeyProviders.createExtension")(
   const { variable, source } = KEY_EXTENSIONS[provider];
   const root = directory ?? tmpdir();
   yield* providerCall(() => mkdir(root, { recursive: true, mode: 0o700 }));
-  const folder = yield* providerCall(() => mkdtemp(join(root, "openbot-pi-")));
+  const folder = yield* providerCall(() => mkdtemp(join(root, "openbot-nc-pi-")));
   const path = join(folder, `${provider}.mjs`);
   yield* providerCall(() => writeFile(path, source, { mode: 0o600 })).pipe(
     Effect.onError(() => providerCall(() => rm(folder, { recursive: true, force: true })).pipe(Effect.orDie)),

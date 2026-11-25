@@ -1,3 +1,5 @@
+import { APP_LINK_SCHEME, isReadableAppLinkProtocol } from "./app-identity";
+
 export const OPENBOT_AGENT_TEMPLATE_ORIGIN = "https://openbot.run";
 export const OPENBOT_AGENT_TEMPLATE_PATH_PREFIX = "/agents/";
 export const OPENBOT_AGENT_TEMPLATE_HOST = "agents";
@@ -47,7 +49,7 @@ export function agentTemplateIdFromWebAppSearch(search: string): string | null {
 
 export function createOpenBotAgentTemplateUrl(id: string): string {
   assertAgentTemplateId(id);
-  return `openbot://${OPENBOT_AGENT_TEMPLATE_HOST}/${id}`;
+  return `${APP_LINK_SCHEME}://${OPENBOT_AGENT_TEMPLATE_HOST}/${id}`;
 }
 
 export function parseAgentTemplateUrl(value: string): string {
@@ -62,7 +64,7 @@ export function parseAgentTemplateUrl(value: string): string {
     url.protocol === "https:" &&
     url.origin === OPENBOT_AGENT_TEMPLATE_ORIGIN &&
     url.pathname.startsWith(OPENBOT_AGENT_TEMPLATE_PATH_PREFIX);
-  const customScheme = url.protocol === "openbot:" && url.hostname === OPENBOT_AGENT_TEMPLATE_HOST;
+  const customScheme = isReadableAppLinkProtocol(url.protocol) && url.hostname === OPENBOT_AGENT_TEMPLATE_HOST;
   if (
     (!canonical && !customScheme) ||
     url.username !== "" ||

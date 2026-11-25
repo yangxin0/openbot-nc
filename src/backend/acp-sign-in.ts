@@ -299,7 +299,7 @@ const SIGN_IN_PAGE_LINKS: Record<SignInPageSite, (url: URL) => string> = {
 };
 
 async function makeOpenerFolder(): Promise<string> {
-  const folder = await mkdtemp(join(tmpdir(), "openbot-sign-in-"));
+  const folder = await mkdtemp(join(tmpdir(), "openbot-nc-sign-in-"));
   const page = join(folder, OPENER_PAGE).replaceAll("'", `'\\''`);
   const script = `#!/bin/sh\nprintf '%s\\n' "$1" >> '${page}'\n`;
   for (const name of ["open", "xdg-open"]) await writeFile(join(folder, name), script, { mode: 0o700 });

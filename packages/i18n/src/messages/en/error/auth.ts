@@ -8,6 +8,7 @@ export const messages = defineMessages("error.auth", {
     "A firewall or proxy on this network blocked OpenBot from reaching {host}. Ask your network administrator to allow {host}, then try again.",
   "error.auth.signInFirst": "Sign in to OpenBot first.",
   "error.auth.signInRequired": "Sign in is required.",
+  "error.auth.accountServiceRemoved": "This OpenBot has no account service. This feature is not available.",
   "error.auth.chatColorUnavailable": "The account service does not support chat colors yet. Try again later.",
   "error.auth.accountChangedDuringRegister": "The signed-in account changed while this server was being registered.",
   "error.auth.hostCredentialUnavailable": "The remote host credential is unavailable. Register the host again.",
@@ -17,8 +18,6 @@ export const messages = defineMessages("error.auth", {
     "OpenBot could not reach the account service. Check your connection, then try again.",
   "error.auth.serviceTimeout": "The account service did not answer in time. Try again.",
   "error.auth.serviceStatus": "The account service returned an error ({status}). Try again later.",
-  "error.auth.invalidHostedServer": "The account service returned an invalid hosted server.",
-  "error.auth.invalidServerClaim": "The account service returned an invalid server claim.",
   "error.auth.codeNotSent": "OpenBot could not send the sign-in code.",
   "error.auth.deliveryTimeout":
     "OpenBot could not confirm delivery in time. The code may still arrive; check delivery before sending again.",
@@ -39,5 +38,4 @@ export const messages = defineMessages("error.auth", {
   "error.auth.companySignInTokenInvalid": "The provider gave a sign-in that OpenBot cannot check.",
   "error.auth.companySignInProviderUnreachable": "The company sign-in provider did not answer.",
   "error.auth.companySignInDomainTaken": "One of these domains already signs in through another server.",
-  "error.auth.companySignInNoServer": "Start this server before you set up company sign-in.",
 });

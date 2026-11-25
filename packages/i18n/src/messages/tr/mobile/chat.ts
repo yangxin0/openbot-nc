@@ -230,14 +230,6 @@ export const messages = {
     "ElevenLabs anahtarında bir izin eksik. Ayarlar > Ses bölümünden kontrol et.",
   "mobile.chat.liveVoice.networkNeeded": "ElevenLabs için ağ bağlantısı gerekir.",
   "mobile.chat.liveVoice.voiceServerFailed": "Ses sunucunuz yanıtı okuyamadı. Ayarlar > Ses bölümünden kontrol edin.",
-  "mobile.chat.liveVoice.gptUnsupported":
-    "Bu sunucu GPT Live Voice'u desteklemiyor. Onu çalıştıran bilgisayarda OpenBot'u güncelleyin.",
-  "mobile.chat.liveVoice.gptFailed": "GPT Live Voice başlatılamadı. Yeniden denemek için mikrofonun sesini açın.",
-  "mobile.chat.liveVoice.gptEnded": "GPT Live Voice durdu. Yeniden başlatmak için mikrofonun sesini açın.",
-  "mobile.chat.liveVoice.gptFailedTitle": "GPT Live Voice başlatılamadı",
-  "mobile.chat.liveVoice.gptEndedTitle": "GPT Live Voice durdu",
-  "mobile.chat.liveVoice.gptMicrophoneOff":
-    "Ayarlar'da OpenBot'un mikrofonu kullanmasına izin verin. Sonra yeniden denemek için mikrofonun sesini açın.",
   "mobile.chat.composer.addAttachment": "Ek ekle",
   "mobile.chat.composer.ask": "{name} ajanına sor",
   "mobile.chat.composer.stopFailed": "Ajan durdurulamadı. Zaten bitmiş olabilir.",

@@ -2,9 +2,9 @@ import { prefersReducedMotion } from "@openbot/ui/utils";
 import { flush } from "solid-js";
 import type { MarketplaceNavigation, MarketplaceView } from "./marketplace-view";
 
-type MarketplaceMotion = "forward" | "back" | "tab" | "swap";
+type MarketplaceMotion = "forward" | "back" | "tab";
 
-export function moveView(motion: MarketplaceMotion, update: () => void, shared = false): void {
+function moveView(motion: MarketplaceMotion, update: () => void, shared = false): void {
   if (typeof document.startViewTransition !== "function" || prefersReducedMotion()) {
     update();
     return;

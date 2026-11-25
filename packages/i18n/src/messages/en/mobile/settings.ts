@@ -520,7 +520,6 @@ export const messages = defineMessages("mobile.settings", {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "Listening",
   "mobile.settings.voice.tab.speaking": "Speaking",
-  "mobile.settings.voice.tab.gptLive": "GPT live",
   "mobile.settings.voice.pause.title": "Pause before sending",
   "mobile.settings.voice.pause.label": "Wait for new words",
   "mobile.settings.voice.pause.footer":
@@ -529,21 +528,6 @@ export const messages = defineMessages("mobile.settings", {
   "mobile.settings.voice.speed.title": "Reply speed",
   "mobile.settings.voice.speed.footer": "The speed of replies that OpenBot reads aloud, also in a voice conversation.",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT live voice",
-  "mobile.settings.voice.gptLive.footer":
-    "In a voice conversation with an agent, GPT live voice listens and speaks instead of this phone. It uses the Codex (ChatGPT) sign-in of the computer that runs the server. Your voice goes between this phone and OpenAI, and OpenAI speaks the agent's replies. It needs a server that supports it; other servers use the voice of this phone.",
-  "mobile.settings.voice.gptLive.automatic": "Automatic",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "OpenAI speaks with this voice in your next voice conversation. With Automatic, OpenAI chooses the voice.",
-  "mobile.settings.voice.gptLive.serversTitle": "Servers",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "Tap a server that needs a sign-in to connect Codex with a ChatGPT account. Only an owner or admin sees the sign-in of a server.",
-  "mobile.settings.voice.gptLive.account": "GPT live voice account",
-  "mobile.settings.voice.gptLive.status.ready": "Ready",
-  "mobile.settings.voice.gptLive.status.supported": "Supported",
-  "mobile.settings.voice.gptLive.status.offline": "Offline",
-  "mobile.settings.voice.gptLive.status.update": "Needs a newer OpenBot on its computer",
-  "mobile.settings.voice.gptLive.status.signIn": "Sign in to Codex with ChatGPT",
   "mobile.settings.voice.server.title": "Voice server",
   "mobile.settings.voice.server.row": "OpenAI-compatible server",
   "mobile.settings.voice.server.notSetUp": "Not set up",

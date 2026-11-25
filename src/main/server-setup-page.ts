@@ -16,9 +16,6 @@ const ASSET_PATH = /^\/assets\/([\w-]+(?:\.[\w-]+)*\.[a-z0-9]+)$/u;
 
 const API_ROUTES: Record<string, ServerSetupAction> = {
   [`GET ${SERVER_SETUP_ROUTES.status}`]: "status",
-  [`POST ${SERVER_SETUP_ROUTES.loginStart}`]: "login_start",
-  [`POST ${SERVER_SETUP_ROUTES.loginVerify}`]: "login_verify",
-  [`POST ${SERVER_SETUP_ROUTES.retry}`]: "retry",
 };
 
 const SECURITY_HEADERS = {

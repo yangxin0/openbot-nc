@@ -11,7 +11,6 @@ import { speechLanguageOf } from "@openbot/contracts/speech-language";
 import { speechTextFromMarkdown } from "@openbot/contracts/speech-text";
 import { toast } from "@openbot/ui";
 import { currentText } from "@openbot/ui/text";
-import { desktopAnalytics } from "../../analytics";
 import { followSpeechModel, speechModelFindsLanguage } from "./speech-model";
 import {
   loadRecording,
@@ -58,8 +57,6 @@ interface DictatedMessage {
   channel: boolean;
 }
 
-type SpeechTrigger = "voice_conversation" | "progress_update" | "dictation" | "read_aloud";
-
 export type { SpeechAgent };
 
 function agentKey(agent: SpeechAgent): string {
@@ -83,12 +80,7 @@ function afterReadings(read: () => Promise<void>): Promise<void> {
   return next;
 }
 
-function readAfterReadings(
-  markdown: string,
-  source: SpeechSource,
-  fallback: SpeechLanguage,
-  trigger: SpeechTrigger,
-): Promise<void> {
+function readAfterReadings(markdown: string, source: SpeechSource, fallback: SpeechLanguage): Promise<void> {
   const waiting = speechInput(markdown, fallback);
   if (waiting) {
     waitingReadings.push(waiting);
@@ -97,7 +89,7 @@ function readAfterReadings(
   return afterReadings(() => {
     const index = waiting ? waitingReadings.indexOf(waiting) : -1;
     if (index >= 0) waitingReadings.splice(index, 1);
-    const read = speak(markdown, source, fallback, trigger, waiting);
+    const read = speak(markdown, source, fallback, waiting);
     setUpcomingReading(waitingReadings[0]);
     return read;
   });
@@ -320,7 +312,7 @@ function readProgressUpdates(messages: readonly ConversationMessage[], agent: Sp
       continue;
     read.ids.add(update.id);
     const source = { ...agent, messageId: update.id };
-    void readAfterReadings(update.text, source, message.language, "progress_update");
+    void readAfterReadings(update.text, source, message.language);
   }
 }
 
@@ -344,15 +336,9 @@ async function readReply(agent: SpeechAgent, turnId: string, message: DictatedMe
       heard ? "" : (answer?.text ?? ""),
       { ...agent, messageId: answer?.id ?? null },
       message.language,
-      message.always ? "voice_conversation" : "dictation",
     );
   } catch (error) {
     if (!loading.has(own)) return;
-    desktopAnalytics.track("speech_reply", {
-      trigger: message.always ? "voice_conversation" : "dictation",
-      result: "failed",
-      failure_code: "load_failed",
-    });
     reportReadFailure(error);
   } finally {
     loading.delete(own);
@@ -363,16 +349,14 @@ async function readReply(agent: SpeechAgent, turnId: string, message: DictatedMe
 async function readChannelReply(channel: SpeechAgent, entry: ChannelMessage, message: DictatedMessage): Promise<void> {
   const own = { ...channel };
   const ended = replyEndedUnlessDropped(channel);
-  const trigger = message.always ? "voice_conversation" : "dictation";
   loading.add(own);
   try {
     if (!message.always && !(await speechPort().voice.getSpeechSettings()).readReplies) return;
     if (!loading.has(own)) return;
     loading.delete(own);
-    await readAfterReadings(entry.message.text, { ...channel, messageId: entry.id }, message.language, trigger);
+    await readAfterReadings(entry.message.text, { ...channel, messageId: entry.id }, message.language);
   } catch (error) {
     if (!loading.has(own)) return;
-    desktopAnalytics.track("speech_reply", { trigger, result: "failed", failure_code: "load_failed" });
     reportReadFailure(error);
   } finally {
     loading.delete(own);
@@ -386,7 +370,7 @@ export function toggleReadAloud(source: SpeechSource & { messageId: string }, ma
     return;
   }
   skipWaitingReadings();
-  void speak(markdown, source, "en", "read_aloud");
+  void speak(markdown, source, "en");
 }
 
 function pauseOrResumeSpeech(messageId: string): boolean {
@@ -406,7 +390,7 @@ export function toggleRecording(messageId: string, url: string): void {
 export function toggleSpokenReply(source: SpeechSource & { messageId: string }, markdown: string): void {
   if (pauseOrResumeSpeech(source.messageId)) return;
   skipWaitingReadings();
-  if (!playSpokenReply(source.messageId)) void speak(markdown, source, "en", "read_aloud");
+  if (!playSpokenReply(source.messageId)) void speak(markdown, source, "en");
 }
 
 export function seekSpokenReply(messageId: string, seconds: number): void {
@@ -453,11 +437,9 @@ async function speak(
   markdown: string,
   source: SpeechSource,
   fallback: SpeechLanguage,
-  trigger: SpeechTrigger,
   prepared?: UpcomingReading,
 ): Promise<void> {
   const own = { serverId: source.serverId, agentId: source.agentId };
-  const analytics = desktopAnalytics.scope();
   try {
     const input = speechInput(markdown, fallback);
     if (!input) {
@@ -466,16 +448,8 @@ async function speak(
     }
     spoken = own;
     void loadSpeechSpeed();
-    const result = await readAloud(input.text, input.language, source, prepared);
-    analytics.track("speech_reply", {
-      trigger,
-      result: "succeeded",
-      completed: result.completed,
-      ...(result.firstAudioMs === null ? {} : { first_audio_ms: result.firstAudioMs }),
-      audio_duration_seconds: Math.round(result.seconds * 10) / 10,
-    });
+    await readAloud(input.text, input.language, source, prepared);
   } catch (error) {
-    analytics.track("speech_reply", { trigger, result: "failed", failure_code: "speech_failed" });
     reportReadFailure(error);
   } finally {
     if (spoken === own) spoken = undefined;

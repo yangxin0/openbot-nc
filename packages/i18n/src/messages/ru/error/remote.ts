@@ -2,52 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "Обновите клиент, чтобы настроить удалённый рабочий стол.",
-  "error.remote.desktopSetupUnavailable": "Настройка удалённого рабочего стола недоступна.",
-  "error.remote.desktopTestUnavailable": "Проверка удалённого рабочего стола недоступна.",
-  "error.remote.controlUnavailable": "Удалённое управление недоступно.",
-  "error.remote.controlSessionNotFound": "Сессия удалённого управления не найдена.",
-  "error.remote.controlNotAllowed": "Владелец этого компьютера не разрешает вашей роли управлять им.",
-  "error.remote.controlDeclined": "Человек за этим компьютером не разрешил удалённое управление.",
-  "error.remote.testRuntimeUpdate": "Обновите среду удалённого рабочего стола для macOS, чтобы выполнить эту проверку.",
-  "error.remote.testOtherSessions": "Завершите другие сессии удалённого рабочего стола, прежде чем начинать проверку.",
-  "error.remote.testPermissions": "Проверьте разрешения и графическую сессию на хосте, прежде чем начинать проверку.",
-  "error.remote.controlSessionEnded": "Сессия удалённого управления завершена.",
-  "error.remote.testPanelFailed": "Хосту не удалось открыть панель проверки.",
-  "error.remote.sessionCapacity": "На хосте уже четыре активные сессии.",
-  "error.remote.linuxNeedsX11": "Для удалённого рабочего стола в Linux нужна сессия X11. Wayland не поддерживается.",
-  "error.remote.runtimeMissing":
-    "Среда Sunshine и Moonlight Web отсутствует или не поддерживается на этом хосте. Установите полный релиз OpenBot на Mac, хост Windows x64 или хост Linux x64 и перезапустите OpenBot.",
-  "error.remote.testActive": "Идёт проверка удалённого рабочего стола. Повторите попытку, когда она закончится.",
-  "error.remote.screenRecordingDenied":
-    "Хост не разрешил OpenBot записывать экран. Разрешите запись экрана на хосте и повторите попытку.",
-  "error.remote.windowsSessionDisconnected":
-    "Сеанс Windows на хосте отключён, поэтому нет экрана для показа. Войдите в Windows на экране хоста и повторите попытку.",
-  "error.remote.windowsCaptureDenied":
-    "Windows на хосте не разрешает OpenBot записывать экран. Разблокируйте Windows на экране хоста, закройте все запросы администратора и повторите попытку. Если проблема не исчезнет, перезапустите хост.",
-  "error.remote.macScreenLocked":
-    "Mac заблокирован, поэтому не может показать свой экран. Разблокируйте Mac на его экране и повторите попытку.",
-  "error.remote.streamTooSlowLowerQuality":
-    "Соединение с хостом слишком медленное для изображения. Повторите попытку: следующее подключение будет с более низким качеством.",
-  "error.remote.streamTooSlow":
-    "Соединение с хостом слишком медленное для изображения. Используйте более быструю сеть и повторите попытку.",
-  "error.remote.noPictureSwitchEncoder":
-    "Хост не передал изображение. Повторите попытку: следующее подключение использует настройку видео, которая работает на большем числе компьютеров.",
-  "error.remote.teamSessionExpired": "Сессия команды истекла.",
-  "error.remote.finishTestBeforeSwitch": "Завершите проверку удалённого рабочего стола, прежде чем переключать экраны.",
-  "error.remote.displayNotFound": "Удалённый экран не найден.",
-  "error.remote.displaySwitchInProgress": "Идёт переключение экрана.",
-  "error.remote.localTestListenerUnavailable": "Локальный приёмник проверки недоступен.",
-  "error.remote.localTestNotFound": "Сессия локальной проверки не найдена.",
-  "error.remote.runtimeUnavailable": "Среда удалённого рабочего стола недоступна.",
-  "error.remote.sunshineStartFailed":
-    "Sunshine не запустился на хосте. Проверьте журналы удалённого рабочего стола на хосте и повторите попытку.",
-  "error.remote.moonlightStartFailed":
-    "Moonlight Web не запустился на хосте. Проверьте журналы удалённого рабочего стола на хосте и повторите попытку.",
-  "error.remote.pairingFailed":
-    "Moonlight не удалось выполнить сопряжение с Sunshine на хосте. Повторите попытку. Если проблема не исчезает, перезапустите OpenBot на хосте.",
-  "error.remote.runtimeStartFailed":
-    "Среда удалённого рабочего стола не запустилась на хосте. Проверьте журналы удалённого рабочего стола на хосте и повторите попытку.",
   "error.remote.hostUnreachable": "Хост недоступен.",
   "error.remote.signInToHostAgain": "Войдите на этот хост снова.",
   "error.remote.invalidData": "Хост вернул некорректные данные.",
@@ -71,12 +25,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "Служба аккаунтов приняла другой хост.",
   "error.remote.inviteIdentityChanged": "Идентификатор хоста приглашения изменился во время принятия.",
   "error.remote.localServerRemove": "Локальный сервер нельзя удалить.",
-  "error.remote.desktopSetupHostUpdate":
-    "Обновите OpenBot на хосте, чтобы проверить настройку удалённого рабочего стола.",
-  "error.remote.desktopTestHostUpdate":
-    "Обновите OpenBot на хосте, чтобы проверить настройку удалённого рабочего стола.",
   "error.remote.viewerProxyUnavailable": "Локальный прокси просмотра удалённого рабочего стола недоступен.",
-  "error.remote.viewerTransportInvalid": "Транспорт просмотра удалённого рабочего стола некорректен.",
   "error.remote.viewerProxyNoPort": "Локальный прокси просмотра удалённого рабочего стола не получил порт.",
   "error.remote.inviteNeedsConnection": "Хост должен один раз подключиться, прежде чем создавать приглашения.",
   "error.remote.permanentInviteUnsupported": "Это подключение к серверу не поддерживает постоянные ссылки-приглашения.",

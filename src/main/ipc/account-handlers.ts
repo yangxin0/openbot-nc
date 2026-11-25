@@ -1,31 +1,35 @@
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
-import { LOCAL_SERVER_ID, type TestCompanySignInInput } from "@openbot/contracts/ipc";
-import { sourceText } from "@openbot/i18n/source";
+import { Effect } from "effect";
 import { runCauseEffect } from "../../backend/effect-boundary";
 import type { CentralAuthManager } from "../central-auth-manager";
 import type { HostService } from "../host-service";
 import { createHostedMobileConnect, createHostedMobileConnectLink } from "../mobile-connect-host";
+import type { RelayService } from "../relay-service";
+import { RemoteWorkflowError } from "../remote-service-effects";
 import { parseChatColor, parseEmailCodeVerification, parseProfileName } from "./app-inputs";
 import { parseAvatarImage } from "./avatar-inputs";
 import { handler, type IpcGroupHandlers, payloadHandler } from "./define-ipc-group";
-import { isObject, requireString, stringPayload } from "./validation";
+import { stringPayload } from "./validation";
 
 export interface AccountIpcDependencies {
   centralAuth: CentralAuthManager;
   refreshServers: () => void;
-  host: Pick<HostService, "configure" | "getStatus" | "start" | "getMobileConnectHost" | "refreshRegistration">;
+  host: Pick<HostService, "configure" | "getStatus" | "getMobileConnectHost" | "refreshRegistration">;
+  relayHosting: Pick<RelayService, "publishHost">;
 }
 
 export function accountIpcHandlers({
   centralAuth,
   host,
+  relayHosting,
   refreshServers,
 }: AccountIpcDependencies): Pick<IpcGroupHandlers, "auth"> {
-  const hostId = (serverId: string): string => {
-    if (serverId !== LOCAL_SERVER_ID) return serverId;
-    const local = host.getStatus().serverId;
-    if (!local) throw new Error(sourceText("error.auth.companySignInNoServer"));
-    return local;
+  const mobileConnectHost = {
+    configure: (input: { serverName: string }) => host.configure(input),
+    getStatus: () => host.getStatus(),
+    getMobileConnectHost: () => host.getMobileConnectHost(),
+    refreshRegistration: () => host.refreshRegistration(),
+    start: () => relayHosting.publishHost().pipe(Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause }))),
   };
   return {
     auth: {
@@ -44,10 +48,14 @@ export function accountIpcHandlers({
       updateChatColor: payloadHandler(parseChatColor, (chatColor) =>
         runCauseEffect(centralAuth.updateChatColor(chatColor)),
       ),
-      createMobileConnect: handler(() => runCauseEffect(createHostedMobileConnect({ centralAuth, host }))),
+      createMobileConnect: handler(() =>
+        runCauseEffect(createHostedMobileConnect({ centralAuth, host: mobileConnectHost })),
+      ),
       cancelMobileConnect: handler(() => runCauseEffect(centralAuth.cancelMobileConnect(host.getMobileConnectHost()))),
       getMobileConnectLink: handler(() => centralAuth.getMobileConnectLink(host.getMobileConnectHost())),
-      createMobileConnectLink: handler(() => runCauseEffect(createHostedMobileConnectLink({ centralAuth, host }))),
+      createMobileConnectLink: handler(() =>
+        runCauseEffect(createHostedMobileConnectLink({ centralAuth, host: mobileConnectHost })),
+      ),
       revokeMobileConnectLink: handler(() =>
         runCauseEffect(centralAuth.revokeMobileConnectLink(host.getMobileConnectHost())),
       ),
@@ -62,26 +70,6 @@ export function accountIpcHandlers({
         runCauseEffect(centralAuth.revokeMobileConnectedDevice(sessionId)),
       ),
       logout: handler(() => runCauseEffect(centralAuth.logout())),
-      openCompanySignIn: handler(() => runCauseEffect(centralAuth.openCompanySignIn())),
-      getCompanySignIn: payloadHandler(stringPayload("serverId"), (serverId) =>
-        runCauseEffect(centralAuth.companySignInSettings(hostId(serverId))),
-      ),
-      testCompanySignIn: payloadHandler(parseTestCompanySignIn, ({ serverId, ...input }) =>
-        runCauseEffect(centralAuth.testCompanySignIn(hostId(serverId), input)),
-      ),
-      cancelCompanySignInTest: handler(() => runCauseEffect(centralAuth.cancelCompanySignInTest())),
-      setCompanySignInEnabled: payloadHandler(parseSetCompanySignInEnabled, ({ serverId, enabled }) =>
-        runCauseEffect(centralAuth.setCompanySignInEnabled(hostId(serverId), enabled)),
-      ),
-      removeCompanySignIn: payloadHandler(stringPayload("serverId"), (serverId) =>
-        runCauseEffect(centralAuth.removeCompanySignIn(hostId(serverId))),
-      ),
-      createCompanySignInScimToken: payloadHandler(stringPayload("serverId"), (serverId) =>
-        runCauseEffect(centralAuth.createCompanySignInScimToken(hostId(serverId))),
-      ),
-      revokeCompanySignInScimToken: payloadHandler(stringPayload("serverId"), (serverId) =>
-        runCauseEffect(centralAuth.revokeCompanySignInScimToken(hostId(serverId))),
-      ),
       listOwnerTransfers: handler(() => runCauseEffect(centralAuth.incomingOwnerTransfers())),
       acceptOwnerTransfer: payloadHandler(stringPayload("transferId", INPUT_LIMITS.identifier), async (transferId) => {
         const accepted = await runCauseEffect(centralAuth.acceptOwnerTransfer(transferId));
@@ -93,30 +81,4 @@ export function accountIpcHandlers({
       ),
     },
   };
-}
-
-const COMPANY_SIGN_IN_FIELD = 1_024;
-const COMPANY_SIGN_IN_DOMAINS = 20;
-
-function parseTestCompanySignIn(input: unknown): TestCompanySignInInput {
-  if (!isObject(input)) throw new Error("Company sign-in details are required.");
-  const { clientSecret, domains } = input;
-  if (typeof clientSecret !== "string" || clientSecret.length > COMPANY_SIGN_IN_FIELD) {
-    throw new Error("clientSecret must be a string.");
-  }
-  if (!Array.isArray(domains) || domains.length > COMPANY_SIGN_IN_DOMAINS) {
-    throw new Error("domains must be a list of at most 20 domains.");
-  }
-  return {
-    serverId: requireString(input.serverId, "serverId"),
-    issuer: requireString(input.issuer, "issuer", INPUT_LIMITS.browserUrl),
-    clientId: requireString(input.clientId, "clientId", COMPANY_SIGN_IN_FIELD),
-    clientSecret,
-    domains: domains.map((domain) => requireString(domain, "domain", INPUT_LIMITS.hostname)),
-  };
-}
-
-function parseSetCompanySignInEnabled(input: unknown): { serverId: string; enabled: boolean } {
-  if (!isObject(input) || typeof input.enabled !== "boolean") throw new Error("enabled must be a boolean.");
-  return { serverId: requireString(input.serverId, "serverId"), enabled: input.enabled };
 }

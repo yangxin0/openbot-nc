@@ -173,6 +173,10 @@ jobs:
             if: env.CODE == 'true'
             run: bun run check:app-minimum-version
 
+          - name: Check vendor endpoints
+            if: env.CODE == 'true'
+            run: bun run check:vendor-endpoints
+
           # Fails after a release that changed the database schema until `releases.json` has it. It
           # takes about 50 s, so it runs only when the database code changes: a new migration must be
           # tested from every released schema. `git archive` needs only the tag commits.
@@ -397,9 +401,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:team-webrtc-wire-parity
 
-      - name: Run the remote viewer proxy E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:remote-viewer-proxy
       - name: Run the server safe mode E2E test
         if: ${{ !cancelled() }}
         run: bun run test:server-safe-mode
@@ -427,22 +428,6 @@ jobs:
       - name: Run the desktop and phone notification E2E test
         if: ${{ !cancelled() }}
         run: bun run test:desktop-notifications
-
-      - name: Run the phone notification away and Live Activity E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:push-notification-away
-
-      - name: Run the computer activity phone notification E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:computer-activity
-
-      - name: Run the notification summary E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:notification-summary
-
-      - name: Run the side thread notification and Live Activity link E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:thread-notifications
 
       - name: Run the routine pause and resume E2E test
         if: ${{ !cancelled() }}
@@ -487,30 +472,6 @@ jobs:
       - name: Run the hosted watchdog E2E test
         if: ${{ !cancelled() }}
         run: bun run test:hosted-watchdog
-
-      - name: Run the messaging pause and resume E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:messaging-pause-resume
-
-      - name: Run the Discord role list and reply context E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:messaging-discord-access
-
-      - name: Run the Discord embeds E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:messaging-discord-embeds
-
-      - name: Run the place history E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:messaging-place-history
-
-      - name: Run the Telegram answer mentions E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:messaging-telegram-mentions
-
-      - name: Run the Slack ping reply E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:messaging-slack-ping-reply
 
       - name: Run the turn input E2E test
         if: ${{ !cancelled() }}
@@ -600,10 +561,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:routine-skipped-runs-report
 
-      - name: Run the agent webhook routine E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:agent-webhook-routine
-
       - name: Run the agent channel management E2E test
         if: ${{ !cancelled() }}
         run: bun run test:agent-channel-manage
@@ -627,10 +584,6 @@ jobs:
       - name: Run the pinned message agent tool E2E test
         if: ${{ !cancelled() }}
         run: bun run test:pinned-message-agent-tool
-
-      - name: Run the messaging owner card E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:messaging-owner-card
 
       - name: Run the agent profile accounts E2E test
         if: ${{ !cancelled() }}
@@ -764,18 +717,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:workflow-model-steps
 
-      - name: Run the credit media workflow E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:credit-media-workflow
-
-      - name: Run the workflow paid media E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:workflow-paid-media
-
-      - name: Run the credit media payer switch E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:credit-media-payer-switch
-
       - name: Run the workflow Discord E2E test
         if: ${{ !cancelled() }}
         run: bun run test:workflow-discord
@@ -844,10 +785,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:instance-transfer
 
-      - name: Run the Discord files to GitHub E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:discord-github-files
-
       - name: Run the OpenCode usage metering E2E test
         if: ${{ !cancelled() }}
         run: bun run test:opencode-usage-metering
@@ -884,10 +821,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:agent-api-keys
 
-      - name: Run the remote connect analytics E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:remote-connect-analytics
-
       - name: Run the memory review E2E test
         if: ${{ !cancelled() }}
         run: bun run test:memory-review
@@ -909,7 +842,6 @@ jobs:
             .openbot-build/team-api-legacy-clients-e2e/
             .openbot-build/team-protocol-v10-e2e/
             .openbot-build/team-webrtc-wire-parity-e2e/
-            .openbot-build/remote-viewer-proxy-e2e/
             .openbot-build/server-safe-mode-e2e/
             .openbot-build/team-session-revoke-e2e/
             .openbot-build/sign-in-relay-paste-e2e/
@@ -917,10 +849,6 @@ jobs:
             .openbot-build/mcp-member-access-e2e/
             .openbot-build/server-mute-e2e/
             .openbot-build/desktop-notifications-e2e/
-            .openbot-build/push-notification-away-e2e/
-            .openbot-build/computer-activity-e2e/
-            .openbot-build/notification-summary-e2e/
-            .openbot-build/thread-notifications-e2e/
             .openbot-build/routine-pause-resume-e2e/
             .openbot-build/routine-timezone-move-e2e/
             .openbot-build/routine-overnight-window-e2e/
@@ -932,12 +860,6 @@ jobs:
             .openbot-build/update-host-takeover-e2e/
             .openbot-build/hosted-update-idle-wait-e2e/
             .openbot-build/hosted-watchdog-e2e/
-            .openbot-build/messaging-pause-resume-e2e/
-            .openbot-build/messaging-discord-access-e2e/
-            .openbot-build/messaging-discord-embeds-e2e/
-            .openbot-build/messaging-place-history-e2e/
-            .openbot-build/messaging-telegram-mentions-e2e/
-            .openbot-build/messaging-slack-ping-reply-e2e/
             .openbot-build/turn-input-e2e/
             .openbot-build/zero-filled-settings-e2e/
             .openbot-build/provider-update-busy-e2e/
@@ -959,14 +881,12 @@ jobs:
             .openbot-build/routine-fresh-session-e2e/
             .openbot-build/routine-report-failure-e2e/
             .openbot-build/routine-skipped-runs-report-e2e/
-            .openbot-build/agent-webhook-routine-e2e/
             .openbot-build/agent-channel-manage-e2e/
             .openbot-build/agent-channel-create-e2e/
             .openbot-build/library-folders-e2e/
             .openbot-build/workflow-folders-e2e/
             .openbot-build/agent-workflow-gate-e2e/
             .openbot-build/pinned-message-agent-tool-e2e/
-            .openbot-build/messaging-owner-card-e2e/
             .openbot-build/agent-profile-accounts-e2e/
             .openbot-build/browser-profile-agents-e2e/
             .openbot-build/agent-browser-profile-tool-e2e/
@@ -996,9 +916,6 @@ jobs:
             .openbot-build/antigravity-failing-session-e2e/
             .openbot-build/antigravity-verification-link-e2e/
             .openbot-build/workflow-model-steps-e2e/
-            .openbot-build/credit-media-workflow-e2e/
-            .openbot-build/workflow-paid-media-e2e/
-            .openbot-build/credit-media-payer-switch-e2e/
             .openbot-build/workflow-discord-e2e/
             .openbot-build/workflow-telegram-e2e/
             .openbot-build/workflow-slack-e2e/
@@ -1015,7 +932,6 @@ jobs:
             .openbot-build/workflow-step-settings-e2e/
             .openbot-build/workflow-team-api-e2e/
             .openbot-build/instance-transfer-everything-e2e/
-            .openbot-build/discord-github-files-e2e/
             .openbot-build/opencode-usage-metering-e2e/
             .openbot-build/claude-api-key-e2e/
             .openbot-build/claude-stored-sign-in-e2e/
@@ -1025,7 +941,6 @@ jobs:
             .openbot-build/pi-sign-in-watch-e2e/
             .openbot-build/provider-launch-order-e2e/
             .openbot-build/agent-api-keys-e2e/
-            .openbot-build/remote-connect-analytics-e2e/
             .openbot-build/memory-review-e2e/
             .openbot-build/skill-revision-e2e.json
           if-no-files-found: ignore

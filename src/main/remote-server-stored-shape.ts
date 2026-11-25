@@ -2,6 +2,11 @@ import { type CustomServerPlan, optionalCustomServerPayment } from "@openbot/con
 import type { ServerNotificationLevel, TeamRole } from "@openbot/contracts/ipc";
 import { LOCAL_SERVER_ID, SERVER_NOTIFICATION_LEVELS } from "@openbot/contracts/ipc";
 import {
+  RELAY_KEY_ID_PATTERN,
+  RELAY_SUBJECT_NAME_PATTERN,
+  RELAY_TEAM_ID_PATTERN,
+} from "@openbot/contracts/relay-protocol/messages";
+import {
   type DynamicRecord,
   isBoolean,
   isDynamicRecord,
@@ -13,6 +18,7 @@ import {
   optionalServerAppearanceField,
   type ServerAppearance,
 } from "@openbot/contracts/team-protocol/host-appearance-v1";
+import { relayOrigin } from "./relay/fetch";
 
 export interface StoredRemoteServer {
   id: string;
@@ -22,11 +28,14 @@ export interface StoredRemoteServer {
   publicKey?: string;
   username: string;
   encryptedToken: string;
-  remoteDesktopAvailable: boolean;
   logoVersion?: string | null;
   appearance?: ServerAppearance | null;
   role: TeamRole;
-  transport?: "webrtc-v2";
+  transport?: "webrtc-v2" | "relay";
+  relayKeyId?: string;
+  relayTeamId?: string;
+  relayUser?: string;
+  relayDevice?: string | null;
   memberLimit?: number;
   hosted?: boolean;
   restartAvailable?: boolean;
@@ -178,25 +187,26 @@ function readStoredRemoteServer(value: unknown): StoredRemoteServer | null {
     !(value.publicKey === undefined || isString(value.publicKey)) ||
     !isString(value.username) ||
     !isString(value.encryptedToken) ||
-    !(value.remoteDesktopAvailable === undefined || isBoolean(value.remoteDesktopAvailable)) ||
     !(value.logoVersion === undefined || value.logoVersion === null || isString(value.logoVersion)) ||
-    !(value.transport === undefined || value.transport === "webrtc-v2") ||
+    !(value.transport === undefined || value.transport === "webrtc-v2" || value.transport === "relay") ||
     !isOneOf(["owner", "admin", "member"] as const, value.role)
   ) {
     return null;
   }
+  const relay = value.transport === "relay" ? readRelayAddress(value) : null;
+  if (value.transport === "relay" && !relay) return null;
   return {
     id: value.id,
     name: value.name,
-    apiUrl: value.apiUrl,
+    apiUrl: relay ? relayOrigin(relay.relayKeyId) : value.apiUrl,
     fingerprint: value.fingerprint,
     ...(value.publicKey === undefined ? {} : { publicKey: value.publicKey }),
     username: value.username,
     encryptedToken: value.encryptedToken,
-    remoteDesktopAvailable: value.remoteDesktopAvailable ?? false,
     ...(value.logoVersion === undefined ? {} : { logoVersion: value.logoVersion }),
     role: value.role,
     ...(value.transport === undefined ? {} : { transport: value.transport }),
+    ...relay,
     ...(isPositiveInteger(value.memberLimit) ? { memberLimit: value.memberLimit } : {}),
     ...(isBoolean(value.hosted) ? { hosted: value.hosted } : {}),
     ...(isBoolean(value.restartAvailable) ? { restartAvailable: value.restartAvailable } : {}),
@@ -204,6 +214,26 @@ function readStoredRemoteServer(value: unknown): StoredRemoteServer | null {
     ...optionalCustomServerPayment(value),
     ...optionalServerAppearanceField(value.appearance),
   };
+}
+
+type StoredRelayAddress = Required<
+  Pick<StoredRemoteServer, "relayKeyId" | "relayTeamId" | "relayUser" | "relayDevice">
+>;
+
+function readRelayAddress(value: DynamicRecord): StoredRelayAddress | null {
+  const { relayKeyId, relayTeamId, relayUser, relayDevice } = value;
+  if (
+    !isString(relayKeyId) ||
+    !RELAY_KEY_ID_PATTERN.test(relayKeyId) ||
+    !isString(relayTeamId) ||
+    !RELAY_TEAM_ID_PATTERN.test(relayTeamId) ||
+    !isString(relayUser) ||
+    !RELAY_SUBJECT_NAME_PATTERN.test(relayUser) ||
+    !(relayDevice === null || (isString(relayDevice) && RELAY_SUBJECT_NAME_PATTERN.test(relayDevice)))
+  ) {
+    return null;
+  }
+  return { relayKeyId, relayTeamId, relayUser, relayDevice };
 }
 
 function isPositiveInteger(value: unknown): value is number {

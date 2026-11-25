@@ -84,8 +84,6 @@ export const messages = {
   "composer.attachment.adding": "Добавление {name}",
   "composer.placeholder.hostSetup": "Завершите настройку провайдера на хосте, чтобы начать",
   "composer.placeholder.connectHost": "Подключитесь к хосту, чтобы начать",
-  "composer.placeholder.hostSleeping": "Сервер спит. Нажмите клавишу или щёлкните, чтобы разбудить его",
-  "composer.placeholder.hostWaking": "Пробуждение сервера…",
   "composer.placeholder.cliSetup": "Завершите настройку CLI агента, чтобы начать",
   "composer.placeholder.reply": "Ответить…",
   "composer.placeholder.message": "Сообщение: {name}",

@@ -3,7 +3,6 @@ import { Button, ChevronRight, Spinner } from "@openbot/ui";
 import { AgentAvatar } from "@openbot/ui/features/agents/AgentAvatar";
 import { useText } from "@openbot/ui/text";
 import { createUniqueId, For, Show } from "solid-js";
-import { AnalyticsConsentRow, ConsentNotice } from "./AnalyticsConsent";
 import type { OnboardingAvatarVariant } from "./onboarding-avatars";
 
 export interface FirstRunChoiceProps {
@@ -13,10 +12,9 @@ export interface FirstRunChoiceProps {
   reason: string;
   onStartFree: () => void;
   onUsePlan: () => void;
-  analytics: boolean;
-  onAnalyticsChange: (enabled: boolean) => void;
-  onOpenTerms: () => void;
-  onOpenPrivacy: () => void;
+  teamName?: string | null | undefined;
+  teamBusy?: boolean | undefined;
+  onConnectTeam?: (() => void) | undefined;
 }
 
 const PLAN_LOGOS: readonly ProviderLogoVariant[] = ["codex", "claude", "grok"];
@@ -26,6 +24,7 @@ export function FirstRunChoice(props: FirstRunChoiceProps) {
   const reasonId = createUniqueId();
   const freeDetailId = createUniqueId();
   const planDetailId = createUniqueId();
+  const teamDetailId = createUniqueId();
   const freeDescribedBy = () => (props.reason ? `${freeDetailId} ${reasonId}` : freeDetailId);
   return (
     <>
@@ -75,14 +74,36 @@ export function FirstRunChoice(props: FirstRunChoiceProps) {
           </span>
           <ChevronRight class="first-run-choice-row-chevron" aria-hidden="true" />
         </Button>
-        <AnalyticsConsentRow
-          checked={props.analytics}
-          disabled={props.disabled}
-          agents={props.team.slice(2, 5)}
-          onChange={(enabled) => props.onAnalyticsChange(enabled)}
-        />
+        <Show when={props.onConnectTeam}>
+          {(connect) => (
+            <Button
+              type="button"
+              variant="ghost"
+              class="first-run-choice-row"
+              disabled={props.disabled || props.teamBusy === true || Boolean(props.teamName)}
+              aria-busy={props.teamBusy ? "true" : undefined}
+              aria-label={t("onboarding.choice.team")}
+              aria-describedby={teamDetailId}
+              onClick={() => connect()()}
+            >
+              <span class="first-run-choice-row-text">
+                <strong>{t("onboarding.choice.team")}</strong>
+                <span id={teamDetailId}>
+                  {props.teamName
+                    ? t("onboarding.choice.teamConnected", { team: props.teamName })
+                    : t("onboarding.choice.teamDetail")}
+                </span>
+              </span>
+              <Show
+                when={props.teamBusy}
+                fallback={<ChevronRight class="first-run-choice-row-chevron" aria-hidden="true" />}
+              >
+                <Spinner size="sm" label={t("settings.team.importing")} />
+              </Show>
+            </Button>
+          )}
+        </Show>
       </div>
-      <ConsentNotice onOpenTerms={() => props.onOpenTerms()} onOpenPrivacy={() => props.onOpenPrivacy()} />
       <Show when={props.reason}>
         {(reason) => (
           <p class="onboarding-next-reason first-run-choice-reason" id={reasonId}>

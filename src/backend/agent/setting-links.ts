@@ -154,13 +154,6 @@ const SETTING_LINKS: Record<SettingLinkId, SettingLinkEntry> = {
     about: "How fast replies are read aloud.",
     words: "tts rate faster slower",
   },
-  "voice.codex-live": {
-    title: "Codex live voice",
-    place: `${APP} > Voice`,
-    about:
-      "Voice conversations with any agent use OpenAI live voice with a Codex sign-in (a ChatGPT account). The voice, the requests and the replies go to OpenAI.",
-    words: "realtime live conversation talk openai chatgpt cloud speech to speech",
-  },
   "voice.server": {
     title: "Voice server",
     place: `${APP} > Voice`,
@@ -435,7 +428,7 @@ const SERVER_PLACES: readonly ServerPlaceEntry[] = [
   {
     title: "Add a server",
     place:
-      "On a computer: the server button at the bottom of the narrow bar on the left, below Settings (Open server menu for <server name>) > Add a server, or Add remote server when no plans show. In the Server rail layout, use the + button at the bottom of the server list instead; with plans, it opens Add a server directly. Add a server opens Run OpenBot 24/7 on an external server, with hosted server plans. In it, Other options > New server on another computer gives one install command for a Linux computer or VPS that the user owns (Ubuntu 24.04 or 26.04). When no plans show, New server on another computer is in that menu itself. New server on another computer is only in the desktop app, not in the browser at openbot.run/app. On the phone app: Servers > Add a server, for a hosted server.",
+      "On a computer: the server button at the bottom of the narrow bar on the left, below Settings (Open server menu for <server name>) > Add a server, or Add remote server when no plans show. In the Server rail layout, use the + button at the bottom of the server list instead; with plans, it opens Add a server directly. Add a server opens Run OpenBot 24/7 on an external server, with hosted server plans. In it, Other options > New server on another computer gives one install command for a Linux computer or VPS that the user owns (Ubuntu 24.04 or 26.04). When no plans show, New server on another computer is in that menu itself. New server on another computer is only in the desktop app, not in the web client. On the phone app: Servers > Add a server, for a hosted server.",
     about:
       "A server that runs 24/7 on another computer, so that agents, routines and chat apps such as WhatsApp keep working while this computer is off. The user runs the install command as root on that computer, then opens the new server and connects a provider and apps there. When the user gives the SSH address, create_server_install_command makes the same command for you to run over SSH.",
     words:
@@ -485,7 +478,7 @@ const CHAT_PLACES: readonly SettingLinkEntry[] = [
     place:
       "On a computer: in the agent's chat, with an empty message box, the voice button in place of Send (Start voice conversation). The voice bar has Mute the microphone, Interrupt, End voice conversation, and How you talk: Open microphone or Push to talk. On the phone app: in a chat with an agent or a channel, with an empty message box, the voice button in place of Send (Start a voice conversation). When the phone has no voice yet, it opens Settings > Voice. The button shows only where voice is available.",
     about:
-      "A continuous spoken conversation with the agent: OpenBot listens, the agent replies aloud, then OpenBot listens again, with no dictation for each message. It uses the voices of Settings > Voice. Codex live voice, an OpenAI voice with a ChatGPT sign-in, is optional, not required.",
+      "A continuous spoken conversation with the agent: OpenBot listens, the agent replies aloud, then OpenBot listens again, with no dictation for each message. It uses the voices of Settings > Voice.",
     words: "talk talking speak spoken live realtime continuous handsfree hands call microphone listen",
   },
 ];

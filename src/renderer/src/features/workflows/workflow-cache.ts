@@ -2,7 +2,6 @@ import {
   type AgentAccessLevels,
   LOCAL_SERVER_ID,
   type WorkflowDetail,
-  type WorkflowGitHubHistory,
   type WorkflowSummary,
   type WorkflowVersion,
 } from "@openbot/contracts/ipc";
@@ -12,7 +11,6 @@ export interface StoredWorkflow {
   detail: WorkflowDetail;
   runs: WorkflowRunView;
   versions: readonly WorkflowVersion[];
-  github: WorkflowGitHubHistory;
 }
 
 export interface HostCache {

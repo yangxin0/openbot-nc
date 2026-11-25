@@ -1,6 +1,5 @@
 import { isKeyOnlyProvider, isKnownAgentProvider } from "@openbot/contracts/agent-providers";
 import { providerCliSource } from "@openbot/contracts/cli-version";
-import { bugReportFormUrl } from "@openbot/contracts/feedback";
 import type {
   AgentProviderId,
   AgentStatus,
@@ -27,7 +26,6 @@ import {
   CUSTOM_PROVIDER_HARNESS_CAPABILITY,
   CUSTOM_PROVIDER_HARNESS_ROUTES,
 } from "@openbot/contracts/team-protocol/custom-provider-harness-v1";
-import { LIVE_VOICE_ACCOUNT_CAPABILITY } from "@openbot/contracts/team-protocol/live-voice-account-v1";
 import { PROVIDER_ACCOUNT_CODE_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-code-v1";
 import { PROVIDER_ACCOUNT_KEYS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-keys-v1";
 import { PROVIDER_ACCOUNT_MODELS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-models-v1";
@@ -101,7 +99,6 @@ import {
   saveCustomAgent,
   saveCustomProvider,
   setHostProviderDefault,
-  setLiveVoiceAccount,
   setProviderAccountPool,
   setProviderApiKey,
   setProviderUse,
@@ -146,13 +143,6 @@ const CODE_LOGIN_POLL_MS = 3000;
 
 const WEB_EXTERNAL_DESTINATIONS: Partial<Record<ExternalDestination, string>> = {
   "opencode-auth": "https://opencode.ai/auth",
-  feedback: "https://x.com/intent/post?text=Feedback%20for%20OpenBot%20%40norbertbodziony%3A%20",
-  "report-problem": bugReportFormUrl({ platform: "Web client" }),
-  message: "https://x.com/norbertbodziony",
-  changelog: "https://openbot.run/changelog",
-  guides: "https://openbot.run/guides",
-  discord: "https://discord.openbot.run",
-  x: "https://x.com/OpenBot_",
 };
 
 export function openWebDestination(destination: ExternalDestination): Promise<void> {
@@ -177,7 +167,6 @@ function webProviderAdmin(
   accountRelay: () => ProviderAccountRelay | null,
   accountModels: () => boolean,
   accountPools: () => boolean,
-  liveVoiceAccount: () => boolean,
   providerRelay: (provider: AgentProviderId) => ReturnType<typeof providerSignInRelay>,
 ): ProviderAdminDesktopApi {
   return {
@@ -266,7 +255,7 @@ function webProviderAdmin(
       ),
     accounts: async (serverId) =>
       runTeamEffect(
-        listProviderAccountsWithModels(request(serverId), accountModels(), accountPools(), liveVoiceAccount()).pipe(
+        listProviderAccountsWithModels(request(serverId), accountModels(), accountPools()).pipe(
           Effect.mapError((error) => error.cause),
         ),
       ),
@@ -306,8 +295,6 @@ function webProviderAdmin(
       runTeamEffect(removeProviderAccount(request(serverId), input).pipe(Effect.mapError((error) => error.cause))),
     setAccountPool: async (input, serverId) =>
       runTeamEffect(setProviderAccountPool(request(serverId), input).pipe(Effect.mapError((error) => error.cause))),
-    setLiveVoiceAccount: async (input, serverId) =>
-      runTeamEffect(setLiveVoiceAccount(request(serverId), input).pipe(Effect.mapError((error) => error.cause))),
     hostDefaultProvider: async (serverId) =>
       knownHostDefault(
         await runTeamEffect(getHostProviderDefault(request(serverId)).pipe(Effect.mapError((error) => error.cause))),
@@ -416,7 +403,6 @@ export function createWebProviderSettings(options: WebProviderSettingsOptions) {
     accountRelayOfServer,
     () => serverSupportsCapability(options.server(), PROVIDER_ACCOUNT_MODELS_CAPABILITY),
     () => serverSupportsCapability(options.server(), PROVIDER_ACCOUNT_POOL_CAPABILITY),
-    () => serverSupportsCapability(options.server(), LIVE_VOICE_ACCOUNT_CAPABILITY),
     (provider) => providerSignInRelay(provider, (capability) => serverSupportsCapability(options.server(), capability)),
   );
   const serverId = createMemo(() => remoteAdminServer(options.server(), "providers-v1")?.id);
@@ -629,11 +615,6 @@ export function createWebProviderSettings(options: WebProviderSettingsOptions) {
         ? {
             setPool: (provider: AgentProviderId, enabled: boolean, leftOut: readonly string[]) =>
               changed(admin.setAccountPool({ provider, enabled, leftOut: [...leftOut] }, id)),
-          }
-        : {}),
-      ...(remoteAdminServer(options.server(), LIVE_VOICE_ACCOUNT_CAPABILITY)?.id === id
-        ? {
-            setLiveVoiceAccount: (accountId: string | null) => changed(admin.setLiveVoiceAccount({ accountId }, id)),
           }
         : {}),
       ...(accountCodeServerId() === id

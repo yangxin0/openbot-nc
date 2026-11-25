@@ -28,7 +28,7 @@ export const messages = {
   "onboarding.setup.defaultProviderHint":
     "Usato per i nuovi agenti locali. Potrai cambiarlo per ogni agente più tardi.",
   "onboarding.setup.invitation": "Invito all'host",
-  "onboarding.setup.invitationPlaceholder": "Incolla un link di invito https://openbot.run/join",
+  "onboarding.setup.invitationPlaceholder": "Incolla un link di invito openbot://join",
   "onboarding.setup.otherInvitation": "Usa un altro invito",
   "onboarding.setup.joinNote":
     "Ti unirai come {email}. Gli inviti via email funzionano solo con l'indirizzo che li ha ricevuti.",
@@ -95,11 +95,6 @@ export const messages = {
   "onboarding.existing.startNewDetail": "Crea qui un nuovo team. I tuoi server mantengono agenti e chat.",
   "onboarding.existing.openFailed": "OpenBot non è riuscito ad aprire {name}.",
   "onboarding.consent.notice": "Continuando, accetti i {terms} e prendi atto dell’{privacy}.",
-  "onboarding.consent.analyticsTitle": "Aiutaci a migliorare OpenBot",
-  "onboarding.consent.analyticsDetail": "Condividi l'uso con il tuo account. Mai chat o file.",
-  "onboarding.consent.thanksTitle": "Grazie! Il team ti deve un favore.",
-  "onboarding.consent.thanksToast": "Grazie per aiutarci a migliorare OpenBot 💜",
-  "onboarding.consent.thanksToastDetail": "Puoi cambiarlo in qualsiasi momento nelle Impostazioni.",
   "onboarding.consent.termsLink": "Termini di servizio",
   "onboarding.consent.privacyLink": "Informativa privacy",
   "onboarding.plan.title": "Connetti il tuo piano",

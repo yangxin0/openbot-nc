@@ -2,16 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "הגדרת ההרשאות זמינה ב-macOS.",
-  "status.remote.setupInstallHost": "יש להתקין את רכיב המארח של שולחן העבודה המרוחק ולבדוק שוב.",
-  "status.remote.setupUpdateRuntime": "יש לעדכן את סביבת ההרצה של שולחן העבודה המרוחק כדי לבדוק הרשאות של macOS.",
-  "status.remote.setupCheckFailed": "Sunshine לא הצליח להשלים את בדיקת ההרשאות. יש לבדוק את הסשן של המארח ולנסות שוב.",
-  "status.remote.setupServiceFailed":
-    "שירות שולחן העבודה המרוחק לא הצליח להתחיל. יש לוודא שלמשתמש ה-macOS הזה יש סשן גרפי פעיל.",
-  "status.remote.connectingSunshine": "מתחבר דרך Sunshine…",
-  "status.remote.switchingMonitor": "מחליף את המסך המשותף…",
-  "status.remote.controlConnected": "השליטה מרחוק מחוברת.",
-  "status.remote.controlFailed": "השליטה מרחוק נכשלה.",
   "status.remote.stagePreferences": "טוען העדפות צ'אט מקומיות: {reason}",
   "status.remote.stageConnection": "מתחבר למחשב: {reason}",
   "status.remote.stageCompatibility": "בודק תאימות של המחשב: {reason}",

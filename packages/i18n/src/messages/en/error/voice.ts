@@ -30,21 +30,6 @@ export const messages = defineMessages("error.voice", {
   "error.voice.speech.providerRefused": "{provider} refused to make the audio: {reason}",
   "error.voice.speech.providerUnreachable": "Could not connect to {provider}. Check the connection.",
   "error.voice.recordingNotKept": "OpenBot could not keep the voice recording.",
-  "error.voice.live.timedOut": "Codex live voice did not start in time. Try again.",
-  "error.voice.live.failed": "Live voice stopped: {reason}",
-  "error.voice.live.disconnected": "Live voice disconnected.",
-  "error.voice.live.startFailed":
-    "Live voice could not start. Update Codex and sign in with ChatGPT on the computer that runs the agent, then try again. Reason: {reason}",
-  "error.voice.live.hostFailed":
-    "Codex on the server could not start live voice. Ask its owner to update Codex on that computer and sign in with ChatGPT, then try again.",
-  "error.voice.live.signIn": "Sign in to Codex with your ChatGPT account to use live voice.",
-  "error.voice.live.chooseAccount":
-    "This ChatGPT account cannot use live voice. In Settings → Voice, choose an account whose plan includes voice.",
-  "error.voice.live.unavailable":
-    "OpenAI could not start live voice. The problem is on OpenAI's side. Try again later.",
-  "error.voice.live.refused":
-    "OpenAI refused to start live voice. Try again later, or turn off live voice in Settings to talk by voice.",
-  "error.voice.live.off": "Codex live voice is off. Turn it on in Settings → Voice.",
   "error.voice.server.routeOff": "The voice server is not set up for this. Check Settings → Voice.",
   "error.voice.server.keyRefused": "{host} refused the API key.",
   "error.voice.server.invalidAnswer": "{host} did not send an OpenAI-compatible answer.",

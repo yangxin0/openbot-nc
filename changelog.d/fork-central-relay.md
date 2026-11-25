@@ -1,0 +1,111 @@
+### Added
+
+- A central server that connects the OpenBots of a team with WebSocket and no WebRTC. It makes the
+  root, team and member certificates, and lets in only an OpenBot that has a certificate of its
+  team. One server can serve many teams. See `docs/central-server.md`.
+- Join a team through the central server. Start OpenBot with `--import-relay-identity=<file>` to
+  import the identity file of `ca issue`, and with `--relay-hosting=on` or `off` to share the agents
+  of this computer with the team, or stop. On a Linux server, use `openbot-nc import-identity <file>`
+  and `openbot-nc hosting on|off`. Sharing is off on a new installation.
+- Settings > Team. It shows your team, user, device, central server, the expiry date of your
+  identity (with a warning when fewer than 30 days remain), the connection to the central server
+  and the members of the team that are connected. A server of a team member that you removed has a
+  "Show again" action. Replace or remove the identity file here.
+- Import the identity file of your central server in Settings > Team, from "Connect to your team" in
+  the "+" menu of the server list, or from the optional "Connect to your team" step of the first
+  start. OpenBot works on this computer with no identity too.
+- The "Share this computer's agents with my team" switch in Settings > Team, with the state of the
+  sharing under it.
+- The servers of team members show the user and the device that share them. When the central server
+  refuses a connection for good, for example for an expired certificate, the server screen has a
+  "Team settings" action next to "Retry".
+
+### Changed
+
+- OpenBot opens with no sign-in. It makes a local profile on this computer, with your name and chat
+  color, and does not connect to an account service. A computer that was signed in keeps its
+  messages, read marks and server on this computer.
+- Features that need the account service do not work in this version: joined servers, invitations,
+  the phone link, the skill and agent marketplaces, hosted sites, feedback, billing and credits. Their actions show "This OpenBot
+  has no account service. This feature is not available." The profile picture cannot be changed.
+- The "+" menu of the server list no longer offers "Add remote server" with an invitation, and the
+  first start no longer shows the invitation step. Team servers come from the central server.
+- This build does not update itself: it does not check for, download or install releases, and
+  Settings > Updates says so. A Linux server installs a release only from an AppImage that you give:
+  `install-server.sh --release <file or https URL> [--sha512 <base64>]`, `openbot-nc update <file or URL>`
+  or `openbot-hosted-update stage <file or URL>`. The update timer of a server no longer downloads.
+- The list of provider runtime versions that must not be installed comes with the app; OpenBot no
+  longer reads it from GitHub.
+- MCP sign-in comes back to OpenBot on this computer (`http://127.0.0.1`) and registers OpenBot with
+  the sign-in server when that server allows it. It no longer goes through pages on `openbot.run`.
+  A sign-in server that accepts only apps with a client ID document cannot sign in, and OpenBot says
+  so; add your own sign-in app to such a server. Meta Ads no longer has a built-in sign-in app: add
+  your own, with the address that Marketplace, Apps shows. A saved sign-in stays. A Meta Ads sign-in
+  ends when its token must be renewed, and a sign-in that ends must be done again.
+- Invitation links that OpenBot makes start with `openbot-nc://join`, not `https://openbot.run/join`.
+- Routine calendar feeds use new event IDs (`@routines.openbot.local`). A calendar app that
+  subscribed to a feed can show the coming runs again once.
+- OpenBot no longer allows pages from `openbot.run` in its window, and sends no OpenBot web address
+  to MCP servers.
+- The app is now OpenBot-NC (non-commercial), with its own app ID (`app.openbotnc.desktop`) and its own
+  data folders: `OpenBot-NC` in the application data folder, `~/OpenBot-NC` for agents and shared
+  files, `OpenBot-NC` caches and `openbot-nc` temporary folders. On a Linux server it installs in
+  `/opt/OpenBot-NC`, keeps data in `/srv/openbot-nc-hosted`, runs as `openbot-nc.service` and its
+  command is `openbot-nc`. The desktop opens `openbot-nc://` links and makes its own links with
+  `openbot-nc://`. OpenBot-NC does not read or change the data of an OpenBot app on the same
+  computer, and a new installation starts empty.
+
+### Removed
+
+- Paid features: billing, credits, the commercial license and its seats, referrals and invite codes,
+  the paid cloud servers with their plans, paywall, plan end and upgrade offers, and the Credits and
+  Pricing pages. Settings has no Billing and no Invite friends tab.
+- The limit of 3 members for a server on this computer. The limit of the app for one server stays.
+- Workflow steps cannot use OpenBot credit models. A saved step with such a model shows that its
+  model is not available; choose a model of your own Sunra or Higgsfield account.
+- The "Install server" dialog and the agent tool that made a one-time install command. They needed a
+  server claim of the account service.
+- Remote desktop. You can no longer see or control the screen of a server computer from OpenBot,
+  and Server Settings has no Remote desktop section. The app no longer includes the Sunshine and
+  Moonlight runtime.
+- Codex live voice. The voice button starts the normal voice conversation: OpenBot listens, sends
+  your words to the agent and reads the reply. Settings > Voice has no Live voice section, and the
+  web client has no voice conversation.
+- The agent marketplace, shared agent templates and the skill marketplace. The Marketplace has no
+  Agents tab and no list of marketplace skills. The Skills tab shows your skills, local skills and
+  skills from a GitHub link. Agent Settings has no Publish action, and OpenBot no longer opens
+  marketplace and shared agent links. The X app is gone from the Marketplace, because its agent came
+  from the marketplace. Skills and agents that you installed before stay on your agents.
+- Hosted sites. Agents can no longer publish, replace or delete a site on `openbot.site`, Server
+  Settings has no Sites section, and agents no longer get the site hosting skill. Site events in old
+  chats still show.
+- The Slack, Discord and Telegram apps. They connected through the OpenBot service. The Marketplace
+  has no Slack, Discord or Telegram app, and agents can no longer read or post in them. Old chats
+  from these apps stay readable. WhatsApp stays: it connects from this computer.
+- Webhook triggers. A new routine runs on a schedule only, and agents no longer have the tools that
+  make or change a webhook routine. A saved webhook routine no longer runs: give it a schedule or
+  delete it. A transfer from another OpenBot skips its webhook routines and says so.
+- The GitHub App connection, GitHub triggers and GitHub actions in workflows. Skills from a GitHub
+  link still install.
+- New workflow steps cannot use webhook, GitHub, Discord, Telegram or Slack triggers or outputs.
+  Saved steps of these kinds stay in the workflow, but they do not run.
+- Phone push notifications and Live Activities. They went through the OpenBot service.
+- Usage analytics and failure reports. OpenBot sends no events and no failure report to any server.
+  Settings and the first start have no analytics switch. Local logs stay. The files
+  `openbot-error-reports-v1.json`, `openbot-analytics-install-id-v1.json`,
+  `openbot-analytics-preference-v1.json` and `openbot-analytics-inventory-v1.json` stay on disk and
+  are no longer read.
+- Feedback to the OpenBot team. Agents no longer have the tools that send or remove a public GitHub
+  issue, the Help menu has no Send feedback and Report a problem, and a phone can no longer send a
+  report through a server. Old "report sent" cards in chats stay readable, with no Remove action.
+- Company sign-in (single sign-on and SCIM) and its section in Server Settings > Members.
+- The upload and download of server logos and appearance through the account service. A server keeps
+  its logo and appearance on its own computer.
+- Release checks of a server in Server Settings > Updates, which read the newest release from
+  GitHub. Servers no longer offer this to other OpenBots.
+- The Copy link action of a plugin in the Marketplace, and the Hermes "Install with a command" step
+  of the agent import. Copy the export skill instead.
+- Links to OpenBot web pages and communities: the "Pull up a chair" card with Discord and X, the
+  follow and GitHub star prompts, the Guides, Discord and Full changelog items of the Help menu, the
+  Terms and Privacy links of the first start, and the download buttons of the update and recovery
+  screens. The Help menu opens What's new, which comes with the app.

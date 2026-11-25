@@ -1932,7 +1932,7 @@ try {
         const sockets = phone.sockets.length;
         await new Promise((resume) => setTimeout(resume, 200));
         assert.equal(phone.sockets.length, sockets, "A replaced session reconnected by itself.");
-        await runCauseEffect(messaging.reconnect("whatsapp", OWNER, true));
+        await runCauseEffect(messaging.reconnect("whatsapp", OWNER));
         await until(() => connection(messaging)?.state === "connected", "connected after Reconnect");
 
         phone.current().close(428);

@@ -74,7 +74,6 @@ export const messages = {
   "error.team.membersCannotArchiveChannels": "Los miembros no pueden archivar canales.",
   "error.team.membersCannotRestoreChannels": "Los miembros no pueden restaurar canales.",
   "error.team.sharedDataUnsupported": "Esta conexión no admite datos compartidos.",
-  "error.team.agentInstallUnsupported": "Esta conexión no permite añadir agentes.",
   "error.team.agentHideUnsupported": "Esta conexión no permite ocultar agentes.",
   "error.team.agentColorsUnsupported": "Esta conexión no admite colores de agentes.",
   "error.team.chatColorsUnsupported": "Esta conexión no admite colores de chat.",
@@ -103,8 +102,6 @@ export const messages = {
   "error.team.sidebarPinsUnsupported":
     "Este servidor no puede guardar tus chats fijados para todos tus dispositivos. Actualiza OpenBot en el ordenador que lo ejecuta.",
   "error.team.agentInstructionsUnsupported": "Esta conexión no permite editar las instrucciones de los agentes.",
-  "error.team.agentPublishUnsupported": "Esta conexión no permite publicar agentes.",
-  "error.team.agentUpdateUnsupported": "Esta conexión no permite actualizar agentes.",
   "error.team.contextResetUnsupported": "Esta conexión no permite iniciar un nuevo chat.",
   "error.team.contextCompactUnsupported": "Esta conexión no admite compactar el contexto.",
   "error.team.messageDeleteUnsupported": "Esta conexión no permite eliminar mensajes.",
@@ -112,8 +109,6 @@ export const messages = {
   "error.team.conversationFileSearchUnsupported": "Esta conexión no permite buscar archivos.",
   "error.team.threadMessageSearchUnsupported": "Esta conexión no permite buscar en los hilos laterales.",
   "error.team.sideQuestionUnsupported": "Esta conexión no permite preguntas aparte.",
-  "error.team.liveVoiceUnsupported":
-    "Este servidor no admite la voz en directo de Codex. Actualiza OpenBot en el equipo que lo ejecuta.",
   "error.team.routineFlowsUnsupported":
     "Este servidor no admite flujos de rutinas. Actualiza OpenBot en el equipo que lo ejecuta.",
   "error.team.routineCanvasTooLarge":
@@ -122,9 +117,6 @@ export const messages = {
     "Un mensaje de esta conversación es demasiado grande para enviarlo a este dispositivo. Abre la conversación en el equipo que ejecuta el servidor.",
   "error.team.agentImportUnsupported": "Esta conexión no permite importar agentes.",
   "error.team.instanceTransferUnsupported": "Esta conexión no admite transferir agentes.",
-  "error.team.liveActivityUnsupported": "Este host no puede actualizar la Live Activity de un teléfono.",
-  "error.team.pushNotificationsUnsupported": "Este host no puede enviar notificaciones a un teléfono.",
-  "error.team.agentUpdateTargetRequired": "Se requiere un agente para actualizar.",
   "error.team.queueEditUnsupported": "Este cliente no admite la edición de la cola.",
   "error.team.skillsUnsupported": "Esta conexión no admite habilidades.",
   "error.team.hostIdentityUnsupported": "Esta conexión no admite cambios en la identidad del servidor.",
@@ -166,9 +158,6 @@ export const messages = {
   "error.team.machineResourcesUnsupported": "Esta conexión no admite el uso de la máquina.",
   "error.team.machineAlertMemberInvalid":
     "Solo un propietario o administrador de este servidor puede recibir alertas de la máquina.",
-  "error.team.hostedSitesUnsupported": "Esta conexión no admite sitios.",
-  "error.team.hostedSitesUnregistered": "Este servidor no está registrado en OpenBot, por lo que no tiene sitios.",
-  "error.team.hostedSiteNotFound": "No se encontró el sitio.",
   "error.team.markUnreadUnsupported": "Este cliente no permite marcar conversaciones como no leídas.",
   "error.team.inviteServiceUnavailable": "El servicio de invitaciones no está disponible.",
   "error.team.logoNotFound": "No se encontró el logotipo del servidor.",
@@ -195,8 +184,6 @@ export const messages = {
     "Este servidor no puede retransmitir inicios de sesión. Actualiza OpenBot en el host.",
   "error.team.connectorsUnsupported":
     "Las conexiones de este servidor no se pueden gestionar desde aquí. Actualiza OpenBot en el host.",
-  "error.team.discordAccessUnsupported": "Este servidor no puede configurar roles de Discord. Actualiza OpenBot en él.",
-  "error.team.connectorPageRefused": "El servidor envió una página que OpenBot no abre.",
   "error.team.signInRelayUnknown": "Este inicio de sesión terminó o no existe.",
   "error.team.signInRelayUsed": "Este inicio de sesión ya se envió.",
   "error.team.signInRelayMismatch": "Esta dirección no es de este inicio de sesión.",
@@ -205,7 +192,6 @@ export const messages = {
   "error.team.agentWaitsUnsupported": "Esta conexión no admite esperas abiertas.",
   "error.team.pendingApprovalUnsupported": "Esta conexión no permite leer una aprobación completa.",
   "error.team.pendingPromptsUnsupported": "Esta conexión no permite leer las preguntas abiertas.",
-  "error.team.phoneFeedbackUnsupported": "Esta conexión no permite enviar un informe desde la app del teléfono.",
   "error.team.messagePinsUnsupported": "Esta conexión no admite los mensajes fijados.",
   "error.team.queuedMessageThreadUnsupported":
     "Esta conexión no admite ejecutar un mensaje en cola como un hilo nuevo.",

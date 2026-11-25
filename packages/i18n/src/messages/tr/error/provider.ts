@@ -218,7 +218,6 @@ export const messages = {
   "error.provider.codexModelProvider":
     "Bu bilgisayardaki Codex başka bir model sağlayıcısı kullanıyor ve bu sağlayıcı ChatGPT oturumu veya OpenAI API anahtarı kullanmıyor. ChatGPT ajanları bu sağlayıcıyı şimdi kullanabilir. ChatGPT hesabınızı kullanmak için Codex model sağlayıcısını yeniden OpenAI olarak ayarlayın.",
   "error.provider.signInExpired": "{provider} oturumunuzun süresi doldu. Devam etmek için yeniden oturum açın.",
-  "error.provider.cliActivateFailed": "OpenBot yönetilen CLI'yi etkinleştiremedi.",
   "error.provider.noMainlandChinaSignIn": "{provider} için Çin anakarası oturum açma yok.",
   "error.provider.cliNewVersionNotStarted": "Yeni sürüm başlamadı.",
   "error.provider.cliBusyReconnect":

@@ -30,7 +30,7 @@ export const messages = {
   "onboarding.setup.defaultProviderHint":
     "Yeni yerel ajanlar için kullanılır. Daha sonra her ajan için değiştirebilirsiniz.",
   "onboarding.setup.invitation": "Ana makine daveti",
-  "onboarding.setup.invitationPlaceholder": "Bir https://openbot.run/join davet bağlantısı yapıştırın",
+  "onboarding.setup.invitationPlaceholder": "Bir openbot://join davet bağlantısı yapıştırın",
   "onboarding.setup.otherInvitation": "Başka bir davet kullan",
   "onboarding.setup.joinNote":
     "{email} olarak katılacaksınız. E-posta davetleri yalnızca onları alan adres için çalışır.",
@@ -97,11 +97,6 @@ export const messages = {
     "Burada yeni bir ekip oluşturun. Sunucularınız ajanlarını ve sohbetlerini korur.",
   "onboarding.existing.openFailed": "OpenBot, {name} sunucusunu açamadı.",
   "onboarding.consent.notice": "Devam ederek {terms}’nı kabul etmiş ve {privacy}’nı okumuş olursunuz.",
-  "onboarding.consent.analyticsTitle": "OpenBot'u geliştirmemize yardım edin",
-  "onboarding.consent.analyticsDetail": "Kullanımı hesabınızla paylaşın. Sohbetler ve dosyalar asla.",
-  "onboarding.consent.thanksTitle": "Teşekkürler! Ekip size bir iyilik borçlu.",
-  "onboarding.consent.thanksToast": "OpenBot'u geliştirmemize yardım ettiğiniz için teşekkürler 💜",
-  "onboarding.consent.thanksToastDetail": "Bunu istediğiniz zaman Ayarlar'dan değiştirebilirsiniz.",
   "onboarding.consent.termsLink": "Hizmet Şartları",
   "onboarding.consent.privacyLink": "Gizlilik Politikası",
   "onboarding.plan.title": "Planınızı bağlayın",

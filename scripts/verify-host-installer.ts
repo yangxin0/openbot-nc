@@ -90,10 +90,10 @@ export async function verifyHostPayload(expanded: string, version: string): Prom
       throw new Error("Installer script does not match release source.");
   }
   for (const [source, destination] of [
-    ["openbot-host", "/usr/local/bin/openbot-host"],
+    ["openbot-host", "/usr/local/bin/openbot-nc-host"],
     ["openbot-relaunch.sh", `${HOST_MANAGER_DIRECTORY}/openbot-relaunch.sh`],
-    ["app.openbot.host-manager.plist", "/Library/LaunchDaemons/app.openbot.host-manager.plist"],
-    ["app.openbot.desktop.relaunch.plist", "/Library/LaunchAgents/app.openbot.desktop.relaunch.plist"],
+    ["app.openbot.host-manager.plist", "/Library/LaunchDaemons/app.openbotnc.host-manager.plist"],
+    ["app.openbot.desktop.relaunch.plist", "/Library/LaunchAgents/app.openbotnc.desktop.relaunch.plist"],
   ] as const) {
     if (
       (await readFile(join(root, destination), "utf8")) !==

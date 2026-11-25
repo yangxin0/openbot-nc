@@ -191,9 +191,4 @@ export const messages = {
   "sidebar.machine.alertTo": "ההתראה נשלחת אל {name}",
   "sidebar.machine.details": "הצגת פרטים",
   "sidebar.machine.dismiss": "הסתרה עד ההתראה הבאה",
-  "sidebar.community.title": "מתיישבים לידנו.",
-  "sidebar.community.body": "יש לך מקום בעתיד של הבינה המלאכותית. מצטרפים לקהילה ב-Discord וב-X.",
-  "sidebar.community.joinDiscord": "הצטרפות ל-Discord",
-  "sidebar.community.followX": "מעקב אחרי OpenBot ב-X",
-  "sidebar.community.dismiss": "סגירת ההזמנה לקהילה",
 } as const satisfies PartialTranslation<typeof source>;

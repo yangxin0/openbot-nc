@@ -6,23 +6,18 @@ import { createBitwardenConnector } from "./bitwarden-connector";
 import { type BitwardenConnectorPort, bitwardenConnectorPort } from "./bitwarden-connector-port";
 import { connectorAccess } from "./connector-access";
 import type { ConnectorController } from "./connector-controller";
-import { createGitHubConnector } from "./github-connector";
-import type { GitHubConnectorPort } from "./github-connector-port";
-import { createMessagingConnector, type MessagingApi, type MessagingConnectorOptions } from "./messaging-connector";
 import { createOnePasswordConnector } from "./onepassword-connector";
 import { type OnePasswordConnectorPort, onePasswordConnectorPort } from "./onepassword-connector-port";
 import { createPasswordManagerConnector } from "./password-manager-connector";
 import { type PasswordManagerPort, passwordManagerPort } from "./password-manager-port";
-import { createWhatsAppConnector, type WhatsAppPort } from "./whatsapp-connector";
+import { createWhatsAppConnector, type MessagingConnectorOptions, type WhatsAppPort } from "./whatsapp-connector";
 
 export type ConnectorSet = Partial<Record<ConnectorId, ConnectorController>>;
 
 export interface ConnectorTransports {
-  github?: () => GitHubConnectorPort;
   onePassword?: () => OnePasswordConnectorPort;
   bitwarden?: () => BitwardenConnectorPort;
   passwordManagers?: () => PasswordManagerPort;
-  messaging?: MessagingApi;
   whatsapp?: () => WhatsAppPort;
 }
 
@@ -34,14 +29,7 @@ export const LOCAL_CONNECTOR_TRANSPORTS = {
 
 export function createConnectorSet(transports: ConnectorTransports, options: MessagingConnectorOptions): ConnectorSet {
   const set: ConnectorSet = {};
-  const { messaging } = transports;
-  if (messaging) {
-    set.slack = createMessagingConnector("slack", messaging, options);
-    set.discord = createMessagingConnector("discord", messaging, options);
-    set.telegram = createMessagingConnector("telegram", messaging, options);
-  }
   if (transports.whatsapp) set.whatsapp = createWhatsAppConnector(transports.whatsapp, options);
-  if (transports.github) set.github = createGitHubConnector(transports.github, options.hostName);
   if (transports.onePassword) set.onepassword = createOnePasswordConnector(transports.onePassword, options.hostName);
   if (transports.bitwarden) set.bitwarden = createBitwardenConnector(transports.bitwarden, options.hostName);
   if (transports.passwordManagers) {

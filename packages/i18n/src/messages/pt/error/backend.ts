@@ -3,13 +3,11 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "Os eventos não estão disponíveis neste computador anfitrião.",
+  "error.backend.webhooksRemoved": "Os gatilhos de webhook não estão disponíveis nesta versão do OpenBot.",
   "error.backend.databaseIntegrity": "O banco de dados do OpenBot falhou na verificação de integridade.",
-  "error.backend.webhookRouteLimit": "Um computador anfitrião pode ter no máximo {limit} rotinas de webhook.",
   "error.backend.webhookSettingsInvalid": "Verifique as configurações do webhook e tente de novo.",
   "error.backend.webhookSenderSecretInvalid":
     "Cole o segredo de assinatura completo do remetente. Ele tem de 16 a 1024 caracteres e nenhum espaço.",
-  "error.backend.webhookRouteUnavailable":
-    "A rota pública do webhook não está pronta. Verifique a conexão do computador anfitrião e tente de novo.",
   "error.backend.browserViewRemoteOnly":
     "A visualização ao vivo do navegador só está disponível para um computador anfitrião remoto.",
   "error.backend.browserViewUnsupported":
@@ -19,32 +17,6 @@ export const messages = {
   "error.backend.browserViewFailed": "A visualização ao vivo desta página falhou.",
   "error.backend.windowTemporarilyUnavailable": "A janela do OpenBot está temporariamente indisponível.",
   "error.backend.windowUnavailable": "A janela do OpenBot está indisponível.",
-  "error.backend.sunshineApiHttp": "A API do Sunshine falhou com HTTP {status}.",
-  "error.backend.sunshinePortsUnavailable":
-    "Não foi possível reservar um conjunto de portas livres do Sunshine para a área de trabalho remota.",
-  "error.backend.moonlightPortsUnavailable":
-    "Não foi possível reservar uma faixa de portas livres do Moonlight WebRTC para a área de trabalho remota.",
-  "error.backend.iceServerNoPort": "O servidor ICE da área de trabalho remota não recebeu uma porta.",
-  "error.backend.remoteDesktopStoppedWhileStarting":
-    "O ambiente de execução da área de trabalho remota foi interrompido durante a inicialização.",
-  "error.backend.sunshineNotStarted": "O Sunshine não iniciou em um conjunto de portas reservadas.",
-  "error.backend.moonlightNoHost": "O Moonlight não tem um computador anfitrião local pareado.",
-  "error.backend.sunshineNoDesktop": "O Sunshine não publicou o aplicativo Desktop.",
-  "error.backend.sunshineAmbiguousPairing": "O Sunshine retornou solicitações ambíguas de pareamento local.",
-  "error.backend.sunshineNoPairingRequest": "O Sunshine não recebeu a solicitação esperada de pareamento local.",
-  "error.backend.moonlightPairingHttp": "O pareamento do Moonlight falhou com HTTP {status}.",
-  "error.backend.moonlightRejectedPairing": "O Moonlight rejeitou o pareamento com o Sunshine.",
-  "error.backend.moonlightNoPin": "O Moonlight não retornou um PIN de pareamento.",
-  "error.backend.moonlightPairingIncomplete": "O pareamento do Moonlight não foi concluído.",
-  "error.backend.moonlightWebNotEmbedded": "O Moonlight Web não é uma versão integrada ao OpenBot.",
-  "error.backend.moonlightEmptyResponse": "O Moonlight retornou uma resposta vazia.",
-  "error.backend.remoteDesktopTimeout": "O tempo da solicitação de área de trabalho remota esgotou.",
-  "error.backend.moonlightApiHttp": "A API do Moonlight falhou com HTTP {status}.",
-  "error.backend.sunshineExited": "O Sunshine encerrou antes de sua API HTTPS na porta {port} ficar pronta.",
-  "error.backend.sunshineNoAnswer": "O Sunshine não respondeu.",
-  "error.backend.sunshineTlsUnexpected": "O Sunshine retornou um certificado TLS inesperado.",
-  "error.backend.moonlightWebExited": "O Moonlight Web encerrou antes de {url} ficar pronto.",
-  "error.backend.moonlightWebNotReady": "O Moonlight Web não ficou pronto.",
   "error.backend.channelDeleteUnsupported": "Este servidor não oferece suporte à exclusão de canais.",
   "error.backend.browserNavigateUnsupported":
     "Este computador anfitrião remoto não oferece suporte à navegação pela barra de endereços em uma aba existente.",
@@ -66,8 +38,6 @@ export const messages = {
   "error.backend.sharedDataLocalOnly":
     "Os dados compartilhados são gerenciados no computador que executa estes agentes.",
   "error.backend.browserUrlProtocol": "Somente URLs HTTP(S) são permitidas no navegador.",
-  "error.backend.sunshineNotReady": "O Sunshine não ficou pronto.",
-  "error.backend.sunshineNotReadyReason": "O Sunshine não ficou pronto. {reason}",
   "error.backend.channelLeadModelUnavailable": "O modelo do líder do canal está indisponível.",
   "error.backend.contextCompactionIneffective":
     "A compactação não reduz este chat: após duas compactações, ele ainda usa {percent}% da janela de contexto do modelo, por isso o OpenBot para de compactá-lo. Ferramentas e instruções usam a maior parte da janela. Desative os servidores MCP ou o uso do computador de que este agente não precisa, ou escolha um modelo com uma janela maior. Depois, inicie um novo chat.",
@@ -281,6 +251,8 @@ export const messages = {
     "O servidor de login ainda não aceita o OpenBot como aplicativo. Sua conta não é a causa. Use outra forma de conexão, como um servidor MCP local.",
   "error.backend.mcpRegistrationUnavailable":
     "O servidor de login não consegue registrar o OpenBot como aplicativo. Sua conta não é a causa. Para conectar, salve este servidor na Loja, Apps, e depois adicione um app de login a ele.",
+  "error.backend.mcpSignInNeedsClientDocument":
+    "Este servidor de login aceita apenas apps que publicam um documento de ID de cliente, e esta versão do OpenBot não publica um. Se você tiver seu próprio app de login para este servidor, salve o servidor na Loja, Apps, e depois adicione o app de login a ele.",
   "error.backend.mcpSignInAbandonedGeneric": "O login foi abandonado.",
   "error.backend.mcpSignInForgotten": "O login MCP foi esquecido enquanto estava em andamento.",
   "error.backend.mcpSignInAbandoned": "O login MCP foi abandonado.",
@@ -488,7 +460,6 @@ export const messages = {
   "error.backend.branchMessageNotFound":
     "Só é possível criar uma ramificação a partir de uma resposta concluída do agente.",
   "error.backend.branchRemoteUnsupported": "As ramificações só estão disponíveis para agentes neste computador.",
-  "error.backend.feedbackWithdrawRemoteUnsupported": "Para remover este relato, peça ao agente para removê-lo.",
   "error.backend.threadMoveRefused":
     "Só uma mensagem que você enviou apenas para este agente pode ser executada em um novo tópico.",
   "error.backend.taskTitleRequired": "Dê um título curto à tarefa.",

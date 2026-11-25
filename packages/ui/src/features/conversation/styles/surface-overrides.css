@@ -1,6 +1,5 @@
 .settings-panel,
-.browser-panel,
-.remote-desktop-workspace {
+.browser-panel {
   background: var(--openbot-bg-canvas);
 }
 
@@ -29,16 +28,6 @@
 
 .direct-composer > button:hover:not(:disabled) {
   background: var(--openbot-accent-hover);
-}
-
-.remote-desktop-stage,
-.remote-desktop-viewer {
-  background: var(--openbot-bg-canvas);
-  color: var(--openbot-text-secondary);
-}
-
-.remote-desktop-header {
-  background: var(--openbot-bg-sidebar);
 }
 
 .voice-button:active,

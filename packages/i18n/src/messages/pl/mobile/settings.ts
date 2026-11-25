@@ -469,7 +469,6 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "Słuchanie",
   "mobile.settings.voice.tab.speaking": "Mówienie",
-  "mobile.settings.voice.tab.gptLive": "GPT na żywo",
   "mobile.settings.voice.pause.title": "Pauza przed wysłaniem",
   "mobile.settings.voice.pause.label": "Czekaj na nowe słowa",
   "mobile.settings.voice.pause.footer":
@@ -478,21 +477,6 @@ export const messages = {
   "mobile.settings.voice.speed.title": "Szybkość odpowiedzi",
   "mobile.settings.voice.speed.footer": "Szybkość odpowiedzi, które OpenBot czyta na głos, także w rozmowie głosowej.",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT Live Voice",
-  "mobile.settings.voice.gptLive.footer":
-    "W rozmowie głosowej z agentem GPT Live Voice słucha i mówi zamiast tego telefonu. Używa logowania Codex (ChatGPT) komputera, na którym działa serwer. Twój głos idzie między tym telefonem a OpenAI, a OpenAI wypowiada odpowiedzi agenta. Wymaga serwera, który to obsługuje; inne serwery używają głosu tego telefonu.",
-  "mobile.settings.voice.gptLive.automatic": "Automatyczny",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "OpenAI mówi tym głosem w następnej rozmowie głosowej. Przy opcji Automatyczny OpenAI wybiera głos.",
-  "mobile.settings.voice.gptLive.serversTitle": "Serwery",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "Dotknij serwera, który wymaga logowania, aby połączyć Codex z kontem ChatGPT. Logowanie serwera widzi tylko właściciel lub administrator.",
-  "mobile.settings.voice.gptLive.account": "Konto głosu na żywo GPT",
-  "mobile.settings.voice.gptLive.status.ready": "Gotowe",
-  "mobile.settings.voice.gptLive.status.supported": "Obsługiwane",
-  "mobile.settings.voice.gptLive.status.offline": "Offline",
-  "mobile.settings.voice.gptLive.status.update": "Wymaga nowszego OpenBot na jego komputerze",
-  "mobile.settings.voice.gptLive.status.signIn": "Zaloguj się do Codex przez ChatGPT",
   "mobile.settings.voice.server.title": "Serwer głosowy",
   "mobile.settings.voice.server.row": "Serwer zgodny z OpenAI",
   "mobile.settings.voice.server.notSetUp": "Nie skonfigurowano",

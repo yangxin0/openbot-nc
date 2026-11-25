@@ -20,7 +20,6 @@ import {
   STORY_CONVERSATION_MESSAGES,
   STORY_MODELS,
   STORY_PRESENCE,
-  STORY_REMOTE_DESKTOP_SESSION,
   STORY_SERVERS,
 } from "./fixtures";
 import { createMockOpenBot } from "./mock-openbot";
@@ -101,8 +100,6 @@ export const CONVERSATION_STORY_ARGS: Parameters<typeof Conversation>[0] = {
   presence: STORY_PRESENCE,
   currentUserEmail: "person@example.com",
   isOwnSender: (senderId) => senderId === "member-self",
-  remoteDesktopSessionActive: Boolean(STORY_REMOTE_DESKTOP_SESSION),
-  remoteDesktopVisible: false,
   prompt: undefined,
   approval: undefined,
   browserTakeover: undefined,
@@ -128,7 +125,6 @@ export const CONVERSATION_STORY_ARGS: Parameters<typeof Conversation>[0] = {
   onReorderQueue: fn(),
   onActivateBrowserTab: fn(),
   onCloseBrowserTab: fn(),
-  onOpenRemoteDesktop: async (_serverId: string, _trigger: HTMLElement) => undefined,
   onStop: fn(),
 };
 

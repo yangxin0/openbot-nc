@@ -1,7 +1,6 @@
 import type {
   AccountUsage,
   AgentStatus,
-  AgentSubmission,
   AttachmentSummary,
   BrowserControlState,
   BrowserTab,
@@ -13,7 +12,6 @@ import type {
   DirectConversationSnapshot,
   DirectThreadSummary,
   ForeignProviderId,
-  HostedSiteSummary,
   HostStatus,
   InstalledSkill,
   MarketplaceAgentDetail,
@@ -23,12 +21,9 @@ import type {
   MarketplaceSkillDetail,
   MarketplaceSkillSummary,
   QueueDelivery,
-  RemoteDesktopSession,
   ServerAuditEntry,
   ServerSummary,
   SharedTable,
-  SkillPackagePreview,
-  SkillSubmission,
   TeamInviteSummary,
   TeamMemberSummary,
   TeamPresenceSnapshot,
@@ -407,7 +402,7 @@ export const STORY_CONVERSATION_MESSAGES: ConversationMessage[] = [
     id: "message-agent-1",
     author: "assistant",
     source: "assistant",
-    text: "Absolutely. I’ll structure the plan around the launch milestones and ask @Research to verify the supporting sources.\n\nThe first draft is ready here: https://openbot.run/docs",
+    text: "Absolutely. I’ll structure the plan around the launch milestones and ask @Research to verify the supporting sources.\n\nThe first draft is ready here: https://example.com/docs",
     createdAt: "2026-08-19T09:43:00.000Z",
     status: "completed",
     attachments: STORY_ATTACHMENTS,
@@ -636,7 +631,6 @@ export const STORY_SERVERS: [ServerSummary, ...ServerSummary[]] = [
     kind: "local",
     state: "online",
     apiUrl: null,
-    remoteDesktopAvailable: false,
     role: null,
     active: true,
   },
@@ -650,7 +644,6 @@ export const STORY_SERVERS: [ServerSummary, ...ServerSummary[]] = [
     kind: "remote",
     state: "online",
     apiUrl: "https://team.example.com",
-    remoteDesktopAvailable: true,
     role: "owner",
     active: false,
   },
@@ -664,12 +657,8 @@ export const STORY_SERVERS: [ServerSummary, ...ServerSummary[]] = [
     kind: "remote",
     state: "offline",
     apiUrl: null,
-    remoteDesktopAvailable: false,
     role: "owner",
     active: false,
-    hostedSleep: "sleeping",
-    hostedIssue: null,
-    hostedStart: null,
   },
 ];
 
@@ -677,7 +666,7 @@ export const STORY_BROWSER_TABS: BrowserTab[] = [
   {
     id: "browser-tab-docs",
     title: "OpenBot documentation",
-    url: "https://openbot.run/docs",
+    url: "https://example.com/docs",
     loading: false,
     ownerThreadId: "thread-chief",
     ownerAgentId: "chief",
@@ -717,12 +706,6 @@ export const STORY_HOST_STATUS: HostStatus = {
   appearance: null,
   apiUrl: "https://team.example.com",
   apiOnline: true,
-  remoteDesktopReady: true,
-  remoteDesktopScreenRecordingDenied: false,
-  remoteDesktopNeedsX11Session: false,
-  remoteDesktopUnattended: true,
-  remoteDesktopActiveSessions: 1,
-  remoteDesktopMaxSessions: 4,
   message: null,
 };
 
@@ -853,21 +836,6 @@ export const STORY_SESSIONS: TeamSessionSummary[] = [
     expiresAt: "2026-09-18T10:00:00.000Z",
   },
 ];
-
-export const STORY_REMOTE_DESKTOP_SESSION: RemoteDesktopSession = {
-  id: "remote-desktop-1",
-  serverId: "team",
-  viewerUrl: "https://team.example.com/v1/remote-screen/sessions/remote-desktop-1/viewer",
-  viewerGrant: "story-viewer-grant",
-  displays: [{ id: "display-1", label: "Main display", width: 1920, height: 1080, primary: true }],
-  selectedDisplayId: "display-1",
-  phase: "connected",
-  transport: "p2p",
-  errorCode: null,
-  message: null,
-  createdAt: STORY_NOW,
-  grantExpiresAt: "2026-08-19T10:01:00.000Z",
-};
 
 export const STORY_UPDATE_STATUS: UpdateStatus = {
   phase: "available",
@@ -1140,57 +1108,6 @@ export const STORY_MCP_SERVERS: McpServerConfig[] = [
     headers: [],
   },
 ];
-
-export const STORY_SKILL_SUBMISSIONS: SkillSubmission[] = [
-  {
-    id: "submission-standup",
-    skillId: "skill-standup-digest",
-    slug: "standup-digest",
-    name: "Standup digest",
-    description: "Collects yesterday's activity into the three lines a standup actually needs.",
-    category: "productivity",
-    version: 1,
-    status: "pending",
-    rejectionNote: null,
-    iconUrl: null,
-    createdAt: "2026-08-18T08:15:00.000Z",
-  },
-  {
-    id: "submission-source-check",
-    skillId: "skill-source-check",
-    slug: "source-check",
-    name: "Source check",
-    description: "Follows every citation in a draft and flags the ones that do not say what is claimed.",
-    category: "research",
-    version: 3,
-    status: "approved",
-    rejectionNote: null,
-    iconUrl: null,
-    createdAt: "2026-08-04T16:20:00.000Z",
-  },
-  {
-    id: "submission-mail-merge",
-    skillId: "skill-mail-merge",
-    slug: "mail-merge",
-    name: "Mail merge",
-    description: "Fills a template from a spreadsheet and sends the result to each row.",
-    category: "automation",
-    version: 1,
-    status: "rejected",
-    rejectionNote: "Sends mail without a confirmation step. Add one and resubmit.",
-    iconUrl: null,
-    createdAt: "2026-07-30T12:00:00.000Z",
-  },
-];
-
-export const STORY_SKILL_PACKAGE_PREVIEW: SkillPackagePreview = {
-  draftId: "draft-standup-digest",
-  name: "Standup digest",
-  description: "Collects yesterday's activity into the three lines a standup actually needs.",
-  slug: "standup-digest",
-  files: ["SKILL.md", "README.md", "scripts/digest.ts"],
-  size: 18_432,
-};
 
 export const STORY_MARKETPLACE_AGENTS: MarketplaceAgentSummary[] = [
   {
@@ -1632,7 +1549,6 @@ const STORY_MARKETPLACE_PLUGIN_AAVE: MarketplacePluginDetail = {
   installs: 2_410,
   featured: true,
   updatedAt: "2026-09-02T11:30:00.000Z",
-  shareUrl: "https://openbot.run/plugins/aave",
   prompts: [
     { id: "prompt-stablecoin-yield", text: "Where can I earn the most on stablecoins across Aave right now?" },
     { id: "prompt-usdc-rates", text: "Which pays more for USDC right now, Aave V3 or V4 on Ethereum?" },
@@ -1711,7 +1627,6 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
     installs: 5_180,
     featured: true,
     updatedAt: "2026-08-28T09:10:00.000Z",
-    shareUrl: "https://openbot.run/plugins/linear",
     prompts: [
       { id: "prompt-linear-cycle", text: "What is still open in the current cycle, and who is it on?" },
       { id: "prompt-linear-file", text: "File a bug for the crash I just described, on the Desktop team." },
@@ -1784,7 +1699,6 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
     installs: 3_060,
     featured: false,
     updatedAt: "2026-09-08T16:45:00.000Z",
-    shareUrl: "https://openbot.run/plugins/figma",
     prompts: [
       { id: "prompt-figma-frames", text: "What frames are on the Settings page of this file?" },
       { id: "prompt-figma-tokens", text: "Which colour variables does the button component bind to?" },
@@ -1849,7 +1763,6 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
     installs: 1_420,
     featured: false,
     updatedAt: "2026-09-30T10:20:00.000Z",
-    shareUrl: "https://openbot.run/plugins/resend",
     prompts: [
       { id: "prompt-resend-send", text: "Send the launch announcement draft to the beta list." },
       { id: "prompt-resend-status", text: "Did the invoice email reach the customer?" },
@@ -1907,7 +1820,6 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
     installs: 4_270,
     featured: false,
     updatedAt: "2026-10-02T13:05:00.000Z",
-    shareUrl: "https://openbot.run/plugins/notion",
     prompts: [
       { id: "prompt-notion-spec", text: "Find the current launch spec and summarize the open questions." },
       { id: "prompt-notion-notes", text: "Turn these bullets into a structured meeting note in my team space." },
@@ -1948,7 +1860,6 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
     installs: 640,
     featured: false,
     updatedAt: "2026-07-19T08:00:00.000Z",
-    shareUrl: "https://openbot.run/plugins/changelog-writer",
     prompts: [{ id: "prompt-changelog", text: "Write the release notes for everything merged since the last tag." }],
     apps: [],
     skills: [
@@ -1968,73 +1879,5 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
     websiteUrl: null,
     privacyPolicyUrl: null,
     termsUrl: null,
-  },
-];
-
-export const STORY_AGENT_SUBMISSIONS: AgentSubmission[] = [
-  {
-    id: "agent-submission-chief",
-    listingId: "listing-chief-of-staff",
-    name: "Chief",
-    title: "Chief of staff",
-    description: "Coordinates projects, priorities, and next steps across the workspace.",
-    version: 2,
-    status: "pending",
-    rejectionNote: null,
-    avatarSeed: "chief",
-    avatarHue: 245,
-    avatarUrl: null,
-    skillCount: 2,
-    routineCount: 1,
-    activeRoutineCount: 1,
-    createdAt: "2026-08-18T09:00:00.000Z",
-  },
-  {
-    id: "agent-submission-ops",
-    listingId: "listing-ops-watch",
-    name: "Ops Watch",
-    title: "Keeps an eye on the stack",
-    description: "Checks the backups ran, the certificates are current, and the disks have room.",
-    version: 2,
-    status: "approved",
-    rejectionNote: null,
-    avatarSeed: "ops-watch",
-    avatarHue: 320,
-    avatarUrl: null,
-    skillCount: 1,
-    routineCount: 3,
-    activeRoutineCount: 3,
-    createdAt: "2026-08-02T06:00:00.000Z",
-  },
-];
-
-export const STORY_HOSTED_SITES: HostedSiteSummary[] = [
-  {
-    id: "site-launch-notes",
-    hostname: "launch-notes.openbot.site",
-    url: "https://launch-notes.openbot.site",
-    title: "Launch notes",
-    description: "The public changelog for the 0.2 release.",
-    framework: "astro",
-    status: "active",
-    fileCount: 42,
-    size: 3_145_728,
-    expiresAt: null,
-    updatedAt: "2026-08-18T18:30:00.000Z",
-    serverId: "host-preview",
-  },
-  {
-    id: "site-design-review",
-    hostname: "design-review.openbot.site",
-    url: "https://design-review.openbot.site",
-    title: "Design review",
-    description: "A one-page mockup shared with the design studio.",
-    framework: "vanilla",
-    status: "active",
-    fileCount: 8,
-    size: 512_000,
-    expiresAt: "2026-09-18T18:30:00.000Z",
-    updatedAt: "2026-08-14T12:00:00.000Z",
-    serverId: null,
   },
 ];

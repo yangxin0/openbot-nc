@@ -701,7 +701,8 @@ own screen. `browser-view-gateway.ts` answers that with a session and a websocke
 streams the tab through CDP, and the gateway sends each frame as bytes and dispatches the pointer and
 key input that comes back, in fractions of the last frame, through the same access checks. Frames stay
 outside the per-tab operation queue, so watching never delays a tool call. `browser-view-client.ts` is
-the client half, and it reuses the Remote Desktop websocket tunnel rather than adding a WebRTC channel.
+the client half, and it uses the websocket tunnel of the `desktop` data channel (`remote-stream-v1`)
+rather than a WebRTC channel of its own.
 The `browser-view` capability says whether a host has both.
 
 The mobile app (iOS and Android) draws the pointer itself, so it needs the page's cursor. A host with

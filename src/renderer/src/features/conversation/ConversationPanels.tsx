@@ -1,4 +1,4 @@
-import { LOCAL_SERVER_ID, type ServerSummary } from "@openbot/contracts/ipc";
+import type { ServerSummary } from "@openbot/contracts/ipc";
 import { AGENT_MEMORY_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/agent-memory-limit-v1";
 import { AGENT_NOTIFICATION_LEVELS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-notification-levels-v1";
 import { BROWSER_PROFILES_CAPABILITY } from "@openbot/contracts/team-protocol/browser-profiles-v1";
@@ -37,16 +37,12 @@ import {
   saveSidePanelWidth,
 } from "../../components/side-panel-width";
 import { deviceQuoteShortcut } from "../../send-shortcut-preference";
-import { type AgentTemplatePublishCalls, agentTemplatesPort } from "../agent-templates/agent-templates-port";
-import { createPublishAgent } from "../agent-templates/PublishAgent";
 import { desktopBrowserProfileCalls } from "../browser/browser-profiles-port";
 import { moveBrowserTab, orderedBrowserTabs } from "../browser/browser-tab-session";
 import type { AgentFilesOptions } from "../files/AgentFilesSettings";
 import type { ChatFilesSource } from "../files/ChatFilesPanel";
 import { canManageStorage, serverHasChannelStorage, serverHasStorage } from "../files/storage-usage";
 import { serverCanAdminister, serverCanManageMcp, serverSupportsCapability } from "../servers/server-capabilities";
-import { codexLiveAccess } from "../speech/codex-live-access";
-import { speechPort } from "../speech/speech-port";
 import { cycleSpeechSpeed, speechSpeed } from "../speech/speech-speed";
 import { openedAttachmentUrl } from "./attachment-preview";
 import { ConversationSideThread } from "./ConversationSideThread";
@@ -69,9 +65,7 @@ import {
   setSideSplitShare,
   sideSplitShare,
 } from "./side-split-layout";
-import { type CodexLivePort, createCodexLiveConversation } from "./stores/codex-live-conversation-store";
 import { MAX_SIDE_SPLITS } from "./stores/panels-store";
-import type { VoiceConversationKind } from "./stores/voice-session-store";
 import { useVoiceTalkKey } from "./voice-talk-key";
 import { setVoiceTalkMode, useVoiceTalkMode } from "./voice-talk-mode";
 
@@ -90,63 +84,20 @@ import {
 import { conversationPort } from "./conversation-port";
 import { conversationOwnerId } from "./stores/composer-store";
 
-function VoiceConversationPane(pill: VoicePillPresence) {
-  const controller = useConversationController();
-  const { props, channel } = useConversationViewScope();
-  const running = untrack(() => {
-    const ownerId = conversationOwnerId(props);
-    return ownerId ? controller.voiceSessions.running(ownerId) : null;
-  });
-  if (channel) return <VoiceConversation kind={running ?? "transcribed"} open={pill.open} onClosed={pill.onClosed} />;
-  const runtimeLive = untrack(() => props.runtime?.liveVoice);
-  if (runtimeLive) {
-    const liveKind: VoiceConversationKind = running ?? "codex-live";
-    return <VoiceConversation kind={liveKind} port={runtimeLive} open={pill.open} onClosed={pill.onClosed} />;
-  }
-  const codex = untrack(
-    () =>
-      (props.server?.kind !== "remote" || serverSupportsCapability(props.server, "live-voice-v1")) &&
-      codexLiveAccess(props.agentStatus.providers) !== "signIn",
-  );
-  const [kind, setKind] = createSignal<VoiceConversationKind | null>(running ?? (codex ? null : "transcribed"));
-  if (!running && codex)
-    void speechPort()
-      .voice.getSpeechSettings()
-      .then(
-        (settings) => setKind(settings.codexLive ? "codex-live" : "transcribed"),
-        () => setKind("transcribed"),
-      );
-  return (
-    <Show when={kind()} keyed>
-      {(next) => <VoiceConversation kind={next} open={pill.open} onClosed={pill.onClosed} />}
-    </Show>
-  );
-}
-
 interface VoicePillPresence {
   open: boolean;
   onClosed: () => void;
 }
 
-function VoiceConversation(paneProps: VoicePillPresence & { kind: VoiceConversationKind; port?: CodexLivePort }) {
+function VoiceConversation(paneProps: VoicePillPresence) {
   const controller = useConversationController();
   const { props, channel, startVoiceConversation, endVoiceConversation } = useConversationViewScope();
   const agentId = untrack(() => conversationOwnerId(props));
   if (!agentId) return null;
-  const serverId = untrack(() => props.server?.id ?? LOCAL_SERVER_ID);
-  const kind = untrack(() => paneProps.kind);
-  const port = untrack(() => paneProps.port);
-  const conversation = controller.voiceSessions.open(agentId, kind, () =>
-    kind === "codex-live"
-      ? createCodexLiveConversation({ agentId, serverId, ...(port ? { port } : {}) })
-      : startVoiceConversation(agentId),
-  );
+  const conversation = controller.voiceSessions.open(agentId, () => startVoiceConversation(agentId));
   const talkMode = useVoiceTalkMode();
   createEffect(talkMode, (mode) => conversation.setTalkMode(mode));
   const talkKey = useVoiceTalkKey(() => props.platform);
-  const transcribed = kind === "transcribed";
-  const replySpeed = () => (transcribed ? speechSpeed() : undefined);
-  const cycleSpeed = transcribed ? cycleSpeechSpeed : undefined;
   const pillAgent = () => (channel ? channel.voiceAgent() : props.agent);
   return (
     <Show when={pillAgent()}>
@@ -168,8 +119,8 @@ function VoiceConversation(paneProps: VoicePillPresence & { kind: VoiceConversat
           onTalkCancel={conversation.cancelTalking}
           onInterrupt={conversation.interrupt}
           onEnd={endVoiceConversation}
-          speed={replySpeed()}
-          onCycleSpeed={cycleSpeed}
+          speed={speechSpeed()}
+          onCycleSpeed={cycleSpeechSpeed}
           open={paneProps.open}
           onClosed={paneProps.onClosed}
         />
@@ -292,18 +243,6 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
       }
     },
   );
-  const publishCalls = (): AgentTemplatePublishCalls => {
-    if (props.runtime?.admin) return props.runtime.admin.agentTemplates;
-    const server = props.server;
-    if (server?.kind !== "remote") return agentTemplatesPort().agentTemplates;
-    const { agent } = agentTemplatesPort();
-    return {
-      preview: (agentId) => agent.previewAgentTemplate(agentId, server.id),
-      publish: (input) => agent.publishAgentTemplate(input, server.id),
-      unpublish: (agentId) => agent.unpublishAgentTemplate(agentId, server.id),
-    };
-  };
-  const publishAgent = createPublishAgent((url) => void conversationRuntime(props).openUrl(url), publishCalls);
   const localAgentDefaults = () => (props.server?.kind === "local" ? props.agentDefaults : undefined);
   const localFolderCalls = agentFolderCalls();
   const [folderPick, setFolderPick] = createSignal<
@@ -400,11 +339,6 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
     const remote = remoteMemoryLimit();
     return remote && remote.serverId === memoryLimitServerId() ? remote.limit : undefined;
   };
-  const canPublish = () =>
-    props.runtime
-      ? props.runtime.admin !== undefined && serverCanAdminister(props.server, "agent-publish-v1")
-      : props.server?.kind === "local" ||
-        (props.server?.kind === "remote" && serverCanAdminister(props.server, "agent-publish-v1"));
   const browserProfileServerId = createMemo(() =>
     props.server && serverSupportsCapability(props.server, BROWSER_PROFILES_CAPABILITY) ? props.server.id : undefined,
   );
@@ -513,7 +447,7 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
     };
   };
   createEffect(
-    () => ({ expanded: browserExpandedOpen(), suspended: props.globalOverlayOpen || props.remoteDesktopVisible }),
+    () => ({ expanded: browserExpandedOpen(), suspended: props.globalOverlayOpen }),
     ({ expanded, suspended }) => {
       if (!expanded || suspended) return;
       const frame = conversationPanelElement()?.closest<HTMLElement>(".app-frame");
@@ -759,7 +693,7 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
       tabs={browserTabs()}
       busyTabIds={busyBrowserTabIds()}
       hidden={browserExpandedOpen()}
-      suspended={props.browserVisibilitySuspended || props.globalOverlayOpen || props.remoteDesktopVisible}
+      suspended={props.browserVisibilitySuspended || props.globalOverlayOpen}
       contextKey={`${props.server?.id ?? "local"}:${props.agent?.id ?? ""}`}
       maxWidth={sidePanelMaxWidth}
       onWidthChange={paneWidthChange(split)}
@@ -808,7 +742,6 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
               instructionsFile={instructionsCalls()}
               sessionSettingsEditable={serverCanAdminister(props.server, "agent-session-settings-v1")}
               adminCalls={props.runtime?.admin}
-              skillCatalog={props.runtime?.skillCatalog}
               skillsMarketplaceOpen={props.skillsMarketplaceOpen}
               workspaceCovered={props.workspaceCovered}
               onAddFromMarketplace={
@@ -875,7 +808,6 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
               }
               onOpenUsage={panelProps.onOpenUsage}
               onOpenApps={serverCanManageMcp(props.server) ? props.onOpenMarketplace : undefined}
-              onPublish={canPublish() ? () => publishAgent.open(agent().id) : undefined}
               agent={agent()}
               runtimeSettings={{
                 provider: settingsProvider(),
@@ -1064,7 +996,7 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
 
       <Show when={voicePill()} keyed>
         {(shown) => (
-          <VoiceConversationPane
+          <VoiceConversation
             open={!voicePillClosing()}
             onClosed={() => {
               if (voicePill() !== shown) return;
@@ -1178,7 +1110,6 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
         </BrowserPageCover>
       </Show>
 
-      {publishAgent.dialog()}
       <Show when={messageLinkRelay()} keyed>
         {(relay) => (
           <McpSignInRelayDialog

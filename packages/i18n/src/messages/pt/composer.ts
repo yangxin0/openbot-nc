@@ -85,8 +85,6 @@ export const messages = {
   "composer.attachment.adding": "Adicionando {name}",
   "composer.placeholder.hostSetup": "Conclua a configuração do provedor no computador anfitrião para começar",
   "composer.placeholder.connectHost": "Conecte-se ao computador anfitrião para começar",
-  "composer.placeholder.hostSleeping": "Este servidor está em repouso. Pressione uma tecla ou clique para acordá-lo",
-  "composer.placeholder.hostWaking": "Acordando o servidor…",
   "composer.placeholder.cliSetup": "Conclua a configuração da CLI do agente para começar",
   "composer.placeholder.reply": "Responder…",
   "composer.placeholder.message": "Mensagem para {name}",

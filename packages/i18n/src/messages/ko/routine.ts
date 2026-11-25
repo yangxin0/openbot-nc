@@ -159,8 +159,6 @@ export const messages = {
   "routine.card.webhookUpdated": "웹훅 루틴을 업데이트했어요",
   "routine.card.webhookChanged": "변경 사항이 저장되지 않았어요",
   "routine.card.webhookSaveFailed": "이벤트를 저장할 수 없어요.",
-  "routine.card.webhookFiltersInvalid": "필터의 JSON Pointer가 올바르지 않아요.",
-
   "routine.timezoneMove.title": "시간대가 {zone}(으)로 바뀌었어요",
   "routine.timezoneMove.description": {
     other: "{server}의 루틴 {count}개가 {from} 시간대로 실행돼요. {zone}(으)로 옮길까요? 시계 시각은 그대로 유지돼요.",
@@ -255,13 +253,11 @@ export const messages = {
   "routine.settings.whenToRun": "실행 시점",
   "routine.settings.nameRequired": "루틴 이름을 입력해 주세요.",
   "routine.settings.instructionRequired": "루틴이 실행될 때 할 일을 설명해 주세요.",
-  "routine.settings.triggerWebhook": "웹훅",
   "routine.settings.webhookSummary": "{eventType}이(가) 도착할 때",
   "routine.settings.webhookSummaryAny": "웹훅이 도착할 때",
 
   "routine.trigger.change": "트리거 변경",
   "routine.trigger.groupSchedule": "일정",
-  "routine.trigger.kind": "루틴을 시작하는 조건",
   "routine.trigger.onceDescription": "정해진 날짜와 시간에",
   "routine.trigger.hourlyDescription": "정해진 시간대에 매시간",
   "routine.trigger.dailyDescription": "정해진 시간에 매일",

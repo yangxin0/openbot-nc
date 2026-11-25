@@ -1,4 +1,4 @@
-import { CODEX_LIVE_VOICES, type CodexLiveVoice, SPEECH_VOICES } from "@openbot/contracts/ipc";
+import { SPEECH_VOICES } from "@openbot/contracts/ipc";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { Button, Spinner, Typography } from "heroui-native";
 import { useThemeColor } from "heroui-native/hooks";
@@ -22,7 +22,7 @@ import { loadElevenLabsVoices, useElevenLabsVoices } from "../model/elevenlabs-v
 import type { ReplyVoiceChoice } from "../model/reply-voice";
 import { useSupertonicModel } from "../model/supertonic-model";
 import { saveVoiceSettings, useVoiceSettings } from "../model/voice-settings";
-import { ChoiceRow, gptLiveVoiceLabel, supertonicVoiceLabel } from "./voice-settings-screen";
+import { supertonicVoiceLabel } from "./voice-settings-screen";
 
 interface VoiceOption {
   id: string;
@@ -56,34 +56,9 @@ function PreviewButton({
   );
 }
 
-function GptLiveVoiceChoice() {
-  const { t } = useText();
-  const chosen = useVoiceSettings((state) => state.gptLiveVoice);
-  const choose = (voice: CodexLiveVoice | null) => {
-    if (voice === chosen) return;
-    void haptics.selection();
-    void saveVoiceSettings({ gptLiveVoice: voice });
-  };
-  return (
-    <SettingsContent>
-      <Stack.Screen options={{ title: t("mobile.settings.voice.gptLive.title") }} />
-      <SettingsSection footer={t("mobile.settings.voice.gptLive.choiceFooter")}>
-        {[null, ...CODEX_LIVE_VOICES].map((voice) => (
-          <ChoiceRow
-            key={voice ?? "automatic"}
-            checked={voice === chosen}
-            label={gptLiveVoiceLabel(voice, t)}
-            onPress={() => choose(voice)}
-          />
-        ))}
-      </SettingsSection>
-    </SettingsContent>
-  );
-}
-
 export function VoiceChoiceScreen() {
   const { engine } = useLocalSearchParams<{ engine?: string }>();
-  return engine === "gpt-live" ? <GptLiveVoiceChoice /> : <VoiceList elevenLabs={engine === "elevenlabs"} />;
+  return <VoiceList elevenLabs={engine === "elevenlabs"} />;
 }
 
 function VoiceList({ elevenLabs }: { elevenLabs: boolean }) {

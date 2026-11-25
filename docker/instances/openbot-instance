@@ -3,11 +3,11 @@ set -euo pipefail
 
 HERE=$(dirname "$(readlink -f "$0")")
 COMPOSE=$HERE/compose.yaml
-DATA=/srv/openbot
+DATA=/srv/openbot-nc
 NETWORK=openbot
 SUBNET=172.30.0.0/16
 FIREWALL=openbot-firewall.service
-LOG_SOCKET=/var/lib/openbot-docker/dev/log
+LOG_SOCKET=/var/lib/openbot-nc-docker/dev/log
 UNIT_DIRECTORY=/etc/systemd/system
 UPDATE_UNIT=openbot-instance-update
 BACKUP_UNIT=openbot-instance-backup
@@ -15,8 +15,8 @@ LOCKS=/run
 LXCFS=/var/lib/lxcfs
 LXCFS_FILES=(proc/cpuinfo proc/stat proc/meminfo proc/swaps)
 LXCFS_DROP_IN=/etc/systemd/system/lxcfs.service.d/openbot.conf
-REQUIRED_FILES=(.config/OpenBot/openbot.db .local/share/keyrings/login.keyring .config/openbot-container/keyring-password)
-SHARED_DATABASE=OpenBot/Shared/Data/agent-data.db
+REQUIRED_FILES=(.config/OpenBot-NC/openbot.db .local/share/keyrings/login.keyring .config/openbot-nc-container/keyring-password)
+SHARED_DATABASE=OpenBot-NC/Shared/Data/agent-data.db
 
 fail() {
   echo "$*" >&2
@@ -28,7 +28,7 @@ usage() {
 Usage: openbot-instance <command>
 
   setup                       Install the firewall and the network of the instances. Run it
-                              once per host, and again after a change to /etc/openbot-docker/deny.
+                              once per host, and again after a change to /etc/openbot-nc-docker/deny.
   create <name> --cpus <n> --mem <n>g --disk <n>G
                               Make an instance and start it. Then sign it in with
                               `openbot-instance run <name> login`.
@@ -113,11 +113,11 @@ setup_lxcfs() {
 
 setup() {
   [ "$(id -u)" -eq 0 ] || fail "Run setup as root."
-  install -d -m 0755 /etc/openbot-docker
-  [ -e /etc/openbot-docker/deny ] ||
+  install -d -m 0755 /etc/openbot-nc-docker
+  [ -e /etc/openbot-nc-docker/deny ] ||
     printf '# More addresses that the instances must not reach, one per line, for example servers\n# that trust the address of this host.\n' \
-      >/etc/openbot-docker/deny
-  sed "s#/opt/openbot-docker/instances/#$HERE/#" "$HERE/$FIREWALL" >"$UNIT_DIRECTORY/$FIREWALL"
+      >/etc/openbot-nc-docker/deny
+  sed "s#/opt/openbot-nc-docker/instances/#$HERE/#" "$HERE/$FIREWALL" >"$UNIT_DIRECTORY/$FIREWALL"
   systemctl daemon-reload
   systemctl enable --quiet "$FIREWALL"
   "$HERE/openbot-firewall"
@@ -128,17 +128,17 @@ setup() {
       --opt com.docker.network.bridge.enable_icc=false "$NETWORK" >/dev/null
   install -m 0644 "$HERE/openbot-sysctl.conf" /etc/sysctl.d/90-openbot-docker.conf
   sysctl --quiet --load /etc/sysctl.d/90-openbot-docker.conf
-  install -d -m 0755 /var/lib/openbot-docker "$(dirname "$LOG_SOCKET")"
-  install -d -o syslog -g adm -m 0750 /var/log/openbot
-  install -m 0644 "$HERE/openbot-logrotate" /etc/openbot-docker/logrotate.conf
+  install -d -m 0755 /var/lib/openbot-nc-docker "$(dirname "$LOG_SOCKET")"
+  install -d -o syslog -g adm -m 0750 /var/log/openbot-nc
+  install -m 0644 "$HERE/openbot-logrotate" /etc/openbot-nc-docker/logrotate.conf
   rm -f /etc/logrotate.d/openbot-docker /etc/systemd/system/docker.service.d/openbot-rsyslog.conf
   install -m 0644 "$HERE/openbot-logrotate.service" "$HERE/openbot-logrotate.timer" /etc/systemd/system/
   install -d -m 0755 /etc/systemd/system/docker.service.d
   install -m 0644 "$HERE/docker-openbot.conf" /etc/systemd/system/docker.service.d/openbot.conf
   install -m 0644 "$HERE/$UPDATE_UNIT@.path" "$UNIT_DIRECTORY/"
-  sed "s#/opt/openbot-docker/instances/#$HERE/#" "$HERE/$UPDATE_UNIT@.service" >"$UNIT_DIRECTORY/$UPDATE_UNIT@.service"
+  sed "s#/opt/openbot-nc-docker/instances/#$HERE/#" "$HERE/$UPDATE_UNIT@.service" >"$UNIT_DIRECTORY/$UPDATE_UNIT@.service"
   install -m 0644 "$HERE/$BACKUP_UNIT@.timer" "$UNIT_DIRECTORY/"
-  sed "s#/opt/openbot-docker/instances/#$HERE/#" "$HERE/$BACKUP_UNIT@.service" >"$UNIT_DIRECTORY/$BACKUP_UNIT@.service"
+  sed "s#/opt/openbot-nc-docker/instances/#$HERE/#" "$HERE/$BACKUP_UNIT@.service" >"$UNIT_DIRECTORY/$BACKUP_UNIT@.service"
   systemctl daemon-reload
   systemctl enable --now --quiet openbot-logrotate.timer
   if ! cmp --silent "$HERE/openbot-rsyslog.conf" /etc/rsyslog.d/30-openbot-docker.conf || [ ! -S "$LOG_SOCKET" ]; then

@@ -81,8 +81,6 @@ export const messages = {
   "composer.attachment.adding": "جارٍ إضافة {name}",
   "composer.placeholder.hostSetup": "أكمل إعداد المزوّد على المضيف للبدء",
   "composer.placeholder.connectHost": "اتصل بالمضيف للبدء",
-  "composer.placeholder.hostSleeping": "هذا الخادم في وضع السكون. اضغط على مفتاح أو انقر لإيقاظه",
-  "composer.placeholder.hostWaking": "جارٍ إيقاظ الخادم…",
   "composer.placeholder.cliSetup": "أكمل إعداد CLI الوكيل للبدء",
   "composer.placeholder.reply": "رد…",
   "composer.placeholder.message": "مراسلة {name}",

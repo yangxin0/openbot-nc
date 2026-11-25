@@ -2,18 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "La configuración de permisos está disponible en macOS.",
-  "status.remote.setupInstallHost": "Instala el componente de host del escritorio remoto y vuelve a comprobarlo.",
-  "status.remote.setupUpdateRuntime":
-    "Actualiza el entorno de ejecución del escritorio remoto para comprobar los permisos de macOS.",
-  "status.remote.setupCheckFailed":
-    "Sunshine no pudo completar la comprobación de permisos. Comprueba la sesión del host e inténtalo de nuevo.",
-  "status.remote.setupServiceFailed":
-    "El servicio de escritorio remoto no pudo iniciarse. Comprueba que este usuario de macOS tenga una sesión gráfica activa.",
-  "status.remote.connectingSunshine": "Conectando a través de Sunshine…",
-  "status.remote.switchingMonitor": "Cambiando el monitor compartido…",
-  "status.remote.controlConnected": "Control remoto conectado.",
-  "status.remote.controlFailed": "El control remoto falló.",
   "status.remote.stagePreferences": "Cargando las preferencias de chat locales: {reason}",
   "status.remote.stageConnection": "Conectando con el escritorio: {reason}",
   "status.remote.stageCompatibility": "Comprobando la compatibilidad del escritorio: {reason}",

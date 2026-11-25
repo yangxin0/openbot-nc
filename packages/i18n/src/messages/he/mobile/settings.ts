@@ -441,7 +441,6 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "האזנה",
   "mobile.settings.voice.tab.speaking": "דיבור",
-  "mobile.settings.voice.tab.gptLive": "GPT חי",
   "mobile.settings.voice.pause.title": "השהיה לפני שליחה",
   "mobile.settings.voice.pause.label": "המתנה למילים חדשות",
   "mobile.settings.voice.pause.footer":
@@ -450,21 +449,6 @@ export const messages = {
   "mobile.settings.voice.speed.title": "מהירות תשובות",
   "mobile.settings.voice.speed.footer": "מהירות התשובות ש-OpenBot מקריא, גם בשיחה קולית.",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT Live Voice",
-  "mobile.settings.voice.gptLive.footer":
-    "בשיחה קולית עם סוכן, GPT Live Voice מאזין ומדבר במקום הטלפון הזה. הוא משתמש בכניסה ל-Codex (ChatGPT) של המחשב שמריץ את השרת. הקול שלכם עובר בין הטלפון הזה ל-OpenAI, ו-OpenAI מקריא את תשובות הסוכן. נדרש שרת שתומך בזה; שרתים אחרים משתמשים בקול של הטלפון הזה.",
-  "mobile.settings.voice.gptLive.automatic": "אוטומטי",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "OpenAI ידבר בקול הזה בשיחה הקולית הבאה שלכם. במצב אוטומטי, OpenAI בוחר את הקול.",
-  "mobile.settings.voice.gptLive.serversTitle": "שרתים",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "הקישו על שרת שצריך כניסה כדי לחבר את Codex לחשבון ChatGPT. רק בעלים או מנהל רואים את הכניסה של שרת.",
-  "mobile.settings.voice.gptLive.account": "חשבון לקול חי של GPT",
-  "mobile.settings.voice.gptLive.status.ready": "מוכן",
-  "mobile.settings.voice.gptLive.status.supported": "נתמך",
-  "mobile.settings.voice.gptLive.status.offline": "לא מחובר",
-  "mobile.settings.voice.gptLive.status.update": "נדרשת גרסה חדשה יותר של OpenBot במחשב שלו",
-  "mobile.settings.voice.gptLive.status.signIn": "היכנסו ל-Codex עם ChatGPT",
   "mobile.settings.voice.server.title": "שרת קול",
   "mobile.settings.voice.server.row": "שרת תואם OpenAI",
   "mobile.settings.voice.server.notSetUp": "לא מוגדר",

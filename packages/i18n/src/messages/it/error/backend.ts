@@ -3,13 +3,11 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "Gli eventi non sono disponibili su questo host.",
+  "error.backend.webhooksRemoved": "I trigger webhook non sono disponibili in questa versione di OpenBot.",
   "error.backend.databaseIntegrity": "Il database di OpenBot non ha superato il controllo di integrità.",
-  "error.backend.webhookRouteLimit": "Un host può avere al massimo {limit} routine webhook.",
   "error.backend.webhookSettingsInvalid": "Controlla le impostazioni del webhook e riprova.",
   "error.backend.webhookSenderSecretInvalid":
     "Incolla il segreto di firma completo del mittente. Ha da 16 a 1024 caratteri e nessuno spazio.",
-  "error.backend.webhookRouteUnavailable":
-    "Il percorso pubblico del webhook non è pronto. Controlla la connessione all'host e riprova.",
   "error.backend.browserViewRemoteOnly": "La vista in diretta del browser è disponibile solo per un host remoto.",
   "error.backend.browserViewUnsupported": "Questo host remoto non supporta la vista in diretta del browser.",
   "error.backend.browserViewLimit": "Su questo host ci sono troppe viste del browser aperte.",
@@ -17,31 +15,6 @@ export const messages = {
   "error.backend.browserViewFailed": "La vista in diretta di questa pagina non è riuscita.",
   "error.backend.windowTemporarilyUnavailable": "La finestra di OpenBot non è al momento disponibile.",
   "error.backend.windowUnavailable": "La finestra di OpenBot non è disponibile.",
-  "error.backend.sunshineApiHttp": "L'API di Sunshine ha risposto con errore HTTP {status}.",
-  "error.backend.sunshinePortsUnavailable":
-    "Impossibile riservare una famiglia di porte Sunshine libera per il desktop remoto.",
-  "error.backend.moonlightPortsUnavailable":
-    "Impossibile riservare un intervallo di porte Moonlight WebRTC libero per il desktop remoto.",
-  "error.backend.iceServerNoPort": "Il server ICE del desktop remoto non ha ottenuto una porta.",
-  "error.backend.remoteDesktopStoppedWhileStarting": "L'ambiente del desktop remoto è stato fermato durante l'avvio.",
-  "error.backend.sunshineNotStarted": "Sunshine non si è avviato su una famiglia di porte riservata.",
-  "error.backend.moonlightNoHost": "Moonlight non ha nessun host locale associato.",
-  "error.backend.sunshineNoDesktop": "Sunshine non ha pubblicato l'applicazione Desktop.",
-  "error.backend.sunshineAmbiguousPairing": "Sunshine ha restituito richieste di associazione locali ambigue.",
-  "error.backend.sunshineNoPairingRequest": "Sunshine non ha ricevuto la richiesta di associazione locale prevista.",
-  "error.backend.moonlightPairingHttp": "L'associazione di Moonlight è fallita con errore HTTP {status}.",
-  "error.backend.moonlightRejectedPairing": "Moonlight ha rifiutato l'associazione con Sunshine.",
-  "error.backend.moonlightNoPin": "Moonlight non ha restituito un PIN di associazione.",
-  "error.backend.moonlightPairingIncomplete": "L'associazione di Moonlight non è stata completata.",
-  "error.backend.moonlightWebNotEmbedded": "Moonlight Web non è una build incorporata di OpenBot.",
-  "error.backend.moonlightEmptyResponse": "Moonlight ha restituito una risposta vuota.",
-  "error.backend.remoteDesktopTimeout": "La richiesta al desktop remoto è scaduta.",
-  "error.backend.moonlightApiHttp": "L'API di Moonlight ha risposto con errore HTTP {status}.",
-  "error.backend.sunshineExited": "Sunshine si è chiuso prima che la sua API HTTPS sulla porta {port} fosse pronta.",
-  "error.backend.sunshineNoAnswer": "Sunshine non ha risposto.",
-  "error.backend.sunshineTlsUnexpected": "Sunshine ha restituito un certificato TLS inatteso.",
-  "error.backend.moonlightWebExited": "Moonlight Web si è chiuso prima che {url} fosse pronto.",
-  "error.backend.moonlightWebNotReady": "Moonlight Web non è diventato pronto.",
   "error.backend.channelDeleteUnsupported": "Questo server non supporta l'eliminazione dei canali.",
   "error.backend.browserNavigateUnsupported":
     "Questo host remoto non supporta la navigazione dalla barra degli indirizzi in una scheda esistente.",
@@ -60,8 +33,6 @@ export const messages = {
   "error.backend.browserStopUnsupported": "Questo host remoto non può interrompere il caricamento di una pagina.",
   "error.backend.sharedDataLocalOnly": "I dati condivisi sono gestiti sul computer su cui girano questi agenti.",
   "error.backend.browserUrlProtocol": "Sono consentiti solo URL del browser HTTP(S).",
-  "error.backend.sunshineNotReady": "Sunshine non è diventato pronto.",
-  "error.backend.sunshineNotReadyReason": "Sunshine non è diventato pronto. {reason}",
   "error.backend.channelLeadModelUnavailable": "Il modello del responsabile del canale non è disponibile.",
   "error.backend.contextCompactionIneffective":
     "La compattazione non riduce questa chat: dopo due compattazioni usa ancora il {percent}% della finestra di contesto del modello, quindi OpenBot smette di compattarla. Strumenti e istruzioni usano la maggior parte della finestra. Disattiva i server MCP o l'uso del computer che questo agente non usa, oppure scegli un modello con una finestra più grande. Poi avvia una nuova chat.",
@@ -280,6 +251,8 @@ export const messages = {
     "Il server di accesso non accetta ancora OpenBot come app. La causa non è il tuo account. Usa un altro modo per connetterti, ad esempio un server MCP locale.",
   "error.backend.mcpRegistrationUnavailable":
     "Il server di accesso non può registrare OpenBot come app. La causa non è il tuo account. Per connetterti, salva questo server in Marketplace, App, poi aggiungi un’app di accesso.",
+  "error.backend.mcpSignInNeedsClientDocument":
+    "Questo server di accesso accetta solo app che pubblicano un documento di ID client, e questa versione di OpenBot non ne pubblica uno. Se hai una tua app di accesso per questo server, salva il server in Marketplace, App, poi aggiungi l’app di accesso.",
   "error.backend.mcpSignInAbandonedGeneric": "L'accesso è stato abbandonato.",
   "error.backend.mcpSignInForgotten": "L'accesso MCP è stato dimenticato mentre era in corso.",
   "error.backend.mcpSignInAbandoned": "L'accesso MCP è stato abbandonato.",
@@ -481,8 +454,6 @@ export const messages = {
   "error.backend.branchSourceBusy": "Interrompi il turno in corso prima di creare un ramo di questa chat.",
   "error.backend.branchMessageNotFound": "Puoi creare un ramo solo da una risposta completata dell'agente.",
   "error.backend.branchRemoteUnsupported": "I rami sono disponibili solo per gli agenti su questo computer.",
-  "error.backend.feedbackWithdrawRemoteUnsupported":
-    "Per rimuovere questa segnalazione, chiedi all’agente di rimuoverla.",
   "error.backend.threadMoveRefused":
     "Solo un messaggio che hai inviato soltanto a questo agente può essere eseguito in un nuovo thread.",
   "error.backend.taskTitleRequired": "Dai all'attività un titolo breve.",

@@ -30,8 +30,6 @@ export const messages = {
   "error.agent.commitEffectsFailed": "הטרנזקציה בוצעה, אך ההשפעות השמורות שלה נכשלו.",
   "error.agent.settingsLocalOnly": "אפשר לשנות הגדרות של סוכן רק במחשב שמריץ את הסוכן.",
   "error.agent.skillsLocalOnly": "אפשר לשנות מיומנויות רק במחשב שמריץ את הסוכן.",
-  "error.agent.addLocalOnly": "אפשר להוסיף סוכנים רק במחשב שמריץ אותם.",
-  "error.agent.joinedServerUpdate": "אי אפשר לעדכן מכאן סוכן בשרת שהצטרפת אליו.",
   "error.agent.searchQueryRequired": "נדרשת שאילתת חיפוש.",
   "error.agent.messageTooLong": "ההודעה ארוכה מדי.",
   "error.agent.messageOrAttachmentRequired": "נדרשת הודעה או קובץ מצורף.",
@@ -155,8 +153,6 @@ export const messages = {
     "סקריפטים מקומיים הריצו את השגרות של הסוכן הזה {limit} פעמים בשעה האחרונה. יש לנסות שוב מאוחר יותר.",
   "error.agent.workspaceOnlyMacOnly":
     "מצב סביבת עבודה בלבד זמין לספק הזה רק ב-macOS. יש לבחור גישה מלאה בהגדרות הסוכן.",
-  "error.agent.lowMemory":
-    "בשרת הזה חסר זיכרון. ההודעה שלך ממתינה בתור ותתחיל כשיתפנה זיכרון. תוכנית גדולה יותר נותנת לשרת יותר זיכרון.",
   "error.agent.lowMemoryServer": "בשרת הזה חסר זיכרון. ההודעה שלך ממתינה בתור ותתחיל כשיתפנה זיכרון.",
   "error.agent.workspaceOnlyToolMissing":
     "מצב סביבת עבודה בלבד דורש את {tool}, ש-OpenBot לא מצא. יש להתקין אותו, או לבחור גישה מלאה בהגדרות הסוכן.",

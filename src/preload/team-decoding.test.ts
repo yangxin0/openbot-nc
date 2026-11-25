@@ -7,9 +7,6 @@ import type {
   HostStatus,
   InvitePreview,
   InviteSummary,
-  RemoteControlPolicy,
-  RemoteDesktopConnectResult,
-  RemoteDesktopSession,
   ScopedDirectMessageEvent,
   ScopedDirectTypingEvent,
   ScopedTeamPresenceSnapshot,
@@ -31,9 +28,6 @@ import {
   decodeInviteSummary,
   decodeInviteUrl,
   decodePendingInvite,
-  decodeRemoteControlPolicy,
-  decodeRemoteDesktopConnectResult,
-  decodeRemoteDesktopSessions,
   decodeScopedDirectMessage,
   decodeScopedDirectTyping,
   decodeScopedTeamPresence,
@@ -56,12 +50,6 @@ const hostStatus = {
   logoUrl: null,
   appearance: null,
   apiOnline: true,
-  remoteDesktopReady: false,
-  remoteDesktopScreenRecordingDenied: false,
-  remoteDesktopNeedsX11Session: false,
-  remoteDesktopUnattended: false,
-  remoteDesktopActiveSessions: 0,
-  remoteDesktopMaxSessions: 4,
   message: null,
 } satisfies HostStatus;
 
@@ -105,21 +93,6 @@ const session = {
   expiresAt: "2026-10-23T10:00:00.000Z",
 } satisfies TeamSessionSummary;
 
-const remoteSession = {
-  id: "screen-1",
-  serverId: "server-1",
-  viewerUrl: "https://viewer.example.test",
-  viewerGrant: "grant",
-  displays: [{ id: "display-1", label: "Built-in", width: 1512, height: 982, primary: true }],
-  selectedDisplayId: "display-1",
-  phase: "connected",
-  transport: "p2p",
-  errorCode: null,
-  message: null,
-  createdAt: "2026-09-23T10:00:00.000Z",
-  grantExpiresAt: "2026-09-23T11:00:00.000Z",
-} satisfies RemoteDesktopSession;
-
 const localServer = {
   notificationsMuted: false,
   notificationsMutedUntil: null,
@@ -129,7 +102,6 @@ const localServer = {
   kind: "local",
   state: "online",
   apiUrl: null,
-  remoteDesktopAvailable: false,
   logoUrl: null,
   role: null,
   active: true,
@@ -208,17 +180,6 @@ const typingEvent = {
   event: { type: "team-direct-typing", senderMemberId: "member-1", recipientMemberId: "member-2", typing: true },
 } satisfies ScopedDirectTypingEvent;
 
-const customPlan = {
-  name: "Business",
-  amount: 89_000,
-  currency: "eur",
-  interval: "month",
-  vcpu: 16,
-  memoryGb: 64,
-  storageGb: 500,
-  personalizedSupport: true,
-};
-
 describe("team decoders", () => {
   it.each([
     ["host status", decodeHostStatus, hostStatus],
@@ -235,44 +196,22 @@ describe("team decoders", () => {
     ["team session list", decodeTeamSessions, [session]],
     ["team invite list", decodeTeamInvites, [teamInvite]],
     ["created invite", decodeInviteSummary, invite],
-    ["remote desktop session list", decodeRemoteDesktopSessions, [remoteSession]],
-    [
-      "connected remote desktop",
-      decodeRemoteDesktopConnectResult,
-      { status: "connected", session: remoteSession } satisfies RemoteDesktopConnectResult,
-    ],
-    [
-      "refused remote desktop",
-      decodeRemoteDesktopConnectResult,
-      {
-        status: "refused",
-        errorCode: "host_permissions_required",
-        message: "The host must allow screen recording.",
-      } satisfies RemoteDesktopConnectResult,
-    ],
     ["local server", decodeServer, localServer],
     ["server list", decodeServers, [localServer, remoteServer]],
     ["server without a connection issue", decodeServer, { ...remoteServer, compatibility: null, issue: null }],
-    ["server with a failed hosted start", decodeServer, { ...remoteServer, hostedIssue: "wake_failed" }],
-    ["server with an ended plan", decodeServer, { ...remoteServer, hostedIssue: "plan_ended" }],
-    ["server with an expired start", decodeServer, { ...remoteServer, hostedIssue: "start_timeout" }],
-    [
-      "server with a hosted start",
-      decodeServer,
-      { ...remoteServer, hostedSleep: "waking", hostedStart: { step: "provider_limit", startedAt: 1 } },
-    ],
-    [
-      "server with a hosted restore",
-      decodeServer,
-      { ...remoteServer, hostedSleep: "waking", hostedStart: { step: "restore", startedAt: 1 } },
-    ],
-    ["server with no hosted start", decodeServer, { ...remoteServer, hostedStart: null }],
     ["server on this computer", decodeServer, { ...remoteServer, thisComputer: true }],
-    ["hosted server with plan storage", decodeServer, { ...remoteServer, hosted: true, storageGb: 50 }],
-    ["hosted server with no restart", decodeServer, { ...remoteServer, hosted: true, restartAvailable: false }],
+    ["server with no restart", decodeServer, { ...remoteServer, restartAvailable: false }],
     ["server with a key change time", decodeServer, { ...remoteServer, keyChangedAt: 1_700_000_000_000 }],
-    ["custom server that waits for payment", decodeServer, { ...remoteServer, paymentRequired: true }],
-    ["custom server with its plan", decodeServer, { ...remoteServer, paymentRequired: true, customPlan }],
+    [
+      "server of a team member through the relay",
+      decodeServer,
+      { ...remoteServer, apiUrl: null, relayHost: { user: "alice", device: "laptop" } },
+    ],
+    [
+      "server of a team member with no device",
+      decodeServer,
+      { ...remoteServer, relayHost: { user: "alice", device: null } },
+    ],
     ["invite preview", decodeInvitePreview, invitePreview],
     ["invite link", decodeInviteUrl, "openbot://join/invite-1"],
     ["pending invite", decodePendingInvite, "openbot://join/invite-1"],
@@ -302,11 +241,6 @@ describe("team decoders", () => {
     ["direct read state", decodeDirectReadState, readState],
     ["direct message event", decodeScopedDirectMessage, directEvent],
     ["direct typing event", decodeScopedDirectTyping, typingEvent],
-    [
-      "remote control policy",
-      decodeRemoteControlPolicy,
-      { access: "admins", askOnHost: true } satisfies RemoteControlPolicy,
-    ],
   ] as const)("keeps a valid %s", (_name, decode: (value: unknown) => unknown, value) => {
     expect(decode(value)).toEqual(value);
   });
@@ -322,19 +256,6 @@ describe("team decoders", () => {
     ["team session without a member", decodeTeamSessions, [{ ...session, memberId: null }]],
     ["team invite for an owner", decodeTeamInvites, [{ ...teamInvite, role: "owner" }]],
     ["created invite without a link", decodeInviteSummary, teamInvite],
-    [
-      "remote desktop session with an unknown transport",
-      decodeRemoteDesktopSessions,
-      [{ ...remoteSession, transport: "tcp" }],
-    ],
-    [
-      "refused remote desktop with an unknown code",
-      decodeRemoteDesktopConnectResult,
-      { status: "refused", errorCode: "busy", message: "No." },
-    ],
-    ["remote desktop connection with an unknown status", decodeRemoteDesktopConnectResult, { status: "pending" }],
-    ["remote control policy with an unknown access", decodeRemoteControlPolicy, { access: "guests", askOnHost: false }],
-    ["remote control policy without a question choice", decodeRemoteControlPolicy, { access: "owner" }],
     ["server with an unknown state", decodeServers, [{ ...localServer, state: "asleep" }]],
     ["server without a role", decodeServer, { ...localServer, role: undefined }],
     [
@@ -349,31 +270,17 @@ describe("team decoders", () => {
     ],
     ["server with a text connection sequence", decodeServer, { ...remoteServer, connectionSequence: "2" }],
     ["server with a false capability wait", decodeServer, { ...remoteServer, capabilitiesPending: false }],
-    ["server with an invalid hosted issue", decodeServer, { ...remoteServer, hostedIssue: "<script>" }],
     ["server with an invalid restart flag", decodeServer, { ...remoteServer, restartAvailable: "false" }],
-    [
-      "server with an invalid hosted start step",
-      decodeServer,
-      { ...remoteServer, hostedStart: { step: "<script>", startedAt: 1 } },
-    ],
-    ["server with a hosted start without a time", decodeServer, { ...remoteServer, hostedStart: { step: "machine" } }],
     ["server on this computer marked false", decodeServer, { ...remoteServer, thisComputer: false }],
-    ["server with a fractional plan storage", decodeServer, { ...remoteServer, storageGb: 1.5 }],
-    ["server with a text plan storage", decodeServer, { ...remoteServer, storageGb: "50" }],
-    ["custom server with payment marked false", decodeServer, { ...remoteServer, paymentRequired: false }],
-    [
-      "custom server with a text price",
-      decodeServer,
-      { ...remoteServer, customPlan: { ...customPlan, amount: "890" } },
-    ],
-    [
-      "custom server with an unknown currency",
-      decodeServer,
-      { ...remoteServer, customPlan: { ...customPlan, currency: "btc" } },
-    ],
-    ["custom server with no memory", decodeServer, { ...remoteServer, customPlan: { ...customPlan, memoryGb: 0 } }],
     ["server with a text key change time", decodeServer, { ...remoteServer, keyChangedAt: "2026-10-31" }],
     ["server with a negative key change time", decodeServer, { ...remoteServer, keyChangedAt: -1 }],
+    ["server with a relay host that is not a record", decodeServer, { ...remoteServer, relayHost: "alice" }],
+    ["server with a relay host without a user", decodeServer, { ...remoteServer, relayHost: { device: "laptop" } }],
+    [
+      "server with a relay host with a numeric device",
+      decodeServer,
+      { ...remoteServer, relayHost: { user: "alice", device: 1 } },
+    ],
     ["invite preview for an owner", decodeInvitePreview, { ...invitePreview, role: "owner" }],
     ["invite link that is not text", decodeInviteUrl, 1],
     ["pending invite that is not text", decodePendingInvite, undefined],

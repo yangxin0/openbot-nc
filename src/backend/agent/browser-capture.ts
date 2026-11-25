@@ -18,7 +18,7 @@ export function signInPageByOpenBot(
 export const captureBrowser = Effect.fn("captureBrowser")(function* (openPage: (url: string) => Promise<void>) {
   const directory = yield* Effect.acquireRelease(
     Effect.tryPromise({
-      try: () => mkdtemp(join(tmpdir(), "openbot-sign-in-")),
+      try: () => mkdtemp(join(tmpdir(), "openbot-nc-sign-in-")),
       catch: (cause) => new CliLoginFailed({ cause }),
     }),
     (path) => Effect.promise(() => rm(path, { recursive: true, force: true })),

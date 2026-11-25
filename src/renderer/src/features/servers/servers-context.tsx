@@ -1,16 +1,12 @@
-import type { HostedServerEntryPoint } from "@openbot/contracts/hosted-servers";
 import type { HostStatus, ServerNotificationLevel, ServerSummary } from "@openbot/contracts/ipc";
 import type { TeamCurrentCapability } from "@openbot/contracts/team-protocol/current";
-import { WAKE_RECONNECT_STATES } from "@openbot/team-client/hosted-server-wake";
 import { classifyFailure } from "@openbot/telemetry";
 import { toast } from "@openbot/ui";
-import { serverPlanDeletionDates } from "@openbot/ui/features/servers/ServerPlanEnd";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, flush, onSettled, untrack } from "solid-js";
 import { actionToast } from "../../action-toast";
 import { FALLBACK_HOST_STATUS } from "../../app-defaults";
 import { createSimpleContext } from "../../simple-context";
-import { refreshEndedPlansOnFocus } from "./ServerPlanReminder";
 import {
   olderAppSide,
   remoteUpdateServer,
@@ -39,16 +35,6 @@ const Servers = createSimpleContext({
     const [hostStatus, setHostStatus] = createSignal<HostStatus>(FALLBACK_HOST_STATUS);
     const [joinServerOpen, setJoinServerOpen] = createSignal(false);
     const [createLocalServerOpen, setCreateLocalServerOpen] = createSignal(false);
-    const [installServerOpen, setInstallServerOpen] = createSignal(false);
-    const [addServerEntryPoint, setAddServerEntryPoint] = createSignal<HostedServerEntryPoint | null>(null);
-    const addServerOpen = () => addServerEntryPoint() !== null;
-    const setAddServerOpen = (...args: [open: false] | [open: true, entryPoint: HostedServerEntryPoint]) =>
-      setAddServerEntryPoint(args[0] ? args[1] : null);
-    const [hostedServersAvailable, setHostedServersAvailable] = createSignal(false);
-    const [hostedServerIds, setHostedServerIds] = createSignal<ReadonlySet<string>>(new Set());
-    const [hostedServersLoaded, setHostedServersLoaded] = createSignal(false);
-    const [planDeletesAtById, setPlanDeletesAtById] = createSignal<ReadonlyMap<string, number>>(new Map());
-    const planDeletesAt = (serverId: string) => planDeletesAtById().get(serverId) ?? null;
     const [serverLoadRequest, setServerLoadRequest] = createSignal<{
       serverId: string;
       nonce: number;
@@ -75,42 +61,6 @@ const Servers = createSimpleContext({
     function activeServerSupportsCapability(capability: TeamCurrentCapability): boolean {
       return serverSupportsCapability(activeServer(), capability);
     }
-
-    createEffect(
-      () => {
-        const server = activeServer();
-        return server?.hostedSleep === "sleeping" ? server.id : null;
-      },
-      (serverId) => {
-        if (!serverId) return;
-        let active = true;
-        const addListeners = () => {
-          window.addEventListener("pointerdown", wake, true);
-          window.addEventListener("keydown", wake, true);
-        };
-        const removeListeners = () => {
-          window.removeEventListener("pointerdown", wake, true);
-          window.removeEventListener("keydown", wake, true);
-        };
-        const wake = () => {
-          removeListeners();
-          void serversPort()
-            .hostedServers.wake(serverId)
-            .then(
-              (server) => WAKE_RECONNECT_STATES.has(server.state),
-              () => false,
-            )
-            .then((started) => {
-              if (!started && active) addListeners();
-            });
-        };
-        addListeners();
-        return () => {
-          active = false;
-          removeListeners();
-        };
-      },
-    );
 
     let openHostUpdate: ((serverId: string) => void) | undefined;
     function setHostUpdateOpener(opener: ((serverId: string) => void) | undefined): void {
@@ -265,56 +215,11 @@ const Servers = createSimpleContext({
         .host.getStatus()
         .then(setHostStatus)
         .catch(() => undefined);
-      void refreshHostedServersAvailable();
-      let signedInUserId: string | null = null;
-      const unsubscribeAuth = serversPort().auth.onEvent((state) => {
-        if (state.status !== "signed_in" && state.status !== "signed_out") return;
-        const userId = state.status === "signed_in" ? state.user.id : null;
-        if (userId === signedInUserId) return;
-        signedInUserId = userId;
-        if (userId) void refreshHostedServersAvailable();
-        else {
-          setHostedServersAvailable(false);
-          setHostedServerIds(new Set<string>());
-          setPlanDeletesAtById(new Map());
-          setHostedServersLoaded(false);
-        }
-      });
-      const stopPlanRefresh = refreshEndedPlansOnFocus(
-        () => untrack(planDeletesAtById).size > 0,
-        refreshHostedServersAvailable,
-      );
       return () => {
         unsubscribeServers();
         unsubscribeHost();
-        unsubscribeAuth();
-        stopPlanRefresh();
       };
     });
-
-    let hostedListRequest = 0;
-    async function refreshHostedServersAvailable(): Promise<boolean> {
-      const request = ++hostedListRequest;
-      const list = await serversPort()
-        .hostedServers.list()
-        .catch(() => null);
-      if (!list) return hostedServersAvailable();
-      if (request !== hostedListRequest) return list.available;
-      setHostedServersAvailable(list.available);
-      setHostedServerIds(new Set(list.servers.map((server) => server.serverId)));
-      setPlanDeletesAtById(serverPlanDeletionDates(list.servers));
-      setHostedServersLoaded(true);
-      return list.available;
-    }
-
-    createEffect(
-      () =>
-        hostedServersLoaded() &&
-        servers().some((server) => server.hostedIssue === "plan_ended" && !planDeletesAtById().has(server.id)),
-      (dateMissing) => {
-        if (dateMissing) void refreshHostedServersAvailable();
-      },
-    );
 
     createEffect(
       () => {
@@ -330,19 +235,6 @@ const Servers = createSimpleContext({
         entry.offered = true;
         const active = untrack(servers).find((server) => server.id === current.id);
         void offerServerUpdate(remoteUpdateServer(active) && active ? updateTarget(active) : null);
-      },
-    );
-
-    const readOwnedServerIds = new Set<string>();
-    createEffect(
-      () =>
-        servers()
-          .filter((server) => server.kind === "remote" && server.role === "owner" && !readOwnedServerIds.has(server.id))
-          .map((server) => server.id),
-      (serverIds) => {
-        if (serverIds.length === 0) return;
-        for (const serverId of serverIds) readOwnedServerIds.add(serverId);
-        void refreshHostedServersAvailable();
       },
     );
 
@@ -430,16 +322,6 @@ const Servers = createSimpleContext({
       setJoinServerOpen,
       createLocalServerOpen,
       setCreateLocalServerOpen,
-      installServerOpen,
-      setInstallServerOpen,
-      addServerOpen,
-      addServerEntryPoint,
-      setAddServerOpen,
-      hostedServersAvailable,
-      hostedServerIds,
-      hostedServersLoaded,
-      planDeletesAt,
-      refreshHostedServersAvailable,
       reorderServers,
       localServerHidden,
       setLocalServerHidden,

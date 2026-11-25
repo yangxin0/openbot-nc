@@ -3,7 +3,6 @@ import { Button, ChevronRight, Spinner } from "@openbot/ui";
 import { ServerMark } from "@openbot/ui/features/servers/ServerRail";
 import { useText } from "@openbot/ui/text";
 import { For, Show } from "solid-js";
-import { ConsentNotice } from "./AnalyticsConsent";
 
 export type FirstRunServer = Pick<ServerSummary, "id" | "name" | "state" | "logoUrl" | "appearance">;
 
@@ -13,8 +12,6 @@ export interface FirstRunExistingServersProps {
   disabled: boolean;
   onOpen: (server: FirstRunServer) => void;
   onStartNew: () => void;
-  onOpenTerms: () => void;
-  onOpenPrivacy: () => void;
 }
 
 export function FirstRunExistingServers(props: FirstRunExistingServersProps) {
@@ -72,7 +69,6 @@ export function FirstRunExistingServers(props: FirstRunExistingServersProps) {
           <ChevronRight class="first-run-choice-row-chevron" aria-hidden="true" />
         </Button>
       </div>
-      <ConsentNotice onOpenTerms={() => props.onOpenTerms()} onOpenPrivacy={() => props.onOpenPrivacy()} />
     </>
   );
 }

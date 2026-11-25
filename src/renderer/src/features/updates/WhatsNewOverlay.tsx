@@ -1,12 +1,8 @@
-import { toast } from "@openbot/ui";
 import { WhatsNewDialog } from "@openbot/ui/features/updates/WhatsNewDialog";
-import { useText } from "@openbot/ui/text";
 import { createEffect, untrack } from "solid-js";
-import { appPort } from "../../app-port";
 import { useWhatsNew } from "./whats-new-context";
 
 export function WhatsNewOverlay(props: { ready: boolean }) {
-  const { t, errorMessage } = useText();
   const whatsNew = useWhatsNew();
   createEffect(
     () => props.ready && whatsNew.state.version !== "",
@@ -24,11 +20,6 @@ export function WhatsNewOverlay(props: { ready: boolean }) {
         if (!open) whatsNew.close();
       }}
       onRetry={whatsNew.retry}
-      onOpenChangelog={() => {
-        void appPort()
-          .openUrl("https://openbot.run/changelog")
-          .catch((error: unknown) => toast.error(errorMessage(error, t("update.whatsNew.changelogFailed")), { error }));
-      }}
     />
   );
 }

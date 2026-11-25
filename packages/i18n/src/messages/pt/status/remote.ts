@@ -2,19 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "A configuração de permissões está disponível no macOS.",
-  "status.remote.setupInstallHost":
-    "Instale o componente de área de trabalho remota do computador anfitrião e verifique novamente.",
-  "status.remote.setupUpdateRuntime":
-    "Atualize o ambiente de execução da área de trabalho remota para verificar as permissões do macOS.",
-  "status.remote.setupCheckFailed":
-    "O Sunshine não conseguiu concluir a verificação de permissões. Verifique a sessão no computador anfitrião e tente novamente.",
-  "status.remote.setupServiceFailed":
-    "O serviço de área de trabalho remota não conseguiu iniciar. Verifique se este usuário do macOS tem uma sessão gráfica ativa.",
-  "status.remote.connectingSunshine": "Conectando pelo Sunshine…",
-  "status.remote.switchingMonitor": "Trocando o monitor compartilhado…",
-  "status.remote.controlConnected": "Controle remoto conectado.",
-  "status.remote.controlFailed": "Falha no controle remoto.",
   "status.remote.stagePreferences": "Carregando preferências locais do chat: {reason}",
   "status.remote.stageConnection": "Conectando ao computador: {reason}",
   "status.remote.stageCompatibility": "Verificando a compatibilidade do computador: {reason}",

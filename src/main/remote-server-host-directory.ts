@@ -1,5 +1,4 @@
 import { verify } from "node:crypto";
-import { REMOTE_ACCOUNT_CHECK_INTERVAL_MS } from "@openbot/team-client";
 import {
   followHostKeyHandovers,
   type HostKeySignatureCheck,
@@ -9,54 +8,7 @@ import { Effect } from "effect";
 import type { RemoteHostSummary } from "./central-auth-records";
 import type { PreservedHostIdentity, StoredRemoteServerView } from "./remote-server-store";
 import type { StoredRemoteServer } from "./remote-server-stored-shape";
-import type { RemoteWorkflowError } from "./remote-service-effects";
 import { fingerprint } from "./team-store";
-
-export function watchRemoteHostDirectory(options: {
-  isActive(): boolean;
-  refresh(): Effect.Effect<void, RemoteWorkflowError>;
-}): () => void {
-  const timer = setInterval(() => {
-    if (options.isActive()) void Effect.runPromise(options.refresh().pipe(Effect.catch(() => Effect.void)));
-  }, REMOTE_ACCOUNT_CHECK_INTERVAL_MS);
-  timer.unref();
-  return () => clearInterval(timer);
-}
-
-const SERVER_CLAIM_REFRESH_INTERVAL_MS = 5_000;
-const SERVER_CLAIM_MAX_WATCH_MS = 15 * 60_000;
-
-export function watchServerClaims(options: { serverIds(): readonly string[]; refresh(): void }): {
-  add(expiresAt: number): void;
-  stop(): void;
-} {
-  let timer: ReturnType<typeof setInterval> | undefined;
-  let known = new Set<string>();
-  let claims = 0;
-  let deadline = 0;
-  const stop = () => {
-    clearInterval(timer);
-    timer = undefined;
-    claims = 0;
-  };
-  const tick = () => {
-    const fresh = options.serverIds().filter((id) => !known.has(id)).length;
-    if (fresh >= claims || Date.now() >= deadline) stop();
-    else options.refresh();
-  };
-  return {
-    add(expiresAt) {
-      if (!timer) {
-        known = new Set(options.serverIds());
-        timer = setInterval(tick, SERVER_CLAIM_REFRESH_INTERVAL_MS);
-        timer.unref();
-      }
-      claims += 1;
-      deadline = Math.max(deadline, Math.min(expiresAt, Date.now() + SERVER_CLAIM_MAX_WATCH_MS));
-    },
-    stop,
-  };
-}
 
 interface HostKeyPin {
   readonly hostId: string;
@@ -134,11 +86,15 @@ export const hostKeyChangeTimes = Effect.fn("RemoteHostDirectory.hostKeyChangeTi
 
 export function reconcileWebRtcHosts(input: WebRtcHostReconciliationInput): WebRtcHostReconciliation {
   const pinnedKeys: HostKeyPin[] = [];
+  const relayHostIds = new Set(
+    input.servers.filter((server) => server.transport === "relay").map((server) => server.id),
+  );
   const listed = input.hosts
     .filter(
       (host) =>
         host.hostId !== input.localHostId &&
         !input.isHiddenHost(host.hostId) &&
+        !relayHostIds.has(host.hostId) &&
         input.isThisComputer?.(host.hostId) !== true,
     )
     .map<StoredRemoteServer>((host) => {
@@ -154,7 +110,6 @@ export function reconcileWebRtcHosts(input: WebRtcHostReconciliationInput): WebR
         ...(publicKey ? { publicKey } : {}),
         username: input.username,
         encryptedToken: "",
-        remoteDesktopAvailable: false,
         logoVersion: host.logoKey,
         ...(host.appearance === undefined ? {} : { appearance: host.appearance }),
         role: host.role,
@@ -173,7 +128,10 @@ export function reconcileWebRtcHosts(input: WebRtcHostReconciliationInput): WebR
   const staleTransportHostIds: string[] = [];
   const servers = input.servers.flatMap((server) => {
     if (server.transport !== "webrtc-v2") {
-      if ((input.keepOtherTransports || input.isThisComputer?.(server.id)) && !listedById.has(server.id))
+      if (
+        (input.keepOtherTransports || server.transport === "relay" || input.isThisComputer?.(server.id)) &&
+        !listedById.has(server.id)
+      )
         return [{ ...server }];
       staleTransportHostIds.push(server.id);
       return [];
@@ -181,9 +139,6 @@ export function reconcileWebRtcHosts(input: WebRtcHostReconciliationInput): WebR
     const refreshed = listedById.get(server.id);
     if (!refreshed) return [];
     seen.add(server.id);
-    if (input.isConnected(server.id) && server.publicKey === refreshed.publicKey) {
-      refreshed.remoteDesktopAvailable = server.remoteDesktopAvailable;
-    }
     if (server.appearance !== undefined && (refreshed.appearance === undefined || input.isConnected(server.id)))
       refreshed.appearance = server.appearance;
     return [refreshed];

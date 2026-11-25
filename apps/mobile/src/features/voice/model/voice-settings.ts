@@ -1,7 +1,5 @@
 import {
   type CloudSpeechModelId,
-  type CodexLiveVoice,
-  isCodexLiveVoice,
   isSpeechSpeed,
   isSpeechVoice,
   type SpeechSpeed,
@@ -61,8 +59,6 @@ interface VoiceSettings {
   elevenLabsModel: ElevenLabsSpeechModelId;
   speed: SpeechSpeed;
   turnPauseMs: number;
-  gptLive: boolean;
-  gptLiveVoice: CodexLiveVoice | null;
 }
 
 const DEFAULT_SETTINGS: VoiceSettings = {
@@ -73,8 +69,6 @@ const DEFAULT_SETTINGS: VoiceSettings = {
   elevenLabsModel: "elevenlabs-flash-v2.5",
   speed: 1,
   turnPauseMs: 1_500,
-  gptLive: false,
-  gptLiveVoice: null,
 };
 
 const SETTINGS_KEY = "openbot.mobile.voice-settings.v1";
@@ -110,8 +104,6 @@ function decodeSettings(raw: string | null): VoiceSettings {
       typeof value.turnPauseMs === "number" && Number.isFinite(value.turnPauseMs)
         ? turnPauseMs(value.turnPauseMs)
         : DEFAULT_SETTINGS.turnPauseMs,
-    gptLive: value.gptLive === true,
-    gptLiveVoice: isCodexLiveVoice(value.gptLiveVoice) ? value.gptLiveVoice : null,
   };
 }
 
@@ -130,17 +122,7 @@ export async function loadVoiceSettings(): Promise<void> {
 }
 
 export async function saveVoiceSettings(change: Partial<VoiceSettings>): Promise<void> {
-  const {
-    engine,
-    recognition,
-    supertonicVoice,
-    elevenLabsVoice,
-    elevenLabsModel,
-    speed,
-    turnPauseMs,
-    gptLive,
-    gptLiveVoice,
-  } = {
+  const { engine, recognition, supertonicVoice, elevenLabsVoice, elevenLabsModel, speed, turnPauseMs } = {
     ...useVoiceSettings.getState(),
     ...change,
   };
@@ -152,8 +134,6 @@ export async function saveVoiceSettings(change: Partial<VoiceSettings>): Promise
     elevenLabsModel,
     speed,
     turnPauseMs,
-    gptLive,
-    gptLiveVoice,
   };
   useVoiceSettings.setState(settings);
   await SecureStore.setItemAsync(SETTINGS_KEY, JSON.stringify(settings));

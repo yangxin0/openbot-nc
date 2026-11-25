@@ -79,8 +79,6 @@ export const messages = {
   "composer.attachment.adding": "正在添加 {name}",
   "composer.placeholder.hostSetup": "请先在主机上完成服务商设置，才能开始",
   "composer.placeholder.connectHost": "请先连接你的主机，才能开始",
-  "composer.placeholder.hostSleeping": "服务器已休眠，按任意键或点击唤醒",
-  "composer.placeholder.hostWaking": "正在唤醒服务器…",
   "composer.placeholder.cliSetup": "请先完成助手 CLI 设置，才能开始",
   "composer.placeholder.reply": "回复…",
   "composer.placeholder.message": "发消息给 {name}",

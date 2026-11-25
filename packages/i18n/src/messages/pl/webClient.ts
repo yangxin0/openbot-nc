@@ -90,8 +90,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "Przesyłanie załącznika zostało anulowane.",
   "webClient.error.duplication": "Ten serwer nie obsługuje duplikowania agentów.",
   "webClient.error.connectServerFirst": "Najpierw połącz się z tym serwerem.",
-  "webClient.error.agentInstallNotAllowed":
-    "Tylko właściciel lub administrator może tu dodać agenta, a serwer musi mieć aktualną wersję OpenBot.",
   "webClient.error.linkDesktopOnly": "Ten link otwiera się tylko w aplikacji na komputer.",
   "webClient.error.saveEndpointOffline": "Połącz się z serwerem, aby zapisać endpoint.",
   "webClient.error.removeEndpointOffline": "Połącz się z serwerem, aby usunąć endpoint.",

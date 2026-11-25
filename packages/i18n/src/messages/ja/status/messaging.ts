@@ -26,24 +26,9 @@ export const messages = {
   "status.messaging.onlyRequester": "これを行えるのは {user} だけです。OpenBot のホストでも回答できます。",
   "status.messaging.hostOnly": "このリクエストに回答できるのは OpenBot のホストだけです。",
   "status.messaging.filesSkipped": "一部のファイルは送信されませんでした: {names}。",
-  "status.messaging.orchestratorName": "Slack Orchestrator",
-  "status.messaging.orchestratorTitle": "Slack で回答し、チームに依頼します",
-  "status.messaging.discordNoAgent":
-    "ここで回答できるエージェントはまだいません。OpenBot で Discord Orchestrator を追加してください。",
-  "status.messaging.discordOrchestratorName": "Discord Orchestrator",
-  "status.messaging.discordOrchestratorTitle": "Discord で回答し、チームに依頼します",
   "status.messaging.integrationsSection": "連携",
-  "status.messaging.signInReceived": "OpenBot は Slack のインストールを受け取りました。このタブは閉じてかまいません。",
-  "status.messaging.signInUnknown":
-    "この Slack のインストールは OpenBot が開始したものではありません。OpenBot でもう一度開始してください。",
-  "status.messaging.telegramNoAgent":
-    "ここで回答できるエージェントはまだいません。OpenBot で マーケットプレイス > アプリ > Telegram を開き、エージェントを追加 をクリックしてください。",
-  "status.messaging.telegramLinked":
-    "OpenBot はこのチャットに接続されています。エージェントに依頼するには、{bot} をメンションするか、OpenBot のメッセージに返信してください。",
   "status.messaging.telegramNotLinked":
     "OpenBot はこのチャットに接続されていません。接続するには、OpenBot アプリを開き、マーケットプレイス → アプリ → Telegram で「グループに追加」または「ダイレクトチャットを開く」を選択してください。",
-  "status.messaging.telegramOrchestratorName": "Telegram Orchestrator",
-  "status.messaging.telegramOrchestratorTitle": "Telegram で回答し、チームに依頼します",
   "status.messaging.whatsappNoAgent":
     "ここで回答できるエージェントはまだいません。OpenBot で WhatsApp Orchestrator を追加してください。",
   "status.messaging.whatsappApprovalMenu": "承認する場合は 1、拒否する場合は 2 と返信してください。",

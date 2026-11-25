@@ -66,13 +66,10 @@ export const messages = {
   "update.whatsNew.empty.title": "Geen nieuwe functies in deze versie",
   "update.whatsNew.empty.body":
     "Deze versie heeft geen opmerkingen om hier te tonen. De volledige changelog toont alle wijzigingen.",
-  "update.whatsNew.changelog": "Volledige changelog",
-  "update.whatsNew.changelogFailed": "OpenBot kan de changelog niet openen.",
   "update.whatsNew.done": "Begrepen",
   "update.required.title": "Update vereist",
   "update.required.description":
     "OpenBot {version} wordt niet meer ondersteund. Werk bij naar {minimum} of nieuwer om door te gaan.",
-  "update.required.download": "OpenBot downloaden",
   "update.required.continue": "Doorgaan zonder update",
   "update.required.failed": "De update is niet voltooid.",
 } as const satisfies PartialTranslation<typeof source>;

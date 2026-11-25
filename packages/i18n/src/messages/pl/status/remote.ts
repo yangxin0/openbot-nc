@@ -2,17 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "Konfiguracja uprawnień jest dostępna w macOS.",
-  "status.remote.setupInstallHost": "Zainstaluj komponent hosta zdalnego pulpitu, a potem sprawdź ponownie.",
-  "status.remote.setupUpdateRuntime": "Zaktualizuj środowisko zdalnego pulpitu, aby sprawdzić uprawnienia macOS.",
-  "status.remote.setupCheckFailed":
-    "Sunshine nie mógł ukończyć sprawdzania uprawnień. Sprawdź sesję hosta i spróbuj ponownie.",
-  "status.remote.setupServiceFailed":
-    "Nie udało się uruchomić usługi zdalnego pulpitu. Sprawdź, czy ten użytkownik macOS ma aktywną sesję graficzną.",
-  "status.remote.connectingSunshine": "Łączenie przez Sunshine…",
-  "status.remote.switchingMonitor": "Przełączanie udostępnianego monitora…",
-  "status.remote.controlConnected": "Zdalne sterowanie połączone.",
-  "status.remote.controlFailed": "Zdalne sterowanie nie powiodło się.",
   "status.remote.stagePreferences": "Wczytywanie lokalnych preferencji czatu: {reason}",
   "status.remote.stageConnection": "Łączenie z komputerem: {reason}",
   "status.remote.stageCompatibility": "Sprawdzanie zgodności z komputerem: {reason}",

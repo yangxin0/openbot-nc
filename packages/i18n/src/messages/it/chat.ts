@@ -523,8 +523,6 @@ export const messages = {
     "L’agente rimuove questa segnalazione e la invia di nuovo senza le parti che scegli.",
   "chat.feedbackSent.removeChoice": "Rimuovila",
   "chat.feedbackSent.removeChoiceHint": "Toglila da GitHub. Non puoi annullare.",
-  "chat.feedbackSent.fixPrompt": "Rimuovi la mia segnalazione #{number} da GitHub e inviala di nuovo senza questo:",
-  "chat.feedbackSent.removePrompt": "Rimuovi la mia segnalazione #{number} da GitHub.",
   "chat.feedbackSent.composerFilled": "La richiesta è nella casella del messaggio. Completala, poi inviala.",
   "chat.feedbackSent.keep": "Tienila",
   "chat.feedbackSent.removing": "Rimozione…",

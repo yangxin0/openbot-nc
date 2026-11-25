@@ -1,8 +1,8 @@
 import { uptime } from "node:os";
 import { join, resolve } from "node:path";
-import { parseInviteUrl, selfHostedApiOrigin } from "@openbot/contracts/invite-links";
+import { APP_ID, APP_LINK_SCHEME, APP_NAME } from "@openbot/contracts/app-identity";
+import { parseInviteUrl } from "@openbot/contracts/invite-links";
 import {
-  type AgentEvent,
   type AgentSummary,
   type AppLogoColor,
   type CentralAuthState,
@@ -14,7 +14,6 @@ import {
 import { createFormat, localeDirection, resolveLocale, translateFor, withHourCycle } from "@openbot/i18n";
 import { localizeSourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
-import { createRemoteDirectoryRefresh } from "@openbot/team-client/remote-directory";
 import { Effect, Semaphore } from "effect";
 import {
   app,
@@ -36,7 +35,6 @@ import {
 } from "electron";
 import { localTimezone } from "../backend/agent/routine-tools";
 import { replaceInvalidLinuxSystemLanguages } from "../backend/browser-policy";
-import { setDiskRestoreProbe } from "../backend/disk-restore";
 import { runCauseEffect } from "../backend/effect-boundary";
 import { LATEST_SCHEMA_VERSION, NewerDatabaseError } from "../backend/openbot-database-schema";
 import { perfTime } from "../backend/perf-probe-hooks";
@@ -57,18 +55,14 @@ import { requestNotificationPermission, showRetainedNotification } from "./deskt
 import {
   developmentUserDataName,
   developmentWorktreeColor,
-  readAnalyticsCaptureUrl,
   readDevelopmentInstanceId,
   readDevelopmentProfile,
   readDevelopmentRemoteDebuggingPort,
-  shouldAutoStartHost,
 } from "./development-profile";
 import { tintDevelopmentIcon } from "./development-worktree-icon";
 import { stopStuckExitAfterLimit } from "./exit-watchdog";
 import { filePreviewPages } from "./file-preview-pages";
 import { hostAllowsTenantLaunch } from "./host-update-coordinator";
-import { hostedDiskRestoreProbe, takeHostedServerEnvironment } from "./hosted-server-bootstrap";
-import { takeHostingDeveloperKey } from "./hosted-server-service";
 import { accountIpcHandlers } from "./ipc/account-handlers";
 import { acpRegistryIpcHandlers } from "./ipc/acp-registry-handlers";
 import { agentAdminIpcHandlers } from "./ipc/agent-admin-handlers";
@@ -77,11 +71,9 @@ import { agentFolderIpcHandlers } from "./ipc/agent-folder-handlers";
 import { agentIpcHandlers } from "./ipc/agent-handlers";
 import { agentImportIpcHandlers } from "./ipc/agent-import-handlers";
 import { agentInstructionsIpcHandlers } from "./ipc/agent-instructions-handlers";
-import { agentTemplateIpcHandlers } from "./ipc/agent-template-handlers";
 import { appIpcHandlers } from "./ipc/app-handlers";
 import { attachmentIpcHandlers } from "./ipc/attachment-handlers";
 import { backgroundProcessIpcHandlers } from "./ipc/background-process-handlers";
-import { billingIpcHandlers } from "./ipc/billing-handlers";
 import { bitwardenConnectorIpcHandlers } from "./ipc/bitwarden-connector-handlers";
 import { browserDockIpcHandlers } from "./ipc/browser-dock-handlers";
 import { browserIpcHandlers } from "./ipc/browser-handlers";
@@ -89,24 +81,17 @@ import { channelFolderIpcHandlers } from "./ipc/channel-folder-handlers";
 import { channelMemoryIpcHandlers } from "./ipc/channel-memory-handlers";
 import { channelRoutineIpcHandlers } from "./ipc/channel-routine-handlers";
 import { computerUseIpcHandlers } from "./ipc/computer-use-handlers";
-import { creditsIpcHandlers } from "./ipc/credits-handlers";
 import { crmIpcHandlers } from "./ipc/crm-handlers";
 import { customAgentIpcHandlers } from "./ipc/custom-agent-handlers";
 import { customProviderIpcHandlers } from "./ipc/custom-provider-handlers";
 import { registerIpcGroups } from "./ipc/define-ipc-group";
 import { dynamicIslandIpcHandlers } from "./ipc/dynamic-island-handlers";
 import { eventsIpcHandlers } from "./ipc/events-handlers";
-import { githubConnectorIpcHandlers } from "./ipc/github-connector-handlers";
 import { hostAdminIpcHandlers } from "./ipc/host-admin-handlers";
-import { hostedServerIpcHandlers } from "./ipc/hosted-server-handlers";
-import { hostedSiteIpcHandlers } from "./ipc/hosted-site-handlers";
 import { instanceTransferIpcHandlers } from "./ipc/instance-transfer-handlers";
-import { licenseIpcHandlers } from "./ipc/license-handlers";
 import { linkAccountIpcHandlers } from "./ipc/link-account-handlers";
 import { localServerIpcHandlers } from "./ipc/local-server-handlers";
 import { macAutomationIpcHandlers } from "./ipc/mac-automation-handlers";
-import { marketplaceAgentIpcHandlers } from "./ipc/marketplace-agent-handlers";
-import { marketplaceLinkIpcHandlers } from "./ipc/marketplace-link-handlers";
 import { mcpServerIpcHandlers } from "./ipc/mcp-server-handlers";
 import { memoryIpcHandlers } from "./ipc/memory-handlers";
 import { messagingIpcHandlers } from "./ipc/messaging-handlers";
@@ -117,7 +102,7 @@ import { pluginIpcHandlers } from "./ipc/plugin-handlers";
 import { providerAdminIpcHandlers } from "./ipc/provider-admin-handlers";
 import { providerDetectionIpcHandlers } from "./ipc/provider-detection-handlers";
 import { providerIpcHandlers } from "./ipc/provider-handlers";
-import { referralIpcHandlers } from "./ipc/referral-handlers";
+import { relayIpcHandlers } from "./ipc/relay-handlers";
 import { routineFeedIpcHandlers } from "./ipc/routine-feed-handlers";
 import { routineIpcHandlers } from "./ipc/routine-handlers";
 import { routineResultIpcHandlers } from "./ipc/routine-result-handlers";
@@ -160,8 +145,12 @@ import { MessageLinkRelay, openMessageLink } from "./message-link-relay";
 import { recoverFromNewerDatabase } from "./newer-database-recovery";
 import { removeOrcaPaneEnvironment } from "./orca-pane-environment";
 import { flushMainLog, startMainLog } from "./provider-log";
-import { notifyRemoteControlStarted } from "./remote-control-question";
-import { watchRemoteHostDirectory } from "./remote-server-host-directory";
+import {
+  IMPORT_RELAY_IDENTITY_SWITCH,
+  NO_RELAY_LAUNCH_OPTIONS,
+  RELAY_HOSTING_SWITCH,
+  readRelayLaunchSwitches,
+} from "./relay-launch-options";
 import { createRendererForwarders } from "./renderer-forwarders";
 import { sendToRenderer } from "./renderer-ipc";
 import { RoutineWake } from "./routine-wake";
@@ -263,6 +252,10 @@ try {
 }
 
 const commandLineUserDataDirectory = app.commandLine.getSwitchValue("user-data-dir").trim();
+const relayLaunchSwitches = readRelayLaunchSwitches(
+  app.commandLine.getSwitchValue(IMPORT_RELAY_IDENTITY_SWITCH),
+  app.commandLine.getSwitchValue(RELAY_HOSTING_SWITCH),
+);
 const developmentProfile = !app.isPackaged ? readDevelopmentProfile(process.env.OPENBOT_DEV_PROFILE) : null;
 const developmentRemoteRole =
   !app.isPackaged &&
@@ -272,32 +265,26 @@ const developmentRemoteRole =
 const developmentTestClientEnabled = !app.isPackaged && process.env.OPENBOT_DEV_TEST_CLIENT_ENABLED === "1";
 removeClaudeCodeSessionEnvironment(process.env);
 removeOrcaPaneEnvironment(process.env);
-const hostedServer = takeHostedServerEnvironment(process.env, app.isPackaged, process.platform);
-if (hostedServer) setDiskRestoreProbe(hostedDiskRestoreProbe());
-const hostingDeveloperKey = takeHostingDeveloperKey(process.env, app.isPackaged);
 const serverMode = takeServerModeEnvironment(process.env, app.isPackaged, process.platform);
 const localServerChildEnvironment = takeLocalServerChildEnvironment(process.env, commandLineUserDataDirectory);
-const localServerChild = serverMode || hostedServer ? null : localServerChildEnvironment;
+const localServerChild = serverMode ? null : localServerChildEnvironment;
 const forcedStartFailure = takeForcedStartFailure(process.env, app.isPackaged);
-const serverStartGuard =
-  serverMode !== null || hostedServer !== null || takeServerStartGuardTest(process.env, app.isPackaged);
+const serverStartGuard = serverMode !== null || takeServerStartGuardTest(process.env, app.isPackaged);
 const localServerControl = localServerChild
   ? openLocalServerControl(process.platform, (cause) =>
       logger.error("The local server has no control pipe from the desktop app:", toLogValue(cause)),
     )
   : null;
-if (serverMode || hostedServer || localServerChild) hideExceptionErrorBox();
-if (serverMode || hostedServer || localServerChild) keepWindowsHidden();
+if (serverMode || localServerChild) hideExceptionErrorBox();
+if (serverMode || localServerChild) keepWindowsHidden();
 if (developmentProfile && process.env.OPENBOT_DEV_WINDOW_FOCUS === "background") openWindowsInBackground();
 if (localServerChild && process.platform === "darwin") app.dock?.hide();
 const inviteLinkOptions = {
   allowLocalDevelopmentApiUrl: developmentRemoteRole !== null,
-  selfHostedApiOrigin: selfHostedApiOrigin(process.env.OPENBOT_AUTH_API_URL),
 };
 const developmentRemoteDebuggingPort = !app.isPackaged
   ? readDevelopmentRemoteDebuggingPort(process.env.OPENBOT_DEV_REMOTE_DEBUGGING_PORT)
   : null;
-const analyticsCaptureUrl = !app.isPackaged ? readAnalyticsCaptureUrl(process.env.OPENBOT_ANALYTICS_CAPTURE_URL) : null;
 app.commandLine.appendSwitch("disable-features", "FedCm");
 if (developmentRemoteDebuggingPort) {
   app.commandLine.appendSwitch("remote-debugging-port", developmentRemoteDebuggingPort);
@@ -319,17 +306,16 @@ if (commandLineUserDataDirectory) {
     ),
   );
 }
-app.setName("OpenBot");
+app.setName(APP_NAME);
 const systemTimezone =
-  serverMode || hostedServer || localServerChild
+  serverMode || localServerChild
     ? applyServerTimezone(join(app.getPath("userData"), SERVER_TIMEZONE_PREFERENCE_FILE), process.env)
     : localTimezone;
 app.enableSandbox();
-if (process.platform === "win32")
-  app.setAppUserModelId(app.isPackaged ? "app.openbot.desktop" : "app.openbot.desktop.dev");
+if (process.platform === "win32") app.setAppUserModelId(app.isPackaged ? APP_ID : `${APP_ID}.dev`);
 if (
   app.isPackaged &&
-  !(serverMode || hostedServer || localServerChildEnvironment) &&
+  !(serverMode || localServerChildEnvironment) &&
   (await Effect.runPromise(
     restartOutsideWindowsPackage(
       process.env,
@@ -342,7 +328,7 @@ if (
 const startedOnXWayland = takeXWaylandRestartMarker(process.env, process.argv);
 if (
   app.isPackaged &&
-  !(serverMode || hostedServer || localServerChildEnvironment) &&
+  !(serverMode || localServerChildEnvironment) &&
   ((await Effect.runPromise(restartOnXWaylandForAboveApps(process.env, app.getPath("userData")))) ||
     (await Effect.runPromise(
       restartOnXWaylandForSoftwareRendering(
@@ -356,7 +342,7 @@ if (
 if (
   process.platform === "darwin" &&
   app.isPackaged &&
-  !(serverMode || hostedServer || localServerChildEnvironment) &&
+  !(serverMode || localServerChildEnvironment) &&
   Effect.runSync(
     shipItInstallInProgress({
       userDataPath: app.getPath("userData"),
@@ -376,7 +362,7 @@ if (hasSingleInstanceLock) {
       userDataPath: app.getPath("userData"),
       crashDumpsPath: app.getPath("crashDumps"),
       appVersion: app.getVersion(),
-      server: hostedServer !== null || serverMode !== null,
+      server: serverMode !== null,
       now: Date.now(),
       bootedAt: Date.now() - uptime() * 1_000,
     }));
@@ -420,7 +406,7 @@ if (hasSingleInstanceLock) {
 configureLinuxGpu({
   userDataPath: app.getPath("userData"),
   ownsInstance: hasSingleInstanceLock,
-  server: hostedServer !== null || serverMode !== null,
+  server: serverMode !== null,
 });
 const appVariant = readAppVariant(process.env.OPENBOT_APP_VARIANT, app.isPackaged);
 const appIconPath = resolveAppIconPath({
@@ -476,8 +462,6 @@ protocol.registerSchemesAsPrivileged([
 let services: ApplicationServices | null = null;
 let activeRemotePrincipalId: string | null = null;
 let centralAuthGeneration = 0;
-let activeAnalyticsPrincipalId: string | null = null;
-let previousCentralAuthStatus: CentralAuthState["status"] | null = null;
 const remoteAccountGate = Semaphore.makeUnsafe(1);
 const macHapticFeedback = new MacHapticFeedback();
 let isQuitting = false;
@@ -487,7 +471,7 @@ let systemSessionEnding = false;
 let systemSessionEndFlushStarted = false;
 let relaunchRequested = false;
 let quitStarted = false;
-type RendererDeepLink = Exclude<DeepLink, { kind: "mcp-auth" | "slack-workspace" | "discord-guild" }>;
+type RendererDeepLink = Exclude<DeepLink, { kind: "mcp-auth" }>;
 
 let pendingDeepLink: RendererDeepLink | null = takeRendererDeepLink(findDeepLink(process.argv, inviteLinkOptions));
 let deepLinkReceiverReady = false;
@@ -528,18 +512,15 @@ const {
   forwardUpdatePreference,
   forwardVoiceModelStatus,
   forwardVoiceStreamTranscript,
-  forwardVoiceLiveEvent,
   forwardSpeechModelStatus,
   forwardVoiceServerSettings,
   forwardProviderRuntimeStatus,
-  forwardGitHubConnectorStatus,
   forwardLinkAccountStatus,
   forwardOnePasswordConnectorStatus,
   forwardBitwardenConnectorStatus,
   forwardPasswordManagerStatus,
   forwardVaultState,
   forwardHostStatus,
-  forwardRemoteDesktopSessions,
   forwardServers,
   forwardTeamPresence,
   forwardDirectMessage,
@@ -554,7 +535,6 @@ const {
   chatWindowTarget: (window) => windows.chatWindowTarget(window),
   getAgentService: () => services?.service ?? null,
   getHostService: () => services?.host ?? null,
-  getHostAnalytics: () => services?.analytics ?? null,
   getRemoteServerManager: () => services?.remoteServers ?? null,
   showMainWindow,
   getTranslate: () => services?.language.translate ?? translateFor("en"),
@@ -709,7 +689,6 @@ function attachWindowsSessionEndHandlers(window: BrowserWindow): void {
 function registerIpcHandlers({
   service,
   signInRelayClient,
-  relayedMessagingInstalls,
   providerRuntimes,
   providerCredentials,
   messaging,
@@ -722,8 +701,6 @@ function registerIpcHandlers({
   browserView,
   updater,
   setupFile,
-  analyticsPreferences,
-  analyticsInstallId,
   updatePreferenceFile,
   requestedUpdate,
   idleRestart,
@@ -771,22 +748,15 @@ function registerIpcHandlers({
   sidebarLayout,
   sidebarPins,
   host,
-  remoteDesktop,
   remoteServers,
+  relay,
   centralAuth,
   skills,
-  hostedSites,
-  githubConnector,
   linkAccount,
   onePasswordConnector,
   bitwardenConnector,
   passwordManagers,
   vault,
-  billing,
-  referral,
-  license,
-  credits,
-  hostedServers,
   localServers,
   routineFeed,
   events,
@@ -795,8 +765,6 @@ function registerIpcHandlers({
   acpRegistry,
   providerDetection,
   providerDetectionSettings,
-  marketplaceAgents,
-  agentTemplates,
   agentImport,
   hermesImport,
   instanceTransfer,
@@ -818,7 +786,6 @@ function registerIpcHandlers({
   resourceMonitor,
   startup,
   workflows,
-  workflowGitHub,
   crm,
   routineResults,
 }: ApplicationServices): void {
@@ -831,7 +798,6 @@ function registerIpcHandlers({
       browser,
       updater,
       setupFile,
-      analyticsPreferences,
       approvalAutomation,
       busyMessageMode,
       agentDefaults,
@@ -850,8 +816,6 @@ function registerIpcHandlers({
       interfaceSize,
       initializeAgent: () => runCauseEffect(agentInitialization.start()),
       appVariant,
-      analyticsCaptureUrl,
-      analyticsInstallId,
       dynamicIslandAvailable: dynamicIsland.available,
       getMainWindow: getDialogParent,
       isMainWindow: (sender) => {
@@ -897,11 +861,14 @@ function registerIpcHandlers({
       speech,
       server: voiceServer,
       service,
-      remoteServers,
-      forwardLiveEvent: forwardVoiceLiveEvent,
     }),
-    ...accountIpcHandlers({ centralAuth, host, refreshServers: () => remoteServers.requestDirectoryRefresh() }),
-    ...skillIpcHandlers({ skills, getMainWindow: getDialogParent, translate: language.translate }),
+    ...accountIpcHandlers({
+      centralAuth,
+      host,
+      relayHosting: relay,
+      refreshServers: () => remoteServers.requestDirectoryRefresh(),
+    }),
+    ...skillIpcHandlers({ skills }),
     ...agentFolderIpcHandlers({
       folders: agentFolders,
       remoteServers,
@@ -915,25 +882,13 @@ function registerIpcHandlers({
       translate: language.translate,
     }),
     ...agentInstructionsIpcHandlers({ files: agentInstructions, remoteServers }),
-    ...hostedSiteIpcHandlers({
-      hostedSites,
-      remoteServers,
-      getMainWindow: getDialogParent,
-      translate: language.translate,
-    }),
-    ...githubConnectorIpcHandlers({ githubConnector, remoteServers, openExternal: openLink }),
     ...linkAccountIpcHandlers({ linkAccount }),
     ...onePasswordConnectorIpcHandlers({ onePasswordConnector, remoteServers }),
     ...bitwardenConnectorIpcHandlers({ bitwardenConnector, remoteServers }),
     ...passwordManagersIpcHandlers({ passwordManagers, remoteServers, openExternal: openLink }),
     ...vaultIpcHandlers({ vault, getMainWindow: getDialogParent, translate: language.translate, remoteServers }),
-    ...billingIpcHandlers({ billing }),
-    ...referralIpcHandlers({ referral }),
-    ...licenseIpcHandlers({ license }),
-    ...creditsIpcHandlers({ credits }),
     ...routineFeedIpcHandlers({ routineFeed }),
     ...eventsIpcHandlers({ events, remoteServers }),
-    ...hostedServerIpcHandlers({ hostedServers }),
     ...localServerIpcHandlers({ localServers }),
     ...customProviderIpcHandlers(customProviderChanges),
     ...customAgentIpcHandlers({ changes: customAgentChanges, remoteServers }),
@@ -942,11 +897,6 @@ function registerIpcHandlers({
       detection: providerDetection,
       settings: providerDetectionSettings,
       remoteServers,
-    }),
-    ...marketplaceAgentIpcHandlers({ marketplaceAgents }),
-    ...agentTemplateIpcHandlers({
-      agentTemplates,
-      takePendingLink: () => takePendingDeepLink("agent-template")?.id ?? null,
     }),
     ...agentImportIpcHandlers({
       agentImport,
@@ -982,23 +932,19 @@ function registerIpcHandlers({
       host,
       localServers,
       ownerTransfers: centralAuth,
-      remoteDesktop,
+      relayHosting: relay,
       remoteServers,
       takePendingInvite: () => takePendingDeepLink("invite")?.url ?? null,
     }),
+    ...relayIpcHandlers({ relay, getMainWindow: getDialogParent, translate: language.translate }),
     ...pluginIpcHandlers({
       takePendingPluginSlug: () => takePendingDeepLink("plugin")?.slug ?? null,
-    }),
-    ...marketplaceLinkIpcHandlers({
-      takePendingListing: () => takePendingDeepLink("marketplace")?.link ?? null,
     }),
     ...memoryIpcHandlers({ service, remoteServers }),
     ...sharedTableIpcHandlers({ service, remoteServers }),
     ...routineIpcHandlers({ service, remoteServers }),
     ...workflowIpcHandlers({
       workflows,
-      events,
-      github: workflowGitHub,
       workflowFolders: workflowFoldersService,
       remoteServers,
       workflowFiles,
@@ -1015,8 +961,6 @@ function registerIpcHandlers({
       defaultsSettings: agentDefaultsSettings,
       browserProfiles,
       skills,
-      marketplaceAgents,
-      agentTemplates,
       remoteServers,
     }),
     ...hostAdminIpcHandlers({
@@ -1057,12 +1001,7 @@ function registerIpcHandlers({
       remoteServers,
       relay: signInRelayClient,
     }),
-    ...messagingIpcHandlers({
-      messaging,
-      remoteServers,
-      relayedInstalls: relayedMessagingInstalls,
-      openExternal: openLink,
-    }),
+    ...messagingIpcHandlers({ messaging, remoteServers }),
     ...mcpServerIpcHandlers({
       service,
       mcpAccess,
@@ -1132,7 +1071,7 @@ function requestDesktopNotificationPermission(
       preference,
       showWelcome: () => {
         if (!Notification.isSupported()) return;
-        showRetainedNotification(new Notification({ title: "OpenBot", body: translate("notification.welcome") }));
+        showRetainedNotification(new Notification({ title: APP_NAME, body: translate("notification.welcome") }));
       },
     }),
   );
@@ -1215,8 +1154,8 @@ async function presentApplication(): Promise<void> {
     process.platform === "linux" ||
     ((process.platform === "darwin" || process.platform === "win32") && app.isPackaged)
   ) {
-    if (!app.setAsDefaultProtocolClient("openbot")) {
-      logger.warn("Unable to register the openbot:// scheme. Invitation links will not open OpenBot.");
+    if (!app.setAsDefaultProtocolClient(APP_LINK_SCHEME)) {
+      logger.warn(`Unable to register the ${APP_LINK_SCHEME}:// scheme. Invitation links will not open ${APP_NAME}.`);
     }
   }
 }
@@ -1227,20 +1166,6 @@ function centralAuthPrincipalId(state: CentralAuthState): string | null {
 
 function forwardCentralAuth(state: CentralAuthState): void {
   if (localServerChild) return;
-  const automaticSignIn =
-    previousCentralAuthStatus === null ||
-    previousCentralAuthStatus === "loading" ||
-    previousCentralAuthStatus === "error" ||
-    previousCentralAuthStatus === "signed_in";
-  previousCentralAuthStatus = state.status;
-  if (state.status === "signed_in") {
-    if (activeAnalyticsPrincipalId && activeAnalyticsPrincipalId !== state.user.id) services?.analytics.clear();
-    activeAnalyticsPrincipalId = state.user.id;
-    services?.analyticsPreferences.followAccount(state.user);
-  } else if (state.status === "signed_out") {
-    if (activeAnalyticsPrincipalId) services?.analytics.clear();
-    activeAnalyticsPrincipalId = null;
-  }
   services?.host.unbindChangedAccount(state.status === "signed_in" ? state.user : null);
   const generation = ++centralAuthGeneration;
   void runCauseEffect(
@@ -1284,19 +1209,7 @@ function forwardCentralAuth(state: CentralAuthState): void {
             host.unbindChangedAccount(null);
             return;
           }
-          services?.analytics.flushPending();
         }
-        if (services)
-          yield* services.remoteServers
-            .syncRemoteHosts()
-            .pipe(
-              Effect.catch((error) =>
-                Effect.sync(() => logger.error("Unable to synchronize the joined servers:", toLogValue(error.cause))),
-              ),
-            );
-        if (host && services?.serverMode) yield* services.serverMode.publish(automaticSignIn);
-        else if (host && shouldAutoStartHost({ ...host.getStatus(), remoteRole: developmentRemoteRole }))
-          yield* host.start(true);
       }),
     ),
   ).catch((error) => {
@@ -1313,10 +1226,6 @@ function acceptDeepLink(link: DeepLink): void {
     receiveMcpAuthorizationCode(link.state, link.code);
     return;
   }
-  if (link.kind === "slack-workspace" || link.kind === "discord-guild") {
-    receiveMessagingInstall(link);
-    return;
-  }
   pendingDeepLink = link;
   const window = windowHolder.current;
   if (!window || window.isDestroyed() || !deepLinkReceiverReady) return;
@@ -1330,10 +1239,6 @@ function sendDeepLink(window: BrowserWindow, link: RendererDeepLink): boolean {
       return sendToRenderer(window, IPC_ENDPOINTS.servers.invite, link.url);
     case "plugin":
       return sendToRenderer(window, IPC_ENDPOINTS.plugins.openListing, link.slug);
-    case "agent-template":
-      return sendToRenderer(window, IPC_ENDPOINTS.agentTemplates.openLink, link.id);
-    case "marketplace":
-      return sendToRenderer(window, IPC_ENDPOINTS.marketplace.openListing, link.link);
   }
 }
 
@@ -1355,39 +1260,7 @@ function isDeepLinkKind<Kind extends RendererDeepLink["kind"]>(
 }
 
 function takeRendererDeepLink(link: DeepLink | null): RendererDeepLink | null {
-  return link && link.kind !== "mcp-auth" && link.kind !== "slack-workspace" && link.kind !== "discord-guild"
-    ? link
-    : null;
-}
-
-function receiveMessagingInstall(link: Extract<DeepLink, { kind: "slack-workspace" | "discord-guild" }>): void {
-  const current = services;
-  if (!current) return;
-  const platform = link.kind === "slack-workspace" ? "slack" : "discord";
-  const completed =
-    platform === "slack"
-      ? current.messaging.completeSlackWorkspace(link.nonce, link.grant)
-      : current.messaging.completeDiscordGuild(link.nonce, link.grant);
-  void Effect.runPromise(
-    completed.pipe(
-      Effect.flatMap((accepted) =>
-        accepted ? Effect.succeed(true) : current.relayedMessagingInstalls.forward(platform, link.nonce, link.grant),
-      ),
-    ),
-  )
-    .then((accepted) => {
-      if (!accepted) {
-        logger.warn(
-          `A ${platform} install link was not accepted: no install of this run waits for it, or the joined server refused it.`,
-        );
-        return;
-      }
-      const window = windowHolder.current;
-      if (window && !window.isDestroyed()) showMainWindow(window);
-    })
-    .catch((error: unknown) => {
-      logger.error(`Unable to finish the ${platform} install:`, toLogValue(error));
-    });
+  return link && link.kind !== "mcp-auth" ? link : null;
 }
 
 function receiveMcpAuthorizationCode(state: string, code: string): void {
@@ -1462,7 +1335,7 @@ if (!hasSingleInstanceLock) {
         app.quit();
         return;
       }
-      if (!localServerChild && !serverMode && !hostedServer) await presentApplication();
+      if (!localServerChild && !serverMode) await presentApplication();
       const recovery = await recoverFromStartLoop();
       if (recovery === "quit") {
         quitFor("quit");
@@ -1486,21 +1359,19 @@ if (!hasSingleInstanceLock) {
       const mainWindow = windows.openMainWindow();
       recovery?.close();
 
+      for (const line of relayLaunchSwitches.ignored) logger.warn(line);
       const built = await createApplicationServices({
         mainWindow,
         windows,
         appIconPath,
         appVariant,
-        analyticsCaptureUrl,
         developmentRemoteRole,
         developmentTestClientEnabled,
-        hostedServer,
         serverMode,
-        hostingDeveloperKey,
         localServerChild,
         localServerControl,
+        relayLaunch: localServerChild ? NO_RELAY_LAUNCH_OPTIONS : relayLaunchSwitches.options,
         systemTimezone,
-        previousUncleanExit,
         macHapticFeedback,
         teardown,
         forwardCentralAuth,
@@ -1517,11 +1388,10 @@ if (!hasSingleInstanceLock) {
       services = built;
       performance.mark("openbot:services-built");
       placeWindowButtons(BrowserWindow.getAllWindows());
-      if (app.isPackaged && !serverMode && !hostedServer && !localServerChild) {
+      if (app.isPackaged && !serverMode && !localServerChild) {
         teardown.push(0, "app archive watch", watchAppArchive(process.resourcesPath, built.language.translate));
       }
       const appliedAccount = built.appliedAccount;
-      activeAnalyticsPrincipalId = centralAuthPrincipalId(appliedAccount);
       activeRemotePrincipalId = centralAuthPrincipalId(appliedAccount);
       const currentAccount = built.centralAuth.getState();
       if (currentAccount.status === "signed_out" && !localServerChild)
@@ -1531,19 +1401,15 @@ if (!hasSingleInstanceLock) {
         centralAuthPrincipalId(currentAccount) !== centralAuthPrincipalId(appliedAccount)
       ) {
         forwardCentralAuth(currentAccount);
-      } else if (currentAccount.status === "signed_in") {
-        built.analyticsPreferences.followAccount(currentAccount.user);
       }
       const {
         service,
         sidebarLayout,
         host,
-        remoteDesktop,
         remoteServers,
         updater,
         dynamicIsland,
         agentDock,
-        teamStore,
         language,
         logoColor,
         appearance,
@@ -1559,55 +1425,8 @@ if (!hasSingleInstanceLock) {
       });
       service.on("event", (event) => trace.observeAgentEvent(event));
       service.on("event", (event) => forwardAgentEvent("local", event));
-      let webhookAgentIds = new Set(service.listAgents().map((agent) => agent.id));
-      const onRoutineEvent = (event: AgentEvent): void => {
-        switch (event.type) {
-          case "routines-changed":
-          case "channel-routines-changed":
-          case "workflows-changed":
-            built.eventsRuntime.syncRoutes({ all: false });
-            return;
-          case "agents-changed": {
-            const previous = webhookAgentIds;
-            webhookAgentIds = new Set(event.agents.map((agent) => agent.id));
-            if ([...previous].some((id) => !webhookAgentIds.has(id))) built.eventsRuntime.syncRoutes({ all: false });
-            return;
-          }
-          case "channels-changed":
-            if (!service.routineRecords.ownerExists({ kind: "channel", id: event.channelId }))
-              built.eventsRuntime.syncRoutes({ all: false });
-            return;
-        }
-      };
-      let webhookPrincipalId = built.webhookPrincipal();
-      built.eventsRuntime.setAccountPrincipal(webhookPrincipalId);
-      const refreshWebhookRoutes = (): void => {
-        const principalId = built.webhookPrincipal();
-        if (principalId === webhookPrincipalId) return;
-        webhookPrincipalId = principalId;
-        built.eventsRuntime.setAccountPrincipal(principalId);
-        if (principalId !== null) built.eventsRuntime.syncRoutes({ all: true });
-      };
-      service.on("event", onRoutineEvent);
-      built.centralAuth.on("changed", refreshWebhookRoutes);
-      let webhookHostId = host.getStatus().serverId;
-      const onHostChanged = (status: HostStatus): void => {
-        const hostIdentityChanged = status.serverId !== webhookHostId;
-        webhookHostId = status.serverId;
-        forwardHostStatus(status);
-        const principalId = built.webhookPrincipal();
-        if (hostIdentityChanged && principalId !== null && status.serverId !== null)
-          built.eventsRuntime.syncRoutes({ all: true });
-      };
-      teardown.push(0, "event service listeners", () => {
-        service.off("event", onRoutineEvent);
-        built.centralAuth.off("changed", refreshWebhookRoutes);
-        host.off("changed", onHostChanged);
-      });
-      service.on("toolUsage", (usage) => built.analytics.handleToolUsage(usage));
-      service.on("workflowRun", (end) => built.analytics.handleWorkflowRun(end));
-      service.on("liveVoice", forwardVoiceLiveEvent);
-      built.browser.onSiteVisited((visit) => built.analytics.handleSiteVisit(visit));
+      const onHostChanged = (status: HostStatus): void => forwardHostStatus(status);
+      teardown.push(0, "host status listener", () => host.off("changed", onHostChanged));
       sidebarLayout.on("changed", (layout) => forwardAgentEvent("local", { type: "sidebar-layout-changed", layout }));
       built.sidebarPins.subscribe((key) => {
         if (key === OWNER_PIN_KEY)
@@ -1627,8 +1446,6 @@ if (!hasSingleInstanceLock) {
       host.on("presence", (snapshot) => forwardTeamPresence("local", snapshot));
       host.on("directMessage", (event) => forwardDirectMessage("local", event));
       host.on("directTyping", (event) => forwardDirectTyping("local", event));
-      remoteDesktop.on("changed", forwardRemoteDesktopSessions);
-      built.githubConnector.onChanged(forwardGitHubConnectorStatus);
       built.linkAccount.onChanged(forwardLinkAccountStatus);
       built.onePasswordConnector.onChanged(forwardOnePasswordConnectorStatus);
       built.bitwardenConnector.onChanged(forwardBitwardenConnectorStatus);
@@ -1645,6 +1462,9 @@ if (!hasSingleInstanceLock) {
       remoteServers.on("directTyping", forwardDirectTyping);
       remoteServers.on("attachmentDownload", forwardAttachmentDownload);
       remoteServers.on("attachmentImportProgress", forwardAttachmentImportProgress);
+      built.relay.on("changed", (state) => {
+        for (const window of BrowserWindow.getAllWindows()) sendToRenderer(window, IPC_ENDPOINTS.relay.state, state);
+      });
       void Effect.runPromise(
         built.centralAuthInitialization.pipe(
           Effect.flatMap(() =>
@@ -1663,7 +1483,6 @@ if (!hasSingleInstanceLock) {
       });
       built.requestedUpdate.on("preference", forwardUpdatePreference);
       updater.start();
-      built.requiredUpdate?.start();
       built.hostUpdateCoordinator.setStopHandler(async () => {
         await prepareForUpdateInstall(SHUTDOWN_DEADLINE_MS);
         app.quit();
@@ -1685,27 +1504,6 @@ if (!hasSingleInstanceLock) {
         });
         return;
       }
-      const publishOnLaunch = () => {
-        const teamIdentity = teamStore.getIdentity();
-        if (built.serverMode) {
-          const serverModeControl = built.serverMode;
-          void runCauseEffect(
-            built.centralAuthInitialization.pipe(Effect.flatMap(() => serverModeControl.publish(true))),
-          ).catch((error) => logger.error("Unable to publish this server:", toLogValue(error)));
-        } else if (
-          shouldAutoStartHost({
-            configured: Boolean(teamIdentity),
-            enabledOnLaunch: teamIdentity?.enabledOnLaunch ?? false,
-            remoteRole: developmentRemoteRole,
-          })
-        ) {
-          void runCauseEffect(built.centralAuthInitialization.pipe(Effect.flatMap(() => host.start(true)))).catch(
-            (error) => logger.error("Unable to republish this OpenBot:", toLogValue(error)),
-          );
-        }
-      };
-      const publishesBeforeRenderer = Boolean(built.serverMode || hostedServer);
-      if (publishesBeforeRenderer) publishOnLaunch();
       void requestDesktopNotificationPermission(built.notificationPreference, language.translate).catch((error) =>
         logger.warn("Unable to ask for notification permission:", toLogValue(error)),
       );
@@ -1725,23 +1523,12 @@ if (!hasSingleInstanceLock) {
         translate: language.translate,
         open: reopenMainWindow,
         quit: () => quitFor("tray"),
-        stopRemoteControl: () => {
-          void runCauseEffect(host.stopRemoteControl()).catch((error) =>
-            logger.warn("Unable to stop remote control:", toLogValue(error)),
-          );
-        },
       });
       const tray = backgroundTray;
       tray.sync(appBehavior.keepRunningInBackground);
       const unsubscribeBackgroundTray = appBehavior.subscribe(() => tray.sync(appBehavior.keepRunningInBackground));
-      const showRemoteControl = (memberNames: string[]) => tray.setRemoteControl(memberNames);
-      const announceRemoteControl = (memberName: string) => notifyRemoteControlStarted(language.translate, memberName);
-      host.on("remoteControlChanged", showRemoteControl);
-      host.on("remoteControlStarted", announceRemoteControl);
       teardown.push(0, "background tray", () => {
         unsubscribeBackgroundTray();
-        host.off("remoteControlChanged", showRemoteControl);
-        host.off("remoteControlStarted", announceRemoteControl);
         tray.destroy();
       });
       language.subscribe((preference) => {
@@ -1833,55 +1620,20 @@ if (!hasSingleInstanceLock) {
         powerMonitor.off("on-battery", syncKeepAwake);
         keepAwake.dispose();
       });
-      if (!publishesBeforeRenderer) publishOnLaunch();
       void runCauseEffect(built.agentInitialization.start()).catch((error) => {
         logger.error("Unable to initialize the local agent backend:", toLogValue(error));
       });
 
-      const directoryRefresh = createRemoteDirectoryRefresh(() => {
-        const generation = centralAuthGeneration;
-        return remoteAccountGate
-          .withPermit(
-            Effect.gen(function* () {
-              if (generation !== centralAuthGeneration || built.centralAuth.getState().status !== "signed_in") return;
-              yield* remoteServers.syncRemoteHosts();
-            }),
-          )
-          .pipe(
-            Effect.catch((error) =>
-              Effect.sync(() => logger.error("Unable to refresh joined servers:", toLogValue(error.cause))),
-            ),
-          );
-      });
       const isAppWindow = (window: BrowserWindow | null) =>
         window !== null && (window === windowHolder.current || windows.getChatWindows().includes(window));
       app.on("browser-window-focus", (_event, window) => {
-        if (isAppWindow(window)) {
-          startDirectoryWatch();
-          void Effect.runPromise(remoteServers.setAppFocused(true));
-        }
+        if (isAppWindow(window)) void Effect.runPromise(remoteServers.setAppFocused(true));
       });
       app.on(
         "browser-window-blur",
         () => void Effect.runPromise(remoteServers.setAppFocused(BrowserWindow.getFocusedWindow() !== null)),
       );
       void Effect.runPromise(remoteServers.setAppFocused(BrowserWindow.getFocusedWindow() !== null));
-      const refreshMemberships = () => void Effect.runPromise(directoryRefresh.refresh(true));
-      remoteServers.on("directoryInvalidated", refreshMemberships);
-      let stopDirectoryWatch = () => {};
-      const startDirectoryWatch = () => {
-        stopDirectoryWatch();
-        stopDirectoryWatch = watchRemoteHostDirectory({
-          isActive: () =>
-            isAppWindow(BrowserWindow.getFocusedWindow()) && built.centralAuth.getState().status === "signed_in",
-          refresh: () => directoryRefresh.refresh(),
-        });
-      };
-      startDirectoryWatch();
-      teardown.push(0, "joined-server directory refresh", () => {
-        stopDirectoryWatch();
-        remoteServers.off("directoryInvalidated", refreshMemberships);
-      });
 
       app.on("activate", () => {
         const window = windowHolder.current;
@@ -1916,14 +1668,12 @@ if (!hasSingleInstanceLock) {
           });
         return;
       }
-      if (!serverMode && !hostedServer && !localServerChild) {
+      if (!serverMode && !localServerChild) {
         const locale = services?.language.locale ?? resolveLocale("system", app.getLocale());
         const translate = services?.language.translate ?? translateFor(locale);
         if (error instanceof NewerDatabaseError) {
           recoverFromNewerDatabase({
-            window: windowHolder.current,
             translate,
-            beforeInstall: prepareForUpdateInstall,
             loopVersion: startAttempts?.summary().loopVersion ?? null,
           }).catch((recoveryError) => {
             logger.error("The update over newer data failed:", toLogValue(recoveryError));

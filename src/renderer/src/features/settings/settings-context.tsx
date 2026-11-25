@@ -8,7 +8,6 @@ import {
   LOCAL_SERVER_ID,
   type McpSignInState,
 } from "@openbot/contracts/ipc";
-import type { MarketplaceListingLink } from "@openbot/contracts/marketplace-links";
 import type { AppTextKey } from "@openbot/i18n";
 import { DEFAULT_GENERAL_SETTINGS, type GeneralSettingsValue } from "@openbot/ui/features/settings/app-settings";
 import type { MobileInstallRequest } from "@openbot/ui/features/settings/SettingsMobileConnectTab";
@@ -17,7 +16,6 @@ import { createEffect, createSignal, flush, onSettled } from "solid-js";
 import { isActionSoundEnabled, readActionSoundTheme, setActionSoundChoice } from "../../action-sounds";
 import { actionToast } from "../../action-toast";
 import { readShowAgentSteps, setShowAgentSteps, useShowAgentSteps } from "../../agent-steps-preference";
-import { desktopAnalytics } from "../../analytics";
 import {
   readCompactMessageActions,
   setCompactMessageActions,
@@ -28,8 +26,6 @@ import { usePlatform } from "../../platform";
 import { readRestoreLastWorkspace, writeRestoreLastWorkspace } from "../../restore-workspace-preference";
 import { readSendShortcutMode, setSendShortcutMode, useSendShortcutMode } from "../../send-shortcut-preference";
 import { createSimpleContext } from "../../simple-context";
-import { useAuth } from "../account/account-context";
-import { useSetup } from "../onboarding/onboarding-context";
 import { mcpSignInRecord } from "../servers/mcp-servers";
 import { desktopMarketplaceCalls } from "./marketplace-calls";
 import { settingsPort } from "./settings-port";
@@ -41,8 +37,6 @@ interface AppSettingRowRequest {
   anchor: AppTextKey;
   nonce: number;
 }
-
-const ANALYTICS_APP_VERSION_STORAGE_KEY = "openbot:analytics-app-version";
 
 function islandSettings(preference: DynamicIslandPreference) {
   return {
@@ -85,11 +79,7 @@ const Settings = createSimpleContext({
   name: "Settings",
   init: () => {
     const platform = usePlatform();
-    const { appInfo, landingPreview } = platform;
-    const { centralAuth } = useAuth();
-    const { setupState } = useSetup();
 
-    const [analyticsPreferenceLoaded, setAnalyticsPreferenceLoaded] = createSignal<boolean | null>(null);
     const [preferencesLoad, setPreferencesLoad] = createSignal<"loading" | "loaded" | "failed">("loading");
     const [skillsMarketplaceOpen, setSkillsMarketplaceOpen] = createSignal(false);
     const [builtInDisplayGeometry, setBuiltInDisplayGeometry] = createSignal<DynamicIslandGeometry | undefined>();
@@ -109,8 +99,6 @@ const Settings = createSimpleContext({
           if (states && mcpSignIns()?.serverId === serverId) setMcpSignIns({ serverId, states });
         });
     }
-    const [pendingMarketplaceListing, setPendingMarketplaceListing] = createSignal<MarketplaceListingLink | null>(null);
-    const [pendingAgentTemplateId, setPendingAgentTemplateId] = createSignal<string | null>(null);
     const [appSettingsOpen, setAppSettingsOpen] = createSignal(false);
     const [appSettingsOpenRequest, setAppSettingsOpenRequest] = createSignal(0);
     const [appSettingsTab, setAppSettingsTab] = createSignal<SettingsTab | undefined>();
@@ -129,11 +117,6 @@ const Settings = createSimpleContext({
       setAppSettingRowRequest(null);
       setMobileInstallRequest(null);
     });
-    const [hostedServerDeleteRequest, setHostedServerDeleteRequest] = createSignal<{
-      serverId: string;
-      nonce: number;
-    } | null>(null);
-    let hostedServerDeleteNonce = 0;
     const [generalSettings, setGeneralSettings] = createSignal<GeneralSettingsValue>(
       {
         ...DEFAULT_GENERAL_SETTINGS,
@@ -177,8 +160,6 @@ const Settings = createSimpleContext({
       autoApproveOverrides: {},
     });
     let appSettingsRestoreTarget: HTMLElement | null = null;
-    let analyticsOpened = false;
-    let analyticsVersionRecorded = false;
     let autoDownloadUpdatesChanged = false;
     let allowRemoteUpdatesChanged = false;
     let autoInstallUpdatesChanged = false;
@@ -194,42 +175,9 @@ const Settings = createSimpleContext({
     let keepAwakeOnBatteryChanged = false;
     let quitGuardChanged = false;
 
-    createEffect(
-      () => ({
-        info: appInfo(),
-        setup: setupState(),
-        auth: centralAuth(),
-        analyticsEnabled: analyticsPreferenceLoaded(),
-      }),
-      ({ info, setup, auth, analyticsEnabled }) => {
-        if (analyticsEnabled === null) return;
-        if (landingPreview) return;
-        desktopAnalytics.setTrackingEnabled(analyticsEnabled);
-        desktopAnalytics.setUser(auth.status === "signed_in" ? auth.user : null);
-        if (!platform.appInfoLoadedFromHost() || !info || !setup || auth.status === "loading") return;
-        if (!desktopAnalytics.configure(info)) return;
-        if (!analyticsVersionRecorded) {
-          analyticsVersionRecorded = true;
-          try {
-            const previousVersion = window.localStorage.getItem(ANALYTICS_APP_VERSION_STORAGE_KEY);
-            if (previousVersion && previousVersion !== info.version) {
-              desktopAnalytics.track("app_updated", { from_version: previousVersion, to_version: info.version });
-            }
-            window.localStorage.setItem(ANALYTICS_APP_VERSION_STORAGE_KEY, info.version);
-          } catch {}
-        }
-        if (analyticsOpened || platform.chatWindow) return;
-        analyticsOpened = true;
-        desktopAnalytics.track("desktop_app_opened", {
-          setup_completed: setup.completed,
-          signed_in: auth.status === "signed_in",
-        });
-      },
-    );
-
     let dynamicIslandSaveCount = 0;
 
-    function updateGeneralSettings(value: GeneralSettingsValue, options: { analyticsChosen?: boolean } = {}): void {
+    function updateGeneralSettings(value: GeneralSettingsValue): void {
       const previous = generalSettings();
       function persistField<Key extends keyof GeneralSettingsValue, Response>(
         key: Key,
@@ -263,26 +211,6 @@ const Settings = createSimpleContext({
       }
       if (previous.soundFeedback !== value.soundFeedback || previous.soundTheme !== value.soundTheme) {
         setActionSoundChoice(value.soundFeedback ? value.soundTheme : "off");
-      }
-      if (previous.productAnalytics !== value.productAnalytics || options.analyticsChosen === true) {
-        desktopAnalytics.setTrackingEnabled(value.productAnalytics, { recordOptOut: true });
-        setAnalyticsPreferenceLoaded(value.productAnalytics);
-        void settingsPort()
-          .setAnalyticsPreference({
-            enabled: value.productAnalytics,
-            ...(options.analyticsChosen === false ? {} : { chosen: true }),
-          })
-          .then((preference) => {
-            desktopAnalytics.setTrackingEnabled(preference.enabled);
-            setAnalyticsPreferenceLoaded(preference.enabled);
-            setGeneralSettings((current) => ({ ...current, productAnalytics: preference.enabled }));
-          })
-          .catch((error: unknown) => {
-            desktopAnalytics.setTrackingEnabled(previous.productAnalytics);
-            setAnalyticsPreferenceLoaded(previous.productAnalytics);
-            setGeneralSettings((current) => ({ ...current, productAnalytics: previous.productAnalytics }));
-            showSaveFailure(error);
-          });
       }
       if (previous.autoDownloadUpdates !== value.autoDownloadUpdates) {
         autoDownloadUpdatesChanged = true;
@@ -454,11 +382,6 @@ const Settings = createSimpleContext({
       openAppSettings(trigger, tab);
     }
 
-    function openHostedServerDelete(serverId: string, trigger?: HTMLElement | null): void {
-      setHostedServerDeleteRequest({ serverId, nonce: ++hostedServerDeleteNonce });
-      openAppSettings(trigger, "hosted-servers");
-    }
-
     function openMobileInstall(platform: MobilePlatformLogoVariant, trigger?: HTMLElement | null): void {
       setMobileInstallRequest({ platform, nonce: ++mobileInstallNonce });
       openAppSettings(trigger, "mobile-connect");
@@ -480,10 +403,6 @@ const Settings = createSimpleContext({
         openAppSettings(undefined, "updates"),
       );
       const unsubscribeApprovals = settingsPort().onApprovalAutomation(setApprovalAutomation);
-      const unsubscribeAnalytics = settingsPort().onAnalyticsPreference(({ enabled }) => {
-        setAnalyticsPreferenceLoaded(enabled);
-        setGeneralSettings((current) => ({ ...current, productAnalytics: enabled }));
-      });
       const unsubscribeMemoryLimit = settingsPort().onAgentMemoryLimitPreference(({ limit }) => {
         agentMemoryLimitChanged = true;
         setGeneralSettings((current) => ({ ...current, agentMemoryLimit: limit }));
@@ -552,7 +471,6 @@ const Settings = createSimpleContext({
         unsubscribe();
         unsubscribeUpdateSettings();
         unsubscribeApprovals();
-        unsubscribeAnalytics();
         unsubscribeMemoryLimit();
         unsubscribeUpdates();
         unsubscribeIsland();
@@ -563,21 +481,6 @@ const Settings = createSimpleContext({
     function loadPreferences(): void {
       setPreferencesLoad("loading");
       void Promise.allSettled([
-        settingsPort()
-          .getAnalyticsPreference()
-          .then(
-            (preference) => {
-              setAnalyticsPreferenceLoaded(preference.enabled);
-              setGeneralSettings((current) => ({ ...current, productAnalytics: preference.enabled }));
-            },
-            (error: unknown) => {
-              if (analyticsPreferenceLoaded() === null) {
-                setAnalyticsPreferenceLoaded(false);
-                setGeneralSettings((current) => ({ ...current, productAnalytics: false }));
-              }
-              throw error;
-            },
-          ),
         settingsPort()
           .update.getPreference()
           .then((preference) => {
@@ -678,7 +581,6 @@ const Settings = createSimpleContext({
     const openNotificationSettings = () => settingsPort().notifications.openSettings();
 
     return {
-      analyticsPreferenceLoaded,
       preferencesLoadFailed: () => preferencesLoad() === "failed",
       reloadPreferences: loadPreferences,
       generalSettings,
@@ -697,8 +599,6 @@ const Settings = createSimpleContext({
       openNotificationLevels,
       appSettingRowRequest,
       openAppSettingRow,
-      hostedServerDeleteRequest,
-      openHostedServerDelete,
       mobileInstallRequest,
       openMobileInstall,
       clearMobileInstallRequest,
@@ -713,10 +613,6 @@ const Settings = createSimpleContext({
       mcpSignIns,
       setMcpSignIns,
       refreshMcpSignIns,
-      pendingMarketplaceListing,
-      setPendingMarketplaceListing,
-      pendingAgentTemplateId,
-      setPendingAgentTemplateId,
     };
   },
 });

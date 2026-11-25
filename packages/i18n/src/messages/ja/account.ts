@@ -2,8 +2,6 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/account";
 
 export const messages = {
-  "account.menu.billing": "お支払い",
-  "account.menu.sendFeedback": "フィードバックを送信",
   "account.menu.signOut": "サインアウト",
   "account.menu.signingOut": "サインアウト中…",
   "account.menu.updateFailed": "OpenBot をアップデートできませんでした。",

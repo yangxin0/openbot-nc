@@ -3,26 +3,6 @@ import type { AppAppearancePreference, SetAppAppearancePreferenceInput } from ".
 import type { AppInterfaceSizePreference, SetAppInterfaceSizePreferenceInput } from "./app-interface-size";
 import type { AppLanguagePreference, SetAppLanguagePreferenceInput } from "./app-language";
 import type { AppLogoColorPreference, SetAppLogoColorPreferenceInput } from "./app-logo-color";
-import type { BillingPortalRequest, BillingState, BillingStorageRequest } from "./billing";
-import type { BillingDetails, BillingDetailsRequest } from "./billing-details";
-import type {
-  CreditActivity,
-  CreditCheckoutRequest,
-  CreditRedeemRequest,
-  CreditRedeemResult,
-  CreditsState,
-  CreditTransferRequest,
-} from "./credits";
-import type { CustomServerCheckoutRequest, CustomServerCheckoutResult } from "./custom-server-plans";
-import type {
-  CreateHostedServerInput,
-  DeleteHostedServerInput,
-  HostedServerCatalog,
-  HostedServerLifecycleInput,
-  HostedServerList,
-  HostedServerSummary,
-  ServerClaim,
-} from "./hosted-servers";
 import type {
   AcpRegistryEntry,
   AcpRegistryInstallation,
@@ -31,7 +11,6 @@ import type {
 } from "./ipc-acp-registry";
 import type { AgentAccessChange, AgentAccessSnapshot } from "./ipc-agent-access";
 import type {
-  AddedAgent,
   AgentAdminSettings,
   AgentBackupModelSettings,
   AgentBuiltinMemorySettings,
@@ -126,7 +105,6 @@ import type {
   RemoveProviderAccountInput,
   RenameProviderAccountInput,
   ResetProviderUsageInput,
-  SetLiveVoiceAccountInput,
   SetProviderAccountPoolInput,
   SetProviderApiKeyInput,
   SubmitProviderAccountCodeLoginInput,
@@ -149,14 +127,6 @@ import type {
   RunQueuedMessageAsTaskInput,
   StartAgentTaskInput,
 } from "./ipc-agent-tasks";
-import type {
-  AgentTemplateDetail,
-  AgentTemplatePreview,
-  AgentTemplatePublication,
-  InstallAgentTemplateInput,
-  InstallAgentTemplateResult,
-  PublishAgentTemplateInput,
-} from "./ipc-agent-templates";
 import type { AgentWaitsSnapshot, CancelAgentWaitInput } from "./ipc-agent-waits";
 import type {
   AgentDefaults,
@@ -168,14 +138,11 @@ import type {
   UpdateAgentInput,
 } from "./ipc-agents";
 import type {
-  AnalyticsPreference,
   AppInfo,
   AppSetupState,
   BackgroundProcess,
   CentralAuthState,
   ChatWindowTarget,
-  CompanySignInScimToken,
-  CompanySignInSettings,
   ComputerUseHighlightPlacement,
   ComputerUsePermissionApp,
   ComputerUseState,
@@ -192,10 +159,6 @@ import type {
   RendererTimingReport,
   SaveSetupInput,
   SentMessageStats,
-  SetAnalyticsPreferenceInput,
-  SetCompanySignInEnabledInput,
-  TestCompanySignInInput,
-  TestCompanySignInResult,
   UpdatePreference,
   UpdatePreferenceChange,
   UpdateRestartMode,
@@ -319,8 +282,6 @@ import type {
   SearchConversationMessagesInput,
   SendMessageInput,
   SetMessageReactionInput,
-  WithdrawFeedbackInput,
-  WithdrawFeedbackResult,
 } from "./ipc-conversations";
 import type {
   CrmActivityPage,
@@ -363,7 +324,6 @@ import type {
   SetDynamicIslandPreferenceInput,
 } from "./ipc-dynamic-island";
 import type {
-  AgentWebhookSecret,
   EventActivity,
   EventRoutine,
   EventRoutineRef,
@@ -374,9 +334,6 @@ import type {
   ListEventRoutinesInput,
   SaveEventRoutineInput,
   SaveEventRoutineResult,
-  SetWebhookSecretInput,
-  WebhookSecret,
-  WebhookTestResult,
 } from "./ipc-events";
 import type {
   ExternalLinkBrowser,
@@ -384,23 +341,14 @@ import type {
   ExternalLinkFallback,
   ExternalLinkPreference,
 } from "./ipc-external-links";
-import type { GitHubConnectorRepositories, GitHubConnectorStatus } from "./ipc-github-connector";
 import type { GithubSkillSource } from "./ipc-github-skills";
 import type { ApplyHermesImportInput, HermesImportPreview } from "./ipc-hermes-import";
 import type { HiddenAgentsSnapshot, SetAgentHiddenInput } from "./ipc-hidden-agents";
 import type { HostAnalytics, HostAnalyticsInput } from "./ipc-host-analytics";
 import type { HostPersonality } from "./ipc-host-personality";
-import type { HostReleaseStatus } from "./ipc-host-release";
 import type { HostSignalHomeSettings } from "./ipc-host-signal-home";
 import type { HostTimezoneSettings } from "./ipc-host-timezone";
 import type { HostTurnLimits, HostTurnLimitsInput } from "./ipc-host-turn-limits";
-import type {
-  DeleteHostedSiteInput,
-  HostedSiteList,
-  HostedSiteSummary,
-  PublishHostedSiteInput,
-  ReplaceHostedSiteInput,
-} from "./ipc-hosted-sites";
 import type {
   ApplyInstanceTransferInput,
   CopyInstanceAgentsInput,
@@ -414,16 +362,6 @@ import type {
 import type { LibraryFolderAction, LibraryFoldersSnapshot } from "./ipc-library-folders";
 import type { LinkAccountStatus } from "./ipc-link-account";
 import type { MachineAlertSettings, MachineMetrics } from "./ipc-machine-resources";
-import type {
-  AgentPublicationPreview,
-  AgentSubmission,
-  InstallMarketplaceAgentInput,
-  InstallMarketplaceAgentResult,
-  MarketplaceAgentDetail,
-  MarketplaceAgentPage,
-  MarketplaceAgentQuery,
-  SubmitMarketplaceAgentInput,
-} from "./ipc-marketplace-agents";
 import type { McpAccessSnapshot, SetMcpAccessInput } from "./ipc-mcp-access";
 import type {
   CancelMcpSignInInput,
@@ -443,39 +381,17 @@ import type {
 } from "./ipc-mcp-servers";
 import type { PinnedMessagesSnapshot, SetMessagePinnedInput } from "./ipc-message-pins";
 import type {
-  AddMessagingOrchestratorInput,
   AddMessagingOrchestratorResult,
-  AddSlackOrchestratorInput,
-  AddSlackOrchestratorResult,
-  AddTelegramOrchestratorInput,
   AddWhatsAppOrchestratorInput,
   AnswerWhatsAppRequestInput,
-  ConnectTelegramChatInput,
-  DiscordAccess,
-  DiscordRoleList,
-  HostAddMessagingOrchestratorInput,
-  HostDiscordAccessInput,
-  HostMessagingConnectInput,
-  HostMessagingPlatformInput,
-  HostMessagingWorkspaceInput,
-  HostSetDiscordAccessInput,
-  HostSetMessagingEnabledInput,
-  MessagingOverview,
   MessagingWorkspaceInput,
   RemoveWhatsAppSenderInput,
-  SetDiscordAccessInput,
   SetMessagingEnabledInput,
-  SetSlackEnabledInput,
-  SetTelegramEnabledInput,
   SetWhatsAppOwnNumberInput,
   SetWhatsAppSenderReadOnlyInput,
   SetWhatsAppStatusReactionsInput,
   SetWhatsAppWorkingMessageInput,
-  SlackOverview,
-  SlackWorkspaceInput,
   StartWhatsAppLinkInput,
-  TelegramChatInput,
-  TelegramOverview,
   WhatsAppGroupList,
   WhatsAppLinkState,
   WhatsAppOverview,
@@ -517,12 +433,7 @@ import type {
   SteerQueuedMessageInput,
   UpdateQueuedMessageInput,
 } from "./ipc-queue";
-import type {
-  RemoteDesktopSetupAction,
-  RemoteDesktopSetupStatus,
-  RemoteDesktopTestInput,
-  RemoteDesktopTestStatus,
-} from "./ipc-remote-desktop-setup";
+import type { RelayImportResult, RelayState } from "./ipc-relay";
 import type {
   RemoteNetworkRoutePreference,
   RemoteNetworkRouteState,
@@ -560,15 +471,10 @@ import type {
   InstallSkillInput,
   LocalSkillRevisionInput,
   MarketplaceSkillDetail,
-  MarketplaceSkillPage,
-  MarketplaceSkillQuery,
   ReviseLocalSkillInput,
   SaveSkillSuggestionInput,
   SaveSkillSuggestionResult,
   SetEnabledSkillInput,
-  SkillPackagePreview,
-  SkillSubmission,
-  SubmitSkillInput,
   UninstallSkillInput,
 } from "./ipc-skills";
 import type {
@@ -598,11 +504,6 @@ import type {
   LoginServerInput,
   MarkDirectReadInput,
   ReadDirectConversationPageInput,
-  RemoteControlPolicy,
-  RemoteDesktopConnectInput,
-  RemoteDesktopConnectResult,
-  RemoteDesktopSelectDisplayInput,
-  RemoteDesktopSession,
   ReorderServersInput,
   ScopedDirectMessageEvent,
   ScopedDirectTypingEvent,
@@ -630,10 +531,6 @@ import type {
   SpeechModelStatus,
   SpeechSettings,
   VoiceApiKeyInput,
-  VoiceLiveEvent,
-  VoiceLiveSession,
-  VoiceLiveStart,
-  VoiceLiveStop,
   VoiceModelRequest,
   VoiceModelStatus,
   VoiceServerConnection,
@@ -649,13 +546,7 @@ import type {
 } from "./ipc-voice";
 import type { WorkflowFileSaveResult } from "./ipc-workflow-file";
 import type { WorkflowFolderAction, WorkflowFoldersSnapshot } from "./ipc-workflow-folders";
-import type {
-  WorkflowGitHubCatalog,
-  WorkflowGitHubHistory,
-  WorkflowGitHubLastEventInput,
-  WorkflowGitHubRepositoryInput,
-  WorkflowGitHubRepositoryOptions,
-} from "./ipc-workflow-github";
+import type {} from "./ipc-workflow-github";
 import type {
   CreateWorkflowInput,
   DecideWorkflowStepInput,
@@ -679,22 +570,11 @@ import type {
   WorkflowStep,
   WorkflowStepSettings,
   WorkflowSummary,
-  WorkflowTriggerInput,
   WorkflowVersion,
   WorkflowVersionInput,
-  WorkflowWebhookSecret,
 } from "./ipc-workflows";
-import type {
-  LicenseCheckoutRequest,
-  LicensePlanRequest,
-  LicenseRenewalRequest,
-  LicenseState,
-  LicenseUsersRequest,
-} from "./license";
-import type { MarketplaceListingLink } from "./marketplace-links";
 import type { AccountSession, MobileConnectedDevice, MobileConnectLink, MobileConnectTicket } from "./mobile-connect";
 import type { AcceptedOwnerTransfer, OwnerTransfer } from "./owner-transfer";
-import type { ReferralPageRequest, ReferralState } from "./referral";
 import type { AgentActiveQueues } from "./team-protocol/agent-active-queues-v1";
 
 declare const payloadType: unique symbol;
@@ -769,10 +649,6 @@ export const IPC_ENDPOINTS = {
     getSetupState: request<undefined, AppSetupState>()("app:get-setup-state"),
     saveSetup: request<SaveSetupInput, AppSetupState>()("app:save-setup"),
     setupState: event<AppSetupState>()("app:setup-state"),
-    getAnalyticsPreference: request<undefined, AnalyticsPreference>()("app:get-analytics-preference"),
-    getAnalyticsDefault: request<undefined, AnalyticsPreference>()("app:get-analytics-default"),
-    analyticsPreference: event<AnalyticsPreference>()("app:analytics-preference"),
-    setAnalyticsPreference: request<SetAnalyticsPreferenceInput, AnalyticsPreference>()("app:set-analytics-preference"),
     reportRendererTiming: request<RendererTimingReport, void>()("app:report-renderer-timing"),
     getApprovalAutomation: request<undefined, ApprovalAutomationPreference>()("app:get-approval-automation"),
     approvalAutomation: event<ApprovalAutomationPreference>()("app:approval-automation"),
@@ -863,7 +739,6 @@ export const IPC_ENDPOINTS = {
     renameProviderAccount: request<RenameProviderAccountInput, AgentStatus>()("app:rename-provider-account"),
     removeProviderAccount: request<RemoveProviderAccountInput, AgentStatus>()("app:remove-provider-account"),
     setProviderAccountPool: request<SetProviderAccountPoolInput, AgentStatus>()("app:set-provider-account-pool"),
-    setLiveVoiceAccount: request<SetLiveVoiceAccountInput, AgentStatus>()("app:set-live-voice-account"),
     signOutProvider: request<AgentProviderId, AgentStatus>()("app:sign-out-provider"),
     providerUsageResets: request<AgentProviderId, ProviderUsageResets[]>()("app:provider-usage-resets"),
     resetProviderUsage: request<ResetProviderUsageInput, ProviderUsageResetOutcome>()("app:reset-provider-usage"),
@@ -909,9 +784,6 @@ export const IPC_ENDPOINTS = {
     probeServer: request<VoiceServerConnection, VoiceServerProbe>()("voice:probe-server"),
     setServer: request<VoiceServerSave, VoiceServerSettings | null>()("voice:set-server"),
     serverSettings: event<VoiceServerSettings | null>()("voice:server-settings"),
-    startLive: scopedRequest<VoiceLiveStart, VoiceLiveSession>()("voice:start-live"),
-    stopLive: request<VoiceLiveStop, void>()("voice:stop-live"),
-    liveEvent: event<VoiceLiveEvent>()("voice:live-event"),
   },
   dynamicIsland: {
     getPreference: request<undefined, DynamicIslandPreference>()("dynamic-island:get-preference"),
@@ -978,13 +850,6 @@ export const IPC_ENDPOINTS = {
     localCreate: request<CreateLocalSkillInput, MarketplaceSkillDetail>()("skills:local-create"),
     localRevise: request<ReviseLocalSkillInput, MarketplaceSkillDetail>()("skills:local-revise"),
     localInstall: request<InstallLocalSkillInput, InstalledSkill>()("skills:local-install"),
-
-    list: request<MarketplaceSkillQuery | undefined, MarketplaceSkillPage>()("skills:list"),
-    get: request<string, MarketplaceSkillDetail>()("skills:get"),
-    getBySlug: request<string, MarketplaceSkillDetail>()("skills:get-by-slug"),
-    listMine: request<undefined, SkillSubmission[]>()("skills:list-mine"),
-    choosePackage: request<undefined, SkillPackagePreview | null>()("skills:choose-package"),
-    submit: request<SubmitSkillInput, SkillSubmission>()("skills:submit"),
     listInstalled: request<string, InstalledSkill[]>()("skills:list-installed"),
     install: request<InstallSkillInput, InstalledSkill>()("skills:install"),
     uninstall: request<UninstallSkillInput, void>()("skills:uninstall"),
@@ -1066,9 +931,6 @@ export const IPC_ENDPOINTS = {
     renameAccount: scopedRequest<RenameProviderAccountInput, void, "required">()("provider-admin:rename-account"),
     removeAccount: scopedRequest<RemoveProviderAccountInput, void, "required">()("provider-admin:remove-account"),
     setAccountPool: scopedRequest<SetProviderAccountPoolInput, void, "required">()("provider-admin:set-account-pool"),
-    setLiveVoiceAccount: scopedRequest<SetLiveVoiceAccountInput, void, "required">()(
-      "provider-admin:set-live-voice-account",
-    ),
     usageResets: scopedRequest<AgentProviderId, ProviderUsageResets[], "required">()("provider-admin:usage-resets"),
     resetUsage: scopedRequest<ResetProviderUsageInput, ProviderUsageResetOutcome, "required">()(
       "provider-admin:reset-usage",
@@ -1115,33 +977,6 @@ export const IPC_ENDPOINTS = {
     ),
   },
   messaging: {
-    getSlackOverview: request<undefined, SlackOverview>()("messaging:get-slack-overview"),
-    connectSlackWorkspace: request<undefined, void>()("messaging:connect-slack-workspace"),
-    disconnectSlackWorkspace: request<SlackWorkspaceInput, void>()("messaging:disconnect-slack-workspace"),
-    reconnectSlackWorkspace: request<SlackWorkspaceInput, void>()("messaging:reconnect-slack-workspace"),
-    setSlackEnabled: request<SetSlackEnabledInput, void>()("messaging:set-slack-enabled"),
-    addSlackOrchestrator: request<AddSlackOrchestratorInput, AddSlackOrchestratorResult>()(
-      "messaging:add-slack-orchestrator",
-    ),
-    getDiscordOverview: request<undefined, MessagingOverview>()("messaging:get-discord-overview"),
-    connectDiscordGuild: request<undefined, void>()("messaging:connect-discord-guild"),
-    disconnectDiscordGuild: request<MessagingWorkspaceInput, void>()("messaging:disconnect-discord-guild"),
-    reconnectDiscordGuild: request<MessagingWorkspaceInput, void>()("messaging:reconnect-discord-guild"),
-    setDiscordEnabled: request<SetMessagingEnabledInput, void>()("messaging:set-discord-enabled"),
-    addDiscordOrchestrator: request<AddMessagingOrchestratorInput, AddMessagingOrchestratorResult>()(
-      "messaging:add-discord-orchestrator",
-    ),
-    getDiscordAccess: request<MessagingWorkspaceInput, DiscordAccess>()("messaging:get-discord-access"),
-    listDiscordRoles: request<MessagingWorkspaceInput, DiscordRoleList>()("messaging:list-discord-roles"),
-    setDiscordAccess: request<SetDiscordAccessInput, DiscordAccess>()("messaging:set-discord-access"),
-    getTelegramOverview: request<undefined, TelegramOverview>()("messaging:get-telegram-overview"),
-    connectTelegramChat: request<ConnectTelegramChatInput, void>()("messaging:connect-telegram-chat"),
-    disconnectTelegramChat: request<TelegramChatInput, void>()("messaging:disconnect-telegram-chat"),
-    reconnectTelegramChat: request<TelegramChatInput, void>()("messaging:reconnect-telegram-chat"),
-    setTelegramEnabled: request<SetTelegramEnabledInput, void>()("messaging:set-telegram-enabled"),
-    addTelegramOrchestrator: request<AddTelegramOrchestratorInput, AddMessagingOrchestratorResult>()(
-      "messaging:add-telegram-orchestrator",
-    ),
     getWhatsAppOverview: request<undefined, WhatsAppOverview>()("messaging:get-whatsapp-overview"),
     startWhatsAppLink: request<StartWhatsAppLinkInput, WhatsAppLinkState>()("messaging:start-whatsapp-link"),
     getWhatsAppLinkState: request<undefined, WhatsAppLinkState>()("messaging:get-whatsapp-link-state"),
@@ -1165,23 +1000,6 @@ export const IPC_ENDPOINTS = {
     ),
     setWhatsAppSenderReadOnly: request<SetWhatsAppSenderReadOnlyInput, void>()(
       "messaging:set-whatsapp-sender-read-only",
-    ),
-    hostOverview: scopedRequest<HostMessagingPlatformInput, MessagingOverview, "required">()("messaging:host-overview"),
-    hostConnect: scopedRequest<HostMessagingConnectInput, void, "required">()("messaging:host-connect"),
-    hostDisconnect: scopedRequest<HostMessagingWorkspaceInput, void, "required">()("messaging:host-disconnect"),
-    hostReconnect: scopedRequest<HostMessagingWorkspaceInput, void, "required">()("messaging:host-reconnect"),
-    hostSetEnabled: scopedRequest<HostSetMessagingEnabledInput, void, "required">()("messaging:host-set-enabled"),
-    hostAddOrchestrator: scopedRequest<HostAddMessagingOrchestratorInput, AddMessagingOrchestratorResult, "required">()(
-      "messaging:host-add-orchestrator",
-    ),
-    hostGetDiscordAccess: scopedRequest<HostDiscordAccessInput, DiscordAccess, "required">()(
-      "messaging:host-get-discord-access",
-    ),
-    hostListDiscordRoles: scopedRequest<HostDiscordAccessInput, DiscordRoleList, "required">()(
-      "messaging:host-list-discord-roles",
-    ),
-    hostSetDiscordAccess: scopedRequest<HostSetDiscordAccessInput, DiscordAccess, "required">()(
-      "messaging:host-set-discord-access",
     ),
     hostGetWhatsAppOverview: scopedQuery<WhatsAppOverview, "required">()("messaging:host-get-whatsapp-overview"),
     hostStartWhatsAppLink: scopedRequest<StartWhatsAppLinkInput, WhatsAppLinkState, "required">()(
@@ -1228,8 +1046,6 @@ export const IPC_ENDPOINTS = {
     updateIdentity: scopedRequest<UpdateHostIdentityInput, ServerSummary, "required">()("host-admin:update-identity"),
     rotateHostKey: scopedQuery<void, "required">()("host-admin:rotate-host-key"),
     restartHost: scopedQuery<void, "required">()("host-admin:restart-host"),
-    getReleaseStatus: scopedQuery<HostReleaseStatus | null, "required">()("host-admin:get-release-status"),
-    checkRelease: scopedQuery<HostReleaseStatus, "required">()("host-admin:check-release"),
     getUpdateStatus: scopedQuery<HostUpdateStatus, "required">()("host-admin:get-update-status"),
     checkForUpdate: scopedQuery<HostUpdateStatus, "required">()("host-admin:check-for-update"),
     startUpdate: scopedRequest<UpdateRestartMode, HostUpdateStatus, "required">()("host-admin:start-update"),
@@ -1296,23 +1112,6 @@ export const IPC_ENDPOINTS = {
     getAgentAccess: scopedQuery<AgentAccessSnapshot, "required">()("host-admin:get-agent-access"),
     setAgentAccess: scopedRequest<AgentAccessChange, AgentAccessSnapshot, "required">()("host-admin:set-agent-access"),
     getAuditLog: scopedQuery<ServerAuditLog, "required">()("host-admin:get-audit-log"),
-  },
-  githubConnector: {
-    status: request<undefined, GitHubConnectorStatus>()("github-connector:status"),
-    connect: request<undefined, GitHubConnectorStatus>()("github-connector:connect"),
-    cancel: request<undefined, GitHubConnectorStatus>()("github-connector:cancel"),
-    disconnect: request<undefined, GitHubConnectorStatus>()("github-connector:disconnect"),
-    repositories: request<undefined, GitHubConnectorRepositories>()("github-connector:repositories"),
-    openVerification: request<undefined, void>()("github-connector:open-verification"),
-    openInstall: request<undefined, void>()("github-connector:open-install"),
-    changed: event<GitHubConnectorStatus>()("github-connector:changed"),
-    hostStatus: scopedQuery<GitHubConnectorStatus, "required">()("github-connector:host-status"),
-    hostConnect: scopedQuery<GitHubConnectorStatus, "required">()("github-connector:host-connect"),
-    hostCancel: scopedQuery<GitHubConnectorStatus, "required">()("github-connector:host-cancel"),
-    hostDisconnect: scopedQuery<GitHubConnectorStatus, "required">()("github-connector:host-disconnect"),
-    hostRepositories: scopedQuery<GitHubConnectorRepositories, "required">()("github-connector:host-repositories"),
-    hostOpenVerification: scopedQuery<void, "required">()("github-connector:host-open-verification"),
-    hostOpenInstall: scopedQuery<void, "required">()("github-connector:host-open-install"),
   },
   bitwardenConnector: {
     status: request<undefined, BitwardenConnectorStatus>()("bitwarden-connector:status"),
@@ -1384,78 +1183,15 @@ export const IPC_ENDPOINTS = {
     ),
     hostDisconnect: scopedQuery<OnePasswordConnectorStatus, "required">()("onepassword-connector:host-disconnect"),
   },
-  hostedSites: {
-    list: scopedQuery<HostedSiteList, "required">()("hosted-sites:list"),
-    chooseDirectory: request<undefined, string | null>()("hosted-sites:choose-directory"),
-    publish: request<PublishHostedSiteInput, HostedSiteSummary>()("hosted-sites:publish"),
-    replace: request<ReplaceHostedSiteInput, HostedSiteSummary>()("hosted-sites:replace"),
-    delete: scopedRequest<DeleteHostedSiteInput, void, "required">()("hosted-sites:delete"),
-  },
   routineFeed: {
     get: request<undefined, RoutineFeed>()("routine-feed:get"),
     create: request<undefined, RoutineFeed>()("routine-feed:create"),
     remove: request<undefined, RoutineFeed>()("routine-feed:remove"),
   },
-  billing: {
-    getState: request<undefined, BillingState>()("billing:get-state"),
-    openPortal: request<BillingPortalRequest, void>()("billing:open-portal"),
-    buyStorage: request<BillingStorageRequest, BillingState>()("billing:buy-storage"),
-    getDetails: request<undefined, BillingDetails>()("billing:get-details"),
-    setDetails: request<BillingDetailsRequest, BillingDetails>()("billing:set-details"),
-  },
-  referral: {
-    getState: request<ReferralPageRequest, ReferralState>()("referral:get-state"),
-  },
-  credits: {
-    getState: request<undefined, CreditsState>()("credits:get-state"),
-    getActivity: request<undefined, CreditActivity>()("credits:get-activity"),
-    openCheckout: request<CreditCheckoutRequest, void>()("credits:open-checkout"),
-    transfer: request<CreditTransferRequest, CreditsState>()("credits:transfer"),
-    redeem: request<CreditRedeemRequest, CreditRedeemResult>()("credits:redeem"),
-  },
-  license: {
-    getState: request<undefined, LicenseState>()("license:get-state"),
-    openCheckout: request<LicenseCheckoutRequest, void>()("license:open-checkout"),
-    setUsers: request<LicenseUsersRequest, LicenseState>()("license:set-users"),
-    changePlan: request<LicensePlanRequest, LicenseState>()("license:change-plan"),
-    setRenewal: request<LicenseRenewalRequest, LicenseState>()("license:set-renewal"),
-  },
-  hostedServers: {
-    list: request<undefined, HostedServerList>()("hosted-servers:list"),
-    plans: request<undefined, HostedServerCatalog>()("hosted-servers:plans"),
-    create: request<CreateHostedServerInput, HostedServerSummary>()("hosted-servers:create"),
-    openCheckout: request<string, HostedServerSummary>()("hosted-servers:open-checkout"),
-    openCustomCheckout: request<CustomServerCheckoutRequest, CustomServerCheckoutResult>()(
-      "hosted-servers:open-custom-checkout",
-    ),
-    delete: request<DeleteHostedServerInput, void>()("hosted-servers:delete"),
-    lifecycle: request<HostedServerLifecycleInput, void>()("hosted-servers:lifecycle"),
-    wake: request<string, HostedServerSummary>()("hosted-servers:wake"),
-    restart: request<string, HostedServerSummary>()("hosted-servers:restart"),
-    createServerClaim: request<undefined, ServerClaim>()("hosted-servers:create-server-claim"),
-  },
   localServers: {
     create: request<string, ServerSummary>()("local-servers:create"),
     restart: request<string, void>()("local-servers:restart"),
     delete: request<string, void>()("local-servers:delete"),
-  },
-  marketplaceAgents: {
-    list: request<MarketplaceAgentQuery | undefined, MarketplaceAgentPage>()("marketplace-agents:list"),
-    get: request<string, MarketplaceAgentDetail>()("marketplace-agents:get"),
-    getListing: request<string, MarketplaceAgentDetail>()("marketplace-agents:get-listing"),
-    listMine: request<undefined, AgentSubmission[]>()("marketplace-agents:list-mine"),
-    preview: request<string, AgentPublicationPreview>()("marketplace-agents:preview"),
-    submit: request<SubmitMarketplaceAgentInput, AgentSubmission>()("marketplace-agents:submit"),
-    install: request<InstallMarketplaceAgentInput, InstallMarketplaceAgentResult>()("marketplace-agents:install"),
-  },
-  agentTemplates: {
-    preview: request<string, AgentTemplatePreview>()("agent-templates:preview"),
-    publish: request<PublishAgentTemplateInput, AgentTemplatePublication>()("agent-templates:publish"),
-    unpublish: request<string, void>()("agent-templates:unpublish"),
-    get: request<string, AgentTemplateDetail>()("agent-templates:get"),
-    install: request<InstallAgentTemplateInput, InstallAgentTemplateResult>()("agent-templates:install"),
-    takePendingLink: request<undefined, string | null>()("agent-templates:take-pending-link"),
-    openLink: event<string>()("agent-templates:open-link"),
   },
   auth: {
     getState: request<undefined, CentralAuthState>()("auth:get-state"),
@@ -1475,16 +1211,6 @@ export const IPC_ENDPOINTS = {
     revokeAccountSession: request<string, void>()("auth:revoke-account-session"),
     revokeMobileConnectedDevice: request<string, void>()("auth:revoke-mobile-connected-device"),
     logout: request<undefined, CentralAuthState>()("auth:logout"),
-    openCompanySignIn: request<undefined, CentralAuthState>()("auth:open-company-sign-in"),
-    getCompanySignIn: request<string, CompanySignInSettings>()("auth:company-sign-in:get"),
-    testCompanySignIn: request<TestCompanySignInInput, TestCompanySignInResult>()("auth:company-sign-in:test"),
-    cancelCompanySignInTest: request<undefined, void>()("auth:company-sign-in:cancel-test"),
-    setCompanySignInEnabled: request<SetCompanySignInEnabledInput, CompanySignInSettings>()(
-      "auth:company-sign-in:set-enabled",
-    ),
-    removeCompanySignIn: request<string, CompanySignInSettings>()("auth:company-sign-in:remove"),
-    createCompanySignInScimToken: request<string, CompanySignInScimToken>()("auth:company-sign-in:create-scim-token"),
-    revokeCompanySignInScimToken: request<string, CompanySignInSettings>()("auth:company-sign-in:revoke-scim-token"),
     listOwnerTransfers: request<undefined, OwnerTransfer[]>()("auth:list-owner-transfers"),
     acceptOwnerTransfer: request<string, AcceptedOwnerTransfer>()("auth:accept-owner-transfer"),
     declineOwnerTransfer: request<string, void>()("auth:decline-owner-transfer"),
@@ -1583,7 +1309,6 @@ export const IPC_ENDPOINTS = {
     deleteConversationMessage: scopedRequest<DeleteConversationMessageInput, void>()(
       "agent:delete-conversation-message",
     ),
-    withdrawFeedback: scopedRequest<WithdrawFeedbackInput, WithdrawFeedbackResult>()("agent:withdraw-feedback"),
     listQueue: scopedRequest<string, QueueSnapshot>()("agent:list-queue"),
     listActiveQueues: scopedRequest<string[], AgentActiveQueues | null>()("agent:list-active-queues"),
     listWaits: scopedRequest<string, AgentWaitsSnapshot>()("agent:list-waits"),
@@ -1696,17 +1421,6 @@ export const IPC_ENDPOINTS = {
     runs: scopedRequest<WorkflowRunsInput, WorkflowRunPage>()("workflows:runs"),
     run: scopedRequest<string, WorkflowRunDetail>()("workflows:run"),
     stepSettings: scopedRequest<string, WorkflowStepSettings>()("workflows:step-settings"),
-    rotateWebhookSecret: scopedRequest<WorkflowTriggerInput, WorkflowWebhookSecret>()(
-      "workflows:rotate-webhook-secret",
-    ),
-    githubCatalog: scopedQuery<WorkflowGitHubCatalog>()("workflows:github-catalog"),
-    githubOptions: scopedRequest<WorkflowGitHubRepositoryInput, WorkflowGitHubRepositoryOptions>()(
-      "workflows:github-options",
-    ),
-    githubHistory: scopedRequest<string, WorkflowGitHubHistory>()("workflows:github-history"),
-    githubRunLastEvent: scopedRequest<WorkflowGitHubLastEventInput, WorkflowRunDetail>()(
-      "workflows:github-run-last-event",
-    ),
     keepPicture: scopedRequest<string, string>()("workflows:keep-picture"),
     mediaProviders: scopedQuery<WorkflowMediaProviders>()("workflows:media-providers"),
     mediaCredits: scopedQuery<WorkflowMediaCredits>()("workflows:media-credits"),
@@ -1870,11 +1584,6 @@ export const IPC_ENDPOINTS = {
     ),
     getAgentNewChat: scopedRequest<string, AgentNewChatSettings>()("agent:admin:get-new-chat"),
     updateAgentNewChat: scopedRequest<UpdateAgentNewChatInput, AgentNewChatSettings>()("agent:admin:update-new-chat"),
-    previewAgentTemplate: scopedRequest<string, AgentTemplatePreview>()("agent:admin:preview-template"),
-    publishAgentTemplate: scopedRequest<PublishAgentTemplateInput, AgentTemplatePublication>()(
-      "agent:admin:publish-template",
-    ),
-    unpublishAgentTemplate: scopedRequest<string, void>()("agent:admin:unpublish-template"),
     getAgentPlanCard: scopedRequest<string, AgentPlanCardSettings>()("agent:admin:get-plan-card"),
     updateAgentPlanCard: scopedRequest<UpdateAgentPlanCardInput, AgentPlanCardSettings>()(
       "agent:admin:update-plan-card",
@@ -1925,12 +1634,6 @@ export const IPC_ENDPOINTS = {
       "agent:admin:set-skill-enabled",
     ),
     readGithubSkills: scopedRequest<string, GithubSkillSource, "required">()("agent:admin:read-github-skills"),
-    addMarketplaceAgent: scopedRequest<InstallMarketplaceAgentInput, AddedAgent, "required">()(
-      "agent:admin:add-marketplace-agent",
-    ),
-    addTemplateAgent: scopedRequest<InstallAgentTemplateInput, AddedAgent, "required">()(
-      "agent:admin:add-template-agent",
-    ),
   },
   mcpServers: {
     listMcpServers: scopedQuery<McpServerConfig[], "required">()("servers:mcp:list"),
@@ -2003,10 +1706,6 @@ export const IPC_ENDPOINTS = {
     takePendingListing: request<undefined, string | null>()("plugins:take-pending-listing"),
     openListing: event<string>()("plugins:open-listing"),
   },
-  marketplace: {
-    takePendingListing: request<undefined, MarketplaceListingLink | null>()("marketplace:take-pending-listing"),
-    openListing: event<MarketplaceListingLink>()("marketplace:open-listing"),
-  },
   host: {
     getStatus: request<undefined, HostStatus>()("host:get-status"),
     configure: request<ConfigureHostInput, HostStatus>()("host:configure"),
@@ -2015,7 +1714,6 @@ export const IPC_ENDPOINTS = {
     getPresence: request<undefined, TeamPresenceSnapshot>()("host:get-presence"),
     start: request<undefined, HostStatus>()("host:start"),
     stop: request<undefined, HostStatus>()("host:stop"),
-    recheckScreenRecording: request<undefined, HostStatus>()("host:recheck-screen-recording"),
     listMembers: request<undefined, TeamMemberSummary[]>()("host:list-members"),
     createInvite: request<CreateTeamInviteInput, InviteSummary>()("host:create-invite"),
     listInvites: request<undefined, TeamInviteSummary[]>()("host:list-invites"),
@@ -2024,10 +1722,16 @@ export const IPC_ENDPOINTS = {
     removeMember: request<string, void>()("host:remove-member"),
     listSessions: request<undefined, TeamSessionSummary[]>()("host:list-sessions"),
     revokeSession: request<string, void>()("host:revoke-session"),
-    getRemoteControlPolicy: request<undefined, RemoteControlPolicy>()("host:get-remote-control-policy"),
-    setRemoteControlPolicy: request<RemoteControlPolicy, RemoteControlPolicy>()("host:set-remote-control-policy"),
-    stopRemoteControl: request<undefined, HostStatus>()("host:stop-remote-control"),
     event: event<HostStatus>()("host:event"),
+  },
+  relay: {
+    getState: request<undefined, RelayState>()("relay:get-state"),
+    importIdentity: request<undefined, RelayImportResult>()("relay:import-identity"),
+    replaceIdentity: request<undefined, RelayImportResult>()("relay:replace-identity"),
+    removeIdentity: request<undefined, RelayState>()("relay:remove-identity"),
+    setHosting: request<boolean, RelayState>()("relay:set-hosting"),
+    unhideHost: request<string, RelayState>()("relay:unhide-host"),
+    state: event<RelayState>()("relay:state"),
   },
   events: {
     getStatus: scopedQuery<EventStatus, "required">()("events:get-status"),
@@ -2035,25 +1739,10 @@ export const IPC_ENDPOINTS = {
     saveRoutine: scopedRequest<SaveEventRoutineInput, SaveEventRoutineResult, "required">()("events:save-routine"),
     deleteRoutine: scopedRequest<EventRoutineRef, void, "required">()("events:delete-routine"),
     testRoutine: scopedRequest<EventRoutineRef, void, "required">()("events:test-routine"),
-    rotateSecret: scopedRequest<EventRoutineRef, WebhookSecret, "required">()("events:rotate-secret"),
-    setSecret: scopedRequest<SetWebhookSecretInput, void, "required">()("events:set-secret"),
-    giveSecretToAgent: scopedRequest<EventRoutineRef, AgentWebhookSecret, "required">()("events:give-secret-to-agent"),
-    sendTestEvent: scopedRequest<EventRoutineRef, WebhookTestResult, "required">()("events:send-test-event"),
     listActivity: scopedRequest<ListEventActivityInput, EventActivity[], "required">()("events:list-activity"),
     listRoutineRuns: scopedRequest<ListEventRoutineRunsInput, EventRoutineRun[], "required">()(
       "events:list-routine-runs",
     ),
-  },
-
-  remoteDesktop: {
-    checkSetup: request<string, RemoteDesktopSetupStatus>()("remote-desktop:check-setup"),
-    openSetup: request<RemoteDesktopSetupAction, void>()("remote-desktop:open-setup"),
-    test: request<RemoteDesktopTestInput, RemoteDesktopTestStatus>()("remote-desktop:test"),
-    list: request<undefined, RemoteDesktopSession[]>()("remote-desktop:list"),
-    connect: request<RemoteDesktopConnectInput, RemoteDesktopConnectResult>()("remote-desktop:connect"),
-    selectDisplay: request<RemoteDesktopSelectDisplayInput, void>()("remote-desktop:select-display"),
-    disconnect: request<string, void>()("remote-desktop:disconnect"),
-    event: event<RemoteDesktopSession[]>()("remote-desktop:event"),
   },
 } as const;
 
@@ -2079,25 +1768,16 @@ export const IPC_GROUP_PATHS = {
   providerAdmin: "providerAdmin",
   messaging: "messaging",
   hostAdmin: "hostAdmin",
-  githubConnector: "githubConnector",
   onePasswordConnector: "onePasswordConnector",
   bitwardenConnector: "bitwardenConnector",
   passwordManagers: "passwordManagers",
   linkAccount: "linkAccount",
   vault: "vault",
-  hostedSites: "hostedSites",
   routineFeed: "routineFeed",
   workflows: "workflows",
   crm: "crm",
   routineResults: "routineResults",
-  billing: "billing",
-  referral: "referral",
-  credits: "credits",
-  license: "license",
-  hostedServers: "hostedServers",
   localServers: "localServers",
-  marketplaceAgents: "marketplaceAgents",
-  agentTemplates: "agentTemplates",
   auth: "auth",
   update: "update",
   notifications: "notifications",
@@ -2121,10 +1801,9 @@ export const IPC_GROUP_PATHS = {
   agentImport: "agentImport",
   instanceTransfer: "instanceTransfer",
   plugins: "plugins",
-  marketplace: "marketplace",
   host: "host",
+  relay: "relay",
   events: "events",
-  remoteDesktop: "remoteDesktop",
 } as const satisfies { readonly [Group in keyof IpcEndpoints]: string | null };
 
 export type IpcGroupName = keyof IpcEndpoints;

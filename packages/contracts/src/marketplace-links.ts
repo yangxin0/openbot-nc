@@ -1,3 +1,5 @@
+import { APP_LINK_SCHEME, isReadableAppLinkProtocol } from "./app-identity";
+
 export const OPENBOT_MARKETPLACE_ORIGIN = "https://openbot.run";
 export const OPENBOT_MARKETPLACE_PATH = "/marketplace";
 export const OPENBOT_MARKETPLACE_HOST = "marketplace";
@@ -63,7 +65,7 @@ function isMarketplaceShareOrigin(origin: string): boolean {
 
 export function createOpenBotMarketplaceUrl(link: MarketplaceListingLink): string {
   assertListing(link);
-  return `openbot://${OPENBOT_MARKETPLACE_HOST}/${LISTING_SEGMENTS[link.kind]}/${link.id}`;
+  return `${APP_LINK_SCHEME}://${OPENBOT_MARKETPLACE_HOST}/${LISTING_SEGMENTS[link.kind]}/${link.id}`;
 }
 
 export function createWebAppMarketplacePath(link: MarketplaceListingLink): string {
@@ -92,7 +94,7 @@ export function parseMarketplaceUrl(value: string): MarketplaceListingLink {
   const prefix = `${OPENBOT_MARKETPLACE_PATH}/`;
   const canonical =
     url.protocol === "https:" && url.origin === OPENBOT_MARKETPLACE_ORIGIN && url.pathname.startsWith(prefix);
-  const customScheme = url.protocol === "openbot:" && url.hostname === OPENBOT_MARKETPLACE_HOST;
+  const customScheme = isReadableAppLinkProtocol(url.protocol) && url.hostname === OPENBOT_MARKETPLACE_HOST;
   if (
     (!canonical && !customScheme) ||
     url.username !== "" ||

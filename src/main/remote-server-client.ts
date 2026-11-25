@@ -1,5 +1,5 @@
 import { randomBytes, verify } from "node:crypto";
-import type { RemoteDesktopCapabilities, ServerCompatibility } from "@openbot/contracts/ipc";
+import type { ServerCompatibility } from "@openbot/contracts/ipc";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import {
   decodeTeamProtocolSupportExpanded,
@@ -26,7 +26,6 @@ import type { TeamProtocolSupportV9 } from "@openbot/contracts/team-protocol/v9"
 import { hasTeamProtocolV10Lists, TEAM_PROTOCOL_V10 } from "@openbot/contracts/team-protocol/v10";
 import { sourceText } from "@openbot/i18n/source";
 import { Deferred, Effect, Option, Result } from "effect";
-import { decodeRemoteDesktopCapabilities } from "./remote-device-decoding";
 import type { ResponseDecoder } from "./remote-host-decoding";
 import {
   assumedCompatibility,
@@ -35,7 +34,13 @@ import {
   webRtcCompatibility,
 } from "./remote-server-connection-status";
 import { RemoteProtocolError, RemoteRequestError } from "./remote-server-errors";
-import { remoteFetch, requestJson, throwRemoteResponseError, webRtcRequestBody } from "./remote-server-http";
+import {
+  type RemoteFetch,
+  remoteFetch,
+  requestJson,
+  throwRemoteResponseError,
+  webRtcRequestBody,
+} from "./remote-server-http";
 import type { StoredRemoteServerView } from "./remote-server-store";
 import { addRemotePreviewUrls } from "./remote-server-urls";
 import { type RemoteFileProgress, RemoteWorkflowError, remoteDecode } from "./remote-service-effects";
@@ -95,7 +100,19 @@ export interface RemoteServerClientOptions {
   servers: RemoteServerLookup;
   connections: RemoteConnectionSink;
   transport: RemoteHostRequestTransport | null;
+  relayFetch?: ((url: URL) => RemoteFetch | null) | undefined;
 }
+
+export interface RemoteHostIdentity {
+  serverId: string;
+  publicKey: string;
+  fingerprint: string;
+  serverName: string;
+  logoVersion: string | null;
+  compatibility: ServerCompatibility;
+}
+
+const RELAY_FILE_TIMEOUT_MS = 10 * 60_000 + 30_000;
 
 export interface RemoteRequestInit {
   method?: string;
@@ -115,6 +132,7 @@ export class RemoteServerClient {
   readonly #servers: RemoteServerLookup;
   readonly #connections: RemoteConnectionSink;
   readonly #transport: RemoteHostRequestTransport | null;
+  readonly #relayFetch: ((url: URL) => RemoteFetch | null) | null;
   readonly #compatibilityRequests = new Map<string, Deferred.Deferred<ServerCompatibility, RemoteWorkflowError>>();
 
   constructor(options: RemoteServerClientOptions) {
@@ -122,6 +140,11 @@ export class RemoteServerClient {
     this.#servers = options.servers;
     this.#connections = options.connections;
     this.#transport = options.transport;
+    this.#relayFetch = options.relayFetch ?? null;
+  }
+
+  fetchFor(url: string | URL): RemoteFetch | undefined {
+    return this.#relayFetch?.(new URL(url)) ?? undefined;
   }
 
   readonly request = Effect.fn("RemoteClient.request")(function* <T>(
@@ -145,6 +168,7 @@ export class RemoteServerClient {
       const compatibility = yield* this.ensureCompatibility(server);
       const value = yield* requestJson(server.apiUrl, path, decoder, {
         ...init,
+        fetch: this.fetchFor(server.apiUrl),
         token: this.#servers.token(server),
         agentCreateModel: this.supportsAgentCreateModel(path, init, compatibility.capabilities),
         ...this.requestProtocol(compatibility),
@@ -222,7 +246,12 @@ export class RemoteServerClient {
         ))
           headers.set(name, value);
       }
-      const response = yield* remoteFetch(input, { ...init, headers }, timeoutMs).pipe(
+      const response = yield* remoteFetch(
+        input,
+        { ...init, headers },
+        timeoutMs ?? (server.transport === "relay" ? RELAY_FILE_TIMEOUT_MS : undefined),
+        this.fetchFor(input),
+      ).pipe(
         Effect.mapError(
           (failure) =>
             new RemoteWorkflowError({
@@ -333,6 +362,7 @@ export class RemoteServerClient {
           Effect.option,
         )
       : requestJson(server.apiUrl, SERVER_SAFE_MODE_ROUTES.reason, decodeServerSafeModeReason, {
+          fetch: this.fetchFor(server.apiUrl),
           token: this.#servers.token(server),
           ...this.requestProtocol(compatibility),
         }).pipe(Effect.option);
@@ -406,6 +436,7 @@ export class RemoteServerClient {
   ): Effect.fn.Return<TeamProtocolSupportV9, RemoteWorkflowError> {
     const attempt4 = yield* Effect.gen({ self: this }, function* () {
       return yield* requestJson(apiUrl, TEAM_API_ROUTES.compatibility, decodeTeamProtocolSupportExpanded, {
+        fetch: this.fetchFor(apiUrl),
         protocol,
         capabilities,
       }).pipe(
@@ -451,13 +482,28 @@ export class RemoteServerClient {
     },
     RemoteWorkflowError
   > {
+    const identity = yield* this.discoverIdentity(apiUrl);
+    if (identity.serverId !== serverId || identity.fingerprint !== expectedFingerprint)
+      return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.identityNotVerified")) });
+    return {
+      publicKey: identity.publicKey,
+      serverName: identity.serverName,
+      logoVersion: identity.logoVersion,
+      compatibility: identity.compatibility,
+    };
+  }).bind(this);
+
+  readonly discoverIdentity = Effect.fn("RemoteClient.discoverIdentity")(function* (
+    this: RemoteServerClient,
+    apiUrl: string,
+  ): Effect.fn.Return<RemoteHostIdentity, RemoteWorkflowError> {
     const compatibility = yield* this.negotiateCompatibility(apiUrl);
     const challenge = randomBytes(24).toString("base64url");
     const proof = yield* requestJson(
       apiUrl,
       `${TEAM_API_ROUTES.identity}?challenge=${encodeURIComponent(challenge)}`,
       decodeIdentityProof,
-      { ...this.requestProtocol(compatibility) },
+      { ...this.requestProtocol(compatibility), fetch: this.fetchFor(apiUrl) },
     ).pipe(
       Effect.mapError(
         (failure) =>
@@ -469,68 +515,20 @@ export class RemoteServerClient {
     );
     const valid = yield* remoteDecode(
       () =>
-        proof.serverId === serverId &&
         proof.challenge === challenge &&
-        proof.fingerprint === expectedFingerprint &&
-        fingerprint(proof.publicKey) === expectedFingerprint &&
+        fingerprint(proof.publicKey) === proof.fingerprint &&
         verify(null, Buffer.from(challenge), proof.publicKey, Buffer.from(proof.signature, "base64url")),
     );
     if (!valid)
       return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.identityNotVerified")) });
     return {
+      serverId: proof.serverId,
       publicKey: proof.publicKey,
+      fingerprint: proof.fingerprint,
       serverName: proof.serverName,
       logoVersion: proof.logoVersion,
       compatibility,
     };
-  }).bind(this);
-
-  readonly probeRemoteDesktop = Effect.fn("RemoteClient.probeRemoteDesktop")(function* (
-    this: RemoteServerClient,
-    server: StoredRemoteServerView,
-  ): Effect.fn.Return<boolean, RemoteWorkflowError> {
-    return yield* Effect.gen({ self: this }, function* () {
-      const compatibility = yield* this.ensureCompatibility(server);
-      if (!compatibility.capabilities.includes("remote-desktop")) return false;
-      let capabilities: RemoteDesktopCapabilities;
-      if (server.transport === "webrtc-v2") {
-        const value = yield* this.#hostRequestEffect(server.id, TEAM_API_ROUTES.remoteScreen.capabilities, {
-          preserveSemanticTags: supportsTeamSemanticTags(compatibility.capabilities),
-        });
-        capabilities = yield* remoteDecode(() => decodeOrProtocolError(decodeRemoteDesktopCapabilities, value));
-      } else {
-        capabilities = yield* requestJson(
-          server.apiUrl,
-          TEAM_API_ROUTES.remoteScreen.capabilities,
-          decodeRemoteDesktopCapabilities,
-          { token: this.#servers.token(server), ...this.requestProtocol(compatibility) },
-        ).pipe(
-          Effect.mapError(
-            (failure) =>
-              new RemoteWorkflowError({
-                cause:
-                  failure instanceof RemoteRequestError || failure instanceof RemoteProtocolError
-                    ? failure
-                    : failure.cause,
-              }),
-          ),
-        );
-      }
-      return capabilities.ready;
-    }).pipe(
-      Effect.catch(({ cause: error }) =>
-        Effect.gen({ self: this }, function* () {
-          if (error instanceof RemoteRequestError && [404, 426, 503].includes(error.status)) return false;
-          if (
-            error instanceof RemoteProtocolError ||
-            (error instanceof RemoteRequestError && error.code === "protocol_error")
-          ) {
-            this.#connections.reportError(server.id, error);
-          }
-          return yield* new RemoteWorkflowError({ cause: error });
-        }),
-      ),
-    );
   }).bind(this);
 
   forget(serverId: string): void {

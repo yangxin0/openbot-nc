@@ -1,12 +1,8 @@
 import { Effect } from "effect";
 
-let restoring: () => boolean = () => false;
+const restoring = (): boolean => false;
 
 export const DISK_RESTORE_WAIT_MS = 120_000;
-
-export function setDiskRestoreProbe(probe: () => boolean): void {
-  restoring = probe;
-}
 
 export function diskRestoring(): boolean {
   return restoring();

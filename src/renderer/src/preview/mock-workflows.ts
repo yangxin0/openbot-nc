@@ -12,10 +12,6 @@ import {
   WORKFLOW_MEDIA_MODELS,
   type WorkflowDetail,
   type WorkflowFoldersSnapshot,
-  type WorkflowGitHubCatalog,
-  type WorkflowGitHubDelivery,
-  type WorkflowGitHubItem,
-  type WorkflowGitHubRepositoryOptions,
   type WorkflowGraph,
   type WorkflowMediaAccountCredits,
   type WorkflowMediaCatalogModel,
@@ -31,41 +27,11 @@ import {
   type WorkflowVersion,
   workflowCatalogProvider,
   workflowFixedCatalogModel,
-  workflowGitHubTriggerRepositories,
   workflowGraphFormat,
 } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
 import { nextValidRoutineOccurrence } from "@openbot/team-client/routine-schedule";
 import { workflowMediaCreditsOf, workflowMediaProvidersOf } from "@openbot/team-client/workflow-decoding";
-
-const PREVIEW_HOOKS = "https://hooks.openbot.run/wf";
-
-const PREVIEW_GITHUB_CATALOG: WorkflowGitHubCatalog = {
-  connected: true,
-  repositories: [
-    { fullName: "openbot-preview/app", private: false, canWrite: true, events: true },
-    { fullName: "openbot-preview/docs", private: true, canWrite: false, events: true },
-  ],
-};
-
-const PREVIEW_GITHUB_OPTIONS: WorkflowGitHubRepositoryOptions = {
-  labels: [
-    { name: "bug", color: "d73a4a" },
-    { name: "enhancement", color: "a2eeef" },
-    { name: "needs triage", color: "fbca04" },
-  ],
-  people: ["octocat", "hubot"],
-};
-
-function previewItem(node: WorkflowNode, number: number, title: string): WorkflowGitHubItem {
-  const repositories = workflowGitHubTriggerRepositories(node.fields);
-  return {
-    repository: repositories[number % Math.max(repositories.length, 1)] ?? "openbot-preview/app",
-    number,
-    pullRequest: false,
-    title,
-  };
-}
 
 function nextDue(node: WorkflowNode): string | null {
   if (!node.schedule) return null;
@@ -199,8 +165,7 @@ export function mockWorkflows(
 ): OpenBotDesktopApi["workflows"] {
   const records = new Map<string, MockWorkflowRecord>();
   const stamp = () => new Date().toISOString();
-  const webhooks = new Set<string>();
-  const triggersOf = (id: string, graph: WorkflowGraph): WorkflowTriggerState[] =>
+  const triggersOf = (graph: WorkflowGraph): WorkflowTriggerState[] =>
     graph.nodes.flatMap((node): WorkflowTriggerState[] => {
       if (node.kind !== "trigger") return [];
       const type = node.fields.trigger ?? "manual";
@@ -210,7 +175,7 @@ export function mockWorkflows(
           nodeId: node.id,
           type,
           nextDueAt: type === "schedule" && node.schedule ? nextDue(node) : null,
-          webhookUrl: type === "webhook" && webhooks.has(`${id}/${node.id}`) ? `${PREVIEW_HOOKS}/${node.id}` : null,
+          webhookUrl: null,
         },
       ];
     });
@@ -229,7 +194,7 @@ export function mockWorkflows(
       summary: summaryOf(id, title, graph, updatedAt),
       graph: structuredClone(graph),
       revision,
-      triggers: triggersOf(id, graph),
+      triggers: triggersOf(graph),
       format: workflowGraphFormat(graph),
       hostFormat: WORKFLOW_FORMAT,
     };
@@ -476,13 +441,6 @@ export function mockWorkflows(
     emit(input.workflowId);
     return runDetail(run.id);
   };
-  const githubTriggerOf = (workflowId: string, nodeId: string) => {
-    const node = nodeOf(workflowId, nodeId);
-    if (node.kind !== "trigger" || node.fields.trigger !== "github")
-      throw new Error(sourceText("error.workflow.nodeMissing"));
-    return node;
-  };
-
   let folders: WorkflowFoldersSnapshot = structuredClone(EMPTY_WORKFLOW_FOLDERS);
   const currentFolders = () => prunedWorkflowFolders(folders, new Set(records.keys()));
   return {
@@ -637,13 +595,6 @@ export function mockWorkflows(
     run: async (runId) => runDetail(runId),
     stepSettings: async (stepId) =>
       structuredClone(recorded.get(stepOf(stepId).id) ?? { settings: null, sources: null }),
-    rotateWebhookSecret: async (input) => {
-      const { detail } = record(input.workflowId);
-      webhooks.add(`${input.workflowId}/${input.nodeId}`);
-      detail.triggers = triggersOf(input.workflowId, detail.graph);
-      emit(input.workflowId);
-      return { secret: `whsec_preview_${crypto.randomUUID()}` };
-    },
     keepPicture: async (draftId) => draftId,
     mediaProviders: async () =>
       workflowMediaProvidersOf(accounts.map(({ provider, id, name }) => ({ provider, id, name }))),
@@ -652,53 +603,5 @@ export function mockWorkflows(
     mediaPrice: async (input) => ({
       credits: previewQuote(input.kind, input.duration, input.resolution, input.options),
     }),
-    githubCatalog: async () => structuredClone(PREVIEW_GITHUB_CATALOG),
-    githubOptions: async (input) => {
-      if (!PREVIEW_GITHUB_CATALOG.repositories.some((repository) => repository.fullName === input.repository))
-        throw new Error(sourceText("error.workflow.githubNoAccess"));
-      return structuredClone(PREVIEW_GITHUB_OPTIONS);
-    },
-    githubHistory: async (workflowId) => {
-      const { detail } = record(workflowId);
-      const triggers = detail.graph.nodes.filter((node) => node.kind === "trigger" && node.fields.trigger === "github");
-      const started = [...runs.values()]
-        .map((entry) => entry.run)
-        .filter((run) => run.workflowId === workflowId && run.source === "github");
-      const now = Date.now();
-      return {
-        deliveries: triggers.flatMap((node, index): WorkflowGitHubDelivery[] => [
-          {
-            id: `${node.id}-opened`,
-            nodeId: node.id,
-            event: "issue.opened",
-            item: previewItem(node, 42, "Crash when the export folder is missing"),
-            receivedAt: new Date(now - (index * 2 + 1) * 60_000).toISOString(),
-            outcome: "started",
-            reason: null,
-            runId: started[0]?.id ?? null,
-          },
-          {
-            id: `${node.id}-skipped`,
-            nodeId: node.id,
-            event: "issue.opened",
-            item: previewItem(node, 41, "Add a dark theme to the settings"),
-            receivedAt: new Date(now - (index * 2 + 2) * 60_000).toISOString(),
-            outcome: "skipped",
-            reason: "filter",
-            runId: null,
-          },
-        ]),
-        runs: started.flatMap((run) => {
-          const node = triggers.find((trigger) => trigger.id === run.triggerNodeId);
-          return node
-            ? [{ runId: run.id, item: previewItem(node, 42, "Crash when the export folder is missing") }]
-            : [];
-        }),
-      };
-    },
-    githubRunLastEvent: async (input) => {
-      githubTriggerOf(input.workflowId, input.nodeId);
-      return beginRun({ workflowId: input.workflowId, requestId: input.requestId, fromNodeId: input.nodeId }, "github");
-    },
   };
 }

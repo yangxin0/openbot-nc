@@ -37,7 +37,6 @@ export const messages = {
   "mobile.app.route.routine": "שגרה",
   "mobile.app.route.threads": "שרשורים",
   "mobile.app.route.usage": "שימוש",
-  "mobile.app.route.remoteDesktop": "שליטה במחשב",
   "mobile.app.route.marketplace": "חנות",
   "mobile.app.route.library": "ספרייה",
   "mobile.app.quickAction.search": "חיפוש",

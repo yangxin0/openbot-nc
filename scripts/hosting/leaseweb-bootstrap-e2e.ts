@@ -9,7 +9,7 @@ const logger = createOpenBotLogger("leaseweb-bootstrap-e2e");
 const BOOTSTRAP = join(import.meta.dirname, "leaseweb-bootstrap.sh");
 const REPORT_DIRECTORY = join(process.cwd(), ".openbot-build", "leaseweb-bootstrap");
 const SSH_OPTIONS = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=8", "-o", "ServerAliveInterval=15"];
-const STATE_FILE = "/etc/openbot/egress-router";
+const STATE_FILE = "/etc/openbot-nc/egress-router";
 const OPERATOR_KEYS = "/etc/ssh/openbot-operator-keys/root";
 const WRONG_ROUTER = "192.0.2.1";
 const COMMAND_DEADLINE_MS = 300_000;
@@ -18,7 +18,7 @@ const WAIT_DEADLINE_MS = 420_000;
 const PROBE = `
 set -u
 export LC_ALL=C
-user=$(</opt/OpenBot/hosted/service-user)
+user=$(</opt/OpenBot-NC/hosted/service-user)
 router=$(cut -d, -f1 ${STATE_FILE})
 connect='exec 3<>"/dev/tcp/$0/$1"'
 result() {
@@ -39,9 +39,9 @@ mail_rejects() { nft list chain inet openbot_egress output | sed -n 's/.*tcp dpo
 monotonic() { systemctl show "$1" -p "$2" --value; }
 echo "bootId=$(</proc/sys/kernel/random/boot_id)"
 echo "serviceUser=$user"
-echo "openbotPid=$(systemctl show openbot.service -p MainPID --value)"
-echo "openbot=$(systemctl is-active openbot.service)"
-echo "rules=$(systemctl is-active openbot-egress-firewall.service)"
+echo "openbotPid=$(systemctl show openbot-nc.service -p MainPID --value)"
+echo "openbot=$(systemctl is-active openbot-nc.service)"
+echo "rules=$(systemctl is-active openbot-nc-egress-firewall.service)"
 echo "updates=$(systemctl is-active unattended-upgrades.service)"
 echo "routerState=$(<${STATE_FILE})"
 echo "routerLease=$(sed -n 's/^SERVER_ADDRESS=//p' /run/systemd/netif/leases/* | sort -u | paste -sd, -)"
@@ -73,14 +73,14 @@ echo "sshd=$(sshd -T | grep -E '^(passwordauthentication|kbdinteractiveauthentic
 echo "updatePeriod=$(apt-config dump | sed -n 's/^APT::Periodic::Unattended-Upgrade "\\(.*\\)";$/\\1/p')"
 echo "updateReboot=$(apt-config dump | sed -n 's/^Unattended-Upgrade::Automatic-Reboot "\\(.*\\)";$/\\1/p')"
 # As needrestart does: the first key, in sort order, that matches the unit gives the value.
-echo "updateServiceRestart=$(perl -e 'our %nrconf = (verbosity => 0, override_rc => {}); our $LOGPREF = ""; do "/etc/needrestart/needrestart.conf"; for my $re (sort keys %{$nrconf{override_rc}}) { next unless "openbot.service" =~ /$re/; print $nrconf{override_rc}{$re}; last }' 2>/dev/null)"
+echo "updateServiceRestart=$(perl -e 'our %nrconf = (verbosity => 0, override_rc => {}); our $LOGPREF = ""; do "/etc/needrestart/needrestart.conf"; for my $re (sort keys %{$nrconf{override_rc}}) { next unless "openbot-nc.service" =~ /$re/; print $nrconf{override_rc}{$re}; last }' 2>/dev/null)"
 echo "updateOrigins=$(apt-config dump | sed -n 's/^Unattended-Upgrade::Allowed-Origins:: "\\(.*\\)";$/\\1/p' | paste -sd, -)"
 # /boot/vmlinuz is a link that Ubuntu keeps on the newest kernel.
 echo "kernelNewest=$(readlink /boot/vmlinuz | sed 's/^vmlinuz-//')"
 echo "kernelFirstEntry=$(sed -n 's/^[[:space:]]*linux[[:space:]]*\\/boot\\/vmlinuz-\\([^ ]*\\) .*/\\1/p' /boot/grub/grub.cfg | head -n 1)"
 echo "kernelRunning=$(uname -r)"
 echo "kernelArguments=$(tr ' ' '\\n' </proc/cmdline | grep -v -E '^(BOOT_IMAGE=.*|root=.*)$' | paste -sd' ' -)"
-echo "rulesLoaded=$(monotonic openbot-egress-firewall.service ExecMainExitTimestampMonotonic)"
+echo "rulesLoaded=$(monotonic openbot-nc-egress-firewall.service ExecMainExitTimestampMonotonic)"
 echo "networkStarted=$(monotonic systemd-networkd.service ExecMainStartTimestampMonotonic)"
 echo "server=$(runuser -u "$user" -- openbot status 2>/dev/null | sed -n 's/^Server: //p')"
 `;
@@ -114,7 +114,7 @@ async function main(): Promise<void> {
   };
 
   const start = await probe(options.host);
-  if (start.openbot !== "active") throw new Error("openbot.service is not active. Install OpenBot first.");
+  if (start.openbot !== "active") throw new Error("openbot-nc.service is not active. Install OpenBot first.");
   const server = start.server ?? "";
   const address = options.host.slice(options.host.indexOf("@") + 1);
   const keyDirectory = await mkdtemp(join(tmpdir(), "leaseweb-bootstrap-e2e-"));
@@ -181,13 +181,13 @@ async function main(): Promise<void> {
 type Expect = (name: string, actual: string | undefined, expected: string) => void;
 
 async function restartChecks(host: string, expect: Expect, hardened: Facts, server: string): Promise<void> {
-  await sshOk(host, `echo ${WRONG_ROUTER} >${STATE_FILE} && systemctl stop openbot-egress-firewall.service`);
+  await sshOk(host, `echo ${WRONG_ROUTER} >${STATE_FILE} && systemctl stop openbot-nc-egress-firewall.service`);
   const stopped = await sshOk(
     host,
-    "systemctl is-active openbot.service; nft list table inet openbot_egress >/dev/null 2>&1; echo table=$?",
+    "systemctl is-active openbot-nc.service; nft list table inet openbot_egress >/dev/null 2>&1; echo table=$?",
   );
   expect("OpenBot stops with the rules", stopped.trim().split("\n").join(","), "inactive,table=1");
-  await sshOk(host, "systemctl start openbot.service");
+  await sshOk(host, "systemctl start openbot-nc.service");
   await waitForServer(host, server);
   expectHardened(expect, "start after a stop of the rules", await probe(host), server);
 
@@ -212,8 +212,8 @@ async function restartChecks(host: string, expect: Expect, hardened: Facts, serv
 
 function expectHardened(expect: Expect, phase: string, facts: Facts, server: string): void {
   const name = (text: string) => `${phase}: ${text}`;
-  expect(name("openbot.service"), facts.openbot, "active");
-  expect(name("openbot-egress-firewall.service"), facts.rules, "active");
+  expect(name("openbot-nc.service"), facts.openbot, "active");
+  expect(name("openbot-nc-egress-firewall.service"), facts.rules, "active");
   expect(name("unattended-upgrades.service"), facts.updates, "active");
   expect(name("the state file names the DHCP server"), facts.routerState, facts.routerLease ?? "");
   expect(name("root connects to the router"), facts.rootRouter, "connected");
@@ -322,7 +322,7 @@ async function waitForBoot(host: string, lastBootId: string): Promise<string> {
 
 async function waitForServer(host: string, server: string): Promise<void> {
   const deadline = Date.now() + WAIT_DEADLINE_MS;
-  const command = `runuser -u "$(</opt/OpenBot/hosted/service-user)" -- openbot status 2>/dev/null | sed -n 's/^Server: //p'`;
+  const command = `runuser -u "$(</opt/OpenBot-NC/hosted/service-user)" -- openbot status 2>/dev/null | sed -n 's/^Server: //p'`;
   while (Date.now() < deadline) {
     const result = await ssh(host, command);
     if (result.code === 0 && result.stdout.trim() === server) return;

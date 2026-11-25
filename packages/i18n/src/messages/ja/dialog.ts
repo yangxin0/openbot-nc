@@ -2,12 +2,9 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/dialog";
 
 export const messages = {
-  "dialog.chooseSiteDirectory": "静的サイトのフォルダーを選択",
   "dialog.chooseAgentFolder": "{agent} のフォルダーを選択",
   "dialog.chooseChannelFolder": "{channel} のフォルダーを選択",
   "dialog.chooseAgentExclusion": "{agent} に変更させないフォルダを選択",
-  "dialog.chooseSkill": "スキルのフォルダーまたは ZIP を選択",
-  "dialog.filter.skillPackages": "スキルパッケージ",
   "dialog.filter.images": "画像",
   "dialog.filter.supportedFiles": "対応ファイル",
   "dialog.filter.attachment": "添付ファイル",

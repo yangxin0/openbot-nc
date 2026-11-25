@@ -1484,7 +1484,7 @@ export function savedCustomAgents(context: ProviderClientContext): readonly Cust
 let customAgentDiscoveryRoot: string | undefined;
 
 function discoveryFolder(agentId: string): string {
-  customAgentDiscoveryRoot ??= mkdtempSync(join(tmpdir(), "openbot-custom-agents-"));
+  customAgentDiscoveryRoot ??= mkdtempSync(join(tmpdir(), "openbot-nc-custom-agents-"));
   const folder = join(customAgentDiscoveryRoot, agentId);
   mkdirSync(folder, { recursive: true, mode: 0o700 });
   return folder;

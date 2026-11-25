@@ -3,7 +3,6 @@ import { isDynamicRecord } from "@openbot/contracts/runtime-values";
 import { sourceText } from "@openbot/i18n/source";
 import { Effect, Schema } from "effect";
 import { PreferenceStore, readPreferenceFile } from "./preference-file";
-import { signalHttpOrigin } from "./telegram-files";
 
 export const SIGNAL_HOME_PREFERENCE_FILE = "openbot-signal-home-v1.json";
 
@@ -57,6 +56,12 @@ const measureOnce = (fetcher: SignalHomeFetch, url: string) =>
     },
     catch: (cause) => new HostSignalHomeError({ cause }),
   });
+
+function signalHttpOrigin(signalUrl: string): string {
+  const url = new URL(signalUrl);
+  url.protocol = url.protocol === "ws:" ? "http:" : "https:";
+  return url.origin;
+}
 
 const measureSignalLatency = Effect.fn("HostSignalHome.measureLatency")(function* (
   fetcher: SignalHomeFetch,

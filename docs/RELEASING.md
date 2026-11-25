@@ -11,9 +11,7 @@ macOS requires every auto-updatable build to be signed with a Developer ID Appli
 The release workflow also notarizes and staples the macOS application before publishing it. A Windows
 x64 tag release is signed with Azure Artifact Signing (see [Windows signing](#windows-signing)). Linux
 releases are unsigned, and the Linux AppImage carries no signature.
-All three platforms must pass before one release is published. A release also requires the pinned
-Sunshine and Moonlight Web runtime artifacts. GitHub Actions downloads those artifacts, checks SHA-256, and
-verifies their native executables as part of the final OpenBot package. Release packages are not built
+All three platforms must pass before one release is published. Release packages are not built
 on a developer machine.
 
 Codex, Claude, and Grok runtimes are optional downloads. They are not part of the application package.
@@ -141,7 +139,7 @@ A tag build signs the Windows release with Azure Artifact Signing. It needs no s
   `bun run dist:win --config electron-builder.windows-signing.yml`, then runs `az account clear`, so
   the steps after the build have no Azure session. That overlay adds
   `win.azureSignOptions` and `forceCodeSigning`. electron-builder signs `OpenBot.exe`, every `.exe` from
-  `extraResources` (the remote desktop runtime and the Computer Use driver), the NSIS
+  `extraResources` (the Computer Use driver), the NSIS
   installer, and its uninstaller. It does not sign the `.node` and `.dll` files of the voice runtime,
   because the overlay sets no `win.signExts`. The provider CLIs are not packaged on Windows, so their
   vendor signatures do not change.
@@ -159,108 +157,6 @@ accepts the first signed update.
 
 The signature removes the Unknown publisher warning. SmartScreen can still warn until the new
 certificate builds download reputation.
-
-## Build the remote desktop runtime
-
-`native-runtime.lock.json` pins the upstream source for Sunshine `v2026.516.143833` and Moonlight Web
-`v2.10.0` by full commit and source archive SHA-256. Each entry also records the reviewable OpenBot
-patch applied to that source. Build on the target platform:
-
-```bash
-bun run build:remote-desktop-runtime
-bun run verify:remote-desktop-runtime
-```
-
-The command writes binaries, the static Moonlight viewer, GPL-3.0 licenses, corresponding-source
-metadata, and SHA-256 checksums under `build/remote-desktop-runtime/<platform>/<arch>`. Publish the
-exact corresponding source for both GPL components with every binary release. A release must stop if
-a binary, license, source manifest, checksum, platform signature, or notarization result is missing.
-
-Use this source build only to make or reproduce a runtime version. The
-`.github/workflows/remote-desktop-runtime.yml` workflow builds macOS ARM64, macOS x64, Windows x64 and Linux x64
-when the recipe or a pinned input changes. It publishes an immutable GitHub prerelease named
-`remote-desktop-runtime-<input-digest>`. The prerelease contains the four deterministic archives, SPDX
-SBOMs, build provenance, and `remote-desktop-runtime-manifest.json`. It is not an OpenBot application
-update and it must never contain `latest.yml`.
-
-PR pushes do not cancel an active runtime build. The next run reuses a successful native build
-from the same PR and platform when its native inputs and build tools are unchanged. It still runs
-verification and the macOS or Linux smoke test against the current checkout. A cache miss rebuilds the
-runtime. Pushes to `main` and manual dispatches do not use the PR build cache.
-
-After publication, the workflow opens a draft PR that adds the release tag and SHA-256 values to
-`native-runtime.lock.json`. That job runs only from `main`, because it pins against the lock it checks
-out: the input digest is derived from the recipe on disk, and a manifest built from a different recipe
-is refused.
-
-So a branch that changes the recipe pins by hand, and must, or merging it leaves `main` with an
-unpinned lock -- which is not a degraded state but a broken one, because
-`prepare-remote-desktop-runtime.ts` throws and takes every `package`, `dist:mac`, `dist:win` and `dist:linux` run
-with it. From the branch:
-
-```bash
-gh workflow run remote-desktop-runtime.yml --ref <branch>
-# once Publish and Verify published are green:
-gh release download remote-desktop-runtime-<input-digest> --pattern remote-desktop-runtime-manifest.json
-bun scripts/pin-remote-desktop-runtime.ts remote-desktop-runtime-manifest.json
-```
-
-To repeat verification after a download or CI setup failure, without replacing the published
-artifacts, run `gh workflow run remote-desktop-runtime.yml --ref <branch> -f verify_only=true`.
-This mode requires an existing release for the current input digest and runs installation, runtime
-verification, the macOS and Linux smoke tests, and application packaging. It does not build or publish.
-
-Commit the rewritten `native-runtime.lock.json` to the branch and merge it with the recipe, so `main`
-never sees the two apart. The pin does not change the input digest -- it covers `recipeVersion`, both
-source entries and `targets`, not the artifacts -- so it cannot invalidate the release it just pinned.
-
-Normal CI and application release jobs then use:
-
-```bash
-bun run install:remote-desktop-runtime
-bun run verify:remote-desktop-runtime
-```
-
-The installer accepts only the exact prerelease and assets in the lock file. It rejects a changed
-manifest, a changed archive, an unsafe archive path, and a mismatched source manifest. Do not replace
-assets in an existing runtime prerelease. Increase `recipeVersion` when the build process changes.
-
-### Sunshine security backports (runtime recipe 12)
-
-The Sunshine upstream base remains `v2026.516.143833` to keep the tested macOS input backend.
-The OpenBot patch includes these upstream security changes and regression tests:
-
-- `1583e7c4a7e99538c7700315a1d2a2101c6d2812`: validate input packets before queueing and
-  dispatch (GHSA-26q2-58j6-qmvv and GHSA-6w33-pjh7-p77c).
-- `82bccdf69894ee03ac422cc787f1ac9654da359d`: reject short ENet control packets
-  (GHSA-c428-87f8-rrv5).
-- `ccf97e38796be6cfcbff0ef248a684d39e181eba`: bind pairing approval to an explicit,
-  expiring request ID (GHSA-36ff-frg7-492f).
-- `4d768847fcd88cc94ac745c4611715c67d7d67e1`: require the exact enabled client
-  certificate and canonicalize stored certificate identities (GHSA-6jvv-jqr7-m6m3).
-
-Backport adaptations retain the older platform APIs and test fixtures. Native CI builds and runs
-only the relevant packet, pairing, REST authorization, and certificate regression tests. The local
-Moonlight client uses a random pairing name and approves only its matching loopback request ID.
-Moonlight now builds from the same upstream commit with the existing OpenBot patch and a fix
-that sends the configured pairing name instead of the upstream hard-coded name.
-The published runtime uses a new recipe/input digest; no existing release assets are replaced.
-The Linux GUI capability advisory GHSA-fp6g-27w5-489j does not apply: the Linux runtime is built
-with the tray off, and OpenBot gives Sunshine no file capabilities.
-
-### Linux runtime (recipe 16)
-
-The `linux-x64` target builds on Ubuntu 24.04 with GCC 14, X11 capture and software encoding only
-(CUDA, DRM, KWin, VAAPI, Vulkan, Wayland, portal and tray are off). The OpenBot patch adds an XTest
-input backend, because Xvfb does not read uinput devices. It also links libcap when DRM is off and
-adds a `vaMapBuffer2` shim, because the prebuilt FFmpeg needs libva 2.21 and Ubuntu 24.04 has 2.20.
-The runtime uses the system libraries of Ubuntu 24.04 that Ubuntu 26.04 also has; the hosted server
-template installs them (the remote desktop part of `scripts/hosting/packages.txt`). Since recipe 16,
-Boost.Locale has no ICU backend, and the runtime carries `lib/libminiupnpc.so.17` with its Debian
-licence, because Ubuntu 26.04 has only `libminiupnpc21`. Sunshine finds it through its RUNPATH
-`$ORIGIN/lib`. The build job checks with `ldd` that each executable finds all its libraries on
-Ubuntu 26.04.
-Linux arm64 builds only for local development and has no release artifact.
 
 ## Pin the Gemini CLI
 
@@ -609,33 +505,32 @@ direct `200` responses: `/join` with `Cache-Control: no-store`, and the associat
 The workflow:
 
 1. verifies the tag matches `package.json`;
-2. installs and verifies the pinned remote desktop runtime without CMake or Cargo;
-3. runs the complete offline repository check on its own macOS runner, in parallel with the builds;
-4. builds signed and notarized ARM64 DMG and ZIP artifacts plus a separately signed/notarized Host PKG on a GitHub Apple silicon runner,
+2. runs the complete offline repository check on its own macOS runner, in parallel with the builds;
+3. builds signed and notarized ARM64 DMG and ZIP artifacts plus a separately signed/notarized Host PKG on a GitHub Apple silicon runner,
    and signed and notarized x64 DMG and ZIP artifacts on a GitHub Intel runner (`macos-15-intel`). Each
-   architecture builds on its own runner, because the voice runtime and the remote desktop runtime
-   are prepared for the architecture of the build machine. The Host PKG is ARM64 only. The x64 job
-   does not run on an Apple silicon runner under Rosetta: there, the packaged app checks take about
-   ten times longer, and the upgrade check does not finish.
+   architecture builds on its own runner, because the install scripts run each provider runtime that
+   they download, and the voice runtime is prepared for the architecture of the build machine. The
+   Host PKG is ARM64 only. The x64 job does not run on an Apple silicon runner under Rosetta: there,
+   the packaged app checks take about ten times longer, and the upgrade check does not finish.
    When `hdiutil create` fails with "Device not configured" or "Resource busy", or a network
    connection drops, the app build of each architecture starts again, up to 3 attempts, because
    these runner errors are not caused by the app;
-5. builds a signed Windows x64 NSIS installer on a GitHub Windows runner (unsigned in a dry run);
-6. builds unsigned Linux x64 and arm64 AppImages on GitHub Ubuntu 24.04 runners of each architecture,
+4. builds a signed Windows x64 NSIS installer on a GitHub Windows runner (unsigned in a dry run);
+5. builds unsigned Linux x64 and arm64 AppImages on GitHub Ubuntu 24.04 runners of each architecture,
    with the launch check under `xvfb-run`. A further check mounts each AppImage with only `fusermount3`,
    because its static runtime must start on systems with no libfuse2, such as Arch Linux and Omarchy;
-7. verifies all three unpacked applications, update metadata, included runtimes, provider control
+6. verifies all three unpacked applications, update metadata, included runtimes, provider control
    artifacts, licenses, checksums, platform signing contracts, launch behavior, and update artifact
    size limits;
-8. generates SPDX SBOMs and GitHub build-provenance attestations for all three platforms;
-9. publishes one non-draft GitHub Release only after all platform jobs pass. It joins the ARM64 and
+7. generates SPDX SBOMs and GitHub build-provenance attestations for all three platforms;
+8. publishes one non-draft GitHub Release only after all platform jobs pass. It joins the ARM64 and
    x64 `latest-mac.yml` files with `scripts/merge-mac-update-manifests.ts`: electron-updater selects
    the ZIP whose name contains `arm64` on Apple silicon and the other ZIP on Intel. Then it writes the
    first rollout percentage into the four update manifests (see [Staged rollout](#staged-rollout)).
-10. builds a Docker image (`docker/Dockerfile`) from each Linux AppImage on a runner of that
-    architecture, after it checks the AppImage against its `SHA256SUMS` file. It starts each image
-    with `docker/seccomp.json`, waits for `openbot status`, and stops it, which must exit with 0;
-11. after the GitHub Release is published, pushes both images to `ghcr.io/nightly-labs/openbot`
+9. builds a Docker image (`docker/Dockerfile`) from each Linux AppImage on a runner of that
+   architecture, after it checks the AppImage against its `SHA256SUMS` file. It starts each image
+   with `docker/seccomp.json`, waits for `openbot-nc status`, and stops it, which must exit with 0;
+10. after the GitHub Release is published, pushes both images to `ghcr.io/nightly-labs/openbot`
     with the tags `<version>-amd64` and `<version>-arm64`, joins them under `<version>`, `v<version>`,
     `latest` and `sha-<commit>`, and attests the build provenance of that image. It then checks
     anonymous access to both architectures. See [Docker](docker.md).
@@ -685,8 +580,7 @@ check, download, or restart reports an actionable error and can be retried in pl
 
 The voice runtime (the sherpa-onnx N-API addon and ONNX Runtime, from the pinned `sherpa-onnx-*`
 npm packages) is part of the macOS, Windows and Linux applications, in `voice/runtime`. Each Linux
-AppImage carries the runtime of its architecture. The Linux arm64 AppImage ships no remote desktop
-runtime. The NVIDIA Parakeet TDT 0.6B v3 int8 model is not part of an application or update
+AppImage carries the runtime of its architecture. The NVIDIA Parakeet TDT 0.6B v3 int8 model is not part of an application or update
 artifact. OpenBot downloads its four pinned files on first voice use, checks the size and SHA-256 of
 each, and keeps the verified files in `runtimes/parakeet-tdt-0.6b-v3-int8` in the user data directory
 for later offline use. The Whisper large-v3 turbo model (an int8 encoder and a full-precision

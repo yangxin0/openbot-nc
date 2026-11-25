@@ -4,14 +4,12 @@ import { PageHeader, type PageHeaderParent } from "@openbot/ui/features/window/P
 import { useText } from "@openbot/ui/text";
 import { holdFlag } from "@openbot/ui/utils";
 import { createEffect, Match, onCleanup, onSettled, Show, Switch } from "solid-js";
-import { MarketplaceAgentPage } from "./MarketplaceAgentPage";
-import { AgentGroupPage } from "./MarketplaceAgents";
 import { MarketplaceAppPage, MarketplaceServerPage } from "./MarketplaceAppPage";
 import { AppGroupPage, createBrowseLists, MarketplaceBrowse } from "./MarketplaceBrowse";
 import { MarketplaceNav } from "./MarketplaceNav";
 import { MarketplaceLocalSkillPage, MarketplaceSkillPage } from "./MarketplaceSkillPage";
-import { SkillGroupPage } from "./MarketplaceSkills";
-import { CATEGORY_LABELS, createMarketplaceListing } from "./marketplace-listing";
+import { YourSkillsPage } from "./MarketplaceSkills";
+import { CATEGORY_LABELS } from "./marketplace-listing";
 import type { MarketplaceModel } from "./marketplace-model";
 import { createMovingNavigation } from "./marketplace-motion";
 import {
@@ -19,7 +17,6 @@ import {
   type MarketplaceNavigation,
   type MarketplaceScope,
   type MarketplaceView,
-  sourceVerified,
 } from "./marketplace-view";
 
 export interface MarketplaceProps {
@@ -35,16 +32,14 @@ function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: str
   switch (view.kind) {
     case "browse":
       return fallback;
-    case "agent":
     case "skill":
       return view.listing.name;
-    case "agentGroup":
     case "appGroup":
       return t(CATEGORY_LABELS[view.category]);
     case "app":
       return scope.model.apps().find((app) => app.id === view.id)?.name ?? fallback;
-    case "skillGroup":
-      return view.group === "yours" ? t("marketplace.skills.yours") : t(CATEGORY_LABELS[view.group]);
+    case "yourSkills":
+      return t("marketplace.skills.yours");
     case "server":
       return view.id === null ? t("mcp.panel.connectTitle") : t("mcp.panel.editTitle");
     case "localSkill":
@@ -86,20 +81,6 @@ function MarketplaceWindow(props: MarketplaceProps) {
       return props.model;
     },
     nav,
-    agents: createMarketplaceListing({
-      list: (query) => props.model.listAgents(query),
-      homeCache: props.model.agentHomeCache,
-      query: () => nav.state.query,
-      category: () => null,
-      verified: () => sourceVerified(nav.state.agentSource),
-    }),
-    skills: createMarketplaceListing({
-      list: (query) => props.model.listSkills(query),
-      homeCache: props.model.skillHomeCache,
-      query: () => nav.state.query,
-      category: () => null,
-      verified: () => sourceVerified(nav.state.skillSource),
-    }),
   };
   const lists = createBrowseLists(scope);
   let body: HTMLDivElement | undefined;
@@ -173,12 +154,6 @@ function MarketplaceWindow(props: MarketplaceProps) {
                 <Match when={view.kind === "browse"}>
                   <MarketplaceBrowse scope={scope} lists={lists} />
                 </Match>
-                <Match when={view.kind === "agent" && view} keyed>
-                  {(agent) => <MarketplaceAgentPage scope={scope} listing={agent.listing} detail={agent.detail} />}
-                </Match>
-                <Match when={view.kind === "agentGroup" && view.category} keyed>
-                  {(category) => <AgentGroupPage scope={scope} category={category} />}
-                </Match>
                 <Match when={view.kind === "skill" && view.listing} keyed>
                   {(listing) => <MarketplaceSkillPage scope={scope} listing={listing} />}
                 </Match>
@@ -186,10 +161,10 @@ function MarketplaceWindow(props: MarketplaceProps) {
                   {(category) => <AppGroupPage scope={scope} category={category} />}
                 </Match>
                 <Match when={view.kind === "app" ? view : undefined} keyed>
-                  {(app) => <MarketplaceAppPage scope={scope} id={app.id} setup={app.setup === true} />}
+                  {(app) => <MarketplaceAppPage scope={scope} id={app.id} />}
                 </Match>
-                <Match when={view.kind === "skillGroup" && view.group} keyed>
-                  {(group) => <SkillGroupPage scope={scope} group={group} />}
+                <Match when={view.kind === "yourSkills"}>
+                  <YourSkillsPage scope={scope} />
                 </Match>
                 <Match when={view.kind === "localSkill" && view.skillId} keyed>
                   {(skillId) => <MarketplaceLocalSkillPage scope={scope} skillId={skillId} />}

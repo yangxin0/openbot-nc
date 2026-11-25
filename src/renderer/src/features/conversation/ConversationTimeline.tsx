@@ -2,7 +2,6 @@ import type { AgentProviderId } from "@openbot/contracts/agent-providers";
 import { chatVisualReply } from "@openbot/contracts/chat-visual";
 import type { AgentApproval, ConversationMessageSender, MessageReaction } from "@openbot/contracts/ipc";
 import { speechTextFromMarkdown } from "@openbot/contracts/speech-text";
-import { FEEDBACK_WITHDRAW_CAPABILITY } from "@openbot/contracts/team-protocol/feedback-withdraw-v1";
 import type { ConversationUiBlock } from "@openbot/contracts/ui-blocks";
 import { feedbackApproval } from "@openbot/team-client/feedback-approval";
 import { Button } from "@openbot/ui";
@@ -51,11 +50,7 @@ import { useShowAgentSteps } from "../../agent-steps-preference";
 import { planItems, planTitle, replacedPlanIds } from "../../app-message-projection";
 import { useChatBubbleStyle } from "../../chat-bubble-style-preference";
 import { useCompactMessageActions } from "../../compact-message-actions-preference";
-import {
-  remoteRoutineRecovery,
-  serverRoleCanAdminister,
-  serverSupportsCapability,
-} from "../servers/server-capabilities";
+import { serverRoleCanAdminister } from "../servers/server-capabilities";
 import { speechModelReady } from "../speech/speech-model";
 import { recordingGone, speechReading, spokenReply } from "../speech/speech-playback";
 import {
@@ -73,8 +68,6 @@ import { ConversationBrowserTakeover } from "./ConversationBrowserTakeover";
 import { ConversationQuestionPrompt } from "./ConversationQuestionPrompt";
 import { chatSearchCanOpen, chatSearchOpensMessage } from "./chat-search";
 import { ApprovalCard, preloadConversationCards, QuestionPromptBubble, UiBlockPrompt } from "./conversation-cards";
-import { useConversationController } from "./conversation-controller-context";
-import { conversationPort } from "./conversation-port";
 import { isIncomingAgentMessage } from "./conversation-read-state";
 import { conversationRuntime } from "./conversation-runtime";
 import { useConversationViewScope } from "./conversation-scope";
@@ -83,9 +76,7 @@ import { McpSignInChatCard } from "./McpSignInChatCard";
 import { useMessageBackdropAction, watchAgentBackdrops } from "./message-backdrop";
 import { createMessageImageFiles } from "./message-image-files";
 import { RoutineChatCard } from "./RoutineChatCard";
-import { createChatWebhookRoutines, RoutineWebhookChatCard } from "./RoutineWebhookChatCard";
 import { createRoutineRunFailures, type RoutineRunFailureSource } from "./routine-run-failures";
-import { desktopChatEventRoutinesApi } from "./routine-webhooks-api";
 import { ServerInstallChatCard } from "./ServerInstallChatCard";
 import { SettingLinkChatCard } from "./SettingLinkChatCard";
 import { SkillSuggestionChatCard, skillSuggestionOutcome } from "./SkillSuggestionChatCard";
@@ -226,7 +217,6 @@ export function ConversationTimeline() {
     messagePins,
   } = useConversationViewScope();
   const { t, format } = useText();
-  const controller = useConversationController();
   const waitingProviderName = () => {
     const waiting = providerSilentMinutes() !== null || providerOffline();
     return waiting ? agentProviderName() : undefined;
@@ -352,30 +342,6 @@ export function ConversationTimeline() {
     () => props.isOwnSender,
   );
   const messageImageFiles = props.runtime ? undefined : createMessageImageFiles(runtime.agent);
-  const withdrawFeedback = createMemo(() => {
-    const agentId = props.agent?.id;
-    const server = props.server;
-    if (channel || !agentId || !server || (server.kind !== "local" && server.role !== "owner")) return undefined;
-    const remove = props.runtime?.withdrawFeedback;
-    if (remove) return (messageId: string) => remove({ agentId, messageId }).then(({ status }) => status);
-    if (props.runtime || !serverSupportsCapability(server, FEEDBACK_WITHDRAW_CAPABILITY)) return undefined;
-    return (messageId: string) =>
-      conversationPort()
-        .agent.withdrawFeedback({ agentId, messageId }, server.id)
-        .then(({ status }) => status);
-  });
-  const requestFeedbackChange = createMemo(() => {
-    const agentId = props.agent?.id;
-    const server = props.server;
-    if (channel || !agentId || !server) return undefined;
-    return (request: { number: number; change: "fix" | "remove" }) => {
-      const target = { serverId: server.id, agentId };
-      const number = String(request.number);
-      if (request.change === "fix")
-        controller.startFeedbackFix(target, request.number, t("chat.feedbackSent.fixPrompt", { number }));
-      else controller.appendPluginPrompt(target, t("chat.feedbackSent.removePrompt", { number }));
-    };
-  });
   const interactionAgentName = () => (channel ? channel.interactionAgentName() : props.agent?.name);
 
   const [sendingFeedback, setSendingFeedback] = createSignal<{
@@ -543,32 +509,8 @@ export function ConversationTimeline() {
     const routine = props.routines?.find((candidate) => candidate.id === cardMarker.routineId);
     return routine && { action: cardMarker.action, routine, agentId };
   };
-  const webhookRoutinesNeeded = createMemo(() => {
-    if (!props.routines) return false;
-    const scheduled = new Set(props.routines.map((routine) => routine.id));
-    return timelineMessages().some((message) => {
-      const marker = routineCardMarker(message, message.actionMarker);
-      return marker !== undefined && marker.action !== "deleted" && !scheduled.has(marker.routineId);
-    });
-  });
-  const webhookRoutineSource = createMemo(
-    () => {
-      const agentId = props.agent?.id;
-      const api = webhookRoutinesNeeded() ? desktopChatEventRoutinesApi(props.server, props.runtime) : undefined;
-      return agentId && api
-        ? { api, agentId, serverId: props.server?.id, recovery: remoteRoutineRecovery(props.server) }
-        : undefined;
-    },
-    {
-      equals: (left, right) =>
-        left?.agentId === right?.agentId && left?.serverId === right?.serverId && left?.recovery === right?.recovery,
-    },
-  );
-  const webhookRoutines = createChatWebhookRoutines(webhookRoutineSource);
   const openRoutineThread = (routineId: string) => {
-    const routine =
-      props.routines?.find((candidate) => candidate.id === routineId) ??
-      webhookRoutines.state.routines.find((candidate) => candidate.id === routineId);
+    const routine = props.routines?.find((candidate) => candidate.id === routineId);
     return routine?.runIn === "chat" ? undefined : props.threads?.routineThread(routineId);
   };
   const routineRunFailureSource = createMemo(
@@ -590,19 +532,7 @@ export function ConversationTimeline() {
     { equals: (left, right) => left?.agentId === right?.agentId && left?.serverId === right?.serverId },
   );
   const routineRunFailure = createRoutineRunFailures(routineRunFailureSource, timelineMessages);
-  const availableRoutineIds = createMemo(() =>
-    props.availableRoutineIds
-      ? [...props.availableRoutineIds, ...webhookRoutines.state.routines.map((routine) => routine.id)]
-      : undefined,
-  );
-  const webhookRoutineCard = (message: AgentMessage | undefined, marker: ChatActionMarkerModel) => {
-    const source = webhookRoutineSource();
-    const cardMarker = routineCardMarker(message, marker);
-    if (!source || !message || !cardMarker || cardMarker.action === "deleted") return undefined;
-    if (latestRoutineMessageIds().get(cardMarker.routineId) !== message.id) return undefined;
-    const routine = webhookRoutines.state.routines.find((candidate) => candidate.id === cardMarker.routineId);
-    return routine && { api: source.api, action: cardMarker.action, routine };
-  };
+  const availableRoutineIds = () => props.availableRoutineIds;
   const suggestionMarker = (marker: ChatActionMarkerModel) =>
     marker.kind === "marketplace-suggestion" && marketplaceSuggestionKnown(marker.appId) ? marker : undefined;
   const skillSuggestionMarker = (marker: ChatActionMarkerModel) =>
@@ -1035,78 +965,56 @@ export function ConversationTimeline() {
                                             when={mcpSignInConfig(marker())}
                                             fallback={
                                               <Show
-                                                when={webhookRoutineCard(message() ?? initialMessage, marker())}
+                                                when={serverInstallCard(marker())}
                                                 fallback={
                                                   <Show
-                                                    when={serverInstallCard(marker())}
+                                                    when={settingLinkMarker(marker())}
                                                     fallback={
-                                                      <Show
-                                                        when={settingLinkMarker(marker())}
-                                                        fallback={
-                                                          <ChatActionMarker
-                                                            onOpenSkill={changeMarkerActions.onOpenSkill}
-                                                            marker={marker()}
-                                                            agents={props.agents}
-                                                            announce={arrives}
-                                                            routineAvailable={routineMarkerAvailable(
-                                                              marker(),
-                                                              availableRoutineIds(),
-                                                            )}
-                                                            onSelectAgent={props.onSelectAgent}
-                                                            onOpenRoutine={openRoutineSettings}
-                                                            openRoutineThread={openRoutineThread}
-                                                            routineRunFailure={routineRunFailure}
-                                                            onOpenHostedSite={(url) => void openExternalMessageUrl(url)}
-                                                            onOpenLink={(url) => void openExternalMessageUrl(url)}
-                                                            onWithdrawFeedback={withdrawFeedback()}
-                                                            onRequestFeedbackChange={requestFeedbackChange()}
-                                                            onToggleRoutineRun={toggleRoutineRun}
-                                                            onToggleAgentMessage={toggleAgentMessage}
-                                                            agentMessageText={agentMessageText}
-                                                            instructions={changeMarkerActions.instructions}
-                                                            onOpenInstructions={changeMarkerActions.onOpenInstructions}
-                                                            onSignInProvider={signInAction(message())}
-                                                          />
-                                                        }
-                                                      >
-                                                        {(link) => (
-                                                          <SettingLinkChatCard
-                                                            settingId={link().settingId}
-                                                            agent={
-                                                              channel || !props.agent
-                                                                ? null
-                                                                : { id: props.agent.id, name: props.agent.name }
-                                                            }
-                                                            onOpenAgentSetting={openAgentSettingRow}
-                                                            appSettingOpener={props.appSettingOpener}
-                                                          />
+                                                      <ChatActionMarker
+                                                        onOpenSkill={changeMarkerActions.onOpenSkill}
+                                                        marker={marker()}
+                                                        agents={props.agents}
+                                                        announce={arrives}
+                                                        routineAvailable={routineMarkerAvailable(
+                                                          marker(),
+                                                          availableRoutineIds(),
                                                         )}
-                                                      </Show>
+                                                        onSelectAgent={props.onSelectAgent}
+                                                        onOpenRoutine={openRoutineSettings}
+                                                        openRoutineThread={openRoutineThread}
+                                                        routineRunFailure={routineRunFailure}
+                                                        onOpenHostedSite={(url) => void openExternalMessageUrl(url)}
+                                                        onOpenLink={(url) => void openExternalMessageUrl(url)}
+                                                        onToggleRoutineRun={toggleRoutineRun}
+                                                        onToggleAgentMessage={toggleAgentMessage}
+                                                        agentMessageText={agentMessageText}
+                                                        instructions={changeMarkerActions.instructions}
+                                                        onOpenInstructions={changeMarkerActions.onOpenInstructions}
+                                                        onSignInProvider={signInAction(message())}
+                                                      />
                                                     }
                                                   >
-                                                    {(card) => (
-                                                      <ServerInstallChatCard
-                                                        messageId={message()?.id ?? initialMessage.id}
-                                                        name={card().marker.name}
-                                                        expiresAt={card().marker.expiresAt}
-                                                        watch={card().watch}
+                                                    {(link) => (
+                                                      <SettingLinkChatCard
+                                                        settingId={link().settingId}
+                                                        agent={
+                                                          channel || !props.agent
+                                                            ? null
+                                                            : { id: props.agent.id, name: props.agent.name }
+                                                        }
+                                                        onOpenAgentSetting={openAgentSettingRow}
+                                                        appSettingOpener={props.appSettingOpener}
                                                       />
                                                     )}
                                                   </Show>
                                                 }
                                               >
                                                 {(card) => (
-                                                  <RoutineWebhookChatCard
-                                                    api={card().api}
-                                                    action={card().action}
-                                                    routine={card().routine}
-                                                    connected={webhookRoutines.state.connected}
-                                                    agentName={props.agent?.name}
-                                                    secret={webhookRoutines.state.secrets[card().routine.id] ?? null}
-                                                    onSecret={(secret) =>
-                                                      webhookRoutines.setSecret(card().routine.id, secret)
-                                                    }
-                                                    onOpenRoutine={openRoutineSettings}
+                                                  <ServerInstallChatCard
+                                                    messageId={message()?.id ?? initialMessage.id}
+                                                    name={card().marker.name}
+                                                    expiresAt={card().marker.expiresAt}
+                                                    watch={card().watch}
                                                   />
                                                 )}
                                               </Show>

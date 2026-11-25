@@ -25,23 +25,9 @@ export const messages = {
   "status.messaging.onlyRequester": "Это может сделать только {user}. Ответить также может хост OpenBot.",
   "status.messaging.hostOnly": "На этот запрос может ответить только хост OpenBot.",
   "status.messaging.filesSkipped": "Некоторые файлы не отправлены: {names}.",
-  "status.messaging.orchestratorName": "Оркестратор Slack",
-  "status.messaging.orchestratorTitle": "Отвечает в Slack и обращается к команде",
-  "status.messaging.discordNoAgent":
-    "Пока нет агента, который мог бы здесь ответить. Добавьте Оркестратора Discord в OpenBot.",
-  "status.messaging.discordOrchestratorName": "Оркестратор Discord",
-  "status.messaging.discordOrchestratorTitle": "Отвечает в Discord и обращается к команде",
   "status.messaging.integrationsSection": "Интеграции",
-  "status.messaging.signInReceived": "OpenBot получил установку Slack. Эту вкладку можно закрыть.",
-  "status.messaging.signInUnknown": "OpenBot не начинал эту установку Slack. Начните её заново в OpenBot.",
-  "status.messaging.telegramNoAgent":
-    "Пока нет агента, который мог бы здесь ответить. В OpenBot откройте Маркетплейс > Приложения > Telegram и нажмите «Добавить агента».",
-  "status.messaging.telegramLinked":
-    "OpenBot подключён к этому чату. Упомяните {bot} или ответьте на сообщение OpenBot, чтобы обратиться к агентам.",
   "status.messaging.telegramNotLinked":
     "OpenBot не подключён к этому чату. Чтобы подключить его, откройте приложение OpenBot, перейдите в Каталог → Приложения → Telegram и выберите «Добавить в группу» или «Открыть личный чат».",
-  "status.messaging.telegramOrchestratorName": "Оркестратор Telegram",
-  "status.messaging.telegramOrchestratorTitle": "Отвечает в Telegram и обращается к команде",
   "status.messaging.whatsappNoAgent":
     "Пока нет агента, который мог бы здесь ответить. Добавьте Оркестратора WhatsApp в OpenBot.",
   "status.messaging.whatsappApprovalMenu": "Ответьте 1, чтобы одобрить, или 2, чтобы отклонить.",

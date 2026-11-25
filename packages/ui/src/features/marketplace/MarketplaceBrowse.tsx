@@ -2,13 +2,13 @@ import type { SkillCategory } from "@openbot/contracts/ipc";
 import { Button, Heading, Input, Plus, Search, Text } from "@openbot/ui";
 import { useText } from "@openbot/ui/text";
 import { createEffect, For, Match, Show, Switch, untrack } from "solid-js";
-import { AgentLibrary, agentFromSource } from "./MarketplaceAgents";
 import { AppRow } from "./MarketplaceCards";
 import { MarketplaceNoMatchPlush } from "./MarketplaceNoMatchPlush";
 import { MissingNotice } from "./MarketplaceParts";
 import { GroupHead, MarketplaceSearch, SkillLibrary } from "./MarketplaceSkills";
 import { CATEGORY_LABELS } from "./marketplace-listing";
 import type { MarketplaceApp } from "./marketplace-model";
+import { matches, userSkills } from "./marketplace-skill-state";
 import {
   appCategories,
   MARKETPLACE_TABS,
@@ -20,19 +20,16 @@ import {
 const APP_GROUP_LIMIT = 6;
 
 const NO_MATCH = {
-  agents: "marketplace.noMatch.agents",
   apps: "marketplace.noMatch.apps",
   skills: "marketplace.noMatch.skills",
 } as const;
 
 const EMPTY = {
-  agents: "marketplace.empty.agents",
   apps: "marketplace.empty.apps",
   skills: "marketplace.empty.skills",
 } as const;
 
 const SHOW_TAB = {
-  agents: "marketplace.noMatch.showAgents",
   apps: "marketplace.noMatch.showApps",
   skills: "marketplace.noMatch.showSkills",
 } as const;
@@ -41,8 +38,6 @@ function NoMatch(props: {
   scope: MarketplaceScope;
   tab: MarketplaceTab;
   counts: () => Record<MarketplaceTab, number>;
-  filtered: boolean;
-  onClearFilters: () => void;
 }) {
   const { t } = useText();
   const nav = () => props.scope.nav;
@@ -52,36 +47,27 @@ function NoMatch(props: {
     <div class="marketplace-empty">
       <MarketplaceNoMatchPlush />
       <Text as="p" variant="body-sm" tone="muted">
-        {props.filtered ? t("marketplace.noMatch.filters") : searching() ? t(NO_MATCH[props.tab]) : t(EMPTY[props.tab])}
+        {searching() ? t(NO_MATCH[props.tab]) : t(EMPTY[props.tab])}
       </Text>
-      <Show when={props.filtered || (searching() && others().length > 0)}>
+      <Show when={searching() && others().length > 0}>
         <div class="marketplace-empty-actions">
-          <Show
-            when={props.filtered}
-            fallback={
-              <For each={others()}>
-                {(tab) => (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    data-cuelume-tap="select"
-                    onClick={() =>
-                      nav().set((draft) => {
-                        draft.tab = tab;
-                      })
-                    }
-                  >
-                    {t(SHOW_TAB[tab], { count: props.counts()[tab] })}
-                  </Button>
-                )}
-              </For>
-            }
-          >
-            <Button type="button" variant="outline" size="sm" onClick={props.onClearFilters}>
-              {t("marketplace.filter.clear")}
-            </Button>
-          </Show>
+          <For each={others()}>
+            {(tab) => (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-cuelume-tap="select"
+                onClick={() =>
+                  nav().set((draft) => {
+                    draft.tab = tab;
+                  })
+                }
+              >
+                {t(SHOW_TAB[tab], { count: props.counts()[tab] })}
+              </Button>
+            )}
+          </For>
         </div>
       </Show>
     </div>
@@ -92,27 +78,22 @@ export function createBrowseLists(scope: MarketplaceScope) {
   const { format } = useText();
   const model = () => scope.model;
   const state = () => scope.nav.state;
-  const agents = () => scope.agents.items().filter((listing) => agentFromSource(listing, state().agentSource));
-  const skills = () => scope.skills.items();
+  const skills = () =>
+    userSkills(model()).filter((skill) => matches(state().query, `${skill.name} ${skill.description ?? ""}`));
   const apps = () =>
     model()
       .apps()
       .filter((app) => matchesApp(app, state().query));
   const counts = (): Record<MarketplaceTab, number> => ({
-    agents: agents().length,
     apps: apps().length,
     skills: skills().length,
   });
   return {
-    agents,
     skills,
     apps,
     counts,
     searching: () => state().query.trim() !== "",
-    countLabel: (tab: MarketplaceTab) => {
-      const more = (tab === "agents" && scope.agents.hasMore()) || (tab === "skills" && scope.skills.hasMore());
-      return `${format.number(counts()[tab])}${more ? "+" : ""}`;
-    },
+    countLabel: (tab: MarketplaceTab) => format.number(counts()[tab]),
   };
 }
 
@@ -133,15 +114,7 @@ function AppList(props: { scope: MarketplaceScope; lists: BrowseLists }) {
   return (
     <Show
       when={props.lists.apps().length > 0}
-      fallback={
-        <NoMatch
-          scope={props.scope}
-          tab="apps"
-          counts={props.lists.counts}
-          filtered={false}
-          onClearFilters={() => undefined}
-        />
-      }
+      fallback={<NoMatch scope={props.scope} tab="apps" counts={props.lists.counts} />}
     >
       <For each={appCategories(props.lists.apps())} keyed={(group) => group.category}>
         {(group) => (
@@ -213,43 +186,12 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope; lists: Brows
     },
   );
 
-  const clearSkillSource = () =>
-    nav().set((draft) => {
-      draft.skillSource = null;
-    });
-  const clearAgentSource = () =>
-    nav().set((draft) => {
-      draft.agentSource = null;
-    });
-
   return (
     <Switch>
       <Match when={state().tab === "skills"}>
         <SkillLibrary
           scope={props.scope}
-          noMatch={
-            <NoMatch
-              scope={props.scope}
-              tab="skills"
-              counts={props.lists.counts}
-              filtered={state().skillSource !== null}
-              onClearFilters={clearSkillSource}
-            />
-          }
-        />
-      </Match>
-      <Match when={state().tab === "agents"}>
-        <AgentLibrary
-          scope={props.scope}
-          noMatch={
-            <NoMatch
-              scope={props.scope}
-              tab="agents"
-              counts={props.lists.counts}
-              filtered={state().agentSource !== null}
-              onClearFilters={clearAgentSource}
-            />
-          }
+          noMatch={<NoMatch scope={props.scope} tab="skills" counts={props.lists.counts} />}
         />
       </Match>
       <Match when={state().tab === "apps"}>

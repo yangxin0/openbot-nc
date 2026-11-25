@@ -96,7 +96,6 @@ import {
   HOST_PERSONALITY_CAPABILITY,
   HOST_PERSONALITY_ROUTES,
 } from "@openbot/contracts/team-protocol/host-personality-v1";
-import { HOST_RELEASE_CAPABILITY, HOST_RELEASE_ROUTES } from "@openbot/contracts/team-protocol/host-release-v1";
 import { HOST_RESTART_CAPABILITY, HOST_RESTART_ROUTES } from "@openbot/contracts/team-protocol/host-restart-v1";
 import {
   HOST_SIGNAL_HOME_CAPABILITY,
@@ -150,7 +149,7 @@ import type { MemoryReviewPreferenceStore } from "../memory-review-preference-st
 import type { ModelVisibility } from "../model-visibility";
 import type { PromptCacheTtlPreferenceStore } from "../prompt-cache-ttl-preference-store";
 import type { ProviderEnvironmentControl } from "../provider-environment-store";
-import { acceptEmpty, decodeHostReleaseStatusFromHost, type ResponseDecoder } from "../remote-host-decoding";
+import { acceptEmpty, type ResponseDecoder } from "../remote-host-decoding";
 import type { RemoteRequestInit } from "../remote-server-client";
 import type { RemoteWorkflowError } from "../remote-service-effects";
 import type { ServerAuditStore } from "../server-audit-store";
@@ -429,30 +428,6 @@ export function hostAdminIpcHandlers({
             }),
           );
           await runCauseEffect(remoteServers.refreshIdentity(serverId)).catch(() => undefined);
-        },
-      }),
-      getReleaseStatus: scopedQueryHandler({
-        local: localUpdate,
-        remote: (serverId) =>
-          remoteServers.supportsCapability(serverId, HOST_RELEASE_CAPABILITY)
-            ? runCauseEffect(
-                remoteServers.request(serverId, HOST_RELEASE_ROUTES.status, decodeHostReleaseStatusFromHost, {
-                  method: "POST",
-                  body: {},
-                }),
-              )
-            : Promise.resolve(null),
-      }),
-      checkRelease: scopedQueryHandler({
-        local: localUpdate,
-        remote: (serverId) => {
-          if (!remoteServers.supportsCapability(serverId, HOST_RELEASE_CAPABILITY)) return localUpdate();
-          return runCauseEffect(
-            remoteServers.request(serverId, HOST_RELEASE_ROUTES.check, decodeHostReleaseStatusFromHost, {
-              method: "POST",
-              body: {},
-            }),
-          );
         },
       }),
       getUpdateStatus: scopedQueryHandler({

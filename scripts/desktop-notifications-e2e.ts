@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { EventEmitter } from "node:events";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -11,7 +10,6 @@ import {
   type ServerNotificationLevel,
   type ServerSummary,
 } from "@openbot/contracts/ipc";
-import { PUSH_NOTIFICATION_THREADS_CAPABILITY } from "@openbot/contracts/team-protocol/push-notification-threads-v1";
 import { createFormat, translateFor } from "@openbot/i18n";
 import { plugin } from "bun";
 import { Effect } from "effect";
@@ -22,12 +20,10 @@ import { runCauseEffect } from "../src/backend/effect-boundary";
 import { MailboxStore } from "../src/backend/mailbox-store";
 import { OpenBotDatabase } from "../src/backend/openbot-database";
 import { SidebarLayoutStore } from "../src/backend/sidebar-layout-store";
-import type { NotificationRelayRequest } from "../src/main/push-notifications";
 
 const OUT = resolve(import.meta.dirname, "../.openbot-build/desktop-notifications-e2e");
 const APP_VERSION = "0.0.0-e2e";
 const STEP_DEADLINE_MS = 30_000;
-const OWNER_ID = "owner";
 const english = translateFor("en");
 
 interface RecordedNotification {
@@ -118,8 +114,6 @@ plugin({
 });
 const { RemoteServerManager } = await import("../src/main/remote-server-manager");
 const { createRendererForwarders } = await import("../src/main/renderer-forwarders");
-const { desktopShowsAgentEvent } = await import("../src/main/desktop-notifications");
-const { PushNotificationService } = await import("../src/main/push-notifications");
 const { BrowserWindow } = await import("electron");
 const mainWindow = new BrowserWindow();
 
@@ -134,7 +128,6 @@ const report: { passed: boolean; unverified: string[]; steps: Step[] } = {
   passed: false,
   unverified: [
     "An answer that arrives while a remote server's agent list is read. For the local server the notification shows before the forwarder returns, so no answer can come between.",
-    "The `hostComputerInUse` closure in `application-services.ts`. The phone steps use the same expression with an unfocused window and recent input.",
   ],
   steps: [],
 };
@@ -196,45 +189,7 @@ const manager = new RemoteServerManager(join(userData, "remote-servers.json"), c
   appVersion: APP_VERSION,
 });
 let agents: AgentService | undefined;
-const hostEvents = new EventEmitter<{ event: [AgentEvent] }>();
-const sent: NotificationRelayRequest[] = [];
 const ownLevels = new Map<string, ServerNotificationLevel>();
-let ownServerLevel: ServerNotificationLevel | null = null;
-const sentWaiters: (() => void)[] = [];
-const phone = new PushNotificationService({
-  agents: {
-    on: (_name, listener) => hostEvents.on("event", listener),
-    off: (_name, listener) => hostEvents.off("event", listener),
-    listAgents: () => agents?.listAgents() ?? [],
-    readConversationPageFor: unused,
-    readTask: () => {
-      throw new Error("Previews are off in this check.");
-    },
-    getRuntimeSnapshot: () => {
-      throw new Error("Not used by this check.");
-    },
-    listConversationReads: () => {
-      throw new Error("Not used by this check.");
-    },
-  },
-  store: { list: () => [], replace: () => Effect.void },
-  send: (request) =>
-    Effect.sync(() => {
-      sent.push(request);
-      for (const resolve of sentWaiters.splice(0)) resolve();
-      return "sent" as const;
-    }),
-  hiddenAgentIds: () => new Set(),
-  memberActive: () => true,
-  lastUseElsewhere: () => null,
-  atHostComputer: (memberId, event) =>
-    memberId === OWNER_ID && event !== null && desktopShowsAgentEvent(event, localServer(), true, ownLevels),
-  memberLevels: (memberId) =>
-    memberId === OWNER_ID ? { server: ownServerLevel, agents: ownLevels } : { server: null, agents: new Map() },
-  liveActivityShows: () => false,
-  randomBytes: (size) => crypto.getRandomValues(new Uint8Array(size)),
-});
-
 function localServer(): ServerSummary {
   const server = manager.list().find((candidate) => candidate.id === LOCAL_SERVER_ID);
   assert.ok(server, "The server list has no local server.");
@@ -253,7 +208,7 @@ function shownSince(from: number): string[] {
 }
 
 try {
-  const agentId = await step("Start the manager, an agent, the forwarder and the phone service", async () => {
+  const agentId = await step("Start the manager, an agent and the forwarder", async () => {
     await runCauseEffect(sidebar.initialize());
     await runCauseEffect(agentStore.initialize());
     await runCauseEffect(mailbox.initialize());
@@ -267,25 +222,6 @@ try {
     );
     agents = new AgentService({ store: agentStore, mailbox, browser: agentBrowser, sidebarLayout: sidebar });
     await runCauseEffect(manager.initialize());
-    phone.start();
-    phone.register(
-      "phone-session",
-      { memberId: OWNER_ID, protocol: 9, capabilities: new Set([PUSH_NOTIFICATION_THREADS_CAPABILITY]) },
-      {
-        platform: "android",
-        value: {
-          serverId: "phone-server-id",
-          token: "e2e-token-".padEnd(40, "x"),
-          secret: Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString("base64url"),
-          locale: "en",
-          away: true,
-          level: "all",
-          mutedUntil: null,
-          preview: false,
-          sound: "default",
-        },
-      },
-    );
     return agent.id;
   });
   const forwarders = createRendererForwarders({
@@ -294,7 +230,6 @@ try {
     chatWindowTarget: () => null,
     getAgentService: () => agents ?? null,
     getHostService: () => null,
-    getHostAnalytics: () => null,
     getRemoteServerManager: () => manager,
     showMainWindow: () => undefined,
     getTranslate: () => english,
@@ -436,47 +371,6 @@ try {
     return { shown: shownSince(from).length };
   });
 
-  const phoneSends = async (event: AgentEvent): Promise<void> => {
-    const delivered = new Promise<void>((resolve) => sentWaiters.push(resolve));
-    hostEvents.emit("event", event);
-    await delivered;
-  };
-  const phoneCount = async (events: AgentEvent[]): Promise<number> => {
-    const from = sent.length;
-    for (const event of events) hostEvents.emit("event", event);
-    await setLevel("all", true);
-    await phoneSends(browserStep(99));
-    return sent.length - from - 1;
-  };
-
-  await step("The phone stays quiet for the events that the desktop shows", async () => {
-    await setLevel("all");
-    assert.equal(await phoneCount([browserStep(7), finished, routineFinished, startFailure]), 0);
-    await setLevel("needs-me");
-    assert.equal(await phoneCount([prompt(8)]), 0);
-    return { sent: 0 };
-  });
-
-  await step("The phone tells the owner about a side thread turn, which the desktop does not show", async () => {
-    await setLevel("all");
-    assert.equal(await phoneCount([finished, routineFinished, sideThreadFinished]), 1);
-    return { sent: 1 };
-  });
-
-  await step("The phone tells the owner when the desktop does not", async () => {
-    await setLevel("all", true);
-    assert.equal(
-      await phoneCount([browserStep(9), finished, routineFinished]),
-      3,
-      "A muted desktop kept the phone quiet.",
-    );
-    await setLevel("nothing");
-    assert.equal(await phoneCount([prompt(10), startFailure]), 2, "The level Nothing kept the phone quiet.");
-    await setLevel("needs-me");
-    assert.equal(await phoneCount([finished, startFailure]), 2, "Only when it needs me kept a finished turn off both.");
-    return { sent: sent.length };
-  });
-
   await step("The level of an agent replaces the server level on the desktop", async () => {
     const from = shown.length;
     await setLevel("needs-me");
@@ -514,43 +408,8 @@ try {
     return { shown: shownSince(from) };
   });
 
-  await step("The owner's phone follows the level of the agent", async () => {
-    await setLevel("all", true);
-    const count = async (level: ServerNotificationLevel, events: AgentEvent[]): Promise<number> => {
-      const from = sent.length;
-      ownLevels.set(agentId, level);
-      for (const event of events) hostEvents.emit("event", event);
-      ownLevels.clear();
-      await phoneSends(browserStep(98));
-      return sent.length - from - 1;
-    };
-    assert.equal(await count("nothing", [browserStep(13), finished]), 0, "Nothing for the agent reached the phone.");
-    assert.equal(await count("needs-me", [finished, prompt(14)]), 1, "Only when it needs me sent a finished turn.");
-    return { sent: sent.length };
-  });
-
-  await step("The owner's phone follows the server level that the owner chose for all devices", async () => {
-    await setLevel("all", true);
-    const count = async (level: ServerNotificationLevel, events: AgentEvent[]): Promise<number> => {
-      const from = sent.length;
-      ownServerLevel = level;
-      for (const event of events) hostEvents.emit("event", event);
-      ownServerLevel = null;
-      await phoneSends(browserStep(97));
-      return sent.length - from - 1;
-    };
-    assert.equal(await count("needs-me", [finished, prompt(15)]), 1, "The server level of all devices was not used.");
-    assert.equal(await count("nothing", [prompt(16), browserStep(17)]), 0, "The server level Nothing sent a request.");
-    ownLevels.set(agentId, "all");
-    assert.equal(await count("needs-me", [finished]), 1, "The agent level did not replace the server level.");
-    assert.equal(await count("nothing", [finished]), 0, "The agent level opened a server set to Nothing.");
-    ownLevels.clear();
-    return { sent: sent.length };
-  });
-
   report.passed = true;
 } finally {
-  await runCauseEffect(phone.dispose()).catch(() => undefined);
   await runCauseEffect(manager.stop()).catch(() => undefined);
   if (agents) await runCauseEffect(agents.stop()).catch(() => undefined);
   database.close();

@@ -31,21 +31,6 @@ export const messages = {
   "error.voice.speech.failed": "OpenBot non è riuscito a leggere la risposta ad alta voce.",
   "error.voice.speech.providerRefused": "{provider} ha rifiutato di creare l’audio: {reason}",
   "error.voice.recordingNotKept": "OpenBot non è riuscito a conservare la registrazione vocale.",
-  "error.voice.live.timedOut": "La voce dal vivo di Codex non si è avviata in tempo. Riprova.",
-  "error.voice.live.failed": "La voce dal vivo si è interrotta: {reason}",
-  "error.voice.live.disconnected": "La voce dal vivo si è disconnessa.",
-  "error.voice.live.startFailed":
-    "Non è stato possibile avviare la voce dal vivo. Aggiorna Codex e accedi con ChatGPT sul computer che esegue l’agente, poi riprova. Motivo: {reason}",
-  "error.voice.live.hostFailed":
-    "Codex sul server non è riuscito ad avviare la voce dal vivo. Chiedi al proprietario di aggiornare Codex su quel computer e di accedere con ChatGPT, poi riprova.",
-  "error.voice.live.signIn": "Accedi a Codex con il tuo account ChatGPT per usare la voce dal vivo.",
-  "error.voice.live.chooseAccount":
-    "Questo account ChatGPT non può usare la voce dal vivo. In Impostazioni → Voce, scegli un account il cui piano include la voce.",
-  "error.voice.live.unavailable":
-    "OpenAI non è riuscita ad avviare la voce dal vivo. Il problema è di OpenAI. Riprova più tardi.",
-  "error.voice.live.refused":
-    "OpenAI ha rifiutato di avviare la voce dal vivo. Riprova più tardi, oppure disattiva la voce dal vivo in Impostazioni per parlare a voce.",
-  "error.voice.live.off": "La voce dal vivo di Codex è disattivata. Attivala in Impostazioni → Voce.",
   "error.voice.server.modelUnsupported":
     "{host} non può trascrivere con {model}. In Impostazioni → Voce, scegli un altro modello di dettatura per il server vocale.",
 } as const satisfies PartialTranslation<typeof source>;

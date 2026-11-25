@@ -190,8 +190,6 @@ export const messages = {
   "routine.card.webhookUpdated": "Обновлена регулярная задача с вебхуком",
   "routine.card.webhookChanged": "Изменения не сохранены",
   "routine.card.webhookSaveFailed": "Не удалось сохранить события.",
-  "routine.card.webhookFiltersInvalid": "У фильтра недопустимый JSON Pointer.",
-
   "routine.timezoneMove.title": "Ваш часовой пояс теперь {zone}",
   "routine.timezoneMove.description": {
     one: "{count} регулярная задача на {server} идёт по времени {from}. Перенести на {zone}? Время на часах не изменится.",
@@ -308,7 +306,6 @@ export const messages = {
   "routine.settings.name": "Название",
   "routine.settings.namePlaceholder": "Утренняя сводка",
   "routine.settings.whenToRun": "Когда запускать",
-  "routine.settings.triggerWebhook": "Вебхук",
   "routine.settings.webhookSummary": "Когда придёт {eventType}",
   "routine.settings.webhookSummaryAny": "Когда придёт вебхук",
 

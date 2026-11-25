@@ -3,8 +3,6 @@ import type { AppTextKey } from "@openbot/i18n";
 import {
   Bell,
   CircleArrowDown,
-  CreditCard,
-  Gift,
   Keyboard,
   Mic,
   MousePointer2,
@@ -12,10 +10,10 @@ import {
   PanelRight,
   PanelTop,
   Power,
-  Server,
   Settings,
   Smartphone,
   UserRound,
+  UsersRound,
 } from "@openbot/ui";
 import { SHORTCUT_COMMANDS, SHORTCUT_TITLES } from "@openbot/ui/features/settings/keyboard-shortcuts";
 
@@ -29,12 +27,10 @@ export type SettingsTab =
   | "dynamic-island"
   | "agent-dock"
   | "computer-use"
+  | "team"
   | "profile"
-  | "billing"
-  | "referral"
   | "mobile-connect"
-  | "updates"
-  | "hosted-servers";
+  | "updates";
 
 type SettingsRow = {
   titleKey: AppTextKey;
@@ -70,7 +66,6 @@ export const navItems: ReadonlyArray<SettingsNavItem> = [
         descriptionKey: "settings.compactMessageActions.description",
       },
       { titleKey: "settings.externalLinks.title", descriptionKey: "settings.externalLinks.description" },
-      { titleKey: "settings.analytics.title", descriptionKey: "settings.analytics.description" },
     ],
   },
   {
@@ -129,10 +124,6 @@ export const navItems: ReadonlyArray<SettingsNavItem> = [
       { titleKey: "settings.voice.speech.voice.title" },
       { titleKey: "settings.voice.speech.speed.title" },
       { titleKey: "settings.voice.talkKey.title", descriptionKey: "settings.voice.talkKey.description" },
-      {
-        titleKey: "settings.voice.speech.codexLive.title",
-        descriptionKey: "settings.voice.speech.codexLive.description",
-      },
     ],
   },
   {
@@ -141,6 +132,20 @@ export const navItems: ReadonlyArray<SettingsNavItem> = [
     descriptionKey: "settings.tab.keyboard.description",
     icon: Keyboard,
     rows: SHORTCUT_COMMANDS.map((command) => ({ titleKey: SHORTCUT_TITLES[command] })),
+  },
+  {
+    value: "team",
+    titleKey: "settings.tab.team.title",
+    descriptionKey: "settings.tab.team.description",
+    icon: UsersRound,
+    group: "settings.sections.group.account",
+    rows: [
+      { titleKey: "settings.team.identity.title", descriptionKey: "settings.team.identity.description" },
+      { titleKey: "settings.team.members.title", descriptionKey: "settings.team.members.description" },
+      { titleKey: "settings.team.hosting.switch", descriptionKey: "settings.team.hosting.description" },
+      { titleKey: "settings.team.replace.title", descriptionKey: "settings.team.replace.description" },
+      { titleKey: "settings.team.remove.title", descriptionKey: "settings.team.remove.description" },
+    ],
   },
   {
     value: "profile",
@@ -152,22 +157,6 @@ export const navItems: ReadonlyArray<SettingsNavItem> = [
       { titleKey: "settings.profile.email.title", descriptionKey: "settings.profile.email.description" },
       { titleKey: "settings.profile.sessions.title", descriptionKey: "settings.profile.sessions.description" },
     ],
-  },
-  {
-    value: "billing",
-    titleKey: "settings.tab.billing.title",
-    descriptionKey: "settings.tab.billing.description",
-    icon: CreditCard,
-    group: "settings.sections.group.account",
-    rows: [],
-  },
-  {
-    value: "referral",
-    titleKey: "settings.tab.referral.title",
-    descriptionKey: "settings.tab.referral.description",
-    icon: Gift,
-    group: "settings.sections.group.account",
-    rows: [],
   },
   {
     value: "mobile-connect",
@@ -262,13 +251,6 @@ export const navItems: ReadonlyArray<SettingsNavItem> = [
       { titleKey: "settings.updates.managed.title", descriptionKey: "settings.updates.managed.description" },
     ],
   },
-  {
-    value: "hosted-servers",
-    titleKey: "settings.tab.hostedServers.title",
-    descriptionKey: "settings.tab.hostedServers.description",
-    icon: Server,
-    rows: [],
-  },
 ];
 
 export function navItem(tab: SettingsTab): SettingsNavItem {
@@ -281,7 +263,6 @@ export function settingsTabShown(
   tab: SettingsTab,
   window: { platform: AppInfo["platform"] | undefined; chatWindow: boolean },
 ): boolean {
-  if (tab === "hosted-servers") return false;
   if (tab === "dynamic-island") return dynamicIslandSettingsShown(window.platform, window.chatWindow);
   if (tab === "agent-dock") return window.platform !== undefined && !window.chatWindow;
   return true;

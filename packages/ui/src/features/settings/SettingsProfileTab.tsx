@@ -127,31 +127,38 @@ export function SettingsProfileTab(props: SettingsProfileTabProps) {
         )}
       </Show>
 
-      <SettingsSection title={t("settings.profile.account.title")}>
-        <ItemGroup class="settings-modal-card">
-          <Item data-settings-row="settings.profile.email.title" class="settings-modal-account-email-row">
-            <ItemContent>
-              <ItemTitle>{t("settings.profile.email.title")}</ItemTitle>
-              <ItemDescription>{t("settings.profile.email.description")}</ItemDescription>
-              <Show when={signOutError()}>
-                {(message) => <ItemDescription role="alert">{message()}</ItemDescription>}
-              </Show>
-            </ItemContent>
-            <ItemActions>
-              <Text as="span" class="settings-modal-readonly-value" variant="body">
-                {props.account.email}
-              </Text>
-              <Show when={props.onSignOut}>
-                {(onSignOut) => (
-                  <Button variant="outline" size="sm" disabled={signingOut()} onClick={() => void signOut(onSignOut())}>
-                    {signingOut() ? t("account.menu.signingOut") : t("account.menu.signOut")}
-                  </Button>
-                )}
-              </Show>
-            </ItemActions>
-          </Item>
-        </ItemGroup>
-      </SettingsSection>
+      <Show when={props.account.email}>
+        <SettingsSection title={t("settings.profile.account.title")}>
+          <ItemGroup class="settings-modal-card">
+            <Item data-settings-row="settings.profile.email.title" class="settings-modal-account-email-row">
+              <ItemContent>
+                <ItemTitle>{t("settings.profile.email.title")}</ItemTitle>
+                <ItemDescription>{t("settings.profile.email.description")}</ItemDescription>
+                <Show when={signOutError()}>
+                  {(message) => <ItemDescription role="alert">{message()}</ItemDescription>}
+                </Show>
+              </ItemContent>
+              <ItemActions>
+                <Text as="span" class="settings-modal-readonly-value" variant="body">
+                  {props.account.email}
+                </Text>
+                <Show when={props.onSignOut}>
+                  {(onSignOut) => (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={signingOut()}
+                      onClick={() => void signOut(onSignOut())}
+                    >
+                      {signingOut() ? t("account.menu.signingOut") : t("account.menu.signOut")}
+                    </Button>
+                  )}
+                </Show>
+              </ItemActions>
+            </Item>
+          </ItemGroup>
+        </SettingsSection>
+      </Show>
       <Show when={props.canListSessions}>
         <SettingsSection
           data-settings-row="settings.profile.sessions.title"

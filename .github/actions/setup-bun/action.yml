@@ -6,11 +6,6 @@ description: >-
   Checkout is the caller's job: a composite action in this repository cannot run
   before the repository is on disk.
 
-  `remote-desktop-runtime.yml` deliberately does not use this action. Its
-  toolchain is part of a versioned build recipe: the workflow makes a change to
-  itself require a `remoteDesktop.recipeVersion` bump, and an edit here would
-  change that recipe without tripping the check.
-
 inputs:
   install:
     description: >-

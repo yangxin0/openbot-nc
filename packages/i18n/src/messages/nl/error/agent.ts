@@ -34,8 +34,6 @@ export const messages = {
   "error.agent.settingsLocalOnly":
     "Instellingen van de agent kun je alleen wijzigen op de computer waarop de agent draait.",
   "error.agent.skillsLocalOnly": "Vaardigheden kun je alleen wijzigen op de computer waarop de agent draait.",
-  "error.agent.addLocalOnly": "Agents kun je alleen toevoegen op de computer waarop ze draaien.",
-  "error.agent.joinedServerUpdate": "Een agent op een server waaraan je deelneemt, kun je hier niet bijwerken.",
   "error.agent.searchQueryRequired": "Een zoekopdracht is verplicht.",
   "error.agent.messageTooLong": "Het bericht is te lang.",
   "error.agent.messageOrAttachmentRequired": "Een bericht of bijlage is verplicht.",
@@ -182,8 +180,6 @@ export const messages = {
     "Lokale scripts hebben de routines van deze agent het afgelopen uur {limit} keer uitgevoerd. Probeer het later opnieuw.",
   "error.agent.workspaceOnlyMacOnly":
     "Alleen werkruimte is voor deze aanbieder alleen beschikbaar op macOS. Kies Volledige toegang in de instellingen van de agent.",
-  "error.agent.lowMemory":
-    "Deze server heeft weinig geheugen. Je bericht wacht in de wachtrij en start zodra er geheugen vrij is. Met een groter abonnement krijgt de server meer geheugen.",
   "error.agent.lowMemoryServer":
     "Deze server heeft weinig geheugen. Je bericht wacht in de wachtrij en start zodra er geheugen vrij is.",
   "error.agent.workspaceOnlyToolMissing":

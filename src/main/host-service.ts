@@ -1,12 +1,9 @@
-import { randomBytes } from "node:crypto";
 import { EventEmitter } from "node:events";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import type { HostKeyHandover } from "@openbot/contracts/host-key-handover";
-import { createInviteUrl, selfHostedApiOrigin } from "@openbot/contracts/invite-links";
+import { createOpenBotInviteUrl, selfHostedApiOrigin } from "@openbot/contracts/invite-links";
 import type {
-  AgentEvent,
   AgentTaskReadState,
-  AvatarImageInput,
   BranchAgentTaskInput,
   CentralAuthUser,
   ChannelSummary,
@@ -27,11 +24,6 @@ import type {
   MarkConversationReadInput,
   MarkConversationUnreadInput,
   MarkDirectReadInput,
-  RemoteControlAccess,
-  RemoteControlPolicy,
-  RemoteDesktopDisplay,
-  RemoteDesktopIceServer,
-  RemoteDesktopSetupAction,
   SendDirectMessageInput,
   SetTeamTypingInput,
   TeamMemberSummary,
@@ -43,18 +35,12 @@ import type {
 } from "@openbot/contracts/ipc";
 import {
   type AgentAccessLevel,
-  agentAccessRank,
   canAdministerServer,
   conversationMessageSender,
-  DEFAULT_REMOTE_CONTROL_POLICY,
-  graphAgentIds,
   isAvatarColor,
   type ServerAuditName,
   SIGNED_OUT_CHANNEL_MEMBER_ID,
-  type WorkflowGraph,
 } from "@openbot/contracts/ipc";
-import type { LiveActivityRelayPush } from "@openbot/contracts/live-activity-relay";
-import type { ServerAppearance } from "@openbot/contracts/team-protocol/host-appearance-v1";
 import type { HostRestartState } from "@openbot/contracts/team-protocol/host-update-v1";
 import { sourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
@@ -82,46 +68,26 @@ import {
   type RemoteHostTicketHome,
   type VerifiedRemoteSessionTicket,
 } from "./central-auth-manager";
-import { LiveActivityPushService, LiveActivitySendFailure } from "./live-activity-push";
-import type { PushNotificationStore } from "./push-notification-store";
-import {
-  type NotificationRelayRequest,
-  PushNotificationSendFailure,
-  PushNotificationService,
-  type PushNotificationViewer,
-  type WorkflowNoticeSource,
-  type WorkflowPushDetail,
-  type WorkflowPushNeed,
-} from "./push-notifications";
-import type { RemoteControlPolicyStore } from "./remote-control-policy-store";
-import type { RemoteDesktopRuntimePaths } from "./remote-desktop-runtime-artifact";
-import { appendRemoteDiagnosticLog } from "./remote-diagnostics";
-import {
-  LOCAL_TEST_MEMBER_ID,
-  RemoteScreenGateway,
-  type RemoteScreenGatewayCreateRuntime,
-  remoteControlDeclined,
-} from "./remote-screen-gateway";
+import type { RelayControl, RelayControlState } from "./relay/control";
+import { HostRelay } from "./relay/host-relay";
+import type { RelayCredentialSource } from "./relay/identity-store";
 import { RemoteWorkflowError, remoteDecode } from "./remote-service-effects";
 import { memberAuditChanges, memberAuditName, type ServerAuditStore } from "./server-audit-store";
 import { OWNER_PIN_KEY, type SidebarPinStore } from "./sidebar-pin-store";
 import type { TeamApiAgentNotificationLevels, TeamApiSidebarPins } from "./team-api/dependencies";
-import { workflowGraphVisible } from "./team-api/workflow-visibility";
 import { TeamApiServer } from "./team-api-server";
 import type { RemoteDirectoryMember, TeamIdentity, TeamStore } from "./team-store";
 import type { TeamWebRtcBridge } from "./team-webrtc-bridge";
 import { TeamWebRtcHostGateway } from "./team-webrtc-host-gateway";
-import { windowsSessionDisconnected } from "./windows-session-state";
 
 export const DEVELOPMENT_REMOTE_CLIENT_USERNAME = "openbot-dev-client";
 
+const UNNAMED_PERSON = "You";
+const RELAY_DEFAULT_SERVER_NAME = "OpenBot";
 const logger = createOpenBotLogger("host-service");
-const REMOTE_CONTROL_QUESTION_MS = 30_000;
 
 interface HostEvents {
   changed: [status: HostStatus];
-  remoteControlStarted: [memberName: string];
-  remoteControlChanged: [memberNames: string[]];
   presence: [snapshot: TeamPresenceSnapshot];
   directMessage: [event: DirectMessageRealtimeEvent];
   directTyping: [event: DirectTypingRealtimeEvent];
@@ -133,6 +99,11 @@ interface MemberAuditActor {
 }
 
 type ForwardedApiOptions = ConstructorParameters<typeof TeamApiServer>[0];
+
+interface RelayHostingOptions {
+  reconnect?: { baseMs?: number; maxMs?: number };
+  control?: RelayControl;
+}
 
 interface HostServiceOptions {
   channels?: ChannelService;
@@ -155,10 +126,8 @@ interface HostServiceOptions {
   libraryFolders?: ForwardedApiOptions["libraryFolders"];
   machine?: ForwardedApiOptions["machine"];
   backgroundProcesses?: ForwardedApiOptions["backgroundProcesses"];
-  liveVoice?: ForwardedApiOptions["liveVoice"];
   voiceTranscription?: ForwardedApiOptions["voiceTranscription"];
   clientBrowser?: ForwardedApiOptions["clientBrowser"];
-  hostedSites?: ForwardedApiOptions["hostedSites"];
   events?: ForwardedApiOptions["events"];
   agentImport?: ForwardedApiOptions["agentImport"];
   hermesImport?: ForwardedApiOptions["hermesImport"];
@@ -200,24 +169,6 @@ interface HostServiceOptions {
     inviteUrl: string;
     role: "admin" | "member";
   }) => Effect.Effect<void, RemoteWorkflowError>;
-  openRemoteDesktopSetup?: (
-    action: RemoteDesktopSetupAction,
-    appPath: string,
-  ) => Effect.Effect<void, RemoteWorkflowError>;
-  remoteDesktopRuntimePaths?: RemoteDesktopRuntimePaths | null;
-  remoteDesktopStateDirectory?: string;
-  createRemoteDesktopRuntime?: RemoteScreenGatewayCreateRuntime;
-  getRemoteDesktopRuntimeCredentials?: () => Effect.Effect<{ username: string; password: string }, RemoteWorkflowError>;
-  getRemoteDesktopDisplays?: () => RemoteDesktopDisplay[];
-  getRemoteDesktopDisplayScreenOrigin?: (displayId: string) => { x: number; y: number } | undefined;
-  remoteDesktopScreenLocked?: () => boolean;
-  wakeRemoteDesktopScreen?: () => void;
-  getRemoteDesktopIceServers?: () => Effect.Effect<RemoteDesktopIceServer[], RemoteWorkflowError>;
-  writeRemoteDesktopClipboard?: (text: string) => void;
-  remoteControlPolicy?: RemoteControlPolicyStore;
-  askRemoteControl?: (memberName: string) => Effect.Effect<boolean, RemoteWorkflowError>;
-  platform?: "darwin" | "win32" | "linux";
-  unattended?: boolean;
   teamWebRtcBridge?: TeamWebRtcBridge;
   peerMemberChanged?: (peerId: string, membershipId: string | null) => void;
   privateNetwork?: () => boolean;
@@ -246,19 +197,6 @@ interface HostServiceOptions {
     hostId: string,
     session: { sessionToken: string; user: CentralAuthUser },
   ) => Effect.Effect<unknown, RemoteWorkflowError>;
-  sendLiveActivityPush?: (
-    hostId: string,
-    push: LiveActivityRelayPush,
-  ) => Effect.Effect<"sent" | "gone", RemoteWorkflowError>;
-  sendPushNotification?: (
-    hostId: string,
-    request: NotificationRelayRequest,
-  ) => Effect.Effect<"sent" | "gone", RemoteWorkflowError>;
-  pushNotificationStore?: PushNotificationStore;
-  hostComputerInUse?: (event: AgentEvent | null) => boolean;
-  signInWaits?: ConstructorParameters<typeof PushNotificationService>[0]["signInWaits"];
-  workflowNotices?: WorkflowNoticeSource;
-  awayAfterMs?: number;
   verifyRemoteSessionTicket?: (ticket: string) => Effect.Effect<VerifiedRemoteSessionTicket, RemoteWorkflowError>;
   endRemoteSession?: (sessionId: string) => Effect.Effect<void, RemoteWorkflowError>;
   remoteControlPlaneUrl?: string;
@@ -291,15 +229,6 @@ interface HostServiceOptions {
     reactivate?: boolean,
   ) => Effect.Effect<void, RemoteWorkflowError>;
   removeRemoteMember?: (hostId: string, membershipId: string) => Effect.Effect<void, RemoteWorkflowError>;
-  updateRemoteHostLogo?: (
-    hostId: string,
-    image: AvatarImageInput | null,
-    version?: string | null,
-  ) => Effect.Effect<string | null, RemoteWorkflowError>;
-  updateRemoteHostAppearance?: (
-    hostId: string,
-    appearance: ServerAppearance | null,
-  ) => Effect.Effect<void, RemoteWorkflowError>;
 }
 
 class HostApiRuntime extends Context.Service<
@@ -316,12 +245,9 @@ export class HostService extends EventEmitter<HostEvents> {
   readonly #runtime: ManagedRuntime.ManagedRuntime<HostApiRuntime, never>;
   readonly #operations = new Set<Deferred.Deferred<void>>();
   #shutdown: Deferred.Deferred<void, RemoteWorkflowError> | null = null;
-  readonly #remoteScreen: RemoteScreenGateway;
   readonly #browserView: BrowserViewGateway;
   #lastBrowserViewInputAt: number | null = null;
   readonly #webrtcGateway: TeamWebRtcHostGateway | null;
-  readonly #liveActivityPush: LiveActivityPushService | undefined;
-  readonly #pushNotifications: PushNotificationService | undefined;
   #status: HostStatus;
   #runtimeGeneration = 0;
   #startOperation: Fiber.Fiber<HostStatus, RemoteWorkflowError> | null = null;
@@ -329,12 +255,13 @@ export class HostService extends EventEmitter<HostEvents> {
   readonly #memberWrites = Semaphore.makeUnsafe(1);
   readonly #ownerAdoption = Semaphore.makeUnsafe(1);
   readonly #localPublish = Semaphore.makeUnsafe(1);
+  readonly #relayHostingLock = Semaphore.makeUnsafe(1);
   #webRtcOnline = false;
   #unreachedSignalUrl: string | null = null;
   #boundAccountId: string | null | undefined = undefined;
   #legacyCredentialRemoved = false;
   #adoptedReaderKey: string | null = null;
-  readonly #remoteControlStreams = new Map<string, string>();
+  #hostRelay: HostRelay | null = null;
 
   constructor(options: HostServiceOptions) {
     super();
@@ -342,61 +269,7 @@ export class HostService extends EventEmitter<HostEvents> {
       ...options,
       localDevelopmentHost: options.localDevelopmentHost ?? false,
     };
-    this.#status = initialHostStatus(options.store.getIdentity(), options.unattended ?? false);
-    const logDirectory = options.logDirectory;
-    this.#remoteScreen = new RemoteScreenGateway({
-      platform: options.platform ?? normalizeRemoteDesktopPlatform(process.platform),
-      unattended: options.unattended ?? false,
-      runtimePaths: options.remoteDesktopRuntimePaths ?? null,
-      runtimeStateDirectory: options.remoteDesktopStateDirectory ?? ".openbot-remote-desktop",
-      getRuntimeCredentials:
-        options.getRemoteDesktopRuntimeCredentials ??
-        (() => Effect.succeed({ username: "openbot", password: "development-runtime-not-for-release" })),
-      ...(options.getRemoteDesktopDisplays ? { getDisplays: options.getRemoteDesktopDisplays } : {}),
-      getDisplayScreenOrigin: options.getRemoteDesktopDisplayScreenOrigin,
-      sessionDisconnected: windowsSessionDisconnected,
-      screenLocked: options.remoteDesktopScreenLocked,
-      wakeScreen: options.wakeRemoteDesktopScreen,
-      getIceServers:
-        options.getRemoteDesktopIceServers ??
-        (() => Effect.fail(new RemoteWorkflowError({ cause: new Error(sourceText("error.host.iceServersMissing")) }))),
-      ...(options.createRemoteDesktopRuntime ? { createRuntime: options.createRemoteDesktopRuntime } : {}),
-      ...(options.writeRemoteDesktopClipboard ? { writeClipboard: options.writeRemoteDesktopClipboard } : {}),
-      ...(logDirectory
-        ? {
-            onDiagnostic: (source: "sunshine" | "moonlight", message: string) => {
-              Effect.runFork(appendRemoteDiagnosticLog(logDirectory, `remote-screen-${source}`, message));
-            },
-          }
-        : {}),
-      onScreenRecordingDenied: () => this.emit("changed", this.getStatus()),
-      confirmSession: (memberId) => this.#confirmRemoteControl(memberId),
-      audit: (event) => {
-        this.#trackRemoteControl(event.event, event.sessionId, event.memberId);
-        if (options.logDirectory) {
-          Effect.runFork(
-            appendRemoteDiagnosticLog(options.logDirectory, "remote-screen", `${JSON.stringify(event)}\n`),
-          );
-        }
-        if (
-          event.event === "started" &&
-          !this.#legacyCredentialRemoved &&
-          options.removeLegacyRemoteDesktopCredential
-        ) {
-          this.#legacyCredentialRemoved = true;
-          const remove = options.removeLegacyRemoteDesktopCredential;
-          this.#dispatch(
-            remove().pipe(
-              Effect.catch(() =>
-                Effect.sync(() => {
-                  this.#legacyCredentialRemoved = false;
-                }),
-              ),
-            ),
-          );
-        }
-      },
-    });
+    this.#status = initialHostStatus(options.store.getIdentity());
     this.#browserView = new BrowserViewGateway({
       browser: options.browser,
       authenticate: (token) => options.store.authenticate(token),
@@ -404,77 +277,6 @@ export class HostService extends EventEmitter<HostEvents> {
         this.#lastBrowserViewInputAt = Date.now();
       },
     });
-    const sendLiveActivityPush = options.sendLiveActivityPush;
-    this.#liveActivityPush = sendLiveActivityPush
-      ? new LiveActivityPushService({
-          agents: options.agents,
-          send: (push) => {
-            const hostId = options.store.getIdentity()?.serverId;
-            if (!hostId)
-              return Effect.fail(
-                new LiveActivitySendFailure({ cause: new Error(sourceText("error.auth.hostCredentialUnavailable")) }),
-              );
-            return sendLiveActivityPush(hostId, push).pipe(
-              Effect.mapError(({ cause }) => new LiveActivitySendFailure({ cause })),
-            );
-          },
-          randomBytes: (size) => new Uint8Array(randomBytes(size)),
-          memberActive: (memberId) => {
-            const member = options.store.getMember(memberId);
-            return member !== null && !member.disabled;
-          },
-          sideThreadOfTurn: (agentId, turnId) =>
-            options.agentTasks?.listTasks(agentId).tasks.find((task) => task.activeTurnId === turnId)?.threadId ?? null,
-          logger,
-        })
-      : undefined;
-    const sendPushNotification = options.sendPushNotification;
-    const pushNotificationStore = options.pushNotificationStore;
-    this.#pushNotifications =
-      sendPushNotification && pushNotificationStore
-        ? new PushNotificationService({
-            agents: options.agents,
-            ...(options.signInWaits === undefined ? {} : { signInWaits: options.signInWaits }),
-            ...(options.workflowNotices === undefined ? {} : { workflowNotices: options.workflowNotices }),
-            workflowDetail: (workflowId) => this.#workflowDetail(workflowId),
-            workflowAllows: (viewer, graph, need) => this.#workflowAllows(viewer, graph, need),
-            store: pushNotificationStore,
-            send: (request) => {
-              const hostId = options.store.getIdentity()?.serverId;
-              if (!hostId)
-                return Effect.fail(
-                  new PushNotificationSendFailure({
-                    cause: new Error(sourceText("error.auth.hostCredentialUnavailable")),
-                  }),
-                );
-              return sendPushNotification(hostId, request).pipe(
-                Effect.mapError(({ cause }) => new PushNotificationSendFailure({ cause })),
-              );
-            },
-            hiddenAgentIds: (protocol, capabilities, memberId) =>
-              this.#api.hiddenAgentIds(protocol, capabilities, memberId),
-            randomBytes: (size) => new Uint8Array(randomBytes(size)),
-            memberActive: (memberId) => {
-              const member = options.store.getMember(memberId);
-              return member !== null && !member.disabled;
-            },
-            lastUseElsewhere: (memberId, sessionId) => this.#api.lastMemberUseElsewhere(memberId, sessionId),
-            ...(options.awayAfterMs === undefined ? {} : { awayAfterMs: options.awayAfterMs }),
-            atHostComputer: (memberId, event) =>
-              memberId === options.store.getOwnerMemberId() && (options.hostComputerInUse?.(event) ?? false),
-            memberLevels: (memberId) => {
-              const key = this.#notificationKey(memberId);
-              return {
-                server: options.agentNotificationLevels?.serverLevel(key) ?? null,
-                agents: options.agentNotificationLevels?.levels(key) ?? new Map(),
-              };
-            },
-            liveActivityShows: (sessionId, subject, alert, startedAt) =>
-              this.#liveActivityPush?.showsEvent(sessionId, subject, alert, startedAt) ?? false,
-            channelForThread: (threadId) => this.channelForThread(threadId),
-            logger,
-          })
-        : undefined;
     this.#api = new TeamApiServer({
       appVersion: options.appVersion,
       store: options.store,
@@ -502,10 +304,8 @@ export class HostService extends EventEmitter<HostEvents> {
       ...(options.libraryFolders === undefined ? {} : { libraryFolders: options.libraryFolders }),
       ...(options.machine === undefined ? {} : { machine: options.machine }),
       ...(options.backgroundProcesses === undefined ? {} : { backgroundProcesses: options.backgroundProcesses }),
-      ...(options.liveVoice === undefined ? {} : { liveVoice: options.liveVoice }),
       ...(options.voiceTranscription === undefined ? {} : { voiceTranscription: options.voiceTranscription }),
       ...(options.clientBrowser === undefined ? {} : { clientBrowser: options.clientBrowser }),
-      ...(options.hostedSites === undefined ? {} : { hostedSites: options.hostedSites }),
       ...(options.events === undefined ? {} : { events: options.events }),
       ...(options.agentImport === undefined ? {} : { agentImport: options.agentImport }),
       ...(options.hermesImport === undefined ? {} : { hermesImport: options.hermesImport }),
@@ -537,8 +337,6 @@ export class HostService extends EventEmitter<HostEvents> {
       ...(options.attachmentPreviews === undefined ? {} : { attachmentPreviews: options.attachmentPreviews }),
       browser: options.browser,
       browserView: this.#browserView,
-      remoteScreen: this.#remoteScreen,
-      remoteControlAccess: () => this.remoteControlAccess(),
       redeemCentralTicket: options.redeemCentralTicket,
       ...(options.chat === undefined ? {} : { chat: options.chat }),
       onPresence: (snapshot) => this.emit("presence", snapshot),
@@ -548,15 +346,13 @@ export class HostService extends EventEmitter<HostEvents> {
       updateMember: (input, actor) => this.updateMember(input, actor),
       removeMember: (memberId, actor) => this.removeMember(memberId, actor),
       onSessionRevoked: (sessionId) => this.#revokeWebRtcSession(sessionId),
-      ...(this.#liveActivityPush === undefined ? {} : { liveActivityPush: this.#liveActivityPush }),
-      ...(this.#pushNotifications === undefined ? {} : { pushNotifications: this.#pushNotifications }),
       ...(options.focusUse === undefined ? {} : { focusUse: options.focusUse }),
     });
     this.#runtime = ManagedRuntime.make(
       Layer.succeed(
         HostApiRuntime,
         HostApiRuntime.of({
-          start: () => this.#api.start().pipe(Effect.tap(() => Effect.sync(() => this.#pushNotifications?.start()))),
+          start: () => this.#api.start(),
         }),
       ),
     );
@@ -593,21 +389,9 @@ export class HostService extends EventEmitter<HostEvents> {
           },
           closeSession: (sessionId) =>
             Effect.gen({ self: this }, function* () {
-              this.#liveActivityPush?.remove(sessionId);
-              this.#pushNotifications?.remove(sessionId);
-              yield* this.#remoteScreen.revokeTeamSession(sessionId);
               yield* this.#browserView.revokeTeamSession(sessionId);
               this.#options.browser.releaseUserControlHeldBy({ kind: "session", sessionId });
             }),
-          pathChanged: (sessionId, lost) => {
-            if (lost) {
-              this.#liveActivityPush?.disconnected(sessionId);
-              this.#pushNotifications?.disconnected(sessionId);
-            } else {
-              this.#liveActivityPush?.reconnected(sessionId);
-              this.#pushNotifications?.reconnected(sessionId);
-            }
-          },
           unknownMemberConnected: (membershipId) => this.#dispatch(this.#learnConnectedMember(membershipId)),
           ...(options.peerMemberChanged ? { peerMemberChanged: options.peerMemberChanged } : {}),
           ...(options.verifyRemoteSessionTicket ? { verifyClientTicket: options.verifyRemoteSessionTicket } : {}),
@@ -633,128 +417,11 @@ export class HostService extends EventEmitter<HostEvents> {
   }
 
   getStatus(): HostStatus {
-    const capabilities = this.#remoteScreen.capabilities();
-    return {
-      ...this.#status,
-      remoteDesktopReady: capabilities.ready,
-      remoteDesktopScreenRecordingDenied: this.#remoteScreen.screenRecordingDenied(),
-      remoteDesktopNeedsX11Session: this.#remoteScreen.needsX11Session(),
-      remoteDesktopUnattended: capabilities.unattended,
-      remoteDesktopActiveSessions: capabilities.activeSessions,
-      remoteDesktopMaxSessions: capabilities.maxSessions,
-    };
+    return { ...this.#status };
   }
-
-  getRemoteControlPolicy(): RemoteControlPolicy {
-    return this.#options.remoteControlPolicy?.get() ?? { ...DEFAULT_REMOTE_CONTROL_POLICY };
-  }
-
-  remoteControlAccess(): RemoteControlAccess {
-    return this.getRemoteControlPolicy().access;
-  }
-
-  readonly setRemoteControlPolicy = Effect.fn("HostService.setRemoteControlPolicy")(function* (
-    this: HostService,
-    policy: RemoteControlPolicy,
-  ): Effect.fn.Return<RemoteControlPolicy, RemoteWorkflowError> {
-    const store = this.#options.remoteControlPolicy;
-    if (!store)
-      return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.controlUnavailable")) });
-    return yield* store.set(policy).pipe(Effect.mapError(({ cause }) => new RemoteWorkflowError({ cause })));
-  }).bind(this);
-
-  readonly stopRemoteControl = Effect.fn("HostService.stopRemoteControl")(
-    function* (this: HostService): Effect.fn.Return<HostStatus, RemoteWorkflowError> {
-      yield* this.#remoteScreen.closeAllSessions();
-      return this.getStatus();
-    },
-    (operation) => this.#provide(operation),
-  ).bind(this);
-
-  #confirmRemoteControl(memberId: string): Effect.Effect<void, RemoteWorkflowError> {
-    return Effect.gen({ self: this }, function* () {
-      if (!this.getRemoteControlPolicy().askOnHost) return;
-      const ask = this.#options.askRemoteControl;
-      if (!ask) return yield* new RemoteWorkflowError({ cause: remoteControlDeclined() });
-      const answer = yield* ask(this.#memberName(memberId)).pipe(
-        Effect.timeoutOption(REMOTE_CONTROL_QUESTION_MS),
-        Effect.catch(({ cause }) =>
-          Effect.sync(() => {
-            logger.warn("Unable to ask about remote control:", toLogValue(cause));
-            return Option.none<boolean>();
-          }),
-        ),
-      );
-      if (Option.isNone(answer) || !answer.value)
-        return yield* new RemoteWorkflowError({ cause: remoteControlDeclined() });
-    });
-  }
-
-  #memberName(memberId: string): string {
-    const member = this.#options.store.getMember(memberId);
-    return member?.name?.trim() || member?.username || memberId;
-  }
-
-  #trackRemoteControl(event: "started" | "transport" | "ended" | "error", sessionId: string, memberId: string): void {
-    if (event !== "started" && event !== "ended") return;
-    if (memberId !== LOCAL_TEST_MEMBER_ID) {
-      if (event === "started" && !this.#remoteControlStreams.has(sessionId)) {
-        const name = this.#memberName(memberId);
-        this.#remoteControlStreams.set(sessionId, name);
-        this.emit("remoteControlStarted", name);
-        this.emit("remoteControlChanged", [...this.#remoteControlStreams.values()]);
-      } else if (event === "ended" && this.#remoteControlStreams.delete(sessionId)) {
-        this.emit("remoteControlChanged", [...this.#remoteControlStreams.values()]);
-      }
-    }
-    this.emit("changed", this.getStatus());
-  }
-
-  checkRemoteDesktopSetup() {
-    return this.#remoteScreen.checkSetup();
-  }
-
-  createLocalRemoteDesktopTestSession() {
-    return this.#remoteScreen.createLocalTestSession();
-  }
-
-  testLocalRemoteDesktop(sessionId: string, action: "start" | "status" | "stop") {
-    return this.#remoteScreen.testLocalSession(sessionId, action);
-  }
-
-  closeLocalRemoteDesktopTestSession(sessionId: string) {
-    return this.#remoteScreen.closeLocalTestSession(sessionId);
-  }
-
-  readonly openRemoteDesktopSetup = Effect.fn("HostService.openRemoteDesktopSetup")(
-    function* (this: HostService, action: RemoteDesktopSetupAction): Effect.fn.Return<void, RemoteWorkflowError> {
-      const optionalOpenRemoteDesktopSetup = this.#options.openRemoteDesktopSetup;
-      if (process.platform !== "darwin")
-        return yield* new RemoteWorkflowError({ cause: new Error(sourceText("status.remote.setupMacOnly")) });
-      const executable = this.#options.remoteDesktopRuntimePaths?.sunshine;
-      if (!executable)
-        return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.host.runtimeNotInstalled")) });
-      const appPath = dirname(dirname(dirname(executable)));
-      if (!optionalOpenRemoteDesktopSetup)
-        return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.host.setupUnavailable")) });
-      yield* optionalOpenRemoteDesktopSetup(action, appPath);
-    },
-    (operation) => this.#provide(operation),
-  ).bind(this);
-
-  readonly recheckScreenRecording = Effect.fn("HostService.recheckScreenRecording")(
-    function* (this: HostService): Effect.fn.Return<HostStatus, RemoteWorkflowError> {
-      yield* this.#remoteScreen.recheckScreenRecording();
-      return this.getStatus();
-    },
-    (operation) => this.#provide(operation),
-  ).bind(this);
 
   describeRestartBlockers(): string[] {
     const reasons: string[] = [];
-    if (this.#remoteScreen.list().some((session) => session.phase === "connected")) {
-      reasons.push("remote-desktop");
-    }
     if (this.#browserView.activeViewCount() > 0) reasons.push("browser-view");
     if (this.#webrtcGateway?.hasActiveTransfers()) reasons.push("file-transfer");
     return reasons;
@@ -766,7 +433,7 @@ export class HostService extends EventEmitter<HostEvents> {
     if (!this.#options.store.configured) return;
     this.#runtimeGeneration += 1;
     this.#options.store.unbindActiveHost();
-    this.#status = initialHostStatus(null, this.#options.unattended ?? false);
+    this.#status = initialHostStatus(null);
     this.emit("changed", this.getStatus());
   }
 
@@ -818,7 +485,7 @@ export class HostService extends EventEmitter<HostEvents> {
         enabledOnLaunch: identity.enabledOnLaunch,
       });
     } else {
-      this.#status = initialHostStatus(identity, this.#options.unattended ?? false);
+      this.#status = initialHostStatus(identity);
       this.emit("changed", this.getStatus());
     }
     if (identity) {
@@ -840,12 +507,11 @@ export class HostService extends EventEmitter<HostEvents> {
       background = false,
     ): Effect.fn.Return<HostStatus, RemoteWorkflowError> {
       const optionalRegisterRemoteHost = this.#options.registerRemoteHost;
-      const optionalUpdateRemoteHostLogo = this.#options.updateRemoteHostLogo;
       const account = yield* remoteDecode(() => this.#options.getSignedInUser());
       const identity = yield* this.#options.store.configureWithAccount(input.serverName, account, input.logo);
       if (this.#signedInAccountId() !== account.id) {
         this.#options.store.unbindActiveHost();
-        this.#status = initialHostStatus(null, this.#options.unattended ?? false);
+        this.#status = initialHostStatus(null);
         this.emit("changed", this.getStatus());
         return yield* new RemoteWorkflowError({
           cause: new Error(sourceText("error.team.accountChangedDuringCreate")),
@@ -869,10 +535,6 @@ export class HostService extends EventEmitter<HostEvents> {
         if (!this.#isActiveHost(identity.serverId)) return this.getStatus();
         if (optionalRegisterRemoteHost)
           yield* this.#registerRemoteHost(optionalRegisterRemoteHost, ownerMembershipId, background);
-        if (input.logo !== undefined && this.#isActiveHost(identity.serverId)) {
-          yield* optionalUpdateRemoteHostLogo?.(identity.serverId, input.logo ?? null, identity.logoVersion) ??
-            Effect.succeed(undefined);
-        }
         if (!this.#isActiveHost(identity.serverId)) return this.getStatus();
         this.#setStatus({
           apiUrl: null,
@@ -897,8 +559,6 @@ export class HostService extends EventEmitter<HostEvents> {
   readonly updateIdentity = Effect.fn("HostService.updateIdentity")(
     function* (this: HostService, input: UpdateHostIdentityInput): Effect.fn.Return<HostStatus, RemoteWorkflowError> {
       const optionalRegisterRemoteHost = this.#options.registerRemoteHost;
-      const optionalUpdateRemoteHostLogo = this.#options.updateRemoteHostLogo;
-      const optionalUpdateRemoteHostAppearance = this.#options.updateRemoteHostAppearance;
       const passwordOwner = this.#options.passwordOwner === true;
       if (!passwordOwner)
         yield* remoteDecode(() => this.#options.store.assertOwnerAccount(this.#options.getSignedInUser()));
@@ -912,16 +572,13 @@ export class HostService extends EventEmitter<HostEvents> {
       });
       this.#api.refreshIdentity();
       if (input.appearance !== undefined) this.#api.refreshAppearance();
+      if (input.serverName !== undefined && this.#hostRelay)
+        yield* this.#hostRelay
+          .setLabel(identity.serverName)
+          .pipe(Effect.mapError((cause) => new RemoteWorkflowError({ cause })));
       if (passwordOwner) return this.getStatus();
       const ownerMembershipId = yield* remoteDecode(() => this.#requiredOwnerMemberId());
       if (optionalRegisterRemoteHost) yield* this.#registerRemoteHost(optionalRegisterRemoteHost, ownerMembershipId);
-      if (input.logo !== undefined && this.#isActiveHost(identity.serverId)) {
-        yield* optionalUpdateRemoteHostLogo?.(identity.serverId, input.logo ?? null, identity.logoVersion) ??
-          Effect.succeed(undefined);
-      }
-      if (input.appearance !== undefined && this.#isActiveHost(identity.serverId)) {
-        yield* optionalUpdateRemoteHostAppearance?.(identity.serverId, identity.appearance) ?? Effect.void;
-      }
       return this.getStatus();
     },
     (operation) => this.#provide(operation),
@@ -1039,6 +696,7 @@ export class HostService extends EventEmitter<HostEvents> {
   }
 
   readonly start = Effect.fn("HostService.start")(function* (this: HostService, automatic = false) {
+    if (this.#hostRelay) return this.getStatus();
     if (this.#startOperation) {
       const joined = yield* Fiber.join(this.#startOperation);
       if (automatic || joined.message !== sourceText("status.host.removed")) return joined;
@@ -1073,6 +731,7 @@ export class HostService extends EventEmitter<HostEvents> {
     yield* remoteDecode(() => this.#options.store.assertOwnerAccount(signedInUser));
     if (yield* this.#options.store.syncAccount(signedInUser)) this.#api.refreshPresence();
     this.#setStatus({ phase: "starting", message: sourceText("status.host.starting") });
+    this.#removeLegacyRemoteDesktopCredential();
 
     const attempt1 = yield* Effect.gen({ self: this }, function* () {
       const apiPort = yield* HostApiRuntime.use((api) => api.start());
@@ -1184,6 +843,103 @@ export class HostService extends EventEmitter<HostEvents> {
     },
     (operation) => this.#provide(operation),
   ).bind(this);
+
+  readonly startRelayHosting = Effect.fn("HostService.startRelayHosting")(
+    function* (
+      this: HostService,
+      identity: RelayCredentialSource,
+      options: RelayHostingOptions = {},
+    ): Effect.fn.Return<HostStatus, RemoteWorkflowError, HostApiRuntime> {
+      const relayIdentity = identity.current();
+      if (!relayIdentity)
+        return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.host.relayIdentityMissing")) });
+      if (this.#hostRelay) return this.getStatus();
+      if (!this.#options.store.configured) yield* this.#configureLocalOwner(RELAY_DEFAULT_SERVER_NAME);
+      yield* this.#options.store.bindRelayOwner(relayIdentity.user);
+      this.#api.refreshPresence();
+      const hostIdentity = this.#options.store.getIdentity();
+      if (!hostIdentity)
+        return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.host.nameBeforePublish")) });
+      const relay = new HostRelay({
+        identity,
+        server: this.#api,
+        label: hostIdentity.serverName,
+        ...(options.reconnect ? { reconnect: options.reconnect } : {}),
+        ...(options.control ? { control: options.control } : {}),
+      });
+      relay.on("state", (state) => this.#relayStateChanged(relay, state));
+      this.#hostRelay = relay;
+      this.#setStatus({ phase: "starting", message: null });
+      const started = yield* Effect.gen(function* () {
+        yield* HostApiRuntime.use((api) => api.start());
+        yield* relay.start();
+      }).pipe(Effect.result);
+      if (Result.isFailure(started)) {
+        yield* this.#stopRuntime();
+        const error = started.failure.cause;
+        this.#setStatus({
+          phase: "error",
+          apiOnline: false,
+          apiUrl: null,
+          message: error instanceof Error ? error.message : sourceText("error.host.publishFailed"),
+        });
+        return yield* started.failure;
+      }
+      const relayStatus = relayHostStatus(relay.state());
+      this.#setStatus({
+        phase: "online",
+        apiUrl: relayIdentity.relayUrl,
+        apiOnline: relayStatus?.apiOnline ?? false,
+        message: relayStatus?.message ?? null,
+      });
+      return this.getStatus();
+    },
+    (operation) => this.#relayHostingLock.withPermit(operation),
+    (operation) => this.#provide(operation),
+  ).bind(this);
+
+  readonly stopRelayHosting = Effect.fn("HostService.stopRelayHosting")(
+    function* (this: HostService): Effect.fn.Return<HostStatus, RemoteWorkflowError> {
+      if (!this.#hostRelay) return this.getStatus();
+      this.#setStatus({ phase: "stopping", message: sourceText("status.host.stopping") });
+      yield* this.#stopRuntime();
+      this.#setStatus({
+        phase: "idle",
+        apiUrl: null,
+        apiOnline: false,
+        message: sourceText("status.host.private"),
+      });
+      return this.getStatus();
+    },
+    (operation) => this.#relayHostingLock.withPermit(operation),
+    (operation) => this.#provide(operation),
+  ).bind(this);
+
+  relayHostingState(): RelayControlState | null {
+    return this.#hostRelay?.state() ?? null;
+  }
+
+  readonly #configureLocalOwner = Effect.fn("HostService.configureLocalOwner")(function* (
+    this: HostService,
+    serverName: string,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    const previousServerId = this.#status.serverId;
+    const account = yield* remoteDecode(() => this.#options.getSignedInUser());
+    yield* this.#options.store.configureWithAccount(serverName, account);
+    this.#publishActiveHost(previousServerId);
+  });
+
+  readonly #stopHostRelay = Effect.fn("HostService.stopHostRelay")(function* (this: HostService) {
+    const relay = this.#hostRelay;
+    this.#hostRelay = null;
+    if (relay) yield* relay.stop();
+  });
+
+  #relayStateChanged(relay: HostRelay, state: RelayControlState): void {
+    if (this.#hostRelay !== relay || this.#status.phase !== "online") return;
+    const status = relayHostStatus(state);
+    if (status) this.#setStatus(status);
+  }
 
   readonly publishLocalServer = Effect.fn("HostService.publishLocalServer")(
     function* (this: HostService): Effect.fn.Return<void, RemoteWorkflowError> {
@@ -1532,10 +1288,7 @@ export class HostService extends EventEmitter<HostEvents> {
         ...(input.disabled === undefined ? {} : { disabled: input.disabled }),
       });
       if (hostId) yield* this.#auditMembers(hostId, before, { actor, memberId: input.memberId });
-      if (member.disabled) {
-        yield* this.#remoteScreen.revokeMember(member.id);
-        this.#options.browser.releaseUserControlHeldBy({ kind: "member", memberId: member.id });
-      }
+      if (member.disabled) this.#options.browser.releaseUserControlHeldBy({ kind: "member", memberId: member.id });
       if (input.role) this.#api.agentAccessChanged();
       this.#api.refreshPresence();
       return member;
@@ -1572,7 +1325,6 @@ export class HostService extends EventEmitter<HostEvents> {
       if (hostId) yield* this.#forgetMemberRoles(hostId, memberId);
       yield* this.#forgetNotificationLevels(memberId);
       yield* this.#forgetSidebarPins(memberId);
-      yield* this.#remoteScreen.revokeMember(memberId);
       this.#options.browser.releaseUserControlHeldBy({ kind: "member", memberId });
       this.#api.refreshPresence();
     },
@@ -1582,30 +1334,6 @@ export class HostService extends EventEmitter<HostEvents> {
 
   copyAgentAccess(sourceAgentId: string, agentId: string): Effect.Effect<void> {
     return this.#api.copyAgentAccess(sourceAgentId, agentId);
-  }
-
-  #workflowDetail(workflowId: string): Effect.Effect<WorkflowPushDetail | null> {
-    const workflows = this.#options.workflows;
-    if (!workflows) return Effect.succeed(null);
-    return workflows.get(workflowId).pipe(
-      Effect.map((detail) => (detail.needsNewerApp ? null : { graph: detail.graph, title: detail.summary.title })),
-      Effect.catch(() => Effect.succeed(null)),
-    );
-  }
-
-  #workflowAllows(viewer: PushNotificationViewer, graph: WorkflowGraph, need: WorkflowPushNeed): boolean {
-    const member = this.#options.store.getMember(viewer.memberId);
-    if (!member || member.disabled) return false;
-    const hiddenAgentIds = this.#api.hiddenAgentIds(viewer.protocol, viewer.capabilities, viewer.memberId);
-    const known = new Set(this.#options.agents.listAgents().map((agent) => agent.id));
-    const admin = canAdministerServer(member.role);
-    if (!workflowGraphVisible({ admin, protocol: viewer.protocol, hiddenAgentIds }, graph, known)) return false;
-    return (
-      need === "view" ||
-      graphAgentIds(graph).every(
-        (agentId) => agentAccessRank(this.#api.agentLevel(viewer.memberId, agentId)) >= agentAccessRank("chat"),
-      )
-    );
   }
 
   #notificationKey(memberId: string): string {
@@ -1682,7 +1410,6 @@ export class HostService extends EventEmitter<HostEvents> {
     function* (this: HostService, sessionId: string): Effect.fn.Return<void, RemoteWorkflowError> {
       yield* this.#revokeWebRtcSession(sessionId);
       yield* this.#options.store.revokeSession(sessionId);
-      yield* this.#remoteScreen.revokeTeamSession(sessionId);
       yield* this.#browserView.revokeTeamSession(sessionId);
       this.#options.browser.releaseUserControlHeldBy({ kind: "session", sessionId });
       this.#api.refreshPresence();
@@ -1768,7 +1495,6 @@ export class HostService extends EventEmitter<HostEvents> {
       yield* this.#closeLocalSession(session.id);
       yield* this.#options.store.revokeSession(session.id);
     }
-    yield* this.#remoteScreen.revokeMember(memberId);
     this.#options.browser.releaseUserControlHeldBy({ kind: "member", memberId });
     this.#api.refreshPresence();
   });
@@ -1777,10 +1503,7 @@ export class HostService extends EventEmitter<HostEvents> {
     this: HostService,
     sessionId: string,
   ): Effect.fn.Return<void, RemoteWorkflowError> {
-    this.#liveActivityPush?.remove(sessionId);
-    this.#pushNotifications?.remove(sessionId);
     if (this.#webrtcGateway) yield* this.#webrtcGateway.revokeSession(sessionId);
-    yield* this.#remoteScreen.revokeTeamSession(sessionId);
     yield* this.#browserView.revokeTeamSession(sessionId);
     this.#options.browser.releaseUserControlHeldBy({ kind: "session", sessionId });
   });
@@ -1789,8 +1512,6 @@ export class HostService extends EventEmitter<HostEvents> {
     this: HostService,
     sessionId: string,
   ): Effect.fn.Return<void, RemoteWorkflowError> {
-    this.#liveActivityPush?.remove(sessionId);
-    this.#pushNotifications?.remove(sessionId);
     const end = this.#options.endRemoteSession;
     const gateway = this.#webrtcGateway;
     yield* Effect.all([end ? end(sessionId) : Effect.void, gateway ? gateway.revokeSession(sessionId) : Effect.void], {
@@ -1799,7 +1520,7 @@ export class HostService extends EventEmitter<HostEvents> {
   });
 
   #usesAccountDirectory(): boolean {
-    return !this.#options.localDevelopmentHost;
+    return !this.#options.localDevelopmentHost && this.#hostRelay === null;
   }
 
   #remoteInviteApiUrl(): string | null {
@@ -1828,7 +1549,7 @@ export class HostService extends EventEmitter<HostEvents> {
         const invite = yield* optionalCreateRemoteInvite(identity.serverId, input);
         yield* remoteDecode(() => this.#assertStillActiveHost(identity.serverId));
         const inviteUrl = yield* remoteDecode(() =>
-          createInviteUrl(
+          createOpenBotInviteUrl(
             {
               apiUrl: remoteInviteApiUrl,
               serverId: identity.serverId,
@@ -1876,7 +1597,7 @@ export class HostService extends EventEmitter<HostEvents> {
         input.email,
         input.permanent === undefined ? {} : { permanent: input.permanent },
       );
-      const inviteUrl = createInviteUrl(
+      const inviteUrl = createOpenBotInviteUrl(
         {
           apiUrl: localApiUrl,
           serverId: identity.serverId,
@@ -1970,6 +1691,21 @@ export class HostService extends EventEmitter<HostEvents> {
     this.#runtime.runFork(this.#provide(operation));
   }
 
+  #removeLegacyRemoteDesktopCredential(): void {
+    const remove = this.#options.removeLegacyRemoteDesktopCredential;
+    if (this.#legacyCredentialRemoved || !remove) return;
+    this.#legacyCredentialRemoved = true;
+    this.#dispatch(
+      remove().pipe(
+        Effect.catch(() =>
+          Effect.sync(() => {
+            this.#legacyCredentialRemoved = false;
+          }),
+        ),
+      ),
+    );
+  }
+
   readonly shutdown = Effect.fn("HostService.shutdown")(function* (this: HostService) {
     if (this.#shutdown) return yield* Deferred.await(this.#shutdown);
     const stopped = Deferred.makeUnsafe<void, RemoteWorkflowError>();
@@ -2005,13 +1741,10 @@ export class HostService extends EventEmitter<HostEvents> {
 
   readonly #stopRuntime = Effect.fn("HostService.stopRuntime")(function* (this: HostService) {
     this.#webRtcOnline = false;
-    const pendingPushes = yield* Effect.forkChild(
-      Effect.all([this.#liveActivityPush?.dispose() ?? Effect.void, this.#pushNotifications?.dispose() ?? Effect.void]),
-    );
     return yield* Effect.acquireUseRelease(
       Effect.void,
-      () => this.#webrtcGateway?.stop() ?? Effect.void,
-      () => this.#api.stop().pipe(Effect.ensuring(Fiber.await(pendingPushes))),
+      () => this.#stopHostRelay().pipe(Effect.andThen(() => this.#webrtcGateway?.stop() ?? Effect.void)),
+      () => this.#api.stop(),
     );
   }, Effect.uninterruptible);
 
@@ -2041,9 +1774,9 @@ export class HostService extends EventEmitter<HostEvents> {
       user = this.#options.getSignedInUser();
     } catch {
       this.#adoptedReaderKey = null;
-      return { id: SIGNED_OUT_CHANNEL_MEMBER_ID, name: "You" };
+      return { id: SIGNED_OUT_CHANNEL_MEMBER_ID, name: UNNAMED_PERSON };
     }
-    return { id: this.#currentAgentReaderId(), name: user.name ?? "You" };
+    return { id: this.#currentAgentReaderId(), name: user.name ?? UNNAMED_PERSON };
   }
 
   channelPersonAgentLevel(personId: string, agentId: string): AgentAccessLevel {
@@ -2095,7 +1828,7 @@ export class HostService extends EventEmitter<HostEvents> {
     } catch {
       return undefined;
     }
-    return conversationMessageSender(this.#currentAgentReaderId(), user.name?.trim() || user.email);
+    return conversationMessageSender(this.#currentAgentReaderId(), user.name?.trim() || user.email || UNNAMED_PERSON);
   }
 
   #currentAgentReaderId(): string {
@@ -2121,7 +1854,11 @@ export class HostService extends EventEmitter<HostEvents> {
 
   #findCurrentMemberId(): string | null {
     try {
-      const email = this.#options.getSignedInUser().email.trim().toLowerCase();
+      const user = this.#options.getSignedInUser();
+      const accountMemberId = this.#options.store.accountMemberId(user.id);
+      if (accountMemberId) return accountMemberId;
+      const email = user.email.trim().toLowerCase();
+      if (!email) return null;
       const member = this.#options.store
         .listMembers()
         .find(
@@ -2141,7 +1878,16 @@ export class HostService extends EventEmitter<HostEvents> {
   }
 }
 
-function initialHostStatus(identity: TeamIdentity | null, unattended: boolean): HostStatus {
+function relayHostStatus(state: RelayControlState): Pick<HostStatus, "apiOnline" | "message"> | null {
+  if (state.status === "online") return { apiOnline: true, message: sourceText("status.host.relayReady") };
+  if (state.status === "connecting" || state.code === "stopped") return null;
+  return {
+    apiOnline: false,
+    message: state.retryInMs === null ? sourceText("error.host.relayRefused") : sourceText("status.host.signalLost"),
+  };
+}
+
+function initialHostStatus(identity: TeamIdentity | null): HostStatus {
   return {
     phase: identity ? "idle" : "unconfigured",
     configured: Boolean(identity),
@@ -2152,23 +1898,12 @@ function initialHostStatus(identity: TeamIdentity | null, unattended: boolean): 
     appearance: identity?.appearance ?? null,
     apiUrl: null,
     apiOnline: false,
-    remoteDesktopReady: false,
-    remoteDesktopScreenRecordingDenied: false,
-    remoteDesktopNeedsX11Session: false,
-    remoteDesktopUnattended: unattended,
-    remoteDesktopActiveSessions: 0,
-    remoteDesktopMaxSessions: 4,
     message: null,
   };
 }
 
 function serverLogoUrl(version: string): string {
   return `openbot-server-logo://local/logo?v=${encodeURIComponent(version)}`;
-}
-
-function normalizeRemoteDesktopPlatform(platform: NodeJS.Platform): "darwin" | "win32" | "linux" {
-  if (platform === "darwin" || platform === "win32") return platform;
-  return "linux";
 }
 
 function memberChatColorsChanged(before: readonly TeamMemberSummary[], after: readonly TeamMemberSummary[]): boolean {

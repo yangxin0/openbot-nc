@@ -51,7 +51,6 @@ export interface GeneralSettingsValue {
   autoDownloadUpdates: boolean;
   allowRemoteUpdates: boolean;
   autoInstallUpdates: boolean;
-  productAnalytics: boolean;
 }
 
 export const DEFAULT_GENERAL_SETTINGS: GeneralSettingsValue = {
@@ -85,5 +84,4 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettingsValue = {
   autoDownloadUpdates: true,
   allowRemoteUpdates: true,
   autoInstallUpdates: false,
-  productAnalytics: false,
 };

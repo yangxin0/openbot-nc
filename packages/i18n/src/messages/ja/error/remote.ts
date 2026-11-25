@@ -2,55 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "リモートデスクトップの設定を使うには、クライアントを更新してください。",
-  "error.remote.desktopSetupUnavailable": "リモートデスクトップの設定を利用できません。",
-  "error.remote.desktopTestUnavailable": "リモートデスクトップのテストを利用できません。",
-  "error.remote.controlUnavailable": "リモート操作を利用できません。",
-  "error.remote.controlSessionNotFound": "リモート操作のセッションが見つかりません。",
-  "error.remote.controlNotAllowed": "このコンピューターのオーナーは、あなたのロールによる操作を許可していません。",
-  "error.remote.controlDeclined": "このコンピューターの前にいるユーザーがリモート操作を許可しませんでした。",
-  "error.remote.testRuntimeUpdate":
-    "このテストを実行するには、macOS のリモートデスクトップのランタイムを更新してください。",
-  "error.remote.testOtherSessions": "テストを開始する前に、ほかのリモートデスクトップのセッションを終了してください。",
-  "error.remote.testPermissions": "テストを開始する前に、ホストの権限と GUI セッションを確認してください。",
-  "error.remote.controlSessionEnded": "リモート操作のセッションが終了しました。",
-  "error.remote.testPanelFailed": "ホストがテストパネルを開けませんでした。",
-  "error.remote.sessionCapacity": "ホストにはすでに 4 つの有効なセッションがあります。",
-  "error.remote.linuxNeedsX11":
-    "Linux のリモートデスクトップには X11 セッションが必要です。Wayland には対応していません。",
-  "error.remote.runtimeMissing":
-    "Sunshine と Moonlight Web のランタイムがないか、このホストでは対応していません。Mac、Windows x64 または Linux x64 のホストに OpenBot のフルリリースをインストールしてから、OpenBot を再起動してください。",
-  "error.remote.testActive": "リモートデスクトップのテストを実行中です。終了してから再試行してください。",
-  "error.remote.screenRecordingDenied":
-    "ホストが OpenBot に画面の収録を許可していません。ホストで画面収録を許可してから、再試行してください。",
-  "error.remote.windowsSessionDisconnected":
-    "ホストの Windows セッションが切断されているため、共有する画面がありません。ホストの画面で Windows にサインインしてから、再試行してください。",
-  "error.remote.windowsCaptureDenied":
-    "ホストの Windows が OpenBot による画面の記録を許可していません。ホストの画面で Windows のロックを解除し、管理者の確認画面をすべて閉じてから、再試行してください。解決しない場合は、ホストを再起動してください。",
-  "error.remote.macScreenLocked":
-    "Mac がロックされているため、画面を共有できません。Mac の画面でロックを解除してから、再試行してください。",
-  "error.remote.streamTooSlowLowerQuality":
-    "ホストへの接続が遅すぎて画面を表示できません。再試行してください。次の接続では画質を下げます。",
-  "error.remote.streamTooSlow":
-    "ホストへの接続が遅すぎて画面を表示できません。より速いネットワークを使ってから、再試行してください。",
-  "error.remote.noPictureSwitchEncoder":
-    "ホストから画面が送られてきませんでした。再試行してください。次の接続では、より多くのコンピューターで動作するビデオ設定を使います。",
-  "error.remote.teamSessionExpired": "チームのセッションの期限が切れました。",
-  "error.remote.finishTestBeforeSwitch":
-    "ディスプレイを切り替える前に、リモートデスクトップのテストを終了してください。",
-  "error.remote.displayNotFound": "リモートディスプレイが見つかりません。",
-  "error.remote.displaySwitchInProgress": "ディスプレイを切り替えています。",
-  "error.remote.localTestListenerUnavailable": "ローカルテストのリスナーを利用できません。",
-  "error.remote.localTestNotFound": "ローカルテストのセッションが見つかりません。",
-  "error.remote.runtimeUnavailable": "リモートデスクトップのランタイムを利用できません。",
-  "error.remote.sunshineStartFailed":
-    "ホストで Sunshine を起動できませんでした。ホストのリモートデスクトップのログを確認してから、もう一度お試しください。",
-  "error.remote.moonlightStartFailed":
-    "ホストで Moonlight Web を起動できませんでした。ホストのリモートデスクトップのログを確認してから、もう一度お試しください。",
-  "error.remote.pairingFailed":
-    "ホストで Moonlight と Sunshine をペアリングできませんでした。もう一度お試しください。問題が続く場合は、ホストで OpenBot を再起動してください。",
-  "error.remote.runtimeStartFailed":
-    "ホストでリモートデスクトップのランタイムを起動できませんでした。ホストのリモートデスクトップのログを確認してから、もう一度お試しください。",
   "error.remote.hostUnreachable": "ホストに接続できません。",
   "error.remote.signInToHostAgain": "このホストにもう一度サインインしてください。",
   "error.remote.invalidData": "ホストが無効なデータを返しました。",
@@ -74,12 +25,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "アカウントサービスが別のホストを承認しました。",
   "error.remote.inviteIdentityChanged": "招待の承認中に、ホストの ID が変わりました。",
   "error.remote.localServerRemove": "ローカルサーバーは削除できません。",
-  "error.remote.desktopSetupHostUpdate":
-    "リモートデスクトップの設定を確認するには、ホストの OpenBot を更新してください。",
-  "error.remote.desktopTestHostUpdate":
-    "リモートデスクトップの設定をテストするには、ホストの OpenBot を更新してください。",
   "error.remote.viewerProxyUnavailable": "リモートビューアーのローカルプロキシを利用できません。",
-  "error.remote.viewerTransportInvalid": "リモートビューアーのトランスポートが無効です。",
   "error.remote.viewerProxyNoPort": "リモートビューアーのローカルプロキシがポートを取得できませんでした。",
   "error.remote.inviteNeedsConnection": "招待を作成するには、ホストが一度接続する必要があります。",
   "error.remote.permanentInviteUnsupported": "このサーバー接続は永続的な招待リンクに対応していません。",

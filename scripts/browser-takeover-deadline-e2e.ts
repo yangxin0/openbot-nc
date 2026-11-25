@@ -123,7 +123,6 @@ const registry = new AttentionRegistry({
       browserLog.push(`end:${tabId}`);
     },
   },
-  hostedSites: { prepareApproval: () => Effect.succeed(null), resolveApproval: () => Effect.void },
   routines: { markNeedsAttention: () => {}, markRunningForTurn: () => {}, runsTurn: () => false },
   emit: (event) => events.push(event),
   emitError: () => {},
@@ -351,7 +350,6 @@ try {
           beginTakeover: () => Effect.void,
           endTakeover: () => {},
         },
-        hostedSites: { prepareApproval: () => Effect.succeed(null), resolveApproval: () => Effect.void },
         routines: { markNeedsAttention: () => {}, markRunningForTurn: () => {}, runsTurn: () => false },
         emit: (event) => events.push(event),
         emitError: () => {},
@@ -443,7 +441,6 @@ try {
           limitedLog.push(`end:${tabId}`);
         },
       },
-      hostedSites: { prepareApproval: () => Effect.succeed(null), resolveApproval: () => Effect.void },
       routines: {
         markNeedsAttention: () => {},
         markRunningForTurn: () => {},
@@ -799,7 +796,6 @@ try {
           beginTakeover: () => Effect.void,
           endTakeover: () => {},
         },
-        hostedSites: { prepareApproval: () => Effect.succeed(null), resolveApproval: () => Effect.void },
         routines: { markNeedsAttention: () => {}, markRunningForTurn: () => {}, runsTurn: () => false },
         emit: (event) => vaultEvents.push(event),
         emitError: () => {},
@@ -914,7 +910,6 @@ try {
           beginTakeover: () => Effect.void,
           endTakeover: () => {},
         },
-        hostedSites: { prepareApproval: () => Effect.succeed(null), resolveApproval: () => Effect.void },
         routines: {
           markNeedsAttention: (turnId) => attention.push(`needs:${turnId}`),
           markRunningForTurn: (turnId) => attention.push(`running:${turnId}`),

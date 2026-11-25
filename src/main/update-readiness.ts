@@ -25,7 +25,6 @@ const BLOCKERS_IGNORED_AFTER_MAXIMUM_WAIT: ReadonlySet<string> = new Set([
   "client-use",
   "browser-view",
   "browser-control",
-  "remote-desktop",
 ]);
 
 export function blockersAfterMaximumWait(reasons: readonly string[], providerOperationPending: boolean): string[] {

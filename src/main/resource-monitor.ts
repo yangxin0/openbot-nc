@@ -16,7 +16,6 @@ import {
   type WebContents,
 } from "electron";
 import { providerProcessIds } from "../backend/provider-processes";
-import type { AnalyticsResourceSource } from "./analytics";
 import { AnalyticsOperationFailure, toAnalyticsOperationFailure } from "./analytics-effects";
 import {
   MainLoopProfiler,
@@ -114,7 +113,7 @@ interface ResourceSample {
   providerTreeSupported: boolean;
 }
 
-export class ResourceMonitor implements AnalyticsResourceSource {
+export class ResourceMonitor {
   readonly #options: ResourceMonitorOptions;
   readonly #summaryPath: string;
   readonly #samplesFile: { directory: string; path: string; maxBytes: number };
@@ -172,7 +171,7 @@ export class ResourceMonitor implements AnalyticsResourceSource {
     });
   }
 
-  start(onDayClosed: () => void, onStallProfile: (profile: MainLoopStallProfile) => void = () => {}): void {
+  start(onDayClosed: () => void = () => {}, onStallProfile: (profile: MainLoopStallProfile) => void = () => {}): void {
     if (this.#closed || this.#timer) return;
     this.#onStallProfile = onStallProfile;
     this.#onDayClosed = onDayClosed;

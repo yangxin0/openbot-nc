@@ -1,19 +1,10 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { createServer, type Server as HttpServer } from "node:http";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
-import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { Effect } from "effect";
 import { z } from "zod";
-import { GitHubMcpProxy } from "../src/main/github-mcp-proxy";
 import { withoutElectronRuntimeFlags } from "./electron-spawn-env";
 
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -22,10 +13,6 @@ const reportPath = join(projectRoot, ".openbot-build/tool-result-size/report.jso
 const runId = randomUUID();
 const measurementSchema = z.union([z.number(), z.boolean(), z.string()]);
 type Measurement = z.infer<typeof measurementSchema>;
-const UPSTREAM_TEXT = Array.from(
-  { length: 1_000 },
-  (_, index) => `#${index} Issue title number ${index}: lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
-).join("\n");
 
 try {
   await mkdir(dirname(reportPath), { recursive: true });
@@ -61,8 +48,7 @@ try {
     })
     .loose()
     .parse(JSON.parse(await readFile(reportPath, "utf8")));
-  const mcp = await measureGitHubProxy();
-  const measurements = { ...report.measurements, ...mcp };
+  const measurements = report.measurements;
   const failed = expectations(measurements);
   const full = { ...report, status: failed.length ? "failed" : "passed", failed, measurements };
   await writeFile(reportPath, `${JSON.stringify(full, null, 2)}\n`);
@@ -89,69 +75,10 @@ function expectations(measurements: Record<string, Measurement>): string[] {
     partCuts: typeof measurements.partCuts === "number" && measurements.partCuts > 0,
     partNotesCountTheSlice: measurements.partNotesCountTheSlice === true,
     partsJoinToValue: measurements.partsJoinToValue === true,
-    githubMcpProxiedTextChars: under("githubMcpProxiedTextChars", 40_500),
   };
   return Object.entries(checks)
     .filter(([, passed]) => !passed)
     .map(([name]) => name);
-}
-
-async function measureGitHubProxy(): Promise<Record<string, number>> {
-  const upstream = createServer((request, response) => {
-    const mcp = new Server({ name: "fake-github", version: "1.0.0" }, { capabilities: { tools: {} } });
-    mcp.setRequestHandler(ListToolsRequestSchema, () => ({
-      tools: [{ name: "list_issues", description: "Lists issues.", inputSchema: { type: "object" } }],
-    }));
-    mcp.setRequestHandler(CallToolRequestSchema, () => ({ content: [{ type: "text", text: UPSTREAM_TEXT }] }));
-    const transport = new StreamableHTTPServerTransport({});
-    response.once("close", () => {
-      void transport.close();
-      void mcp.close();
-    });
-    void mcp.connect(asTransport(transport)).then(() => transport.handleRequest(request, response));
-  });
-  const proxy = new GitHubMcpProxy({
-    upstreamUrl: `http://127.0.0.1:${await listen(upstream)}/mcp`,
-    secret: () => "bench-secret",
-    userToken: () => Effect.succeed("bench-user-token"),
-    botToken: () => null,
-    canRead: () => Effect.succeed(null),
-    refused: () => Effect.void,
-  });
-  const client = new Client({ name: "tool-result-size-bench", version: "1.0.0" });
-  try {
-    await Effect.runPromise(proxy.start(null));
-    const url = proxy.url();
-    if (!url) throw new Error("The GitHub MCP proxy has no URL.");
-    await client.connect(
-      asTransport(
-        new StreamableHTTPClientTransport(new URL(url), {
-          requestInit: { headers: { Authorization: "Bearer bench-secret" } },
-        }),
-      ),
-    );
-    const result = await client.callTool({ name: "list_issues", arguments: {} });
-    const items = z.array(z.object({ type: z.string(), text: z.string().optional() })).parse(result.content);
-    return {
-      githubMcpUpstreamTextChars: UPSTREAM_TEXT.length,
-      githubMcpProxiedTextChars: items.reduce((sum, item) => sum + (item.text?.length ?? 0), 0),
-    };
-  } finally {
-    await client.close();
-    await Effect.runPromise(proxy.stop());
-    upstream.closeAllConnections();
-    await new Promise<void>((resolve) => upstream.close(() => resolve()));
-  }
-}
-
-async function listen(server: HttpServer): Promise<number> {
-  await new Promise<void>((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve);
-  });
-  const address = server.address();
-  if (!address || typeof address !== "object") throw new Error("Loopback server address missing.");
-  return address.port;
 }
 
 async function run(command: string, args: string[], electron = false): Promise<void> {
@@ -190,27 +117,4 @@ async function output(command: string, args: string[]): Promise<string> {
     child.once("error", reject);
     child.once("exit", (code) => (code === 0 ? resolve(text) : reject(new Error("Unable to read the source SHA."))));
   });
-}
-
-function asTransport(inner: {
-  start(): Promise<void>;
-  send: Transport["send"];
-  close(): Promise<void>;
-  onclose?: (() => void) | undefined;
-  onerror?: ((error: Error) => void) | undefined;
-  onmessage?: Transport["onmessage"] | undefined;
-  setProtocolVersion?: ((version: string) => void) | undefined;
-}): Transport {
-  const transport: Transport = {
-    start: () => {
-      inner.onclose = () => transport.onclose?.();
-      inner.onerror = (error) => transport.onerror?.(error);
-      inner.onmessage = (message, extra) => transport.onmessage?.(message, extra);
-      return inner.start();
-    },
-    send: (message, options) => inner.send(message, options),
-    close: () => inner.close(),
-    setProtocolVersion: (version) => inner.setProtocolVersion?.(version),
-  };
-  return transport;
 }

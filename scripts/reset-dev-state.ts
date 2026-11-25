@@ -14,7 +14,7 @@ export { resolveDevelopmentAppDataRoot } from "./development-state-paths";
 const logger = createOpenBotLogger("reset-dev-state");
 
 const developmentProfiles = ["app", "test-client"] as const satisfies readonly DevelopmentProfile[];
-const legacyDevelopmentStateNames = ["OpenBot Dev Host"] as const;
+const legacyDevelopmentStateNames = ["OpenBot-NC Dev Host"] as const;
 
 const USAGE = [
   "Usage: bun run dev:reset",

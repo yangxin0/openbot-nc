@@ -29,7 +29,7 @@ export const messages = {
   "onboarding.setup.defaultProviderHint":
     "Используется для новых локальных агентов. Позже его можно изменить для каждого агента.",
   "onboarding.setup.invitation": "Приглашение на хост",
-  "onboarding.setup.invitationPlaceholder": "Вставьте ссылку-приглашение https://openbot.run/join",
+  "onboarding.setup.invitationPlaceholder": "Вставьте ссылку-приглашение openbot://join",
   "onboarding.setup.otherInvitation": "Использовать другое приглашение",
   "onboarding.setup.joinNote":
     "Вы присоединитесь как {email}. Приглашения по почте работают только для адреса, на который они пришли.",
@@ -95,11 +95,6 @@ export const messages = {
   "onboarding.existing.startNewDetail": "Создайте здесь новую команду. Агенты и чаты останутся на ваших серверах.",
   "onboarding.existing.openFailed": "OpenBot не удалось открыть {name}.",
   "onboarding.consent.notice": "Продолжая, вы принимаете {terms}. Подробнее о данных: {privacy}.",
-  "onboarding.consent.analyticsTitle": "Помогите улучшить OpenBot",
-  "onboarding.consent.analyticsDetail": "Делитесь использованием с аккаунтом. Чаты и файлы — никогда.",
-  "onboarding.consent.thanksTitle": "Спасибо! Команда у вас в долгу.",
-  "onboarding.consent.thanksToast": "Спасибо, что помогаете улучшать OpenBot 💜",
-  "onboarding.consent.thanksToastDetail": "Это можно изменить в любой момент в настройках.",
   "onboarding.consent.termsLink": "Условия использования",
   "onboarding.consent.privacyLink": "Политика конфиденциальности",
   "onboarding.plan.title": "Подключите подписку",

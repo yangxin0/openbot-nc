@@ -195,7 +195,6 @@ const memory: HostMemory = {
   turnLimit: () => 8,
   reserveTurn: () => () => {},
   subscribe: () => () => {},
-  hostedPlan: false,
 };
 const unused = () => Effect.die(new Error("Not used by this check."));
 const browser: AgentBrowserHost = {

@@ -3,7 +3,6 @@ import {
   WHATSAPP_CONNECTOR_ROUTES,
 } from "@openbot/contracts/team-protocol/whatsapp-connector-v1";
 import { sourceText } from "@openbot/i18n/source";
-import { Effect } from "effect";
 import { runCauseEffect } from "../../backend/effect-boundary";
 import {
   parseAnswerWhatsAppRequestInput,
@@ -57,7 +56,7 @@ export async function routeWhatsAppConnector(
     }
     case WHATSAPP_CONNECTOR_ROUTES.reconnect: {
       const { workspaceId } = parse(parseMessagingWorkspaceInput, body);
-      await runCauseEffect(Effect.asVoid(messaging.reconnect("whatsapp", workspaceId, false)));
+      await runCauseEffect(messaging.reconnect("whatsapp", workspaceId));
       return json(200, {});
     }
     case WHATSAPP_CONNECTOR_ROUTES.enabled: {

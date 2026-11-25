@@ -1,10 +1,5 @@
 import { lazy } from "solid-js";
 
-export const AgentTemplateInstall = lazy(() =>
-  import("./features/agent-templates/AgentTemplateInstall").then((module) => ({
-    default: module.AgentTemplateInstall,
-  })),
-);
 export const AgentUsagePanel = lazy(() =>
   import("./features/usage/AgentUsagePanel").then((module) => ({ default: module.AgentUsagePanel })),
 );
@@ -29,23 +24,9 @@ export const DirectConversation = lazy(() =>
 export const GlobalSearch = lazy(() =>
   import("@openbot/ui/components/GlobalSearch").then((module) => ({ default: module.GlobalSearch })),
 );
-export const InitialSetup = lazy(() =>
-  import("./features/onboarding/InitialSetup").then((module) => ({ default: module.InitialSetup })),
-);
-export const AddServerDialog = lazy(() =>
-  import("@openbot/ui/features/servers/AddServerDialog").then((module) => ({ default: module.AddServerDialog })),
-);
-export const HostedPricingPage = lazy(() =>
-  import("@openbot/ui/features/servers/HostedPricingPage").then((module) => ({ default: module.HostedPricingPage })),
-);
 export const CreateLocalServerDialog = lazy(() =>
   import("@openbot/ui/features/servers/CreateLocalServerDialog").then((module) => ({
     default: module.CreateLocalServerDialog,
-  })),
-);
-export const InstallServerDialog = lazy(() =>
-  import("@openbot/ui/features/servers/InstallServerDialog").then((module) => ({
-    default: module.InstallServerDialog,
   })),
 );
 export const JoinServerDialog = lazy(() =>
@@ -56,11 +37,6 @@ export const FirstRunFlow = lazy(() =>
 );
 export const LanguageStep = lazy(() =>
   import("./features/onboarding/LanguageStep").then((module) => ({ default: module.LanguageStep })),
-);
-export const RemoteDesktopWorkspace = lazy(() =>
-  import("@openbot/ui/features/remote-desktop/RemoteDesktopWorkspace").then((module) => ({
-    default: module.RemoteDesktopWorkspace,
-  })),
 );
 export const ServerSettingsModal = lazy(() =>
   import("./features/servers/ServerSettingsModal").then((module) => ({ default: module.ServerSettingsModal })),

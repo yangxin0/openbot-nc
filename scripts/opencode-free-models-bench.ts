@@ -20,7 +20,7 @@ const CONCURRENCY = Number(flag("concurrency")[0] ?? 4);
 async function opencodeCli(): Promise<string> {
   if (process.env.OPENCODE_CLI) return process.env.OPENCODE_CLI;
   const platform = `${process.platform}-${process.arch}`;
-  for (const app of ["OpenBot", "OpenBot Dev"]) {
+  for (const app of ["OpenBot-NC", "OpenBot-NC Dev"]) {
     const root = join(homedir(), "Library/Application Support", app, "provider-runtimes/opencode", platform);
     if (!existsSync(root)) continue;
     const versions = (await readdir(root)).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));

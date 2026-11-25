@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { createOpenBotLogger } from "@openbot/logging";
 import { z } from "zod";
 import { type AgentRuntimeLock, loadAgentRuntimeLock } from "./agent-runtime-lock";
-import { rejectNonRegularFiles, sha256 } from "./remote-desktop-runtime-release";
+import { rejectNonRegularFiles, sha256 } from "./runtime-file-checks";
 import {
   download,
   escapeRegExp,

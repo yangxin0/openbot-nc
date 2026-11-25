@@ -77,7 +77,7 @@ Keep `index.ts` as the dispatcher and lifecycle module. Do not move these respon
 | `main-window.ts` | Every `BrowserWindow`, renderer URLs, menu, bounds recorder |
 | `main-window-state.ts` | Reading, resolving and debounce-writing saved window position |
 | `teardown-registry.ts` | Shutdown sequence |
-| `development-remote-bootstrap.ts` | Dev-only `OPENBOT_DEV_REMOTE_ROLE` account and connection |
+| `development-remote-bootstrap.ts` | Dev-only `OPENBOT_DEV_REMOTE_ROLE` host and connection |
 | `session-configuration.ts` | Renderer CSP, bundle protocol, permissions, attachment/avatar/logo protocols |
 | `renderer-forwarders.ts` | Service events sent to the renderer |
 | `ipc/*-handlers.ts` | IPC endpoints by domain |
@@ -118,13 +118,13 @@ return type enforces this without a test.
 | --- | --- |
 | Shared error, dependencies, parsing, context | `http-error.ts`, `dependencies.ts`, `request-helpers.ts`, `request-context.ts` |
 | Members, invitations, sessions, presence, authenticated account routes | `route-team.ts` |
-| Screen, direct requests, browser, files | `route-remote-screen.ts`, `route-direct.ts`, `route-browser.ts`, `route-files.ts` |
+| Direct requests, browser, files | `route-direct.ts`, `route-browser.ts`, `route-files.ts` |
 | Agent collection and the only `/v1/agents/:agentId` route regex | `route-agents.ts` |
 | Agent sub-resources, owned by `route-agents.ts` | `route-agent-memories.ts`, `route-agent-routines.ts`, `route-agent-conversation.ts`, `route-agent-queue.ts` |
 
 Preserve these released wire rules:
 
-- Run gates in order: `compatibility`, remote-screen delegation, protocol gate, path-independent 401.
+- Run gates in order: `compatibility`, protocol gate, path-independent 401.
 - Only the dispatcher returns 404. An unsupported path **or method** returns `"unmatched"` from the
   route; a wrong method stays 404, not 405.
 - Only the dispatcher catches errors. Unexpected errors must reach the logger and return 500.

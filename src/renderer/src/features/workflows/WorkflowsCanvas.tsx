@@ -21,7 +21,6 @@ import {
 } from "@openbot/ui/features/workflows/workflow-model";
 import { currentText, useText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, onCleanup, Show, untrack } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { mediaServiceAccountName, noteMediaStepEnded } from "./workflow-media-credits";
 import { createWorkflowsController, type WorkflowRequest } from "./workflows-controller";
 import type { WorkflowHost } from "./workflows-port";
@@ -41,7 +40,6 @@ export function WorkflowsCanvas(props: {
   const { t } = useText();
   const workflows = createWorkflowsController(
     untrack(() => props.host),
-    () => desktopAnalytics.scope(),
     untrack(() => props.request),
     untrack(() => props.serverId),
   );
@@ -159,15 +157,6 @@ export function WorkflowsCanvas(props: {
     get places() {
       return workflows.places();
     },
-    get discord() {
-      return workflows.discord();
-    },
-    get telegram() {
-      return workflows.telegram();
-    },
-    get slack() {
-      return workflows.slack();
-    },
     get channels() {
       return workflows.channels();
     },
@@ -269,27 +258,16 @@ export function WorkflowsCanvas(props: {
     },
   };
   const features = createMemo<WorkflowFeatures>(() => {
-    const github = props.admin && props.host.githubSupported();
-    const discord = props.admin && workflows.discord().length > 0;
-    const telegram = props.admin && workflows.telegram().length > 0;
-    const slack = props.admin && workflows.slack().length > 0;
     const outputs = [
       ...WORKFLOW_FEATURES_V1.outputs.filter((output) => output !== "channel" || workflows.places().length > 0),
       ...(props.admin && workflows.channels().length > 0 ? (["chat-channel"] as const) : []),
-    ];
-    const added = [
-      ...(github ? (["github"] as const) : []),
-      ...(discord ? (["discord"] as const) : []),
-      ...(telegram ? (["telegram"] as const) : []),
-      ...(slack ? (["slack"] as const) : []),
     ];
     const media = props.host.mediaSupported();
     return {
       ...WORKFLOW_FEATURES_V1,
       kinds: media ? [...WORKFLOW_FEATURES_V1.kinds, "image", "asset"] : WORKFLOW_FEATURES_V1.kinds,
       uploads: media,
-      triggers: [...WORKFLOW_FEATURES_V1.triggers, ...added],
-      outputs: [...outputs, ...added],
+      outputs,
       format: workflows.detail()?.hostFormat ?? WORKFLOW_FEATURES_V1.format,
     };
   });
@@ -309,13 +287,11 @@ export function WorkflowsCanvas(props: {
           workflow={workflow()}
           features={features()}
           catalogs={catalogs}
-          github={workflows.github}
           frame="window"
           server={props.serverId}
           readOnly={workflows.readOnly()}
           agentProgress={props.agentProgress}
           {...workflows.props}
-          onRotateWebhookSecret={props.admin ? workflows.props.onRotateWebhookSecret : undefined}
         />
       )}
     </Show>

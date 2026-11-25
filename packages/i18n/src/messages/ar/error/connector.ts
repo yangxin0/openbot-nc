@@ -2,18 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/connector";
 
 export const messages = {
-  "error.connector.githubUnavailable": "لا يتضمن إصدار OpenBot هذا GitHub App.",
-  "error.connector.githubDenied": "تم رفض تسجيل الدخول إلى GitHub.",
-  "error.connector.githubCodeExpired": "انتهت صلاحية رمز GitHub. اتصل بـ GitHub مرة أخرى.",
-  "error.connector.githubDeviceFlowDisabled": "لا يسمح GitHub App بتسجيل الدخول عبر الجهاز.",
-  "error.connector.githubClientUnknown": "لا يعرف GitHub معرّف Client ID لهذا GitHub App.",
-  "error.connector.githubUnexpected": "أرسل GitHub إجابة غير متوقعة: {detail}",
-  "error.connector.githubUnreachable": "لا يمكن لـ OpenBot الوصول إلى GitHub: {detail}",
-  "error.connector.githubOffline":
-    "لا يمكن لـ OpenBot الوصول إلى GitHub. تحقق من اتصال الإنترنت وإعدادات DNS في الكمبيوتر أو الخادم الذي يشغّل OpenBot، ثم حاول مرة أخرى.",
-  "error.connector.githubExpired": "انتهت صلاحية الاتصال بـ GitHub. اتصل بـ GitHub مرة أخرى.",
-  "error.connector.githubFileUnreadable": "ملف اتصال GitHub غير قابل للقراءة.",
-  "error.connector.githubFileTooLarge": "ملف اتصال GitHub كبير جدًا.",
   "error.connector.linkDenied": "تم رفض تسجيل الدخول إلى Link.",
   "error.connector.linkCodeExpired": "انتهت صلاحية تسجيل الدخول إلى Link. اتصل بـ Link مرة أخرى.",
   "error.connector.linkUnexpected": "أرسل Link إجابة غير متوقعة: {detail}",

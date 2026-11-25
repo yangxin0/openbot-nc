@@ -2,52 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "원격 데스크톱 설정을 사용하려면 클라이언트를 업데이트해 주세요.",
-  "error.remote.desktopSetupUnavailable": "원격 데스크톱 설정을 사용할 수 없어요.",
-  "error.remote.desktopTestUnavailable": "원격 데스크톱 테스트를 사용할 수 없어요.",
-  "error.remote.controlUnavailable": "원격 제어를 사용할 수 없어요.",
-  "error.remote.controlSessionNotFound": "원격 제어 세션을 찾을 수 없어요.",
-  "error.remote.controlNotAllowed": "이 컴퓨터의 소유자가 내 역할의 원격 제어를 허용하지 않아요.",
-  "error.remote.controlDeclined": "이 컴퓨터 앞에 있는 사람이 원격 제어를 허용하지 않았어요.",
-  "error.remote.testRuntimeUpdate": "이 테스트를 실행하려면 macOS 원격 데스크톱 런타임을 업데이트해 주세요.",
-  "error.remote.testOtherSessions": "테스트를 시작하기 전에 다른 원격 데스크톱 세션을 종료해 주세요.",
-  "error.remote.testPermissions": "테스트를 시작하기 전에 호스트의 권한과 GUI 세션을 확인해 주세요.",
-  "error.remote.controlSessionEnded": "원격 제어 세션이 종료되었어요.",
-  "error.remote.testPanelFailed": "호스트에서 테스트 패널을 열 수 없어요.",
-  "error.remote.sessionCapacity": "호스트에 이미 활성 세션이 4개 있어요.",
-  "error.remote.linuxNeedsX11": "Linux의 원격 데스크톱에는 X11 세션이 필요해요. Wayland는 지원하지 않아요.",
-  "error.remote.runtimeMissing":
-    "Sunshine 및 Moonlight Web 런타임이 없거나 이 호스트에서 지원되지 않아요. Mac, Windows x64 호스트 또는 Linux x64 호스트에 전체 OpenBot 릴리스를 설치한 다음 OpenBot을 다시 시작해 주세요.",
-  "error.remote.testActive": "원격 데스크톱 테스트가 진행 중이에요. 테스트가 끝난 후에 다시 시도해 주세요.",
-  "error.remote.screenRecordingDenied":
-    "호스트에서 OpenBot의 화면 녹화를 허용하지 않았어요. 호스트에서 화면 녹화 권한을 허용한 다음 다시 시도해 주세요.",
-  "error.remote.windowsSessionDisconnected":
-    "호스트의 Windows 세션 연결이 끊겨 공유할 화면이 없어요. 호스트 화면에서 Windows에 로그인한 다음 다시 시도해 주세요.",
-  "error.remote.windowsCaptureDenied":
-    "호스트의 Windows가 OpenBot의 화면 녹화를 허용하지 않아요. 호스트 화면에서 Windows 잠금을 해제하고 관리자 확인 창을 모두 닫은 다음 다시 시도해 주세요. 계속 문제가 생기면 호스트를 다시 시작해 주세요.",
-  "error.remote.macScreenLocked":
-    "Mac이 잠겨 있어 화면을 공유할 수 없어요. Mac 화면에서 잠금을 해제한 다음 다시 시도해 주세요.",
-  "error.remote.streamTooSlowLowerQuality":
-    "호스트와의 연결이 너무 느려서 화면을 표시할 수 없어요. 다시 시도해 주세요. 다음 연결은 더 낮은 화질을 사용해요.",
-  "error.remote.streamTooSlow":
-    "호스트와의 연결이 너무 느려서 화면을 표시할 수 없어요. 더 빠른 네트워크를 사용한 다음 다시 시도해 주세요.",
-  "error.remote.noPictureSwitchEncoder":
-    "호스트가 화면을 보내지 않았어요. 다시 시도해 주세요. 다음 연결에서는 더 많은 컴퓨터에서 작동하는 비디오 설정을 사용해요.",
-  "error.remote.teamSessionExpired": "팀 세션이 만료되었어요.",
-  "error.remote.finishTestBeforeSwitch": "디스플레이를 전환하기 전에 원격 데스크톱 테스트를 끝내 주세요.",
-  "error.remote.displayNotFound": "원격 디스플레이를 찾을 수 없어요.",
-  "error.remote.displaySwitchInProgress": "디스플레이를 전환하는 중이에요.",
-  "error.remote.localTestListenerUnavailable": "로컬 테스트 리스너를 사용할 수 없어요.",
-  "error.remote.localTestNotFound": "로컬 테스트 세션을 찾을 수 없어요.",
-  "error.remote.runtimeUnavailable": "원격 데스크톱 런타임을 사용할 수 없어요.",
-  "error.remote.sunshineStartFailed":
-    "호스트에서 Sunshine이 시작되지 않았어요. 호스트의 원격 데스크톱 로그를 확인한 다음 다시 시도해 주세요.",
-  "error.remote.moonlightStartFailed":
-    "호스트에서 Moonlight Web이 시작되지 않았어요. 호스트의 원격 데스크톱 로그를 확인한 다음 다시 시도해 주세요.",
-  "error.remote.pairingFailed":
-    "Moonlight이 호스트의 Sunshine과 페어링되지 않았어요. 다시 시도해 주세요. 문제가 계속되면 호스트에서 OpenBot을 다시 시작해 주세요.",
-  "error.remote.runtimeStartFailed":
-    "호스트에서 원격 데스크톱 런타임이 시작되지 않았어요. 호스트의 원격 데스크톱 로그를 확인한 다음 다시 시도해 주세요.",
   "error.remote.hostUnreachable": "호스트에 연결할 수 없어요.",
   "error.remote.signInToHostAgain": "이 호스트에 다시 로그인해 주세요.",
   "error.remote.invalidData": "호스트가 잘못된 데이터를 반환했어요.",
@@ -71,10 +25,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "계정 서비스가 다른 호스트를 수락했어요.",
   "error.remote.inviteIdentityChanged": "초대를 수락하는 동안 초대 호스트 ID가 변경되었어요.",
   "error.remote.localServerRemove": "로컬 서버는 삭제할 수 없어요.",
-  "error.remote.desktopSetupHostUpdate": "원격 데스크톱 설정을 확인하려면 호스트의 OpenBot을 업데이트해 주세요.",
-  "error.remote.desktopTestHostUpdate": "원격 데스크톱 설정을 테스트하려면 호스트의 OpenBot을 업데이트해 주세요.",
   "error.remote.viewerProxyUnavailable": "로컬 원격 뷰어 프록시를 사용할 수 없어요.",
-  "error.remote.viewerTransportInvalid": "원격 뷰어 전송이 올바르지 않아요.",
   "error.remote.viewerProxyNoPort": "로컬 원격 뷰어 프록시가 포트를 받지 못했어요.",
   "error.remote.inviteNeedsConnection": "초대를 만들려면 호스트가 먼저 한 번 연결되어야 해요.",
   "error.remote.permanentInviteUnsupported": "이 서버 연결은 영구 초대 링크를 지원하지 않아요.",

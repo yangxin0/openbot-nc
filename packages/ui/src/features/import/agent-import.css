@@ -454,10 +454,3 @@ label.agent-import-row:has(input:disabled) {
   font-size: var(--openbot-text-sm);
   cursor: pointer;
 }
-
-.agent-import-command {
-  font-family: var(--openbot-font-mono);
-  font-size: var(--openbot-text-sm);
-  overflow-wrap: anywhere;
-  white-space: normal;
-}

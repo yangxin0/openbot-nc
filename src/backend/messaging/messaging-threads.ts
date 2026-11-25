@@ -12,7 +12,6 @@ import {
   CONVERSATION_SUBAGENTS_ITEM_TYPE,
   MESSAGING_LIMITS,
 } from "@openbot/contracts/ipc";
-import type { DiscordEmbed } from "@openbot/contracts/signal-protocol/discord-api";
 import { sourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger } from "@openbot/logging";
 import { Deferred, Effect, Result, Schema, type Scope } from "effect";
@@ -126,30 +125,16 @@ export interface MessagingOutbound {
     target: MessageTarget,
     markdown: string,
     files: MessagingAnswerFile[],
-    embeds?: DiscordEmbed[],
   ): Effect.Effect<
     | {
         posted: true;
         messageId: string;
-        url?: string;
         skippedFiles?: string[];
         ping?: MessagingPostPing;
       }
     | { posted: true; messageId?: string; skippedFiles?: string[]; ping?: MessagingPostPing }
     | { error: string; failure: Exclude<MessagingPostFailure, "gone"> }
   >;
-  discord(
-    connectionId: string,
-    send: MessagingDiscordSend,
-  ): Effect.Effect<{ posted: true } | { failure: Exclude<MessagingPostFailure, "gone"> }>;
-  telegram(
-    connectionId: string,
-    send: MessagingTelegramSend,
-  ): Effect.Effect<{ posted: true } | { failure: Exclude<MessagingPostFailure, "gone"> }>;
-  slack(
-    connectionId: string,
-    send: MessagingSlackSend,
-  ): Effect.Effect<{ posted: true } | { failure: Exclude<MessagingPostFailure, "gone"> }>;
 }
 
 export type MessagingTelegramSend =
@@ -282,9 +267,6 @@ export class MessagingThreads {
       ) => Effect.Effect<MessagingHistory | null, MessagingOperationFailed>)
     | null = null;
   #outbound: MessagingOutbound | null = null;
-  #mentionHandler: ((mention: MessagingDiscordMention) => Effect.Effect<MessagingMentionResult>) | null = null;
-  #telegramMentionHandler: ((mention: MessagingTelegramMention) => Effect.Effect<MessagingMentionResult>) | null = null;
-  #slackMentionHandler: ((mention: MessagingSlackMention) => Effect.Effect<MessagingMentionResult>) | null = null;
 
   constructor(database: OpenBotDatabase, mailbox: MailboxStore, hooks: MessagingThreadsHooks) {
     this.store = new MessagingStore(database);
@@ -336,72 +318,6 @@ export class MessagingThreads {
     return this.#outbound?.keysUnreadable(connectionId) === true;
   }
 
-  setMentionHandler(
-    handler: ((mention: MessagingDiscordMention) => Effect.Effect<MessagingMentionResult>) | null,
-  ): void {
-    this.#mentionHandler = handler;
-  }
-
-  workflowMention(mention: MessagingDiscordMention): Effect.Effect<MessagingMentionResult> {
-    return this.#mentionHandler ? this.#mentionHandler(mention) : Effect.succeed("none");
-  }
-
-  setSlackMentionHandler(
-    handler: ((mention: MessagingSlackMention) => Effect.Effect<MessagingMentionResult>) | null,
-  ): void {
-    this.#slackMentionHandler = handler;
-  }
-
-  slackWorkflowMention(mention: MessagingSlackMention): Effect.Effect<MessagingMentionResult> {
-    return this.#slackMentionHandler ? this.#slackMentionHandler(mention) : Effect.succeed("none");
-  }
-
-  readonly discordSend = Effect.fn("MessagingThreads.discordSend")(function* (
-    this: MessagingThreads,
-    connectionId: string,
-    send: MessagingDiscordSend,
-  ): Effect.fn.Return<{ posted: true } | { failure: MessagingPostFailure }> {
-    const record = this.store.connection(connectionId);
-    if (!record?.enabled || record.platform !== "discord") return { failure: "gone" };
-    const outbound = this.#outbound;
-    if (!outbound) return { failure: "not-running" };
-    return yield* outbound.discord(connectionId, send);
-  });
-
-  setTelegramMentionHandler(
-    handler: ((mention: MessagingTelegramMention) => Effect.Effect<MessagingMentionResult>) | null,
-  ): void {
-    this.#telegramMentionHandler = handler;
-  }
-
-  workflowTelegramMention(mention: MessagingTelegramMention): Effect.Effect<MessagingMentionResult> {
-    return this.#telegramMentionHandler ? this.#telegramMentionHandler(mention) : Effect.succeed("none");
-  }
-
-  readonly telegramSend = Effect.fn("MessagingThreads.telegramSend")(function* (
-    this: MessagingThreads,
-    connectionId: string,
-    send: MessagingTelegramSend,
-  ): Effect.fn.Return<{ posted: true } | { failure: MessagingPostFailure }> {
-    const record = this.store.connection(connectionId);
-    if (!record?.enabled || record.platform !== "telegram") return { failure: "gone" };
-    const outbound = this.#outbound;
-    if (!outbound) return { failure: "not-running" };
-    return yield* outbound.telegram(connectionId, send);
-  });
-
-  readonly slackSend = Effect.fn("MessagingThreads.slackSend")(function* (
-    this: MessagingThreads,
-    connectionId: string,
-    send: MessagingSlackSend,
-  ): Effect.fn.Return<{ posted: true } | { failure: MessagingPostFailure }> {
-    const record = this.store.connection(connectionId);
-    if (!record?.enabled || record.platform !== "slack") return { failure: "gone" };
-    const outbound = this.#outbound;
-    if (!outbound) return { failure: "not-running" };
-    return yield* outbound.slack(connectionId, send);
-  });
-
   readonly outboundTool = Effect.fn("MessagingThreads.outboundTool")(function* (
     this: MessagingThreads,
     agentId: string,
@@ -452,7 +368,6 @@ export class MessagingThreads {
             { platformChannelId: call.place, replyThreadId: call.replyTo },
             call.text,
             call.files.length ? yield* openFiles(call.files) : [],
-            call.embeds,
           );
     if ("error" in answer) return openBotToolFailure(answer.error);
     if (!("posted" in answer) || !answer.ping) return openBotToolResult(answer);

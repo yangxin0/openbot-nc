@@ -22,8 +22,7 @@ export function serverSupportsCapability(
   capability: TeamCurrentCapability,
 ): boolean {
   if (
-    (capability === "remote-desktop-setup" ||
-      capability === "channel-chats-v1" ||
+    (capability === "channel-chats-v1" ||
       capability === "channel-delete-v1" ||
       capability === "channel-attention-v1" ||
       capability === "channel-isolation-v1" ||
@@ -41,7 +40,6 @@ export function serverSupportsCapability(
       capability === "mcp-accounts-v1" ||
       capability === "mcp-member-access-v1" ||
       capability === "mcp-access-v1" ||
-      capability === "live-voice-v1" ||
       capability === "sign-in-relay-v1" ||
       capability === "provider-sign-in-relay-v2" ||
       capability === "connectors-v1" ||
@@ -61,7 +59,6 @@ export function serverSupportsCapability(
       capability === "storage-v1" ||
       capability === "storage-disk-v1" ||
       capability === "machine-resources-v1" ||
-      capability === "hosted-sites-v1" ||
       capability === "agent-admin-v1" ||
       capability === "agent-host-settings-v1" ||
       capability === "agent-backup-models-v1" ||
@@ -73,8 +70,6 @@ export function serverSupportsCapability(
       capability === "provider-usage-reset-v1" ||
       capability === "skills-admin-v1" ||
       capability === "shared-tables-v1" ||
-      capability === "agent-install-v1" ||
-      capability === "agent-publish-v1" ||
       capability === "providers-v1" ||
       capability === "providers-v2" ||
       capability === "providers-v3" ||

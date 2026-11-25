@@ -242,10 +242,7 @@ async function startHost(): Promise<Host> {
     appVersion: HOST_VERSION,
     hiddenAgents: agents,
     agentAccess: access,
-    workflows: {
-      ...workflows,
-      rotateWorkflowSecret: () => Effect.die(new Error("No webhook secret rotates in this check.")),
-    },
+    workflows,
     workflowFolders: new WorkflowFoldersService({ store: folders, workflows }),
   });
   const port = await Effect.runPromise(server.start());

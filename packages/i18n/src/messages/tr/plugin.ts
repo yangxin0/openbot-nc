@@ -5,7 +5,6 @@ export const messages = {
   "plugin.link.website": "Web sitesi",
   "plugin.link.privacyPolicy": "Gizlilik Politikası",
   "plugin.link.terms": "Hizmet Şartları",
-  "plugin.copyLink": "Bağlantıyı kopyala",
   "plugin.askPrompt": "{name} eklentisine sor: {prompt}",
   "plugin.section.skills": "Beceriler",
   "plugin.section.information": "Bilgiler",

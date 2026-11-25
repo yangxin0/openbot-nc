@@ -3,7 +3,6 @@ import type { OpenBotDesktopApi } from "@openbot/contracts/ipc";
 export interface SettingsPort {
   getAgentDefaults: OpenBotDesktopApi["getAgentDefaults"];
   getAgentMemoryLimitPreference: OpenBotDesktopApi["getAgentMemoryLimitPreference"];
-  getAnalyticsPreference: OpenBotDesktopApi["getAnalyticsPreference"];
   getAppBehaviorPreference: OpenBotDesktopApi["getAppBehaviorPreference"];
   getApprovalAutomation: OpenBotDesktopApi["getApprovalAutomation"];
   getBusyMessageModePreference: OpenBotDesktopApi["getBusyMessageModePreference"];
@@ -14,11 +13,9 @@ export interface SettingsPort {
   getRemoteNetworkRoute: OpenBotDesktopApi["getRemoteNetworkRoute"];
   getRemoteSessionReusePreference: OpenBotDesktopApi["getRemoteSessionReusePreference"];
   onAgentMemoryLimitPreference: OpenBotDesktopApi["onAgentMemoryLimitPreference"];
-  onAnalyticsPreference: OpenBotDesktopApi["onAnalyticsPreference"];
   onApprovalAutomation: OpenBotDesktopApi["onApprovalAutomation"];
   onOpenSettings: OpenBotDesktopApi["onOpenSettings"];
   onOpenUpdateSettings: OpenBotDesktopApi["onOpenUpdateSettings"];
-  setAnalyticsPreference: OpenBotDesktopApi["setAnalyticsPreference"];
   setAppBehaviorPreference: OpenBotDesktopApi["setAppBehaviorPreference"];
   setExternalLinkPreference: OpenBotDesktopApi["setExternalLinkPreference"];
   setRemoteNetworkRoute: OpenBotDesktopApi["setRemoteNetworkRoute"];

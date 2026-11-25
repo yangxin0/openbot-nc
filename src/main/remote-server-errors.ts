@@ -12,6 +12,23 @@ export class RemoteRequestError extends Schema.TaggedError<RemoteRequestError>()
   }
 }
 
+const REMOTE_RELAY_REFUSALS = [
+  "member_disabled",
+  "certificate_revoked",
+  "certificate_expired",
+  "certificate_refused",
+  "identity_unusable",
+  "other_team",
+  "host_certificate_refused",
+  "identity_changed",
+] as const;
+export type RemoteRelayRefusalCode = (typeof REMOTE_RELAY_REFUSALS)[number];
+
+export class RemoteRelayRefusal extends Schema.TaggedError<RemoteRelayRefusal>()("RemoteRelayRefusal", {
+  code: Schema.Literals(REMOTE_RELAY_REFUSALS),
+  message: Schema.String,
+}) {}
+
 export class RemoteProtocolError extends Schema.TaggedError<RemoteProtocolError>()("RemoteProtocolError", {
   code: Schema.Literals(["client_update_required", "host_update_required", "protocol_error", "server_safe_mode"]),
   message: Schema.String,

@@ -33,8 +33,6 @@ export const messages = {
   "error.agent.commitEffectsFailed": "La transazione è stata confermata, ma i suoi effetti salvati non sono riusciti.",
   "error.agent.settingsLocalOnly": "Le impostazioni dell'agente si possono cambiare solo sul computer che lo esegue.",
   "error.agent.skillsLocalOnly": "Le skill si possono cambiare solo sul computer che esegue l'agente.",
-  "error.agent.addLocalOnly": "Gli agenti si possono aggiungere solo sul computer che li esegue.",
-  "error.agent.joinedServerUpdate": "Un agente su un server a cui ti sei unito non si può aggiornare da qui.",
   "error.agent.searchQueryRequired": "Serve un testo di ricerca.",
   "error.agent.messageTooLong": "Il messaggio è troppo lungo.",
   "error.agent.messageOrAttachmentRequired": "Serve un messaggio o un allegato.",
@@ -179,8 +177,6 @@ export const messages = {
     "Gli script locali hanno eseguito le routine di questo agente {limit} volte nell'ultima ora. Riprova più tardi.",
   "error.agent.workspaceOnlyMacOnly":
     "Solo workspace è disponibile per questo provider solo su macOS. Scegli Accesso completo nelle impostazioni dell'agente.",
-  "error.agent.lowMemory":
-    "Questo server ha poca memoria. Il tuo messaggio resta in coda e parte quando si libera memoria. Un piano più grande dà più memoria al server.",
   "error.agent.lowMemoryServer":
     "Questo server ha poca memoria. Il tuo messaggio resta in coda e parte quando si libera memoria.",
   "error.agent.workspaceOnlyToolMissing":

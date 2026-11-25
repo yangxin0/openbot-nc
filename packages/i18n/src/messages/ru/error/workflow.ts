@@ -80,8 +80,6 @@ export const messages = {
     "Этот рабочий процесс слишком большой для сохранения. Удалите часть рисунков или длинных текстов и повторите попытку.",
   "error.workflow.tooLargeToSend":
     "Этот рабочий процесс слишком большой, чтобы отправить его на другой компьютер. Откройте его на компьютере, где работает сервер.",
-  "error.workflow.webhookMissing":
-    "Этот шаг не является триггером веб-хука. Сохраните рабочий процесс и повторите попытку.",
   "error.workflow.githubActionMissing": "Выберите, что этот вывод делает на GitHub.",
   "error.workflow.githubRepositoryMissing": "Выберите репозиторий для этого вывода.",
   "error.workflow.githubItemMissing":
@@ -93,13 +91,6 @@ export const messages = {
   "error.workflow.githubChoiceMissing": "Выберите метки или человека для этого вывода.",
   "error.workflow.githubChoseNothing": "Модель не выбрала ни одной метки или человека из этого репозитория.",
   "error.workflow.githubNotConnected": "Подключите GitHub на компьютере, на котором работает этот рабочий процесс.",
-  "error.workflow.githubNoAccess":
-    "OpenBot GitHub App не видит этот репозиторий или элемент. Откройте GitHub и дайте приложению доступ.",
-  "error.workflow.githubNoWrite":
-    "OpenBot GitHub App не может изменять этот репозиторий. Откройте GitHub и дайте приложению доступ.",
-  "error.workflow.githubLocked": "Это обсуждение заблокировано на GitHub.",
-  "error.workflow.githubRefused": "GitHub отклонил изменение: {detail}",
-  "error.workflow.githubUnreachable": "OpenBot не удалось связаться с GitHub. Запустите шаг снова.",
   "error.workflow.githubUncertain":
     "Изменение остановилось на полпути. Оно может уже быть на GitHub. Проверьте там, прежде чем запускать шаг снова.",
   "error.workflow.githubNoEvent": "На GitHub нет задачи или пул-реквеста, на которых запускается этот триггер.",

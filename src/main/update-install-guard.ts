@@ -2,10 +2,11 @@ import { spawnSync } from "node:child_process";
 import { closeSync, openSync, readFileSync, readSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { APP_ID } from "@openbot/contracts/app-identity";
 import { Effect, Option, Schema } from "effect";
 
 export const UPDATE_HANDOVER_FILE = "update-handover.json";
-const SHIPIT_JOB_LABEL = "app.openbot.desktop.ShipIt";
+const SHIPIT_JOB_LABEL = `${APP_ID}.ShipIt`;
 const HANDOVER_MAX_AGE_MS = 10 * 60 * 1_000;
 const LOG_TAIL_BYTES = 64 * 1024;
 const SHIPIT_INSTALL_REQUEST = "Detected this as an install request";

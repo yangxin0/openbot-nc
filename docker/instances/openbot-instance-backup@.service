@@ -4,5 +4,5 @@ After=docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/openbot-docker/instances/openbot-instance backup %i --verify
+ExecStart=/opt/openbot-nc-docker/instances/openbot-instance backup %i --verify
 TimeoutStartSec=6h

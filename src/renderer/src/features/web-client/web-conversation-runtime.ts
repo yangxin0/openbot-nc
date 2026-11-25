@@ -13,12 +13,6 @@ import {
 import { AGENT_FOLDERS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-folders-v1";
 import { AGENT_INSTRUCTIONS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-instructions-v1";
 import { AGENT_MEMORY_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/agent-memory-limit-v1";
-import {
-  decodeFeedbackWithdrawResult,
-  FEEDBACK_WITHDRAW_CAPABILITY,
-  FEEDBACK_WITHDRAW_ROUTES,
-} from "@openbot/contracts/team-protocol/feedback-withdraw-v1";
-import { LIVE_VOICE_CAPABILITY } from "@openbot/contracts/team-protocol/live-voice-v1";
 import { ROUTINE_PAUSE_REASONS_CAPABILITY } from "@openbot/contracts/team-protocol/routine-pause-reasons-v1";
 import { ROUTINE_RESULTS_CAPABILITY } from "@openbot/contracts/team-protocol/routine-results-v1";
 import {
@@ -33,7 +27,6 @@ import {
   SIDE_QUESTION_THREADS_CAPABILITY,
 } from "@openbot/contracts/team-protocol/side-question-v1";
 import { SKILL_LEARNING_ROUTES } from "@openbot/contracts/team-protocol/skill-learning-v1";
-import { WEBHOOK_AGENT_SECRET_CAPABILITY } from "@openbot/contracts/team-protocol/webhook-agent-secret-v1";
 import { runTeamEffect } from "@openbot/team-client";
 import {
   deleteSharedTable,
@@ -41,21 +34,17 @@ import {
   listAgentSkills,
   listMcpServers,
   listSharedTables,
-  previewAgentTemplate,
-  publishAgentTemplate,
   readAgentSessionSettings,
   resetAgentSessionSetting,
   setAgentSessionSetting,
   setAgentSkillEnabled,
   testMcpServer,
   uninstallAgentSkill,
-  unpublishAgentTemplate,
 } from "@openbot/team-client/team-admin-requests";
 import { listInstalledSkills, type TeamApiRequest, teamAgentRoutinesApi } from "@openbot/team-client/team-api-requests";
 import { currentText } from "@openbot/ui/text";
 import { Effect } from "effect";
 import { onCleanup } from "solid-js";
-import type { SkillCatalogCalls } from "../../skills-port";
 import type { ConversationRuntime } from "../conversation/conversation-runtime";
 import { webEventRoutinesApi } from "../conversation/routine-webhooks-api";
 import type { FilesPort } from "../files/files-port";
@@ -69,7 +58,6 @@ import {
 import { createWebAttachmentMedia } from "./web-attachment-media";
 import { createWebAttachmentFiles, openWebLink } from "./web-attachments";
 import { webBrowserProfileCalls } from "./web-browser-profiles";
-import { useWebLiveVoice, webLiveVoicePort } from "./web-live-voice";
 import { openWebMessageLink, webMessageLinks } from "./web-message-link-relay";
 import type { WebWorkspaceRuntime } from "./web-runtime";
 
@@ -81,22 +69,16 @@ function webHostAdmin(
   eventsEnabled?: () => boolean,
   sessionSettingsEnabled?: () => boolean,
   routineRecoveryEnabled?: () => boolean,
-  webhookTestsEnabled?: () => boolean,
-  webhookSenderSecretEnabled?: () => boolean,
   routineRunPlaceEnabled?: () => boolean,
   routinesOnceEnabled?: () => boolean,
   routinePauseReasonsEnabled?: () => boolean,
-  webhookAgentSecretEnabled?: () => boolean,
 ): NonNullable<ConversationRuntime["admin"]> {
   const eventRoutines = webEventRoutinesApi(
     (...args) => request()(...args),
     () => routineRecoveryEnabled?.() === true,
-    () => webhookTestsEnabled?.() === true,
-    () => webhookSenderSecretEnabled?.() === true,
     () => routineRunPlaceEnabled?.() === true,
     () => routinesOnceEnabled?.() === true,
     () => routinePauseReasonsEnabled?.() === true,
-    () => webhookAgentSecretEnabled?.() === true,
   );
   return {
     get sessionSettings() {
@@ -141,14 +123,6 @@ function webHostAdmin(
       deleteTable: ({ name }) =>
         runTeamEffect(deleteSharedTable(request(), name).pipe(Effect.mapError((error) => error.cause))),
     },
-    agentTemplates: {
-      preview: (agentId) =>
-        runTeamEffect(previewAgentTemplate(request(), agentId).pipe(Effect.mapError((error) => error.cause))),
-      publish: (input) =>
-        runTeamEffect(publishAgentTemplate(request(), input).pipe(Effect.mapError((error) => error.cause))),
-      unpublish: (agentId) =>
-        runTeamEffect(unpublishAgentTemplate(request(), agentId).pipe(Effect.mapError((error) => error.cause))),
-    },
     get eventRoutines() {
       return eventsEnabled?.() === false ? undefined : eventRoutines;
     },
@@ -165,20 +139,16 @@ export function createWebConversationRuntime(
   signInRelayEnabled?: () => boolean,
   routineRecoveryEnabled?: () => boolean,
   sideQuestionEnabled?: () => boolean,
-  webhookTestsEnabled?: () => boolean,
   browserProfilesEnabled?: () => boolean,
-  webhookSenderSecretEnabled?: () => boolean,
   browserProxiesEnabled?: () => boolean,
   routineRunPlaceEnabled?: () => boolean,
   skillLearningEnabled?: () => boolean,
   hasCapability?: (capability: string) => boolean,
   canAdminister?: (capability: string) => boolean,
   storageCalls?: () => FilesPort,
-  skillCatalog?: () => SkillCatalogCalls,
 ): ConversationRuntime {
   const routinesOnceEnabled = () => hasCapability?.(ROUTINES_ONCE_CAPABILITY) === true;
   const routinePauseReasonsEnabled = () => hasCapability?.(ROUTINE_PAUSE_REASONS_CAPABILITY) === true;
-  const webLiveVoice = useWebLiveVoice();
   const listeners = new Set<(event: AttachmentImportEvent) => void>();
   const attachmentMedia = createWebAttachmentMedia(remote, hostId);
   const files = createWebAttachmentFiles(remote, hostId, attachmentMedia);
@@ -420,14 +390,6 @@ export function createWebConversationRuntime(
       onStreamTranscript: () => () => {},
     },
     openUrl: openWebLink,
-    get liveVoice() {
-      if (!adminRequest || !onHostEvent || hasCapability?.(LIVE_VOICE_CAPABILITY) !== true || !webLiveVoice())
-        return undefined;
-      return webLiveVoicePort(adminRequest, onHostEvent);
-    },
-    get skillCatalog() {
-      return skillCatalog?.();
-    },
     get askSideQuestion() {
       if (!adminRequest || sideQuestionEnabled?.() !== true) return undefined;
       return async (input: AskSideQuestionInput) => {
@@ -443,14 +405,6 @@ export function createWebConversationRuntime(
     },
     get sideQuestionThreads() {
       return hasCapability?.(SIDE_QUESTION_THREADS_CAPABILITY) === true;
-    },
-    get withdrawFeedback() {
-      if (!adminRequest || hasCapability?.(FEEDBACK_WITHDRAW_CAPABILITY) !== true) return undefined;
-      return async (input: { agentId: string; messageId: string }) =>
-        adminRequest()("POST", FEEDBACK_WITHDRAW_ROUTES.withdraw, decodeFeedbackWithdrawResult, {
-          agentId: input.agentId,
-          messageId: input.messageId,
-        });
     },
     get saveSkillSuggestion() {
       if (!adminRequest || skillLearningEnabled?.() !== true) return undefined;
@@ -516,12 +470,9 @@ export function createWebConversationRuntime(
           eventsEnabled,
           sessionSettingsEnabled,
           routineRecoveryEnabled,
-          webhookTestsEnabled,
-          webhookSenderSecretEnabled,
           routineRunPlaceEnabled,
           routinesOnceEnabled,
           routinePauseReasonsEnabled,
-          () => eventsEnabled?.() === true && hasCapability?.(WEBHOOK_AGENT_SECRET_CAPABILITY) === true,
         )
       : undefined,
   };

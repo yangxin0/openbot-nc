@@ -214,25 +214,25 @@ interface MachineState {
   data: boolean;
   hostKey: string;
 }
-const MACHINE_STATE = `v=$(sed -n 's/^X-AppImage-Version=//p' /opt/OpenBot/app/*.desktop 2>/dev/null | head -n 1)
+const MACHINE_STATE = `v=$(sed -n 's/^X-AppImage-Version=//p' /opt/OpenBot-NC/app/*.desktop 2>/dev/null | head -n 1)
 echo "version=$v"
-echo "user=$(cat /opt/OpenBot/hosted/service-user 2>/dev/null || true)"
+echo "user=$(cat /opt/OpenBot-NC/hosted/service-user 2>/dev/null || true)"
 echo "ids=$(id -u user 2>/dev/null || true):$(id -g user 2>/dev/null || true)"
-echo "enabled=$(systemctl is-enabled openbot.service 2>/dev/null || true)"
-if [ -e /home/user/.config/OpenBot ] || [ -e /home/user/.config/openbot-hosted ] || [ -e /srv/openbot-hosted/keyrings ]; then echo data=yes; else echo data=no; fi
+echo "enabled=$(systemctl is-enabled openbot-nc.service 2>/dev/null || true)"
+if [ -e /home/user/.config/OpenBot-NC ] || [ -e /home/user/.config/openbot-nc-hosted ] || [ -e /srv/openbot-nc-hosted/keyrings ]; then echo data=yes; else echo data=no; fi
 echo "hostkey=$(cut -d' ' -f1,2 /etc/ssh/ssh_host_ed25519_key.pub)"`;
 
 const CUSTOM_STATE = `export LC_ALL=C
 echo "hostname=$(hostname)"
 if [ -s /etc/ssh/openbot-operator-keys/root ]; then echo bootstrap=yes; else echo bootstrap=no; fi
-user=$(cat /opt/OpenBot/hosted/service-user 2>/dev/null || true)
-if [ -n "$user" ] && command -v openbot >/dev/null && systemctl is-active --quiet openbot.service; then
+user=$(cat /opt/OpenBot-NC/hosted/service-user 2>/dev/null || true)
+if [ -n "$user" ] && command -v openbot >/dev/null && systemctl is-active --quiet openbot-nc.service; then
   status=$(runuser -u "$user" -- openbot status 2>/dev/null || true)
   echo "version=$(sed -n 's/^OpenBot //p' <<<"$status" | head -n 1)"
   echo "account=$(sed -n 's/^Account: //p' <<<"$status" | head -n 1)"
   echo "server=$(sed -n 's/^Server: //p' <<<"$status" | head -n 1)"
   home=$(getent passwd "$user" | cut -d: -f6)
-  echo "hosts=$(grep -o '"serverId": *"[^"]*"' "$home/.config/OpenBot/openbot-team-server-v2.json" 2>/dev/null |
+  echo "hosts=$(grep -o '"serverId": *"[^"]*"' "$home/.config/OpenBot-NC/openbot-team-server-v2.json" 2>/dev/null |
     sed 's/.*"\\([^"]*\\)"$/\\1/' | paste -sd, -)"
 fi`;
 
@@ -364,7 +364,7 @@ const SANDBOX_SSH = `ssh -i "$d/key" -o IdentitiesOnly=yes -o BatchMode=yes -o S
 function movableFolder(folder: string) {
   return (
     /^\/(?:srv\/|mnt\/|media\/)?[A-Za-z0-9_@+-][A-Za-z0-9._@+-]*$/u.test(folder) &&
-    folder !== "/srv/openbot-hosted" &&
+    folder !== "/srv/openbot-nc-hosted" &&
     !/^\/(?:bin|boot|cdrom|dev|etc|gnu|home|initrd.*|lib.*|lost\+found|media|mnt|nix|opt|proc|root|run|sbin|snap|srv|swap.*|sys|tmp|usr|var)$/u.test(
       folder,
     )
@@ -807,8 +807,8 @@ class Pool {
     this.#remote(
       machine,
       state === "stopped"
-        ? "systemctl disable --now openbot.service"
-        : "rm -f /run/openbot-pre-stop && systemctl enable --now openbot.service",
+        ? "systemctl disable --now openbot-nc.service"
+        : "rm -f /run/openbot-nc-pre-stop && systemctl enable --now openbot-nc.service",
     );
     const changes = this.#write(
       `UPDATE hosted_servers SET observed_state = '${state}', updated_at = ${literal(Date.now())}
@@ -1986,7 +1986,7 @@ ${writeFileCommand(`${SANDBOX_MOVE}/known-hosts`, `${machine.address} ${machineS
 ssh-keygen -q -t ed25519 -N '' -C openbot-move -f "$d/key" </dev/null
 echo "key=$(cat "$d/key.pub")"
 echo "ids=$(id -u user):$(id -g user)"
-echo "version=$(sed -n 's/^X-AppImage-Version=//p' /opt/OpenBot/app/*.desktop | head -n 1)"
+echo "version=$(sed -n 's/^X-AppImage-Version=//p' /opt/OpenBot-NC/app/*.desktop | head -n 1)"
 echo "containers=$(find /var/lib/docker/containers -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)"
 if ids=$(docker ps -aq 2>/dev/null); then
   echo "docker_running=$(docker ps -q | wc -l)"
@@ -2084,7 +2084,7 @@ bash "$d/move-from-boat.sh" packages`,
     try {
       await this.#sandboxRun(
         sandbox,
-        `systemctl reset-failed openbot-move-export.service 2>/dev/null || true
+        `systemctl reset-failed openbot-nc-move-export.service 2>/dev/null || true
 systemd-run --quiet --collect --unit=openbot-move-export bash ${SANDBOX_MOVE}/run-export.sh ${machine.address} ${folderArgs}`,
       );
       const deadline = Date.now() + EXPORT_WAIT_MS;
@@ -2145,9 +2145,9 @@ systemd-run --quiet --collect --unit=openbot-move-export bash ${SANDBOX_MOVE}/ru
       let active = "";
       for (let attempt = 0; attempt < 30 && active !== "active"; attempt += 1) {
         if (attempt > 0) await delay(2_000);
-        active = this.#remote(machine, "systemctl is-active openbot.service || true", { capture: true }).trim();
+        active = this.#remote(machine, "systemctl is-active openbot-nc.service || true", { capture: true }).trim();
       }
-      if (active !== "active") throw new Error(`openbot.service is ${active} on VPS ${vpsId} after 60 s.`);
+      if (active !== "active") throw new Error(`openbot-nc.service is ${active} on VPS ${vpsId} after 60 s.`);
       lap("OpenBot started");
     } catch (error) {
       try {

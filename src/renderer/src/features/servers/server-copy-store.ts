@@ -7,7 +7,6 @@ import type {
 import type { TransferUploadState } from "@openbot/ui/features/transfer/InstanceTransferView";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createStore, onCleanup, untrack } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 
 export type ServerCopyCalls = Pick<OpenBotDesktopApi["instanceTransfer"], "summary" | "copy"> &
   Partial<Pick<OpenBotDesktopApi["instanceTransfer"], "onUploadProgress">>;
@@ -169,15 +168,6 @@ export function createServerCopyStore(
     });
     const copying = { fromId: state.fromId, toId, result: calls.copy({ fromServerId: state.fromId, agentIds }, toId) };
     runningCopies.set(serverId, copying);
-    void copying.result.then(
-      () => desktopAnalytics.track("server_transfer_action", { action: "copy", result: "succeeded" }),
-      () =>
-        desktopAnalytics.track("server_transfer_action", {
-          action: "copy",
-          result: "failed",
-          failure_code: "copy_failed",
-        }),
-    );
     followCopy(copying);
   }
 

@@ -21,7 +21,7 @@ display_size() {
 [ "$(id -u)" -ne 0 ] || fail "Run the OpenBot image as its own user, not as root."
 [ -w "$HOME" ] || fail "User $(id -u) cannot write to $HOME. Give the data volume to that user: chown -R $(id -u):$(id -g) <folder>"
 unshare --user --map-root-user true 2>/dev/null ||
-  fail "OpenBot cannot make a user namespace for the Electron sandbox. Start the container with --security-opt seccomp=seccomp.json. See https://github.com/nightly-labs/openbot/blob/main/docs/docker.md"
+  fail "OpenBot cannot make a user namespace for the Electron sandbox. Start the container with --security-opt seccomp=seccomp.json. See docs/docker.md in the OpenBot source."
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 0700 "$XDG_RUNTIME_DIR"
 rm -f "$XDG_RUNTIME_DIR/control.sock"
@@ -40,9 +40,9 @@ for display in :0 :1; do
   xdpyinfo -display "$display" >/dev/null 2>&1 || fail "The virtual display $display did not start."
 done
 xsetroot -display :1 -cursor_name left_ptr || true
-(DISPLAY=:1 bash /opt/OpenBot/app/resources/hosting/openbot-desktop </dev/null &)
+(DISPLAY=:1 bash /opt/OpenBot-NC/app/resources/hosting/openbot-desktop </dev/null &)
 
-state="$HOME/.config/openbot-container"
+state="$HOME/.config/openbot-nc-container"
 keyrings="$HOME/.local/share/keyrings"
 mkdir -p "$state" "$keyrings"
 if [ ! -s "$state/keyring-password" ] && [ -e "$keyrings/login.keyring" ]; then
@@ -65,4 +65,4 @@ shm=$(df --output=size -k /dev/shm 2>/dev/null | tail -n 1 | tr -d ' ') || shm=0
 [ "${shm:-0}" -ge 1048576 ] 2>/dev/null || chromium+=(--disable-dev-shm-usage)
 
 export OPENBOT_SERVER=1
-exec /opt/OpenBot/app/openbot --password-store=gnome-libsecret "${chromium[@]}"
+exec /opt/OpenBot-NC/app/openbot-nc --password-store=gnome-libsecret "${chromium[@]}"

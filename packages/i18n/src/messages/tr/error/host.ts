@@ -2,13 +2,10 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.iceServersMissing": "Remote Signal ICE sunucularını sağlamadı.",
   "error.host.keyRotationUnavailable": "Bu sunucu, hesap hizmeti olmadan anahtarını değiştiremez.",
   "error.host.keyRotationRefused":
     "Hesap hizmeti yeni sunucu anahtarını kabul etmedi. Mevcut anahtar kullanılmaya devam ediyor.",
   "error.host.webRtcNotConfigured": "WebRTC ana makine hizmeti yapılandırılmamış.",
-  "error.host.runtimeNotInstalled": "Uzak masaüstü çalışma zamanı kurulu değil.",
-  "error.host.setupUnavailable": "İzin kurulumu kullanılamıyor.",
   "error.host.accountChangedDuringUpdate": "Bu sunucu güncellenirken oturum açmış hesap değişti.",
   "error.host.nameBeforePublish": "Yayımlamadan önce bu OpenBot'a bir ad verin.",
   "error.host.memberNotFound": "Uzak üye mevcut değil.",

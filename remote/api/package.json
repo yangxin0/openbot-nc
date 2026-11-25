@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
+    "relay": "bun src/relay/main.ts",
     "typecheck": "bun ../../scripts/type-checker.ts --noEmit -p tsconfig.json",
     "check": "bun run typecheck"
   },

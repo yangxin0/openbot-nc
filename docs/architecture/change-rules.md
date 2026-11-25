@@ -70,10 +70,7 @@ safe to replay. Keep domain retry and recovery rules at their existing owners.
    component that assembles another one's props is how the god controller grew back last time.
 9. Do not add temporary compatibility paths without a removal condition and a test for that condition. Team API protocol adapters stay while a release in the support window speaks their protocol (root `AGENTS.md`, `packages/contracts/AGENTS.md`).
 10. Log through `@openbot/logging` (`ts-log` Logger), never bare `console.*` - Biome's `noConsole`
-    enforces this in `src`, `scripts` and `packages`. The remote-desktop build recipe scripts that the
-    `noConsole` override in `biome.json` excludes are exempt. The `Require a recipe version bump` step
-    of `.github/workflows/remote-desktop-runtime.yml` lists them: any edit to them, cosmetic or not, forces `remoteDesktop.recipeVersion` up and a full
-    native runtime rebuild, so their logging is frozen until the recipe changes for a real reason. Every line is timestamped, prefixed and
+    enforces this in `src`, `scripts` and `packages`. Every line is timestamped, prefixed and
     secret-redacted, and redaction covers a serialized payload passed as one string, not only a
     structured param. Patterns cannot find a secret with no label, such as a token in an error
     text, so a store that loads a secret passes the value to `registerSecretValue`, and every later
@@ -95,7 +92,7 @@ safe to replay. Keep domain retry and recovery rules at their existing owners.
     Storybook included, and `scripts/dev-automation/port-allocation.ts` serializes read, choose and
     publish behind one machine-wide lock: probing a port and binding it seconds later is a check
     followed by a use, so two runners starting together both used to win 5173 and the unsuffixed
-    `OpenBot Dev` profile with it. Ownership of that lock is a generation rather than a path: taking
+    `OpenBot-NC Dev` profile with it. Ownership of that lock is a generation rather than a path: taking
     it means creating the next numbered file with an exclusive create, so who owns it is decided by
     a step the kernel makes atomic and never by a delete. Once a lock path exists it stays, and nothing ever
     frees it: releasing replaces the contents with a released marker in one `rename` onto the same

@@ -1095,9 +1095,7 @@ export class TeamWebRtcHostPeer {
   ) {
     const url = yield* remoteDecode(() => new URL(path, `ws://127.0.0.1:${this.#localApiPort}`));
     const allowed =
-      url.origin === `ws://127.0.0.1:${this.#localApiPort}` &&
-      (/^\/v1\/remote-screen\/sessions\/[A-Za-z0-9-]+\/stream$/u.test(url.pathname) ||
-        browserViewStreamSessionId(url.pathname) !== null);
+      url.origin === `ws://127.0.0.1:${this.#localApiPort}` && browserViewStreamSessionId(url.pathname) !== null;
     if (!allowed || this.#desktopSockets.size >= MAXIMUM_DESKTOP_STREAMS) {
       yield* HostPeerTransport.use((transport) =>
         transport.send(

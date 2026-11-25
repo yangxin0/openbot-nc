@@ -31,8 +31,6 @@ export const messages = defineMessages("error.agent", {
   "error.agent.commitEffectsFailed": "The transaction committed, but its saved effects failed.",
   "error.agent.settingsLocalOnly": "Agent settings can only be changed on the computer that runs the agent.",
   "error.agent.skillsLocalOnly": "Skills can only be changed on the computer that runs the agent.",
-  "error.agent.addLocalOnly": "Agents can only be added on the computer that runs them.",
-  "error.agent.joinedServerUpdate": "An agent on a joined server cannot be updated from here.",
   "error.agent.searchQueryRequired": "A search query is required.",
   "error.agent.messageTooLong": "Message is too long.",
   "error.agent.messageOrAttachmentRequired": "A message or attachment is required.",
@@ -165,8 +163,6 @@ export const messages = defineMessages("error.agent", {
     "Local scripts ran this agent's routines {limit} times in the last hour. Try again later.",
   "error.agent.workspaceOnlyMacOnly":
     "Workspace only is available for this provider on macOS only. Choose Full access in the agent settings.",
-  "error.agent.lowMemory":
-    "This server is low on memory. Your message waits in the queue and starts when memory is free. A larger plan gives the server more memory.",
   "error.agent.lowMemoryServer":
     "This server is low on memory. Your message waits in the queue and starts when memory is free.",
   "error.agent.workspaceOnlyToolMissing":

@@ -2,55 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate":
-    "Mettez à jour le client pour utiliser la configuration du bureau à distance.",
-  "error.remote.desktopSetupUnavailable": "La configuration du bureau à distance n’est pas disponible.",
-  "error.remote.desktopTestUnavailable": "Le test du bureau à distance n’est pas disponible.",
-  "error.remote.controlUnavailable": "Le contrôle à distance n’est pas disponible.",
-  "error.remote.controlSessionNotFound": "Session de contrôle à distance introuvable.",
-  "error.remote.controlNotAllowed": "Le propriétaire de cet ordinateur ne permet pas à votre rôle de le contrôler.",
-  "error.remote.controlDeclined": "La personne devant cet ordinateur n’a pas autorisé le contrôle à distance.",
-  "error.remote.testRuntimeUpdate": "Mettez à jour le runtime macOS du bureau à distance pour lancer ce test.",
-  "error.remote.testOtherSessions": "Terminez les autres sessions de bureau à distance avant de lancer un test.",
-  "error.remote.testPermissions":
-    "Vérifiez les autorisations et la session graphique sur l’hôte avant de lancer le test.",
-  "error.remote.controlSessionEnded": "La session de contrôle à distance est terminée.",
-  "error.remote.testPanelFailed": "L’hôte n’a pas pu ouvrir le panneau de test.",
-  "error.remote.sessionCapacity": "L’hôte a déjà quatre sessions actives.",
-  "error.remote.linuxNeedsX11":
-    "Sous Linux, le bureau à distance nécessite une session X11. Wayland n’est pas pris en charge.",
-  "error.remote.runtimeMissing":
-    "Le runtime Sunshine et Moonlight Web est absent ou n’est pas pris en charge sur cet hôte. Installez la version complète d’OpenBot sur un hôte Mac, Windows x64 ou Linux x64, puis redémarrez OpenBot.",
-  "error.remote.testActive": "Un test du bureau à distance est en cours. Réessayez quand il sera terminé.",
-  "error.remote.screenRecordingDenied":
-    "L’hôte n’a pas autorisé OpenBot à enregistrer son écran. Autorisez l’enregistrement de l’écran sur l’hôte, puis réessayez.",
-  "error.remote.windowsSessionDisconnected":
-    "La session Windows de l’hôte est déconnectée : elle n’a aucun écran à partager. Connectez-vous à Windows sur l’écran de l’hôte, puis réessayez.",
-  "error.remote.windowsCaptureDenied":
-    "Windows sur l’hôte n’autorise pas OpenBot à enregistrer son écran. Déverrouillez Windows sur l’écran de l’hôte, fermez toute invite d’administrateur, puis réessayez. Si le problème persiste, redémarrez l’hôte.",
-  "error.remote.macScreenLocked":
-    "Le Mac est verrouillé : il ne peut pas partager son écran. Déverrouillez le Mac sur son écran, puis réessayez.",
-  "error.remote.streamTooSlowLowerQuality":
-    "La connexion à l’hôte est trop lente pour l’image. Réessayez : la prochaine connexion utilisera une qualité inférieure.",
-  "error.remote.streamTooSlow":
-    "La connexion à l’hôte est trop lente pour l’image. Utilisez un réseau plus rapide, puis réessayez.",
-  "error.remote.noPictureSwitchEncoder":
-    "L’hôte n’a envoyé aucune image. Réessayez : la prochaine connexion utilise un réglage vidéo qui fonctionne sur plus d’ordinateurs.",
-  "error.remote.teamSessionExpired": "La session de l’équipe a expiré.",
-  "error.remote.finishTestBeforeSwitch": "Terminez le test du bureau à distance avant de changer d’écran.",
-  "error.remote.displayNotFound": "Écran distant introuvable.",
-  "error.remote.displaySwitchInProgress": "Un changement d’écran est en cours.",
-  "error.remote.localTestListenerUnavailable": "L’écouteur du test local n’est pas disponible.",
-  "error.remote.localTestNotFound": "Session de test local introuvable.",
-  "error.remote.runtimeUnavailable": "Le runtime du bureau à distance n’est pas disponible.",
-  "error.remote.sunshineStartFailed":
-    "Sunshine n’a pas démarré sur l’hôte. Consultez les journaux du bureau à distance sur l’hôte, puis réessayez.",
-  "error.remote.moonlightStartFailed":
-    "Moonlight Web n’a pas démarré sur l’hôte. Consultez les journaux du bureau à distance sur l’hôte, puis réessayez.",
-  "error.remote.pairingFailed":
-    "Moonlight n’a pas pu s’associer à Sunshine sur l’hôte. Réessayez. Si le problème persiste, redémarrez OpenBot sur l’hôte.",
-  "error.remote.runtimeStartFailed":
-    "Le runtime du bureau à distance n’a pas démarré sur l’hôte. Consultez les journaux du bureau à distance sur l’hôte, puis réessayez.",
   "error.remote.hostUnreachable": "L’hôte est injoignable.",
   "error.remote.signInToHostAgain": "Reconnectez-vous à cet hôte.",
   "error.remote.invalidData": "L’hôte a renvoyé des données non valides.",
@@ -74,12 +25,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "Le service de compte a accepté un autre hôte.",
   "error.remote.inviteIdentityChanged": "L’identité de l’hôte de l’invitation a changé pendant son acceptation.",
   "error.remote.localServerRemove": "Le serveur local ne peut pas être supprimé.",
-  "error.remote.desktopSetupHostUpdate":
-    "Mettez à jour OpenBot sur l’hôte pour vérifier la configuration du bureau à distance.",
-  "error.remote.desktopTestHostUpdate":
-    "Mettez à jour OpenBot sur l’hôte pour tester la configuration du bureau à distance.",
   "error.remote.viewerProxyUnavailable": "Le proxy local de la visionneuse distante n’est pas disponible.",
-  "error.remote.viewerTransportInvalid": "Le transport de la visionneuse distante n’est pas valide.",
   "error.remote.viewerProxyNoPort": "Le proxy local de la visionneuse distante n’a pas obtenu de port.",
   "error.remote.inviteNeedsConnection": "L’hôte doit se connecter une fois avant de pouvoir créer des invitations.",
   "error.remote.permanentInviteUnsupported":

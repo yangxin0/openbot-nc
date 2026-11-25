@@ -43,7 +43,6 @@ import {
 } from "./delivery-content";
 import type { DuplicationGate } from "./duplication-gate";
 import { handoffHasHistory } from "./handoff-history";
-import type { LiveVoiceRelayed } from "./live-voice";
 import type { MailboxSync } from "./mailbox-sync";
 import type { MemoryHold } from "./memory-hold";
 import type { PlanContinuation } from "./plan-continuation";
@@ -101,7 +100,6 @@ export interface DrainHooks {
   servesModel(model: string, provider: AgentProvider, configRevision: number | null): boolean;
   redactMcp(text: string): string;
   tagReferences(agentId: string, threadId: string | null): TagReferenceSource;
-  liveVoiceRelayed(deliveryId: string): LiveVoiceRelayed | null;
   fromChrome(deliveryId: string): boolean;
   requeueChannelDelivery(deliveryId: string, continueWork?: boolean): Effect.Effect<boolean>;
   mayContinueOnBackup(agentId: string): boolean;
@@ -969,7 +967,6 @@ export class DrainScheduler {
               taskReport: this.taskReport(item),
               taskReportWaiting: this.taskReportWaiting(item),
               tags,
-              liveVoice: this.#hooks.liveVoiceRelayed(item.delivery.id),
               fromChrome: this.#hooks.fromChrome(item.delivery.id),
               externalChat: this.#messaging?.ownsDelivery(item.delivery.id) === true,
               ...(executionText === undefined ? {} : { executionText }),

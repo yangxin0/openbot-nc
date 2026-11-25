@@ -52,14 +52,6 @@ export const messages = defineMessages("error.workflow", {
     "Write a description, or run the steps before this one so that a text or a picture comes in.",
   "error.workflow.mediaInputNotImage":
     "This step takes only pictures, not videos. Remove the connection from the video.",
-  "error.workflow.mediaInputTooLarge":
-    "A picture for this step is too large. Use pictures of 7 MB or less each, and 14 MB or less together.",
-  "error.workflow.mediaInputType":
-    "This model takes only PNG, JPEG and WebP pictures. Connect a picture of one of these types.",
-  "error.workflow.creditMediaPictureRequired":
-    "This model needs a picture. Connect a picture step to this step, then run it again.",
-  "error.workflow.creditMediaPromptRequired":
-    "This model needs a description. Write one in this step, or connect a text step to it.",
   "error.workflow.mediaInputNotClip":
     "This input takes only videos and audio files. Remove the connection from the file.",
   "error.workflow.stepMissing": "This step no longer exists.",
@@ -85,7 +77,6 @@ export const messages = defineMessages("error.workflow", {
   "error.workflow.tooLarge": "This workflow is too large to save. Remove some drawings or long texts, then try again.",
   "error.workflow.tooLargeToSend":
     "This workflow is too large to send to another computer. Open it on the computer that runs the server.",
-  "error.workflow.webhookMissing": "This step is not a webhook trigger. Save the workflow, then try again.",
   "error.workflow.githubActionMissing": "Choose what this output does on GitHub.",
   "error.workflow.githubRepositoryMissing": "Choose a repository for this output.",
   "error.workflow.githubItemMissing":
@@ -97,13 +88,6 @@ export const messages = defineMessages("error.workflow", {
   "error.workflow.githubChoiceMissing": "Choose the labels or the person for this output.",
   "error.workflow.githubChoseNothing": "The model chose no label or person of this repository.",
   "error.workflow.githubNotConnected": "Connect GitHub on the computer that runs this workflow.",
-  "error.workflow.githubNoAccess":
-    "The OpenBot GitHub App cannot see this repository or item. Open GitHub and give it access.",
-  "error.workflow.githubNoWrite":
-    "The OpenBot GitHub App cannot change this repository. Open GitHub and give it access.",
-  "error.workflow.githubLocked": "This conversation is locked on GitHub.",
-  "error.workflow.githubRefused": "GitHub refused the change: {detail}",
-  "error.workflow.githubUnreachable": "OpenBot could not reach GitHub. Run the step again.",
   "error.workflow.githubUncertain":
     "The change stopped on its way. It can be on GitHub. Look there before you run the step again.",
   "error.workflow.githubNoEvent": "GitHub has no issue or pull request that this trigger starts on.",

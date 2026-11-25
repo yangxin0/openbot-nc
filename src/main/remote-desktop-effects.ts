@@ -13,4 +13,3 @@ export function desktopFailure(cause: unknown): RemoteDesktopOperationError {
 export function desktopCall<A>(operation: () => A | Promise<A>): Effect.Effect<A, RemoteDesktopOperationError> {
   return Effect.tryPromise({ try: () => Promise.resolve(operation()), catch: desktopFailure });
 }
-export const desktopSync = <A>(operation: () => A) => Effect.try({ try: operation, catch: desktopFailure });

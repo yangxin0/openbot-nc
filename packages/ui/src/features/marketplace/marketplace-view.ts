@@ -1,39 +1,27 @@
 import {
-  type MarketplaceAgentDetail,
-  type MarketplaceAgentSummary,
-  type MarketplaceSkillSort,
   type MarketplaceSkillSummary,
   type McpServerConfig,
   SKILL_CATEGORIES,
   type SkillCategory,
 } from "@openbot/contracts/ipc";
-import type { MarketplaceListingKind } from "@openbot/contracts/marketplace-links";
 import { errorReference } from "@openbot/user-errors";
 import { createStore, onCleanup, onSettled, untrack } from "solid-js";
-import type { MarketplaceListing } from "./marketplace-listing";
 import type { MarketplaceApp, MarketplaceModel } from "./marketplace-model";
 
 export type MarketplaceView =
   | { kind: "browse" }
-  | { kind: "agent"; listing: MarketplaceAgentSummary; detail?: MarketplaceAgentDetail | undefined }
-  | { kind: "agentGroup"; category: SkillCategory }
   | { kind: "skill"; listing: MarketplaceSkillSummary }
-  | { kind: "app"; id: string; setup?: boolean }
+  | { kind: "app"; id: string }
   | { kind: "appGroup"; category: SkillCategory }
-  | { kind: "skillGroup"; group: SkillGroup }
+  | { kind: "yourSkills" }
   | { kind: "localSkill"; skillId: string }
   | { kind: "server"; id: string | null };
 
-export type SkillGroup = "yours" | SkillCategory;
+export type MarketplaceTab = "apps" | "skills";
 
-export type SkillSource = "verified" | "public";
-
-export type MarketplaceTab = "apps" | "agents" | "skills";
-
-export const MARKETPLACE_TABS: readonly MarketplaceTab[] = ["apps", "agents", "skills"];
+export const MARKETPLACE_TABS: readonly MarketplaceTab[] = ["apps", "skills"];
 
 export const MARKETPLACE_TAB_LABEL = {
-  agents: "marketplace.tab.agents",
   apps: "marketplace.tab.apps",
   skills: "marketplace.tab.skills",
 } as const satisfies Record<MarketplaceTab, string>;
@@ -42,17 +30,8 @@ export interface MarketplaceNavigationState {
   stack: MarketplaceView[];
   tab: MarketplaceTab;
   query: string;
-  agentSource: SkillSource | null;
-  skillSort: MarketplaceSkillSort;
-  skillSource: SkillSource | null;
   missingApp: string | null;
-  missingListing: MarketplaceListingKind | null;
   appGroup: SkillCategory | null;
-}
-
-export function sourceVerified(source: SkillSource | null): boolean | undefined {
-  if (source === null) return undefined;
-  return source === "verified";
 }
 
 export interface MarketplaceNavigation {
@@ -70,11 +49,7 @@ function initialState(): MarketplaceNavigationState {
     stack: [{ kind: "browse" }],
     tab: "apps",
     query: "",
-    agentSource: null,
-    skillSort: "installs",
-    skillSource: null,
     missingApp: null,
-    missingListing: null,
     appGroup: null,
   };
 }
@@ -82,8 +57,6 @@ function initialState(): MarketplaceNavigationState {
 export interface MarketplaceScope {
   model: MarketplaceModel;
   nav: MarketplaceNavigation;
-  agents: MarketplaceListing<MarketplaceAgentSummary>;
-  skills: MarketplaceListing<MarketplaceSkillSummary>;
 }
 
 export function createMarketplaceNavigation(): MarketplaceNavigation {
@@ -95,7 +68,6 @@ export function createMarketplaceNavigation(): MarketplaceNavigation {
       set((draft) => {
         draft.stack = [...draft.stack, view];
         draft.missingApp = null;
-        draft.missingListing = null;
       }),
     back: () =>
       set((draft) => {
@@ -109,7 +81,6 @@ export function createMarketplaceNavigation(): MarketplaceNavigation {
       set((draft) => {
         draft.tab = tab;
         draft.missingApp = null;
-        draft.missingListing = null;
         if (view) draft.stack = [draft.stack[0] ?? { kind: "browse" }, view];
         else draft.stack = draft.stack.slice(0, 1);
       }),
@@ -118,7 +89,7 @@ export function createMarketplaceNavigation(): MarketplaceNavigation {
 }
 
 export function isMarketplaceTab(value: string): value is MarketplaceTab {
-  return value === "apps" || value === "agents" || value === "skills";
+  return value === "apps" || value === "skills";
 }
 
 export function serverAddress(server: McpServerConfig): string {

@@ -73,7 +73,6 @@ export const messages = {
   "error.team.membersCannotArchiveChannels": "Участники не могут архивировать каналы.",
   "error.team.membersCannotRestoreChannels": "Участники не могут восстанавливать каналы.",
   "error.team.sharedDataUnsupported": "Это подключение не поддерживает общие данные.",
-  "error.team.agentInstallUnsupported": "Это подключение не поддерживает добавление агентов.",
   "error.team.agentHideUnsupported": "Это подключение не поддерживает скрытие агентов.",
   "error.team.agentColorsUnsupported": "Это подключение не поддерживает цвета агентов.",
   "error.team.chatColorsUnsupported": "Это подключение не поддерживает цвета чата.",
@@ -99,8 +98,6 @@ export const messages = {
   "error.team.sidebarPinsUnsupported":
     "Этот сервер не может хранить закреплённые чаты для всех ваших устройств. Обновите OpenBot на компьютере, на котором он работает.",
   "error.team.agentInstructionsUnsupported": "Это подключение не поддерживает редактирование инструкций агентов.",
-  "error.team.agentPublishUnsupported": "Это подключение не поддерживает публикацию агентов.",
-  "error.team.agentUpdateUnsupported": "Это подключение не поддерживает обновление агентов.",
   "error.team.contextResetUnsupported": "Это подключение не поддерживает начало нового чата.",
   "error.team.contextCompactUnsupported": "Это подключение не поддерживает сжатие контекста.",
   "error.team.messageDeleteUnsupported": "Это подключение не поддерживает удаление сообщений.",
@@ -108,8 +105,6 @@ export const messages = {
   "error.team.conversationFileSearchUnsupported": "Это подключение не поддерживает поиск файлов.",
   "error.team.threadMessageSearchUnsupported": "Это подключение не поддерживает поиск в побочных ветках.",
   "error.team.sideQuestionUnsupported": "Это подключение не поддерживает побочные вопросы.",
-  "error.team.liveVoiceUnsupported":
-    "Этот сервер не поддерживает живой голос Codex. Обновите OpenBot на компьютере, где он работает.",
   "error.team.routineFlowsUnsupported":
     "Этот сервер не поддерживает цепочки регулярных задач. Обновите OpenBot на компьютере, где он работает.",
   "error.team.routineCanvasTooLarge":
@@ -118,9 +113,6 @@ export const messages = {
     "Сообщение в этом диалоге слишком велико для отправки на это устройство. Откройте диалог на компьютере, где работает сервер.",
   "error.team.agentImportUnsupported": "Это подключение не поддерживает импорт агентов.",
   "error.team.instanceTransferUnsupported": "Это подключение не поддерживает перенос агентов.",
-  "error.team.liveActivityUnsupported": "Этот хост не может обновлять Live Activity на телефоне.",
-  "error.team.pushNotificationsUnsupported": "Этот хост не может отправлять уведомления на телефон.",
-  "error.team.agentUpdateTargetRequired": "Нужно указать агента для обновления.",
   "error.team.queueEditUnsupported": "Этот клиент не поддерживает редактирование очереди.",
   "error.team.skillsUnsupported": "Это подключение не поддерживает навыки.",
   "error.team.hostIdentityUnsupported": "Это подключение не поддерживает изменение идентификатора сервера.",
@@ -162,9 +154,6 @@ export const messages = {
   "error.team.machineResourcesUnsupported": "Это подключение не поддерживает данные о машине.",
   "error.team.machineAlertMemberInvalid":
     "Оповещения о машине может получать только владелец или администратор этого сервера.",
-  "error.team.hostedSitesUnsupported": "Это подключение не поддерживает сайты.",
-  "error.team.hostedSitesUnregistered": "Этот сервер не зарегистрирован в OpenBot, поэтому у него нет сайтов.",
-  "error.team.hostedSiteNotFound": "Сайт не найден.",
   "error.team.markUnreadUnsupported": "Этот клиент не поддерживает отметку диалогов как непрочитанных.",
   "error.team.inviteServiceUnavailable": "Служба приглашений недоступна.",
   "error.team.logoNotFound": "Логотип сервера не найден.",
@@ -189,8 +178,6 @@ export const messages = {
   "error.team.requestTooLarge": "Тело запроса слишком большое.",
   "error.team.signInRelayUnsupported": "Этот сервер не может передавать входы. Обновите OpenBot на хосте.",
   "error.team.connectorsUnsupported": "Подключениями этого сервера нельзя управлять отсюда. Обновите OpenBot на хосте.",
-  "error.team.discordAccessUnsupported": "Этот сервер не может задать роли Discord. Обновите на нём OpenBot.",
-  "error.team.connectorPageRefused": "Сервер прислал страницу, которую OpenBot не открывает.",
   "error.team.signInRelayUnknown": "Этот вход завершён или не существует.",
   "error.team.signInRelayUsed": "Этот вход уже отправлен.",
   "error.team.signInRelayMismatch": "Этот адрес не относится к этому входу.",
@@ -199,7 +186,6 @@ export const messages = {
   "error.team.agentWaitsUnsupported": "Это подключение не поддерживает открытые ожидания.",
   "error.team.pendingApprovalUnsupported": "Это подключение не позволяет прочитать запрос на подтверждение целиком.",
   "error.team.pendingPromptsUnsupported": "Это подключение не поддерживает чтение открытых вопросов.",
-  "error.team.phoneFeedbackUnsupported": "Это подключение не позволяет отправить отчёт из приложения на телефоне.",
   "error.team.messagePinsUnsupported": "Это подключение не поддерживает закреплённые сообщения.",
   "error.team.queuedMessageThreadUnsupported":
     "Это подключение не поддерживает запуск сообщения из очереди в новой ветке.",

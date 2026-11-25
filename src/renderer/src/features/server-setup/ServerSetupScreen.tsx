@@ -1,42 +1,37 @@
 import { AppLogo } from "@openbot/brand";
-import type { AppVariant, CentralAuthIssue, CentralAuthState } from "@openbot/contracts/ipc";
-import { Button } from "@openbot/ui";
-import { AccountLogin } from "@openbot/ui/features/account/AccountLogin";
+import type { AppVariant } from "@openbot/contracts/ipc";
 import { useText } from "@openbot/ui/text";
+import type { JSX } from "@solidjs/web";
 import { createEffect, createStore, onCleanup, onSettled, Show } from "solid-js";
-import {
-  NO_ANSWER,
-  number,
-  type SetupAnswer,
-  setupLoginStart,
-  setupLoginVerify,
-  setupRetry,
-  setupStatus,
-  text,
-} from "./server-setup-port";
+import { type SetupAnswer, setupStatus, text } from "./server-setup-port";
 
-const APP_URL = "https://openbot.run/app";
 const PRODUCT_NAME = "OpenBot";
 const DEFAULT_SERVER_NAME = "OpenBot";
+const IMPORT_COMMAND = "openbot import-identity <file>";
+const HOSTING_COMMAND = "openbot hosting on";
 const STATUS_POLL_MS = 2_000;
 const ERROR_POLL_MS = 10_000;
 
-interface ServerView {
-  email: string;
-  online: boolean;
+interface MemberView {
+  team: string;
+  user: string;
   name: string;
+  online: boolean;
+  hosting: boolean;
   message: string | null;
 }
 
-interface SetupState {
-  login: CentralAuthState;
-  server: ServerView | null;
-}
+type SetupView =
+  | { kind: "loading" }
+  | { kind: "no_answer" }
+  | { kind: "identity_missing" }
+  | { kind: "identity_unusable"; message: string | null }
+  | { kind: "member"; member: MemberView };
 
 export function ServerSetupScreen() {
   const { t, sourceText } = useText();
   const variant: AppVariant = import.meta.env.DEV ? "dev" : "production";
-  const [state, setState] = createStore<SetupState>({ login: { status: "loading" }, server: null });
+  const [state, setState] = createStore<{ view: SetupView }>({ view: { kind: "loading" } });
   let pollTimer: number | undefined;
 
   onCleanup(() => window.clearTimeout(pollTimer));
@@ -48,187 +43,119 @@ export function ServerSetupScreen() {
     },
   );
 
-  function fallbackMessage(code: string): string {
-    switch (code) {
-      case "invalid_email":
-        return t("account.login.emailInvalid");
-      case "company_sign_in_required":
-        return t("server.setup.errorCompany");
-      case NO_ANSWER:
-        return t("server.setup.errorNoAnswer");
-      default:
-        return t("server.setup.errorRefused");
-    }
-  }
-
-  function issueOf(answer: SetupAnswer): CentralAuthIssue {
-    const code = text(answer, "error") ?? "failed";
-    const message = text(answer, "message") ?? fallbackMessage(code);
-    const retryAfterSeconds = number(answer, "retry_after");
-    return retryAfterSeconds ? { code, message, retryAfterSeconds } : { code, message };
-  }
-
-  function refusedByAccount(answer: SetupAnswer): boolean {
-    const code = text(answer, "error");
-    return code === "signed_in" || (code?.startsWith("account_") ?? false);
-  }
-
-  function poll(delay = STATUS_POLL_MS): void {
+  function poll(delay: number): void {
     window.clearTimeout(pollTimer);
     pollTimer = window.setTimeout(() => void refresh(), delay);
   }
 
-  function showStatus(answer: SetupAnswer): void {
-    window.clearTimeout(pollTimer);
-    if (!answer.ok) {
-      const issue = { code: "auth_api_unavailable", message: fallbackMessage(text(answer, "error") ?? NO_ANSWER) };
-      setState((draft) => {
-        draft.server = null;
-        draft.login = { status: "error", issue };
-      });
-      poll(ERROR_POLL_MS);
-      return;
-    }
-    const account = text(answer, "account");
-    if (account === "signed_in") {
-      const server: ServerView = {
-        email: text(answer, "email") ?? "",
-        online: text(answer, "server") === "online",
+  function viewOf(answer: SetupAnswer): SetupView {
+    if (!answer.ok) return { kind: "no_answer" };
+    const identity = text(answer, "identity");
+    if (identity === "missing") return { kind: "identity_missing" };
+    if (identity !== "ready") return { kind: "identity_unusable", message: text(answer, "identity_message") };
+    return {
+      kind: "member",
+      member: {
+        team: text(answer, "team") ?? "",
+        user: text(answer, "user") ?? "",
         name: text(answer, "server_name") ?? DEFAULT_SERVER_NAME,
+        online: text(answer, "hosting_state") === "online",
+        hosting: text(answer, "hosting") === "on",
         message: text(answer, "server_message"),
-      };
-      setState((draft) => {
-        draft.server = server;
-      });
-      if (!server.online) poll();
-      return;
-    }
-    const issue: CentralAuthIssue | null =
-      account === "error"
-        ? {
-            code: text(answer, "account_issue") ?? "auth_api_unavailable",
-            message: text(answer, "account_message") ?? t("account.login.unavailableDescription"),
-          }
-        : null;
-    const loading = account === "loading" || account === "signing_in";
-    const keepChallenge = !issue && !loading && state.login.status === "code_sent";
-    setState((draft) => {
-      draft.server = null;
-      if (issue) draft.login = { status: "error", issue };
-      else if (loading) draft.login = { status: "loading" };
-      else if (!keepChallenge) draft.login = { status: "signed_out" };
-    });
-    if (loading) poll();
-    else if (issue) poll(ERROR_POLL_MS);
+      },
+    };
   }
 
   async function refresh(): Promise<void> {
-    showStatus(await setupStatus());
+    const view = viewOf(await setupStatus());
+    setState((draft) => {
+      draft.view = view;
+    });
+    if (view.kind === "no_answer") poll(ERROR_POLL_MS);
+    else if (view.kind !== "member" || !view.member.online) poll(STATUS_POLL_MS);
   }
 
-  async function requestEmailCode(email: string): Promise<void> {
-    const answer = await setupLoginStart(email);
-    const challengeId = text(answer, "challenge");
-    if (answer.ok && challengeId) {
-      const login: CentralAuthState = {
-        status: "code_sent",
-        challengeId,
-        email,
-        expiresAt: number(answer, "expires_at") ?? 0,
-        resendAvailableAt: number(answer, "resend_at") ?? 0,
-      };
-      setState((draft) => {
-        draft.login = login;
-      });
-      return;
-    }
-    if (refusedByAccount(answer)) {
-      await refresh();
-      return;
-    }
-    const issue = issueOf(answer);
-    const current = state.login;
-    const login: CentralAuthState = current.status === "code_sent" ? { ...current, issue } : { status: "error", issue };
-    setState((draft) => {
-      draft.login = login;
-    });
+  function command(value: string): JSX.Element {
+    return (
+      <p class="account-login-description">
+        <code>{value}</code>
+      </p>
+    );
   }
 
-  async function verifyEmailCode(_challengeId: string, code: string): Promise<void> {
-    const current = state.login;
-    if (current.status !== "code_sent") return;
-    const answer = await setupLoginVerify(current.challengeId, code);
-    if (answer.ok) {
-      showStatus(answer);
-      return;
-    }
-    if (refusedByAccount(answer)) {
-      await refresh();
-      return;
-    }
-    const issue = issueOf(answer);
-    setState((draft) => {
-      draft.login = { ...current, issue };
-    });
+  function member(): MemberView | null {
+    const view = state.view;
+    return view.kind === "member" ? view.member : null;
+  }
+
+  function unusableMessage(): string | null {
+    const view = state.view;
+    return view.kind === "identity_unusable" ? view.message : null;
   }
 
   return (
-    <Show
-      when={state.server}
-      fallback={
-        <AccountLogin
-          variant={variant}
-          state={state.login}
-          onRetry={async () => showStatus(await setupRetry())}
-          onRequestEmailCode={requestEmailCode}
-          onVerifyEmailCode={verifyEmailCode}
-          onReset={async () => {
-            setState((draft) => {
-              draft.login = { status: "signed_out" };
-            });
-          }}
-        />
-      }
-    >
-      {(server) => (
-        <main class="account-login-screen">
-          <div class="account-login-shell">
-            <header class="account-login-brand-lockup">
-              <AppLogo variant={variant} animation="blink" interactive class="account-login-logo" />
-              <span class="account-login-wordmark">{PRODUCT_NAME}</span>
-            </header>
-            <section class="account-login" aria-labelledby="server-setup-title" aria-live="polite">
-              <h1 id="server-setup-title" class="account-login-title">
-                {server().online
-                  ? t("server.setup.online", { name: server().name })
-                  : t("server.setup.starting", { name: server().name })}
-              </h1>
-              <p class="account-login-description">{t("server.setup.signedInAs", { email: server().email })}</p>
-              <Show when={!server().online}>
-                <div class="account-login-loader" role="status">
-                  <span class="account-login-spinner" aria-hidden="true" />
-                  <Show when={server().message}>
-                    {(message) => <span class="account-login-error">{sourceText(message())}</span>}
+    <main class="account-login-screen">
+      <div class="account-login-shell">
+        <header class="account-login-brand-lockup">
+          <AppLogo variant={variant} animation="blink" interactive class="account-login-logo" />
+          <span class="account-login-wordmark">{PRODUCT_NAME}</span>
+        </header>
+        <section class="account-login" aria-labelledby="server-setup-title" aria-live="polite">
+          <Show
+            when={member()}
+            fallback={
+              <>
+                <h1 id="server-setup-title" class="account-login-title">
+                  {t("server.setup.identityTitle")}
+                </h1>
+                <Show when={state.view.kind === "no_answer"}>
+                  <p class="account-login-error">{t("server.setup.errorNoAnswer")}</p>
+                </Show>
+                <Show when={state.view.kind === "identity_unusable"}>
+                  <p class="account-login-error">
+                    {sourceText(unusableMessage() ?? t("server.setup.identityUnusable"))}
+                  </p>
+                </Show>
+                <p class="account-login-description">{t("server.setup.identityHelp")}</p>
+                {command(IMPORT_COMMAND)}
+              </>
+            }
+          >
+            {(view) => (
+              <>
+                <h1 id="server-setup-title" class="account-login-title">
+                  {!view().hosting
+                    ? t("server.setup.notShared", { name: view().name })
+                    : view().online
+                      ? t("server.setup.online", { name: view().name })
+                      : t("server.setup.starting", { name: view().name })}
+                </h1>
+                <p class="account-login-description">
+                  {t("server.setup.teamMember", { team: view().team, user: view().user })}
+                </p>
+                <Show
+                  when={view().hosting}
+                  fallback={
+                    <>
+                      <p class="account-login-description">{t("server.setup.hostingOff")}</p>
+                      {command(HOSTING_COMMAND)}
+                    </>
+                  }
+                >
+                  <Show when={!view().online}>
+                    <div class="account-login-loader" role="status">
+                      <span class="account-login-spinner" aria-hidden="true" />
+                      <Show when={view().message}>
+                        {(message) => <span class="account-login-error">{sourceText(message())}</span>}
+                      </Show>
+                    </div>
                   </Show>
-                </div>
-              </Show>
-              <Button
-                as="a"
-                variant="default"
-                class="account-login-primary"
-                href={APP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t("server.setup.openApp")}
-              </Button>
-              <div class="account-login-footer">
-                <p class="account-login-local-data">{t("server.setup.signOutDescription")}</p>
-              </div>
-            </section>
-          </div>
-        </main>
-      )}
-    </Show>
+                </Show>
+              </>
+            )}
+          </Show>
+        </section>
+      </div>
+    </main>
   );
 }

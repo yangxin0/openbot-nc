@@ -469,7 +469,6 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "الاستماع",
   "mobile.settings.voice.tab.speaking": "التحدث",
-  "mobile.settings.voice.tab.gptLive": "GPT المباشر",
   "mobile.settings.voice.pause.title": "التوقف قبل الإرسال",
   "mobile.settings.voice.pause.label": "انتظار كلمات جديدة",
   "mobile.settings.voice.pause.footer":
@@ -478,21 +477,6 @@ export const messages = {
   "mobile.settings.voice.speed.title": "سرعة الردود",
   "mobile.settings.voice.speed.footer": "سرعة الردود التي يقرؤها OpenBot بصوت عالٍ، وكذلك في المحادثة الصوتية.",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT Live Voice",
-  "mobile.settings.voice.gptLive.footer":
-    "في محادثة صوتية مع وكيل، يستمع GPT Live Voice ويتحدث بدلًا من هذا الهاتف. يستخدم تسجيل دخول Codex (ChatGPT) على الكمبيوتر الذي يشغّل الخادم. ينتقل صوتك بين هذا الهاتف وOpenAI، وتنطق OpenAI ردود الوكيل. يحتاج إلى خادم يدعمه؛ الخوادم الأخرى تستخدم صوت هذا الهاتف.",
-  "mobile.settings.voice.gptLive.automatic": "تلقائي",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "تتحدث OpenAI بهذا الصوت في محادثتك الصوتية التالية. مع «تلقائي» تختار OpenAI الصوت.",
-  "mobile.settings.voice.gptLive.serversTitle": "الخوادم",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "اضغط على خادم يحتاج إلى تسجيل الدخول لربط Codex بحساب ChatGPT. لا يرى تسجيل دخول الخادم إلا المالك أو المسؤول.",
-  "mobile.settings.voice.gptLive.account": "حساب الصوت المباشر في GPT",
-  "mobile.settings.voice.gptLive.status.ready": "جاهز",
-  "mobile.settings.voice.gptLive.status.supported": "مدعوم",
-  "mobile.settings.voice.gptLive.status.offline": "غير متصل",
-  "mobile.settings.voice.gptLive.status.update": "يحتاج إلى إصدار أحدث من OpenBot على الكمبيوتر الخاص به",
-  "mobile.settings.voice.gptLive.status.signIn": "سجّل الدخول إلى Codex باستخدام ChatGPT",
   "mobile.settings.voice.server.title": "خادم الصوت",
   "mobile.settings.voice.server.row": "خادم متوافق مع OpenAI",
   "mobile.settings.voice.server.notSetUp": "غير معدّ",

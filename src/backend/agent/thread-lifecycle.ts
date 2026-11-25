@@ -170,7 +170,6 @@ export interface ThreadLifecycleOptions {
   passwordVaultConnected?: () => boolean;
   vaultItems?: (agentId: string) => VaultContents;
   serverHost?: boolean;
-  hostedStorageGb?: () => number | null;
   agentCursorDrawn?: boolean;
   computerUseOnWayland?: boolean;
   computerUseInputRefused?: () => boolean;
@@ -204,7 +203,6 @@ export class ThreadLifecycle {
   readonly #passwordVaultConnected: () => boolean;
   readonly #vaultItems: (agentId: string) => VaultContents;
   readonly #serverHost: boolean;
-  readonly #hostedStorageGb: () => number | null;
   readonly #agentCursorDrawn: boolean;
   readonly #computerUseOnWayland: boolean;
   readonly #computerUseInputRefused: () => boolean;
@@ -247,7 +245,6 @@ export class ThreadLifecycle {
     this.#passwordVaultConnected = options.passwordVaultConnected ?? (() => false);
     this.#vaultItems = options.vaultItems ?? (() => ({ available: false, cards: false, contacts: false }));
     this.#serverHost = options.serverHost ?? false;
-    this.#hostedStorageGb = options.hostedStorageGb ?? (() => null);
     this.#agentCursorDrawn = options.agentCursorDrawn ?? false;
     this.#computerUseOnWayland = options.computerUseOnWayland ?? false;
     this.#computerUseInputRefused = options.computerUseInputRefused ?? (() => false);
@@ -1175,7 +1172,6 @@ export class ThreadLifecycle {
       passwordVault: this.#passwordVaultConnected(),
       vaultItems: this.#vaultItems(agent.id),
       serverHost: this.#serverHost,
-      hostedStorageGb: this.#hostedStorageGb(),
       agentCursorDrawn: this.#agentCursorDrawn,
       computerUseOnWayland: this.#computerUseOnWayland,
       computerUseInputRefused: this.#computerUseInputRefused(),

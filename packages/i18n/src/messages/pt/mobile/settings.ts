@@ -451,7 +451,6 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "Ouvir",
   "mobile.settings.voice.tab.speaking": "Falar",
-  "mobile.settings.voice.tab.gptLive": "GPT ao vivo",
   "mobile.settings.voice.pause.title": "Pausa antes de enviar",
   "mobile.settings.voice.pause.label": "Esperar novas palavras",
   "mobile.settings.voice.pause.footer":
@@ -461,21 +460,6 @@ export const messages = {
   "mobile.settings.voice.speed.footer":
     "A velocidade das respostas que o OpenBot lê em voz alta, também em uma conversa por voz.",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT Live Voice",
-  "mobile.settings.voice.gptLive.footer":
-    "Em uma conversa por voz com um agente, o GPT Live Voice ouve e fala no lugar deste telefone. Ele usa o login do Codex (ChatGPT) do computador que executa o servidor. Sua voz vai entre este telefone e a OpenAI, e a OpenAI fala as respostas do agente. Precisa de um servidor compatível; os outros servidores usam a voz deste telefone.",
-  "mobile.settings.voice.gptLive.automatic": "Automática",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "A OpenAI fala com esta voz na sua próxima conversa por voz. Com Automática, a OpenAI escolhe a voz.",
-  "mobile.settings.voice.gptLive.serversTitle": "Servidores",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "Toque num servidor que precisa de login para conectar o Codex a uma conta do ChatGPT. Só um proprietário ou administrador vê o login de um servidor.",
-  "mobile.settings.voice.gptLive.account": "Conta da voz ao vivo do GPT",
-  "mobile.settings.voice.gptLive.status.ready": "Pronto",
-  "mobile.settings.voice.gptLive.status.supported": "Compatível",
-  "mobile.settings.voice.gptLive.status.offline": "Offline",
-  "mobile.settings.voice.gptLive.status.update": "Precisa de um OpenBot mais recente no computador dele",
-  "mobile.settings.voice.gptLive.status.signIn": "Entre no Codex com o ChatGPT",
   "mobile.settings.voice.server.title": "Servidor de voz",
   "mobile.settings.voice.server.row": "Servidor compatível com OpenAI",
   "mobile.settings.voice.server.notSetUp": "Não configurado",

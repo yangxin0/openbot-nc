@@ -140,11 +140,6 @@ import {
   CONVERSATION_UNREAD_FROM_CAPABILITY,
   CONVERSATION_UNREAD_FROM_ROUTE,
 } from "@openbot/contracts/team-protocol/conversation-unread-from-v1";
-import {
-  decodeFeedbackWithdrawResult,
-  FEEDBACK_WITHDRAW_CAPABILITY,
-  FEEDBACK_WITHDRAW_ROUTES,
-} from "@openbot/contracts/team-protocol/feedback-withdraw-v1";
 import { MESSAGE_DELETE_CAPABILITY, MESSAGE_DELETE_ROUTES } from "@openbot/contracts/team-protocol/message-delete-v1";
 import {
   decodeMessagePinsResponse,
@@ -281,7 +276,6 @@ import {
   parseSteerQueuedMessage,
   parseUpdateAgent,
   parseUpdateQueuedMessage,
-  parseWithdrawFeedback,
 } from "./agent-inputs";
 import type { IpcGroupHandlers } from "./define-ipc-group";
 import { readRemoteAgentStatus } from "./remote-agent-status";
@@ -1145,19 +1139,6 @@ export function agentIpcHandlers({
                 taskId: input.taskId,
                 messageId: input.messageId,
               }),
-      }),
-      withdrawFeedback: scopedHandler(parseWithdrawFeedback, {
-        local: (input) => runCauseEffect(service.withdrawFeedback(input)),
-        remote: (input, serverId) => {
-          if (!remoteServers.supportsCapability(serverId, FEEDBACK_WITHDRAW_CAPABILITY))
-            throw new Error(sourceText("error.backend.feedbackWithdrawRemoteUnsupported"));
-          return runCauseEffect(
-            remoteServers.request(serverId, FEEDBACK_WITHDRAW_ROUTES.withdraw, decodeFeedbackWithdrawResult, {
-              method: "POST",
-              body: { agentId: input.agentId, messageId: input.messageId },
-            }),
-          );
-        },
       }),
       sendMessage: scopedHandler(parseSendMessage, {
         local: (input) => runCauseEffect(service.sendMessage(input, host.conversationSender())),

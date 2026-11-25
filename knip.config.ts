@@ -108,7 +108,7 @@ const config: KnipConfig = {
       ],
     },
     "remote/api": {
-      entry: ["src/capacity-report.ts"],
+      entry: ["src/capacity-report.ts", "src/relay/main.ts"],
       project: ["src/**/*.ts"],
     },
     "packages/i18n": {

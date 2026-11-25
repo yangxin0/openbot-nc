@@ -25,22 +25,9 @@ export const messages = {
   "status.messaging.onlyRequester": "רק {user} יכול לבצע זאת. אפשר גם לענות במארח OpenBot.",
   "status.messaging.hostOnly": "רק מארח OpenBot יכול לענות על הבקשה הזו.",
   "status.messaging.filesSkipped": "חלק מהקבצים לא נשלחו: {names}.",
-  "status.messaging.orchestratorName": "Slack Orchestrator",
-  "status.messaging.orchestratorTitle": "עונה ב-Slack ושואל את הצוות",
-  "status.messaging.discordNoAgent": "עדיין אין סוכן שיכול לענות כאן. יש להוסיף את Discord Orchestrator ב-OpenBot.",
-  "status.messaging.discordOrchestratorName": "Discord Orchestrator",
-  "status.messaging.discordOrchestratorTitle": "עונה ב-Discord ושואל את הצוות",
   "status.messaging.integrationsSection": "שילובים",
-  "status.messaging.signInReceived": "OpenBot קיבל את התקנת Slack. אפשר לסגור את הלשונית הזו.",
-  "status.messaging.signInUnknown": "OpenBot לא התחיל את התקנת Slack הזו. יש להתחיל אותה שוב ב-OpenBot.",
-  "status.messaging.telegramNoAgent":
-    "עדיין אין סוכן שיכול לענות כאן. ב-OpenBot, יש לפתוח את חנות > אפליקציות > Telegram וללחוץ על הוספת סוכן.",
-  "status.messaging.telegramLinked":
-    "OpenBot מחובר לצ'אט הזה. אפשר לתייג את {bot} או להשיב להודעה של OpenBot כדי לשאול את הסוכנים.",
   "status.messaging.telegramNotLinked":
     "OpenBot לא מחובר לצ'אט הזה. כדי לחבר אותו, יש לפתוח את אפליקציית OpenBot, לעבור אל חנות ← אפליקציות ← Telegram ולבחור „הוספה לקבוצה” או „פתיחת צ'אט ישיר”.",
-  "status.messaging.telegramOrchestratorName": "Telegram Orchestrator",
-  "status.messaging.telegramOrchestratorTitle": "עונה ב-Telegram ושואל את הצוות",
   "status.messaging.whatsappNoAgent": "עדיין אין סוכן שיכול לענות כאן. יש להוסיף את WhatsApp Orchestrator ב-OpenBot.",
   "status.messaging.whatsappApprovalMenu": "יש להשיב 1 לאישור או 2 לדחייה.",
   "status.messaging.whatsappStopMenu": "יש להשיב stop כדי לעצור.",

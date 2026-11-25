@@ -43,7 +43,6 @@ import { matchesShortcut } from "../../keyboard-shortcut-preference";
 import { holdNativeBrowserPage, reserveNativeBrowserPageInset } from "../../native-browser-page";
 import { createScopeGuard } from "../../scope-lifetime";
 import { serverSupportsCapability } from "../servers/server-capabilities";
-import { codexLiveAccess } from "../speech/codex-live-access";
 import { followDictatedChannelReply } from "../speech/speech-replies";
 import { insideOverlay } from "../window/workspace-shortcuts";
 import { createAttachmentImportSounds } from "./attachment-import-sounds";
@@ -2207,11 +2206,7 @@ export function createConversationViewScope(props: ConversationProps) {
   );
 
   const browserPageVisible = () =>
-    Boolean(shownBrowserSurface()) &&
-    !props.browserVisibilitySuspended &&
-    !props.globalOverlayOpen &&
-    !dialogShown() &&
-    !props.remoteDesktopVisible;
+    Boolean(shownBrowserSurface()) && !props.browserVisibilitySuspended && !props.globalOverlayOpen && !dialogShown();
   createEffect(
     () =>
       props.browserEnabled !== false &&
@@ -2566,11 +2561,7 @@ export function createConversationViewScope(props: ConversationProps) {
       () => ({ view: channel.replyView(), serverId: props.server?.id ?? "local" }),
       ({ view, serverId }) => followDictatedChannelReply({ serverId, agentId: channel.id }, view),
     );
-  const voiceConversationAvailable = () =>
-    channel
-      ? !props.runtime
-      : !props.runtime ||
-        (props.runtime.liveVoice !== undefined && codexLiveAccess(props.agentStatus.providers) !== "signIn");
+  const voiceConversationAvailable = () => !props.runtime;
   const voiceConversationOpen = () => {
     const ownerId = conversationOwnerId(props);
     return Boolean(ownerId && controller.voiceSessions.active(ownerId));
@@ -2585,7 +2576,7 @@ export function createConversationViewScope(props: ConversationProps) {
     const ownerId = conversationOwnerId(props);
     if (ownerId) controller.voiceSessions.stop(ownerId);
   }
-  onCleanup(() => controller.voiceSessions.end("transcribed"));
+  onCleanup(() => controller.voiceSessions.end());
   const startVoiceConversation = (agentId: string) =>
     createVoiceConversation({
       agentId,

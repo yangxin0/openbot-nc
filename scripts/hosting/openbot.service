@@ -1,18 +1,18 @@
 [Unit]
 Description=OpenBot hosted server
-Wants=network-online.target openbot-update-apply.service
+Wants=network-online.target openbot-nc-update-apply.service
 After=network-online.target display-manager.service
-ConditionPathExists=!/run/openbot-pre-stop
+ConditionPathExists=!/run/openbot-nc-pre-stop
 
 [Service]
 Type=simple
 User=@SERVICE_USER@
-RuntimeDirectory=openbot
+RuntimeDirectory=openbot-nc
 RuntimeDirectoryMode=0700
-Environment=XDG_RUNTIME_DIR=/run/openbot
-ExecStartPre=-+/opt/OpenBot/hosted/openbot-hosted-update trigger
-ExecStart=/opt/OpenBot/hosted/openbot-hosted-server
-ExecStop=/opt/OpenBot/hosted/openbot-hosted-server --stop
+Environment=XDG_RUNTIME_DIR=/run/openbot-nc
+ExecStartPre=-+/opt/OpenBot-NC/hosted/openbot-hosted-update trigger
+ExecStart=/opt/OpenBot-NC/hosted/openbot-hosted-server
+ExecStop=/opt/OpenBot-NC/hosted/openbot-hosted-server --stop
 Restart=always
 RestartSec=10
 RestartPreventExitStatus=78

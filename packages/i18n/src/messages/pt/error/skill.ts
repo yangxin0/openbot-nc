@@ -20,9 +20,7 @@ export const messages = {
   "error.skill.frontmatterInvalid": "O cabeçalho de SKILL.md não é um YAML válido.",
   "error.skill.descriptionLength": "SKILL.md precisa de uma descrição de 1 a {limit} caracteres.",
   "error.skill.nameMismatch": 'SKILL.md precisa de "name: {slug}", igual ao nome da pasta.',
-  "error.skill.draftExpired": "O pacote de habilidade selecionado expirou. Escolha-o novamente.",
   "error.skill.localHasNoVersion": "Uma habilidade local não tem uma versão publicada.",
-  "error.skill.publishLocalFirst": "Publique as habilidades locais separadamente antes de publicar este agente.",
   "error.skill.bundleMismatch": "A habilidade baixada não corresponde ao registro assinado no catálogo.",
   "error.skill.metadataMismatch": "Os metadados da habilidade baixada não correspondem ao catálogo.",
   "error.skill.folderTaken": "Outra habilidade instalada usa este nome de pasta.",
@@ -39,15 +37,10 @@ export const messages = {
   "error.skill.localLibraryUnavailable": "A biblioteca de habilidades locais está indisponível.",
   "error.skill.lockInvalid": "O registro da habilidade instalada é inválido. Ele não foi alterado.",
   "error.skill.installPathSymlink": "Os caminhos de instalação de habilidades não podem conter links simbólicos.",
-  "error.skill.duplicateSlug": 'Duas habilidades se chamam "{slug}". Renomeie uma delas antes de publicar.',
-  "error.skill.publishNeedsRepair": "{name} tem alterações locais ou precisa de reparos antes de publicar.",
-  "error.skill.publishUntracked":
-    "{name} foi instalada antes do controle exato de versões. Atualize ou repare a habilidade antes de publicar.",
   "error.skill.tooManySkills": "Um agente pode ter até {limit} habilidades.",
   "error.skill.unmanagedExists": "Uma habilidade não gerenciada já existe em {path}.",
   "error.skill.managedSlug":
     "O OpenBot dá a cada agente sua própria habilidade {slug}. Dê outro nome a esta habilidade.",
-  "error.skill.templateMarkdownTooLarge": "{name}: SKILL.md tem mais de 64 KB. Encurte o texto antes de publicar.",
   "error.skill.localNoRevisions": "A habilidade local não tem revisões publicadas.",
   "error.skill.localNotFound": "Esta habilidade local não existe. Confira o ID dela na lista de habilidades locais.",
   "error.skill.localRevisionNotFound":
@@ -72,5 +65,4 @@ export const messages = {
   "error.skill.githubTooLarge":
     "O OpenBot não consegue ler todos os arquivos de {repository}. O repositório é grande demais.",
   "error.skill.githubHostTooOld": "Atualize este servidor para adicionar habilidades do GitHub.",
-  "error.skill.publishGithub": "{name} vem do GitHub. Você só pode publicar as habilidades que criou.",
 } as const satisfies PartialTranslation<typeof source>;

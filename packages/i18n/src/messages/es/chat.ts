@@ -527,8 +527,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "El agente elimina este informe y lo envía de nuevo sin las partes que elijas.",
   "chat.feedbackSent.removeChoice": "Eliminarlo",
   "chat.feedbackSent.removeChoiceHint": "Quitarlo de GitHub. No puedes deshacerlo.",
-  "chat.feedbackSent.fixPrompt": "Elimina mi informe #{number} de GitHub y envíalo de nuevo sin esto:",
-  "chat.feedbackSent.removePrompt": "Elimina mi informe #{number} de GitHub.",
   "chat.feedbackSent.composerFilled": "La solicitud está en tu cuadro de mensaje. Complétala y luego envíala.",
   "chat.feedbackSent.keep": "Conservar",
   "chat.feedbackSent.removing": "Eliminando…",

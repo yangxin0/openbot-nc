@@ -403,8 +403,9 @@ try {
     assert.equal(highestCommonTeamProtocol(released.protocol, host.protocol), TEAM_PROTOCOL_V1);
     assert.equal(highestCommonTeamProtocol({ minimum: 1, maximum: TEAM_PROTOCOL_V3 }, host.protocol), TEAM_PROTOCOL_V3);
     const missing = released.capabilities.filter((capability) => !host.capabilities.includes(capability));
-    assert.deepEqual(missing, [], "The host stopped advertising a released v1 capability.");
-    return { protocol: host.protocol, releasedCapabilities: released.capabilities };
+    assert.deepEqual(missing, ["remote-desktop"], "The host stopped advertising a released v1 capability.");
+    assert.ok(!host.capabilities.includes("remote-desktop-setup"), "The host advertises remote desktop setup.");
+    return { protocol: host.protocol, releasedCapabilities: released.capabilities, missing };
   });
 
   await step("protocol gate: refuses clients that cannot be served, with the frozen error shape", async () => {

@@ -9,6 +9,4 @@ export const messages = {
   "error.app.macSecureStorageUnavailable": "האחסון המאובטח של macOS אינו זמין.",
   "error.app.secretStorageUnavailable": "אחסון הסודות של המערכת אינו זמין.",
   "error.app.remoteIdentityUnavailable": "זהות המארח המרוחק אינה זמינה.",
-  "error.app.iceServersMissing": "Remote Signal עדיין לא סיפק שרתי ICE.",
-  "error.app.finishLocalTest": "יש לסיים את הבדיקה המקומית לפני החלפת תצוגות.",
 } as const satisfies PartialTranslation<typeof source>;

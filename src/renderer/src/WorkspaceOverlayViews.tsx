@@ -1,11 +1,9 @@
-import type { AddedAgent, McpSignInState, ServerSummary } from "@openbot/contracts/ipc";
-import type { MarketplaceListingLink } from "@openbot/contracts/marketplace-links";
+import type { McpSignInState, ServerSummary } from "@openbot/contracts/ipc";
 import { MAC_APPS_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/mac-apps-limit-v1";
 import type { BrowserViewRuntime } from "@openbot/ui/features/browser/BrowserLiveView";
 import type { MarketplaceAppsBlock } from "@openbot/ui/features/marketplace/marketplace-model";
 import type { ComponentProps } from "@solidjs/web";
 import { createMemo, Loading, omit, Show } from "solid-js";
-import type { AgentTemplateInstallCalls } from "./features/agent-templates/agent-templates-port";
 import { ChannelCreateDialog } from "./features/channels/ChannelCreateDialog";
 import { useChannels } from "./features/channels/channels-context";
 import type { ConnectorRegistry } from "./features/connectors/connector-registry";
@@ -26,13 +24,7 @@ import {
 import type { MarketplaceCalls } from "./features/settings/marketplace-calls";
 import type { MarketplaceAgentRow } from "./features/settings/marketplace-controller";
 import { MARKETPLACE_PLUGINS } from "./features/settings/marketplace-plugin-catalog";
-import {
-  AgentTemplateInstall,
-  GlobalSearch,
-  JoinServerDialog,
-  MarketplaceModal,
-  ServerSettingsModal,
-} from "./lazy-views";
+import { GlobalSearch, JoinServerDialog, MarketplaceModal, ServerSettingsModal } from "./lazy-views";
 
 export function JoinServerOverlay(props: { open: boolean } & ComponentProps<typeof JoinServerDialog>) {
   const dialog = omit(props, "open");
@@ -53,12 +45,9 @@ export function MarketplaceOverlay(props: {
   activeAgentId: string;
   composerAvailable: boolean;
   onOpenAgent: (agentId: string) => void;
-  onAgentInstalled: (agent: AddedAgent, serverId?: string) => void | Promise<void>;
   pluginSlug?: string | null | undefined;
   pluginConnect?: boolean | undefined;
   onPluginSlugConsumed: () => void;
-  marketplaceListing?: MarketplaceListingLink | null | undefined;
-  onMarketplaceListingConsumed?: (() => void) | undefined;
   connectors?: ConnectorRegistry | undefined;
   calls?: MarketplaceCalls | undefined;
   browserRuntime?: BrowserViewRuntime | undefined;
@@ -127,15 +116,9 @@ export function MarketplaceOverlay(props: {
           agents={manage() ? props.agents : []}
           activeAgentId={manage() ? props.activeAgentId : ""}
           hostServerId={remoteAdminServer(props.server, "skills-admin-v1")?.id}
-          agentServerId={remoteAdminServer(props.server, "agent-install-v1")?.id}
-          agentUpdateServerId={remoteAdminServer(props.server, "agent-update-v1")?.id}
-          xApp={manage() && serverCanAdminister(props.server, "agent-install-v1")}
           githubSkills={manage() && serverCanAdminister(props.server, "github-skills-v1")}
           onOpenChange={(open) => {
-            if (!open) {
-              props.onPluginSlugConsumed();
-              props.onMarketplaceListingConsumed?.();
-            }
+            if (!open) props.onPluginSlugConsumed();
             props.onOpenChange(open);
           }}
           onTrySkill={
@@ -148,13 +131,10 @@ export function MarketplaceOverlay(props: {
               ? (agentId) => appendExample(agentId, (target) => controller.startSkillCreation(target))
               : undefined
           }
-          onAgentInstalled={props.onAgentInstalled}
           plugins={MARKETPLACE_PLUGINS}
           initialPluginSlug={props.pluginSlug ?? undefined}
           initialPluginConnect={props.pluginConnect}
           onInitialPluginSlugConsumed={props.onPluginSlugConsumed}
-          initialListing={props.marketplaceListing ?? undefined}
-          onInitialListingConsumed={props.onMarketplaceListingConsumed}
           pluginServerId={pluginServerId()}
           pluginsBlocked={pluginsBlocked()}
           pluginSignInApp={serverSupportsCapability(props.server, "mcp-sign-in-app-v1")}
@@ -175,32 +155,6 @@ export function MarketplaceOverlay(props: {
           }
         />
       </Loading>
-    </Show>
-  );
-}
-
-export function SharedAgentInstallOverlay(props: {
-  templateId: string | null | undefined;
-  server: ServerSummary | undefined;
-  calls?: AgentTemplateInstallCalls | undefined;
-  onOpenLink: (url: string) => void;
-  onClose: () => void;
-  onInstalled: (agent: AddedAgent, serverId?: string) => Promise<void>;
-}) {
-  return (
-    <Show when={props.templateId}>
-      {(templateId) => (
-        <Loading>
-          <AgentTemplateInstall
-            templateId={templateId()}
-            server={remoteAdminServer(props.server, "agent-install-v1")}
-            calls={props.calls}
-            onOpenLink={props.onOpenLink}
-            onClose={props.onClose}
-            onInstalled={props.onInstalled}
-          />
-        </Loading>
-      )}
     </Show>
   );
 }

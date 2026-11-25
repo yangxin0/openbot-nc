@@ -2,17 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "La configurazione dei permessi è disponibile su macOS.",
-  "status.remote.setupInstallHost": "Installa il componente host del desktop remoto, poi controlla di nuovo.",
-  "status.remote.setupUpdateRuntime": "Aggiorna il runtime del desktop remoto per controllare i permessi di macOS.",
-  "status.remote.setupCheckFailed":
-    "Sunshine non ha potuto completare il controllo dei permessi. Controlla la sessione dell'host, poi riprova.",
-  "status.remote.setupServiceFailed":
-    "Impossibile avviare il servizio del desktop remoto. Controlla che questo utente macOS abbia una sessione grafica attiva.",
-  "status.remote.connectingSunshine": "Connessione tramite Sunshine…",
-  "status.remote.switchingMonitor": "Cambio del monitor condiviso…",
-  "status.remote.controlConnected": "Controllo remoto connesso.",
-  "status.remote.controlFailed": "Controllo remoto non riuscito.",
   "status.remote.stagePreferences": "Caricamento delle preferenze locali della chat: {reason}",
   "status.remote.stageConnection": "Connessione al desktop: {reason}",
   "status.remote.stageCompatibility": "Controllo della compatibilità del desktop: {reason}",

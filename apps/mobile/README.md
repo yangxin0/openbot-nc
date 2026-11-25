@@ -655,7 +655,7 @@ and Google Play give the same version. `bun run mobile:release:published android
 When that change is on `main`, the `Publish the Android APK` workflow (`publish-android-apk.yml`)
 makes the draft of that version public (`scripts/android-apk-release.ts publish`). The account
 Worker deploys at the end of CI, some minutes later, so the file is there before the site links to
-it. The release is a GitHub prerelease, as the remote desktop runtime releases are: a prerelease
+it. The release is a GitHub prerelease: a prerelease
 cannot become the "latest" release, so desktop downloads and updates do not change, and the notes
 of the next desktop release do not start from it. The workflow fails if the "latest" release changed.
 Do not publish the draft by hand in the GitHub page with the prerelease mark cleared.
@@ -995,7 +995,7 @@ where available, `duration_ms`. Failure codes are fixed categories, never raw er
 | --- | --- |
 | `mobile_app_opened` | Cold start or return from background, with `signed_in`; iOS inactive overlays do not count as a new visit |
 | `mobile_pairing_action` | Sign-in scanner opened, camera permission result, QR redemption result, scanner cancelled; `entry_point` is `qr` or `link` (a pairing link) |
-| `mobile_connection_action` | Initial connection attempt, reconnection attempt, or connection lost; result, duration and bounded loading stage. From generation 5, the milliseconds from the start of the attempt to the Signal socket (`signal_socket_ms`), the Signal answer (`signal_ms`), the open data channels (`channels_ms`) and the host sign-in (`auth_ms`), when the attempt made a new peer connection; `route`, the candidate types and transports of the selected WebRTC path (for example `relay/tcp -> host/udp`; for a relay candidate, the transport from the phone to the relay); and `vpn` (`off`, `on`, `proxy` for a tunnel address in `198.18.0.0/15` as Clash-type proxy apps use, or `unknown`), also on `lost`. No address or VPN name is sent |
+| `mobile_connection_action` | Initial connection attempt, reconnection attempt, or connection lost; result, duration and bounded loading stage. From generation 5, the milliseconds from the start of the attempt to the Signal socket (`signal_socket_ms`), the Signal answer (`signal_ms`), the open data channels (`channels_ms`) and the host sign-in (`auth_ms`), when the attempt made a new peer connection; `route`, the candidate types and transports of the selected WebRTC path (for example `relay/tcp -> host/udp`; for a relay candidate, the transport from the phone to the relay); and `vpn` (`on` when the system reports a VPN connection, or `unknown`; an older app version also sends `off` and `proxy`), also on `lost`. No address or VPN name is sent |
 | `conversation_opened` | One visible-visit outcome and time to readable conversation, including cached/offline reads; failures when no readable conversation is available |
 | `message_send` | Host receipt or failure, attachment count, reply flag, provider/model/reasoning metadata when known |
 | `agent_input_action` | Submission of a structured prompt answer or an approval decision (`accept` or `decline`); no answer contents, command or path |

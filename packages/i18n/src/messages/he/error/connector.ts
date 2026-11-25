@@ -2,18 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/connector";
 
 export const messages = {
-  "error.connector.githubUnavailable": "בגרסה הזאת של OpenBot אין GitHub App.",
-  "error.connector.githubDenied": "ההתחברות ל-GitHub נדחתה.",
-  "error.connector.githubCodeExpired": "הקוד של GitHub פג תוקף. יש לחבר את GitHub מחדש.",
-  "error.connector.githubDeviceFlowDisabled": "ה-GitHub App לא מאפשר התחברות מהתקן.",
-  "error.connector.githubClientUnknown": "GitHub לא מכיר את ה-Client ID של ה-GitHub App הזה.",
-  "error.connector.githubUnexpected": "GitHub שלח תשובה לא צפויה: {detail}",
-  "error.connector.githubUnreachable": "OpenBot לא מצליח להגיע אל GitHub: {detail}",
-  "error.connector.githubOffline":
-    "OpenBot לא מצליח להגיע אל GitHub. יש לבדוק את החיבור לאינטרנט ואת הגדרות ה-DNS של המחשב או השרת שמריץ את OpenBot, ולנסות שוב.",
-  "error.connector.githubExpired": "החיבור ל-GitHub פג תוקף. יש לחבר את GitHub מחדש.",
-  "error.connector.githubFileUnreadable": "קובץ החיבור ל-GitHub אינו קריא.",
-  "error.connector.githubFileTooLarge": "קובץ החיבור ל-GitHub גדול מדי.",
   "error.connector.linkDenied": "ההתחברות ל-Link נדחתה.",
   "error.connector.linkCodeExpired": "ההתחברות ל-Link פגה. יש לחבר את Link מחדש.",
   "error.connector.linkUnexpected": "Link שלח תשובה לא צפויה: {detail}",

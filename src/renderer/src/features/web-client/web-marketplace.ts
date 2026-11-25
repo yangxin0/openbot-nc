@@ -1,15 +1,11 @@
-import { agentTemplateShareOrigin } from "@openbot/contracts/agent-template-links";
 import type { McpServerConfig, McpTestResult } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n";
 import { runTeamEffect } from "@openbot/team-client";
-import { createMarketplaceCatalog } from "@openbot/team-client/marketplace-catalog";
 import {
   cancelMcpSignIn,
   getHostAgentAccess,
   getHostMcpAccess,
   installAgentSkill,
-  installAgentTemplate,
-  installMarketplaceAgent,
   listAgentSkills,
   listMcpServers,
   listMcpSignIns,
@@ -31,7 +27,6 @@ import {
 import type { TeamApiRequest } from "@openbot/team-client/team-api-requests";
 import { currentText } from "@openbot/ui/text";
 import { Effect } from "effect";
-import type { AgentTemplateInstallCalls } from "../agent-templates/agent-templates-port";
 import type { MarketplaceCalls } from "../settings/marketplace-calls";
 import { webMcpRelay } from "./web-mcp-relay";
 
@@ -42,14 +37,10 @@ export interface WebHostSignIn {
   hostTab: () => boolean;
 }
 
-const noAgentInstall = () => currentText().t("webClient.error.agentInstallNotAllowed");
-
 export function createWebMarketplaceCalls(
-  accountFetch: typeof fetch,
   request: (serverId?: string) => TeamApiRequest,
   hostSignIn?: WebHostSignIn,
 ): MarketplaceCalls {
-  const catalog = createMarketplaceCatalog(accountFetch);
   const relay = webMcpRelay();
   const hostTabs = new Map<string, string | null>();
   const run = <T>(effect: Effect.Effect<T, { cause: unknown }>) =>
@@ -76,17 +67,6 @@ export function createWebMarketplaceCalls(
     }
   }
   return {
-    skills: {
-      list: (query) => runTeamEffect(catalog.skills.list(query)),
-      get: (id) => runTeamEffect(catalog.skills.get(id)),
-      getBySlug: (slug) => runTeamEffect(catalog.skills.getBySlug(slug)),
-    },
-    agents: {
-      list: (query) => runTeamEffect(catalog.agents.list(query)),
-      get: (id) => runTeamEffect(catalog.agents.get(id)),
-      getListing: (id) => runTeamEffect(catalog.agents.getListing(id)),
-    },
-    shareOrigin: agentTemplateShareOrigin(window.location.origin),
     agentSkills: (serverId) => ({
       listInstalled: async (agentId) =>
         runTeamEffect(listAgentSkills(request(serverId), agentId).pipe(Effect.mapError((error) => error.cause))),
@@ -144,41 +124,12 @@ export function createWebMarketplaceCalls(
       paste: (url, address) => relay.paste(url, address),
       hostTab: async (url) => hostTabs.get(url) ?? null,
     },
-    addAgent: async (input, serverId) => {
-      if (!serverId) throw new Error(noAgentInstall());
-      return runTeamEffect(
-        installMarketplaceAgent(request(serverId), input).pipe(Effect.mapError((error) => error.cause)),
-      );
-    },
     openUrl: async (url) => {
       const protocol = URL.parse(url)?.protocol;
       if (protocol !== "https:" && protocol !== "http:") {
         throw new Error(currentText().t("webClient.error.linkBlocked"));
       }
       window.open(url, "_blank", "noopener");
-    },
-  };
-}
-
-export function createWebAgentTemplateCalls(
-  accountFetch: typeof fetch,
-  request: (serverId?: string) => TeamApiRequest,
-): AgentTemplateInstallCalls {
-  const catalog = createMarketplaceCatalog(accountFetch);
-  return {
-    agentTemplates: {
-      get: (id) => runTeamEffect(catalog.templates.get(id)),
-      install: async () => {
-        throw new Error(noAgentInstall());
-      },
-    },
-    agent: {
-      addTemplateAgent: async (input, serverId) => {
-        if (!serverId) throw new Error(noAgentInstall());
-        return runTeamEffect(
-          installAgentTemplate(request(serverId), input).pipe(Effect.mapError((error) => error.cause)),
-        );
-      },
     },
   };
 }

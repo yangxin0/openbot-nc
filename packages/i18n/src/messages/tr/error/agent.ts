@@ -32,8 +32,6 @@ export const messages = {
   "error.agent.commitEffectsFailed": "İşlem kaydedildi, ancak kaydedilen etkileri başarısız oldu.",
   "error.agent.settingsLocalOnly": "Ajan ayarları yalnızca ajanı çalıştıran bilgisayarda değiştirilebilir.",
   "error.agent.skillsLocalOnly": "Beceriler yalnızca ajanı çalıştıran bilgisayarda değiştirilebilir.",
-  "error.agent.addLocalOnly": "Ajanlar yalnızca onları çalıştıran bilgisayarda eklenebilir.",
-  "error.agent.joinedServerUpdate": "Katılınan bir sunucudaki ajan buradan güncellenemez.",
   "error.agent.searchQueryRequired": "Bir arama sorgusu gereklidir.",
   "error.agent.messageTooLong": "Mesaj çok uzun.",
   "error.agent.messageOrAttachmentRequired": "Bir mesaj veya ek gereklidir.",
@@ -165,8 +163,6 @@ export const messages = {
     "Yerel betikler bu ajanın rutinlerini son bir saat içinde {limit} kez çalıştırdı. Daha sonra tekrar deneyin.",
   "error.agent.workspaceOnlyMacOnly":
     "Bu sağlayıcıda “Yalnızca çalışma alanı” seçeneği yalnızca macOS'ta kullanılabilir. Ajan ayarlarından Tam erişim'i seçin.",
-  "error.agent.lowMemory":
-    "Bu sunucunun belleği azaldı. Mesajınız kuyrukta bekler ve bellek boşaldığında başlar. Daha büyük bir plan sunucuya daha fazla bellek sağlar.",
   "error.agent.lowMemoryServer":
     "Bu sunucunun belleği azaldı. Mesajınız kuyrukta bekler ve bellek boşaldığında başlar.",
   "error.agent.workspaceOnlyToolMissing":

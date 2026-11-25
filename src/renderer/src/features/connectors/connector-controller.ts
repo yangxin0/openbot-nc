@@ -5,9 +5,6 @@ import type { ConnectorId } from "@openbot/ui/features/connectors/connectors";
 import { currentText } from "@openbot/ui/text";
 import { createSignal, onCleanup } from "solid-js";
 import { actionToast } from "../../action-toast";
-import { type DesktopAnalyticsProperties, desktopAnalytics } from "../../analytics";
-
-export type ConnectorAnalyticsAction = DesktopAnalyticsProperties<"connector_action">["action"];
 
 export interface ConnectorController {
   readonly id: ConnectorId;
@@ -22,7 +19,7 @@ export interface ConnectorController {
 
 export const NO_WATCH = () => () => undefined;
 
-export function createConnectorActions(failed: AppTextKey, connector: ConnectorId) {
+export function createConnectorActions(failed: AppTextKey) {
   const [busy, setBusy] = createSignal(false);
   let attempt = 0;
   let disposed = false;
@@ -42,21 +39,17 @@ export function createConnectorActions(failed: AppTextKey, connector: ConnectorI
       waits?: boolean;
       done?: (result: T) => void;
       settled?: () => void;
-      track?: ConnectorAnalyticsAction;
     } = {},
   ) => {
     const waits = options.waits ?? true;
     if (waits && busy()) return;
     const current = ++attempt;
     setBusy(waits);
-    const track = options.track;
     void action()
       .then((result) => {
-        if (track) desktopAnalytics.track("connector_action", { connector, action: track, result: "succeeded" });
         if (!disposed && current === attempt) options.done?.(result);
       })
       .catch((error: unknown) => {
-        if (track) desktopAnalytics.track("connector_action", { connector, action: track, result: "failed" });
         if (disposed || current !== attempt) return;
         report(error);
       })

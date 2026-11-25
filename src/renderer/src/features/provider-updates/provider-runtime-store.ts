@@ -10,7 +10,6 @@ import {
   type ProviderRuntimesDesktopApi,
   type ServerSummary,
 } from "@openbot/contracts/ipc";
-import { matchingSourceKeys } from "@openbot/i18n";
 import {
   type ProviderUpdate,
   providerUpdateAvailable,
@@ -18,7 +17,6 @@ import {
 } from "@openbot/ui/features/provider-updates/provider-update";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createSignal, flush, onSettled } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { FALLBACK_PROVIDER_RUNTIMES } from "../../app-defaults";
 import {
   dismissProviderUpdateToast,
@@ -36,37 +34,6 @@ function downloadRuns(status: ProviderRuntimeStatus | undefined): boolean {
 }
 
 export type ProviderRuntimeSource = Omit<ProviderRuntimesDesktopApi, "measureDownload" | "removeDownload">;
-
-const DOWNLOAD_FAILURE_CODES: Readonly<Record<string, string>> = {
-  "error.provider.diskSpace": "disk_space",
-  "error.provider.downloadHttp": "download_http",
-  "error.provider.downloadIntegrity": "download_integrity",
-  "error.provider.downloadSize": "download_size",
-  "error.provider.claudeArchivePath": "archive_invalid",
-  "error.provider.claudePackageMismatch": "archive_invalid",
-  "error.provider.claudeChecksum": "checksum_failed",
-  "error.provider.runtimeChecksum": "checksum_failed",
-  "error.provider.installRecordMismatch": "checksum_failed",
-  "error.provider.unexpectedVersion": "version_mismatch",
-  "error.provider.cpuUnsupported": "cpu_unsupported",
-  "error.provider.largeMemoryPages": "large_memory_pages",
-  "error.provider.ipv6Missing": "ipv6_missing",
-  "error.provider.windowsBlocked": "windows_blocked",
-  "error.provider.cliUpdateFailed": "cli_update_failed",
-  "error.provider.cliActivateFailed": "cli_activate_failed",
-  "error.provider.cliNewVersionNotStarted": "cli_activate_failed",
-  "error.provider.cliSelectFailed": "cli_select_failed",
-  "error.provider.cliSigningIn": "cli_signing_in",
-  "error.provider.off": "provider_off",
-  "status.provider.downloadStopped": "download_stopped",
-  "error.provider.hermesInstallFailed": "hermes_install_failed",
-  "error.provider.hermesNeedsGitCurl": "hermes_prerequisites",
-};
-
-function downloadFailureCode(message: string | null): string {
-  const key = message === null ? undefined : matchingSourceKeys(message)[0];
-  return (key && DOWNLOAD_FAILURE_CODES[key]) ?? "runtime_download_failed";
-}
 
 export function hostConnection(server: ServerSummary | undefined): number | undefined {
   return server?.kind === "remote" && server.state === "online" ? (server.connectionSequence ?? 0) : undefined;
@@ -183,22 +150,7 @@ export function createProviderRuntimeStore(
     hostReconnected = false;
     for (const provider of MANAGED_RUNTIME_PROVIDERS) {
       const previousPhase = current.providers[provider].phase;
-      const nextPhase = snapshot.providers[provider].phase;
       if (previousPhase !== "downloading" && previousPhase !== "finishing") continue;
-      if (nextPhase === "ready") {
-        desktopAnalytics.scope().track("provider_action", {
-          provider,
-          action: "download_completed",
-          result: "succeeded",
-        });
-      } else if (nextPhase === "download-error") {
-        desktopAnalytics.scope().track("provider_action", {
-          provider,
-          action: "download_completed",
-          result: "failed",
-          failure_code: downloadFailureCode(snapshot.providers[provider].message),
-        });
-      }
     }
     for (const provider of INSTALLER_PROVIDERS) {
       const previousPhase = current.providers[provider]?.phase;
@@ -206,13 +158,6 @@ export function createProviderRuntimeStore(
       const next = snapshot.providers[provider];
       if (!next || next.phase === "downloading" || next.phase === "finishing" || next.phase === "not-downloaded")
         continue;
-      desktopAnalytics.scope().track("provider_action", {
-        provider,
-        action: "download_completed",
-        ...(next.phase === "download-error"
-          ? { result: "failed", failure_code: downloadFailureCode(next.message) }
-          : { result: "succeeded" }),
-      });
     }
     setProviderRuntimeSnapshot(snapshot);
     for (const provider of MANAGED_RUNTIME_PROVIDERS) {
@@ -300,17 +245,9 @@ export function createProviderRuntimeStore(
         () => retryDownload(provider),
       );
     }
-    const analytics = desktopAnalytics.scope();
-    analytics.track("provider_action", { provider, action: "download_started", result: "succeeded" });
     try {
       applyFrom(source, await source.download(provider));
     } catch (error) {
-      analytics.track("provider_action", {
-        provider,
-        action: "download_completed",
-        result: "failed",
-        failure_code: "download_failed",
-      });
       if (update && isUpdate) {
         updating.delete(provider);
         if (!disposed)
@@ -344,11 +281,6 @@ export function createProviderRuntimeStore(
     installing.delete(provider);
     dismissProviderUpdateToast(provider);
     applyFrom(source, snapshot);
-    desktopAnalytics.scope().track("provider_action", {
-      provider,
-      action: "download_cancelled",
-      result: "succeeded",
-    });
   }
 
   createEffect(

@@ -2,17 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "권한 설정은 macOS에서만 사용할 수 있어요.",
-  "status.remote.setupInstallHost": "원격 데스크톱 호스트 구성 요소를 설치한 후 다시 확인해 주세요.",
-  "status.remote.setupUpdateRuntime": "macOS 권한을 확인하려면 원격 데스크톱 런타임을 업데이트해 주세요.",
-  "status.remote.setupCheckFailed":
-    "Sunshine이 권한 확인을 완료하지 못했어요. 호스트 세션을 확인한 후 다시 시도해 주세요.",
-  "status.remote.setupServiceFailed":
-    "원격 데스크톱 서비스를 시작할 수 없어요. 이 macOS 사용자에게 활성 GUI 세션이 있는지 확인해 주세요.",
-  "status.remote.connectingSunshine": "Sunshine으로 연결 중…",
-  "status.remote.switchingMonitor": "공유 모니터 전환 중…",
-  "status.remote.controlConnected": "원격 제어에 연결했어요.",
-  "status.remote.controlFailed": "원격 제어에 실패했어요.",
   "status.remote.stagePreferences": "로컬 채팅 환경설정 불러오는 중: {reason}",
   "status.remote.stageConnection": "데스크톱에 연결 중: {reason}",
   "status.remote.stageCompatibility": "데스크톱 호환성 확인 중: {reason}",

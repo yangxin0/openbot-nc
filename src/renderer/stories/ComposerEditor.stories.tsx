@@ -106,7 +106,7 @@ const longDescriptionSkill: InstalledSkill = {
 };
 
 const browserTabs: ComposerBrowserTab[] = [
-  { id: "browser-tab-docs", title: "OpenBot documentation", url: "https://openbot.run/docs" },
+  { id: "browser-tab-docs", title: "OpenBot documentation", url: "https://example.com/docs" },
   { id: "browser-tab-linear", title: "Plans and pricing – Linear", url: "https://linear.app/pricing" },
   {
     id: "browser-tab-github",

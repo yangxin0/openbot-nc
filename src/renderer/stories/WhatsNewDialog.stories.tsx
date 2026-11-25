@@ -93,7 +93,6 @@ const args: Parameters<typeof WhatsNewDialog>[0] = {
   previousVersion: "0.22.0",
   notes: { status: "ready", releases: [RELEASE_0_23] },
   onRetry: fn(),
-  onOpenChangelog: fn(),
 };
 
 const meta = {

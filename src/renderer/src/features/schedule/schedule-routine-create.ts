@@ -3,9 +3,7 @@ import type {
   RoutineCalendarCreate,
   RoutineCalendarNewRoutine,
 } from "@openbot/ui/features/conversation/RoutineCalendarCreateCard";
-import { desktopAnalytics } from "../../analytics";
 import type { ConversationRuntime } from "../conversation/conversation-runtime";
-import { trackRoutineAction } from "../conversation/routine-analytics";
 import { desktopChatEventRoutinesApi } from "../conversation/routine-webhooks-api";
 import {
   type AgentRoutinesApi,
@@ -13,7 +11,6 @@ import {
   eventRoutinesPort,
   type RoutinesPort,
 } from "../conversation/routines-port";
-import { hostedUpsellRoutineCreated } from "../servers/hosted-server-upsell-controller";
 import { serverRoleCanAdminister, serverSupportsCapability } from "../servers/server-capabilities";
 
 function desktopAgentRoutinesApi(serverId: string): AgentRoutinesApi {
@@ -62,31 +59,21 @@ export function scheduleRoutineCreate(
     },
     save: async (routine: RoutineCalendarNewRoutine) => {
       const port = ports(routine.agentId);
-      const startedAt = performance.now();
-      const analytics = desktopAnalytics.scope();
-      const tracked: Parameters<typeof trackRoutineAction>[2] = { triggerKind: "schedule", schedule: routine.schedule };
-      try {
-        const result = await port.save({
-          routineId: null,
-          name: routine.name,
-          instruction: routine.instruction,
-          active: true,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-          schedule: routine.schedule,
-          trigger: { kind: "schedule", schedule: routine.schedule },
-          ...(routine.limitPolicy ? { limitPolicy: routine.limitPolicy } : {}),
-          ...(routine.missedPolicy ? { missedPolicy: routine.missedPolicy } : {}),
-          ...(port.runIn && routine.runIn ? { runIn: routine.runIn } : {}),
-        });
-        trackRoutineAction(analytics, "create", tracked, startedAt, "succeeded");
-        hostedUpsellRoutineCreated({ id: result.routine.id, name: result.routine.name, agentId: null });
-        const place = result.routine.runIn ?? routine.runIn ?? "chat";
-        if (port.runIn && place !== (routine.runIn ?? "chat")) placeFailed();
-        saved();
-      } catch (caught) {
-        trackRoutineAction(analytics, "create", tracked, startedAt, "failed", caught);
-        throw caught;
-      }
+      const result = await port.save({
+        routineId: null,
+        name: routine.name,
+        instruction: routine.instruction,
+        active: true,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+        schedule: routine.schedule,
+        trigger: { kind: "schedule", schedule: routine.schedule },
+        ...(routine.limitPolicy ? { limitPolicy: routine.limitPolicy } : {}),
+        ...(routine.missedPolicy ? { missedPolicy: routine.missedPolicy } : {}),
+        ...(port.runIn && routine.runIn ? { runIn: routine.runIn } : {}),
+      });
+      const place = result.routine.runIn ?? routine.runIn ?? "chat";
+      if (port.runIn && place !== (routine.runIn ?? "chat")) placeFailed();
+      saved();
     },
   };
 }

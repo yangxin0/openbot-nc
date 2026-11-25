@@ -24,7 +24,6 @@ import { fn } from "storybook/test";
 import { defaultSidebarLayout } from "../src/features/sidebar/sidebar-sections";
 import { createWorkflowsController } from "../src/features/workflows/workflows-controller";
 import { keptPicture, type WorkflowHost } from "../src/features/workflows/workflows-port";
-import { createMockGitHubConnector } from "../src/preview/mock-github-connector";
 import { mockWorkflows } from "../src/preview/mock-workflows";
 import { STORY_AGENTS } from "./fixtures";
 import { STORY_CATALOGS, type StoryWorkflow } from "./workflow-story-data";
@@ -131,12 +130,6 @@ function storyWorkflowHost(workflows: readonly StoryWorkflow[]): WorkflowHost {
       decide: async (input) => {
         if (!fixtureSteps.has(input.stepId)) await api.decide(input);
       },
-      githubHistory: async (workflowId) => {
-        const live = await api.githubHistory(workflowId);
-        const fixture = fixtures.get(workflowId)?.github;
-        if (!fixture) return live;
-        return { deliveries: [...live.deliveries, ...fixture.deliveries], runs: [...live.runs, ...fixture.runs] };
-      },
     },
     onChanged(changed) {
       listeners.add(changed);
@@ -144,11 +137,7 @@ function storyWorkflowHost(workflows: readonly StoryWorkflow[]): WorkflowHost {
     },
     places: async () => [...STORY_CATALOGS.places],
     channels: async () => [...(STORY_CATALOGS.channels ?? [])],
-    discordServers: async () => [],
-    telegramChats: async () => [],
-    slackWorkspaces: async () => [],
     agentLevels: async () => null,
-    githubSupported: () => true,
     mediaSupported: () => true,
     mediaAccountSupported: () => true,
     mediaTransparentSupported: () => true,
@@ -169,7 +158,6 @@ function storyWorkflowHost(workflows: readonly StoryWorkflow[]): WorkflowHost {
     uploadPicture: async (file) => keptPicture(crypto.randomUUID(), file, URL.createObjectURL(file)),
     mediaUrl: () => null,
     mediaPreviewUrl: () => null,
-    githubConnector: createMockGitHubConnector(),
     hostName: () => undefined,
     openUrl: async () => undefined,
   };
@@ -190,7 +178,6 @@ export function WorkflowStory(props: {
           workflow={workflow()}
           features={features()}
           catalogs={props.catalogs ?? STORY_CATALOGS}
-          github={story.github}
           presence={props.presence}
           {...story.props}
         />
@@ -217,18 +204,7 @@ function WorkflowAppWindow(props: { children: JSX.Element }) {
         onUsage={() => setPage("usage")}
         onMarketplace={fn()}
         onSettings={() => setPage("settings")}
-        help={
-          <HelpMenu
-            news={[]}
-            triggerClass="window-rail-button"
-            onOpenWhatsNew={fn()}
-            onOpenChangelog={fn()}
-            onOpenGuides={fn()}
-            onOpenDiscord={fn()}
-            onReportProblem={fn()}
-            onSendFeedback={fn()}
-          />
-        }
+        help={<HelpMenu news={[]} triggerClass="window-rail-button" onOpenWhatsNew={fn()} />}
       />
       <div
         class="app-frame app-frame-edge app-frame-platform-darwin"
@@ -289,7 +265,6 @@ export function WorkflowInAppStory(props: {
             workflow={workflow()}
             features={features()}
             catalogs={STORY_CATALOGS}
-            github={story.github}
             frame="window"
             {...story.props}
             opening={props.opening === true || story.props.opening}

@@ -12,7 +12,6 @@ import type {
 } from "@openbot/contracts/ipc";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, flush, onCleanup } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { createSimpleContext } from "../../simple-context";
 import { useAuth } from "../account/account-context";
 import type { ServerSettingsSection } from "./ServerSettingsModal";
@@ -169,37 +168,17 @@ const ServerSettings = createSimpleContext({
       const server = serverSettingsTarget();
       if (!serverCanAdminister(server, "host-admin-v1"))
         throw new Error(currentText().t("server.settings.identityLocalOnly"));
-      const analytics = desktopAnalytics.scope();
       const serverKind = server.kind;
-      let operationSucceeded = false;
-      try {
-        if (serverKind === "local") {
-          const status = hostStatus().configured
-            ? await serversPort().host.updateIdentity(input)
-            : await serversPort().host.configure(input);
-          setHostStatus(status);
-        } else {
-          await serversPort().hostAdmin.updateIdentity(input, server.id);
-        }
-        analytics.track("team_action", {
-          action: "identity_saved",
-          result: "succeeded",
-          server_kind: serverKind,
-        });
-        operationSucceeded = true;
-        setServers(await serversPort().servers.list());
-        await refreshServerSettings(server.id);
-      } catch (error) {
-        if (!operationSucceeded) {
-          analytics.track("team_action", {
-            action: "identity_saved",
-            result: "failed",
-            server_kind: serverKind,
-            failure_code: "identity_save_failed",
-          });
-        }
-        throw error;
+      if (serverKind === "local") {
+        const status = hostStatus().configured
+          ? await serversPort().host.updateIdentity(input)
+          : await serversPort().host.configure(input);
+        setHostStatus(status);
+      } else {
+        await serversPort().hostAdmin.updateIdentity(input, server.id);
       }
+      setServers(await serversPort().servers.list());
+      await refreshServerSettings(server.id);
     }
 
     async function saveServerAppearance(appearance: ServerAppearance | null): Promise<void> {
@@ -230,10 +209,6 @@ const ServerSettings = createSimpleContext({
       setServers(await serversPort().servers.list());
     }
 
-    async function recheckScreenRecording(): Promise<void> {
-      setHostStatus(await serversPort().host.recheckScreenRecording());
-    }
-
     async function rotateHostKey(): Promise<void> {
       const server = serverSettingsTarget();
       if (server?.kind === "local") {
@@ -254,30 +229,13 @@ const ServerSettings = createSimpleContext({
     async function setLocalServerPublished(published: boolean): Promise<void> {
       const server = servers().find((candidate) => candidate.kind === "local");
       if (!server) throw new Error(currentText().t("server.settings.publicationLocalOnly"));
-      const analytics = desktopAnalytics.scope();
-      const action = published ? ("published" as const) : ("unpublished" as const);
-      let operationSucceeded = false;
-      try {
-        if (published && !hostStatus().configured)
-          setHostStatus(await serversPort().host.configure({ serverName: generatedServerName(signedInAccount()) }));
-        const status = published ? await serversPort().host.start() : await serversPort().host.stop();
-        if (published && status.phase !== "online") throw new Error("publish_failed");
-        analytics.track("team_action", { action, result: "succeeded", server_kind: "local" });
-        operationSucceeded = true;
-        setHostStatus(status);
-        setServers(await serversPort().servers.list());
-        if (serverSettingsTargetId() === server.id) await refreshServerSettings(server.id);
-      } catch (error) {
-        if (!operationSucceeded) {
-          analytics.track("team_action", {
-            action,
-            result: "failed",
-            server_kind: "local",
-            failure_code: published ? "publish_failed" : "unpublish_failed",
-          });
-        }
-        throw error;
-      }
+      if (published && !hostStatus().configured)
+        setHostStatus(await serversPort().host.configure({ serverName: generatedServerName(signedInAccount()) }));
+      const status = published ? await serversPort().host.start() : await serversPort().host.stop();
+      if (published && status.phase !== "online") throw new Error("publish_failed");
+      setHostStatus(status);
+      setServers(await serversPort().servers.list());
+      if (serverSettingsTargetId() === server.id) await refreshServerSettings(server.id);
     }
 
     async function createServerInvite(input: {
@@ -287,102 +245,30 @@ const ServerSettings = createSimpleContext({
     }): Promise<InviteSummary> {
       const server = serverSettingsTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
-      const analytics = desktopAnalytics.scope();
-      let operationSucceeded = false;
-      try {
-        const invite = await serverAdminPort(server).createInvite(input);
-        analytics.track("team_action", {
-          action: "invite_created",
-          result: "succeeded",
-          server_kind: server.kind,
-          role: input.role,
-          email_bound: Boolean(input.email),
-        });
-        operationSucceeded = true;
-        await refreshServerSettings(server.id);
-        return invite;
-      } catch (error) {
-        if (!operationSucceeded) {
-          analytics.track("team_action", {
-            action: "invite_created",
-            result: "failed",
-            server_kind: server.kind,
-            role: input.role,
-            email_bound: Boolean(input.email),
-            failure_code: "invite_create_failed",
-          });
-        }
-        throw error;
-      }
+      const invite = await serverAdminPort(server).createInvite(input);
+      await refreshServerSettings(server.id);
+      return invite;
     }
 
     async function updateServerMember(input: UpdateTeamMemberInput): Promise<void> {
       const server = serverSettingsTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
-      const analytics = desktopAnalytics.scope();
-      let operationSucceeded = false;
-      try {
-        await serverAdminPort(server).updateMember(input);
-        analytics.track("team_action", { action: "member_updated", result: "succeeded", server_kind: server.kind });
-        operationSucceeded = true;
-        await refreshServerSettings(server.id);
-      } catch (error) {
-        if (!operationSucceeded) {
-          analytics.track("team_action", {
-            action: "member_updated",
-            result: "failed",
-            server_kind: server.kind,
-            failure_code: "member_update_failed",
-          });
-        }
-        throw error;
-      }
+      await serverAdminPort(server).updateMember(input);
+      await refreshServerSettings(server.id);
     }
 
     async function removeServerMember(memberId: string): Promise<void> {
       const server = serverSettingsTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
-      const analytics = desktopAnalytics.scope();
-      let operationSucceeded = false;
-      try {
-        await serverAdminPort(server).removeMember(memberId);
-        analytics.track("team_action", { action: "member_removed", result: "succeeded", server_kind: server.kind });
-        operationSucceeded = true;
-        await refreshServerSettings(server.id);
-      } catch (error) {
-        if (!operationSucceeded) {
-          analytics.track("team_action", {
-            action: "member_removed",
-            result: "failed",
-            server_kind: server.kind,
-            failure_code: "member_remove_failed",
-          });
-        }
-        throw error;
-      }
+      await serverAdminPort(server).removeMember(memberId);
+      await refreshServerSettings(server.id);
     }
 
     async function revokeServerInvite(inviteId: string): Promise<void> {
       const server = serverSettingsTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
-      const analytics = desktopAnalytics.scope();
-      let operationSucceeded = false;
-      try {
-        await serverAdminPort(server).revokeInvite(inviteId);
-        analytics.track("team_action", { action: "invite_revoked", result: "succeeded", server_kind: server.kind });
-        operationSucceeded = true;
-        await refreshServerSettings(server.id);
-      } catch (error) {
-        if (!operationSucceeded) {
-          analytics.track("team_action", {
-            action: "invite_revoked",
-            result: "failed",
-            server_kind: server.kind,
-            failure_code: "invite_revoke_failed",
-          });
-        }
-        throw error;
-      }
+      await serverAdminPort(server).revokeInvite(inviteId);
+      await refreshServerSettings(server.id);
     }
 
     async function leaveServer(): Promise<void> {
@@ -404,26 +290,12 @@ const ServerSettings = createSimpleContext({
       const server = restartConfirmServer();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       if (server.thisComputer) await serversPort().localServers.restart(server.id);
-      else if (server.hosted !== true && serverSupportsCapability(server, "host-restart-v1"))
+      else if (serverSupportsCapability(server, "host-restart-v1"))
         await serversPort().hostAdmin.restartHost(server.id);
-      else await serversPort().hostedServers.restart(server.id);
     }
 
     async function removeMembership(server: ServerSummary): Promise<void> {
-      const analytics = desktopAnalytics.scope();
-      const action = server.role === "owner" ? "server_removed" : "server_left";
-      try {
-        await serversPort().servers.remove(server.id);
-      } catch (error) {
-        analytics.track("team_action", {
-          action,
-          result: "failed",
-          server_kind: server.kind,
-          failure_code: "server_leave_failed",
-        });
-        throw error;
-      }
-      analytics.track("team_action", { action, result: "succeeded", server_kind: server.kind });
+      await serversPort().servers.remove(server.id);
     }
 
     setHostUpdateOpener((serverId) => openServerSettings(serverId, null, "updates"));
@@ -446,7 +318,6 @@ const ServerSettings = createSimpleContext({
       refreshServerSettings,
       saveServerIdentity,
       saveServerAppearance,
-      recheckScreenRecording,
       rotateHostKey,
       setServerPublished,
       publishLocalServer: () => setLocalServerPublished(true),

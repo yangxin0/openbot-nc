@@ -18,7 +18,6 @@ import { AGENT_MEMORY_LIMIT_ROUTES } from "@openbot/contracts/team-protocol/agen
 import { AGENT_NEW_CHAT_ROUTES } from "@openbot/contracts/team-protocol/agent-new-chat-v1";
 import { AGENT_NOTIFICATION_LEVELS_ROUTES } from "@openbot/contracts/team-protocol/agent-notification-levels-v1";
 import { AGENT_PLAN_CARD_ROUTES } from "@openbot/contracts/team-protocol/agent-plan-card-v1";
-import { AGENT_PUBLISH_ROUTES } from "@openbot/contracts/team-protocol/agent-publish-v1";
 import { AGENT_SPEED_ROUTES } from "@openbot/contracts/team-protocol/agent-speed-v1";
 import { AGENT_TASK_LIMIT_ROUTES } from "@openbot/contracts/team-protocol/agent-task-limit-v1";
 import { AGENT_TASKS_ROUTES } from "@openbot/contracts/team-protocol/agent-tasks-v1";
@@ -57,10 +56,8 @@ import { HOST_TIMEZONE_ROUTES } from "@openbot/contracts/team-protocol/host-time
 import { HOST_TURN_LIMITS_ROUTES } from "@openbot/contracts/team-protocol/host-turn-limits-v1";
 import { HOST_UPDATE_ROUTES } from "@openbot/contracts/team-protocol/host-update-v1";
 import { HOST_VOICE_MODEL_ROUTES } from "@openbot/contracts/team-protocol/host-voice-model-v1";
-import { HOSTED_SITES_ROUTES } from "@openbot/contracts/team-protocol/hosted-sites-v1";
 import { LIBRARY_FOLDERS_ROUTES } from "@openbot/contracts/team-protocol/library-folders-v1";
 import { LIVE_ACTIVITY_PUSH_ROUTES } from "@openbot/contracts/team-protocol/live-activity-push-v1";
-import { LIVE_VOICE_ACCOUNT_ROUTES } from "@openbot/contracts/team-protocol/live-voice-account-v1";
 import { LOCAL_SERVERS_ROUTES } from "@openbot/contracts/team-protocol/local-servers-v1";
 import { MACHINE_RESOURCES_ROUTES } from "@openbot/contracts/team-protocol/machine-resources-v1";
 import { MCP_SIGN_IN_ROUTES } from "@openbot/contracts/team-protocol/mcp-sign-in-v1";
@@ -111,8 +108,6 @@ import { WHATSAPP_READ_ONLY_ROUTES } from "@openbot/contracts/team-protocol/what
 import { WHATSAPP_STATUS_REACTIONS_ROUTES } from "@openbot/contracts/team-protocol/whatsapp-status-reactions-v1";
 import { WHATSAPP_WORKING_MESSAGE_ROUTES } from "@openbot/contracts/team-protocol/whatsapp-working-message-v1";
 import { WORKFLOW_FOLDERS_ROUTES } from "@openbot/contracts/team-protocol/workflow-folders-v1";
-import { WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_ROUTES } from "@openbot/contracts/team-protocol/workflows-credit-media-unavailable-v1";
-import { WORKFLOWS_CREDIT_MEDIA_ROUTES } from "@openbot/contracts/team-protocol/workflows-credit-media-v1";
 import { WORKFLOWS_GITHUB_ROUTES } from "@openbot/contracts/team-protocol/workflows-github-v1";
 import { WORKFLOWS_HIGGSFIELD_ROUTES } from "@openbot/contracts/team-protocol/workflows-higgsfield-v1";
 import { WORKFLOWS_MEDIA_CATALOG_ROUTES } from "@openbot/contracts/team-protocol/workflows-media-catalog-v1";
@@ -160,7 +155,6 @@ const PASSIVE_ROUTES: ReadonlySet<string> = new Set([
   PROVIDER_MODEL_SOURCE_ROUTES.list,
   PROVIDER_ACCOUNT_MODELS_ROUTES.list,
   PROVIDER_ACCOUNT_POOL_ROUTES.list,
-  LIVE_VOICE_ACCOUNT_ROUTES.settings,
   PROVIDER_DEFAULT_ROUTES.settings,
   PROVIDER_USE_ROUTES.list,
   LOCAL_SERVERS_ROUTES.list,
@@ -233,9 +227,7 @@ const PASSIVE_ROUTES: ReadonlySet<string> = new Set([
   AGENT_MEMORIES_PAGE_ROUTE,
   AGENT_MEMORY_SELECTION_PAGE_ROUTE,
   SKILLS_ADMIN_ROUTES.list,
-  AGENT_PUBLISH_ROUTES.preview,
   SHARED_TABLES_ROUTES.list,
-  HOSTED_SITES_ROUTES.list,
   PROVIDERS_ADMIN_ROUTES.apiKeyState,
   PROVIDERS_ADMIN_ROUTES.customList,
   CUSTOM_PROVIDER_HARNESS_ROUTES.customList,
@@ -278,9 +270,6 @@ const PASSIVE_ROUTES: ReadonlySet<string> = new Set([
   WORKFLOWS_GITHUB_ROUTES.catalog,
   WORKFLOWS_GITHUB_ROUTES.history,
   WORKFLOWS_GITHUB_ROUTES.options,
-  WORKFLOWS_CREDIT_MEDIA_ROUTES.catalog,
-  WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_ROUTES.list,
-  WORKFLOWS_CREDIT_MEDIA_ROUTES.credits,
   CONNECTORS_ROUTES.githubStatus,
   CONNECTORS_ROUTES.githubRepositories,
   CONNECTORS_ROUTES.messagingOverview,

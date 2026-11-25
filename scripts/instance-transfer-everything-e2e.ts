@@ -198,23 +198,7 @@ function profile(name: string) {
   });
   const library = new LocalSkillLibrary(join(userData, "local-skills"), () => agents.listAgents());
   const workflows = new WorkflowStore({ database, nextDueAt: workflowScheduleDueAt(() => "UTC") });
-  const events = new HostEventsService({
-    routines: agents.routineRecords,
-    cipher: {
-      encrypt: (value) => Buffer.from(`sealed:${Buffer.from(value).toString("base64")}`),
-      decrypt: (value) => Buffer.from(value.toString().slice("sealed:".length), "base64").toString(),
-    },
-    relay: {
-      connected: () => true,
-      setEnabled: () => {},
-      setAccountActive: () => {},
-      refresh: () => {},
-      ensureHost: () => Effect.void,
-      registerRoute: (routeId) => Effect.succeed(`https://signal.example.test/v1/webhooks/${routeId}`),
-      revokeRoute: () => Effect.void,
-    },
-    accountPrincipal: () => "account-1",
-  });
+  const events = new HostEventsService({ routines: agents.routineRecords });
   const positions = new Map<string, { nodeKey: string; x: number; y: number }[]>();
   const pins = new Set<string>();
   const levels = new Map<string, "all" | "needs-me" | "nothing">();
@@ -453,16 +437,13 @@ try {
     });
     await runCauseEffect(source.agents.setAgentHidden({ agentId: agent.id, hidden: true }));
   }
-  await runCauseEffect(
-    source.events.saveRoutine({
-      owner: { kind: "agent", id: archivist.id },
-      name: "Backup alarm",
-      instruction: "Check the backup.",
-      active: true,
-      timezone: "UTC",
-      trigger: { kind: "webhook", eventType: "backup.failed", filters: [] },
-    }),
-  );
+  source.agents.routineRecords.save({ kind: "agent", id: archivist.id }, undefined, {
+    name: "Backup alarm",
+    instruction: "Check the backup.",
+    active: true,
+    timezone: "UTC",
+    trigger: { kind: "webhook", eventType: "backup.failed", filters: [], secretCiphertext: null },
+  });
   source.pins.add(writer.id);
   source.levels.set(writer.id, "needs-me");
   source.approvals.set(editor.id, false);
@@ -572,19 +553,16 @@ try {
     return messages.some((entry) => entry.author.kind === "agent" && entry.message.status === "completed") && messages;
   });
 
-  const hooked = await runCauseEffect(
-    source.events.saveRoutine({
-      owner: { kind: "agent", id: writer.id },
-      name: "Breaking news",
-      instruction: "Write a short item.",
-      active: true,
-      timezone: "UTC",
-      trigger: { kind: "webhook", eventType: "news.breaking", filters: [] },
-    }),
-  );
+  const hooked = source.agents.routineRecords.save({ kind: "agent", id: writer.id }, undefined, {
+    name: "Breaking news",
+    instruction: "Write a short item.",
+    active: true,
+    timezone: "UTC",
+    trigger: { kind: "webhook", eventType: "news.breaking", filters: [], secretCiphertext: null },
+  });
   source.positions.set(writer.id, [
     { nodeKey: `routine:${routine.id}`, x: 120, y: 40 },
-    { nodeKey: `routine:${hooked.routine.id}`, x: 320, y: 40 },
+    { nodeKey: `routine:${hooked.id}`, x: 320, y: 40 },
     { nodeKey: `agent:${editor.id}`, x: 520, y: 40 },
   ]);
 
@@ -979,23 +957,17 @@ try {
     ),
   ];
   pass(
-    "the routines of a hidden agent that an older app stopped are added turned off",
-    archivistRoutines.length === 2 && archivistRoutines.every((item) => !item.active),
+    "the routines of a hidden agent that an older app stopped are added turned off, without the webhook routine",
+    archivistRoutines.length === 1 && archivistRoutines.every((item) => !item.active),
     JSON.stringify(archivistRoutines.map((item) => ({ name: item.name, active: item.active }))),
   );
   const newHooked = (
     await runCauseEffect(target.events.listRoutines({ owner: { kind: "agent", id: newWriter.id } }))
   ).find((item) => item.name === "Breaking news");
+  pass("a webhook routine is not added: webhook triggers are removed", newHooked === undefined);
   pass(
-    "the webhook routine moves with its event type and a new address",
-    newHooked?.trigger.kind === "webhook" &&
-      newHooked.trigger.eventType === "news.breaking" &&
-      hooked.routine.trigger.kind === "webhook" &&
-      newHooked.trigger.url !== hooked.routine.trigger.url,
-  );
-  pass(
-    "the user is told about the new webhook address",
-    result.warnings.some((warning) => warning.includes("Breaking news") && warning.includes("webhook")),
+    "the user is told that the webhook routine is skipped",
+    result.warnings.some((warning) => warning.includes("Breaking news")),
   );
   const newRoutineId = target.agents.listRoutines(newWriter.id).find((item) => item.name === routine.name)?.id;
   pass(

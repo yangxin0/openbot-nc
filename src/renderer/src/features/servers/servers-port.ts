@@ -33,30 +33,12 @@ export interface ServersPort {
     OpenBotDesktopApi["hostAdmin"],
     "cancelUpdate" | "getUpdateStatus" | "restartHost" | "rotateHostKey" | "startUpdate" | "updateIdentity"
   >;
-  hostedServers: Pick<
-    OpenBotDesktopApi["hostedServers"],
-    "list" | "openCheckout" | "openCustomCheckout" | "restart" | "wake"
-  >;
   localServers: OpenBotDesktopApi["localServers"];
   host: Pick<
     OpenBotDesktopApi["host"],
-    | "configure"
-    | "getRemoteControlPolicy"
-    | "getStatus"
-    | "onEvent"
-    | "recheckScreenRecording"
-    | "rotateIdentityKey"
-    | "setRemoteControlPolicy"
-    | "start"
-    | "stop"
-    | "stopRemoteControl"
-    | "updateIdentity"
+    "configure" | "getStatus" | "onEvent" | "rotateIdentityKey" | "start" | "stop" | "updateIdentity"
   >;
   notifications: Pick<OpenBotDesktopApi["notifications"], "onOpened" | "onWorkflowOpened">;
-  remoteDesktop: Pick<
-    OpenBotDesktopApi["remoteDesktop"],
-    "checkSetup" | "connect" | "disconnect" | "list" | "openSetup" | "test"
-  >;
   servers: Pick<
     OpenBotDesktopApi["servers"],
     | "getPresenceFor"

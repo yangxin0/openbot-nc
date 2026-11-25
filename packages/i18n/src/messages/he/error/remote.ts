@@ -2,51 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "יש לעדכן את הלקוח כדי להשתמש בהגדרת שולחן עבודה מרוחק.",
-  "error.remote.desktopSetupUnavailable": "הגדרת שולחן עבודה מרוחק אינה זמינה.",
-  "error.remote.desktopTestUnavailable": "בדיקת שולחן עבודה מרוחק אינה זמינה.",
-  "error.remote.controlUnavailable": "שליטה מרחוק אינה זמינה.",
-  "error.remote.controlSessionNotFound": "סשן השליטה מרחוק לא נמצא.",
-  "error.remote.controlNotAllowed": "בעל המחשב הזה לא מאפשר לתפקיד שלך לשלוט בו.",
-  "error.remote.controlDeclined": "האדם שליד המחשב הזה לא אישר שליטה מרחוק.",
-  "error.remote.testRuntimeUpdate": "יש לעדכן את סביבת הריצה של שולחן עבודה מרוחק ב-macOS כדי להריץ את הבדיקה.",
-  "error.remote.testOtherSessions": "יש לסיים סשנים אחרים של שולחן עבודה מרוחק לפני תחילת בדיקה.",
-  "error.remote.testPermissions": "יש לבדוק את ההרשאות ואת סשן ה-GUI במארח לפני תחילת הבדיקה.",
-  "error.remote.controlSessionEnded": "סשן השליטה מרחוק הסתיים.",
-  "error.remote.testPanelFailed": "המארח לא הצליח לפתוח את חלונית הבדיקה.",
-  "error.remote.sessionCapacity": "במארח כבר יש ארבעה סשנים פעילים.",
-  "error.remote.linuxNeedsX11": "שולחן עבודה מרוחק ב-Linux דורש סשן X11. Wayland אינו נתמך.",
-  "error.remote.runtimeMissing":
-    "סביבת הריצה של Sunshine ו-Moonlight Web חסרה או שאינה נתמכת במארח הזה. יש להתקין את גרסת OpenBot המלאה ב-Mac, במארח Windows x64 או במארח Linux x64, ואז להפעיל מחדש את OpenBot.",
-  "error.remote.testActive": "בדיקת שולחן עבודה מרוחק פעילה. יש לנסות שוב כשהיא תסתיים.",
-  "error.remote.screenRecordingDenied":
-    "המארח לא אישר ל-OpenBot להקליט את המסך שלו. יש לאשר הקלטת מסך במארח ולנסות שוב.",
-  "error.remote.windowsSessionDisconnected":
-    "הסשן של Windows במארח מנותק, ולכן אין מסך לשיתוף. יש להיכנס ל-Windows במסך של המארח ולנסות שוב.",
-  "error.remote.windowsCaptureDenied":
-    "Windows במארח לא מאפשר ל-OpenBot להקליט את המסך שלו. יש לבטל את נעילת Windows במסך של המארח, לסגור כל בקשת הרשאת מנהל ולנסות שוב. אם הבעיה נמשכת, יש להפעיל מחדש את המארח.",
-  "error.remote.macScreenLocked":
-    "ה-Mac נעול, ולכן אינו יכול לשתף את המסך שלו. יש לבטל את נעילת ה-Mac במסך שלו ולנסות שוב.",
-  "error.remote.streamTooSlowLowerQuality":
-    "החיבור למארח איטי מדי בשביל התמונה. יש לנסות שוב: החיבור הבא ישתמש באיכות נמוכה יותר.",
-  "error.remote.streamTooSlow": "החיבור למארח איטי מדי בשביל התמונה. יש להשתמש ברשת מהירה יותר ולנסות שוב.",
-  "error.remote.noPictureSwitchEncoder":
-    "המארח לא שלח תמונה. יש לנסות שוב: החיבור הבא משתמש בהגדרת וידאו שעובדת ביותר מחשבים.",
-  "error.remote.teamSessionExpired": "הסשן של הצוות פג.",
-  "error.remote.finishTestBeforeSwitch": "יש לסיים את בדיקת שולחן העבודה המרוחק לפני החלפת תצוגות.",
-  "error.remote.displayNotFound": "התצוגה המרוחקת לא נמצאה.",
-  "error.remote.displaySwitchInProgress": "החלפת תצוגה מתבצעת.",
-  "error.remote.localTestListenerUnavailable": "מאזין הבדיקה המקומי אינו זמין.",
-  "error.remote.localTestNotFound": "סשן הבדיקה המקומי לא נמצא.",
-  "error.remote.runtimeUnavailable": "סביבת הריצה של שולחן עבודה מרוחק אינה זמינה.",
-  "error.remote.sunshineStartFailed":
-    "Sunshine לא הופעל במארח. יש לבדוק את יומני שולחן העבודה המרוחק במארח ולנסות שוב.",
-  "error.remote.moonlightStartFailed":
-    "Moonlight Web לא הופעל במארח. יש לבדוק את יומני שולחן העבודה המרוחק במארח ולנסות שוב.",
-  "error.remote.pairingFailed":
-    "Moonlight לא הצליח להתאים את עצמו ל-Sunshine במארח. יש לנסות שוב. אם הבעיה נמשכת, יש להפעיל מחדש את OpenBot במארח.",
-  "error.remote.runtimeStartFailed":
-    "סביבת הריצה של שולחן עבודה מרוחק לא הופעלה במארח. יש לבדוק את יומני שולחן העבודה המרוחק במארח ולנסות שוב.",
   "error.remote.hostUnreachable": "אי אפשר להגיע למארח.",
   "error.remote.signInToHostAgain": "יש להתחבר שוב למארח הזה.",
   "error.remote.invalidData": "המארח החזיר נתונים לא תקינים.",
@@ -70,10 +25,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "שירות החשבונות אישר מארח אחר.",
   "error.remote.inviteIdentityChanged": "זהות מארח ההזמנה השתנתה בזמן אישור ההזמנה.",
   "error.remote.localServerRemove": "אי אפשר להסיר את השרת המקומי.",
-  "error.remote.desktopSetupHostUpdate": "יש לעדכן את OpenBot במארח כדי לבדוק את הגדרת שולחן העבודה המרוחק.",
-  "error.remote.desktopTestHostUpdate": "יש לעדכן את OpenBot במארח כדי לבדוק את הגדרת שולחן העבודה המרוחק.",
   "error.remote.viewerProxyUnavailable": "שרת הביניים המקומי של מציג שולחן העבודה המרוחק אינו זמין.",
-  "error.remote.viewerTransportInvalid": "שכבת התעבורה של מציג שולחן העבודה המרוחק אינה תקינה.",
   "error.remote.viewerProxyNoPort": "שרת הביניים המקומי של המציג המרוחק לא קיבל פורט.",
   "error.remote.inviteNeedsConnection": "המארח צריך להתחבר פעם אחת לפני שיוכל ליצור הזמנות.",
   "error.remote.permanentInviteUnsupported": "החיבור לשרת הזה לא תומך בקישורי הזמנה קבועים.",

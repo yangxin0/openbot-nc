@@ -1,19 +1,13 @@
-import type { CreditsState } from "@openbot/contracts/credits";
 import type {
   AccountSession,
   AppInfo,
   AvatarColor,
   AvatarImageInput,
-  BillingDesktopApi,
   CentralAuthUser,
-  CreditsDesktopApi,
   DynamicIslandGeometry,
-  HostedServersDesktopApi,
-  LicenseDesktopApi,
   MobileConnectedDevice,
   MobileConnectLink,
   MobileConnectTicket,
-  ReferralDesktopApi,
   RemoteNetworkRoute,
   RemoteNetworkRouteState,
   ServerNotificationLevel,
@@ -30,15 +24,6 @@ import {
   Tabs,
   TriangleAlert,
 } from "@openbot/ui";
-import { BillingPanel } from "@openbot/ui/features/billing/BillingPanel";
-import { createBillingStore } from "@openbot/ui/features/billing/billing-store";
-import { LicenseSection } from "@openbot/ui/features/billing/LicenseSection";
-import { createLicenseStore } from "@openbot/ui/features/billing/license-store";
-import { CreditActivitySection } from "@openbot/ui/features/credits/CreditActivitySection";
-import { CreditsSection } from "@openbot/ui/features/credits/CreditsSection";
-import { createCreditsStore } from "@openbot/ui/features/credits/credits-store";
-import { ReferralPanel } from "@openbot/ui/features/referral/ReferralPanel";
-import { createReferralStore } from "@openbot/ui/features/referral/referral-store";
 import type { GeneralSettingsValue } from "@openbot/ui/features/settings/app-settings";
 import {
   SettingsDialogShell,
@@ -48,17 +33,15 @@ import {
 import type { MobileInstallRequest } from "@openbot/ui/features/settings/SettingsMobileConnectTab";
 import { SettingsMobileConnectTab } from "@openbot/ui/features/settings/SettingsMobileConnectTab";
 import { SettingsProfileTab } from "@openbot/ui/features/settings/SettingsProfileTab";
+import { SettingsTeamTab } from "@openbot/ui/features/settings/SettingsTeamTab";
 import { SettingsUpdatesTab } from "@openbot/ui/features/settings/SettingsUpdatesTab";
-import { createSettingsHostedServersStore } from "@openbot/ui/features/settings/stores/hosted-servers-store";
 import { createSettingsMobileConnectStore } from "@openbot/ui/features/settings/stores/mobile-connect-store";
 import { createSettingsProfileStore } from "@openbot/ui/features/settings/stores/profile-store";
 import { createSettingsUpdatesStore } from "@openbot/ui/features/settings/stores/updates-store";
 import { createEffect, createSignal, Show, untrack } from "solid-js";
 import { useI18n } from "../../i18n-context";
 import { ComputerUseSetup } from "../computer-use/ComputerUseSetup";
-import type { CodexLiveAccess } from "../speech/codex-live-access";
-import type { LiveVoiceAccountChoice } from "./LiveVoiceAccountRow";
-import { licenseContactUs, trackLicenseEvent } from "./license-analytics";
+import { useRelay } from "../relay/relay-context";
 import { createNotificationLevelsStore } from "./notification-levels-store";
 import { createProfileActivityStore } from "./profile-activity-store";
 import { renderProfileShareImage } from "./profile-share-image";
@@ -109,19 +92,7 @@ export interface SettingsModalProps {
   onRevokeAccountSession?: (sessionId: string) => Promise<void>;
   onSignOut?: (() => Promise<void>) | undefined;
   processAvatarFile?: (file: File) => Promise<AvatarImageInput>;
-  billingApi?: BillingDesktopApi;
-  referralApi?: ReferralDesktopApi | undefined;
-  licenseApi?: LicenseDesktopApi | undefined;
-  creditsApi?: CreditsDesktopApi | undefined;
-  onCreditsChange?: ((credits: CreditsState) => void) | undefined;
-  onBuyCredits?: ((serverId: string | null) => void) | undefined;
   onContactUs?: (() => void) | undefined;
-  hostedServersApi?: HostedServersDesktopApi | undefined;
-  onAddHostedServer?: (() => void) | undefined;
-  codexLiveAccess?: CodexLiveAccess | undefined;
-  liveVoiceAccount?: LiveVoiceAccountChoice | undefined;
-  onConnectCodex?: (() => void) | undefined;
-  hostedServerDeleteRequest?: { serverId: string; nonce: number } | null;
   mobileInstallRequest?: MobileInstallRequest | null;
   onMobileInstallRequestHandled?: (() => void) | undefined;
   onTestNotification?: () => void | Promise<void>;
@@ -134,9 +105,8 @@ export interface SettingsModalProps {
 
 export function SettingsModal(props: SettingsModalProps) {
   const i18n = useI18n();
-  const [activeTab, setActiveTab] = createSignal<SettingsTab>(
-    untrack(() => (props.initialTab === "hosted-servers" ? "billing" : props.initialTab)) ?? "general",
-  );
+  const relay = useRelay();
+  const [activeTab, setActiveTab] = createSignal<SettingsTab>(untrack(() => props.initialTab) ?? "general");
   let modalElement: HTMLElement | undefined;
   const profile = createSettingsProfileStore(props, () => activeTab() === "profile");
   const profileActivity = createProfileActivityStore(
@@ -145,47 +115,14 @@ export function SettingsModal(props: SettingsModalProps) {
   );
   const mobileConnect = createSettingsMobileConnectStore(props, () => activeTab() === "mobile-connect");
   const updates = createSettingsUpdatesStore(props);
-  const billing = createBillingStore(
-    () => props.billingApi,
-    () => props.open && activeTab() === "billing",
-  );
-  const referral = createReferralStore(
-    () => props.referralApi,
-    () => props.open && activeTab() === "referral",
-  );
-  const license = createLicenseStore(
-    () => props.licenseApi,
-    () => props.open && activeTab() === "billing",
-    trackLicenseEvent,
-  );
-  const credits = createCreditsStore(
-    () => props.creditsApi,
-    () => props.open && activeTab() === "billing",
-    (state) => props.onCreditsChange?.(state),
-    { activity: true },
-  );
-  const hostedServers = createSettingsHostedServersStore(props, () => activeTab() === "billing");
   const voice = createSettingsVoiceStore(() => props.open && activeTab() === "voice");
   const notificationLevels = createNotificationLevelsStore({
     visible: () => props.open && activeTab() === "notifications",
     servers: () => props.servers ?? [],
   });
-  let handledHostedServerDeleteNonce = 0;
-  createEffect(
-    () => (props.open ? props.hostedServerDeleteRequest : null),
-    (request) => {
-      if (!request || request.nonce === handledHostedServerDeleteNonce) return;
-      handledHostedServerDeleteNonce = request.nonce;
-      hostedServers.requestDeleteById(request.serverId);
-    },
-  );
-
   const dynamicIslandShown = () => dynamicIslandSettingsShown(props.appInfo?.platform, props.chatWindow === true);
   createEffect(
-    () => {
-      const tab = props.open ? props.openTab : undefined;
-      return tab === "hosted-servers" ? "billing" : tab;
-    },
+    () => (props.open ? props.openTab : undefined),
     (tab) => {
       if (!tab) return;
       setActiveTab(tab);
@@ -219,9 +156,8 @@ export function SettingsModal(props: SettingsModalProps) {
         (value === "dynamic-island" && dynamicIslandShown()) ||
         (value === "agent-dock" && agentDockShown()) ||
         value === "computer-use" ||
+        value === "team" ||
         value === "profile" ||
-        value === "billing" ||
-        value === "referral" ||
         value === "mobile-connect" ||
         value === "updates"
       ) {
@@ -365,14 +301,7 @@ export function SettingsModal(props: SettingsModalProps) {
         </Tabs.Content>
 
         <Tabs.Content value="voice" class="settings-modal-tab-panel" data-tab="voice">
-          <SettingsVoiceTab
-            store={voice}
-            selectMount={modalElement}
-            codexLiveAccess={props.codexLiveAccess}
-            onConnectCodex={props.onConnectCodex}
-            liveVoiceAccount={props.liveVoiceAccount}
-            platform={props.appInfo?.platform}
-          />
+          <SettingsVoiceTab store={voice} selectMount={modalElement} platform={props.appInfo?.platform} />
         </Tabs.Content>
 
         <Tabs.Content value="keyboard" class="settings-modal-tab-panel" data-tab="keyboard">
@@ -406,46 +335,32 @@ export function SettingsModal(props: SettingsModalProps) {
           <ComputerUseSetup variant="settings" />
         </Tabs.Content>
 
+        <Tabs.Content value="team" class="settings-modal-tab-panel" data-tab="team">
+          <SettingsTeamTab
+            state={relay.view.state}
+            receivedAt={relay.view.receivedAt}
+            loadError={relay.view.loadError}
+            busy={relay.view.busy}
+            unhidingServerId={relay.view.unhidingServerId}
+            error={relay.view.error}
+            onImport={() => void relay.importIdentity()}
+            onReplace={() => void relay.replaceIdentity()}
+            onRemove={relay.removeIdentity}
+            onSetHosting={(enabled) => void relay.setHosting(enabled)}
+            onUnhide={(serverId) => void relay.unhideHost(serverId)}
+            onRetryLoad={() => void relay.reload()}
+          />
+        </Tabs.Content>
+
         <Tabs.Content value="profile" class="settings-modal-tab-panel profile-panel" data-tab="profile">
           <SettingsProfileTab
             store={profile}
             account={props.account}
             activity={profileActivity}
-            canListSessions={Boolean(props.onListAccountSessions)}
+            canListSessions={Boolean(props.onListAccountSessions) && props.account.email !== ""}
             canRevokeSession={Boolean(props.onRevokeAccountSession)}
-            onSignOut={props.onSignOut}
+            onSignOut={props.account.email ? props.onSignOut : undefined}
           />
-        </Tabs.Content>
-
-        <Tabs.Content value="billing" class="settings-modal-tab-panel" data-tab="billing">
-          <BillingPanel
-            store={billing}
-            available={Boolean(props.billingApi)}
-            hostedServers={hostedServers}
-            onAddServer={hostedServers.state.available ? props.onAddHostedServer : undefined}
-            license={
-              <LicenseSection
-                store={license}
-                onManagePayment={() => void billing.openPortal({ flow: "manage" })}
-                onContactUs={licenseContactUs(props.onContactUs)}
-                billingDetails={props.billingApi}
-              />
-            }
-            credits={
-              <Show when={props.onBuyCredits}>
-                {(onBuy) => (
-                  <>
-                    <CreditsSection store={credits} onBuy={(serverId) => onBuy()(serverId)} />
-                    <CreditActivitySection store={credits} />
-                  </>
-                )}
-              </Show>
-            }
-          />
-        </Tabs.Content>
-
-        <Tabs.Content value="referral" class="settings-modal-tab-panel" data-tab="referral">
-          <ReferralPanel store={referral} available={props.referralApi !== undefined} />
         </Tabs.Content>
 
         <Tabs.Content value="mobile-connect" class="settings-modal-tab-panel" data-tab="mobile-connect">

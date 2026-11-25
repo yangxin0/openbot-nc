@@ -510,8 +510,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "助手会删除此报告，并在去掉你选择的部分后重新发送。",
   "chat.feedbackSent.removeChoice": "删除",
   "chat.feedbackSent.removeChoiceHint": "从 GitHub 上删除。此操作无法撤销。",
-  "chat.feedbackSent.fixPrompt": "请从 GitHub 删除我的报告 #{number}，并去掉以下内容后重新发送：",
-  "chat.feedbackSent.removePrompt": "请从 GitHub 删除我的报告 #{number}。",
   "chat.feedbackSent.composerFilled": "请求已放入消息框。补充完整后再发送。",
   "chat.feedbackSent.keep": "保留",
   "chat.feedbackSent.removing": "正在删除…",

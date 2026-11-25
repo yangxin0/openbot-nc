@@ -2,8 +2,6 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/account";
 
 export const messages = {
-  "account.menu.billing": "결제",
-  "account.menu.sendFeedback": "피드백 보내기",
   "account.menu.signOut": "로그아웃",
   "account.menu.signingOut": "로그아웃 중…",
   "account.menu.updateFailed": "OpenBot을 업데이트할 수 없어요.",

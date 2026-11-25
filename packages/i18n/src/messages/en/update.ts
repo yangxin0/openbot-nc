@@ -68,13 +68,10 @@ export const messages = defineMessages("update", {
     "Make sure that you are online and try again. The full changelog also shows all changes.",
   "update.whatsNew.empty.title": "No new features in this version",
   "update.whatsNew.empty.body": "This version has no notes to show here. The full changelog shows all changes.",
-  "update.whatsNew.changelog": "Full changelog",
-  "update.whatsNew.changelogFailed": "OpenBot could not open the changelog.",
   "update.whatsNew.done": "Got it",
 
   "update.required.title": "Update required",
   "update.required.description": "OpenBot {version} is no longer supported. Update to {minimum} or newer to continue.",
-  "update.required.download": "Download OpenBot",
   "update.required.continue": "Continue without updating",
   "update.required.failed": "The update did not finish.",
 });

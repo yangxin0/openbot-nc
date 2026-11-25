@@ -2,16 +2,11 @@ import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("error.backend", {
   "error.backend.eventsUnavailable": "Events are not available on this host.",
+  "error.backend.webhooksRemoved": "Webhook triggers are not available in this version of OpenBot.",
   "error.backend.databaseIntegrity": "OpenBot database failed its integrity check.",
-  "error.backend.webhookRouteLimit": "A host can have at most {limit} webhook routines.",
   "error.backend.webhookSettingsInvalid": "Check the webhook settings and try again.",
   "error.backend.webhookSenderSecretInvalid":
     "Paste the complete signing secret from the sender. It has 16 to 1024 characters and no spaces.",
-  "error.backend.webhookRouteUnavailable":
-    "The public webhook route is not ready. Check the host connection and try again.",
-  "error.backend.webhookTestUnavailable":
-    "The host cannot take the test event now. Make sure it is signed in, then try again.",
-  "error.backend.webhookTestFailed": "The test event did not reach the routine. Try again.",
   "error.backend.browserViewRemoteOnly": "A live browser view is only for a remote host.",
   "error.backend.browserViewUnsupported": "This remote host does not support a live browser view.",
   "error.backend.browserViewLimit": "Too many browser views are open on this host.",
@@ -19,29 +14,6 @@ export const messages = defineMessages("error.backend", {
   "error.backend.browserViewFailed": "The live view of this page failed.",
   "error.backend.windowTemporarilyUnavailable": "The OpenBot window is temporarily unavailable.",
   "error.backend.windowUnavailable": "The OpenBot window is unavailable.",
-  "error.backend.sunshineApiHttp": "Sunshine API failed with HTTP {status}.",
-  "error.backend.sunshinePortsUnavailable": "Could not reserve a free Sunshine port family for Remote Desktop.",
-  "error.backend.moonlightPortsUnavailable": "Could not reserve a free Moonlight WebRTC port range for Remote Desktop.",
-  "error.backend.iceServerNoPort": "The Remote Desktop ICE server did not get a port.",
-  "error.backend.remoteDesktopStoppedWhileStarting": "The remote desktop runtime was stopped while it started.",
-  "error.backend.sunshineNotStarted": "Sunshine did not start on a reserved port family.",
-  "error.backend.moonlightNoHost": "Moonlight has no paired local host.",
-  "error.backend.sunshineNoDesktop": "Sunshine did not publish the Desktop application.",
-  "error.backend.sunshineAmbiguousPairing": "Sunshine returned ambiguous local pairing requests.",
-  "error.backend.sunshineNoPairingRequest": "Sunshine did not receive the expected local pairing request.",
-  "error.backend.moonlightPairingHttp": "Moonlight pairing failed with HTTP {status}.",
-  "error.backend.moonlightRejectedPairing": "Moonlight rejected Sunshine pairing.",
-  "error.backend.moonlightNoPin": "Moonlight did not return a pairing PIN.",
-  "error.backend.moonlightPairingIncomplete": "Moonlight pairing did not complete.",
-  "error.backend.moonlightWebNotEmbedded": "Moonlight Web is not an OpenBot embedded build.",
-  "error.backend.moonlightEmptyResponse": "Moonlight returned an empty response.",
-  "error.backend.remoteDesktopTimeout": "Remote desktop request timed out.",
-  "error.backend.moonlightApiHttp": "Moonlight API failed with HTTP {status}.",
-  "error.backend.sunshineExited": "Sunshine exited before its HTTPS API on port {port} became ready.",
-  "error.backend.sunshineNoAnswer": "Sunshine did not answer.",
-  "error.backend.sunshineTlsUnexpected": "Sunshine returned an unexpected TLS certificate.",
-  "error.backend.moonlightWebExited": "Moonlight Web exited before {url} became ready.",
-  "error.backend.moonlightWebNotReady": "Moonlight Web did not become ready.",
   "error.backend.channelDeleteUnsupported": "Channel deletion is not supported by this server.",
   "error.backend.browserNavigateUnsupported":
     "This remote host does not support address-bar navigation in an existing tab.",
@@ -58,8 +30,6 @@ export const messages = defineMessages("error.backend", {
   "error.backend.browserStopUnsupported": "This remote host cannot stop a page load.",
   "error.backend.sharedDataLocalOnly": "Shared data is managed on the computer that runs these agents.",
   "error.backend.browserUrlProtocol": "Only HTTP(S) browser URLs are allowed.",
-  "error.backend.sunshineNotReady": "Sunshine did not become ready.",
-  "error.backend.sunshineNotReadyReason": "Sunshine did not become ready. {reason}",
   "error.backend.channelLeadModelUnavailable": "The channel lead model is unavailable.",
   "error.backend.contextCompactionIneffective":
     "Compaction does not make this chat smaller: after two compactions it still uses {percent}% of the model's context window, so OpenBot stops compacting it. Tools and instructions use most of the window. Turn off the MCP servers or computer use that this agent does not need, or select a model with a larger window. Then start a new chat.",
@@ -266,6 +236,8 @@ export const messages = defineMessages("error.backend", {
     "The sign-in server does not accept OpenBot as an app yet. Your account is not the cause. Use another way to connect, such as a local MCP server.",
   "error.backend.mcpRegistrationUnavailable":
     "The sign-in server cannot register OpenBot as an app. Your account is not the cause. To connect, save this server in Marketplace, Apps, then add a sign-in app to it.",
+  "error.backend.mcpSignInNeedsClientDocument":
+    "This sign-in server accepts only apps that publish a client ID document, and this build of OpenBot does not publish one. If you have your own sign-in app for this server, save the server in Marketplace, Apps, then add the sign-in app to it.",
   "error.backend.mcpSignInAbandonedGeneric": "The sign-in was abandoned.",
   "error.backend.mcpSignInForgotten": "The MCP sign-in was forgotten while it was running.",
   "error.backend.mcpSignInAbandoned": "The MCP sign-in was abandoned.",
@@ -481,7 +453,6 @@ export const messages = defineMessages("error.backend", {
   "error.backend.branchSourceBusy": "Stop the current turn before you branch this chat.",
   "error.backend.branchMessageNotFound": "You can branch only from a finished answer of the agent.",
   "error.backend.branchRemoteUnsupported": "Branches are only available for agents on this computer.",
-  "error.backend.feedbackWithdrawRemoteUnsupported": "To remove this report, ask the agent to remove it.",
   "error.backend.threadMoveRefused": "Only a message that you sent to this agent alone can run in a new thread.",
   "error.backend.taskTitleRequired": "Give the task a short title.",
   "error.backend.taskToolInvalid": "Give the task a title of at most 120 characters and a brief that says what to do.",

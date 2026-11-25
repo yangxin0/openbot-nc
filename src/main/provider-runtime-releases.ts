@@ -2,6 +2,7 @@ import { MANAGED_RUNTIME_PROVIDERS, type ManagedProviderId } from "@openbot/cont
 import { type DynamicRecord, isDynamicRecord, isNumber, isString } from "@openbot/contracts/runtime-values";
 import { sourceText } from "@openbot/i18n/source";
 import { Effect } from "effect";
+import bundledBlocklist from "../../provider-runtime-blocklist.json";
 import type { AgentRuntimeLock } from "../../scripts/agent-runtime-lock";
 import {
   codexTag,
@@ -21,9 +22,6 @@ export interface LatestReleaseContext {
   lock: AgentRuntimeLock;
   fetch: Fetch;
 }
-
-const BLOCKED_VERSIONS_URL =
-  "https://raw.githubusercontent.com/nightly-labs/openbot/main/provider-runtime-blocklist.json";
 
 const REQUEST_TIMEOUT_MS = 30_000;
 const MAX_METADATA_BYTES = 4 * 1024 * 1024;
@@ -381,10 +379,11 @@ export function latestRelease(
 ): Effect.Effect<RuntimeSpec, ProviderRuntimeFailure> {
   return LATEST_RELEASES[provider](context);
 }
-export const fetchBlockedVersions = Effect.fn("ProviderRelease.fetchBlockedVersions")(function* (
-  fetch: Fetch,
-): Effect.fn.Return<BlockedVersions, ProviderRuntimeFailure> {
-  const value = yield* fetchJsonEffect(fetch, BLOCKED_VERSIONS_URL);
+export const readBlockedVersions = Effect.fn("ProviderRelease.readBlockedVersions")(function* (): Effect.fn.Return<
+  BlockedVersions,
+  ProviderRuntimeFailure
+> {
+  const value: DynamicRecord = bundledBlocklist;
   if (!(value.schemaVersion === 1 && isDynamicRecord(value.blocked))) {
     return yield* new ProviderRuntimeFailure({ cause: new Error(sourceText("error.provider.blockedListShape")) });
   }

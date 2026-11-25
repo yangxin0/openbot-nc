@@ -68,12 +68,13 @@ browser also stores the chosen interface language and whether the completion sou
 no message content.
 Signing out revokes that credential's remote sessions and tells other open tabs to clear private
 state. Host identity pins remain so a later sign-in cannot silently trust a replacement host key.
-The web client records the product events that "Product analytics" describes. At sign-in it sends the saved first website visit
+The web client of this version records no product events. At sign-in it sends the saved first website visit
 of the browser, described in "Product analytics", to the account service. It does not send email codes, credentials,
 message content, file content, or search queries to telemetry.
 
-Production builds of OpenBot desktop, the browser client at `/app`, the configured mobile app, and the website use a
-self-hosted OpenPanel service for product analytics. Development builds, previews, tests, and Storybook do not send analytics.
+The desktop app, its local host and the browser client at `/app` send no product analytics and no
+error reports in this version. The configured mobile app and the website use a self-hosted OpenPanel
+service for product analytics. Development builds, previews, tests, and Storybook do not send analytics.
 
 The production account service also sends OpenPanel an event when a paid plan or a hosted server
 changes: a Checkout starts or expires, a plan starts, changes, is cancelled or ends, a payment
@@ -208,7 +209,7 @@ It also records the topic and result of a contact form send, and whether a retur
 completed or was cancelled, for a plan, a license or the billing portal. The contact form message,
 name and email are not sent to analytics.
 The production desktop app records application, sign-in, onboarding, agent, message, turn, prompt,
-approval, queue, routine, workflow, team, browser, search, Remote Desktop, update, marketplace, memory,
+approval, queue, routine, workflow, team, browser, search, update, marketplace, memory,
 provider, voice transcription, voice conversation, spoken reply, voice model download, spoken reply setting,
 reaction, Hosted Site, hosted server offer, hosted server plans, plan and member limits, license,
 contact sales, provider usage limit, agent template, phone connection, connector, Computer Use
@@ -247,7 +248,7 @@ that vendor's app. A key the user types, or the grant of a browser sign-in, goes
 own host over the encrypted Team channel.
 Mobile properties include app version/build, iOS or Android, result, timing, bounded connection stage,
 connection step times, the kind of connection path (direct or relayed, and UDP, TCP or TLS), whether
-the phone uses a VPN or a proxy app (never its name or an address), counts, coarse attachment size buckets, and provider/model/reasoning metadata where available.
+the system reports a VPN connection (never its name or an address), counts, coarse attachment size buckets, and provider/model/reasoning metadata where available.
 Mobile does not read the Android install referrer from Google Play. It never sends scanned QR values,
 install-referrer URLs or route identifiers. It does not
 emit host lifecycle events again. Agent/host token and cost reports remain separate local data.
@@ -422,7 +423,8 @@ agent workspaces, conversations, attachments, browser data, and team data are st
 
 ### Install ID
 
-When analytics is off or not answered, the desktop app, the local host, the browser app and the
+The desktop app and its local host no longer make or send an install ID. When analytics is off or
+not answered, the desktop app, the local host, the browser app and the
 mobile app still send basic product events and error reports. These are anonymous: they carry a
 random install ID (`install-` and a random UUID) and no name, email or account. The ID has no part
 of the account, the email, the device name or the hardware, and OpenBot does not join these
@@ -598,7 +600,7 @@ OpenBot computer. It runs on a virtual server that OpenBot rents from
 France). The sandbox holds the server's workspaces, conversations, attachments, browser data and
 team data, the same as your own computer would. The server stops 15 to 30 minutes after its last use and
 starts again when you press a key or click in an app that shows it, when a Slack, Discord or
-Telegram message addresses OpenBot, or a few minutes before its next scheduled routine run. Use means that an agent works, a remote desktop is open, a file moves, or you
+Telegram message addresses OpenBot, or a few minutes before its next scheduled routine run. Use means that an agent works, a file moves, or you
 sent a message, made a change, typed or used a shared browser view in the last 5 minutes. An app
 that has focus (a focused window or tab, or the phone app in the foreground) also counts, for at
 most 30 minutes after your last message, change or typing, or after you return to the app. The app
@@ -718,7 +720,7 @@ system and device model, app state changes, the route name of each screen that o
 `chat/[agentId]`, never an ID), the steps of the notification setup (the setting, the permission,
 whether the phone gave a push token and whether each server registered it, never the token), the
 notification, microphone and camera permissions, a range of free storage (such as `2-10 GB`), low
-memory warnings, the kind of network with the name of the VPN that is on
+memory warnings, the kind of network and whether a VPN is on
 (see below), connection steps with server IDs, error text and error
 codes, the types and counts of network candidates (such as "relay/udp", never an address), the
 desktop app version and protocol support of each server, the method, address without query, status
@@ -731,6 +733,9 @@ without that Send.
 
 #### Bug reports about the phone app
 
+A server with this version of OpenBot does not take bug reports from a phone, and agents can no
+longer send reports to GitHub.
+
 When an agent offers a bug report about the phone app, only the phone app can send it. With **Send**,
 the phone adds to the report its system (iOS or Android), the app version with the build number and
 the update ID, the system version and the device model, its network and VPN, and at most 60 lines of
@@ -738,14 +743,12 @@ the support log: the last warnings and errors, and the connection and app state 
 A request that got an answer is not in these lines, and a console line is not: a library can write
 any value there.
 
-The network line is such as `Wi-Fi · VPN: Tailscale` or `Mobile data · no VPN found`. The app reads
-the kind of connection from the system. To find a VPN or a mesh network (Tailscale, ZeroTier and
-others), it reads the addresses of the phone's network interfaces on the phone: it makes a WebRTC
-connection object with no server and no other side, which sends nothing. No system gives the name of
-the VPN app, so the name comes from the address range of the VPN's tunnel, and "probably" marks a
-name that comes from a default range. The line has the name, and at most the first two numbers of a
-private range (`10.8.x.x`); it never has an address. The app reads this at its start, at each change
-of the network and when a report card opens, and it writes each change to the support log.
+The network line is such as `Wi-Fi · VPN: not known` or
+`Network type not known · VPN: on, name not known`. The app reads the kind of connection from the
+system, and it says that a VPN is on only when the system reports the connection as a VPN. It does
+not read the addresses of the phone's network interfaces, so the line has no VPN name and never has
+an address. The app reads this at its start, at each change of the network and when a report card
+opens, and it writes each change to the support log.
 
 These lines must not point to you. Tokens, keys and email addresses were masked when each line was
 written. For the report, the phone also masks:
@@ -854,6 +857,8 @@ The chosen voice settings are kept on the phone. OpenBot does not store the repl
 
 ## Company sign-in
 
+The desktop app no longer has company sign-in or its Members section.
+
 A server owner can connect the company's OpenID Connect provider, such as Microsoft Entra ID, Okta
 or Google Workspace, in Members → Company sign-in. Then people with an email at the company domains
 sign in at the company provider in place of an email code.
@@ -925,7 +930,7 @@ messages one address can send, it keeps a hash of your IP address in its rate-li
 in its mailbox and uses your address only to answer you.
 
 Cloudflare processes account and configuration API requests. It does not carry Team API, file,
-message, command, Remote Desktop media, or Remote Desktop input traffic. It forwards sealed iPhone
+message, or command traffic. It forwards sealed iPhone
 Live Activity updates and phone notifications that it cannot read; see [iPhone Live Activity](#iphone-live-activity),
 [iPhone notifications](#iphone-notifications) and [Android notifications](#android-notifications). For an
 agent's Slack app, it exchanges the Slack sign-in and serves the install page; see
@@ -1227,37 +1232,25 @@ Google account requests retain the Electron version token for sign-in compatibil
 
 When the owner publishes OpenBot, the app starts an authenticated Team API on a localhost port. The
 client and host use a separate OpenBot Signal service to establish WebRTC. Signal carries only
-short-lived authentication, SDP, and ICE messages. Team API data uses WebRTC DataChannels. Remote
-Desktop media and input use a separate WebRTC connection. A paste in the Remote Desktop viewer
-sends the member's clipboard text to the host, which puts it on the host's clipboard. The live browser view sends compressed
+short-lived authentication, SDP, and ICE messages. Team API data uses WebRTC DataChannels. The live browser view sends compressed
 images of the host's browser tab, and the watching member's pointer and key input, through the
 desktop DataChannel of the Team API connection. ICE uses a direct peer-to-peer path when possible. If a direct path is not possible, encrypted WebRTC traffic uses an OpenBot coturn relay.
 When the owner selects **Private network** in Settings › Mobile Connect, the host gets no STUN or
 TURN server, so no WebRTC traffic goes through an OpenBot relay. Team API connections then use only
-addresses on a private network, such as the Wi-Fi or a Tailscale tailnet. The desktop media
-connection gets the same empty server list for each new stream, so it also uses only a direct path,
-which can be a public IPv6 address of the computer. Sign-in and Signal messages do not change.
+addresses on a private network, such as the Wi-Fi or a Tailscale tailnet. Sign-in and Signal
+messages do not change.
 
 When an owner or an admin opens Server settings › General, the host sends a few `GET /health/ready`
 requests to each OpenBot Signal machine to measure its latency. The requests carry no account, server
 or chat data. When the owner or admin chooses a Signal machine, the host keeps the choice in a local
 file and sends only its name (such as `au`) with each Signal ticket request to the account service.
 
-The phone app shows a Remote Desktop in a web view that loads the host's viewer from a server on the
-phone's loopback address (`127.0.0.1`). That server takes only requests with a random token, serves
-one session, and stops when the screen closes. The viewer's files and its signaling go to the host
-through the encrypted Team API connection; the video and input use the separate WebRTC connection as
-on desktop. The phone does not store the viewer's files, the screen, or the connection stats that its stats
-sheet shows; Copy in that sheet puts them on the phone's clipboard only when the user taps it. It asks for Face ID, Touch ID
-or the phone unlock before a session, ends the session when the app leaves the foreground, and on
-Android does not allow screenshots or screen recording of the screen while it is open.
-
 On Android, the phone app turns off Content Capture for its window. The system's content capture
 service, such as Android System Intelligence, does not get the text of the app's screens, such as chat
 messages. Accessibility services and autofill do not change.
 
-Agents, conversations, queues, direct messages, attachments, browser data, prompts, approvals, and
-Remote Desktop data remain on the host. The central account service does not copy them into D1 or
+Agents, conversations, queues, direct messages, attachments, browser data, prompts, and approvals
+remain on the host. The central account service does not copy them into D1 or
 R2. The Signal service does not proxy them or write them to logs. The host does not need a public
 inbound port. The things Signal passes to a host are the Slack events of an agent's Slack app, the
 Discord mentions of the Discord app, the updates of the OpenBot Telegram bot, the GitHub events of
@@ -1353,12 +1346,8 @@ Network traffic can also occur when:
   `User-Agent: OpenBot/<version>` and, when a session starts, the client name `openbot`, the
   OpenBot version and the title `<agent name> (OpenBot)`, so the server can show which agent made a
   change. Nothing else about the user's agents, conversations or files is sent in those requests. The
-  registration names OpenBot's logo at `openbot.run`; an authorization service that shows it on its
-  sign-in page can make the browser load it from `openbot.run`. Meta Ads takes no loopback address,
-  so its sign-in page sends the browser to `https://openbot.run/oauth/mcp-callback` with the grant
-  and the sign-in's random state. The account service keeps nothing and sends the browser on at once
-  to `127.0.0.1` on the same computer. The grant cannot be used without a code that only OpenBot on
-  that computer holds;
+  sign-in page sends the grant back to `127.0.0.1` on the same computer, and the registration names
+  no OpenBot web address;
 - an owner or admin pastes a GitHub link into the Marketplace Skills search. The computer that runs
   OpenBot, or the joined server, reads that public repository from `api.github.com` and
   `raw.githubusercontent.com` without a GitHub account, with `User-Agent: OpenBot`. It reads the
@@ -1425,26 +1414,6 @@ Network traffic can also occur when:
   text, as for a typed message, and no recording is kept. Recordings show in the Storage tab of
   **Server Settings**, where the user can delete them, and are part of a data export. A recording is
   deleted with the agent's or channel's data;
-- the user turns on Codex live voice in **Settings → Voice** and starts a voice conversation with an agent on
-  this computer, with any provider. OpenBot starts a separate Codex App Server process for the
-  session. The app window sends a WebRTC offer to it, and it opens a realtime voice session with
-  OpenAI through the user's own Codex sign-in: the agent's own Codex account for an agent on Codex,
-  else the default Codex sign-in. The microphone audio then goes from this computer to OpenAI, and the
-  spoken reply comes back, until the pane closes. OpenAI also gets the short relay instructions of
-  OpenBot, with the agent's name, but not the agent's chat. Each request that the voice gives to the agent goes to the
-  agent's own provider as a text message, as for a typed message, and shows in the chat. The agent's
-  text answer then goes to OpenAI to be spoken. OpenBot never reads the Codex credentials. The voice
-  transcript is not added to the chat; no recording is kept. OpenAI handles the audio and the text
-  under its own policy and the user's ChatGPT plan. The setting is saved in `speech-preference.json`
-  in the application data folder. It is off by default;
-- a member of a server that this computer hosts starts live voice in an agent's chat from their
-  desktop or phone. The member's device sends a WebRTC offer to this computer through the Team API,
-  and OpenBot answers it as above, with the Codex sign-in of this computer: the call uses the ChatGPT
-  account of the host owner. The microphone audio and the spoken reply then go directly between the
-  member's device and OpenAI, not through this computer. Each request that the voice gives to the
-  agent goes into the chat as the member's message, and the agent's text answer goes to OpenAI to be
-  spoken. The live transcript goes only to that member's devices and is not saved. The session stops
-  when the member ends it, closes the app or loses access;
 - an agent uses the `openbot.web_search` tool. Only agents on a provider with no web search tool of
   its own get it. OpenBot starts a separate Codex App Server process, which sends the agent's question
   to OpenAI through the default Codex sign-in of this computer. OpenAI searches the web and returns a
@@ -1497,8 +1466,8 @@ Network traffic can also occur when:
   version, model and reasoning effort. It also sends up to 5 error lines of the chat from the last
   hour: the errors of failed tools other than shell commands, and of OpenBot tools. The card shows the
   errors. OpenBot removes known secrets from the text and the errors before it shows them. A bug
-  report about the phone app also has the phone's system, app version, device, network with the name
-  of its VPN, and support log lines,
+  report about the phone app also has the phone's system, app version, device, network (with whether
+  a VPN is on), and support log lines,
   which the phone adds when the user sends the report there (see
   [bug reports about the phone app](#bug-reports-about-the-phone-app)); the service refuses such a
   report without them. The service opens it as a public
@@ -1524,13 +1493,14 @@ Network traffic can also occur when:
   merchant name and address, and the agent's description of the purchase. Link asks the user to
   approve it, and OpenBot then reads the one-time card from `api.link.com`. Nothing else about the
   user's agents, conversations or files is sent to Link;
-- an installed build checks GitHub Releases for updates;
+- a Linux server downloads an OpenBot AppImage only from an https URL that you give to
+  `install-server.sh --release`, `openbot update` or `openbot-hosted-update stage`; the desktop app
+  does not check for, download or install updates;
 - OpenBot checks for new provider CLI releases when it starts, once an hour, and when you select
   `Check for updates`. It asks `api.github.com` for Codex, Kimi, GitHub Copilot, Mistral and Gemini, `registry.npmjs.org` for Claude,
   OpenCode and Cline, `x.ai/cli` for Grok, `raw.githubusercontent.com/agentclientprotocol/registry` and
   `downloads.cursor.com` (for the download size) for Cursor, `static.devin.ai` (the manifest, and the
-  download size) for Devin, and it reads a list of blocked
-  versions from `raw.githubusercontent.com/nightly-labs/openbot`. These requests contain no account, agent,
+  download size) for Devin. The list of blocked versions comes with the app. These requests contain no account, agent,
   conversation or file data;
 - an agent shows a visual reply, an agent checks its page with `html_preview`, or a user opens an
   HTML attachment, shared file or workspace file in the file preview. The page is HTML that the
@@ -2442,14 +2412,6 @@ include them in logs. The installed administrator CLI shows each password once o
 then removes the recovery file. A failed setup retains that root-only file for administrator recovery.
 The administrator controls secure password delivery. Host verification reads home metadata only
 and tests cross-user access using harmless temporary files outside tenant homes.
-
-### Remote desktop setup diagnostics
-
-When an authenticated server member checks remote desktop setup, the host sends its computer name,
-macOS account name, permission and service results, active session count, and check time to that member.
-A live test also sends a temporary four-digit code and mouse and keyboard test results. These results
-stay in memory and are not sent to analytics. Screen video uses the existing remote desktop connection.
-Permission approval remains in macOS System Settings on the host.
 
 ## Secure browser authentication
 

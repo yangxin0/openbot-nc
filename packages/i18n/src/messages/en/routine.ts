@@ -161,8 +161,6 @@ export const messages = defineMessages("routine", {
   "routine.card.webhookUpdated": "Updated webhook routine",
   "routine.card.webhookChanged": "Changes not saved",
   "routine.card.webhookSaveFailed": "Could not save the events.",
-  "routine.card.webhookFiltersInvalid": "A filter has a JSON Pointer that is not valid.",
-
   "routine.timezoneMove.title": "Your time zone is now {zone}",
   "routine.timezoneMove.description": {
     one: "{count} routine on {server} runs on {from} time. Move it to {zone}? Its clock time stays the same.",
@@ -264,13 +262,11 @@ export const messages = defineMessages("routine", {
   "routine.settings.whenToRun": "When to run",
   "routine.settings.nameRequired": "Give the routine a name.",
   "routine.settings.instructionRequired": "Describe what to do when the routine runs.",
-  "routine.settings.triggerWebhook": "Webhook",
   "routine.settings.webhookSummary": "When {eventType} arrives",
   "routine.settings.webhookSummaryAny": "When a webhook arrives",
 
   "routine.trigger.change": "Change trigger",
   "routine.trigger.groupSchedule": "Schedule",
-  "routine.trigger.kind": "What starts the routine",
   "routine.trigger.onceDescription": "On a chosen date and time",
   "routine.trigger.hourlyDescription": "Every hour within chosen hours",
   "routine.trigger.dailyDescription": "Every day at a chosen time",

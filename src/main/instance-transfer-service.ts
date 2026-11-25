@@ -100,7 +100,6 @@ import {
   writeTreeEffect,
 } from "./agent-archive";
 import type { AgentImportSkills, ChannelActor } from "./agent-import-service";
-import { validTimezone } from "./agent-marketplace-service";
 import { type ArchiveOperationError, archiveCall, archiveFailure, archiveSync } from "./archive-effects";
 import { InstanceTransferChunks } from "./instance-transfer-chunks";
 import {
@@ -148,6 +147,7 @@ import { exportWorkflows, importWorkflows, type TransferWorkflowPort } from "./i
 import { parseAvatarImage } from "./ipc/avatar-inputs";
 import { parseHostIdentity } from "./ipc/server-inputs";
 import { OWNERSHIP_MARKER } from "./managed-skill-service";
+import { validTimezone } from "./server-timezone-preference-store";
 import { readPackFolders } from "./skill-marketplace-service";
 import { isUnsafeArchivePath, normalizedFiles } from "./skill-package";
 

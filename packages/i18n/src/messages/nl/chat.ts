@@ -523,8 +523,6 @@ export const messages = {
     "De agent verwijdert deze melding en stuurt hem opnieuw zonder de delen die je kiest.",
   "chat.feedbackSent.removeChoice": "Verwijderen",
   "chat.feedbackSent.removeChoiceHint": "Van GitHub halen. Je kunt dit niet ongedaan maken.",
-  "chat.feedbackSent.fixPrompt": "Verwijder mijn melding #{number} van GitHub en stuur hem opnieuw zonder dit:",
-  "chat.feedbackSent.removePrompt": "Verwijder mijn melding #{number} van GitHub.",
   "chat.feedbackSent.composerFilled": "Het verzoek staat in je berichtveld. Vul het aan en stuur het dan.",
   "chat.feedbackSent.keep": "Bewaren",
   "chat.feedbackSent.removing": "Verwijderen…",

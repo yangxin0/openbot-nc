@@ -72,12 +72,9 @@ export const messages = {
     "تأكد من اتصالك بالإنترنت وحاول مرة أخرى. يعرض سجل التغييرات الكامل أيضًا كل التغييرات.",
   "update.whatsNew.empty.title": "لا ميزات جديدة في هذا الإصدار",
   "update.whatsNew.empty.body": "لا يحتوي هذا الإصدار على ملاحظات لعرضها هنا. يعرض سجل التغييرات الكامل كل التغييرات.",
-  "update.whatsNew.changelog": "سجل التغييرات الكامل",
-  "update.whatsNew.changelogFailed": "تعذّر على OpenBot فتح سجل التغييرات.",
   "update.whatsNew.done": "حسنًا",
   "update.required.title": "التحديث مطلوب",
   "update.required.description": "لم يعد OpenBot {version} مدعومًا. حدّث إلى {minimum} أو أحدث للمتابعة.",
-  "update.required.download": "تنزيل OpenBot",
   "update.required.continue": "المتابعة دون تحديث",
   "update.required.failed": "لم يكتمل التحديث.",
 } as const satisfies PartialTranslation<typeof source>;

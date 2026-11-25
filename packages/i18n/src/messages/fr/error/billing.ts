@@ -35,8 +35,6 @@ export const messages = {
     "Le système de TVA de l’UE ne peut pas vérifier le numéro de TVA pour l’instant. Réessayez plus tard ou continuez sans numéro de TVA.",
   "error.billing.vatUnavailable": "Le paiement n’est pas disponible pour l’instant. Réessayez plus tard.",
   "error.billing.invalidRequest": "La demande de facturation n’est pas valide.",
-  "error.billing.invalidResponse": "La réponse de facturation n’est pas valide.",
-  "error.billing.notStripePage": "La page de facturation n’est pas une page Stripe.",
   "error.billing.customServerOfferMissing": "Ce serveur n’a aucune offre à payer.",
   "error.billing.checkoutUnavailable": "Le paiement ne peut pas démarrer maintenant. Réessayez dans une minute.",
 } as const satisfies PartialTranslation<typeof source>;

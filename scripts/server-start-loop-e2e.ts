@@ -256,34 +256,34 @@ function stampTime(path: string): number | null {
   return existsSync(path) ? statSync(path).mtimeMs : null;
 }
 
-const START = "systemctl start --no-block openbot.service";
+const START = "systemctl start --no-block openbot-nc.service";
 const CHECK_CASES: CheckCase[] = [
   {
-    name: "start loop stopped, first run after a boot: stage and start",
+    name: "start loop stopped, first run after a boot: start, no download",
     activeState: "failed",
     execMainStatus: "78",
     stampAgeMs: null,
     stageFails: false,
     stagedVersion: "",
-    expected: { calls: ["stage", START], exitCode: 0, stampRefreshed: true },
+    expected: { calls: [START], exitCode: 0, stampRefreshed: false },
   },
   {
-    name: "start loop stopped, staged 1 hour ago: stage and start again",
+    name: "start loop stopped, checked 1 hour ago: start again",
     activeState: "failed",
     execMainStatus: "78",
     stampAgeMs: HOUR_MS,
     stageFails: false,
     stagedVersion: "",
-    expected: { calls: ["stage", START], exitCode: 0, stampRefreshed: true },
+    expected: { calls: [START], exitCode: 0, stampRefreshed: false },
   },
   {
-    name: "start loop stopped, stage fails: start all the same, and fail",
+    name: "start loop stopped, a stage would fail: start, never stage",
     activeState: "failed",
     execMainStatus: "78",
     stampAgeMs: HOUR_MS,
     stageFails: true,
     stagedVersion: "",
-    expected: { calls: ["stage", START], exitCode: 1, stampRefreshed: false },
+    expected: { calls: [START], exitCode: 0, stampRefreshed: false },
   },
   {
     name: "start loop stopped, a release is staged: install it and start",
@@ -292,7 +292,7 @@ const CHECK_CASES: CheckCase[] = [
     stampAgeMs: HOUR_MS,
     stageFails: false,
     stagedVersion: "99.0.0",
-    expected: { calls: ["stage", "apply", START], exitCode: 0, stampRefreshed: true },
+    expected: { calls: ["apply", START], exitCode: 0, stampRefreshed: false },
   },
   {
     name: "running, staged 1 hour ago: nothing",
@@ -304,22 +304,22 @@ const CHECK_CASES: CheckCase[] = [
     expected: { calls: [], exitCode: 0, stampRefreshed: false },
   },
   {
-    name: "running, staged 7 hours ago: stage only",
+    name: "running, checked 7 hours ago: nothing, no download",
     activeState: "active",
     execMainStatus: "0",
     stampAgeMs: 7 * HOUR_MS,
     stageFails: false,
     stagedVersion: "",
-    expected: { calls: ["stage"], exitCode: 0, stampRefreshed: true },
+    expected: { calls: [], exitCode: 0, stampRefreshed: false },
   },
   {
-    name: "stopped by hand (status 0): stage when due, no start",
+    name: "stopped by hand (status 0): no stage, no start",
     activeState: "inactive",
     execMainStatus: "0",
     stampAgeMs: null,
     stageFails: false,
     stagedVersion: "",
-    expected: { calls: ["stage"], exitCode: 0, stampRefreshed: true },
+    expected: { calls: [], exitCode: 0, stampRefreshed: false },
   },
   {
     name: "stopped by hand after the start loop stopped (inactive, 78): no start",
@@ -336,7 +336,7 @@ function checkTimerUnits(): { timer: string; service: string } {
   const timer = readFileSync(join(HOSTING, "openbot-update.timer"), "utf8");
   const service = readFileSync(join(HOSTING, "openbot-update.service"), "utf8");
   const interval = timer.match(/^OnUnitActiveSec=(.+)$/mu)?.[1];
-  assert.equal(interval, "1h", "openbot-update.timer runs each hour");
+  assert.equal(interval, "1h", "openbot-nc-update.timer runs each hour");
   assert.match(service, /^ExecStart=\/opt\/OpenBot\/hosted\/openbot-hosted-update check$/mu);
   return { timer: interval, service: "check" };
 }

@@ -608,8 +608,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "Агент удалит этот отчёт и отправит его снова без частей, которые вы выберете.",
   "chat.feedbackSent.removeChoice": "Удалить",
   "chat.feedbackSent.removeChoiceHint": "Убрать с GitHub. Это нельзя отменить.",
-  "chat.feedbackSent.fixPrompt": "Удали мой отчёт #{number} с GitHub и отправь его снова без этого:",
-  "chat.feedbackSent.removePrompt": "Удали мой отчёт #{number} с GitHub.",
   "chat.feedbackSent.composerFilled": "Запрос в поле сообщения. Дополните его и отправьте.",
   "chat.feedbackSent.keep": "Оставить",
   "chat.feedbackSent.removing": "Удаление…",

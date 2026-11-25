@@ -1,35 +1,8 @@
-import { isAgentTemplateId } from "@openbot/contracts/agent-template-links";
-import { type BillingState, parseBillingState } from "@openbot/contracts/billing";
-import { type BillingDetails, parseBillingDetails } from "@openbot/contracts/billing-details";
-import {
-  type CreditActivity,
-  type CreditRedeemResult,
-  type CreditsState,
-  parseCreditActivity,
-  parseCreditRedeemResult,
-  parseCreditsState,
-} from "@openbot/contracts/credits";
-import {
-  type CustomServerCheckoutResult,
-  parseCustomServerCheckoutResult,
-} from "@openbot/contracts/custom-server-plans";
-import {
-  type HostedServerCatalog,
-  type HostedServerList,
-  type HostedServerSummary,
-  parseHostedServerCatalog,
-  parseHostedServerList,
-  parseHostedServerSummary,
-  parseServerClaim,
-  type ServerClaim,
-} from "@openbot/contracts/hosted-servers";
-import { parseHostedSiteList, parseHostedSiteSummary } from "@openbot/contracts/hosted-sites";
 import {
   type AccountSession,
   AGENT_DEFAULT_KEYS,
   type AgentDefaults,
   type AgentMemoryLimitPreference,
-  type AnalyticsPreference,
   type AppAppearancePreference,
   type AppBehaviorPreference,
   type AppFontFamily,
@@ -65,10 +38,6 @@ import {
   type ExternalLinkBrowsers,
   type ExternalLinkFallback,
   type ExternalLinkPreference,
-  type GitHubConnectorRepositories,
-  type GitHubConnectorStatus,
-  type HostedSiteList,
-  type HostedSiteSummary,
   IDLE_RESTART_TARGETS,
   type IdleRestart,
   isAgentMemoryLimit,
@@ -86,7 +55,6 @@ import {
   isAvatarColor,
   isBusyMessageMode,
   isChatBackgroundColor,
-  isCodexLiveVoice,
   isCustomAgentCheckResult,
   isCustomAgentResult,
   isCustomAgentSummary,
@@ -99,8 +67,6 @@ import {
   isElevenLabsSpeechVoice,
   isPlanStartAfterMs,
   isProviderDetectionSettings,
-  isRemoteDesktopSetupStatus,
-  isRemoteDesktopTestStatus,
   isRemoteNetworkRoute,
   isSpeechModelId,
   isSpeechSpeed,
@@ -119,13 +85,9 @@ import {
   type NotificationPreference,
   type OnePasswordConnectorStatus,
   type ProviderDetectionSettings,
-  parseGitHubConnectorRepositories,
-  parseGitHubConnectorStatus,
   parseLinkAccountStatus,
   parseOnePasswordConnectorStatus,
   QUIT_GUARDS,
-  type RemoteDesktopSetupStatus,
-  type RemoteDesktopTestStatus,
   type RemoteNetworkRouteState,
   type RemoteSessionReusePreference,
   type SentMessageStats,
@@ -135,8 +97,6 @@ import {
   UPDATE_PHASES,
   type UpdatePreference,
   type UpdateStatus,
-  type VoiceLiveEvent,
-  type VoiceLiveSession,
   type VoiceModelStatus,
   type VoiceServerProbe,
   type VoiceServerSettings,
@@ -158,42 +118,15 @@ import {
   requiredNumber,
   requiredString,
 } from "@openbot/contracts/ipc-decoding";
-import { type LicenseState, parseLicenseState } from "@openbot/contracts/license";
-import {
-  isMarketplaceAgentId,
-  isMarketplaceSkillSlug,
-  type MarketplaceListingLink,
-} from "@openbot/contracts/marketplace-links";
 import { decodeOwnerTransfer, type OwnerTransfer } from "@openbot/contracts/owner-transfer";
 import { isPluginSlug } from "@openbot/contracts/plugin-links";
-import { parseReferralState, type ReferralState } from "@openbot/contracts/referral";
-import {
-  type DynamicRecord,
-  isBoolean,
-  isDynamicRecord,
-  isNumber,
-  isOneOf,
-  isString,
-} from "@openbot/contracts/runtime-values";
+import { type DynamicRecord, isBoolean, isNumber, isOneOf, isString } from "@openbot/contracts/runtime-values";
 
 export function decodeAppInfo(value: unknown): AppInfo {
   const info = decodeRecord(value, "app info");
-  const {
-    platform,
-    variant,
-    analyticsCaptureUrl,
-    analyticsInstallId,
-    softwareRendering,
-    hourCycle,
-    aboveAppsSupport,
-    dynamicIslandUnavailable,
-  } = info;
+  const { platform, variant, softwareRendering, hourCycle, aboveAppsSupport, dynamicIslandUnavailable } = info;
   if (!isOneOf(["darwin", "win32", "linux"] as const, platform)) throw new Error("Invalid platform.");
   if (!isOneOf(["production", "dev", "preview"] as const, variant)) throw new Error("Invalid variant.");
-  if (analyticsCaptureUrl !== undefined && !isString(analyticsCaptureUrl))
-    throw new Error("Invalid analytics capture URL.");
-  if (analyticsInstallId !== undefined && !isString(analyticsInstallId))
-    throw new Error("Invalid analytics install ID.");
   if (softwareRendering !== undefined && !isBoolean(softwareRendering))
     throw new Error("Invalid software rendering flag.");
   if (hourCycle !== undefined && !isOneOf(["h12", "h23"] as const, hourCycle)) throw new Error("Invalid hour cycle.");
@@ -206,8 +139,6 @@ export function decodeAppInfo(value: unknown): AppInfo {
     version: requiredString(info, "version"),
     platform,
     variant,
-    ...(analyticsCaptureUrl === undefined ? {} : { analyticsCaptureUrl }),
-    ...(analyticsInstallId === undefined ? {} : { analyticsInstallId }),
     ...(softwareRendering === undefined ? {} : { softwareRendering }),
     ...(hourCycle === undefined ? {} : { hourCycle }),
     ...(aboveAppsSupport === undefined ? {} : { aboveAppsSupport }),
@@ -228,10 +159,6 @@ export function decodeAppSetupState(value: unknown): AppSetupState {
   if (preferredProvider !== null && !isAgentProvider(preferredProvider)) throw new Error("Invalid preferredProvider.");
   if (preferredModel !== null && !isAgentModel(preferredModel)) throw new Error("Invalid preferredModel.");
   return { completed: requiredBoolean(state, "completed"), preferredProvider, preferredModel };
-}
-
-export function decodeAnalyticsPreference(value: unknown): AnalyticsPreference {
-  return { enabled: requiredBoolean(decodeRecord(value, "analytics preference"), "enabled") };
 }
 
 export const decodeApprovalAutomationPreference: (value: unknown) => ApprovalAutomationPreference = guardedDecoder(
@@ -628,14 +555,13 @@ export function decodeSpeechModelStatus(value: unknown): SpeechModelStatus {
 
 export function decodeSpeechSettings(value: unknown): SpeechSettings {
   const settings = decodeRecord(value, "speech settings");
-  const { modelId, voice, elevenLabsVoice, xaiVoice, speed, codexLiveVoice, turnPauseMs } = settings;
+  const { modelId, voice, elevenLabsVoice, xaiVoice, speed, turnPauseMs } = settings;
   if (
     !isSpeechModelId(modelId) ||
     !isSpeechVoice(voice) ||
     !isElevenLabsSpeechVoice(elevenLabsVoice) ||
     !isXaiSpeechVoice(xaiVoice) ||
     !isSpeechSpeed(speed) ||
-    !(codexLiveVoice === null || isCodexLiveVoice(codexLiveVoice)) ||
     !isVoiceTurnPause(turnPauseMs)
   )
     throw new Error("Invalid speech settings.");
@@ -646,30 +572,7 @@ export function decodeSpeechSettings(value: unknown): SpeechSettings {
     elevenLabsVoice,
     xaiVoice,
     speed,
-    codexLive: requiredBoolean(settings, "codexLive"),
-    codexLiveVoice,
     turnPauseMs,
-  };
-}
-
-export function decodeVoiceLiveSession(value: unknown): VoiceLiveSession {
-  const session = decodeRecord(value, "live voice session");
-  return { sessionId: requiredString(session, "sessionId"), sdp: requiredString(session, "sdp") };
-}
-
-export function decodeVoiceLiveEvent(value: unknown): VoiceLiveEvent {
-  const event = decodeRecord(value, "live voice event");
-  const sessionId = requiredString(event, "sessionId");
-  if (event.type === "ended") return { type: "ended", sessionId, error: nullableString(event, "error") };
-  const { role } = event;
-  if (event.type !== "transcript" || (role !== "user" && role !== "assistant"))
-    throw new Error("Invalid live voice event.");
-  return {
-    type: "transcript",
-    sessionId,
-    role,
-    text: requiredString(event, "text"),
-    final: requiredBoolean(event, "final"),
   };
 }
 
@@ -705,47 +608,12 @@ export function decodePendingListing(value: unknown): string | null {
   return typeof value === "string" && isPluginSlug(value) ? value : null;
 }
 
-export function decodePendingAgentTemplate(value: unknown): string | null {
-  return typeof value === "string" && isAgentTemplateId(value) ? value : null;
-}
-
-export function decodePendingMarketplaceListing(value: unknown): MarketplaceListingLink | null {
-  if (!isDynamicRecord(value) || !isString(value.id)) return null;
-  if (value.kind === "agent" && isMarketplaceAgentId(value.id)) return { kind: "agent", id: value.id };
-  if (value.kind === "skill" && isMarketplaceSkillSlug(value.id)) return { kind: "skill", id: value.id };
-  return null;
-}
-
 export function decodeAgentImportSkill(value: unknown): string {
   if (!isString(value) || !value) throw new Error("Invalid export skill response.");
   return value;
 }
 
 export const decodeVoid = emptyDecoder("IPC returned unexpected data.");
-
-export function decodeHostedSite(value: unknown): HostedSiteSummary {
-  const site = parseHostedSiteSummary(value);
-  if (!site) throw new Error("Invalid hosted site response.");
-  return site;
-}
-
-export function decodeHostedSiteList(value: unknown): HostedSiteList {
-  const list = parseHostedSiteList(value);
-  if (!list) throw new Error("Invalid hosted site list response.");
-  return list;
-}
-
-export function decodeGitHubConnectorStatus(value: unknown): GitHubConnectorStatus {
-  const status = parseGitHubConnectorStatus(value);
-  if (!status) throw new Error("Invalid GitHub connector response.");
-  return status;
-}
-
-export function decodeGitHubConnectorRepositories(value: unknown): GitHubConnectorRepositories {
-  const repositories = parseGitHubConnectorRepositories(value);
-  if (!repositories) throw new Error("Invalid GitHub repository list response.");
-  return repositories;
-}
 
 export function decodeLinkAccountStatus(value: unknown): LinkAccountStatus {
   const status = parseLinkAccountStatus(value);
@@ -757,78 +625,6 @@ export function decodeOnePasswordConnectorStatus(value: unknown): OnePasswordCon
   const status = parseOnePasswordConnectorStatus(value);
   if (!status) throw new Error("Invalid 1Password connector response.");
   return status;
-}
-
-export function decodeBillingState(value: unknown): BillingState {
-  const state = parseBillingState(value);
-  if (!state) throw new Error("Invalid billing state response.");
-  return state;
-}
-
-export function decodeBillingDetails(value: unknown): BillingDetails {
-  const details = parseBillingDetails(value);
-  if (!details) throw new Error("Invalid billing details response.");
-  return details;
-}
-
-export function decodeReferralState(value: unknown): ReferralState {
-  const state = parseReferralState(value);
-  if (!state) throw new Error("Invalid referral state response.");
-  return state;
-}
-
-export function decodeCreditsState(value: unknown): CreditsState {
-  const state = parseCreditsState(value);
-  if (!state) throw new Error("Invalid credits state response.");
-  return state;
-}
-
-export function decodeCreditRedeemResult(value: unknown): CreditRedeemResult {
-  const result = parseCreditRedeemResult(value);
-  if (!result) throw new Error("Invalid credit redeem response.");
-  return result;
-}
-
-export function decodeCreditActivity(value: unknown): CreditActivity {
-  const activity = parseCreditActivity(value);
-  if (!activity) throw new Error("Invalid credit activity response.");
-  return activity;
-}
-
-export function decodeLicenseState(value: unknown): LicenseState {
-  const state = parseLicenseState(value);
-  if (!state) throw new Error("Invalid license state response.");
-  return state;
-}
-
-export function decodeHostedServer(value: unknown): HostedServerSummary {
-  const server = parseHostedServerSummary(value);
-  if (!server) throw new Error("Invalid hosted server response.");
-  return server;
-}
-
-export function decodeCustomServerCheckoutResult(value: unknown): CustomServerCheckoutResult {
-  const result = parseCustomServerCheckoutResult(value);
-  if (!result) throw new Error("Invalid custom server checkout response.");
-  return result;
-}
-
-export function decodeServerClaim(value: unknown): ServerClaim {
-  const claim = parseServerClaim(value);
-  if (!claim) throw new Error("Invalid server claim response.");
-  return claim;
-}
-
-export function decodeHostedServerCatalog(value: unknown): HostedServerCatalog {
-  const catalog = parseHostedServerCatalog(value);
-  if (!catalog) throw new Error("Invalid hosted server plans response.");
-  return catalog;
-}
-
-export function decodeHostedServerList(value: unknown): HostedServerList {
-  const list = parseHostedServerList(value);
-  if (!list) throw new Error("Invalid hosted server list response.");
-  return list;
 }
 
 export function decodeCustomProviders(value: unknown): CustomProviderSummary[] {
@@ -894,15 +690,6 @@ export function decodeProviderDetectionSettings(value: unknown): ProviderDetecti
 export function decodeNullablePath(value: unknown): string | null {
   if (value !== null && !isString(value)) throw new Error("Invalid directory response.");
   return value;
-}
-
-export function decodeRemoteDesktopSetupFromMain(value: unknown): RemoteDesktopSetupStatus {
-  if (!isRemoteDesktopSetupStatus(value)) throw new Error("Invalid remote desktop setup response.");
-  return { ...value };
-}
-export function decodeRemoteDesktopTestFromMain(value: unknown): RemoteDesktopTestStatus {
-  if (!isRemoteDesktopTestStatus(value)) throw new Error("Invalid remote desktop test response.");
-  return { ...value };
 }
 
 export function decodeBitwardenConnectorStatus(value: unknown): BitwardenConnectorStatus {

@@ -2,12 +2,9 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.iceServersMissing": "원격 Signal이 ICE 서버를 제공하지 않았어요.",
   "error.host.keyRotationUnavailable": "이 서버는 계정 서비스 없이는 키를 변경할 수 없어요.",
   "error.host.keyRotationRefused": "계정 서비스가 새 서버 키를 수락하지 않았어요. 현재 키를 계속 사용해요.",
   "error.host.webRtcNotConfigured": "WebRTC 호스트 서비스가 설정되어 있지 않아요.",
-  "error.host.runtimeNotInstalled": "원격 데스크톱 런타임이 설치되어 있지 않아요.",
-  "error.host.setupUnavailable": "권한 설정을 사용할 수 없어요.",
   "error.host.accountChangedDuringUpdate": "이 서버를 업데이트하는 동안 로그인한 계정이 변경되었어요.",
   "error.host.nameBeforePublish": "이 OpenBot을 게시하기 전에 이름을 지정해 주세요.",
   "error.host.memberNotFound": "원격 멤버가 없어요.",

@@ -2,53 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "Aktualisiere den Client, um den Remote-Desktop einzurichten.",
-  "error.remote.desktopSetupUnavailable": "Die Einrichtung des Remote-Desktops ist nicht verfügbar.",
-  "error.remote.desktopTestUnavailable": "Remote-Desktop-Tests sind nicht verfügbar.",
-  "error.remote.controlUnavailable": "Die Fernsteuerung ist nicht verfügbar.",
-  "error.remote.controlSessionNotFound": "Fernsteuerungssitzung nicht gefunden.",
-  "error.remote.controlNotAllowed": "Der Eigentümer dieses Computers erlaubt deiner Rolle keine Fernsteuerung.",
-  "error.remote.controlDeclined": "Die Person an diesem Computer hat die Fernsteuerung nicht erlaubt.",
-  "error.remote.testRuntimeUpdate": "Aktualisiere die macOS-Remote-Desktop-Laufzeit, um diesen Test auszuführen.",
-  "error.remote.testOtherSessions": "Beende andere Remote-Desktop-Sitzungen, bevor du einen Test startest.",
-  "error.remote.testPermissions":
-    "Prüfe die Berechtigungen und die grafische Sitzung auf dem Host, bevor du den Test startest.",
-  "error.remote.controlSessionEnded": "Die Fernsteuerungssitzung wurde beendet.",
-  "error.remote.testPanelFailed": "Der Host konnte das Testfenster nicht öffnen.",
-  "error.remote.sessionCapacity": "Der Host hat bereits vier aktive Sitzungen.",
-  "error.remote.linuxNeedsX11": "Remote-Desktop unter Linux benötigt eine X11-Sitzung. Wayland wird nicht unterstützt.",
-  "error.remote.runtimeMissing":
-    "Die Sunshine- und Moonlight-Web-Laufzeit fehlt oder wird auf diesem Host nicht unterstützt. Installiere die vollständige OpenBot-Version auf einem Mac, einem Windows-x64-Host oder einem Linux-x64-Host und starte OpenBot neu.",
-  "error.remote.testActive": "Ein Remote-Desktop-Test ist aktiv. Versuche es nach seinem Abschluss erneut.",
-  "error.remote.screenRecordingDenied":
-    "Der Host hat OpenBot keine Bildschirmaufnahme erlaubt. Erlaube die Bildschirmaufnahme auf dem Host und versuche es erneut.",
-  "error.remote.windowsSessionDisconnected":
-    "Die Windows-Sitzung auf dem Host ist getrennt und hat keinen Bildschirm zum Teilen. Melde dich am Bildschirm des Hosts bei Windows an und versuche es erneut.",
-  "error.remote.windowsCaptureDenied":
-    "Windows auf dem Host lässt OpenBot den Bildschirm nicht aufzeichnen. Entsperre Windows am Bildschirm des Hosts, schließe alle Administrator-Abfragen und versuche es erneut. Wenn das Problem bleibt, starte den Host neu.",
-  "error.remote.macScreenLocked":
-    "Der Mac ist gesperrt und kann seinen Bildschirm nicht teilen. Entsperre den Mac an seinem Bildschirm und versuche es erneut.",
-  "error.remote.streamTooSlowLowerQuality":
-    "Die Verbindung zum Host ist zu langsam für das Bild. Versuche es erneut: Die nächste Verbindung nutzt eine niedrigere Qualität.",
-  "error.remote.streamTooSlow":
-    "Die Verbindung zum Host ist zu langsam für das Bild. Nutze ein schnelleres Netzwerk und versuche es erneut.",
-  "error.remote.noPictureSwitchEncoder":
-    "Der Host hat kein Bild gesendet. Versuche es erneut: Die nächste Verbindung nutzt eine Videoeinstellung, die auf mehr Computern funktioniert.",
-  "error.remote.teamSessionExpired": "Die Teamsitzung ist abgelaufen.",
-  "error.remote.finishTestBeforeSwitch": "Beende den Remote-Desktop-Test, bevor du den Bildschirm wechselst.",
-  "error.remote.displayNotFound": "Remote-Bildschirm nicht gefunden.",
-  "error.remote.displaySwitchInProgress": "Ein Bildschirmwechsel läuft.",
-  "error.remote.localTestListenerUnavailable": "Der Empfänger für den lokalen Test ist nicht verfügbar.",
-  "error.remote.localTestNotFound": "Lokale Testsitzung nicht gefunden.",
-  "error.remote.runtimeUnavailable": "Die Remote-Desktop-Laufzeit ist nicht verfügbar.",
-  "error.remote.sunshineStartFailed":
-    "Sunshine wurde auf dem Host nicht gestartet. Prüfe die Remote-Desktop-Protokolle auf dem Host und versuche es erneut.",
-  "error.remote.moonlightStartFailed":
-    "Moonlight Web wurde auf dem Host nicht gestartet. Prüfe die Remote-Desktop-Protokolle auf dem Host und versuche es erneut.",
-  "error.remote.pairingFailed":
-    "Moonlight konnte auf dem Host nicht mit Sunshine gekoppelt werden. Versuche es erneut. Falls das Problem weiter auftritt, starte OpenBot auf dem Host neu.",
-  "error.remote.runtimeStartFailed":
-    "Die Remote-Desktop-Laufzeit wurde auf dem Host nicht gestartet. Prüfe die Remote-Desktop-Protokolle auf dem Host und versuche es erneut.",
   "error.remote.hostUnreachable": "Der Host ist nicht erreichbar.",
   "error.remote.signInToHostAgain": "Melde dich erneut bei diesem Host an.",
   "error.remote.invalidData": "Der Host hat ungültige Daten zurückgegeben.",
@@ -72,12 +25,7 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "Der Kontodienst hat einen anderen Host akzeptiert.",
   "error.remote.inviteIdentityChanged": "Die Identität des Einladungshosts wurde während der Annahme geändert.",
   "error.remote.localServerRemove": "Der lokale Server kann nicht entfernt werden.",
-  "error.remote.desktopSetupHostUpdate":
-    "Aktualisiere OpenBot auf dem Host, um die Remote-Desktop-Einrichtung zu prüfen.",
-  "error.remote.desktopTestHostUpdate":
-    "Aktualisiere OpenBot auf dem Host, um die Remote-Desktop-Einrichtung zu testen.",
   "error.remote.viewerProxyUnavailable": "Der lokale Proxy der Fernanzeige ist nicht verfügbar.",
-  "error.remote.viewerTransportInvalid": "Der Transport der Fernanzeige ist ungültig.",
   "error.remote.viewerProxyNoPort": "Der lokale Proxy der Fernanzeige hat keinen Port erhalten.",
   "error.remote.inviteNeedsConnection": "Der Host muss sich einmal verbinden, bevor er Einladungen erstellen kann.",
   "error.remote.permanentInviteUnsupported": "Diese Serververbindung unterstützt keine dauerhaften Einladungslinks.",

@@ -1,12 +1,9 @@
 import { defineMessages } from "../../message";
 
 export const messages = defineMessages("dialog", {
-  "dialog.chooseSiteDirectory": "Choose a static site directory",
   "dialog.chooseAgentFolder": "Choose a folder for {agent}",
   "dialog.chooseChannelFolder": "Choose a folder for {channel}",
   "dialog.chooseAgentExclusion": "Choose a folder that {agent} must not change",
-  "dialog.chooseSkill": "Choose a skill folder or ZIP",
-  "dialog.filter.skillPackages": "Skill packages",
   "dialog.filter.images": "Images",
   "dialog.filter.supportedFiles": "Supported files",
   "dialog.filter.attachment": "Attachment",
@@ -16,6 +13,7 @@ export const messages = defineMessages("dialog", {
   "dialog.chooseHermesFolder": "Choose the Hermes folder",
   "dialog.filter.agentExports": "Agent exports",
   "dialog.chooseVaultCsv": "Choose a password export",
+  "dialog.chooseRelayIdentity": "Choose an identity file",
   "dialog.filter.csv": "CSV files",
   "dialog.saveExportSkill": "Save the export skill",
   "dialog.saveTransfer": "Save the transfer file",

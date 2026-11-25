@@ -137,8 +137,6 @@ async function main(): Promise<void> {
           readReplies: true,
           voice: sample.voice,
           speed: 1,
-          codexLive: false,
-          codexLiveVoice: null,
         }),
       );
       const startedAt = Date.now();

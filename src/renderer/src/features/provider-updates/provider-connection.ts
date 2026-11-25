@@ -87,10 +87,6 @@ export interface ProviderConnectionOptions {
   connectInMainlandChina?: (provider: AgentProviderId) => Promise<void>;
   openVerificationUrl: (url: string) => void;
   openAppDownload?: () => void;
-  analytics?: {
-    begin: (provider: AgentProviderId) => () => void;
-    drop: (provider: AgentProviderId) => void;
-  };
 }
 
 export interface ProviderConnectionController extends ProviderConnectionApi {
@@ -141,7 +137,6 @@ export function createProviderConnection(options: ProviderConnectionOptions): Pr
     setCodeLoginOpener(opener);
     setCodeLoginProvider(provider);
     setCodeLoginState({ phase: "starting" });
-    const failConnection = options.analytics?.begin(provider);
     try {
       await codeLoginCancellation;
       if (generation !== codeLoginGeneration) return;
@@ -219,7 +214,6 @@ export function createProviderConnection(options: ProviderConnectionOptions): Pr
       );
     } catch (error) {
       if (generation !== codeLoginGeneration) return;
-      failConnection?.();
       endProviderCodeLogin(provider, {
         kind: "failed",
         message:
@@ -420,7 +414,6 @@ export function createProviderConnection(options: ProviderConnectionOptions): Pr
     setCodeLoginProvider(null);
     const target = codeLoginTarget;
     if (!provider || !target) return;
-    options.analytics?.drop(provider);
     if (codeLoginMethod === "code" && codeLoginAccount !== undefined) {
       const accountId = codeLoginAccountId;
       if (accountId && target.accountCode)

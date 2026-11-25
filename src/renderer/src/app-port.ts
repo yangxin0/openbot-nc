@@ -1,5 +1,4 @@
 import type { OpenBotDesktopApi } from "@openbot/contracts/ipc";
-import type { CompanySignInCalls } from "./features/servers/ServerCompanySignInSection";
 
 export interface AppPort {
   getAppInfo: OpenBotDesktopApi["getAppInfo"];
@@ -28,23 +27,14 @@ export interface AppPort {
     OpenBotDesktopApi["agent"],
     "readConversationPage" | "searchConversationMessages" | "searchConversationFiles" | "listRoutines" | "listAgents"
   >;
-  agentTemplates: Pick<OpenBotDesktopApi["agentTemplates"], "onOpenLink" | "takePendingLink">;
   acpRegistry: OpenBotDesktopApi["acpRegistry"];
-  hostedSites: OpenBotDesktopApi["hostedSites"];
-  billing: OpenBotDesktopApi["billing"];
-  credits: OpenBotDesktopApi["credits"];
-  referral: OpenBotDesktopApi["referral"];
-  license: OpenBotDesktopApi["license"];
-  auth: CompanySignInCalls &
-    Pick<
-      OpenBotDesktopApi["auth"],
-      "listOwnerTransfers" | "acceptOwnerTransfer" | "declineOwnerTransfer" | "onOwnerTransfersChanged"
-    >;
-  hostedServers: OpenBotDesktopApi["hostedServers"];
+  auth: Pick<
+    OpenBotDesktopApi["auth"],
+    "listOwnerTransfers" | "acceptOwnerTransfer" | "declineOwnerTransfer" | "onOwnerTransfersChanged"
+  >;
   routineFeed: OpenBotDesktopApi["routineFeed"];
   events: OpenBotDesktopApi["events"];
   plugins: Pick<OpenBotDesktopApi["plugins"], "onOpenListing" | "takePendingListing">;
-  marketplace: Pick<OpenBotDesktopApi["marketplace"], "onOpenListing" | "takePendingListing">;
   servers: Pick<
     OpenBotDesktopApi["servers"],
     "onInvite" | "takePendingInvite" | "getOwnerTransfer" | "startOwnerTransfer" | "cancelOwnerTransfer"

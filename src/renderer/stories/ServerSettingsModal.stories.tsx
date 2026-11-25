@@ -4,7 +4,6 @@ import {
   type BrowserProfileSummary,
   type BrowserProxyComputer,
   type BrowserProxySummary,
-  type HostStatus,
   type HostUpdateStatus,
   nextBrowserProfileHue,
   parseBrowserProxyAddress,
@@ -13,7 +12,7 @@ import {
 import type { OwnerTransfer } from "@openbot/contracts/owner-transfer";
 import { sourceText } from "@openbot/i18n/source";
 import { Toaster } from "@openbot/ui";
-import { createSignal, createStore } from "solid-js";
+import { createStore } from "solid-js";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import type { ServerBrowserProfilesOptions } from "../src/features/browser/ServerBrowserProfilesPanel";
@@ -21,11 +20,10 @@ import { OwnerTransferPrompt } from "../src/features/servers/OwnerTransferPrompt
 import type { ServerAuditOptions } from "../src/features/servers/ServerAuditSection";
 import type { OwnerTransferCalls } from "../src/features/servers/ServerOwnerTransferSection";
 import type { ServerAgentAccessOptions } from "../src/features/servers/ServerRolesSection";
-import { ServerSettingsModal, type ServerSettingsModalProps } from "../src/features/servers/ServerSettingsModal";
+import { ServerSettingsModal } from "../src/features/servers/ServerSettingsModal";
 import {
   STORY_AGENT_SUMMARIES,
   STORY_HOST_STATUS,
-  STORY_HOSTED_SITES,
   STORY_PRESENCE,
   STORY_SERVER_AUDIT_ENTRIES,
 } from "../src/preview/fixtures";
@@ -86,12 +84,6 @@ export const LocalFirstSetup: Story = {
       logoUrl: null,
       apiUrl: null,
       apiOnline: false,
-      remoteDesktopReady: false,
-      remoteDesktopScreenRecordingDenied: false,
-      remoteDesktopNeedsX11Session: false,
-      remoteDesktopUnattended: false,
-      remoteDesktopActiveSessions: 0,
-      remoteDesktopMaxSessions: 4,
     },
     members: [],
     invites: [],
@@ -108,28 +100,6 @@ export const FirstSetupInvalidNameSmallViewport: Story = {
 export const LocalFirstPublication: Story = {
   args: { ...LocalFirstSetup.args, initialSection: "members" },
 };
-
-export const RemoteDesktopAfterPublication: Story = {
-  render: (args) => <PublicationSetupStory settings={args} />,
-};
-
-function PublicationSetupStory(props: { settings: ServerSettingsModalProps }) {
-  const [published, setPublished] = createSignal(false);
-  return (
-    <ServerSettingsStory
-      settings={{
-        ...props.settings,
-        initialSection: "members",
-        get hostStatus(): HostStatus {
-          return { ...STORY_HOST_STATUS, configured: true, phase: published() ? "online" : "idle" };
-        },
-        onSetPublished: async (value) => {
-          setPublished(value);
-        },
-      }}
-    />
-  );
-}
 
 export const LocalOnline: Story = {
   args: {
@@ -151,7 +121,6 @@ export const RemoteOwnerInBrowser: Story = {
     server: remoteServer,
     hostStatus: null,
     initialSection: "members",
-    onDownloadDesktopApp: fn(),
   },
   render: (args) => (
     <>
@@ -173,19 +142,6 @@ export const RemoteMember: Story = {
     server: { ...remoteServer, role: "member" },
     hostStatus: null,
     invites: [],
-  },
-};
-
-export const Sites: Story = {
-  args: {
-    initialSection: "sites",
-    hostedSites: {
-      api: {
-        list: async () => ({ sites: STORY_HOSTED_SITES.map((site) => ({ ...site })), limit: 3, used: 2 }),
-        delete: fn(async () => undefined),
-      },
-      onOpenSite: fn(),
-    },
   },
 };
 
@@ -443,14 +399,6 @@ export const BrowserProfilesEmpty: Story = {
   render: (args) => <ServerSettingsStory settings={{ ...args, browserProfiles: storyBrowserProfiles([]) }} />,
 };
 
-export const SitesForMember: Story = {
-  args: {
-    ...Sites.args,
-    server: { ...remoteServer, role: "member" },
-    hostStatus: null,
-  },
-};
-
 const STORY_HOST_UPDATE: HostUpdateStatus = {
   phase: "available",
   currentVersion: "0.23.0",
@@ -532,28 +480,6 @@ export const SmallViewport: Story = {
   parameters: {
     viewport: { defaultViewport: "serverMobile" },
   },
-};
-
-export const HostedReleaseAvailable: Story = {
-  args: remoteUpdateArgs,
-  render: (args) => (
-    <ServerSettingsStory
-      settings={args}
-      hostUpdate={{ ...STORY_HOST_UPDATE, currentVersion: "0.25.2", phase: "unsupported", availableVersion: null }}
-      hostRelease={{ currentVersion: "0.25.2", latestVersion: "0.26.0", phase: "available", method: "hosted" }}
-    />
-  ),
-};
-
-export const ContainerReleaseAvailable: Story = {
-  args: remoteUpdateArgs,
-  render: (args) => (
-    <ServerSettingsStory
-      settings={args}
-      hostUpdate={{ ...STORY_HOST_UPDATE, currentVersion: "0.25.2", phase: "unsupported", availableVersion: null }}
-      hostRelease={{ currentVersion: "0.25.2", latestVersion: "0.26.0", phase: "available", method: "container" }}
-    />
-  ),
 };
 
 function storyAgentAccess(): ServerAgentAccessOptions {

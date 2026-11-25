@@ -5,7 +5,13 @@ import { TEAM_PROTOCOL_V10 } from "@openbot/contracts/team-protocol/v10";
 import { sourceText } from "@openbot/i18n/source";
 import { isSafeConnectionError } from "@openbot/team-client/remote-recovery";
 import { errorReference, referenceFrom } from "@openbot/user-errors";
-import { RemoteProtocolError, RemoteRequestError } from "./remote-server-errors";
+import { RelaySocketError, type RelaySocketErrorCode } from "./relay/socket";
+import {
+  RemoteProtocolError,
+  RemoteRelayRefusal,
+  type RemoteRelayRefusalCode,
+  RemoteRequestError,
+} from "./remote-server-errors";
 
 export const LOCAL_TEAM_PROTOCOL = { minimum: TEAM_PROTOCOL_V1, maximum: TEAM_PROTOCOL_V10 } as const;
 
@@ -16,9 +22,6 @@ export interface RemoteServerConnectionStatus {
   connectionSequence: number;
   capabilitiesPending: boolean;
   hostRestart: ServerSummary["hostRestart"];
-  hostedSleep: ServerSummary["hostedSleep"];
-  hostedIssue: ServerSummary["hostedIssue"];
-  hostedStart: ServerSummary["hostedStart"];
 }
 
 export interface RemoteConnectionOutcome {
@@ -58,7 +61,83 @@ export function classifyConnectFailure(failure: unknown): RemoteConnectionOutcom
   return hostUnreachable(reference ?? "transport/connect_failed", message);
 }
 
+function relayRefusalMessage(code: RemoteRelayRefusalCode): string {
+  switch (code) {
+    case "member_disabled":
+      return sourceText("error.team.memberDisabled");
+    case "certificate_revoked":
+      return sourceText("error.remote.relayCertificateRevoked");
+    case "certificate_expired":
+      return sourceText("error.remote.relayCertificateExpired");
+    case "certificate_refused":
+      return sourceText("error.remote.relayCertificateRefused");
+    case "identity_unusable":
+      return sourceText("error.remote.relayIdentityUnusable");
+    case "other_team":
+      return sourceText("error.remote.relayOtherTeam");
+    case "host_certificate_refused":
+      return sourceText("error.remote.relayHostCertificateRefused");
+    case "identity_changed":
+      return sourceText("error.remote.identityNotVerified");
+  }
+}
+
+export function relayRefusal(code: RemoteRelayRefusalCode): RemoteRelayRefusal {
+  return new RemoteRelayRefusal({ code, message: relayRefusalMessage(code) });
+}
+
+export function relayRefusalForSocketCode(code: RelaySocketErrorCode): RemoteRelayRefusalCode | null {
+  switch (code) {
+    case "certificate_revoked":
+      return "certificate_revoked";
+    case "certificate_expired":
+      return "certificate_expired";
+    case "authentication_failed":
+      return "certificate_refused";
+    case "identity_unavailable":
+    case "relay_url_missing":
+    case "insecure_relay_url":
+      return "identity_unusable";
+    case "peer_refused":
+      return "host_certificate_refused";
+    default:
+      return null;
+  }
+}
+
+function relaySocketCodeOf(error: unknown): RelaySocketErrorCode | null {
+  if (error instanceof RelaySocketError) return error.code;
+  return error instanceof TypeError && error.cause instanceof RelaySocketError ? error.cause.code : null;
+}
+
+function relayRefused(code: RemoteRelayRefusalCode): RemoteConnectionOutcome {
+  return {
+    issue: withReference(
+      { code: "authentication_required", message: relayRefusalMessage(code), retryable: false },
+      referenceFrom("relay", code),
+    ),
+    state: "error",
+    suspendReconnect: true,
+    hostSupport: null,
+  };
+}
+
+function relayTransportFailure(code: RelaySocketErrorCode): RemoteConnectionOutcome {
+  const refusal = relayRefusalForSocketCode(code);
+  if (refusal) return relayRefused(refusal);
+  return code === "target_unavailable"
+    ? relayHostOffline()
+    : hostUnreachable(referenceFrom("relay", code) ?? undefined);
+}
+
+export function relayHostOffline(): RemoteConnectionOutcome {
+  return hostUnreachable("relay/target_unavailable", sourceText("error.remote.hostOffline"));
+}
+
 export function classifyRemoteConnectionError(error: unknown): RemoteConnectionOutcome {
+  if (error instanceof RemoteRelayRefusal) return relayRefused(error.code);
+  const relayCode = relaySocketCodeOf(error);
+  if (relayCode !== null) return relayTransportFailure(relayCode);
   if (error instanceof RemoteProtocolError) {
     return {
       issue: withReference(

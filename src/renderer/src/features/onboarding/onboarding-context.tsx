@@ -1,12 +1,9 @@
 import type { AgentModelId, AgentProviderId, AppSetupState } from "@openbot/contracts/ipc";
 import { errorReference } from "@openbot/user-errors";
 import { createSignal, createStore, onSettled } from "solid-js";
-import { type DesktopAnalyticsProperties, desktopAnalytics } from "../../analytics";
 import { createSimpleContext } from "../../simple-context";
 import { firstRunTransition } from "./first-run-transition";
 import { onboardingPort } from "./onboarding-port";
-
-export type OnboardingJourney = Pick<DesktopAnalyticsProperties<"onboarding_completed">, "path" | "skipped">;
 
 interface SetupRead {
   loaded: boolean;
@@ -69,13 +66,8 @@ const Setup = createSimpleContext({
       return previous.preferredModel ?? null;
     }
 
-    async function saveSetup(
-      preferredProvider: AgentProviderId,
-      preferredModel?: AgentModelId | null,
-      journey: OnboardingJourney = {},
-    ) {
+    async function saveSetup(preferredProvider: AgentProviderId, preferredModel?: AgentModelId | null) {
       const wasCompleted = setupState()?.completed === true;
-      const analytics = desktopAnalytics.scope();
       const state = await onboardingPort().saveSetup({
         preferredProvider,
         preferredModel: preferredModel === undefined ? keptModel(preferredProvider) : preferredModel,
@@ -84,7 +76,6 @@ const Setup = createSimpleContext({
         await firstRunTransition("open", () => {
           setSetupState(state);
         });
-        analytics.track("onboarding_completed", { preferred_provider: preferredProvider, ...journey });
       } else {
         setSetupState(state);
       }

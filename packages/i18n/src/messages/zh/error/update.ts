@@ -3,6 +3,7 @@ import type { messages as source } from "../../en/error/update";
 
 export const messages = {
   "error.update.unsupported": "仅已安装的桌面版本支持更新。",
+  "error.update.noSelfUpdate": "此版本不会自动更新。如需更新 OpenBot，请手动安装更新的版本。",
   "error.update.notReady": "更新尚未准备好安装。",
   "error.update.restartFailed": "OpenBot 无法重启以安装更新。",
   "error.update.downloadStalled": "更新下载停止响应，请重试。",
@@ -10,7 +11,7 @@ export const messages = {
   "error.update.notInstalled": "上次重启未能安装更新。请重启以重试。",
   "error.update.downloadFailed": "无法下载更新，请重试。",
   "error.update.signatureNotConfirmed":
-    "OpenBot 无法验证此更新，请重试。如果仍然出错，请从 openbot.run/download 下载 OpenBot。",
+    "OpenBot 无法验证此更新，请重试。如果仍然出错，请从你获取 OpenBot 的来源重新安装。",
   "error.update.checkFailed": "无法检查更新，请重试。",
   "error.update.checkStalled": "更新检查停止响应，请重试。",
   "error.update.checkOffline": "无法连接更新服务，请检查网络后重试。",

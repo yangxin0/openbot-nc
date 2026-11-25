@@ -18,7 +18,7 @@ metadata without opening tenant content. Do not share writable groups or grant F
 or administrator rights to tenants. Do not enable shared folders for tenant content.
 
 The home boundary protects `~/OpenBot`, OpenBot's database and browser profiles under
-`~/Library/Application Support/OpenBot`, `.codex`, `.claude`, credentials, and conversations.
+`~/Library/Application Support/OpenBot-NC`, `.codex`, `.claude`, credentials, and conversations.
 A tenant can deliberately share its own files; that is outside the private-account policy.
 
 The application and all its real contents must be root-owned with no group/public write bits
@@ -27,14 +27,6 @@ tenant. The system `admin` group may write to that parent; public or tenant-grou
 Framework symlinks must remain inside the application. Initial setup accepts a signed app owned
 by root or the installing administrator, then removes group/public write access and assigns it
 to root. It refuses a tenant-owned or publicly writable bundle. It never changes tenant data.
-
-Remote Desktop reserves separate Sunshine port families and Moonlight WebRTC ranges. Each fixed
-WebRTC UDP range has a TCP reservation at its first port until the runtime stops. This keeps
-separate processes from selecting the same range before streaming begins. Stored
-Moonlight endpoints are recreated when the allocated port changes. The local Moonlight
-header has a random per-process credential, stored only in the private runtime config; automatic
-password-based administrator enrollment is disabled. Sunshine credentials use the pinned native
-runtime's salted hash file format, so plaintext passwords do not appear in process arguments.
 
 ## Host Manager boundary
 
@@ -58,7 +50,7 @@ The retired application is removed after verification; it is never used for auto
 The helper itself is updated separately by an administrator, not by a tenant or downloaded code.
 
 ```text
-/Library/Application Support/OpenBot/HostManager/    root:wheel 0755
+/Library/Application Support/OpenBot-NC/HostManager/    root:wheel 0755
   config.json       root:wheel 0644; managed flag and registered numeric UIDs
   state.json        root:wheel 0644; phase, cycle, version, timestamp, error
   host-manager      root:wheel 0755; compiled daemon
@@ -262,10 +254,8 @@ This is not replaced by tests that run under one UID:
   executable. Check ACLs as well as mode bits. Do not modify an actual executable for this test.
 - Confirm that each tenant cannot create another UID's status, replace host config/state, or
   replace its parent status directory with a symlink.
-- Run both Remote Desktop sessions, restart in reverse order, and confirm both reach their own
-  screen. Try a request with the other session's local Moonlight header and confirm rejection.
-- Exercise busy agents, provider activity, queued channel work, file transfers, browser control,
-  and Remote Desktop. Each blocks maintenance; busy status resets the five-minute grace.
+- Exercise busy agents, provider activity, queued channel work, file transfers and browser control.
+  Each blocks maintenance; busy status resets the five-minute grace.
 - Set both tenant download preferences off. Confirm one host download still occurs while they work.
 - Use a signed newer build. Confirm all tenants exit, bundle replacement completes, and only then
   `released` appears. Confirm Acme-first and Bravo-first relaunch in their own Aqua sessions.
@@ -274,6 +264,6 @@ This is not replaced by tests that run under one UID:
 - Confirm fresh health reports for the new version. Disable and re-enable management and verify
   that unmanaged mode never requests automatic tenant shutdown.
 
-The development computer used for this change has no `/Applications/OpenBot.app`, no native
-Remote Desktop runtime artifact, and no two-tenant acceptance setup. Actual signing assessment,
+The development computer used for this change has no `/Applications/OpenBot.app` and no
+two-tenant acceptance setup. Actual signing assessment,
 DMG installation, cross-UID permissions, and Aqua relaunch still require this target-host run.

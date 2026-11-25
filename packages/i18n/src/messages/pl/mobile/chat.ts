@@ -293,15 +293,6 @@ export const messages = {
   "mobile.chat.liveVoice.networkNeeded": "ElevenLabs wymaga połączenia z siecią.",
   "mobile.chat.liveVoice.voiceServerFailed":
     "Serwer głosowy nie mógł odczytać odpowiedzi. Sprawdź go w Ustawienia > Głos.",
-  "mobile.chat.liveVoice.gptUnsupported":
-    "Ten serwer nie obsługuje GPT Live Voice. Zaktualizuj OpenBot na komputerze, na którym działa.",
-  "mobile.chat.liveVoice.gptFailed":
-    "Nie udało się uruchomić GPT Live Voice. Wyłącz wyciszenie, aby spróbować ponownie.",
-  "mobile.chat.liveVoice.gptEnded": "GPT Live Voice zatrzymał się. Wyłącz wyciszenie, aby uruchomić go ponownie.",
-  "mobile.chat.liveVoice.gptFailedTitle": "Nie udało się uruchomić GPT Live Voice",
-  "mobile.chat.liveVoice.gptEndedTitle": "GPT Live Voice zatrzymał się",
-  "mobile.chat.liveVoice.gptMicrophoneOff":
-    "Zezwól OpenBot na użycie mikrofonu w Ustawieniach. Potem wyłącz wyciszenie, aby spróbować ponownie.",
   "mobile.chat.composer.addAttachment": "Dodaj załącznik",
   "mobile.chat.composer.ask": "Zapytaj: {name}",
   "mobile.chat.composer.stopFailed": "Nie udało się zatrzymać agenta. Mógł już skończyć.",

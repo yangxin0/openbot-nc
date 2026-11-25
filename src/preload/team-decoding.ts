@@ -1,28 +1,20 @@
-import { parseCustomServerPlan } from "@openbot/contracts/custom-server-plans";
 import {
   type DirectConversationPage,
   type DirectConversationReadState,
   type DirectConversationSnapshot,
   type DirectMessage,
   type DirectThreadSummary,
-  type HostedServerIssue,
-  type HostedServerStart,
   type HostStatus,
   type InvitePreview,
   type InviteSummary,
   isAvatarColor,
-  isRemoteControlAccess,
-  REMOTE_DESKTOP_ERROR_CODES,
-  type RemoteControlPolicy,
-  type RemoteDesktopConnectResult,
-  type RemoteDesktopDisplay,
-  type RemoteDesktopSession,
   type ScopedDirectMessageEvent,
   type ScopedDirectTypingEvent,
   type ScopedTeamPresenceSnapshot,
   SERVER_NOTIFICATION_LEVELS,
   type ServerCompatibility,
   type ServerConnectionIssue,
+  type ServerRelayHost,
   type ServerSummary,
   type TeamInviteSummary,
   type TeamMemberSummary,
@@ -47,8 +39,6 @@ import { type ServerAppearance, serverAppearanceOrNull } from "@openbot/contract
 const HOST_PHASES = ["unconfigured", "idle", "starting", "online", "stopping", "error"] as const;
 const TEAM_ROLES = ["owner", "admin", "member"] as const;
 const INVITE_ROLES = ["admin", "member"] as const;
-const REMOTE_DESKTOP_PHASES = ["starting_host", "connecting", "connected", "disconnecting", "error"] as const;
-const REMOTE_DESKTOP_TRANSPORTS = ["unknown", "p2p", "relay"] as const;
 const SERVER_KINDS = ["local", "remote"] as const;
 const SERVER_STATES = ["online", "connecting", "offline", "error", "incompatible"] as const;
 const SERVER_ISSUE_CODES = [
@@ -104,20 +94,8 @@ export function decodeHostStatus(value: unknown): HostStatus {
     logoUrl: nullableString(status, "logoUrl"),
     appearance: serverAppearance(status.appearance),
     apiOnline: requiredBoolean(status, "apiOnline"),
-    remoteDesktopReady: requiredBoolean(status, "remoteDesktopReady"),
-    remoteDesktopScreenRecordingDenied: requiredBoolean(status, "remoteDesktopScreenRecordingDenied"),
-    remoteDesktopNeedsX11Session: requiredBoolean(status, "remoteDesktopNeedsX11Session"),
-    remoteDesktopUnattended: requiredBoolean(status, "remoteDesktopUnattended"),
-    remoteDesktopActiveSessions: requiredNumber(status, "remoteDesktopActiveSessions"),
-    remoteDesktopMaxSessions: requiredNumber(status, "remoteDesktopMaxSessions"),
     message: nullableString(status, "message"),
   };
-}
-
-export function decodeRemoteControlPolicy(value: unknown): RemoteControlPolicy {
-  const policy = decodeRecord(value, "remote control policy");
-  if (!isRemoteControlAccess(policy.access)) throw new Error("Invalid remote control access.");
-  return { access: policy.access, askOnHost: requiredBoolean(policy, "askOnHost") };
 }
 
 export function decodeTeamMember(value: unknown): TeamMemberSummary {
@@ -246,26 +224,6 @@ export function decodeScopedDirectTyping(value: unknown): ScopedDirectTypingEven
   };
 }
 
-export function decodeRemoteDesktopSessions(value: unknown): RemoteDesktopSession[] {
-  return decodeList(value, "remote desktop session list", remoteDesktopSession);
-}
-
-export function decodeRemoteDesktopConnectResult(value: unknown): RemoteDesktopConnectResult {
-  const result = decodeRecord(value, "remote desktop connection");
-  switch (result.status) {
-    case "connected":
-      return {
-        status: "connected",
-        session: remoteDesktopSession(decodeRecord(result.session, "remote desktop session")),
-      };
-    case "refused":
-      if (!isOneOf(REMOTE_DESKTOP_ERROR_CODES, result.errorCode)) throw new Error("Invalid errorCode.");
-      return { status: "refused", errorCode: result.errorCode, message: requiredString(result, "message") };
-    default:
-      throw new Error("Invalid remote desktop connection status.");
-  }
-}
-
 function server(summary: DynamicRecord): ServerSummary {
   const {
     notificationLevel,
@@ -277,32 +235,18 @@ function server(summary: DynamicRecord): ServerSummary {
     connectionSequence,
     capabilitiesPending,
     hostRestart,
-    hostedSleep,
-    hostedIssue,
-    hostedStart,
-    memberLimit,
-    hosted,
     restartAvailable,
-    storageGb,
-    paymentRequired,
-    customPlan,
     keyChangedAt,
     thisComputer,
     hidden,
     appearance,
+    relayHost,
   } = summary;
   if (!isOneOf(SERVER_NOTIFICATION_LEVELS, notificationLevel)) throw new Error("Invalid notificationLevel.");
   if (!isOneOf(SERVER_KINDS, kind)) throw new Error("Invalid kind.");
   if (!isOneOf(SERVER_STATES, state)) throw new Error("Invalid state.");
   if (connectionSequence !== undefined && !isNumber(connectionSequence)) throw new Error("Invalid connectionSequence.");
-  if (memberLimit !== undefined && !(isNumber(memberLimit) && Number.isSafeInteger(memberLimit) && memberLimit >= 1)) {
-    throw new Error("Invalid memberLimit.");
-  }
-  if (hosted !== undefined && !isBoolean(hosted)) throw new Error("Invalid hosted.");
   if (restartAvailable !== undefined && !isBoolean(restartAvailable)) throw new Error("Invalid restartAvailable.");
-  if (storageGb !== undefined && !(isNumber(storageGb) && Number.isSafeInteger(storageGb) && storageGb >= 1)) {
-    throw new Error("Invalid storageGb.");
-  }
   if (
     keyChangedAt !== undefined &&
     !(isNumber(keyChangedAt) && Number.isSafeInteger(keyChangedAt) && keyChangedAt >= 0)
@@ -311,9 +255,6 @@ function server(summary: DynamicRecord): ServerSummary {
   }
   if (thisComputer !== undefined && thisComputer !== true) throw new Error("Invalid thisComputer.");
   if (hidden !== undefined && !isBoolean(hidden)) throw new Error("Invalid hidden.");
-  if (paymentRequired !== undefined && paymentRequired !== true) throw new Error("Invalid paymentRequired.");
-  const plan = customPlan === undefined ? undefined : parseCustomServerPlan(customPlan);
-  if (plan === null) throw new Error("Invalid customPlan.");
   if (capabilitiesPending !== undefined && capabilitiesPending !== true) {
     throw new Error("Invalid capabilitiesPending.");
   }
@@ -326,7 +267,6 @@ function server(summary: DynamicRecord): ServerSummary {
     kind,
     state,
     apiUrl: nullableString(summary, "apiUrl"),
-    remoteDesktopAvailable: requiredBoolean(summary, "remoteDesktopAvailable"),
     logoUrl: nullableString(summary, "logoUrl"),
     ...(appearance === undefined ? {} : { appearance: serverAppearance(appearance) }),
     role: role === null ? null : teamRole(role),
@@ -338,21 +278,17 @@ function server(summary: DynamicRecord): ServerSummary {
     ...(connectionSequence === undefined ? {} : { connectionSequence }),
     ...(capabilitiesPending === undefined ? {} : { capabilitiesPending }),
     ...(hostRestart === undefined ? {} : { hostRestart: hostRestart === null ? null : serverHostRestart(hostRestart) }),
-    ...(hostedSleep === undefined
-      ? {}
-      : { hostedSleep: hostedSleep === "sleeping" || hostedSleep === "waking" ? hostedSleep : null }),
-    ...(hostedIssue === undefined ? {} : { hostedIssue: decodeHostedIssue(hostedIssue) }),
-    ...(hostedStart === undefined ? {} : { hostedStart: decodeHostedStart(hostedStart) }),
-    ...(memberLimit === undefined ? {} : { memberLimit }),
-    ...(hosted === undefined ? {} : { hosted }),
     ...(restartAvailable === undefined ? {} : { restartAvailable }),
-    ...(storageGb === undefined ? {} : { storageGb }),
-    ...(paymentRequired === undefined ? {} : { paymentRequired }),
-    ...(plan === undefined ? {} : { customPlan: plan }),
     ...(keyChangedAt === undefined ? {} : { keyChangedAt }),
     ...(thisComputer === undefined ? {} : { thisComputer }),
     ...(hidden === undefined ? {} : { hidden }),
+    ...(relayHost === undefined ? {} : { relayHost: serverRelayHost(relayHost) }),
   };
+}
+
+function serverRelayHost(value: unknown): ServerRelayHost {
+  const host = decodeRecord(value, "server relay host");
+  return { user: requiredString(host, "user"), device: nullableString(host, "device") };
 }
 
 function serverAppearance(value: unknown): ServerAppearance | null {
@@ -457,52 +393,7 @@ function teamInvite(invite: DynamicRecord): TeamInviteSummary {
   };
 }
 
-function remoteDesktopSession(session: DynamicRecord): RemoteDesktopSession {
-  const { phase, transport, errorCode } = session;
-  if (!isOneOf(REMOTE_DESKTOP_PHASES, phase)) throw new Error("Invalid phase.");
-  if (!isOneOf(REMOTE_DESKTOP_TRANSPORTS, transport)) throw new Error("Invalid transport.");
-  if (errorCode !== null && !isOneOf(REMOTE_DESKTOP_ERROR_CODES, errorCode)) throw new Error("Invalid errorCode.");
-  return {
-    id: requiredString(session, "id"),
-    serverId: requiredString(session, "serverId"),
-    viewerUrl: requiredString(session, "viewerUrl"),
-    viewerGrant: requiredString(session, "viewerGrant"),
-    displays: decodeList(session.displays, "remote desktop display list", remoteDesktopDisplay),
-    selectedDisplayId: nullableString(session, "selectedDisplayId"),
-    phase,
-    transport,
-    errorCode,
-    message: nullableString(session, "message"),
-    createdAt: requiredString(session, "createdAt"),
-    grantExpiresAt: requiredString(session, "grantExpiresAt"),
-  };
-}
-
-function remoteDesktopDisplay(display: DynamicRecord): RemoteDesktopDisplay {
-  return {
-    id: requiredString(display, "id"),
-    label: requiredString(display, "label"),
-    width: requiredNumber(display, "width"),
-    height: requiredNumber(display, "height"),
-    primary: requiredBoolean(display, "primary"),
-  };
-}
-
 function teamRole(value: unknown): TeamRole {
   if (!isOneOf(TEAM_ROLES, value)) throw new Error("Invalid role.");
   return value;
-}
-
-function decodeHostedIssue(value: unknown): HostedServerIssue | null {
-  if (value === null || value === "plan_ended" || value === "wake_failed" || value === "start_timeout") return value;
-  throw new Error("Invalid hostedIssue.");
-}
-
-function decodeHostedStart(value: unknown): HostedServerStart | null {
-  if (value === null) return null;
-  const start = decodeRecord(value, "hosted start");
-  const { step } = start;
-  if (step !== "machine" && step !== "restore" && step !== "openbot" && step !== "provider_limit")
-    throw new Error("Invalid hostedStart.");
-  return { step, startedAt: requiredNumber(start, "startedAt") };
 }

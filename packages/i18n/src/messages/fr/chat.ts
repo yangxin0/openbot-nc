@@ -517,8 +517,6 @@ export const messages = {
     "L’agent supprime ce rapport et l’envoie de nouveau sans les parties que vous choisissez.",
   "chat.feedbackSent.removeChoice": "Le supprimer",
   "chat.feedbackSent.removeChoiceHint": "Le retirer de GitHub. Vous ne pourrez pas annuler.",
-  "chat.feedbackSent.fixPrompt": "Supprime mon rapport #{number} de GitHub et envoie-le de nouveau sans ceci :",
-  "chat.feedbackSent.removePrompt": "Supprime mon rapport #{number} de GitHub.",
   "chat.feedbackSent.composerFilled": "La demande est dans votre zone de message. Complétez-la, puis envoyez-la.",
   "chat.feedbackSent.keep": "Le garder",
   "chat.feedbackSent.removing": "Suppression…",

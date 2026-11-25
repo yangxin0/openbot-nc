@@ -19,12 +19,12 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* /tmp/packages.txt /tmp/optional-packages.txt
 RUN userdel --remove ubuntu \
   && useradd --uid 1000 --user-group --home-dir /data --create-home --shell /bin/bash openbot \
-  && install -d -o openbot -g openbot -m 0700 /run/openbot
-RUN install -d -m 0755 /var/lib/openbot-update/requests /var/lib/openbot-update/status
-COPY --from=release /tmp/squashfs-root /opt/OpenBot/app
-RUN install -d -m 0755 /opt/OpenBot/hosted \
-  && printf 'container\n' >/opt/OpenBot/hosted/mode \
-  && ln -s /opt/OpenBot/app/resources/hosting/openbot /usr/local/bin/openbot
+  && install -d -o openbot -g openbot -m 0700 /run/openbot-nc
+RUN install -d -m 0755 /var/lib/openbot-nc-update/requests /var/lib/openbot-nc-update/status
+COPY --from=release /tmp/squashfs-root /opt/OpenBot-NC/app
+RUN install -d -m 0755 /opt/OpenBot-NC/hosted \
+  && printf 'container\n' >/opt/OpenBot-NC/hosted/mode \
+  && ln -s /opt/OpenBot-NC/app/resources/hosting/openbot /usr/local/bin/openbot-nc
 
 ARG VERSION=unknown
 ARG REVISION=unknown
@@ -33,10 +33,10 @@ LABEL org.opencontainers.image.title=OpenBot \
   org.opencontainers.image.licenses=PolyForm-Noncommercial-1.0.0 \
   org.opencontainers.image.version=${VERSION} \
   org.opencontainers.image.revision=${REVISION}
-ENV LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/openbot
+ENV LANG=C.UTF-8 XDG_RUNTIME_DIR=/run/openbot-nc
 ENV PATH=${PATH}:/data/.local/bin
 USER openbot
 WORKDIR /data
 VOLUME /data
 STOPSIGNAL SIGTERM
-ENTRYPOINT ["/usr/bin/tini", "--", "/opt/OpenBot/app/resources/hosting/openbot-container"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/opt/OpenBot-NC/app/resources/hosting/openbot-container"]

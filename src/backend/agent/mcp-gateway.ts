@@ -25,6 +25,7 @@ import {
   type McpSignInOffer,
   type McpSignInOpener,
   mcpOAuthAccountKey,
+  refusedSignInOfferText,
 } from "../mcp-oauth-provider";
 import { McpOAuthProxy, type McpOAuthProxyTarget, mcpOAuthProxyAgentKey, mcpOAuthProxyRoute } from "../mcp-oauth-proxy";
 import {
@@ -308,9 +309,8 @@ export class McpGateway {
     }
     const outcome = yield* this.#probeStoredSignIn(config, silent, options.signInPlace ?? null);
     yield* this.#refreshForTestedTools(config, outcome);
-    const refused = outcome.error === null && (yield* this.signInOffer(config)) === "refused";
-    const error = refused ? sourceText("error.backend.mcpRegistrationUnavailable") : outcome.error;
-    return { toolCount: outcome.toolCount, error };
+    const offerError = outcome.error === null ? refusedSignInOfferText(yield* this.signInOffer(config)) : null;
+    return { toolCount: outcome.toolCount, error: offerError ?? outcome.error };
   });
 
   readonly #probeStoredSignIn = Effect.fnUntraced(function* (
@@ -452,7 +452,7 @@ export class McpGateway {
     const config = this.#httpRow(input.mcpServerId);
     const oauth = this.#oauth;
     return {
-      redirectUrl: oauth && config ? oauth.signInAppRedirectUrl(config.url) : (oauth?.redirectUrl ?? null),
+      redirectUrl: oauth?.redirectUrl ?? null,
       app: config && oauth ? oauth.signInApp(config.url) : null,
     };
   }

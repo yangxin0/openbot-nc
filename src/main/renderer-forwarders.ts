@@ -15,7 +15,6 @@ import {
   latestTurnAnswer,
   type ServerNotificationLevel,
   type SpeechModelStatus,
-  type VoiceLiveEvent,
   type VoiceModelStatus,
   type VoiceServerSettings,
   type VoiceStreamTranscript,
@@ -52,7 +51,6 @@ import { isNoUpdateAnswer } from "../backend/agent/routine-quiet-runs";
 import type { AgentService } from "../backend/agent-service";
 import { runCauseEffect } from "../backend/effect-boundary";
 import type { WorkflowNotice } from "../backend/workflows/workflows";
-import type { HostAnalytics } from "./analytics";
 import {
   closeRetainedNotification,
   desktopAgentEventLevel,
@@ -78,7 +76,6 @@ export interface RendererForwarderDependencies {
   chatWindowTarget: (window: BrowserWindow) => ChatWindowTarget | null;
   getAgentService: () => Pick<AgentService, "listAgents" | "listHiddenAgents"> | null;
   getHostService: () => HostService | null;
-  getHostAnalytics: () => HostAnalytics | null;
   getRemoteServerManager: () => Pick<
     RemoteServerManager,
     | "activeServerId"
@@ -108,7 +105,6 @@ export function createRendererForwarders({
   chatWindowTarget,
   getAgentService,
   getHostService,
-  getHostAnalytics,
   getRemoteServerManager,
   showMainWindow,
   getTranslate,
@@ -134,7 +130,6 @@ export function createRendererForwarders({
   }
 
   function forwardAgentEvent(serverId: string, event: AgentEvent, bufferedLive = false): void {
-    if (serverId === LOCAL_SERVER_ID) getHostAnalytics()?.handleAgentEvent(event);
     const window = getMainWindow();
     if (!window || window.isDestroyed()) return;
     const scoped = bufferedLive ? { serverId, event, bufferedLive } : { serverId, event };
@@ -573,17 +568,8 @@ export function createRendererForwarders({
     for (const window of appWindows()) sendToRenderer(window, IPC_ENDPOINTS.voice.streamTranscript, transcript);
   }
 
-  function forwardVoiceLiveEvent(event: VoiceLiveEvent, memberId: string | null = null): void {
-    if (memberId !== null) return;
-    for (const window of appWindows()) sendToRenderer(window, IPC_ENDPOINTS.voice.liveEvent, event);
-  }
-
   function forwardProviderRuntimeStatus(snapshot: import("@openbot/contracts/ipc").ProviderRuntimeSnapshot): void {
     for (const window of appWindows()) sendToRenderer(window, IPC_ENDPOINTS.providerRuntimes.event, snapshot);
-  }
-
-  function forwardGitHubConnectorStatus(status: import("@openbot/contracts/ipc").GitHubConnectorStatus): void {
-    for (const window of appWindows()) sendToRenderer(window, IPC_ENDPOINTS.githubConnector.changed, status);
   }
 
   function forwardLinkAccountStatus(status: import("@openbot/contracts/ipc").LinkAccountStatus): void {
@@ -614,12 +600,6 @@ export function createRendererForwarders({
       sendToRenderer(target, IPC_ENDPOINTS.host.event, status);
       if (servers) sendToRenderer(target, IPC_ENDPOINTS.servers.event, servers);
     }
-  }
-
-  function forwardRemoteDesktopSessions(sessions: import("@openbot/contracts/ipc").RemoteDesktopSession[]): void {
-    const window = getMainWindow();
-    if (!window || window.isDestroyed()) return;
-    sendToRenderer(window, IPC_ENDPOINTS.remoteDesktop.event, sessions);
   }
 
   function forwardServers(servers: import("@openbot/contracts/ipc").ServerSummary[]): void {
@@ -687,18 +667,15 @@ export function createRendererForwarders({
     forwardUpdatePreference,
     forwardVoiceModelStatus,
     forwardVoiceStreamTranscript,
-    forwardVoiceLiveEvent,
     forwardSpeechModelStatus,
     forwardVoiceServerSettings,
     forwardProviderRuntimeStatus,
-    forwardGitHubConnectorStatus,
     forwardLinkAccountStatus,
     forwardOnePasswordConnectorStatus,
     forwardBitwardenConnectorStatus,
     forwardPasswordManagerStatus,
     forwardVaultState,
     forwardHostStatus,
-    forwardRemoteDesktopSessions,
     forwardServers,
     forwardTeamPresence,
     forwardDirectMessage,

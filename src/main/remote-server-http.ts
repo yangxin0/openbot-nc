@@ -13,12 +13,17 @@ import { decodeTeamProtocolV2Json, type TeamProtocolV2Json } from "@openbot/cont
 import { sourceText } from "@openbot/i18n/source";
 import { startRemoteRequest } from "@openbot/team-client/sync-profile";
 import { Effect, Result, Schema } from "effect";
+import { isRelayAddress } from "./relay/fetch";
+import { RelaySocketError } from "./relay/socket";
 import type { ResponseDecoder } from "./remote-host-decoding";
 import { RemoteProtocolError, RemoteRequestError } from "./remote-server-errors";
 
 const REMOTE_REQUEST_TIMEOUT_MS = 15_000;
 
+export type RemoteFetch = (input: string | URL, init?: RequestInit) => Promise<Response>;
+
 export interface RemoteJsonRequestOptions {
+  fetch?: RemoteFetch | undefined;
   method?: string | undefined;
   body?: unknown;
   token?: string | undefined;
@@ -81,6 +86,7 @@ export const requestJson = Effect.fn("RemoteHttp.requestJson")(function* <T>(
       ...(body === undefined ? {} : { body }),
     },
     options.timeoutMs,
+    options.fetch,
   );
   if (profile)
     profile.responded(
@@ -203,13 +209,24 @@ class RemoteTransportError extends Schema.TaggedError<RemoteTransportError>()("R
 }) {}
 
 export const remoteFetch = Effect.fn("RemoteHttp.fetch")(
-  (input: string | URL, init: RequestInit = {}, timeoutMs = REMOTE_REQUEST_TIMEOUT_MS) =>
+  (input: string | URL, init: RequestInit = {}, timeoutMs = REMOTE_REQUEST_TIMEOUT_MS, send?: RemoteFetch) =>
     Effect.tryPromise({
       try: (signal) =>
-        fetch(input, {
+        (send ?? directFetch(input))(input, {
           ...init,
           signal: AbortSignal.any([signal, AbortSignal.timeout(timeoutMs), ...(init.signal ? [init.signal] : [])]),
         }),
       catch: (cause) => new RemoteTransportError({ cause }),
     }),
 );
+
+function directFetch(input: string | URL): RemoteFetch {
+  return isRelayAddress(new URL(input)) ? refuseRelayAddress : fetch;
+}
+
+const refuseRelayAddress: RemoteFetch = () =>
+  Promise.reject(
+    new TypeError("fetch failed", {
+      cause: new RelaySocketError({ code: "identity_unavailable", message: "No relay connection is available." }),
+    }),
+  );

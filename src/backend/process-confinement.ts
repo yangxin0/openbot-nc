@@ -72,7 +72,7 @@ export function openCodeStatePaths(env: NodeJS.ProcessEnv = process.env, home = 
   };
 }
 
-const OPENCODE_CONFINED_CACHE = join(tmpdir(), "openbot-confined-cache");
+const OPENCODE_CONFINED_CACHE = join(tmpdir(), "openbot-nc-confined-cache");
 
 export function openCodeDataDirectory(env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
   return join(env.XDG_DATA_HOME?.trim() || join(home, ".local/share"), "opencode");
@@ -123,7 +123,7 @@ export function cursorDataHome(env: NodeJS.ProcessEnv = process.env, home = home
   return env.CURSOR_DATA_DIR?.trim() || join(home, ".cursor");
 }
 
-const CURSOR_CONFINED_CACHE = join(tmpdir(), "openbot-confined-cursor-cache");
+const CURSOR_CONFINED_CACHE = join(tmpdir(), "openbot-nc-confined-cursor-cache");
 
 let keychainLockFile: string | undefined;
 
@@ -140,7 +140,7 @@ function keychainLockFiles(): string[] {
 }
 
 function cursorConfinedConfig(home: string): string {
-  return join(home, ".cursor", "openbot-confined");
+  return join(home, ".cursor", "openbot-nc-confined");
 }
 
 export function cursorConfinedEnv(home = homedir()): Readonly<Record<string, string>> {
@@ -413,7 +413,7 @@ function makeCopilotConfig(copilotHome: string): void {
   }
 }
 
-const COPILOT_CONFINED_CACHE = join(tmpdir(), "openbot-confined-copilot-cache");
+const COPILOT_CONFINED_CACHE = join(tmpdir(), "openbot-nc-confined-copilot-cache");
 
 export const COPILOT_CONFINED_ENV: Readonly<Record<string, string>> = {
   COPILOT_CACHE_HOME: COPILOT_CONFINED_CACHE,

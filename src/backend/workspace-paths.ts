@@ -1,6 +1,7 @@
 import { readdir, realpath, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
+import { APP_HOME_FOLDER } from "@openbot/contracts/app-identity";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import {
   type AgentSummary,
@@ -33,7 +34,13 @@ function withoutSlashBeforeDrive(path: string): string {
 export function sharedPathFromInput(sharedRoot: string, written: string): string {
   const inputPath = withoutSlashBeforeDrive(written);
   const normalized = inputPath.replaceAll("\\", "/");
-  for (const prefix of ["~/OpenBot/Shared/", "OpenBot/Shared/", "Shared/"]) {
+  for (const prefix of [
+    `~/${APP_HOME_FOLDER}/Shared/`,
+    `${APP_HOME_FOLDER}/Shared/`,
+    "~/OpenBot/Shared/",
+    "OpenBot/Shared/",
+    "Shared/",
+  ]) {
     if (normalized.startsWith(prefix)) return join(sharedRoot, normalized.slice(prefix.length));
   }
   return isAbsolute(inputPath) ? inputPath : join(sharedRoot, normalized);
@@ -44,6 +51,8 @@ export function workspacePathFromInput(workspaceRoot: string, agentId: string, i
   const normalized = decoded.replaceAll("\\", "/");
   const legacyId = legacyAgentId(agentId);
   for (const prefix of [
+    `~/${APP_HOME_FOLDER}/Agents/${agentId}/`,
+    `${APP_HOME_FOLDER}/Agents/${agentId}/`,
     `~/OpenBot/Agents/${agentId}/`,
     `OpenBot/Agents/${agentId}/`,
     `~/OpenBot/Bots/${legacyId}/`,

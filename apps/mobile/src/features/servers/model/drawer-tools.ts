@@ -10,7 +10,6 @@ const DRAWER_TOOL_IDS = [
   "usage",
   "library",
   "providers",
-  "remoteDesktop",
   "members",
 ] as const;
 

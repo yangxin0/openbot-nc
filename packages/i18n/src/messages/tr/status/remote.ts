@@ -2,17 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "İzin kurulumu macOS üzerinde kullanılabilir.",
-  "status.remote.setupInstallHost": "Uzak masaüstü ana makine bileşenini yükleyin, ardından tekrar kontrol edin.",
-  "status.remote.setupUpdateRuntime": "macOS izinlerini kontrol etmek için uzak masaüstü çalışma zamanını güncelleyin.",
-  "status.remote.setupCheckFailed":
-    "Sunshine izin kontrolünü tamamlayamadı. Ana makine oturumunu kontrol edin, ardından tekrar deneyin.",
-  "status.remote.setupServiceFailed":
-    "Uzak masaüstü hizmeti başlatılamadı. Bu macOS kullanıcısının etkin bir GUI oturumuna sahip olduğunu kontrol edin.",
-  "status.remote.connectingSunshine": "Sunshine üzerinden bağlanılıyor…",
-  "status.remote.switchingMonitor": "Paylaşılan monitör değiştiriliyor…",
-  "status.remote.controlConnected": "Uzaktan kontrol bağlandı.",
-  "status.remote.controlFailed": "Uzaktan kontrol başarısız oldu.",
   "status.remote.stagePreferences": "Yerel sohbet tercihleri yükleniyor: {reason}",
   "status.remote.stageConnection": "Masaüstüne bağlanılıyor: {reason}",
   "status.remote.stageCompatibility": "Masaüstü uyumluluğu kontrol ediliyor: {reason}",

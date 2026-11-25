@@ -2,13 +2,10 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.iceServersMissing": "O Remote Signal não forneceu servidores ICE.",
   "error.host.keyRotationUnavailable": "Este servidor não pode alterar a chave sem o serviço de contas.",
   "error.host.keyRotationRefused":
     "O serviço de contas não aceitou a nova chave do servidor. A chave atual continua em uso.",
   "error.host.webRtcNotConfigured": "O serviço WebRTC do computador anfitrião não está configurado.",
-  "error.host.runtimeNotInstalled": "O ambiente de execução da área de trabalho remota não está instalado.",
-  "error.host.setupUnavailable": "A configuração de permissões não está disponível.",
   "error.host.accountChangedDuringUpdate": "A conta conectada mudou durante a atualização deste servidor.",
   "error.host.nameBeforePublish": "Dê um nome a este OpenBot antes de publicá-lo.",
   "error.host.memberNotFound": "O membro remoto não existe.",

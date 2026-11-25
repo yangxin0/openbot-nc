@@ -14,7 +14,6 @@ import {
   usageLimitAskOptions,
 } from "@openbot/ui/features/conversation/BackupModels";
 import { type Accessor, createEffect } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { useTurns } from "../../turns";
 import { useAgents } from "../agents/agents-context";
 import { useServers } from "../servers/servers-context";
@@ -87,15 +86,8 @@ export function usageLimitAskFrom(source: UsageLimitAskSource) {
           leaveUsageLimit: true,
           ...(remember ? { backupModels: rememberedBackupModels(option.choice, backupModels) } : {}),
         });
-        desktopAnalytics.track("usage_limit_action", {
-          action: "model_switched",
-          from_provider: provider,
-          to_provider: option.choice.provider,
-          to_model: option.choice.model,
-        });
       },
       onWait: () => {
-        desktopAnalytics.track("usage_limit_action", { action: "waited", from_provider: provider });
         source.wait(agentId, resetsAt);
       },
     };
@@ -131,7 +123,6 @@ export function trackUsageLimitShown(shown: () => { agentId: string; ask: UsageL
     (value) => {
       if (!value || tracked.has(value.key)) return;
       tracked.add(value.key);
-      desktopAnalytics.track("usage_limit_action", { action: "shown", from_provider: value.provider });
     },
   );
 }

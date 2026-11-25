@@ -1514,7 +1514,7 @@ client does not show it; the phone shows it for a joined server. App preferences
 the providers that are off belong to the app, not to a server, so they are not in the file.
 
 The file has `openbot-transfer.json` at its root, `agents/<key>/` folders (`avatar.<ext>`,
-`skills/<slug>/` and `workspace/`), and `shared/` for `~/OpenBot/Shared`. The manifest is
+`skills/<slug>/` and `workspace/`), and `shared/` for `~/OpenBot-NC/Shared`. The manifest is
 `{ format: "openbot-instance-transfer", version: 1, source, agents, settings, shared, signedIn }`.
 `src/main/instance-transfer-manifest.ts` writes and reads it with Effect `Schema`; it is a contract
 between app versions, so add only optional fields and raise `version` for a change of meaning. A file

@@ -1,4 +1,3 @@
-import type { MarketplaceListingLink } from "@openbot/contracts/marketplace-links";
 import { createEffect, flush, onSettled } from "solid-js";
 import { appPort } from "./app-port";
 import { useAuth } from "./features/account/account-context";
@@ -10,8 +9,7 @@ export function AppBootstrap() {
   const { centralAuth } = useAuth();
   const { setupState, pendingInviteUrl, setPendingInviteUrl } = useSetup();
   const { setJoinServerOpen } = useServers();
-  const { setPendingAgentTemplateId, setPendingPluginSlug, setPendingMarketplaceListing, setSkillsMarketplaceOpen } =
-    useSettings();
+  const { setPendingPluginSlug, setSkillsMarketplaceOpen } = useSettings();
 
   onSettled(() => {
     const receiveInvite = (inviteUrl: string) => {
@@ -32,21 +30,6 @@ export function AppBootstrap() {
     const unsubscribePlugin = appPort().plugins.onOpenListing((slug) => {
       receivePluginSlug(slug);
     });
-    const receiveMarketplaceListing = (link: MarketplaceListingLink) => {
-      flush(() => {
-        setPendingMarketplaceListing(link);
-        setSkillsMarketplaceOpen(true);
-      });
-    };
-    const unsubscribeMarketplace = appPort().marketplace.onOpenListing((link) => {
-      receiveMarketplaceListing(link);
-    });
-    const receiveAgentTemplate = (id: string) => {
-      flush(() => setPendingAgentTemplateId(id));
-    };
-    const unsubscribeAgentTemplate = appPort().agentTemplates.onOpenLink((id) => {
-      receiveAgentTemplate(id);
-    });
     void appPort()
       .servers.takePendingInvite()
       .then((inviteUrl) => inviteUrl && receiveInvite(inviteUrl))
@@ -55,19 +38,9 @@ export function AppBootstrap() {
       .plugins.takePendingListing()
       .then((slug) => slug && receivePluginSlug(slug))
       .catch(() => undefined);
-    void appPort()
-      .marketplace.takePendingListing()
-      .then((link) => link && receiveMarketplaceListing(link))
-      .catch(() => undefined);
-    void appPort()
-      .agentTemplates.takePendingLink()
-      .then((id) => id && receiveAgentTemplate(id))
-      .catch(() => undefined);
     return () => {
       unsubscribeInvite();
       unsubscribePlugin();
-      unsubscribeMarketplace();
-      unsubscribeAgentTemplate();
     };
   });
 

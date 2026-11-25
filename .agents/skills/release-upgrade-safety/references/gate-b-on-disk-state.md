@@ -1,8 +1,7 @@
 # Gate B — On-disk state outside SQLite — every decoder of a versioned file
 
 Triggered by a change to `src/main/index.ts`, `src/backend/workspace-paths.ts`,
-`src/main/sunshine-moonlight-runtime.ts`, `electron-builder.yml`, or **any file that decodes a
-versioned payload**. Derive that last set instead of trusting a list — a serialization owner is not
+`electron-builder.yml`, or **any file that decodes a versioned payload**. Derive that last set instead of trusting a list — a serialization owner is not
 always a `*-store.ts`, and `central-auth-manager.ts`, `main-window-state.ts` and
 `skill-marketplace-service.ts` are three that are not:
 
@@ -132,8 +131,7 @@ open the inventory for the file-by-file detail.
   named file, once, with `COPYFILE_EXCL`, and it is used for the two legacy JSON imports only.
   Nothing else on disk is ever copied before being rewritten.
 - **`safeStorage` files become undecryptable** if the macOS signing identity, team ID or `appId`
-  changes: `openbot-central-auth-v1.bin` and the remote-desktop secret files are encrypted against
-  the keychain entry those identify. Diff `electron-builder.yml` for `appId`, `ElectronTeamID`, and
+  changes: `openbot-central-auth-v1.bin` is encrypted against the keychain entry those identify. Diff `electron-builder.yml` for `appId`, `ElectronTeamID`, and
   the `publish` block — this overlaps gate F on purpose, because one field breaks two things.
 
 ## Mobile over-the-air updates

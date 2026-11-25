@@ -14,7 +14,6 @@ import type { ContextCompaction } from "./context-compaction";
 import type { ConversationRuntime } from "./conversation-runtime";
 import type { DrainScheduler } from "./drain-scheduler";
 import type { DuplicationGate } from "./duplication-gate";
-import type { HostedSiteCoordinator } from "./hosted-site-coordinator";
 import type { RoutineScheduler } from "./routine-scheduler";
 import type { ThreadLifecycle } from "./thread-lifecycle";
 import type { AgentBrowserHost, TurnLifecycle } from "./turn-lifecycle";
@@ -45,7 +44,6 @@ export interface AgentRemovalOptions {
   drain: DrainScheduler;
   threads: ThreadLifecycle;
   turn: TurnLifecycle;
-  hostedSites: HostedSiteCoordinator;
   compaction: ContextCompaction;
   apiKeys?: AgentApiKeys | null | undefined;
   deleteWithRevokedApproval: (
@@ -70,7 +68,6 @@ export class AgentRemoval {
   readonly #drain: DrainScheduler;
   readonly #threads: ThreadLifecycle;
   readonly #turn: TurnLifecycle;
-  readonly #hostedSites: HostedSiteCoordinator;
   readonly #compaction: ContextCompaction;
   readonly #apiKeys: AgentApiKeys | null;
   readonly #deleteWithRevokedApproval: AgentRemovalOptions["deleteWithRevokedApproval"];
@@ -89,7 +86,6 @@ export class AgentRemoval {
     this.#drain = options.drain;
     this.#threads = options.threads;
     this.#turn = options.turn;
-    this.#hostedSites = options.hostedSites;
     this.#compaction = options.compaction;
     this.#apiKeys = options.apiKeys ?? null;
     this.#deleteWithRevokedApproval = options.deleteWithRevokedApproval;
@@ -288,7 +284,6 @@ export class AgentRemoval {
       this.#conversation.forgetAgent(agent.id);
       this.#turn.forgetAgent(agent.id);
       this.#drain.forgetAgent(agent.id);
-      this.#hostedSites.forgetAgent(agent.id);
       if (agent.threadId) {
         for (const session of providerSessions) {
           this.#conversation.unbindThread(session.externalSessionId);

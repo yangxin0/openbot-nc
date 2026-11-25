@@ -20,9 +20,7 @@ export const messages = {
   "error.skill.frontmatterInvalid": "Nagłówek frontmatter w SKILL.md nie jest prawidłowym YAML.",
   "error.skill.descriptionLength": "SKILL.md wymaga opisu o długości od 1 do {limit} znaków.",
   "error.skill.nameMismatch": "SKILL.md wymaga „name: {slug}”, zgodnie z nazwą folderu.",
-  "error.skill.draftExpired": "Wybrany pakiet umiejętności wygasł. Wybierz go ponownie.",
   "error.skill.localHasNoVersion": "Lokalna umiejętność nie ma opublikowanej wersji.",
-  "error.skill.publishLocalFirst": "Opublikuj lokalne umiejętności osobno, zanim opublikujesz tego agenta.",
   "error.skill.bundleMismatch": "Pobrana umiejętność nie pasuje do podpisanego wpisu w katalogu.",
   "error.skill.metadataMismatch": "Metadane pobranej umiejętności nie pasują do katalogu.",
   "error.skill.folderTaken": "Inna zainstalowana umiejętność używa tej nazwy folderu.",
@@ -39,15 +37,10 @@ export const messages = {
   "error.skill.localLibraryUnavailable": "Lokalna biblioteka umiejętności jest niedostępna.",
   "error.skill.lockInvalid": "Wpis zainstalowanej umiejętności jest nieprawidłowy. Pozostawiono go bez zmian.",
   "error.skill.installPathSymlink": "Ścieżki instalacji umiejętności nie mogą zawierać dowiązań symbolicznych.",
-  "error.skill.duplicateSlug": "Dwie umiejętności mają nazwę „{slug}”. Zmień nazwę jednej z nich przed publikacją.",
-  "error.skill.publishNeedsRepair": "{name} ma lokalne zmiany lub wymaga naprawy przed publikacją.",
-  "error.skill.publishUntracked":
-    "{name} zainstalowano przed śledzeniem dokładnych wersji. Zaktualizuj lub napraw tę umiejętność przed publikacją.",
   "error.skill.tooManySkills": "Agent może mieć maksymalnie {limit} umiejętności.",
   "error.skill.unmanagedExists": "Niezarządzana umiejętność już istnieje w {path}.",
   "error.skill.managedSlug":
     "OpenBot daje każdemu agentowi własną umiejętność {slug}. Nadaj tej umiejętności inną nazwę.",
-  "error.skill.templateMarkdownTooLarge": "{name}: SKILL.md jest większy niż 64 KB. Skróć go przed publikacją.",
   "error.skill.localNoRevisions": "Lokalna umiejętność nie ma opublikowanych wersji.",
   "error.skill.localNotFound": "Ta lokalna umiejętność nie istnieje. Sprawdź jej ID na liście lokalnych umiejętności.",
   "error.skill.localRevisionNotFound":
@@ -70,5 +63,4 @@ export const messages = {
     "GitHub ogranicza, jak często OpenBot może go odczytać bez konta. Spróbuj ponownie za godzinę.",
   "error.skill.githubTooLarge": "OpenBot nie może odczytać wszystkich plików {repository}. Repozytorium jest za duże.",
   "error.skill.githubHostTooOld": "Zaktualizuj ten serwer, aby dodawać umiejętności z GitHub.",
-  "error.skill.publishGithub": "{name} pochodzi z GitHub. Możesz publikować tylko umiejętności, które utworzysz.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -20,6 +20,7 @@ import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { finished } from "node:stream/promises";
 import { promisify } from "node:util";
+import { APP_HOME_FOLDER } from "@openbot/contracts/app-identity";
 import {
   type AgentProviderId,
   type AgentProviderRef,
@@ -70,12 +71,7 @@ import {
   type RuntimeTarget,
 } from "./provider-runtime-descriptors";
 import { ProviderRuntimeFailure, runtimeIO, runtimeSync } from "./provider-runtime-effects";
-import {
-  type BlockedVersions,
-  fetchBlockedVersions,
-  latestRelease,
-  readLimitedBody,
-} from "./provider-runtime-releases";
+import { type BlockedVersions, latestRelease, readBlockedVersions, readLimitedBody } from "./provider-runtime-releases";
 
 const execFileAsync = promisify(execFile);
 const logger = createOpenBotLogger("provider-runtimes");
@@ -111,6 +107,7 @@ export interface ProviderRuntimeManagerOptions {
   architecture?: string;
   fetchImpl?: Fetch;
   lock?: AgentRuntimeLock;
+  blockedVersions?: BlockedVersions;
   availableDiskBytes?: () => Promise<number>;
   heldStageWaitMs?: number;
   hermesInstaller?: HermesInstaller;
@@ -126,7 +123,7 @@ export interface ProviderRuntimeManagerOptions {
 export function providerRuntimeRoot(input: { appData: string; userDataOverride: string }): string {
   const override = input.userDataOverride.trim();
   if (override) return join(resolve(override), "provider-runtimes");
-  return join(input.appData, "OpenBot", "provider-runtimes");
+  return join(input.appData, APP_HOME_FOLDER, "provider-runtimes");
 }
 
 export class ProviderRuntimeManager extends EventEmitter<ProviderRuntimeManagerEvents> {
@@ -160,6 +157,7 @@ export class ProviderRuntimeManager extends EventEmitter<ProviderRuntimeManagerE
     onWait: () => void,
   ) => Effect.Effect<void, ProviderRuntimeFailure>;
   #blocked: BlockedVersions = new Map();
+  readonly #blockedVersions: Effect.Effect<BlockedVersions, ProviderRuntimeFailure>;
   #check: Deferred.Deferred<void, ProviderRuntimeFailure> | null = null;
   readonly #scope = Scope.makeUnsafe();
   #checkTimer: NodeJS.Timeout | null = null;
@@ -180,6 +178,7 @@ export class ProviderRuntimeManager extends EventEmitter<ProviderRuntimeManagerE
     this.#target = runtimeTarget(options.platform ?? process.platform, options.architecture ?? process.arch);
     this.#fetch = options.fetchImpl ?? fetch;
     this.#lock = options.lock ?? parseAgentRuntimeLock(lockValue);
+    this.#blockedVersions = options.blockedVersions ? Effect.succeed(options.blockedVersions) : readBlockedVersions();
     this.#availableDiskBytes =
       options.availableDiskBytes ??
       (async () => {
@@ -399,7 +398,7 @@ export class ProviderRuntimeManager extends EventEmitter<ProviderRuntimeManagerE
     return Effect.gen({ self: this }, function* (): Effect.fn.Return<void, ProviderRuntimeFailure> {
       const [blocked, releases] = yield* Effect.all(
         [
-          Effect.result(fetchBlockedVersions(this.#fetch)),
+          Effect.result(this.#blockedVersions),
           Effect.forEach(
             PROVIDERS,
             (provider) =>
@@ -682,7 +681,7 @@ export class ProviderRuntimeManager extends EventEmitter<ProviderRuntimeManagerE
   }
   #findLatestRelease(provider: ManagedProviderId, target: RuntimeTarget): Effect.Effect<void> {
     const lookups = [
-      fetchBlockedVersions(this.#fetch).pipe(
+      this.#blockedVersions.pipe(
         Effect.tap((blocked) =>
           Effect.sync(() => {
             this.#blocked = blocked;

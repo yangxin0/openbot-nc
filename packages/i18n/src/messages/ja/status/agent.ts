@@ -42,13 +42,6 @@ export const messages = {
   "status.agent.feedbackSameAs": "issue #{issue} に追加します",
   "status.agent.feedbackSent": "OpenBot チームに送信しました: {title}",
   "status.agent.feedbackWithdrawn": "GitHub から削除しました: {title}",
-  "status.agent.feedbackWithdrawCommand": "レポート #{issue} を GitHub から削除",
-  "status.agent.feedbackWithdrawReason":
-    "このレポートは GitHub で誰も見られなくなります。元に戻せません。修正するには、エージェントが修正したレポートを送信できます。",
-  "status.agent.feedbackWithdrawing": "レポートを GitHub から削除しています…",
-  "status.agent.serverInstallCommand":
-    "別のコンピューターに OpenBot をサーバー {name} としてインストールし、あなたのアカウントにサインインさせる 1 回限りのコマンドを作成します。エージェントがそこで実行します。",
-  "status.agent.serverInstallCard": "サーバー {name} のインストールコマンド",
   "status.agent.browserProfileNamed":
     "{agents} をブラウザープロファイル {profile} に移動します。そのログイン情報と Cookie を使えるようになります。開いているタブは閉じます。",
   "status.agent.commitCoAuthorOff": "すべてのエージェントのコミットに OpenBot を共同作成者として追加するのをやめます。",
@@ -59,7 +52,6 @@ export const messages = {
     "{agents} を共有のブラウザープロファイルに移動します。そのログイン情報と Cookie を使えるようになります。開いているタブは閉じます。",
   "status.agent.browserProfileOwn":
     "{agents} にそれぞれ専用のブラウザープロファイルを与えます。開いているタブは閉じます。",
-  "status.agent.feedbackSending": "フィードバックを OpenBot チームに送信しています…",
   "status.agent.workflowDelete":
     "ワークフロー {title} を実行履歴とバージョンごと削除します。実行中のステップは停止します。",
   "status.agent.deleteAgents": "{agents} をチャットとファイルごと削除します。元に戻せません。",

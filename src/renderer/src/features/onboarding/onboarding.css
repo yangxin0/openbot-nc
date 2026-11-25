@@ -860,56 +860,6 @@ html:active-view-transition-type(open)::view-transition-new(*) {
   margin-top: var(--openbot-space-3);
 }
 
-.first-run-choice-improve {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--openbot-space-2);
-  border-top: 1px solid var(--openbot-border-grouped);
-  padding: var(--openbot-space-3) var(--openbot-space-4);
-  text-align: start;
-  cursor: pointer;
-}
-
-.first-run-choice-improve-text {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  color: var(--openbot-text-muted);
-  font-size: var(--openbot-text-sm);
-  line-height: var(--openbot-leading-sm);
-}
-
-.first-run-choice-improve-text strong {
-  color: var(--openbot-text-primary);
-  font-weight: var(--openbot-weight-medium);
-}
-
-.first-run-choice-improve-pop {
-  position: absolute;
-  top: var(--openbot-space-2);
-  inset-inline-end: var(--openbot-space-4);
-  display: flex;
-  align-items: flex-end;
-  gap: var(--openbot-space-1);
-  pointer-events: none;
-}
-
-.first-run-choice-improve-agent.agent-avatar {
-  width: 20px;
-  height: 20px;
-  animation: first-run-improve-pop 1600ms var(--openbot-ease-out) both;
-}
-
-.first-run-choice-improve-agent:nth-child(2) {
-  animation-delay: 90ms;
-}
-
-.first-run-choice-improve-agent:nth-child(3) {
-  animation-delay: 180ms;
-}
-
 @keyframes first-run-improve-pop {
   0% {
     opacity: 0;
@@ -975,10 +925,6 @@ html:active-view-transition-type(open)::view-transition-new(*) {
 @media (prefers-reduced-motion: reduce) {
   .first-run-choice-avatar {
     animation: none;
-  }
-
-  .first-run-choice-improve-pop {
-    display: none;
   }
 }
 

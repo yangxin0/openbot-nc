@@ -30,8 +30,6 @@ export const messages = {
     "AB KDV sistemi şu anda KDV numarasını kontrol edemiyor. Daha sonra yeniden deneyin veya KDV numarası olmadan devam edin.",
   "error.billing.vatUnavailable": "Ödeme şu anda kullanılamıyor. Daha sonra yeniden deneyin.",
   "error.billing.invalidRequest": "Faturalandırma isteği geçersiz.",
-  "error.billing.invalidResponse": "Faturalandırma yanıtı geçersiz.",
-  "error.billing.notStripePage": "Faturalandırma sayfası bir Stripe sayfası değil.",
   "error.billing.customServerOfferMissing": "Bu sunucunun ödenecek bir planı yok.",
   "error.billing.checkoutUnavailable": "Ödeme şu anda başlatılamıyor. Bir dakika sonra yeniden deneyin.",
 } as const satisfies PartialTranslation<typeof source>;

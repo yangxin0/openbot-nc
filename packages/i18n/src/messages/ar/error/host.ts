@@ -2,12 +2,9 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.iceServersMissing": "لم يوفّر Remote Signal خوادم ICE.",
   "error.host.keyRotationUnavailable": "لا يمكن لهذا الخادم تغيير مفتاحه بدون خدمة الحساب.",
   "error.host.keyRotationRefused": "لم تقبل خدمة الحساب مفتاح الخادم الجديد. يبقى المفتاح الحالي قيد الاستخدام.",
   "error.host.webRtcNotConfigured": "خدمة مضيف WebRTC غير مهيّأة.",
-  "error.host.runtimeNotInstalled": "بيئة تشغيل سطح المكتب البعيد غير مثبّتة.",
-  "error.host.setupUnavailable": "إعداد الأذونات غير متاح.",
   "error.host.accountChangedDuringUpdate": "تغيّر الحساب المسجّل الدخول أثناء تحديث هذا الخادم.",
   "error.host.nameBeforePublish": "سمِّ OpenBot هذا قبل نشره.",
   "error.host.memberNotFound": "العضو البعيد غير موجود.",

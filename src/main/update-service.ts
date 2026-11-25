@@ -20,7 +20,6 @@ import type { HostUpdateState } from "../../packages/contracts/src/host-manager"
 import { causeHelpers } from "../backend/effect-boundary";
 import { writeUpdateHandover, writeUpdateInstallRecord } from "./update-install-guard";
 import type { OpenBotSiblingInstance, SiblingScanFailed } from "./update-sibling-instances";
-import { verifyWindowsUpdateSignature } from "./windows-update-signature";
 
 const logger = createOpenBotLogger("update");
 
@@ -48,7 +47,6 @@ export type UpdateAdapter = {
   on(event: "update-downloaded", listener: (info: UpdateInfo) => void): unknown;
   on(event: "error", listener: (error: Error) => void): unknown;
   quitAndInstall: (isSilent?: boolean, isForceRunAfter?: boolean) => void;
-  isUserWithinRollout?: (info: UpdateInfo) => boolean | Promise<boolean>;
 };
 
 export function createDisabledUpdateAdapter(): UpdateAdapter {
@@ -63,23 +61,6 @@ export function createDisabledUpdateAdapter(): UpdateAdapter {
   };
 }
 
-export async function loadElectronUpdater(): Promise<UpdateAdapter | null> {
-  try {
-    const updaterModule = await import("electron-updater");
-    const adapter = updaterModule.autoUpdater ?? updaterModule.default?.autoUpdater ?? updaterModule.default;
-    const NsisUpdater = updaterModule.NsisUpdater ?? updaterModule.default?.NsisUpdater;
-    if (NsisUpdater && adapter instanceof NsisUpdater) {
-      adapter.verifyUpdateCodeSignature = (publisherNames, file) =>
-        Effect.runPromise(verifyWindowsUpdateSignature(publisherNames, file));
-    }
-    if (adapter) return adapter;
-    logger.warn("OpenBot updates are disabled: electron-updater did not export autoUpdater");
-  } catch {
-    logger.warn("OpenBot updates are disabled: electron-updater failed to load");
-  }
-  return null;
-}
-
 export function electronUpdaterCacheDirectory(): string {
   const root =
     process.platform === "win32"
@@ -87,7 +68,7 @@ export function electronUpdaterCacheDirectory(): string {
       : process.platform === "darwin"
         ? join(homedir(), "Library", "Caches")
         : process.env.XDG_CACHE_HOME || join(homedir(), ".cache");
-  return join(root, "openbot-updater");
+  return join(root, "openbot-nc-updater");
 }
 
 type UpdateOperation = "check" | "download" | "install";
@@ -152,7 +133,7 @@ export function isNixStoreInstall(executablePath: string = process.execPath): bo
 }
 
 function unsupportedMessage(): string {
-  return sourceText(isNixStoreInstall() ? "error.update.managedByNix" : "error.update.unsupported");
+  return sourceText(isNixStoreInstall() ? "error.update.managedByNix" : "error.update.noSelfUpdate");
 }
 
 export class UpdateService extends EventEmitter<UpdateServiceEvents> {
@@ -205,9 +186,6 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
   #checkRequest: Deferred.Deferred<UpdateCheckOutcome | null, UpdateOperationFailure> | null = null;
   #downloadInFlight = false;
   #teardownCommitted = false;
-  #requestedVersion: string | null = null;
-  #rolloutMiss: string | null = null;
-  #stagedVersion: string | null = null;
   #requiredVersion: string | null = null;
 
   constructor(updater: UpdateAdapter, options: UpdateServiceOptions) {
@@ -256,17 +234,6 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
     this.#updater.autoDownload = false;
     this.#updater.autoInstallOnAppQuit = false;
     this.#updater.allowPrerelease = false;
-    const stagedRollout = this.#updater.isUserWithinRollout;
-    if (stagedRollout) {
-      this.#updater.isUserWithinRollout = async (info) => {
-        const percentage = stagingPercentage(info.stagingPercentage);
-        if (percentage !== 0 && info.version === this.#requestedVersion) return true;
-        const within = await stagedRollout(info);
-        if (!within && percentage !== null && percentage > 0) this.#rolloutMiss = info.version;
-        return within;
-      };
-    }
-
     this.#updater.on("download-progress", (progress: ProgressInfo) => {
       if (!this.#isDownloadLive()) return;
       this.#setStatus({ phase: "downloading", progress: clampProgress(progress.percent), errorCode: null });
@@ -315,7 +282,6 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
     if (this.#scheduledRestart)
       status.scheduledRestart = { ...this.#scheduledRestart, waitingFor: [...this.#scheduledRestart.waitingFor] };
     if (this.#idleRestart) status.idleRestart = { ...this.#idleRestart, waitingFor: [...this.#idleRestart.waitingFor] };
-    if (this.#stagedVersion && status.phase === "up-to-date") status.stagedVersion = this.#stagedVersion;
     if (this.#requiredVersion) status.requiredVersion = this.#requiredVersion;
     return status;
   }
@@ -427,7 +393,7 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
       const generation = ++this.#checkGeneration;
       this.#operation = "check";
       this.#setStatus({ phase: "checking", progress: null, message: null, errorCode: null });
-      const checked = yield* this.#issueRequestedCheck(joinOutstandingRequest, generation).pipe(
+      const checked = yield* Effect.result(this.#issueCheck()).pipe(
         Effect.ensuring(
           Effect.sync(() => {
             if (this.#checkGeneration === generation) this.#scheduleCheck(this.#options.checkIntervalMs);
@@ -435,7 +401,6 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
         ),
       );
       if (this.#checkGeneration !== generation) return this.getStatus();
-      this.#stagedVersion = null;
       if (Result.isFailure(checked)) this.#setError("check_failed", describeCheckFailure(checked.failure.cause));
       else {
         const result = checked.success;
@@ -445,8 +410,6 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
           this.#markAvailable(result.updateInfo.version);
         } else {
           this.#downloadedVersion = null;
-          if (this.#rolloutMiss && isNewerRelease(this.#rolloutMiss, this.#status.currentVersion))
-            this.#stagedVersion = this.#rolloutMiss;
           this.#setStatus({
             phase: "up-to-date",
             availableVersion: null,
@@ -660,7 +623,6 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
       if (this.#checkRequest) return yield* Deferred.await(this.#checkRequest);
       const request = Deferred.makeUnsafe<UpdateCheckOutcome | null, UpdateOperationFailure>();
       this.#checkRequest = request;
-      this.#rolloutMiss = null;
       return yield* updateIO(() => this.#updater.checkForUpdates()).pipe(
         Effect.tapError(({ cause }) => Effect.sync(() => logUpdateFailure("OpenBot update check failed.", cause))),
         Effect.onExit((exit) =>
@@ -671,20 +633,6 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
         ),
         Effect.uninterruptible,
       );
-    });
-  }
-
-  #issueRequestedCheck(
-    requested: boolean,
-    generation: number,
-  ): Effect.Effect<Result.Result<UpdateCheckOutcome | null, UpdateOperationFailure>> {
-    return Effect.gen({ self: this }, function* () {
-      const checked = yield* Effect.result(this.#issueCheck());
-      const missed = this.#rolloutMiss;
-      if (!requested || !missed || Result.isFailure(checked) || this.#checkGeneration !== generation) return checked;
-      if (checked.success?.isUpdateAvailable) return checked;
-      this.#requestedVersion = missed;
-      return yield* Effect.result(this.#issueCheck());
     });
   }
 
@@ -976,12 +924,6 @@ function pruneInstalledUpdate(directory: string, currentVersion: string): Effect
     yield* updateIO(() => rm(join(pending, basename(fileName)), { force: true }));
     yield* updateIO(() => rm(join(pending, "update-info.json"), { force: true }));
   }).pipe(Effect.catch(() => Effect.void));
-}
-
-function stagingPercentage(value: unknown): number | null {
-  if (value === null || value === undefined) return null;
-  const percentage = Number.parseInt(String(value), 10);
-  return Number.isNaN(percentage) ? null : percentage;
 }
 
 function clampProgress(value: number): number | null {

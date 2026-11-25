@@ -13,7 +13,6 @@ export interface AccountPort {
     | "listMobileConnectedDevices"
     | "logout"
     | "onEvent"
-    | "openCompanySignIn"
     | "requestEmailCode"
     | "retry"
     | "revokeAccountSession"

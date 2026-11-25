@@ -3,13 +3,11 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "Zdarzenia nie są dostępne na tym hoście.",
+  "error.backend.webhooksRemoved": "Wyzwalacze webhook nie są dostępne w tej wersji OpenBot.",
   "error.backend.databaseIntegrity": "Baza danych OpenBot nie przeszła kontroli integralności.",
-  "error.backend.webhookRouteLimit": "Host może mieć maksymalnie {limit} rutyn typu webhook.",
   "error.backend.webhookSettingsInvalid": "Sprawdź ustawienia webhooka i spróbuj ponownie.",
   "error.backend.webhookSenderSecretInvalid":
     "Wklej pełny sekret podpisu od nadawcy. Ma od 16 do 1024 znaków i nie zawiera spacji.",
-  "error.backend.webhookRouteUnavailable":
-    "Publiczna trasa webhooka nie jest gotowa. Sprawdź połączenie z hostem i spróbuj ponownie.",
   "error.backend.browserViewRemoteOnly": "Podgląd przeglądarki na żywo jest tylko dla zdalnego hosta.",
   "error.backend.browserViewUnsupported": "Ten zdalny host nie obsługuje podglądu przeglądarki na żywo.",
   "error.backend.browserViewLimit": "Na tym hoście jest otwartych zbyt wiele widoków przeglądarki.",
@@ -17,32 +15,6 @@ export const messages = {
   "error.backend.browserViewFailed": "Podgląd tej strony na żywo nie powiódł się.",
   "error.backend.windowTemporarilyUnavailable": "Okno OpenBot jest chwilowo niedostępne.",
   "error.backend.windowUnavailable": "Okno OpenBot jest niedostępne.",
-  "error.backend.sunshineApiHttp": "API Sunshine zwróciło błąd HTTP {status}.",
-  "error.backend.sunshinePortsUnavailable":
-    "Nie udało się zarezerwować wolnej rodziny portów Sunshine dla zdalnego pulpitu.",
-  "error.backend.moonlightPortsUnavailable":
-    "Nie udało się zarezerwować wolnego zakresu portów Moonlight WebRTC dla zdalnego pulpitu.",
-  "error.backend.iceServerNoPort": "Serwer ICE zdalnego pulpitu nie otrzymał portu.",
-  "error.backend.remoteDesktopStoppedWhileStarting":
-    "Środowisko zdalnego pulpitu zostało zatrzymane podczas uruchamiania.",
-  "error.backend.sunshineNotStarted": "Sunshine nie uruchomił się na zarezerwowanej rodzinie portów.",
-  "error.backend.moonlightNoHost": "Moonlight nie ma sparowanego lokalnego hosta.",
-  "error.backend.sunshineNoDesktop": "Sunshine nie opublikował aplikacji Desktop.",
-  "error.backend.sunshineAmbiguousPairing": "Sunshine zwrócił niejednoznaczne lokalne żądania parowania.",
-  "error.backend.sunshineNoPairingRequest": "Sunshine nie otrzymał oczekiwanego lokalnego żądania parowania.",
-  "error.backend.moonlightPairingHttp": "Parowanie Moonlight zwróciło błąd HTTP {status}.",
-  "error.backend.moonlightRejectedPairing": "Moonlight odrzucił parowanie z Sunshine.",
-  "error.backend.moonlightNoPin": "Moonlight nie zwrócił kodu PIN parowania.",
-  "error.backend.moonlightPairingIncomplete": "Parowanie Moonlight nie zostało ukończone.",
-  "error.backend.moonlightWebNotEmbedded": "Moonlight Web nie jest wbudowaną wersją OpenBot.",
-  "error.backend.moonlightEmptyResponse": "Moonlight zwrócił pustą odpowiedź.",
-  "error.backend.remoteDesktopTimeout": "Upłynął limit czasu żądania zdalnego pulpitu.",
-  "error.backend.moonlightApiHttp": "API Moonlight zwróciło błąd HTTP {status}.",
-  "error.backend.sunshineExited": "Sunshine zakończył działanie, zanim jego API HTTPS na porcie {port} było gotowe.",
-  "error.backend.sunshineNoAnswer": "Sunshine nie odpowiedział.",
-  "error.backend.sunshineTlsUnexpected": "Sunshine zwrócił nieoczekiwany certyfikat TLS.",
-  "error.backend.moonlightWebExited": "Moonlight Web zakończył działanie, zanim {url} był gotowy.",
-  "error.backend.moonlightWebNotReady": "Moonlight Web nie osiągnął gotowości.",
   "error.backend.channelDeleteUnsupported": "Ten serwer nie obsługuje usuwania kanałów.",
   "error.backend.browserNavigateUnsupported":
     "Ten zdalny host nie obsługuje nawigacji z paska adresu w istniejącej karcie.",
@@ -61,8 +33,6 @@ export const messages = {
   "error.backend.browserStopUnsupported": "Ten zdalny host nie może zatrzymać wczytywania strony.",
   "error.backend.sharedDataLocalOnly": "Dane współdzielone są zarządzane na komputerze, na którym działają ci agenci.",
   "error.backend.browserUrlProtocol": "Dozwolone są tylko adresy URL HTTP(S).",
-  "error.backend.sunshineNotReady": "Sunshine nie osiągnął gotowości.",
-  "error.backend.sunshineNotReadyReason": "Sunshine nie osiągnął gotowości. {reason}",
   "error.backend.channelLeadModelUnavailable": "Model lidera kanału jest niedostępny.",
   "error.backend.contextCompactionIneffective":
     "Kompaktowanie nie zmniejsza tego czatu: po dwóch kompaktowaniach nadal zajmuje {percent}% okna kontekstu modelu, więc OpenBot przestaje go kompaktować. Narzędzia i instrukcje zajmują większość okna. Wyłącz serwery MCP lub sterowanie komputerem, których ten agent nie potrzebuje, albo wybierz model z większym oknem. Potem zacznij nowy czat.",
@@ -272,6 +242,8 @@ export const messages = {
     "Serwer logowania nie akceptuje jeszcze OpenBot jako aplikacji. Przyczyną nie jest twoje konto. Połącz się w inny sposób, na przykład przez lokalny serwer MCP.",
   "error.backend.mcpRegistrationUnavailable":
     "Serwer logowania nie może zarejestrować OpenBot jako aplikacji. Przyczyną nie jest twoje konto. Aby się połączyć, zapisz ten serwer w Marketplace, Aplikacje, a potem dodaj do niego aplikację logowania.",
+  "error.backend.mcpSignInNeedsClientDocument":
+    "Ten serwer logowania przyjmuje tylko aplikacje, które publikują dokument identyfikatora klienta, a ta wersja OpenBot go nie publikuje. Jeśli masz własną aplikację logowania dla tego serwera, zapisz serwer w Marketplace, Aplikacje, a potem dodaj do niego tę aplikację logowania.",
   "error.backend.mcpSignInAbandonedGeneric": "Logowanie zostało porzucone.",
   "error.backend.mcpSignInForgotten": "Logowanie MCP zostało zapomniane w trakcie działania.",
   "error.backend.mcpSignInAbandoned": "Logowanie MCP zostało porzucone.",
@@ -469,7 +441,6 @@ export const messages = {
   "error.backend.branchSourceBusy": "Zatrzymaj bieżącą turę, zanim utworzysz odgałęzienie tego czatu.",
   "error.backend.branchMessageNotFound": "Odgałęzienie możesz utworzyć tylko od ukończonej odpowiedzi agenta.",
   "error.backend.branchRemoteUnsupported": "Odgałęzienia są dostępne tylko dla agentów na tym komputerze.",
-  "error.backend.feedbackWithdrawRemoteUnsupported": "Aby usunąć to zgłoszenie, poproś o to agenta.",
   "error.backend.threadMoveRefused": "W nowym wątku można uruchomić tylko wiadomość wysłaną wyłącznie do tego agenta.",
   "error.backend.taskTitleRequired": "Nadaj zadaniu krótki tytuł.",
   "error.backend.taskToolInvalid":

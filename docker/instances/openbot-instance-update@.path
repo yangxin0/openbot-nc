@@ -2,8 +2,8 @@
 Description=Update requests of OpenBot instance %i
 
 [Path]
-PathExists=/srv/openbot/%i/update-requests/update-stage
-PathExists=/srv/openbot/%i/update-requests/update-install
+PathExists=/srv/openbot-nc/%i/update-requests/update-stage
+PathExists=/srv/openbot-nc/%i/update-requests/update-install
 
 [Install]
 WantedBy=paths.target

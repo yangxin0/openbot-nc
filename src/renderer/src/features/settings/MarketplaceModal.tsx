@@ -1,6 +1,4 @@
-import type { MarketplaceListingLink } from "@openbot/contracts/marketplace-links";
 import { ConfirmDialog } from "@openbot/ui";
-import { AgentUpdateDialog } from "@openbot/ui/features/marketplace/AgentUpdateDialog";
 import { Marketplace } from "@openbot/ui/features/marketplace/Marketplace";
 import type { MarketplaceApp } from "@openbot/ui/features/marketplace/marketplace-model";
 import { createMarketplaceNavigation } from "@openbot/ui/features/marketplace/marketplace-view";
@@ -21,8 +19,6 @@ export interface MarketplaceModalProps extends MarketplaceControllerProps {
   initialPluginSlug?: string | undefined;
   initialPluginConnect?: boolean | undefined;
   onInitialPluginSlugConsumed?: (() => void) | undefined;
-  initialListing?: MarketplaceListingLink | undefined;
-  onInitialListingConsumed?: (() => void) | undefined;
 }
 
 export function MarketplaceModal(props: MarketplaceModalProps) {
@@ -49,8 +45,7 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
     if (!app || app.status === "connected") return;
     if (app.kind === "connector") {
       if (app.status === "idle") model.connector(app.connector)?.connect?.();
-    } else if (app.kind === "x") nav.go({ kind: "app", id: app.id, setup: true });
-    else if (app.kind === "plugin" && model.canConnectApps()) void model.connectApp(app);
+    } else if (app.kind === "plugin" && model.canConnectApps()) void model.connectApp(app);
   };
 
   createEffect(
@@ -67,29 +62,6 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
         });
       }
       untrack(() => props.onInitialPluginSlugConsumed)?.();
-    },
-  );
-
-  let listingRequest = 0;
-  createEffect(
-    () => (props.open ? props.initialListing : undefined),
-    (link) => {
-      if (!link) return;
-      listingRequest += 1;
-      const request = listingRequest;
-      nav.reset();
-      untrack(() => props.onInitialListingConsumed)?.();
-      void controller.readListing(link).then((listing) => {
-        if (request !== listingRequest) return;
-        if (listing?.kind === "agent")
-          nav.show("agents", { kind: "agent", listing: listing.detail, detail: listing.detail });
-        else if (listing?.kind === "skill") nav.show("skills", { kind: "skill", listing: listing.skill });
-        else
-          nav.set((draft) => {
-            draft.tab = link.kind === "agent" ? "agents" : "skills";
-            draft.missingListing = link.kind;
-          });
-      });
     },
   );
 
@@ -152,7 +124,6 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
     (open) => {
       if (open) return;
       setConnectWhenReady(null);
-      listingRequest += 1;
     },
   );
 
@@ -194,17 +165,6 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
             description={t("marketplace.app.replace.description", { server: replace.server, name: replace.app })}
             confirmLabel={t("marketplace.app.replace.action")}
             initialFocus="cancel"
-          />
-        )}
-      </Show>
-      <Show when={controller.agentUpdate()} keyed>
-        {(pending) => (
-          <AgentUpdateDialog
-            agentName={pending.agentName}
-            changed={pending.changed}
-            othersCount={pending.othersCount}
-            onCancel={() => pending.settle(null)}
-            onConfirm={(replaceSkillIds) => pending.settle(replaceSkillIds)}
           />
         )}
       </Show>

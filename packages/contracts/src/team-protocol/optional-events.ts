@@ -16,7 +16,6 @@ import { type HostAppearanceEvent, hostAppearanceEvent } from "./host-appearance
 import { type HostTurnLimitsEvent, hostTurnLimitsEvent } from "./host-turn-limits-events-v1";
 import { type HostRestartEvent, hostRestartEvent } from "./host-update-v1";
 import { type LibraryFoldersEvent, libraryFoldersEvent } from "./library-folders-events-v1";
-import { type LiveVoiceEvent, liveVoiceEvent } from "./live-voice-v1";
 import { type MachineAlertEvent, machineAlertEvent } from "./machine-resources-v1";
 import { type MessagePinsEvent, messagePinsEvent } from "./message-pins-v1";
 import { type QuietTurnCompletedEvent, quietTurnEvent } from "./quiet-turn-v1";
@@ -46,7 +45,6 @@ export type OptionalTeamEvent =
   | HostRestartEvent
   | HostTurnLimitsEvent
   | LibraryFoldersEvent
-  | LiveVoiceEvent
   | MachineAlertEvent
   | MessagePinsEvent
   | SidebarPinsEvent
@@ -82,7 +80,6 @@ export function optionalTeamEvent(value: unknown, options?: OptionalTeamEventOpt
     hostRestartEvent(value) ??
     hostTurnLimitsEvent(value) ??
     libraryFoldersEvent(value) ??
-    liveVoiceEvent(value) ??
     machineAlertEvent(value) ??
     messagePinsEvent(value) ??
     sidebarPinsEvent(value) ??

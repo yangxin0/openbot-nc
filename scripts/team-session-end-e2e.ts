@@ -54,14 +54,10 @@ function recorder() {
     listSessions: () => [SESSION_B],
     revokeSession: (sessionId) => record("store.revokeSession", sessionId),
   };
-  const remoteScreen: NonNullable<TeamRouteDependencies["remoteScreen"]> = {
-    revokeTeamSession: (sessionId) => record("remoteScreen.revokeTeamSession", sessionId),
-    revokeMember: (memberId) => record("remoteScreen.revokeMember", memberId),
-  };
   const browserView: NonNullable<TeamRouteDependencies["browserView"]> = {
     revokeTeamSession: (sessionId) => record("browserView.revokeTeamSession", sessionId),
   };
-  return { calls, store, remoteScreen, browserView };
+  return { calls, store, browserView };
 }
 
 async function send(method: string, path: string, dependencies: TeamRouteDependencies) {
@@ -101,15 +97,10 @@ const routes = {
 
 try {
   {
-    const { calls, store, remoteScreen, browserView } = recorder();
-    const result = await send("POST", TEAM_API_ROUTES.auth.logout, { store, remoteScreen, browserView, ...routes });
+    const { calls, store, browserView } = recorder();
+    const result = await send("POST", TEAM_API_ROUTES.auth.logout, { store, browserView, ...routes });
     check("a sign-out answers 204", result.status === 204, result);
     check("a sign-out ends the store session", calls["store.logout"]?.join() === "token-a", calls);
-    check(
-      "a sign-out closes the remote screen of the session",
-      calls["remoteScreen.revokeTeamSession"]?.join() === "session-a",
-      calls,
-    );
     check(
       "a sign-out closes the browser view of the session",
       calls["browserView.revokeTeamSession"]?.join() === "session-a",
@@ -117,20 +108,10 @@ try {
     );
   }
   {
-    const { calls, store, remoteScreen, browserView } = recorder();
-    const result = await send("DELETE", TEAM_API_ROUTES.team.session(SESSION_B.id), {
-      store,
-      remoteScreen,
-      browserView,
-      ...routes,
-    });
+    const { calls, store, browserView } = recorder();
+    const result = await send("DELETE", TEAM_API_ROUTES.team.session(SESSION_B.id), { store, browserView, ...routes });
     check("an owner who ends a session gets 204", result.status === 204, result);
     check("a session end removes the store session", calls["store.revokeSession"]?.join() === "session-b", calls);
-    check(
-      "a session end closes the remote screen of the session",
-      calls["remoteScreen.revokeTeamSession"]?.join() === "session-b",
-      calls,
-    );
     check(
       "a session end closes the browser view of the session",
       calls["browserView.revokeTeamSession"]?.join() === "session-b",
@@ -138,8 +119,8 @@ try {
     );
   }
   {
-    const { calls, store, remoteScreen } = recorder();
-    const result = await send("DELETE", TEAM_API_ROUTES.team.session(SESSION_B.id), { store, remoteScreen, ...routes });
+    const { calls, store } = recorder();
+    const result = await send("DELETE", TEAM_API_ROUTES.team.session(SESSION_B.id), { store, ...routes });
     check("a session end with no browser view still answers 204", result.status === 204, { result, calls });
   }
   report.passed = checks.every((entry) => entry.passed);

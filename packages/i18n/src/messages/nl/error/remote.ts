@@ -2,53 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/remote";
 
 export const messages = {
-  "error.remote.desktopSetupClientUpdate": "Werk de client bij om extern bureaublad in te stellen.",
-  "error.remote.desktopSetupUnavailable": "Instellen van extern bureaublad is niet beschikbaar.",
-  "error.remote.desktopTestUnavailable": "Testen van extern bureaublad is niet beschikbaar.",
-  "error.remote.controlUnavailable": "Bediening op afstand is niet beschikbaar.",
-  "error.remote.controlSessionNotFound": "Sessie voor bediening op afstand niet gevonden.",
-  "error.remote.controlNotAllowed": "De eigenaar van deze computer staat je rol niet toe om hem te bedienen.",
-  "error.remote.controlDeclined": "De persoon bij deze computer heeft bediening op afstand niet toegestaan.",
-  "error.remote.testRuntimeUpdate": "Werk de macOS-runtime voor extern bureaublad bij om deze test uit te voeren.",
-  "error.remote.testOtherSessions": "Beëindig andere sessies van extern bureaublad voordat je een test start.",
-  "error.remote.testPermissions": "Controleer de toestemmingen en de GUI-sessie op de host voordat je de test start.",
-  "error.remote.controlSessionEnded": "De sessie voor bediening op afstand is beëindigd.",
-  "error.remote.testPanelFailed": "De host kon het testpaneel niet openen.",
-  "error.remote.sessionCapacity": "De host heeft al vier actieve sessies.",
-  "error.remote.linuxNeedsX11":
-    "Extern bureaublad op Linux heeft een X11-sessie nodig. Wayland wordt niet ondersteund.",
-  "error.remote.runtimeMissing":
-    "De runtime van Sunshine en Moonlight Web ontbreekt of wordt niet ondersteund op deze host. Installeer de volledige release van OpenBot op een Mac, een Windows x64-host of een Linux x64-host en start OpenBot opnieuw.",
-  "error.remote.testActive": "Er loopt een test van extern bureaublad. Probeer het opnieuw als die klaar is.",
-  "error.remote.screenRecordingDenied":
-    "De host heeft OpenBot niet toegestaan het scherm op te nemen. Geef toestemming voor schermopname op de host en probeer het opnieuw.",
-  "error.remote.windowsSessionDisconnected":
-    "De Windows-sessie op de host is verbroken, dus er is geen scherm om te delen. Meld je aan bij Windows op het scherm van de host en probeer het opnieuw.",
-  "error.remote.windowsCaptureDenied":
-    "Windows op de host laat OpenBot het scherm niet opnemen. Ontgrendel Windows op het scherm van de host, sluit elke beheerdersprompt en probeer het opnieuw. Blijft het probleem, start de host dan opnieuw op.",
-  "error.remote.macScreenLocked":
-    "De Mac is vergrendeld en kan zijn scherm dus niet delen. Ontgrendel de Mac op zijn scherm en probeer het opnieuw.",
-  "error.remote.streamTooSlowLowerQuality":
-    "De verbinding met de host is te traag voor het beeld. Probeer het opnieuw: de volgende verbinding gebruikt een lagere kwaliteit.",
-  "error.remote.streamTooSlow":
-    "De verbinding met de host is te traag voor het beeld. Gebruik een sneller netwerk en probeer het opnieuw.",
-  "error.remote.noPictureSwitchEncoder":
-    "De host heeft geen beeld gestuurd. Probeer het opnieuw: de volgende verbinding gebruikt een video-instelling die op meer computers werkt.",
-  "error.remote.teamSessionExpired": "De teamsessie is verlopen.",
-  "error.remote.finishTestBeforeSwitch": "Rond de test van extern bureaublad af voordat je van beeldscherm wisselt.",
-  "error.remote.displayNotFound": "Extern beeldscherm niet gevonden.",
-  "error.remote.displaySwitchInProgress": "Er wordt al van beeldscherm gewisseld.",
-  "error.remote.localTestListenerUnavailable": "De lokale testlistener is niet beschikbaar.",
-  "error.remote.localTestNotFound": "Lokale testsessie niet gevonden.",
-  "error.remote.runtimeUnavailable": "De runtime voor extern bureaublad is niet beschikbaar.",
-  "error.remote.sunshineStartFailed":
-    "Sunshine is niet gestart op de host. Controleer de logs van extern bureaublad op de host en probeer het opnieuw.",
-  "error.remote.moonlightStartFailed":
-    "Moonlight Web is niet gestart op de host. Controleer de logs van extern bureaublad op de host en probeer het opnieuw.",
-  "error.remote.pairingFailed":
-    "Moonlight kon niet koppelen met Sunshine op de host. Probeer het opnieuw. Blijft het probleem, start OpenBot dan opnieuw op de host.",
-  "error.remote.runtimeStartFailed":
-    "De runtime voor extern bureaublad is niet gestart op de host. Controleer de logs van extern bureaublad op de host en probeer het opnieuw.",
   "error.remote.hostUnreachable": "De host is niet bereikbaar.",
   "error.remote.signInToHostAgain": "Log opnieuw in bij deze host.",
   "error.remote.invalidData": "De host gaf ongeldige gegevens terug.",
@@ -75,11 +28,7 @@ export const messages = {
   "error.remote.inviteIdentityChanged":
     "De identiteit van de host van de uitnodiging is gewijzigd tijdens het accepteren.",
   "error.remote.localServerRemove": "De lokale server kan niet worden verwijderd.",
-  "error.remote.desktopSetupHostUpdate":
-    "Werk OpenBot bij op de host om de instelling van extern bureaublad te controleren.",
-  "error.remote.desktopTestHostUpdate": "Werk OpenBot bij op de host om de instelling van extern bureaublad te testen.",
   "error.remote.viewerProxyUnavailable": "De lokale proxy voor de externe viewer is niet beschikbaar.",
-  "error.remote.viewerTransportInvalid": "Het transport van de externe viewer is ongeldig.",
   "error.remote.viewerProxyNoPort": "De lokale proxy voor de externe viewer heeft geen poort gekregen.",
   "error.remote.inviteNeedsConnection": "De host moet eerst één keer verbinden voordat hij uitnodigingen kan maken.",
   "error.remote.permanentInviteUnsupported": "Deze serververbinding ondersteunt geen permanente uitnodigingslinks.",

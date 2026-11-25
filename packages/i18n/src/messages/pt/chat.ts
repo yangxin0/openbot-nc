@@ -513,8 +513,6 @@ export const messages = {
   "chat.feedbackSent.fixChoiceHint": "O agente remove este relato e o envia de novo sem as partes que você escolher.",
   "chat.feedbackSent.removeChoice": "Remover",
   "chat.feedbackSent.removeChoiceHint": "Tirar do GitHub. Não é possível desfazer.",
-  "chat.feedbackSent.fixPrompt": "Remova meu relato #{number} do GitHub e envie-o de novo sem isto:",
-  "chat.feedbackSent.removePrompt": "Remova meu relato #{number} do GitHub.",
   "chat.feedbackSent.composerFilled": "O pedido está na sua caixa de mensagem. Complete-o e depois envie.",
   "chat.feedbackSent.keep": "Manter",
   "chat.feedbackSent.removing": "Removendo…",

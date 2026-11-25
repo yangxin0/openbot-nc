@@ -444,7 +444,6 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "Dinleme",
   "mobile.settings.voice.tab.speaking": "Konuşma",
-  "mobile.settings.voice.tab.gptLive": "Canlı GPT",
   "mobile.settings.voice.pause.title": "Göndermeden önce duraklama",
   "mobile.settings.voice.pause.label": "Yeni kelimeleri bekle",
   "mobile.settings.voice.pause.footer":
@@ -453,21 +452,6 @@ export const messages = {
   "mobile.settings.voice.speed.title": "Yanıt hızı",
   "mobile.settings.voice.speed.footer": "OpenBot'un sesli okuduğu yanıtların hızı, sesli konuşmada da.",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT Live Voice",
-  "mobile.settings.voice.gptLive.footer":
-    "Bir ajanla sesli konuşmada GPT Live Voice bu telefonun yerine dinler ve konuşur. Sunucuyu çalıştıran bilgisayarın Codex (ChatGPT) oturumunu kullanır. Sesiniz bu telefon ile OpenAI arasında gider ve OpenAI ajanın yanıtlarını seslendirir. Bunu destekleyen bir sunucu gerekir; diğer sunucular bu telefonun sesini kullanır.",
-  "mobile.settings.voice.gptLive.automatic": "Otomatik",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "OpenAI bir sonraki sesli konuşmanızda bu sesle konuşur. Otomatik seçeneğinde sesi OpenAI seçer.",
-  "mobile.settings.voice.gptLive.serversTitle": "Sunucular",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "Codex'i bir ChatGPT hesabına bağlamak için oturum açması gereken bir sunucuya dokunun. Bir sunucunun oturumunu yalnızca sahip veya yönetici görür.",
-  "mobile.settings.voice.gptLive.account": "GPT canlı ses hesabı",
-  "mobile.settings.voice.gptLive.status.ready": "Hazır",
-  "mobile.settings.voice.gptLive.status.supported": "Destekleniyor",
-  "mobile.settings.voice.gptLive.status.offline": "Çevrimdışı",
-  "mobile.settings.voice.gptLive.status.update": "Bilgisayarında daha yeni bir OpenBot gerekiyor",
-  "mobile.settings.voice.gptLive.status.signIn": "ChatGPT ile Codex'te oturum açın",
   "mobile.settings.voice.server.title": "Ses sunucusu",
   "mobile.settings.voice.server.row": "OpenAI uyumlu sunucu",
   "mobile.settings.voice.server.notSetUp": "Ayarlanmadı",

@@ -215,7 +215,6 @@ export const messages = {
   "error.provider.codexModelProvider":
     "Codex na tym komputerze używa innego dostawcy modeli, a ten dostawca nie używa logowania do ChatGPT ani klucza API OpenAI. Agenci ChatGPT mogą już używać tego dostawcy. Aby używać konta ChatGPT, ustaw z powrotem OpenAI jako dostawcę modeli w Codex.",
   "error.provider.signInExpired": "Logowanie do {provider} wygasło. Zaloguj się ponownie, aby kontynuować.",
-  "error.provider.cliActivateFailed": "Nie udało się aktywować zarządzanego CLI.",
   "error.provider.noMainlandChinaSignIn": "{provider} nie ma logowania dla Chin kontynentalnych.",
   "error.provider.cliNewVersionNotStarted": "Nowa wersja się nie uruchomiła.",
   "error.provider.cliBusyReconnect": "{provider} CLI pracuje nad turą. Zaczekaj, aż skończy, a potem połącz ponownie.",

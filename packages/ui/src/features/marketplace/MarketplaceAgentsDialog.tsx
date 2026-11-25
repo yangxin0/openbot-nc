@@ -256,7 +256,7 @@ export function AgentSearchList(props: {
   );
 }
 
-export function AgentsDialog(props: { model: MarketplaceModel; skill: DialogSkill; onClose: () => void }) {
+function AgentsDialog(props: { model: MarketplaceModel; skill: DialogSkill; onClose: () => void }) {
   const { t } = useText();
   const words = useSkillWords(() => props.model);
   const skillId = untrack(() => props.skill.id);

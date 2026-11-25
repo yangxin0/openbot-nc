@@ -30,8 +30,6 @@ export const messages = {
   "error.agent.commitEffectsFailed": "تم تنفيذ المعاملة، لكن آثارها المحفوظة فشلت.",
   "error.agent.settingsLocalOnly": "لا يمكن تغيير إعدادات الوكيل إلا على الحاسوب الذي يشغّل الوكيل.",
   "error.agent.skillsLocalOnly": "لا يمكن تغيير المهارات إلا على الحاسوب الذي يشغّل الوكيل.",
-  "error.agent.addLocalOnly": "لا يمكن إضافة الوكلاء إلا على الحاسوب الذي يشغّلهم.",
-  "error.agent.joinedServerUpdate": "لا يمكن تحديث وكيل على خادم منضم إليه من هنا.",
   "error.agent.searchQueryRequired": "عبارة البحث مطلوبة.",
   "error.agent.messageTooLong": "الرسالة طويلة جدًا.",
   "error.agent.messageOrAttachmentRequired": "رسالة أو مرفق مطلوب.",
@@ -155,8 +153,6 @@ export const messages = {
     "شغّلت السكربتات المحلية المهام الدورية لهذا الوكيل {limit} مرة في الساعة الأخيرة. أعد المحاولة لاحقًا.",
   "error.agent.workspaceOnlyMacOnly":
     "خيار «مساحة العمل فقط» متاح لهذا المزوّد على macOS فقط. اختر الوصول الكامل في إعدادات الوكيل.",
-  "error.agent.lowMemory":
-    "ذاكرة هذا الخادم منخفضة. تنتظر رسالتك في قائمة الانتظار وتبدأ عند توفر الذاكرة. تمنح الخطة الأكبر الخادمَ ذاكرة أكثر.",
   "error.agent.lowMemoryServer": "ذاكرة هذا الخادم منخفضة. تنتظر رسالتك في قائمة الانتظار وتبدأ عند توفر الذاكرة.",
   "error.agent.workspaceOnlyToolMissing":
     "يحتاج خيار «مساحة العمل فقط» إلى {tool}، ولم يجده OpenBot. ثبّته، أو اختر الوصول الكامل في إعدادات الوكيل.",

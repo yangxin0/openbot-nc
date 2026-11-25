@@ -20,9 +20,7 @@ export const messages = {
   "error.skill.frontmatterInvalid": "SKILL.md ön bölümü (frontmatter) geçerli bir YAML değil.",
   "error.skill.descriptionLength": "SKILL.md 1 ila {limit} karakterden oluşan bir açıklamaya ihtiyaç duyar.",
   "error.skill.nameMismatch": 'SKILL.md klasör adıyla aynı şekilde "name: {slug}" gerektirir.',
-  "error.skill.draftExpired": "Seçilen beceri paketinin süresi doldu. Yeniden seçin.",
   "error.skill.localHasNoVersion": "Yerel bir becerinin yayımlanmış sürümü yoktur.",
-  "error.skill.publishLocalFirst": "Bu ajanı yayımlamadan önce yerel becerileri ayrı olarak yayımlayın.",
   "error.skill.bundleMismatch": "İndirilen beceri imzalı katalog kaydıyla eşleşmedi.",
   "error.skill.metadataMismatch": "İndirilen beceri meta verileri katalogla eşleşmiyor.",
   "error.skill.folderTaken": "Kurulu başka bir beceri bu klasör adını kullanıyor.",
@@ -39,14 +37,9 @@ export const messages = {
   "error.skill.localLibraryUnavailable": "Yerel beceri kitaplığı kullanılamıyor.",
   "error.skill.lockInvalid": "Kurulu beceri kaydı geçersiz. Değiştirilmeden bırakıldı.",
   "error.skill.installPathSymlink": "Beceri kurulum yolları sembolik bağlantılar içeremez.",
-  "error.skill.duplicateSlug": 'İki beceri "{slug}" olarak adlandırılmış. Yayımlamadan önce birini yeniden adlandırın.',
-  "error.skill.publishNeedsRepair": "{name} yerel değişikliklere sahip veya yayımlanmadan önce onarılması gerekiyor.",
-  "error.skill.publishUntracked":
-    "{name} kesin sürüm takibinden önce kurulmuş. Yayımlamadan önce güncelleyin veya onarın.",
   "error.skill.tooManySkills": "Bir ajan en fazla {limit} beceriye sahip olabilir.",
   "error.skill.unmanagedExists": "{path} konumunda zaten yönetilmeyen bir beceri mevcut.",
   "error.skill.managedSlug": "OpenBot her ajana kendi {slug} becerisini verir. Bu beceriye başka bir ad verin.",
-  "error.skill.templateMarkdownTooLarge": "{name}: SKILL.md 64 KB'tan daha büyük. Yayımlamadan önce kısaltın.",
   "error.skill.localNoRevisions": "Yerel becerinin yayımlanmış revizyonu yok.",
   "error.skill.localNotFound": "Bu yerel beceri yok. Kimliğini yerel beceriler listesinden kontrol edin.",
   "error.skill.localRevisionNotFound": "Bu yerel becerinin {revision} revizyonu yok. En son revizyonu {latest}.",
@@ -68,6 +61,4 @@ export const messages = {
     "GitHub, OpenBot'un hesap olmadan ne sıklıkla okuyabileceğini sınırlıyor. Bir saat sonra yeniden deneyin.",
   "error.skill.githubTooLarge": "OpenBot, {repository} deposunun tüm dosyalarını okuyamıyor. Depo çok büyük.",
   "error.skill.githubHostTooOld": "GitHub'dan beceri eklemek için bu sunucuyu güncelleyin.",
-  "error.skill.publishGithub":
-    "{name} GitHub'dan geliyor. Yalnızca kendi oluşturduğunuz becerileri yayımlayabilirsiniz.",
 } as const satisfies PartialTranslation<typeof source>;

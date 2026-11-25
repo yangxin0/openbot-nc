@@ -5,41 +5,15 @@ import {
   type MessagingConnection,
 } from "@openbot/contracts/ipc";
 import type { ConnectorDetail } from "@openbot/ui/features/connectors/ConnectorDetailPanel";
-import type { SlackIntegrationAgent } from "@openbot/ui/features/settings/SlackIntegrationPanel";
-import { WHATSAPP_LINK_IDLE } from "@openbot/ui/features/settings/WhatsAppIntegrationPanel";
+import {
+  WHATSAPP_LINK_IDLE,
+  type WhatsAppIntegrationAgent,
+} from "@openbot/ui/features/settings/WhatsAppIntegrationPanel";
 import { fn } from "storybook/test";
 import type { ConnectorController } from "../src/features/connectors/connector-controller";
 import type { ConnectorSet } from "../src/features/connectors/connector-registry";
 
-const workspace = {
-  agents: [],
-  connections: [],
-  busy: false,
-  onConnectWorkspace: fn(),
-  onDisconnectWorkspace: fn(),
-  onDisconnectAll: fn(),
-  onReconnect: fn(),
-  onSetEnabled: fn(),
-  onAddOrchestrator: fn(),
-};
-
 export const STORY_CONNECTOR_DETAILS: readonly ConnectorDetail[] = [
-  { id: "slack", props: { ...workspace, platform: "slack" } },
-  { id: "discord", props: { ...workspace, platform: "discord" } },
-  {
-    id: "telegram",
-    props: {
-      agents: [],
-      connections: [],
-      busy: false,
-      onConnectChat: fn(async () => true),
-      onDisconnectChat: fn(),
-      onDisconnectAll: fn(),
-      onReconnect: fn(),
-      onSetEnabled: fn(),
-      onAddOrchestrator: fn(),
-    },
-  },
   {
     id: "whatsapp",
     props: {
@@ -63,34 +37,6 @@ export const STORY_CONNECTOR_DETAILS: readonly ConnectorDetail[] = [
       onRemoveSender: fn(),
       onSetSenderReadOnly: fn(),
       onAnswerRequest: fn(),
-    },
-  },
-  {
-    id: "github",
-    props: {
-      status: {
-        available: true,
-        state: "connected",
-        login: "octocat",
-        avatarUrl: null,
-        userCode: null,
-        verificationUri: null,
-        error: null,
-      },
-      busy: false,
-      repositories: {
-        repositories: [
-          { fullName: "octocat/hello-world", private: false },
-          { fullName: "octocat/private-notes", private: true },
-        ],
-        total: 2,
-      },
-      repositoriesError: null,
-      onConnect: fn(),
-      onCancel: fn(),
-      onDisconnect: fn(),
-      onOpenVerification: fn(),
-      onOpenInstall: fn(),
     },
   },
   {
@@ -130,7 +76,7 @@ export const STORY_CONNECTOR_DETAILS: readonly ConnectorDetail[] = [
   },
 ];
 
-const ORCHESTRATOR: SlackIntegrationAgent = {
+const ORCHESTRATOR: WhatsAppIntegrationAgent = {
   id: "agent-orchestrator",
   name: "Orchestrator",
   title: "Answers in the channel and asks the team",
@@ -156,32 +102,6 @@ function channel(update: Partial<MessagingConnection> & Pick<MessagingConnection
 
 export const CONNECTED_CONNECTOR_DETAILS: readonly ConnectorDetail[] = STORY_CONNECTOR_DETAILS.map((detail) => {
   switch (detail.id) {
-    case "slack":
-      return {
-        ...detail,
-        props: { ...detail.props, agents: [ORCHESTRATOR], connections: [channel({ platform: "slack" })] },
-      };
-    case "discord":
-      return {
-        ...detail,
-        props: {
-          ...detail.props,
-          agents: [ORCHESTRATOR],
-          connections: [channel({ platform: "discord", workspaceId: "1000", workspaceName: "Acme community" })],
-        },
-      };
-    case "telegram":
-      return {
-        ...detail,
-        props: {
-          ...detail.props,
-          agents: [ORCHESTRATOR],
-          connections: [
-            channel({ platform: "telegram", workspaceId: "-1001234567890", workspaceName: "Acme team" }),
-            channel({ platform: "telegram", workspaceId: "123456789", workspaceName: "Ada Lovelace" }),
-          ],
-        },
-      };
     case "whatsapp":
       return {
         ...detail,
@@ -237,12 +157,7 @@ function storyConnector(detail: ConnectorDetail): ConnectorController {
     available: () => true,
     busy: () => false,
     detail,
-    connect:
-      detail.id === "github" || detail.id === "protonpass"
-        ? detail.props.onConnect
-        : detail.id === "slack" || detail.id === "discord"
-          ? detail.props.onConnectWorkspace
-          : undefined,
+    connect: detail.id === "protonpass" ? detail.props.onConnect : undefined,
     reload: fn(),
     watch: () => () => undefined,
   };

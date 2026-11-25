@@ -83,7 +83,6 @@ import {
   type UpdateRoutineInput,
   VOICE_AUDIO_LIMITS,
   VOICE_MODEL_IDS,
-  type VoiceLiveEvent,
   type VoiceModelStatus,
   type VoiceSettings,
   type WhatsAppAccount,
@@ -294,7 +293,6 @@ import {
   CUSTOM_PROVIDER_HARNESS_ROUTES,
 } from "@openbot/contracts/team-protocol/custom-provider-harness-v1";
 import {
-  decodeFeedbackWithdrawResult,
   FEEDBACK_WITHDRAW_CAPABILITY,
   FEEDBACK_WITHDRAW_ROUTES,
 } from "@openbot/contracts/team-protocol/feedback-withdraw-v1";
@@ -344,17 +342,6 @@ import {
   LIBRARY_FOLDERS_CAPABILITY,
   LIBRARY_FOLDERS_ROUTES,
 } from "@openbot/contracts/team-protocol/library-folders-v1";
-import {
-  decodeLiveVoiceAccount,
-  LIVE_VOICE_ACCOUNT_CAPABILITY,
-  LIVE_VOICE_ACCOUNT_ROUTES,
-} from "@openbot/contracts/team-protocol/live-voice-account-v1";
-import {
-  LIVE_VOICE_CAPABILITY,
-  LIVE_VOICE_ROUTES,
-  type LiveVoiceEvent,
-  liveVoiceEvent,
-} from "@openbot/contracts/team-protocol/live-voice-v1";
 import { LOCAL_SERVERS_CAPABILITY, LOCAL_SERVERS_ROUTES } from "@openbot/contracts/team-protocol/local-servers-v1";
 import { MAC_APPS_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/mac-apps-limit-v1";
 import {
@@ -636,7 +623,6 @@ import type {
   TeamApiAttachmentPreviews,
   TeamApiBrowser,
   TeamApiConnectors,
-  TeamApiLiveVoice,
   TeamApiMailbox,
   TeamApiRoutineRunPlaces,
   TeamApiVoiceTranscription,
@@ -1101,7 +1087,6 @@ const REFUSED_ACCOUNT_KEY = "key_e2e_refused";
 const ACCOUNT_KEY = "key_e2e_accepted";
 
 let antigravityPool: ProviderAccountPool | undefined;
-let codexLiveVoiceAccount: string | null = null;
 let codeSignInAccount: string | null = null;
 let agentStatus: AgentStatus | null = null;
 let deleteFailure: string | null = null;
@@ -1340,14 +1325,6 @@ const fakeEvents: HostEventsApi = {
   saveRoutine: notInThisCheck,
   deleteRoutine: notInThisCheck,
   testRoutine: notInThisCheck,
-  rotateSecret: notInThisCheck,
-  setSecret: notInThisCheck,
-  giveSecretToAgent: (input) =>
-    Effect.sync(() => {
-      record("giveSecretToAgent", input);
-      return { name: `WEBHOOK_SECRET_${input.id.replaceAll("-", "").toUpperCase()}` };
-    }),
-  sendTestEvent: notInThisCheck,
   listActivity: notInThisCheck,
   listRoutineRuns: notInThisCheck,
 };
@@ -1560,10 +1537,6 @@ const fakeAgents: TeamApiAgents = {
   saveSkillSuggestion: (input) => {
     record("saveSkillSuggestion", input);
     return Effect.succeed({ saved: input.messageId === "suggestion-1" });
-  },
-  withdrawFeedback: (input) => {
-    record("withdrawFeedback", input);
-    return Effect.succeed({ status: input.messageId === "feedback-card-1" ? "withdrawn" : "notYours" });
   },
   saveProfile: unused("saveProfile"),
   createAgent: unused("createAgent"),
@@ -2337,27 +2310,7 @@ const whatsappAccount: WhatsAppAccount = {
 };
 let whatsappLinkError: WhatsAppLinkState["error"] = null;
 const whatsappMessaging: TeamApiConnectors["messaging"] = {
-  slackOverview: unused("slackOverview"),
-  discordOverview: unused("discordOverview"),
-  telegramOverview: unused("telegramOverview"),
-  connectSlackWorkspace: unused("connectSlackWorkspace"),
-  connectDiscordGuild: unused("connectDiscordGuild"),
-  connectTelegramChat: unused("connectTelegramChat"),
-  completeSlackWorkspace: unused("completeSlackWorkspace"),
-  completeDiscordGuild: unused("completeDiscordGuild"),
-  disconnectSlackWorkspace: unused("disconnectSlackWorkspace"),
-  disconnectDiscordGuild: unused("disconnectDiscordGuild"),
-  disconnectTelegramChat: unused("disconnectTelegramChat"),
-  addOrchestrator: unused("addOrchestrator"),
-  addTelegramOrchestrator: unused("addTelegramOrchestrator"),
-  discordAccess: unused("discordAccess"),
-  listDiscordRoles: unused("listDiscordRoles"),
-  setDiscordAccess: unused("setDiscordAccess"),
-  reconnect: (platform, workspaceId, opensPage) =>
-    Effect.sync(() => {
-      record("whatsapp.reconnect", platform, workspaceId, opensPage);
-      return null;
-    }),
+  reconnect: (platform, workspaceId) => Effect.sync(() => record("whatsapp.reconnect", platform, workspaceId, false)),
   setEnabled: (platform, workspaceId, enabled) =>
     Effect.sync(() => record("whatsapp.setEnabled", platform, workspaceId, enabled)),
   whatsappOverview: () => {
@@ -2448,17 +2401,7 @@ const whatsappMessaging: TeamApiConnectors["messaging"] = {
       );
     }),
 };
-const connectors: TeamApiConnectors = {
-  github: {
-    status: unused("github.status"),
-    pages: unused("github.pages"),
-    connect: unused("github.connect"),
-    cancel: unused("github.cancel"),
-    disconnect: unused("github.disconnect"),
-    repositories: unused("github.repositories"),
-  },
-  messaging: whatsappMessaging,
-};
+const connectors: TeamApiConnectors = { messaging: whatsappMessaging };
 const vaultFile = join(root, "openbot-vault-v1.json");
 const vault = new VaultService({ store: new VaultStore(vaultFile, fakeCipher), canPersist: () => true });
 await Effect.runPromise(vault.load());
@@ -2508,39 +2451,6 @@ const voiceTranscription: TeamApiVoiceTranscription = {
 
 const clientBrowser = new ClientBrowserHub({ commandMs: 1_500, presenceMs: 60_000 });
 
-const liveVoiceListeners = new Set<(event: VoiceLiveEvent, memberId: string | null) => void>();
-let liveVoiceStarts = 0;
-let liveVoiceStopped: (() => void) | null = null;
-const liveVoice: TeamApiLiveVoice = {
-  startLiveVoice: (input, voice, owner) => {
-    record("startLiveVoice", input, voice, owner?.memberId ?? null, owner?.sender?.id ?? null);
-    if (input.sdp === "offer-without-sign-in")
-      return Effect.fail(
-        new AgentLifecycleFailed({
-          operation: "startLiveVoice",
-          cause: new Error(sourceText("error.voice.live.signIn")),
-        }),
-      );
-    if (input.sdp === "offer-codex-failed")
-      return Effect.fail(
-        new AgentLifecycleFailed({
-          operation: "startLiveVoice",
-          cause: new Error(sourceText("error.voice.live.startFailed", { reason: "realtime session failed" })),
-        }),
-      );
-    liveVoiceStarts += 1;
-    return Effect.succeed({ sessionId: `voice-${liveVoiceStarts}`, sdp: `answer to ${input.sdp}` });
-  },
-  stopLiveVoice: (sessionId, memberId) =>
-    Effect.sync(() => {
-      record("stopLiveVoice", sessionId, memberId);
-      liveVoiceStopped?.();
-    }),
-  subscribe: (listener) => {
-    liveVoiceListeners.add(listener);
-    return () => liveVoiceListeners.delete(listener);
-  },
-};
 const memoryReviewFile = join(root, "memory-review.json");
 const ROTATED_HOST_KEY = "-----BEGIN PUBLIC KEY-----\nrotated-e2e\n-----END PUBLIC KEY-----\n";
 let refuseHostKeyRotation = false;
@@ -2603,14 +2513,7 @@ writeFileSync(
 );
 mkdirSync(join(adaSkills, "settlement-economy"), { recursive: true });
 writeFileSync(join(adaSkills, "settlement-economy", "SKILL.md"), "\uFEFF# Settle\r\n");
-const chatSkills = new SkillMarketplaceService(
-  {
-    requestAuthorized: () => Effect.die("Not used."),
-    downloadAuthorized: () => Effect.die("Not used."),
-    resolveApiUrl: () => "",
-  },
-  () => agents,
-);
+const chatSkills = new SkillMarketplaceService(() => agents);
 
 const skillLearningFile = join(root, "skill-learning.json");
 const skillLearning = new SkillLearningPreferenceStore(skillLearningFile);
@@ -3172,7 +3075,6 @@ try {
         }),
       stop: (id) => Effect.sync(() => record("stopBackgroundProcess", id)),
     },
-    liveVoice,
     voiceTranscription,
     clientBrowser,
     storage: {
@@ -3210,13 +3112,6 @@ try {
             antigravityPool = enabled
               ? { leftOut: out, inUse: known.find((id) => !out.includes(id)) ?? null }
               : undefined;
-            return accountModelsStatus();
-          }),
-        liveVoiceAccount: () => codexLiveVoiceAccount,
-        setLiveVoiceAccount: (accountId) =>
-          Effect.sync(() => {
-            record("setLiveVoiceAccount", accountId);
-            codexLiveVoiceAccount = accountId;
             return accountModelsStatus();
           }),
         getProviderAccountUsage: unused("providerAccounts.getProviderAccountUsage"),
@@ -3515,8 +3410,8 @@ try {
     json: { inviteToken: seatInvite.token, username: "carol", password: "carol-password-e2e" },
   });
   check(
-    "a fourth member is refused with memberLimit",
-    errorIs(fourth, 400, sourceText("error.team.memberLimit", { limit: 3 })) && store.listMembers().length === 3,
+    "a fourth member joins, because a host has no limit of three members",
+    fourth.status === 201 && store.listMembers().length === 4,
     summary(fourth),
   );
 
@@ -3692,7 +3587,7 @@ try {
     );
 
     const members = await call("GET", TEAM_API_ROUTES.team.members, { token: adaToken });
-    check("an admin lists the three members", members.status === 200 && list(members.body).length === 3, {
+    check("an admin lists the four members", members.status === 200 && list(members.body).length === 4, {
       status: members.status,
       count: list(members.body).length,
     });
@@ -5010,71 +4905,6 @@ try {
       "an admin turns the pool off again",
       offAgain.status === 200 && isDeepStrictEqual(cleared.body, { pools: [] }),
       [summary(offAgain), summary(cleared)],
-    );
-  }
-
-  {
-    const v10 = { capabilities: [LIVE_VOICE_CAPABILITY, LIVE_VOICE_ACCOUNT_CAPABILITY], protocol: TEAM_PROTOCOL_V10 };
-    const route = LIVE_VOICE_ACCOUNT_ROUTES;
-    const unsupported = await call("POST", route.settings, {
-      token: adaToken,
-      json: {},
-      capabilities: [LIVE_VOICE_CAPABILITY],
-      protocol: TEAM_PROTOCOL_V10,
-    });
-    check(
-      "the live voice account route without live-voice-account-v1 gets 400 providersUnsupported",
-      errorIs(unsupported, 400, sourceText("error.team.providersUnsupported")),
-      summary(unsupported),
-    );
-    const writes = callsOf("setLiveVoiceAccount").length;
-    const memberRead = await call("POST", route.settings, { token: bobToken, json: {}, ...v10 });
-    const memberUpdate = await call("POST", route.update, {
-      token: bobToken,
-      json: { accountId: ULTRA_ACCOUNT },
-      ...v10,
-    });
-    check(
-      "a member cannot read or change the live voice account, and the host writes nothing",
-      errorIs(memberRead, 403, sourceText("error.team.adminRequired")) &&
-        errorIs(memberUpdate, 403, sourceText("error.team.adminRequired")) &&
-        callsOf("setLiveVoiceAccount").length === writes,
-      [summary(memberRead), summary(memberUpdate)],
-    );
-    const automatic = await call("POST", route.settings, { token: adaToken, json: {}, ...v10 });
-    check(
-      "with no choice, the live voice account is automatic",
-      automatic.status === 200 && isDeepStrictEqual(automatic.body, { accountId: null }),
-      summary(automatic),
-    );
-    const badAccount = await call("POST", route.update, {
-      token: adaToken,
-      json: { accountId: "not-an-account" },
-      ...v10,
-    });
-    check(
-      "an account id that is not one gets 400, and the host writes nothing",
-      badAccount.status === 400 && callsOf("setLiveVoiceAccount").length === writes,
-      summary(badAccount),
-    );
-    const chosen = await call("POST", route.update, { token: adaToken, json: { accountId: ULTRA_ACCOUNT }, ...v10 });
-    const read = await call("POST", route.settings, { token: adaToken, json: {}, ...v10 });
-    check(
-      "an admin chooses the Codex account for live voice, and the client decodes it",
-      chosen.status === 200 &&
-        isDeepStrictEqual(callsOf("setLiveVoiceAccount").at(-1), [ULTRA_ACCOUNT]) &&
-        read.status === 200 &&
-        decodeLiveVoiceAccount(read.body) === ULTRA_ACCOUNT,
-      [summary(chosen), summary(read)],
-    );
-    const reset = await call("POST", route.update, { token: adaToken, json: { accountId: null }, ...v10 });
-    const cleared = await call("POST", route.settings, { token: adaToken, json: {}, ...v10 });
-    check(
-      "an admin sets the live voice account back to automatic",
-      reset.status === 200 &&
-        isDeepStrictEqual(callsOf("setLiveVoiceAccount").at(-1), [null]) &&
-        isDeepStrictEqual(cleared.body, { accountId: null }),
-      [summary(reset), summary(cleared)],
     );
   }
 
@@ -12400,28 +12230,20 @@ try {
     const compatibility = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: TEAM_PROTOCOL_V10 });
     const older = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: TEAM_PROTOCOL_V9 });
     check(
-      "the host advertises webhook-agent-secret-v1 to a protocol 10 peer and not to a protocol 9 peer",
-      list(field(compatibility.body, "capabilities")).includes(WEBHOOK_AGENT_SECRET_CAPABILITY) &&
+      "the host advertises webhook-agent-secret-v1 to no peer: webhook triggers are removed",
+      !list(field(compatibility.body, "capabilities")).includes(WEBHOOK_AGENT_SECRET_CAPABILITY) &&
         !list(field(older.body, "capabilities")).includes(WEBHOOK_AGENT_SECRET_CAPABILITY),
       [summary(compatibility), summary(older)],
     );
     const unsupported = await call("POST", WEBHOOK_AGENT_SECRET_ROUTES.give, { token: adaToken, json });
     const member = await call("POST", WEBHOOK_AGENT_SECRET_ROUTES.give, { token: bobToken, json, capabilities });
     check(
-      "a peer without the capability gets 400 eventsUnavailable, a member gets 403, and the host gives no secret",
-      errorIs(unsupported, 400, sourceText("error.backend.eventsUnavailable")) &&
-        member.status === 403 &&
-        callsOf("giveSecretToAgent").length === 0,
+      "a peer without the capability and a member both get 404: the route is gone",
+      unsupported.status === 404 && member.status === 404,
       [summary(unsupported), summary(member)],
     );
     const given = await call("POST", WEBHOOK_AGENT_SECRET_ROUTES.give, { token: adaToken, json, capabilities });
-    check(
-      "an admin gives the secret to the agent; the answer has only the key name",
-      given.status === 200 &&
-        isDeepStrictEqual(given.body, { name: "WEBHOOK_SECRET_ROUTINEHOOK" }) &&
-        isDeepStrictEqual(callsOf("giveSecretToAgent"), [[json]]),
-      summary(given),
-    );
+    check("an admin gets 404 too, and the host gives no secret", given.status === 404, summary(given));
   }
 
   {
@@ -13319,221 +13141,24 @@ try {
   }
 
   {
-    const capabilities = [LIVE_VOICE_CAPABILITY];
-    const v9 = { capabilities, protocol: TEAM_PROTOCOL_V9 };
-    const starts = () => callsOf("startLiveVoice").length;
-    const compatibility = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: TEAM_PROTOCOL_V9 });
-    const older = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: 8 });
-    check(
-      "the host advertises live-voice-v1 to a protocol 9 peer only",
-      list(field(compatibility.body, "capabilities")).includes(LIVE_VOICE_CAPABILITY) &&
-        !list(field(older.body, "capabilities")).includes(LIVE_VOICE_CAPABILITY),
-      [summary(compatibility), list(field(older.body, "capabilities")).length],
-    );
-    const start = { agentId: "agent-ada", sdp: "offer-1", voice: "maple" };
-    const unsupported = await call("POST", LIVE_VOICE_ROUTES.start, { token: bobToken, json: start });
-    check(
-      "a start without live-voice-v1 gets 400 liveVoiceUnsupported and starts no voice",
-      errorIs(unsupported, 400, sourceText("error.team.liveVoiceUnsupported")) && starts() === 0,
-      summary(unsupported),
-    );
-    const unknownVoice = await call("POST", LIVE_VOICE_ROUTES.start, {
+    const newest = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: TEAM_PROTOCOL_V10 });
+    const older = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: TEAM_PROTOCOL_V9 });
+    const advertised = [...list(field(newest.body, "capabilities")), ...list(field(older.body, "capabilities"))];
+    const start = await call("POST", "/v1/live-voice/start", {
       token: bobToken,
-      ...v9,
-      json: { ...start, voice: "alloy" },
-    });
-    const hiddenAgent = await call("POST", LIVE_VOICE_ROUTES.start, {
-      token: bobToken,
-      capabilities,
-      protocol: 6,
-      json: { ...start, agentId: "agent-pi" },
-    });
-    const missingAgent = await call("POST", LIVE_VOICE_ROUTES.start, {
-      token: bobToken,
-      ...v9,
-      json: { ...start, agentId: "agent-gone" },
-    });
-    accessLevels = { revision: 12, everyone: { "agent-ada": "view" }, roles: [] };
-    const viewer = await call("POST", LIVE_VOICE_ROUTES.start, { token: bobToken, ...v9, json: start });
-    accessLevels = { revision: 13, everyone: {}, roles: [] };
-    const noEvents = await call("POST", LIVE_VOICE_ROUTES.start, { token: bobToken, ...v9, json: start });
-    check(
-      "a voice outside the contract, a hidden or missing agent, a member who can only view, or a session with no event connection starts no voice",
-      unknownVoice.status === 400 &&
-        errorIs(hiddenAgent, 404, sourceText("error.team.agentNotFound")) &&
-        errorIs(missingAgent, 404, sourceText("error.team.agentNotFound")) &&
-        errorIs(viewer, 403, sourceText("error.team.agentViewOnly")) &&
-        errorIs(noEvents, 409, sourceText("error.voice.live.disconnected")) &&
-        starts() === 0,
-      [summary(unknownVoice), summary(hiddenAgent), summary(missingAgent), summary(viewer), summary(noEvents)],
-    );
-
-    const openVoiceSocket = async (token: string) => {
-      const socket = new WebSocket(`ws://127.0.0.1:${port}${TEAM_API_ROUTES.events}`, [
-        TEAM_PROTOCOL_V1_WEBSOCKET,
-        `openbot-token.${token}`,
-      ]);
-      const events: LiveVoiceEvent[] = [];
-      const waiters = new Set<() => void>();
-      let declared = false;
-      socket.addEventListener("message", (message) => {
-        const value = JSON.parse(String(message.data));
-        if (isDynamicRecord(value) && value.type === "chat-colors-changed") declared = true;
-        const event = liveVoiceEvent(value);
-        if (event) events.push(event);
-        for (const wake of waiters) wake();
-      });
-      await new Promise<void>((resolveOpen, reject) => {
-        socket.addEventListener("open", () => resolveOpen(), { once: true });
-        socket.addEventListener("error", () => reject(new Error("The event socket did not open.")), { once: true });
-      });
-      const until = (ready: () => boolean) =>
-        new Promise<boolean>((resolveReady) => {
-          if (ready()) return resolveReady(true);
-          const timer = setTimeout(() => {
-            waiters.delete(wake);
-            resolveReady(false);
-          }, 5_000);
-          const wake = () => {
-            if (!ready()) return;
-            clearTimeout(timer);
-            waiters.delete(wake);
-            resolveReady(true);
-          };
-          waiters.add(wake);
-        });
-      socket.send(
-        JSON.stringify({
-          type: "agent-event-scope",
-          includeConversations: false,
-          capabilities: [CHAT_COLORS_CAPABILITY, LIVE_VOICE_CAPABILITY],
-        }),
-      );
-      const ready = await until(() => declared);
-      return { socket, events, ready, until };
-    };
-    const bobSocket = await openVoiceSocket(bobToken);
-    const adaSocket = await openVoiceSocket(adaToken);
-    const started = await call("POST", LIVE_VOICE_ROUTES.start, { token: bobToken, ...v9, json: start });
-    check(
-      "a member who can chat starts live voice and gets the answer, with the member as owner and sender",
-      bobSocket.ready &&
-        adaSocket.ready &&
-        started.status === 200 &&
-        isDeepStrictEqual(started.body, { sessionId: "voice-1", sdp: "answer to offer-1" }) &&
-        isDeepStrictEqual(callsOf("startLiveVoice"), [
-          [{ agentId: "agent-ada", sdp: "offer-1" }, "maple", bobId, bobId],
-        ]),
-      [summary(started), callsOf("startLiveVoice")],
-    );
-    const emitVoice = (event: VoiceLiveEvent, memberId: string | null) => {
-      for (const listener of liveVoiceListeners) listener(event, memberId);
-    };
-    emitVoice({ type: "transcript", sessionId: "voice-1", role: "user", text: "Hello Ada", final: true }, bobId);
-    emitVoice({ type: "transcript", sessionId: "voice-local", role: "user", text: "Mine", final: true }, null);
-    emitVoice({ type: "ended", sessionId: "voice-1", error: null }, bobId);
-    const bobHeard = await bobSocket.until(() => bobSocket.events.some((event) => event.kind === "ended"));
-    emitVoice({ type: "ended", sessionId: "voice-ada", error: null }, adaId);
-    const adaHeard = await adaSocket.until(() => adaSocket.events.length > 0);
-    check(
-      "the transcript and the end go only to the member who started the voice, and a session of the host computer goes to no member",
-      bobHeard &&
-        isDeepStrictEqual(bobSocket.events, [
-          {
-            type: "live-voice",
-            kind: "transcript",
-            sessionId: "voice-1",
-            role: "user",
-            text: "Hello Ada",
-            final: true,
-          },
-          { type: "live-voice", kind: "ended", sessionId: "voice-1", error: null },
-        ]) &&
-        adaHeard &&
-        isDeepStrictEqual(adaSocket.events, [
-          { type: "live-voice", kind: "ended", sessionId: "voice-ada", error: null },
-        ]),
-      [bobSocket.events, adaSocket.events],
-    );
-    const stopped = await call("POST", LIVE_VOICE_ROUTES.stop, {
-      token: bobToken,
-      ...v9,
-      json: { sessionId: "voice-1" },
+      capabilities: ["live-voice-v1"],
+      protocol: TEAM_PROTOCOL_V9,
+      json: { agentId: "agent-ada", sdp: "offer-1" },
     });
     check(
-      "a member stops a voice as its owner only",
-      stopped.status === 200 &&
-        isDeepStrictEqual(stopped.body, {}) &&
-        isDeepStrictEqual(callsOf("stopLiveVoice"), [["voice-1", bobId]]),
-      [summary(stopped), callsOf("stopLiveVoice")],
-    );
-    const noSignIn = await call("POST", LIVE_VOICE_ROUTES.start, {
-      token: bobToken,
-      ...v9,
-      json: { agentId: "agent-ada", sdp: "offer-without-sign-in" },
-    });
-    check(
-      "a host without a Codex sign-in answers 409 with the sentence for the member, and no voice means OpenAI chooses",
-      errorIs(noSignIn, 409, sourceText("error.voice.live.signIn")) &&
-        isDeepStrictEqual(callsOf("startLiveVoice").at(-1), [
-          { agentId: "agent-ada", sdp: "offer-without-sign-in" },
-          null,
-          bobId,
-          bobId,
-        ]),
-      [summary(noSignIn), callsOf("startLiveVoice").at(-1)],
-    );
-    const codexFailed = await call("POST", LIVE_VOICE_ROUTES.start, {
-      token: bobToken,
-      ...v9,
-      json: { agentId: "agent-ada", sdp: "offer-codex-failed" },
-    });
-    check(
-      "a host whose Codex cannot start the voice answers 409 with the reason and the next step for the member",
-      errorIs(codexFailed, 409, sourceText("error.voice.live.startFailed", { reason: "realtime session failed" })),
-      summary(codexFailed),
-    );
-    const revoked = await call("POST", LIVE_VOICE_ROUTES.start, {
-      token: bobToken,
-      ...v9,
-      json: { agentId: "agent-ada", sdp: "offer-revoked" },
-    });
-    accessLevels = { revision: 14, everyone: { "agent-ada": "view" }, roles: [] };
-    for (const listener of accessListeners) listener(store.getIdentity()?.serverId ?? "", accessLevels);
-    const stopsAfterRevoke = callsOf("stopLiveVoice").slice(1);
-    accessLevels = { revision: 15, everyone: {}, roles: [] };
-    for (const listener of accessListeners) listener(store.getIdentity()?.serverId ?? "", accessLevels);
-    check(
-      "a member who loses chat access to the agent loses the voice, and the host stops it only once",
-      revoked.status === 200 &&
-        field(revoked.body, "sessionId") === "voice-2" &&
-        isDeepStrictEqual(stopsAfterRevoke, [["voice-2", bobId]]) &&
-        callsOf("stopLiveVoice").length === 2,
-      [summary(revoked), callsOf("stopLiveVoice")],
-    );
-    const second = await call("POST", LIVE_VOICE_ROUTES.start, {
-      token: bobToken,
-      ...v9,
-      json: { agentId: "agent-ada", sdp: "offer-2" },
-    });
-    const closedStop = new Promise<boolean>((resolveStop) => {
-      const timer = setTimeout(() => resolveStop(false), 5_000);
-      liveVoiceStopped = () => {
-        clearTimeout(timer);
-        resolveStop(true);
-      };
-    });
-    bobSocket.socket.close();
-    const stoppedOnClose = await closedStop;
-    liveVoiceStopped = null;
-    adaSocket.socket.close();
-    check(
-      "the host stops a member's voice when the last event connection of its logical session closes",
-      second.status === 200 &&
-        field(second.body, "sessionId") === "voice-3" &&
-        stoppedOnClose &&
-        isDeepStrictEqual(callsOf("stopLiveVoice").at(-1), ["voice-3", bobId]),
-      [summary(second), callsOf("stopLiveVoice")],
+      "the host does not advertise live-voice-v1 or live-voice-account-v1, a protocol 10 answer lists live-voice-v1 in absent, and a live voice start gets 404 routeNotFound",
+      newest.status === 200 &&
+        older.status === 200 &&
+        !advertised.includes("live-voice-v1") &&
+        !advertised.includes("live-voice-account-v1") &&
+        list(field(newest.body, "absent")).includes("live-voice-v1") &&
+        errorIs(start, 404, sourceText("error.team.routeNotFound")),
+      [summary(newest), list(field(older.body, "capabilities")).length, summary(start)],
     );
   }
 
@@ -14116,97 +13741,22 @@ try {
     const compatibility = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: TEAM_PROTOCOL_V9 });
     const older = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: 8 });
     check(
-      "the host advertises phone-feedback-v1 to a protocol 9 peer only",
-      list(field(compatibility.body, "capabilities")).includes(PHONE_FEEDBACK_CAPABILITY) &&
+      "the host advertises phone-feedback-v1 to no peer: reports do not go to the vendor",
+      !list(field(compatibility.body, "capabilities")).includes(PHONE_FEEDBACK_CAPABILITY) &&
         !list(field(older.body, "capabilities")).includes(PHONE_FEEDBACK_CAPABILITY),
-      summary(compatibility),
+      [summary(compatibility), summary(older)],
     );
     const answers = () => callsOf("respondToApproval").length;
     const before = answers();
-    const unsupported = await call("POST", PHONE_FEEDBACK_ROUTES.send, {
-      token: owner.sessionToken,
-      json: { requestId: 7, phone },
-    });
-    const noLog = await call("POST", PHONE_FEEDBACK_ROUTES.send, {
-      token: owner.sessionToken,
-      ...v9,
-      json: { requestId: 7, phone: { ...phone, log: " " } },
-    });
-    const otherSystem = await call("POST", PHONE_FEEDBACK_ROUTES.send, {
-      token: owner.sessionToken,
-      ...v9,
-      json: { requestId: 7, phone: { ...phone, platform: "macOS" } },
-    });
-    const noVersion = await call("POST", PHONE_FEEDBACK_ROUTES.send, {
-      token: owner.sessionToken,
-      ...v9,
-      json: {
-        requestId: 7,
-        phone: { platform: phone.platform, system: phone.system, network: phone.network, log: phone.log },
-      },
-    });
-    const noNetwork = await call("POST", PHONE_FEEDBACK_ROUTES.send, {
-      token: owner.sessionToken,
-      ...v9,
-      json: {
-        requestId: 7,
-        phone: { platform: phone.platform, appVersion: phone.appVersion, system: phone.system, log: phone.log },
-      },
-    });
-    accessLevels = { revision: 24, everyone: { "agent-ada": "view" }, roles: [] };
-    const viewer = await call("POST", PHONE_FEEDBACK_ROUTES.send, {
-      token: bobToken,
-      ...v9,
-      json: { requestId: 7, phone },
-    });
-    accessLevels = { revision: 25, everyone: {}, roles: [] };
-    check(
-      "a send without the capability, without a log, a version, a network or a phone system, or by a member who can only view reaches no approval",
-      errorIs(unsupported, 400, sourceText("error.team.phoneFeedbackUnsupported")) &&
-        noLog.status === 400 &&
-        otherSystem.status === 400 &&
-        noVersion.status === 400 &&
-        noNetwork.status === 400 &&
-        errorIs(viewer, 403, sourceText("error.team.agentViewOnly")) &&
-        answers() === before,
-      [
-        summary(unsupported),
-        summary(noLog),
-        summary(otherSystem),
-        summary(noVersion),
-        summary(noNetwork),
-        summary(viewer),
-      ],
-    );
-    const member = await call("POST", PHONE_FEEDBACK_ROUTES.send, {
-      token: bobToken,
-      ...v9,
-      json: { requestId: 7, phone },
-    });
-    const closed = await call("POST", PHONE_FEEDBACK_ROUTES.send, {
-      token: owner.sessionToken,
-      ...v9,
-      json: { requestId: "request-closed", phone },
-    });
-    check(
-      "a member who is not the owner is refused, and a request that no longer waits is closed",
-      errorIs(member, 403, sourceText("error.backend.approvalOwnerOnly")) &&
-        errorIs(closed, 409, sourceText("error.backend.approvalInactive")),
-      [summary(member), summary(closed)],
-    );
     const sent = await call("POST", PHONE_FEEDBACK_ROUTES.send, {
       token: owner.sessionToken,
       ...v9,
       json: { requestId: 7, phone },
     });
     check(
-      "the owner's phone sends the report: the approval is accepted with the phone's system, version, device and log",
-      sent.status === 204 &&
-        isDeepStrictEqual(callsOf("respondToApproval").at(-1), [
-          { requestId: 7, decision: "accept" },
-          { owner: true, phone },
-        ]),
-      { status: sent.status, call: callsOf("respondToApproval").at(-1) },
+      "a phone report from the owner gets 404 and reaches no approval",
+      errorIs(sent, 404, sourceText("error.team.routeNotFound")) && answers() === before,
+      summary(sent),
     );
     const plain = await call("POST", TEAM_API_ROUTES.respond.approval, {
       token: owner.sessionToken,
@@ -16312,77 +15862,23 @@ try {
 
   {
     const capabilities = [FEEDBACK_WITHDRAW_CAPABILITY];
-    const ownerToken = owner.sessionToken;
     const compatibility = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: TEAM_PROTOCOL_V9 });
     const older = await call("GET", TEAM_API_ROUTES.compatibility, { protocol: 8 });
     check(
-      "the host advertises feedback-withdraw-v1 on protocol 9 only",
-      list(field(compatibility.body, "capabilities")).includes(FEEDBACK_WITHDRAW_CAPABILITY) &&
+      "the host advertises feedback-withdraw-v1 to no peer: reports do not go to the vendor",
+      !list(field(compatibility.body, "capabilities")).includes(FEEDBACK_WITHDRAW_CAPABILITY) &&
         !list(field(older.body, "capabilities")).includes(FEEDBACK_WITHDRAW_CAPABILITY),
       [summary(compatibility), summary(older)],
     );
-    const unsupported = await call("POST", FEEDBACK_WITHDRAW_ROUTES.withdraw, {
-      token: ownerToken,
-      json: { agentId: "agent-ada", messageId: "feedback-card-1" },
-    });
-    const malformed = await call("POST", FEEDBACK_WITHDRAW_ROUTES.withdraw, {
-      token: ownerToken,
-      json: { agentId: "agent-ada", messageId: "" },
-      capabilities,
-    });
-    const hidden = await call("POST", FEEDBACK_WITHDRAW_ROUTES.withdraw, {
-      token: ownerToken,
-      protocol: 6,
-      json: { agentId: "agent-pi", messageId: "feedback-card-1" },
-      capabilities,
-    });
-    const missing = await call("POST", FEEDBACK_WITHDRAW_ROUTES.withdraw, {
-      token: ownerToken,
-      json: { agentId: "agent-gone", messageId: "feedback-card-1" },
-      capabilities,
-    });
-    const member = await call("POST", FEEDBACK_WITHDRAW_ROUTES.withdraw, {
-      token: bobToken,
-      json: { agentId: "agent-ada", messageId: "feedback-card-1" },
-      capabilities,
-    });
-    const admin = await call("POST", FEEDBACK_WITHDRAW_ROUTES.withdraw, {
-      token: adaToken,
-      json: { agentId: "agent-ada", messageId: "feedback-card-1" },
-      capabilities,
-    });
-    check(
-      "a feedback removal without the capability, with a bad body, to a hidden or missing agent, or from a member or an admin reaches no agent",
-      errorIs(unsupported, 400, sourceText("error.backend.feedbackWithdrawRemoteUnsupported")) &&
-        malformed.status === 400 &&
-        errorIs(hidden, 404, sourceText("error.team.agentNotFound")) &&
-        errorIs(missing, 404, sourceText("error.team.agentNotFound")) &&
-        errorIs(member, 403, sourceText("error.team.ownerRequired")) &&
-        errorIs(admin, 403, sourceText("error.team.ownerRequired")) &&
-        callsOf("withdrawFeedback").length === 0,
-      [summary(unsupported), summary(malformed), summary(hidden), summary(missing), summary(member), summary(admin)],
-    );
     const removed = await call("POST", FEEDBACK_WITHDRAW_ROUTES.withdraw, {
-      token: ownerToken,
+      token: owner.sessionToken,
       json: { agentId: "agent-ada", messageId: "feedback-card-1" },
       capabilities,
     });
-    const refused = await call("POST", FEEDBACK_WITHDRAW_ROUTES.withdraw, {
-      token: ownerToken,
-      json: { agentId: "agent-ada", messageId: "feedback-card-2" },
-      capabilities,
-    });
     check(
-      "the owner removes a report; the host gets the agent and card, and the client decodes each result",
-      removed.status === 200 &&
-        isDeepStrictEqual(decodeFeedbackWithdrawResult(removed.body), { status: "withdrawn" }) &&
-        refused.status === 200 &&
-        isDeepStrictEqual(decodeFeedbackWithdrawResult(refused.body), { status: "notYours" }) &&
-        isDeepStrictEqual(callsOf("withdrawFeedback"), [
-          [{ agentId: "agent-ada", messageId: "feedback-card-1" }],
-          [{ agentId: "agent-ada", messageId: "feedback-card-2" }],
-        ]),
-      [summary(removed), summary(refused)],
+      "a report removal from the owner gets 404",
+      errorIs(removed, 404, sourceText("error.team.routeNotFound")),
+      summary(removed),
     );
   }
 

@@ -66,7 +66,7 @@ On Ubuntu 23.10 or newer and on Debian 13, unprivileged user namespaces are rest
 and OpenBot exits during launch until you install an AppArmor profile:
 
 ```bash
-sudo install -m 0644 build/linux/openbot.apparmor /etc/apparmor.d/openbot
+sudo install -m 0644 build/linux/openbot.apparmor /etc/apparmor.d/openbot-nc
 sudo systemctl reload apparmor
 ```
 
@@ -74,14 +74,14 @@ The same file ships inside the AppImage at `resources/linux/openbot.apparmor`. E
 path in the profile if you keep the AppImage outside the usual locations. Do not start OpenBot with
 `--no-sandbox`: that removes the boundary between a renderer and the rest of the computer.
 
-On the first start from an AppImage, OpenBot writes `~/.local/share/applications/openbot.desktop`
-and `~/.local/share/icons/openbot.png`, which is what lets an `openbot://` link - an invitation, or
+On the first start from an AppImage, OpenBot writes `~/.local/share/applications/openbot-nc.desktop`
+and `~/.local/share/icons/openbot-nc.png`, which is what lets an `openbot://` link - an invitation, or
 a plugin listing - open the app and gives the launcher an icon that stays after the app exits. Delete the two files to undo it.
 
 #### Theme palette files
 
 OpenBot reads each `<name>.json` file in the `themes` folder of its data folder
-(`~/.config/OpenBot/themes/` on Linux) and lists it under Settings > Appearance > Theme. Another
+(`~/.config/OpenBot-NC/themes/` on Linux) and lists it under Settings > Appearance > Theme. Another
 program, such as an Omarchy theme script, can write the file. OpenBot follows each change to the
 file with no restart. Replace the file with a rename, so that OpenBot never reads half of it:
 
@@ -113,9 +113,6 @@ theme's `surface` is usually darker than its background. Each color is `#rrggbb`
 OpenBot ignores a file with a missing or different color, and then shows the saved light, dark or
 system choice. While no theme choice is saved, OpenBot shows the first palette.
 
-Remote desktop works on Linux x64 in an X11 session,
-such as Xorg or Xvfb. It does not work under Wayland, and the arm64 AppImage does not include it.
-
 For Gemini sign-in, install a desktop browser and `xdg-utils`. Open the sign-in page in a
 desktop session on the same host or VM. Google sends the callback to that host through
 `127.0.0.1`; a server with no desktop cannot complete this sign-in. See
@@ -128,7 +125,7 @@ To run OpenBot as an always-on server of your account on a VPS or home server (U
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nightly-labs/openbot/main/scripts/install-server.sh | sudo bash
-sudo openbot login
+sudo openbot-nc login
 ```
 
 Then use it from the desktop app, the iPhone app or `openbot.run/app`. See
@@ -143,7 +140,7 @@ Electron sandbox stay on:
 curl -fsSLO https://raw.githubusercontent.com/nightly-labs/openbot/main/docker/seccomp.json
 docker run -d --name openbot --restart unless-stopped \
   --security-opt seccomp=seccomp.json --security-opt no-new-privileges:true \
-  --shm-size 1g --stop-timeout 60 -v openbot-data:/data \
+  --shm-size 1g --stop-timeout 60 -v openbot-nc-data:/data \
   ghcr.io/nightly-labs/openbot:latest
 docker exec -it openbot openbot login
 ```
@@ -162,9 +159,7 @@ nix profile install github:nightly-labs/openbot
 
 `overlays.default` adds `pkgs.openbot`. OpenBot is not free software, so your nixpkgs must allow it,
 for example with `nixpkgs.config.allowUnfreePredicate = pkg: lib.getName pkg == "openbot";`.
-Nix installs OpenBot updates. OpenBot does not update itself from the Nix store. On Linux, the Nix
-package does not include the remote desktop runtime, because nixpkgs does not have a library that it
-needs.
+Nix installs OpenBot updates. OpenBot does not update itself from the Nix store.
 
 > [!IMPORTANT]
 > Windows releases are signed by `SYNTHETIFY LABS SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ`. Older
@@ -330,7 +325,7 @@ lists from the main checkout when they are missing, installs dependencies, migra
 and seeds the isolated profile. Set it as the worktree setup command of your agent harness.
 
 On macOS, a worktree's `node_modules` uses almost no new disk space. Bun clones packages from its
-cache, and the root `postinstall` clones Electron from `~/Library/Caches/OpenBot/electron-dist`.
+cache, and the root `postinstall` clones Electron from `~/Library/Caches/OpenBot-NC/electron-dist`.
 `du` still shows the full size of each clone.
 The first install of an Electron version extracts it once and saves it there. Delete the directory
 to clear the cache; an entry that nobody used for 30 days is removed by the next save.
@@ -340,11 +335,11 @@ To reset only the local development state, quit the dev app and test client, the
 The command deletes the app and test-client development profiles plus the legacy host profile,
 including `openbot.db` and its WAL files. It prints each profile before it deletes it, and it
 deletes nothing while a dev app has one of them open. It does not change the production profile,
-the worktree profiles that `bun run dev` opens (`OpenBot Dev wt-<hash>`), agent workspaces,
+the worktree profiles that `bun run dev` opens (`OpenBot-NC Dev wt-<hash>`), agent workspaces,
 `~/.codex`, or `~/.claude`.
 
 `bun run dev` seeds a development profile it creates, so a first start already shows this data.
-`bun run dev:seed` replaces the shared `OpenBot Dev` profile. To use it, quit the dev app, then run:
+`bun run dev:seed` replaces the shared `OpenBot-NC Dev` profile. To use it, quit the dev app, then run:
 
 ```bash
 bun run dev:seed
@@ -403,7 +398,7 @@ See [web client delivery](docs/web-client.md) for the release gate and focused c
 
 | Command | Purpose |
 | --- | --- |
-| `bun run dev` | Start the local Auth API, Signal service, and Electron client with renderer HMR on its app profile. Ports are allocated through the dev registry, so a sibling worktree never takes one this stack won. It refuses a second stack in the same worktree unless you pass `--force`. Each worktree opens a profile of its own, keyed to its path; `--shared` opens the shared `OpenBot Dev` profile instead. The main window opens behind the active app and does not take the keyboard focus, also after each `src/main` rebuild, so a stack that an agent starts does not interrupt your work in another app. In this mode the main window is not throttled when other windows cover it, so automation stays fast; `--foreground` opens it in front with focus, as before. `--isolated` is still accepted and changes nothing. A profile that you used before stays on disk unchanged. `--hosting=test` signs the app in to the `test` account Worker, on a profile that all worktrees share, so that a hosted server is a real VM; see [docs/hosted-servers.md](docs/hosted-servers.md#real-servers-from-a-development-build). A profile that does not exist yet is seeded with the showcase data of `bun run dev:seed` before the client starts, so a first start never opens an empty app; an existing profile is left as it is. An isolated profile still shares the computer's provider CLI store, so it does not download the pinned CLIs again. Before it starts, it runs `bun install --frozen-lockfile` and `bun run api:migrate:local` only when `bun.lock`, a workspace `package.json`, a patch, or a migration changed since their last successful run. The stamps are in `node_modules` and `apps/auth-api/.wrangler/state/v3/d1`, and each `bun install` writes the install stamp too; delete one to run its step again. |
+| `bun run dev` | Start the Electron client with renderer HMR on its app profile. It starts no account service and no Signal service: the app opens with the local profile. Ports are allocated through the dev registry, so a sibling worktree never takes one this stack won. It refuses a second stack in the same worktree unless you pass `--force`. Each worktree opens a profile of its own, keyed to its path; `--shared` opens the shared `OpenBot-NC Dev` profile instead. The main window opens behind the active app and does not take the keyboard focus, also after each `src/main` rebuild, so a stack that an agent starts does not interrupt your work in another app. In this mode the main window is not throttled when other windows cover it, so automation stays fast; `--foreground` opens it in front with focus, as before. `--isolated` is still accepted and changes nothing. A profile that you used before stays on disk unchanged. `--hosting=test` signs the app in to the `test` account Worker, on a profile that all worktrees share, so that a hosted server is a real VM; see [docs/hosted-servers.md](docs/hosted-servers.md#real-servers-from-a-development-build). A profile that does not exist yet is seeded with the showcase data of `bun run dev:seed` before the client starts, so a first start never opens an empty app; an existing profile is left as it is. An isolated profile still shares the computer's provider CLI store, so it does not download the pinned CLIs again. Before it starts, it runs `bun install --frozen-lockfile` and `bun run api:migrate:local` only when `bun.lock`, a workspace `package.json`, a patch, or a migration changed since their last successful run. The stamps are in `node_modules` and `apps/auth-api/.wrangler/state/v3/d1`, and each `bun install` writes the install stamp too; delete one to run its step again. |
 | `bun run preview` | Preview the built Electron client with the green preview icon. |
 | `bun run mobile:go` | Start the mobile app in Expo Go and clear the Metro cache. When the branch name ends in `-<number>`, such as `mobile-triage-12555`, Expo Go shows the server as `Issue #12555`. Set `OPENBOT_EXPO_SESSION_NAME` to use a different name. |
 | `bun mobile:ios` | Build and launch the iOS simulator app without RocketSim. |
@@ -431,10 +426,10 @@ See [web client delivery](docs/web-client.md) for the release gate and focused c
 | `bun run remote:update` | Update Signal, then drain and update the single coturn instance. |
 | `bun run dev:all` | Start the Auth API, Signal service, and single local Electron instance. |
 | `bun run dev:slack` | Start the same stack as `bun run dev`, with two `cloudflared` quick tunnels, one to Signal and one to the local account API, so that Slack can send the development Slack app's events and install return to the agents on this computer. It reads `OPENBOT_DEV_SLACK_SIGNING_SECRET` from the ignored `.env.slack-dev`, and needs `SLACK_ROUTE_PRIVATE_JWK` and `SLACK_ROUTE_KEY_ID` in the shell environment. Takes the same options as `bun run dev`, such as `--shared`. See [docs/messaging.md](docs/messaging.md#test-slack-locally). |
-| `bun run dev:test-client` | Start the Auth API, Signal service, local instance, and an isolated second client for team testing. |
+| `bun run dev:test-client` | Start the local instance and an isolated second client for team testing, without the Auth API or Signal. Each one has its own build folder (`out-dev-app`, `out-dev-test-client`), renderer port, debug port and profile. `OPENBOT_DEV_ELECTRON_ARGS` and `OPENBOT_DEV_TEST_CLIENT_ELECTRON_ARGS` give each one start switches as a JSON list, for example `["--import-relay-identity=<file>","--relay-hosting=on"]`. |
 | `bun run dev:seed` | Replace only the app development profile with durable showcase data. `--if-missing` keeps an existing profile, which is how `bun run dev` seeds a first start. `--scale=agents:N,messages:M,channels:C,channelMessages:K,attachments:A` adds generated agents, chat history, channel history and large images to the showcase data, for memory and CPU measurements. |
 | `bun run dev:reset` | Delete the local app, test-client, and legacy host development state. It refuses while a dev app has one of these profiles open. |
-| `bun run dev:status` | Print, as JSON, every dev stack and dev app instance live on this machine: services, ports, pids, which of them belong to this worktree, and which are orphaned - a supervisor that is gone with its children still holding the ports. Each recorded process carries the state a stop command acts on: `live`, `gone` with `groupLive` for a survivor of a dead leader, and `unverified` for a pid this machine cannot date. `registryDirectory` is the directory it read: `~/Library/Caches/OpenBot/dev` on macOS, `$XDG_RUNTIME_DIR/openbot-dev` (else `~/.cache/openbot/dev`) on Linux, `%LOCALAPPDATA%\OpenBot\openbot-dev-instances` on Windows, or `OPENBOT_DEV_REGISTRY_DIR` when set. It does not depend on `TMPDIR`. |
+| `bun run dev:status` | Print, as JSON, every dev stack and dev app instance live on this machine: services, ports, pids, which of them belong to this worktree, and which are orphaned - a supervisor that is gone with its children still holding the ports. Each recorded process carries the state a stop command acts on: `live`, `gone` with `groupLive` for a survivor of a dead leader, and `unverified` for a pid this machine cannot date. `registryDirectory` is the directory it read: `~/Library/Caches/OpenBot-NC/dev` on macOS, `$XDG_RUNTIME_DIR/openbot-dev` (else `~/.cache/openbot/dev`) on Linux, `%LOCALAPPDATA%\OpenBot\openbot-dev-instances` on Windows, or `OPENBOT_DEV_REGISTRY_DIR` when set. It does not depend on `TMPDIR`. |
 | `bun run dev:verify` | Print a stable JSON verification plan for this worktree: `ready`/`reasons` for safe checks, setup state, changed files and affected surfaces, nearby tests, runtime state, `qa.required`/`qa.ready`/`qa.reasons`, the renderer QA loop, safe `runnableCommands`, and all suggested `commands`. Add `--run` to execute only the safe non-mutating checks in the plan. Renderer QA follows `snapshot → action with --wait-for → snapshot → screenshot` when appearance matters. |
 | `bun run dev:extension` | Open Chrome for Testing with the browser extension for this worktree's running `bun run dev` stack: it builds the extension for the stack's Auth API, loads it in a profile of its own (`.openbot-build/dev-extension-chrome`), and signs the side panel in to the dev host's account. Chrome stays open. Run it again after an extension change: it rebuilds the extension and reloads it in the open Chrome. `--fresh` starts with an empty profile, `--signed-out` leaves the side panel signed out, `--email=<address>` signs in another account, and `--browser=<path>` names the browser (default: Playwright's Chromium; branded Chrome does not load an unpacked extension from the command line). |
 | `bun run dev:restart-client` | Restart only the test client of this worktree's `dev:test-client` stack. The host and the other services stay live. The supervisor stops its own test-client child by PID and starts it again. Not on Windows. |
@@ -453,6 +448,7 @@ See [web client delivery](docs/web-client.md) for the release gate and focused c
 | `bun run check:ui` | Check the renderer against the design system: shared primitives, Kobalte and Lucide confined to `@openbot/ui`, palette tokens instead of colour, size, radius and transition literals. Checks renderer and shared UI source. |
 | `bun run check:assets` | Fail when a tracked image or video file is outside the product asset directories. Pull request screenshots go in the pull request body. |
 | `bun run check:doc-links` | Fail when a link in a tracked Markdown file names a Markdown file that does not exist, or an anchor that the file does not have. |
+| `bun run check:vendor-endpoints` | Fail when a file in `src`, `packages`, `resources`, `electron-builder.yml`, `scripts/hosting` or `remote` names `openbot.run`, `nightly-labs` or `openpanel`, except the paths that the script allows for other apps. It shows the file and line of each hit. |
 | `bun run verify:preload` | After `bun run build`, run the built preload with a fake Electron. Fail when it loads a module that a sandboxed preload cannot load, uses `import()`, or exposes a method that `IPC_ENDPOINTS` does not name. |
 | `bun run types:ratchet` | Hold each TypeScript option in `tools/typescript/type-baseline.json` to its error count per file in every project that extends `tsconfig.base.json`. A new error fails. Add `--write` after a fix to lower the baseline, or `--add=<option>` to start an option at its current counts. |
 | `bun run i18n:check` | Check the translation catalogs: key prefixes, placeholders, plural forms, ambiguous source text, unused keys, and new untranslated keys that `packages/i18n/untranslated.json` does not list. `--fix` puts translated keys in the English order and removes translated keys from `untranslated.json`. `--json` writes `.openbot-build/i18n-report.json`. See [docs/i18n.md](docs/i18n.md). |
@@ -503,7 +499,7 @@ Publishing never creates a second OpenBot instance. The host keeps its Team API 
 sandboxed Electron page connects it to invited clients through WebRTC. Signal carries only connection
 setup messages. Team data uses direct DataChannels when possible and the project coturn service when
 direct ICE fails. Cloudflare stores accounts, configuration, memberships, invitations, logical session
-records, and public assets. It does not carry chats, files, commands, or remote desktop media.
+records, and public assets. It does not carry chats, files, or commands.
 
 The development runner advertises both Mobile Connect and its Signal service on the preferred private
 LAN interface. Restart the runner after changing networks so newly generated QR codes contain the
@@ -527,20 +523,18 @@ Mobile sign-out removes the local login even when the account API is unavailable
 only the credential in secure storage for revocation retries at startup, on return to the foreground,
 and on the next connection attempt. Remote revocation completes when the account API is reachable.
 
-For manual team testing, `bun run dev:test-client` starts a complete two-client harness. The second
-client uses the `OpenBot Dev Test Client wt-<hash>` profile of this worktree (`OpenBot Dev Test Client`
-with `--shared`) and renderer port 5174. `dev:reset` removes the shared one and the legacy
-`OpenBot Dev Host` profile. It does not remove the downloaded
+For manual team testing, `bun run dev:test-client` starts two isolated instances. The second
+client uses the `OpenBot-NC Dev Test Client wt-<hash>` profile of this worktree (`OpenBot-NC Dev Test Client`
+with `--shared`), renderer port 5174 and the `out-dev-test-client` build folder. The two instances do
+not connect by themselves: give each one a relay identity with the start switches, as
+`bun run test:relay-team-ui` does with a local relay. `dev:reset` removes the shared one and the legacy
+`OpenBot-NC Dev Host` profile. It does not remove the downloaded
 provider CLIs, which the whole computer shares. Press `Ctrl+C` in the runner terminal
 to stop only the processes started by that runner, or run `bun run dev:stop` from the worktree once
 that terminal is gone. Never stop a dev stack with `pkill -f electron` or `pkill -f bun`: on a
 machine running several worktrees those kill the other checkouts' work mid-write, which is what
 `dev:status` and `dev:stop` exist to make unnecessary.
 
-Set `OPENBOT_DEV_ICE_TRANSPORT_POLICY=relay` before this command to force Team API traffic through
-coturn. This test option works only with the development renderer. Production always starts with `all`.
-Set `OPENBOT_DEV_SYNC_PROFILE=1` as well to let `bun run perf:remote` read the host requests of the
-desktop client.
 Set `OPENBOT_DEV_AWAY_SECONDS=<seconds>` to change the time without input on the computer after which
 a phone gets the notifications of a host (30 seconds by default), for example `5` to test it. The host
 and the desktop client of the stack both read it. A packaged app ignores it.
@@ -549,35 +543,10 @@ The normal `check` command is offline and uses a fake App Server. Manual smoke s
 signed-in subscription and must not run in CI.
 
 Local agents run with the providers' unrestricted execution modes. Each agent starts in its own
-persistent `~/OpenBot/Agents/<agent-id>` workspace and also receives `~/OpenBot/Shared`; routine command
+persistent `~/OpenBot-NC/Agents/<agent-id>` workspace and also receives `~/OpenBot-NC/Shared`; routine command
 and filesystem work in both locations runs without OpenBot adding another permission boundary.
 Because these modes are intentionally unrestricted, they also permit host access outside those
 directories when the provider and operating system allow it.
-
-### macOS remote desktop permissions
-
-For each macOS account, log in to its GUI session and open **Server Settings → Remote desktop access**.
-Select **Check again** to read Sunshine's Screen Recording and Accessibility permissions, display availability,
-and GUI session status. The panel names the Mac and the account that runs Sunshine. Grant permissions in
-that account, including when the account was created with the tenant setup script.
-
-After you publish a server on a Mac, an optional **Set up remote desktop** prompt opens this panel. Select **Later** to keep using the published server without remote desktop setup.
-
-Use the permission buttons to open **System Settings → Privacy & Security** on the host. If Sunshine is
-missing from a list, select **Show Sunshine in Finder** and add the bundled `Sunshine.app` with the **+** button.
-macOS can attribute access to the application that starts Sunshine; enable the application named by the
-system prompt. Return to OpenBot to check again. If a restart is required, end remote sessions first.
-A check never restarts an active session.
-
-Select **Test on this Mac** for a local test. If native checks are unavailable, it tests video only and disables viewer input. After the checks pass, it can test mouse and keyboard too. Select **Test remote desktop** from another computer for a remote test.
-The test requires an otherwise unused remote desktop host. It opens a temporary host panel, keeps remote
-input inside that panel, and asks you to click a target and type a four-digit code. Confirm that the picture
-is visible, then select **Finish test**. Local input does not pass the mouse or keyboard test. The panel
-expires after two minutes. Older hosts or native runtimes require an update before these checks are available.
-
-The native runtime source change invalidates prior artifact pins. The **Remote desktop runtime** CI workflow
-builds and tests the new source, then publishes and pins verified artifacts through its existing release flow.
-Do not reuse old artifact hashes with the new source digest.
 
 ## Architecture
 
@@ -639,18 +608,18 @@ list of documents, text, data, and source files.
 
 ## Local data and network boundaries
 
-- `~/OpenBot/Agents/<agent-id>` — one working directory per agent. A profile written before the
-  bot-to-agent rename holds them under `~/OpenBot/Bots`; the app moves them on first launch, and a
+- `~/OpenBot-NC/Agents/<agent-id>` — one working directory per agent. A profile written before the
+  bot-to-agent rename holds them under `~/OpenBot-NC/Bots`; the app moves them on first launch, and a
   workspace whose move could not run stays readable where it is.
-- `~/OpenBot/Shared` — files intentionally shared between agents.
-- `~/OpenBot/Shared/Transfers` — managed message snapshots and generated files. Each transfer has
+- `~/OpenBot-NC/Shared` — files intentionally shared between agents.
+- `~/OpenBot-NC/Shared/Transfers` — managed message snapshots and generated files. Each transfer has
   an `.openbot-transfer.json` manifest with ownership, recipients, size, and SHA-256 metadata.
-- `~/OpenBot/Downloads` — embedded-browser downloads.
+- `~/OpenBot-NC/Downloads` — embedded-browser downloads.
 - Electron `userData/openbot.db` — the canonical OpenBot event log and projections for agents,
   conversations, provider session bindings, queues, reactions, and attachment indexes.
 - Electron `userData/legacy-backup-v1` — unchanged copies of imported `bots.json` and
   `mailbox.json` files, when these files existed before the SQLite migration.
-- `~/Library/Application Support/OpenBot/provider-runtimes` — the provider CLIs OpenBot downloads
+- `~/Library/Application Support/OpenBot-NC/provider-runtimes` — the provider CLIs OpenBot downloads
   and pins. One store for the whole computer, outside any one profile, so every development profile
   and the packaged app read the same download. `--user-data-dir` keeps the store in that directory
   instead, so an explicitly named profile stays self-contained.

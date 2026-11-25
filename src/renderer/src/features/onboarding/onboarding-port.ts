@@ -6,7 +6,6 @@ export interface OnboardingPort {
   onSetupState: OpenBotDesktopApi["onSetupState"];
   servers: Pick<OpenBotDesktopApi["servers"], "previewInvite">;
   openUrl: OpenBotDesktopApi["openUrl"];
-  getAnalyticsDefault: OpenBotDesktopApi["getAnalyticsDefault"];
 }
 
 export function onboardingPort(): OnboardingPort {

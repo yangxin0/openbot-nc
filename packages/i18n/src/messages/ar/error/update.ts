@@ -3,6 +3,7 @@ import type { messages as source } from "../../en/error/update";
 
 export const messages = {
   "error.update.unsupported": "التحديثات متاحة في إصدارات سطح المكتب المثبّتة.",
+  "error.update.noSelfUpdate": "هذا الإصدار لا يحدّث نفسه. لتحديث OpenBot، ثبّت إصدارًا أحدث يدويًا.",
   "error.update.notReady": "لا يوجد تحديث جاهز للتثبيت.",
   "error.update.restartFailed": "تعذّر على OpenBot إعادة التشغيل لتثبيت التحديث.",
   "error.update.downloadStalled": "توقف تنزيل التحديث عن الاستجابة. حاول مرة أخرى.",
@@ -10,7 +11,7 @@ export const messages = {
   "error.update.notInstalled": "لم تُثبِّت إعادة التشغيل الأخيرة التحديث. أعد التشغيل للمحاولة مرة أخرى.",
   "error.update.downloadFailed": "تعذّر تنزيل التحديث. حاول مرة أخرى.",
   "error.update.signatureNotConfirmed":
-    "تعذّر على OpenBot التحقق من التحديث. حاول مرة أخرى. إذا استمر هذا الخطأ، نزّل OpenBot من openbot.run/download.",
+    "تعذّر على OpenBot التحقق من التحديث. حاول مرة أخرى. إذا استمر هذا الخطأ، فثبّت OpenBot مرة أخرى من المكان الذي حصلت عليه منه.",
   "error.update.checkFailed": "تعذّر التحقق من وجود تحديثات. حاول مرة أخرى.",
   "error.update.checkStalled": "توقف التحقق من التحديثات عن الاستجابة. حاول مرة أخرى.",
   "error.update.checkOffline": "تعذّر الوصول إلى خدمة التحديث. تحقق من اتصالك بالإنترنت، ثم حاول مرة أخرى.",

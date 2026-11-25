@@ -31,21 +31,6 @@ export const messages = {
   "error.voice.speech.failed": "OpenBot no pudo leer la respuesta en voz alta.",
   "error.voice.speech.providerRefused": "{provider} se negó a crear el audio: {reason}",
   "error.voice.recordingNotKept": "OpenBot no pudo guardar la grabación de voz.",
-  "error.voice.live.timedOut": "La voz en directo de Codex no se inició a tiempo. Inténtalo de nuevo.",
-  "error.voice.live.failed": "La voz en directo se detuvo: {reason}",
-  "error.voice.live.disconnected": "La voz en directo se desconectó.",
-  "error.voice.live.startFailed":
-    "La voz en directo no pudo iniciarse. Actualiza Codex e inicia sesión con ChatGPT en el ordenador que ejecuta el agente, y vuelve a intentarlo. Motivo: {reason}",
-  "error.voice.live.hostFailed":
-    "Codex en el servidor no pudo iniciar la voz en directo. Pide a su propietario que actualice Codex en ese ordenador e inicie sesión con ChatGPT, y vuelve a intentarlo.",
-  "error.voice.live.signIn": "Inicia sesión en Codex con tu cuenta de ChatGPT para usar la voz en directo.",
-  "error.voice.live.chooseAccount":
-    "Esta cuenta de ChatGPT no puede usar la voz en directo. En Ajustes → Voz, elige una cuenta cuyo plan incluya voz.",
-  "error.voice.live.unavailable":
-    "OpenAI no pudo iniciar la voz en directo. El problema es de OpenAI. Inténtalo de nuevo más tarde.",
-  "error.voice.live.refused":
-    "OpenAI rechazó iniciar la voz en directo. Inténtalo de nuevo más tarde o desactiva la voz en directo en Ajustes para hablar por voz.",
-  "error.voice.live.off": "La voz en directo de Codex está desactivada. Actívala en Ajustes → Voz.",
   "error.voice.server.modelUnsupported":
     "{host} no puede transcribir con {model}. En Ajustes → Voz, elige otro modelo de dictado para el servidor de voz.",
 } as const satisfies PartialTranslation<typeof source>;

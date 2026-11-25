@@ -3,7 +3,6 @@ import { ProviderModelPicker } from "@openbot/ui/components/ProviderModelPicker"
 import type { AgentProfile } from "@openbot/ui/data";
 import { AgentAvatar } from "@openbot/ui/features/agents/AgentAvatar";
 import { agentAccessLockLabel } from "@openbot/ui/features/agents/agent-access";
-import { RemoteDesktopIcon } from "@openbot/ui/features/conversation/ConversationIcons";
 import { PinnedMessages, type PinnedMessagesProps } from "@openbot/ui/features/conversation/PinnedMessages";
 import { TabShape } from "@openbot/ui/features/conversation/TabShape";
 import { useText } from "@openbot/ui/text";
@@ -19,7 +18,6 @@ export interface ConversationHeaderProps {
   onSettingsIntent: () => void;
   onOpenSettings: () => void;
   onOpenChat?: (() => void) | undefined;
-  remoteControl?: ConversationHeaderRemoteControl | undefined;
   pinnedMessages?: PinnedMessagesProps | undefined;
   threads?: JSX.Element | undefined;
   titleSelected?: boolean | undefined;
@@ -28,13 +26,6 @@ export interface ConversationHeaderProps {
 export interface ConversationHeaderPendingModel {
   running: string;
   next: string;
-}
-
-export interface ConversationHeaderRemoteControl {
-  enabled: boolean;
-  active: boolean;
-  visible: boolean;
-  onOpen: (trigger: HTMLButtonElement) => void;
 }
 
 const AGENT_TITLE_MIN_EM = 4;
@@ -170,25 +161,6 @@ export function ConversationHeader(props: ConversationHeaderProps) {
         </Show>
         <Show when={props.agent}>
           <ProviderModelPicker {...props.modelPicker} />
-        </Show>
-        <Show when={props.remoteControl}>
-          {(control) => (
-            <Button
-              variant="ghost"
-              type="button"
-              class="header-panel-toggle remote-desktop-button"
-              aria-label={t(control().active ? "conversation.header.resumeRemote" : "conversation.header.openRemote")}
-              aria-expanded={control().visible ? "true" : "false"}
-              disabled={!control().enabled}
-              onClick={(event) => control().onOpen(event.currentTarget)}
-              data-cuelume-tap="open"
-            >
-              <RemoteDesktopIcon />
-              <Show when={control().active}>
-                <span class="remote-desktop-button-dot" aria-hidden="true" />
-              </Show>
-            </Button>
-          )}
         </Show>
         <Show when={props.pinnedMessages}>{(pins) => <PinnedMessages {...pins()} />}</Show>
       </div>

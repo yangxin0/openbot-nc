@@ -30,8 +30,6 @@ export const messages = {
     "O sistema de IVA da UE não pode verificar o número de IVA agora. Tente mais tarde ou continue sem número de IVA.",
   "error.billing.vatUnavailable": "O pagamento não está disponível agora. Tente mais tarde.",
   "error.billing.invalidRequest": "A solicitação de cobrança é inválida.",
-  "error.billing.invalidResponse": "A resposta de cobrança é inválida.",
-  "error.billing.notStripePage": "A página de cobrança não é uma página do Stripe.",
   "error.billing.customServerOfferMissing": "Este servidor não tem um plano para pagar.",
   "error.billing.checkoutUnavailable": "O pagamento não pode começar agora. Tente novamente em um minuto.",
 } as const satisfies PartialTranslation<typeof source>;

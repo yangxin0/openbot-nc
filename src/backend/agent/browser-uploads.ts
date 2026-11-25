@@ -193,7 +193,7 @@ export class BrowserUploads {
             const stagedPaths = reused ? [...reused.files] : [];
             if (!reused) {
               yield* Effect.gen(function* () {
-                stagingRoot = yield* attachmentCall(() => mkdtemp(join(tmpdir(), "openbot-browser-upload-")));
+                stagingRoot = yield* attachmentCall(() => mkdtemp(join(tmpdir(), "openbot-nc-browser-upload-")));
                 currentReservation.root = stagingRoot;
               }).pipe(Effect.uninterruptible);
               if (reservation.invalidated)

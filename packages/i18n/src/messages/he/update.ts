@@ -64,12 +64,9 @@ export const messages = {
   "update.whatsNew.failed.body": "יש לוודא שיש חיבור לאינטרנט ולנסות שוב. יומן השינויים המלא מציג גם את כל השינויים.",
   "update.whatsNew.empty.title": "אין תכונות חדשות בגרסה הזו",
   "update.whatsNew.empty.body": "אין לגרסה הזו הערות להצגה כאן. יומן השינויים המלא מציג את כל השינויים.",
-  "update.whatsNew.changelog": "יומן שינויים מלא",
-  "update.whatsNew.changelogFailed": "OpenBot לא הצליח לפתוח את יומן השינויים.",
   "update.whatsNew.done": "הבנתי",
   "update.required.title": "נדרש עדכון",
   "update.required.description": "OpenBot {version} כבר לא נתמך. יש לעדכן לגרסה {minimum} ומעלה כדי להמשיך.",
-  "update.required.download": "הורדת OpenBot",
   "update.required.continue": "המשך בלי לעדכן",
   "update.required.failed": "העדכון לא הסתיים.",
 } as const satisfies PartialTranslation<typeof source>;

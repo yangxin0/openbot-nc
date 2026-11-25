@@ -5,7 +5,6 @@ import { ServerMenu } from "@openbot/ui/features/servers/ServerMenu";
 import { PageRail, type PageRailPage } from "@openbot/ui/features/window/PageRail";
 import { useText } from "@openbot/ui/text";
 import { Show } from "solid-js";
-import { appPort } from "../../app-port";
 import { useLayout } from "../../layout";
 import { WorkflowsPage } from "../../lazy-views";
 import { usePlatform } from "../../platform";
@@ -70,9 +69,6 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
   function crmRailAction(): ((button: HTMLElement) => void) | undefined {
     return crmShown() ? windowPage.openCrm : undefined;
   }
-  function creditsRailAction(): (() => void) | undefined {
-    return windowPage.creditsAvailable() ? () => windowPage.openCredits(null) : undefined;
-  }
   function crmConnectorsAction(): ((button: HTMLElement) => void) | undefined {
     if (!crmShown()) return undefined;
     return (button) => windowPage.openCrm(button, true);
@@ -85,7 +81,7 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
         serverSettingsShownSection() === "providers" && serverSettingsTarget()?.id === activeServer()?.id;
       return providers ? "providers" : null;
     }
-    return page === "pricing" ? null : page;
+    return page;
   };
   return (
     <PageRail
@@ -97,7 +93,6 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
       customAgentUsage={localAgentUsage()}
       mediaCredits={mediaCredits()}
       onMediaCredits={(provider) => {
-        windowPage.leavePricing();
         setPendingPluginConnect(false);
         setPendingPluginSlug(provider);
         setSkillsMarketplaceOpen(true);
@@ -112,10 +107,7 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
       onProviders={openProviders()}
       onCrm={crmRailAction()}
       onCrmConnectors={crmConnectorsAction()}
-      onCredits={creditsRailAction()}
-      creditBalance={windowPage.creditsMenu().state?.balance}
       onMarketplace={() => {
-        windowPage.leavePricing();
         setSkillsMarketplaceOpen(true);
       }}
       onSettings={(button) => (updateNotice() ? openAppSettings(button, "updates") : windowPage.openSettings(button))}
@@ -131,22 +123,14 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
             onViewChange={layout.setServerView}
             onSelect={serverActions.select}
             onAdd={serverActions.add}
-            onCreateLocal={serverActions.addMenuCreateLocal()}
-            onInstallServer={serverActions.addMenuInstallServer()}
-            addCreatesServer={serverActions.addCreatesServer()}
+            addLabel={serverActions.addLabel()}
+            onCreateLocal={serverActions.createLocal}
             hiddenServers={serverActions.hiddenServers()}
-            credits={windowPage.creditsMenu()}
             {...serverActions.callbacks}
           />
         </Show>
       }
-      help={
-        <RailHelpMenu
-          version={whatsNew.state.version}
-          onOpenWhatsNew={whatsNew.reopen}
-          onOpenLink={(destination) => void appPort().openExternal(destination)}
-        />
-      }
+      help={<RailHelpMenu version={whatsNew.state.version} onOpenWhatsNew={whatsNew.reopen} />}
     />
   );
 }

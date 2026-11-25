@@ -167,8 +167,6 @@ export const messages = {
   "routine.card.webhookUpdated": "שגרת Webhook עודכנה",
   "routine.card.webhookChanged": "השינויים לא נשמרו",
   "routine.card.webhookSaveFailed": "לא ניתן לשמור את האירועים.",
-  "routine.card.webhookFiltersInvalid": "באחד המסננים יש JSON Pointer לא תקין.",
-
   "routine.timezoneMove.title": "אזור הזמן שלך הוא עכשיו {zone}",
   "routine.timezoneMove.description": {
     one: "שגרה אחת ב-{server} רצה לפי שעון {from}. להעביר אותה ל-{zone}? שעת השעון שלה נשארת זהה.",
@@ -277,13 +275,11 @@ export const messages = {
   "routine.settings.whenToRun": "מתי להריץ",
   "routine.settings.nameRequired": "יש לתת שם לשגרה.",
   "routine.settings.instructionRequired": "יש לתאר מה לעשות כשהשגרה רצה.",
-  "routine.settings.triggerWebhook": "Webhook",
   "routine.settings.webhookSummary": "כש-{eventType} מתקבל",
   "routine.settings.webhookSummaryAny": "כש-Webhook מתקבל",
 
   "routine.trigger.change": "שינוי הטריגר",
   "routine.trigger.groupSchedule": "תזמון",
-  "routine.trigger.kind": "מה מפעיל את השגרה",
   "routine.trigger.onceDescription": "בתאריך ובשעה שנבחרו",
   "routine.trigger.hourlyDescription": "כל שעה בטווח השעות שנבחר",
   "routine.trigger.dailyDescription": "כל יום בשעה שנבחרה",

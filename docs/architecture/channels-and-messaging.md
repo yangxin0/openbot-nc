@@ -579,7 +579,7 @@ recovery checks accepted provider work before retrying. Unknown outcomes require
 Command, assignment, and result IDs prevent duplicate dispatch and visible results; external side
 effects do not have an exactly-once guarantee.
 
-Desktop IPC and remote desktop transports expose `channel-chats-v1` as an optional capability with
+Desktop IPC and the remote transports expose `channel-chats-v1` as an optional capability with
 separate payload codecs. Released Team API adapters keep their existing meaning. A host advertises
 the capability only when its channel service is connected. When a host does not advertise
 `channel-chats-v1`, the renderer hides the channel controls in the sidebar, search and schedule. On desktop and in the web

@@ -40,17 +40,12 @@ export const messages = defineMessages("import", {
   "import.guide.hermesSetupLabel": "How to bring the profiles",
   "import.guide.setupFolder": "Read this computer",
   "import.guide.setupServer": "Read the server",
-  "import.guide.setupCommand": "Install with a command",
   "import.guide.hermesStepFolder": "Read the Hermes folder",
   "import.guide.hermesStep1": "Add the export skill to Hermes",
   "import.guide.readFolder": "Read the Hermes folder",
   "import.guide.readFolderMeta": "OpenBot reads ~/.hermes and changes nothing in it.",
   "import.guide.readFolderNote":
     "You see every item of every profile before anything changes. MCP servers come too, turned off.",
-  "import.guide.copyCommand": "Copy command",
-  "import.guide.commandCopied": "Command copied",
-  "import.guide.commandNote":
-    "Type it in a Hermes chat. In a terminal, run hermes skills install with the same name. Hermes scans the skill before it installs it.",
   "import.guide.hermesSkillNote":
     "Save it as ~/.hermes/skills/openbot-export/SKILL.md. Hermes finds it in the next chat. The export leaves it out.",
   "import.guide.hermesMessageNote":

@@ -20,9 +20,7 @@ export const messages = {
   "error.skill.frontmatterInvalid": "SKILL.md 프런트매터가 올바른 YAML이 아니에요.",
   "error.skill.descriptionLength": "SKILL.md에는 1자 이상 {limit}자 이하의 설명이 필요해요.",
   "error.skill.nameMismatch": 'SKILL.md에는 폴더 이름과 같은 "name: {slug}"가 필요해요.',
-  "error.skill.draftExpired": "선택한 스킬 패키지가 만료되었어요. 다시 선택해 주세요.",
   "error.skill.localHasNoVersion": "로컬 스킬에는 게시된 버전이 없어요.",
-  "error.skill.publishLocalFirst": "이 에이전트를 게시하기 전에 로컬 스킬을 먼저 따로 게시해 주세요.",
   "error.skill.bundleMismatch": "다운로드한 스킬이 서명된 카탈로그 기록과 일치하지 않아요.",
   "error.skill.metadataMismatch": "다운로드한 스킬의 메타데이터가 카탈로그와 일치하지 않아요.",
   "error.skill.folderTaken": "설치된 다른 스킬이 이 폴더 이름을 사용하고 있어요.",
@@ -39,15 +37,10 @@ export const messages = {
   "error.skill.localLibraryUnavailable": "로컬 스킬 라이브러리를 사용할 수 없어요.",
   "error.skill.lockInvalid": "설치된 스킬 기록이 올바르지 않아요. 변경하지 않고 그대로 두었어요.",
   "error.skill.installPathSymlink": "스킬 설치 경로에는 심볼릭 링크를 포함할 수 없어요.",
-  "error.skill.duplicateSlug": '"{slug}"라는 이름의 스킬이 두 개 있어요. 게시하기 전에 하나의 이름을 바꿔 주세요.',
-  "error.skill.publishNeedsRepair": "{name}에 로컬 변경 사항이 있거나 게시하기 전에 복구가 필요해요.",
-  "error.skill.publishUntracked":
-    "{name}은(는) 정확한 버전 추적이 도입되기 전에 설치되었어요. 게시하기 전에 업데이트하거나 복구해 주세요.",
   "error.skill.tooManySkills": "에이전트에는 스킬을 최대 {limit}개까지 둘 수 있어요.",
   "error.skill.unmanagedExists": "{path}에 관리되지 않는 스킬이 이미 있어요.",
   "error.skill.managedSlug":
     "OpenBot은 모든 에이전트에 자체 {slug} 스킬을 제공해요. 이 스킬에는 다른 이름을 지정해 주세요.",
-  "error.skill.templateMarkdownTooLarge": "{name}: SKILL.md가 64KB보다 커요. 게시하기 전에 줄여 주세요.",
   "error.skill.localNoRevisions": "로컬 스킬에 게시된 수정본이 없어요.",
   "error.skill.localNotFound": "이 로컬 스킬은 없어요. 로컬 스킬 목록에서 ID를 확인해 주세요.",
   "error.skill.localRevisionNotFound": "이 로컬 스킬에는 수정본 {revision}이(가) 없어요. 최신 수정본은 {latest}이에요.",
@@ -69,5 +62,4 @@ export const messages = {
     "GitHub는 계정 없이 OpenBot이 읽을 수 있는 횟수를 제한해요. 1시간 후에 다시 시도해 주세요.",
   "error.skill.githubTooLarge": "OpenBot이 {repository}의 모든 파일을 읽을 수 없습니다. 저장소가 너무 큽니다.",
   "error.skill.githubHostTooOld": "GitHub에서 스킬을 추가하려면 이 서버를 업데이트해 주세요.",
-  "error.skill.publishGithub": "{name}은(는) GitHub에서 가져온 스킬이에요. 직접 만든 스킬만 게시할 수 있어요.",
 } as const satisfies PartialTranslation<typeof source>;

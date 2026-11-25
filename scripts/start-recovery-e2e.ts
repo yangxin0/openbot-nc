@@ -261,11 +261,9 @@ try {
 
   editAttempts(({ lastGoodSchemaVersion: _removed, ...record }) => ({ ...record, lastGoodVersion: "0.70.0" }));
   const latest = await windowRun(5);
-  for (const key of ["startup.recoveryLatestVersion", "startup.recoveryHintLatest"] as const)
-    assert.ok(latest.snapshot.includes(latest.translate(key)), `the window that offers the latest version has ${key}`);
   assert.ok(
-    !latest.snapshot.includes(latest.translate("startup.recoveryPreviousVersion")),
-    `it does not offer 0.70.0, which cannot open schema ${LATEST_SCHEMA_VERSION}`,
+    latest.snapshot.includes(latest.translate("startup.recoveryHintLatest")),
+    `the window says that no earlier version can open schema ${LATEST_SCHEMA_VERSION}`,
   );
   const latestScreenshot = capture("recovery-window-latest.png");
   choose(latest.translate("startup.recoveryQuit"));
@@ -277,11 +275,9 @@ try {
 
   editAttempts((record) => ({ ...record, lastGoodSchemaVersion: LATEST_SCHEMA_VERSION }));
   const previous = await windowRun(6);
-  for (const key of ["startup.recoveryPreviousVersion", "startup.recoveryHint"] as const)
-    assert.ok(previous.snapshot.includes(previous.translate(key)), `the window that offers 0.70.0 has ${key}`);
   assert.ok(
-    !previous.snapshot.includes(previous.translate("startup.recoveryLatestVersion")),
-    "it does not offer the latest version",
+    previous.snapshot.includes(previous.translate("startup.recoveryHint")),
+    "the window says that the last version that opened can open the data",
   );
   recovery = {
     locale: previous.locale,

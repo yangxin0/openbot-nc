@@ -30,7 +30,7 @@ preload call is found by `src/main/ipc-channel-coverage.test.ts`, not by the typ
 A group is the unit one registrar covers in full, which is why a wire prefix can span several: the
 `agent:` channels are eight groups in seven registrars, because the exhaustiveness a group buys is only
 worth having when a single object literal can satisfy it. A registrar covering more than one group
-returns `Pick<IpcGroupHandlers, "servers" | "host" | "remoteDesktop">`.
+returns `Pick<IpcGroupHandlers, "servers" | "host">`.
 
 ## The five ways to bind a handler
 

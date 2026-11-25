@@ -33,10 +33,10 @@ version=<version>
 device=/dev/sdf
 # The data volume. mkfs runs only on a volume with no file system.
 blkid "$device" || mkfs -t xfs "$device"
-mkdir -p /srv/openbot-data
-echo "UUID=$(blkid -s UUID -o value "$device") /srv/openbot-data xfs defaults,nofail 0 2" >>/etc/fstab
-mount /srv/openbot-data
-chown 1000:1000 /srv/openbot-data
+mkdir -p /srv/openbot-nc-data
+echo "UUID=$(blkid -s UUID -o value "$device") /srv/openbot-nc-data xfs defaults,nofail 0 2" >>/etc/fstab
+mount /srv/openbot-nc-data
+chown 1000:1000 /srv/openbot-nc-data
 # The seccomp profile of that image version, and no-new-privileges, for each container.
 [ ! -e /etc/docker/daemon.json ] || { echo "Add the two keys to /etc/docker/daemon.json." >&2; exit 1; }
 curl -fsSL -o /etc/docker/openbot-seccomp.json \
@@ -60,7 +60,7 @@ the profile of that version again.
   "networkMode": "bridge",
   "taskRoleArn": "arn:aws:iam::<account>:role/openbot-task",
   "executionRoleArn": "arn:aws:iam::<account>:role/openbot-execution",
-  "volumes": [{ "name": "data", "host": { "sourcePath": "/srv/openbot-data" } }],
+  "volumes": [{ "name": "data", "host": { "sourcePath": "/srv/openbot-nc-data" } }],
   "containerDefinitions": [
     {
       "name": "openbot",
@@ -88,7 +88,7 @@ the profile of that version again.
 | --- | --- | --- |
 | `sharedMemorySize: 1024` | `--shm-size 1g` | Chromium uses shared memory. |
 | `stopTimeout: 60` | `--stop-timeout 60` | OpenBot stops its agents and closes its database before it exits. |
-| `host.sourcePath` | `-v openbot-data:/data` | All data is in `/data`. |
+| `host.sourcePath` | `-v openbot-nc-data:/data` | All data is in `/data`. |
 | `daemon.json` | `--security-opt` | See [Instance](#instance). |
 
 The image starts `tini` as process 1. Do not set `initProcessEnabled`.
@@ -122,8 +122,8 @@ aws ecs execute-command --cluster openbot --task <task ID> --container openbot \
   --interactive --command "openbot login"
 ```
 
-`openbot status`, `logout` and `name` work in the same way. The log is in the CloudWatch log group
-`/ecs/openbot`, not in `openbot logs`.
+`openbot-nc status`, `logout` and `name` work in the same way. The log is in the CloudWatch log group
+`/ecs/openbot`, not in `openbot-nc logs`.
 
 ## Network
 

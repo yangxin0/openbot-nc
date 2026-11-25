@@ -503,8 +503,6 @@ export interface SpeechSettings {
   elevenLabsVoice: ElevenLabsSpeechVoice;
   xaiVoice: XaiSpeechVoice;
   speed: SpeechSpeed;
-  codexLive: boolean;
-  codexLiveVoice: CodexLiveVoice | null;
   turnPauseMs: VoiceTurnPause;
 }
 
@@ -515,61 +513,8 @@ export const DEFAULT_SPEECH_SETTINGS: SpeechSettings = {
   elevenLabsVoice: "alice",
   xaiVoice: "eve",
   speed: 1,
-  codexLive: false,
-  codexLiveVoice: null,
   turnPauseMs: VOICE_TURN_PAUSES[0],
 };
-
-export const CODEX_LIVE_VOICES = [
-  "juniper",
-  "maple",
-  "spruce",
-  "ember",
-  "vale",
-  "breeze",
-  "arbor",
-  "sol",
-  "cove",
-  "aube",
-  "bubbie",
-  "haetsal",
-  "hanul",
-  "himari",
-  "leher",
-  "miko",
-  "neer",
-  "porto",
-  "rindo",
-  "rio",
-  "rivage",
-  "selva",
-  "sonna",
-  "tinta",
-  "viola",
-] as const;
-export type CodexLiveVoice = (typeof CODEX_LIVE_VOICES)[number];
-
-export interface VoiceLiveStart {
-  agentId: string;
-  sdp: string;
-}
-
-export interface VoiceLiveSession {
-  sessionId: string;
-  sdp: string;
-}
-
-export interface VoiceLiveStop {
-  sessionId: string;
-}
-
-export type VoiceLiveEvent =
-  | { type: "transcript"; sessionId: string; role: "user" | "assistant"; text: string; final: boolean }
-  | { type: "ended"; sessionId: string; error: string | null };
-
-export const VOICE_LIVE_LIMITS = {
-  maximumSdpLength: 65_536,
-} as const;
 
 export interface SpeechModelStatus extends Omit<VoiceModelStatus, "modelId"> {
   modelId: SpeechModelId;
@@ -612,10 +557,6 @@ export function isElevenLabsSpeechVoice(value: unknown): value is ElevenLabsSpee
 
 export function isXaiSpeechVoice(value: unknown): value is XaiSpeechVoice {
   return isOneOf(XAI_SPEECH_VOICES, value);
-}
-
-export function isCodexLiveVoice(value: unknown): value is CodexLiveVoice {
-  return isOneOf(CODEX_LIVE_VOICES, value);
 }
 
 export function isSpeechSpeed(value: unknown): value is SpeechSpeed {

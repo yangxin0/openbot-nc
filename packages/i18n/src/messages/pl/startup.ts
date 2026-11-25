@@ -8,22 +8,15 @@ export const messages = {
   "startup.archiveChangedTitle": "Pliki OpenBot zostały zmienione",
   "startup.archiveChangedBody":
     "Inny program zmienił plik app.asar OpenBot. OpenBot działa teraz, ale nie uruchomi się po zamknięciu.\n\nAby naprawić OpenBot, zainstaluj go ponownie. Twoje lokalne dane zostaną zachowane.",
-  "startup.archiveChangedDownload": "Pobierz OpenBot",
   "startup.filesDamagedBody":
     "Niektóre pliki OpenBot są uszkodzone lub ich brakuje.\n\nAby naprawić OpenBot, zainstaluj go ponownie. Twoje lokalne dane zostaną zachowane.",
-  "startup.newerDataUpdatingTitle": "Aktualizowanie OpenBot",
-  "startup.newerDataUpdatingBody":
-    "Nowsza wersja OpenBot zapisała Twoje dane. OpenBot instaluje najnowszą wersję, a potem uruchomi się ponownie.\n\nTwoje lokalne dane nie zostały zresetowane ani nadpisane.",
   "startup.newerDataTitle": "Zainstaluj najnowszy OpenBot",
   "startup.newerDataBody":
     "Nowsza wersja OpenBot zapisała Twoje dane, a ta wersja ({version}) nie może ich otworzyć. Zainstaluj najnowszą wersję, aby otworzyć swoje dane.\n\nTwoje lokalne dane nie zostały zresetowane ani nadpisane.",
-  "startup.newerDataDownload": "Pobierz OpenBot",
-  "startup.newerDataGuide": "Otwórz przewodnik",
   "startup.newerDataQuit": "Zakończ",
   "startup.newerDataLoopTitle": "Najnowszy OpenBot się nie otworzył",
   "startup.newerDataLoopBody":
     "Nowsza wersja OpenBot zapisała Twoje dane, a ta wersja ({version}) nie może ich otworzyć. OpenBot {loopVersion} kilka razy z rzędu zatrzymał się przed otwarciem, więc nie zostanie zainstalowany ponownie.\n\nZainstaluj wersję nowszą niż {loopVersion}, gdy będzie dostępna. Aby uzyskać pomoc, otwórz przewodnik.\n\nTwoje lokalne dane nie zostały zresetowane ani nadpisane.",
-  "startup.newerDataReleases": "Pokaż wydania",
   "startup.recoveryWindowTitle": "Odzyskiwanie OpenBot",
   "startup.recoveryTitle": "OpenBot się nie otworzył",
   "startup.recoveryBody": {
@@ -38,8 +31,6 @@ export const messages = {
   "startup.recoveryHintLatest":
     "OpenBot nie znalazł wcześniejszej wersji, która może otworzyć Twoje dane. Spróbuj ponownie albo zainstaluj najnowszą wersję. Aby uzyskać pomoc, wyeksportuj diagnostykę i wyślij plik ze zgłoszeniem.",
   "startup.recoveryRetry": "Spróbuj ponownie",
-  "startup.recoveryPreviousVersion": "Pobierz poprzednią wersję",
-  "startup.recoveryLatestVersion": "Pobierz najnowszą wersję",
   "startup.recoveryExportDiagnostics": "Eksportuj diagnostykę",
   "startup.recoveryOpenDataFolder": "Otwórz folder danych",
   "startup.recoveryQuit": "Zakończ",

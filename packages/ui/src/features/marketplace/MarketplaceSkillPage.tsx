@@ -27,11 +27,8 @@ import { useText } from "@openbot/ui/text";
 import { createEffect, createSignal, For, Show } from "solid-js";
 import { IntegrationPage, type IntegrationStatus } from "../settings/IntegrationLayout";
 import { AddToAgents, type DialogSkill } from "./MarketplaceAgentsDialog";
-import { useInstalls } from "./MarketplaceCards";
-import { CopyListingLink, DetailState, SkillIcon, TryCard } from "./MarketplaceParts";
-import { VerifiedMark } from "./MarketplaceSkills";
+import { DetailState, SkillIcon, TryCard } from "./MarketplaceParts";
 import { GithubTrustNote, githubOrigin } from "./marketplace-github";
-import { CATEGORY_LABELS } from "./marketplace-listing";
 import type { MarketplaceAgent, MarketplaceModel } from "./marketplace-model";
 import { agentsWith, canSwitch, isOn, matches, outdated, useSkillWords } from "./marketplace-skill-state";
 import { createDetail, type MarketplaceScope } from "./marketplace-view";
@@ -193,11 +190,6 @@ function SkillAgents(props: {
 
 function SkillInformation(props: { skill: MarketplaceSkillSummary }) {
   const { t, format } = useText();
-  const installs = useInstalls();
-  const source = () =>
-    props.skill.verified === true
-      ? t("marketplace.skills.source.verifiedLong")
-      : t("marketplace.skills.source.publicLong");
   const updated = () => ({
     label: t("marketplace.properties.updated"),
     value: format.date(new Date(props.skill.updatedAt), { dateStyle: "medium" }),
@@ -209,17 +201,10 @@ function SkillInformation(props: { skill: MarketplaceSkillSummary }) {
   ];
   const facts = () => {
     const origin = githubOrigin(props.skill.id);
-    if (origin) return githubFacts(origin);
-    return catalogFacts();
+    return origin
+      ? githubFacts(origin)
+      : [{ label: t("marketplace.properties.creator"), value: props.skill.creatorName }, updated()];
   };
-  const catalogFacts = () => [
-    { label: t("marketplace.properties.creator"), value: props.skill.creatorName },
-    { label: t("marketplace.skills.sourceLabel"), value: source() },
-    { label: t("marketplace.properties.category"), value: t(CATEGORY_LABELS[props.skill.category]) },
-    { label: t("marketplace.properties.version"), value: format.number(props.skill.version) },
-    updated(),
-    { label: t("marketplace.properties.installs"), value: installs(props.skill.installs) },
-  ];
   return (
     <SettingsSection title={t("plugin.section.information")}>
       <ItemGroup class="settings-modal-card">
@@ -312,16 +297,12 @@ export function MarketplaceSkillPage(props: { scope: MarketplaceScope; listing: 
         class="marketplace-skill-page"
         logo={<SkillIcon url={skill().iconUrl} />}
         name={skill().name}
-        nameMark={<VerifiedMark on={skill().verified === true} />}
         status={current().status}
         statusLabel={current().label}
         subtitle={skill().description}
         actions={
           <>
-            <Show
-              when={origin()}
-              fallback={<CopyListingLink model={model()} link={{ kind: "skill", id: skill().slug }} />}
-            >
+            <Show when={origin()}>
               {(github) => (
                 <Button
                   type="button"

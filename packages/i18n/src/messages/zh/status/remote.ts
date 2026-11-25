@@ -2,15 +2,6 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/status/remote";
 
 export const messages = {
-  "status.remote.setupMacOnly": "权限设置仅在 macOS 上可用。",
-  "status.remote.setupInstallHost": "请先安装远程桌面主机组件，然后重新检查。",
-  "status.remote.setupUpdateRuntime": "请更新远程桌面运行时以检查 macOS 权限。",
-  "status.remote.setupCheckFailed": "Sunshine 未能完成权限检查，请检查主机会话后重试。",
-  "status.remote.setupServiceFailed": "远程桌面服务无法启动，请确认该 macOS 用户有活跃的图形会话。",
-  "status.remote.connectingSunshine": "正在通过 Sunshine 连接…",
-  "status.remote.switchingMonitor": "正在切换共享显示器…",
-  "status.remote.controlConnected": "远程控制已连接。",
-  "status.remote.controlFailed": "远程控制失败。",
   "status.remote.stagePreferences": "正在加载本地聊天偏好：{reason}",
   "status.remote.stageConnection": "正在连接桌面：{reason}",
   "status.remote.stageCompatibility": "正在检查桌面兼容性：{reason}",

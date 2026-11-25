@@ -2,12 +2,9 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/host";
 
 export const messages = {
-  "error.host.iceServersMissing": "Remote Signal לא סיפק שרתי ICE.",
   "error.host.keyRotationUnavailable": "השרת הזה לא יכול להחליף את המפתח שלו ללא שירות החשבונות.",
   "error.host.keyRotationRefused": "שירות החשבונות לא קיבל את מפתח השרת החדש. המפתח הנוכחי נשאר בשימוש.",
   "error.host.webRtcNotConfigured": "שירות המארח של WebRTC לא הוגדר.",
-  "error.host.runtimeNotInstalled": "סביבת הריצה של שולחן עבודה מרוחק אינה מותקנת.",
-  "error.host.setupUnavailable": "הגדרת ההרשאות אינה זמינה.",
   "error.host.accountChangedDuringUpdate": "החשבון המחובר השתנה בזמן עדכון השרת הזה.",
   "error.host.nameBeforePublish": "יש לתת ל-OpenBot הזה שם לפני הפרסום.",
   "error.host.memberNotFound": "החבר המרוחק לא קיים.",

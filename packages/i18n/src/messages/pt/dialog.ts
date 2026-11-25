@@ -2,12 +2,9 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/dialog";
 
 export const messages = {
-  "dialog.chooseSiteDirectory": "Escolha um diretório de site estático",
   "dialog.chooseAgentFolder": "Escolha uma pasta para {agent}",
   "dialog.chooseChannelFolder": "Escolha uma pasta para {channel}",
   "dialog.chooseAgentExclusion": "Escolha uma pasta que {agent} não deve alterar",
-  "dialog.chooseSkill": "Escolha uma pasta de habilidade ou um ZIP",
-  "dialog.filter.skillPackages": "Pacotes de habilidades",
   "dialog.filter.images": "Imagens",
   "dialog.filter.supportedFiles": "Arquivos compatíveis",
   "dialog.filter.attachment": "Anexo",

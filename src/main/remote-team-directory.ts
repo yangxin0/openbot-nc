@@ -1,4 +1,4 @@
-import { createInviteUrl, selfHostedApiOrigin } from "@openbot/contracts/invite-links";
+import { createOpenBotInviteUrl, selfHostedApiOrigin } from "@openbot/contracts/invite-links";
 import type {
   InviteSummary,
   TeamInviteSummary,
@@ -200,7 +200,7 @@ export class RemoteTeamDirectory {
           email: input.email ?? null,
           permanent: invite.permanent,
           useCount: invite.useCount,
-          inviteUrl: createInviteUrl(
+          inviteUrl: createOpenBotInviteUrl(
             {
               apiUrl: transport.controlPlaneUrl,
               serverId,

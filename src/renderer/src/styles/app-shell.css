@@ -68,6 +68,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+.remote-compatibility-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--openbot-space-2);
+}
+
 .global-search-dialog {
   position: fixed;
   z-index: calc(var(--openbot-layer-dialog) + 1);
@@ -1073,18 +1080,6 @@ textarea {
   color: var(--openbot-text-muted);
 }
 
-.sidebar-server-name > .sidebar-server-name-sleep {
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-  flex: 0 0 auto;
-  color: var(--openbot-text-muted);
-}
-
-.sidebar-server-name > .sidebar-server-name-sleep[data-state="waking"] {
-  color: var(--openbot-accent);
-  animation: server-sleep-waking 1200ms ease-in-out infinite;
-}
-
 @keyframes sidebar-server-mark-in {
   from {
     opacity: 0;
@@ -1203,104 +1198,20 @@ textarea {
   white-space: nowrap;
 }
 
-.server-menu-muted {
-  flex: 0 0 auto;
-  color: var(--openbot-text-secondary);
-}
-
-.server-menu-credit-value {
-  font-variant-numeric: tabular-nums;
-}
-
-.server-menu-credits-card {
-  display: grid;
-  margin-block-end: var(--openbot-space-1-5);
-  border-radius: var(--openbot-radius-card);
-  background: color-mix(in srgb, var(--openbot-text-primary) 5%, transparent);
-  padding: var(--openbot-space-1);
-}
-
-.server-menu-credits-label {
-  flex: 1 1 auto;
-}
-
-.server-menu-credits-card .server-menu-credit-value {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--openbot-space-1);
-  color: var(--openbot-text-secondary);
-  font-size: var(--openbot-text-md);
-}
-
-.server-menu-credits-buy {
-  position: relative;
-  display: flex;
-  min-height: var(--openbot-control-lg);
-  align-items: center;
-  gap: var(--openbot-space-2);
-  padding-block: var(--openbot-space-0-5);
-  padding-inline: var(--ui-menu-inset) var(--openbot-space-1);
-}
-
-.server-menu-credits-buy::before {
-  position: absolute;
-  inset: 0 var(--ui-menu-inset) auto;
-  height: 1px;
-  background: color-mix(in srgb, var(--openbot-text-primary) 10%, transparent);
-  content: "";
-  transition: opacity var(--openbot-duration-hover) ease;
-}
-
-.server-menu-credits-line[data-highlighted] + .server-menu-credits-buy::before {
-  opacity: 0;
-}
-
-.server-menu-credits-buy-icon {
-  font-size: var(--openbot-text-xl);
-}
-
-.server-menu-credits-buy-label {
+.server-menu-host {
   min-width: 0;
-  flex: 1 1 auto;
+  max-width: 45%;
+  flex: 0 1 auto;
   overflow: hidden;
-  font-size: var(--openbot-text-lg);
-  line-height: var(--openbot-leading-lg);
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.ui-action-menu .server-menu-credits-buy [role="menuitem"].server-menu-credits-get {
-  width: auto;
-  height: var(--openbot-control-sm);
-  min-height: var(--openbot-control-sm);
+.server-menu-muted {
   flex: 0 0 auto;
-  justify-content: center;
-  border-radius: var(--openbot-radius-pill);
-  background: var(--openbot-surface-light);
-  padding-inline: var(--openbot-space-4);
-  color: var(--openbot-text-on-light);
-  font-size: var(--openbot-text-md);
-  font-weight: var(--openbot-weight-medium);
-}
-
-.ui-action-menu
-  .server-menu-credits-buy
-  [role="menuitem"].server-menu-credits-get:is(:hover, :focus-visible, [data-highlighted]) {
-  background: color-mix(in srgb, var(--openbot-surface-light) 82%, transparent);
-  color: var(--openbot-text-on-light);
-}
-
-.server-menu-sleep {
-  width: 7px;
-  height: 7px;
-  flex: 0 0 auto;
-  border-radius: var(--openbot-radius-pill);
-  background: var(--openbot-text-muted);
-}
-
-.server-menu-sleep[data-state="waking"] {
-  background: var(--openbot-accent);
-  animation: server-sleep-waking 1200ms ease-in-out infinite;
+  color: var(--openbot-text-secondary);
 }
 
 .server-menu .server-menu-layout-chevron {
@@ -3378,8 +3289,7 @@ textarea {
   color: var(--openbot-text-primary);
 }
 
-.composer-mention-token,
-.remote-desktop-empty-mark {
+.composer-mention-token {
   background: var(--openbot-bg-control-hover);
   color: var(--openbot-text-secondary);
 }
@@ -3400,13 +3310,6 @@ textarea {
 
   50% {
     opacity: 0.35;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .server-menu-sleep[data-state="waking"],
-  .sidebar-server-name > .sidebar-server-name-sleep[data-state="waking"] {
-    animation: none;
   }
 }
 

@@ -25,7 +25,7 @@ const requireUpdateMetadata = process.argv.includes("--require-update-metadata")
 const requireSignature = process.argv.includes("--require-signature");
 const appPathArgument = process.argv.slice(2).find((argument) => !argument.startsWith("--"));
 const appPath = resolve(appPathArgument ?? "dist/win-unpacked");
-const executablePath = resolve(appPath, "OpenBot.exe");
+const executablePath = resolve(appPath, "OpenBot-NC.exe");
 const resourcesPath = resolve(appPath, "resources");
 const voiceRuntimePath = resolve(resourcesPath, "voice/runtime");
 const voiceRuntimeFiles = [
@@ -56,31 +56,13 @@ await Promise.all([
   ...voiceRuntimeFiles.map((name) => access(resolve(voiceRuntimePath, name))),
   access(voiceHostPath),
   access(speechHostPath),
-  access(resolve(resourcesPath, "remote-desktop-runtime/licenses/Sunshine-GPL-3.0.txt")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/licenses/moonlight-web-stream-GPL-3.0.txt")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/source-manifest.json")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/DISTRIBUTION-SHA256SUMS.txt")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/Sunshine-v2026.516.143833-source.tar.gz")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/sunshine-v2026.516.143833-openbot.patch")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/moonlight-web-stream-v2.10.0-openbot-source.tar.gz")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/sources/moonlight-web-stream-v2.10.0-openbot.patch")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/sunshine.exe")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/web-server.exe")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/streamer.exe")),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/static/stream.html")),
-  access(
-    resolve(
-      resourcesPath,
-      "remote-desktop-runtime/win32/x64/assets/shaders/directx/convert_yuv420_packed_uv_type0_ps.hlsl",
-    ),
-  ),
-  access(resolve(resourcesPath, "remote-desktop-runtime/win32/x64/SHA256SUMS.txt")),
   access(resolve(resourcesPath, "cua-driver/win32/x64/cua-driver.exe")),
   access(resolve(resourcesPath, "cua-driver/win32/x64/LICENSE.md")),
 ]);
 await Promise.all(["darwin", "linux"].map((name) => assertAbsent(resolve(resourcesPath, "cua-driver", name))));
 await Promise.all(["codex", "claude", "grok"].map((name) => assertAbsent(resolve(resourcesPath, name))));
 await assertAbsent(resolve(resourcesPath, "cloudflared"));
+await assertAbsent(resolve(resourcesPath, "remote-desktop-runtime"));
 await assertAbsent(resolve(resourcesPath, "app.asar.unpacked/node_modules/@anthropic-ai/claude-agent-sdk-win32-x64"));
 
 if (
@@ -121,8 +103,8 @@ const versionInfo = JSON.parse(
   ),
 );
 if (!isDynamicRecord(versionInfo)) throw new Error("Windows version metadata is invalid.");
-expectEqual(versionInfo.ProductName, "OpenBot", "product name");
-expectEqual(versionInfo.FileDescription, "OpenBot", "file description");
+expectEqual(versionInfo.ProductName, "OpenBot-NC", "product name");
+expectEqual(versionInfo.FileDescription, "OpenBot-NC", "file description");
 if (!String(versionInfo.ProductVersion).startsWith(packageJson.version)) {
   throw new Error(
     `Unexpected product version: ${String(versionInfo.ProductVersion)} (expected ${packageJson.version})`,
@@ -140,12 +122,7 @@ if (updateMetadata !== null && !updateMetadata.includes("provider: github")) {
   throw new Error("The packaged update provider is not GitHub.");
 }
 
-const ownExecutables = [
-  executablePath,
-  ...["sunshine.exe", "web-server.exe", "streamer.exe"].map((name) =>
-    resolve(resourcesPath, "remote-desktop-runtime/win32/x64", name),
-  ),
-];
+const ownExecutables = [executablePath];
 if (requireSignature) {
   const metadata = updateMetadata === null ? null : parseYaml(updateMetadata);
   const publisherNames = isDynamicRecord(metadata) ? metadata.publisherName : undefined;
@@ -180,9 +157,7 @@ for (const [fuse, expected] of expectedFuses) {
 await verifyLaunch(executablePath);
 
 logger.info(`Verified ${appPath}`);
-logger.info(
-  `OpenBot ${packageJson.version} · Windows x64 · metadata · GPL remote runtime · ASAR integrity · hardened fuses · launch`,
-);
+logger.info(`OpenBot ${packageJson.version} · Windows x64 · metadata · ASAR integrity · hardened fuses · launch`);
 
 function expectEqual(actual: unknown, expected: unknown, label: string): void {
   if (actual !== expected) {

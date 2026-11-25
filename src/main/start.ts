@@ -1,6 +1,5 @@
 import { resolveLocale, translateFor } from "@openbot/i18n";
-import { app, dialog, shell } from "electron";
-import { DOWNLOAD_URL } from "./download-url";
+import { app, dialog } from "electron";
 
 function isDamagedInstallation(error: unknown): boolean {
   if (!app.isPackaged || !(error instanceof Error)) return false;
@@ -21,15 +20,12 @@ function report(message: string, error: unknown): void {
 
 async function showDamagedInstallation(): Promise<void> {
   const translate = translateFor(resolveLocale("system", app.getLocale()));
-  const { response } = await dialog.showMessageBox({
+  await dialog.showMessageBox({
     type: "error",
     message: translate("startup.failedTitle"),
     detail: translate("startup.filesDamagedBody"),
-    buttons: [translate("startup.archiveChangedDownload"), translate("common.close")],
-    defaultId: 0,
-    cancelId: 1,
+    buttons: [translate("common.close")],
   });
-  if (response === 0) await shell.openExternal(DOWNLOAD_URL);
 }
 
 if (__OPENBOT_PERF_PROBES__ && !app.isPackaged && process.env.OPENBOT_PERF_PROBES === "1") {

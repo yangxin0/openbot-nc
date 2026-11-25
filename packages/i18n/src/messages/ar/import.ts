@@ -82,16 +82,11 @@ export const messages = {
   "import.guide.hermesSetupLabel": "كيفية جلب ملفات التعريف",
   "import.guide.setupFolder": "قراءة هذا الحاسوب",
   "import.guide.setupServer": "قراءة الخادم",
-  "import.guide.setupCommand": "التثبيت بأمر",
   "import.guide.hermesStepFolder": "اقرأ مجلد Hermes",
   "import.guide.hermesStep1": "أضف مهارة التصدير إلى Hermes",
   "import.guide.readFolder": "قراءة مجلد Hermes",
   "import.guide.readFolderMeta": "يقرأ OpenBot ~/.hermes ولا يغيّر فيه شيئًا.",
   "import.guide.readFolderNote": "ترى كل عنصر في كل ملف تعريف قبل أن يتغيّر أي شيء. تأتي خوادم MCP أيضًا، متوقفة.",
-  "import.guide.copyCommand": "نسخ الأمر",
-  "import.guide.commandCopied": "نُسخ الأمر",
-  "import.guide.commandNote":
-    "اكتبه في دردشة Hermes. في الطرفية، شغّل hermes skills install بالاسم نفسه. يفحص Hermes المهارة قبل تثبيتها.",
   "import.guide.hermesSkillNote":
     "احفظها باسم ~/.hermes/skills/openbot-export/SKILL.md. يجدها Hermes في الدردشة التالية. يستبعدها التصدير.",
   "import.guide.hermesMessageNote":

@@ -28,8 +28,6 @@ export const messages = {
     "מערכת המע״מ של האיחוד האירופי לא יכולה לבדוק את מספר המע״מ כרגע. יש לנסות שוב מאוחר יותר, או להמשיך בלי מספר מע״מ.",
   "error.billing.vatUnavailable": "התשלום לא זמין כרגע. יש לנסות שוב מאוחר יותר.",
   "error.billing.invalidRequest": "בקשת החיוב אינה תקינה.",
-  "error.billing.invalidResponse": "תשובת החיוב אינה תקינה.",
-  "error.billing.notStripePage": "דף החיוב אינו דף של Stripe.",
   "error.billing.customServerOfferMissing": "לשרת הזה אין תוכנית לתשלום.",
   "error.billing.checkoutUnavailable": "אי אפשר להתחיל את התשלום עכשיו. נסו שוב בעוד דקה.",
 } as const satisfies PartialTranslation<typeof source>;

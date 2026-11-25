@@ -67,24 +67,9 @@
   color: var(--openbot-text-muted);
 }
 
-.web-consent-row.first-run-choice-improve {
-  align-items: flex-start;
-  border-top: 0;
-  padding: var(--openbot-space-1) 0 0;
-}
-
-.web-consent-row .ui-checkbox {
-  margin-top: 1px;
-}
-
 .account-login-legal .first-run-consent-notice {
   width: auto;
   margin: 0;
-}
-
-.web-consent-row .first-run-choice-improve-pop {
-  top: 0;
-  inset-inline-end: 0;
 }
 
 .web-app-window[data-loading-waited-long] > .app-loading {

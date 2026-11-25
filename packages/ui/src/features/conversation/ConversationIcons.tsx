@@ -151,16 +151,6 @@ export function ComputerIcon() {
   );
 }
 
-export function RemoteDesktopIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20" class="ui-glyph-20 size-[14px] fill-none stroke-current">
-      <rect x="2.5" y="3" width="15" height="10" rx="1.5" />
-      <path d="M7 17h6M10 13v4" stroke-linecap="round" />
-      <path d="M13.8 6.2c.9.45 1.45 1.15 1.65 2.05M13.65 8.3h.01" stroke-linecap="round" />
-    </svg>
-  );
-}
-
 export function BrowserControlIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 16 16" class="ui-glyph-16 browser-tab-control-icon">

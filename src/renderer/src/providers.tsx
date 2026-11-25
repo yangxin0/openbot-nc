@@ -17,7 +17,6 @@ import {
 import { CLAUDE_API_KEY_CAPABILITY } from "@openbot/contracts/team-protocol/claude-api-key-v1";
 import { CODEX_API_KEY_CAPABILITY } from "@openbot/contracts/team-protocol/codex-api-key-v1";
 import { CUSTOM_PROVIDER_EDIT_CAPABILITY } from "@openbot/contracts/team-protocol/custom-provider-edit-v1";
-import { LIVE_VOICE_ACCOUNT_CAPABILITY } from "@openbot/contracts/team-protocol/live-voice-account-v1";
 import { PROVIDER_ACCOUNT_CODE_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-code-v1";
 import { PROVIDER_ACCOUNT_KEYS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-keys-v1";
 import { PROVIDER_ACCOUNT_POOL_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-pool-v1";
@@ -38,8 +37,7 @@ import { classifyFailure } from "@openbot/telemetry";
 import { toast } from "@openbot/ui";
 import type { ProviderAccountActions } from "@openbot/ui/components/provider-accounts";
 import { currentText } from "@openbot/ui/text";
-import { createEffect, createMemo, createSignal, flush, onSettled, untrack } from "solid-js";
-import { type DesktopAnalyticsProperties, desktopAnalytics } from "./analytics";
+import { createEffect, createMemo, createSignal, flush, untrack } from "solid-js";
 import { appPort } from "./app-port";
 import { useAgents } from "./features/agents/agents-context";
 import { conversationPort } from "./features/conversation/conversation-port";
@@ -57,8 +55,6 @@ import { hostProviderKeyApi, providerKeyApi } from "./features/settings/provider
 import { usePlatform } from "./platform";
 import { providersPort } from "./providers-port";
 import { createSimpleContext } from "./simple-context";
-
-type ProviderConnectMethod = Extract<DesktopAnalyticsProperties<"provider_action">["method"], "browser" | "code">;
 
 const Providers = createSimpleContext({
   name: "Providers",
@@ -95,17 +91,9 @@ const Providers = createSimpleContext({
         readsClaudeKey: !serverId || hostReadsClaudeKey(),
         readsCodexKey: !serverId || hostReadsCodexKey(),
         setProviderApiKey: async (input: { provider: AgentProviderId; key: string }) => {
-          const analytics = desktopAnalytics.scope();
-          const tracked = { provider: input.provider, action: "api_key_saved", method: "api_key" } as const;
-          try {
-            const result = await api.setProviderApiKey(input);
-            analytics.track("provider_action", { ...tracked, result: "succeeded" });
-            if (isKeyOnlyProvider(input.provider)) runtimes.refreshProviderRuntimes();
-            return result;
-          } catch (error) {
-            analytics.track("provider_action", { ...tracked, result: "failed", failure_code: "update_failed" });
-            throw error;
-          }
+          const result = await api.setProviderApiKey(input);
+          if (isKeyOnlyProvider(input.provider)) runtimes.refreshProviderRuntimes();
+          return result;
         },
       };
     });
@@ -140,33 +128,7 @@ const Providers = createSimpleContext({
         if (key) void hostCustomProviders.refreshCustomProviders().catch(() => undefined);
       },
     );
-    const pendingProviderConnections = new Map<
-      AgentProviderId,
-      { analytics: ReturnType<typeof desktopAnalytics.scope>; method: ProviderConnectMethod }
-    >();
     function applyAgentStatus(status: AgentStatus): void {
-      for (const provider of status.providers ?? []) {
-        const { analytics, method } = pendingProviderConnections.get(provider.id) ?? {};
-        if (!analytics) continue;
-        if (provider.state === "available") {
-          pendingProviderConnections.delete(provider.id);
-          analytics.track("provider_action", {
-            provider: provider.id,
-            action: "connect_completed",
-            result: "succeeded",
-            ...(method ? { method } : {}),
-          });
-        } else if (provider.state === "error") {
-          pendingProviderConnections.delete(provider.id);
-          analytics.track("provider_action", {
-            provider: provider.id,
-            action: "connect_completed",
-            result: "failed",
-            failure_code: "connect_failed",
-            ...(method ? { method } : {}),
-          });
-        }
-      }
       setAgentStatus(status);
     }
 
@@ -179,86 +141,31 @@ const Providers = createSimpleContext({
     }
 
     function connectProvider(provider: AgentProviderId): Promise<void> {
-      return startBrowserSignIn(provider, () => providersPort().connectProvider(provider));
+      return startBrowserSignIn(() => providersPort().connectProvider(provider));
     }
 
     function connectProviderInMainlandChina(provider: AgentProviderId): Promise<void> {
-      return startBrowserSignIn(provider, () => providersPort().connectProviderInMainlandChina(provider));
+      return startBrowserSignIn(() => providersPort().connectProviderInMainlandChina(provider));
     }
 
-    async function startBrowserSignIn(provider: AgentProviderId, start: () => Promise<AgentStatus>): Promise<void> {
-      const analytics = beginProviderConnection(provider, "browser");
-      try {
-        const status = await start();
-        flush(() => applyAgentStatus(status));
-      } catch (error) {
-        endFailedProviderConnection(provider, analytics, "browser");
-        throw error;
-      }
-    }
-
-    async function cancelProviderSignIn(provider: AgentProviderId): Promise<void> {
-      dropProviderConnection(provider);
-      const status = await providersPort().cancelProviderSignIn(provider);
+    async function startBrowserSignIn(start: () => Promise<AgentStatus>): Promise<void> {
+      const status = await start();
       flush(() => applyAgentStatus(status));
     }
 
-    function beginProviderConnection(provider: AgentProviderId, method: ProviderConnectMethod) {
-      const analytics = desktopAnalytics.scope();
-      pendingProviderConnections.set(provider, { analytics, method });
-      analytics.track("provider_action", {
-        provider,
-        action: "connect_started",
-        result: "succeeded",
-        method,
-      });
-      return analytics;
-    }
-
-    function dropProviderConnection(provider: AgentProviderId): void {
-      const pending = pendingProviderConnections.get(provider);
-      if (!pending) return;
-      pendingProviderConnections.delete(provider);
-      pending.analytics.track("provider_action", {
-        provider,
-        action: "sign_in_cancelled",
-        result: "cancelled",
-        method: pending.method,
-      });
-    }
-
-    function endFailedProviderConnection(
-      provider: AgentProviderId,
-      analytics: ReturnType<typeof desktopAnalytics.scope>,
-      method: ProviderConnectMethod,
-    ): void {
-      pendingProviderConnections.delete(provider);
-      analytics.track("provider_action", {
-        provider,
-        action: "connect_completed",
-        result: "failed",
-        failure_code: "connect_failed",
-        method,
-      });
+    async function cancelProviderSignIn(provider: AgentProviderId): Promise<void> {
+      const status = await providersPort().cancelProviderSignIn(provider);
+      flush(() => applyAgentStatus(status));
     }
 
     async function refreshAgentProviders(options = { automatic: false }): Promise<void> {
       if (refreshingProviders() || agentStatus().phase === "starting" || agentStatus().phase === "restarting") {
         return;
       }
-      const analytics = desktopAnalytics.scope();
       setRefreshingProviders(true);
       try {
         const status = await providersPort().refreshAgentProviders(options);
         flush(() => applyAgentStatus(status));
-        analytics.track("provider_action", { action: "refresh", result: "succeeded" });
-      } catch (error) {
-        analytics.track("provider_action", {
-          action: "refresh",
-          result: "failed",
-          failure_code: "refresh_failed",
-        });
-        throw error;
       } finally {
         flush(() => setRefreshingProviders(false));
       }
@@ -319,9 +226,6 @@ const Providers = createSimpleContext({
     const accountCodeServerId = createMemo(
       () => remoteAdminServer(activeServer(), PROVIDER_ACCOUNT_CODE_CAPABILITY)?.id,
     );
-    const liveVoiceAccountServerId = createMemo(
-      () => remoteAdminServer(activeServer(), LIVE_VOICE_ACCOUNT_CAPABILITY)?.id,
-    );
     const accountKeysServerId = createMemo(
       () => remoteAdminServer(activeServer(), PROVIDER_ACCOUNT_KEYS_CAPABILITY)?.id,
     );
@@ -365,12 +269,6 @@ const Providers = createSimpleContext({
                   changed(providerAdmin().setAccountPool({ provider, enabled, leftOut: [...leftOut] }, hostServerId)),
               }
             : {}),
-          ...(liveVoiceAccountServerId() === hostServerId
-            ? {
-                setLiveVoiceAccount: (accountId: string | null) =>
-                  changed(providerAdmin().setLiveVoiceAccount({ accountId }, hostServerId)),
-              }
-            : {}),
           ...(accountCodeServerId() === hostServerId
             ? {
                 connectWithCode: async (provider: AgentProviderId, accountId: string | null) =>
@@ -411,7 +309,6 @@ const Providers = createSimpleContext({
         signOut: (provider) => apply(providersPort().signOutProvider(provider)),
         setPool: (provider, enabled, leftOut) =>
           apply(providersPort().setProviderAccountPool({ provider, enabled, leftOut: [...leftOut] })),
-        setLiveVoiceAccount: (accountId) => apply(providersPort().setLiveVoiceAccount({ accountId })),
         local: true,
       };
     });
@@ -444,12 +341,6 @@ const Providers = createSimpleContext({
         });
       }
     }
-
-    onSettled(() => {
-      return () => {
-        pendingProviderConnections.clear();
-      };
-    });
 
     function accountSignIn(serverId: string) {
       return {
@@ -566,13 +457,6 @@ const Providers = createSimpleContext({
       connectInBrowser: connectProvider,
       connectInMainlandChina: connectProviderInMainlandChina,
       openVerificationUrl: (url) => void appPort().openUrl(url),
-      analytics: {
-        begin: (provider) => {
-          const analytics = beginProviderConnection(provider, "code");
-          return () => endFailedProviderConnection(provider, analytics, "code");
-        },
-        drop: dropProviderConnection,
-      },
     });
 
     return {

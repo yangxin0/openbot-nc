@@ -92,8 +92,6 @@ export const messages = {
   "sitePage.pricing.consent.statement": "Ik verklaar dat ik {policy}, {terms} accepteer.",
   "sitePage.pricing.consent.policy": "het privacybeleid",
   "sitePage.pricing.consent.terms": "de voorwaarden en het herroepingsrecht",
-  "sitePage.pricing.consent.earlyStart":
-    "Ik verzoek dat de hostingdienst begint vóór het einde van de herroepingstermijn van 14 dagen. Ik erken dat ik, als ik de overeenkomst herroep voordat de dienst volledig is uitgevoerd, moet betalen voor de diensten die tot het moment van herroeping zijn geleverd, en dat ik mijn herroepingsrecht verlies zodra de dienst volledig is uitgevoerd.",
   "sitePage.teams.title": "OpenBot voor Teams",
   "sitePage.teams.description":
     "Draai OpenBot op beheerde infrastructuur, of laat ons een implementatie op maat ontwerpen rond je team, je workflows en je bestaande systemen.",

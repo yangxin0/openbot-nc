@@ -33,7 +33,6 @@ import { useText } from "@openbot/ui/text";
 import { errorReference } from "@openbot/user-errors";
 import type { JSX } from "@solidjs/web";
 import { createEffect, createStore, onSettled, Show } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { createPageHeaderFrame } from "../window/page-header-frame";
 import { type UsagePort, usagePort } from "./usage-port";
 
@@ -114,16 +113,6 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
         if (props.agentId === undefined) delete draft.range.agentId;
         else draft.range.agentId = props.agentId;
         draft.agents = [];
-      });
-    },
-  );
-  createEffect(
-    () => [state.range.agentId, props.serverId, state.period] as const,
-    ([agentId, , range]) => {
-      desktopAnalytics.track("usage_viewed", {
-        scope: agentId ? "agent" : "server",
-        range,
-        filtered: agentId !== props.agentId,
       });
     },
   );

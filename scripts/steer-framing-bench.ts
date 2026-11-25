@@ -15,7 +15,7 @@ type Provider = Extract<AgentProviderId, "claude" | "codex">;
 type Event = { at: number; kind: "tool" | "text"; detail: string };
 
 const OUT = resolve(import.meta.dirname, "../.openbot-build/steer-framing-bench");
-const RUNTIMES = join(homedir(), "Library/Application Support/OpenBot/provider-runtimes");
+const RUNTIMES = join(homedir(), "Library/Application Support/OpenBot-NC/provider-runtimes");
 const CLAUDE_BIN = process.env.STEER_BENCH_CLAUDE ?? join(RUNTIMES, "claude/darwin-arm64/2.1.330/bin/claude");
 const CODEX_BIN = process.env.STEER_BENCH_CODEX ?? join(RUNTIMES, "codex/darwin-arm64/0.171.0/bin/codex");
 const STEPS = 8;

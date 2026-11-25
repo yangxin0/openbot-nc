@@ -68,7 +68,6 @@ export const messages = {
   "error.workflow.outputUncertain": "הפרסום נעצר באמצע. ייתכן שחלק ממנו נמצא במקום. יש לבדוק שם לפני שמנסים שוב.",
   "error.workflow.tooLarge": "תהליך העבודה הזה גדול מדי לשמירה. יש להסיר חלק מהציורים או מהטקסטים הארוכים ולנסות שוב.",
   "error.workflow.tooLargeToSend": "תהליך העבודה הזה גדול מדי לשליחה למחשב אחר. יש לפתוח אותו במחשב שמפעיל את השרת.",
-  "error.workflow.webhookMissing": "השלב הזה אינו טריגר webhook. יש לשמור את תהליך העבודה ולנסות שוב.",
   "error.workflow.githubActionMissing": "יש לבחור מה הפלט הזה עושה ב-GitHub.",
   "error.workflow.githubRepositoryMissing": "יש לבחור מאגר לפלט הזה.",
   "error.workflow.githubItemMissing":
@@ -80,11 +79,6 @@ export const messages = {
   "error.workflow.githubChoiceMissing": "יש לבחור את התוויות או את האדם לפלט הזה.",
   "error.workflow.githubChoseNothing": "המודל לא בחר תווית או אדם מהמאגר הזה.",
   "error.workflow.githubNotConnected": "יש לחבר את GitHub במחשב שמפעיל את תהליך העבודה הזה.",
-  "error.workflow.githubNoAccess": "ל-OpenBot GitHub App אין גישה למאגר או לפריט הזה. יש לפתוח את GitHub ולתת לו גישה.",
-  "error.workflow.githubNoWrite": "OpenBot GitHub App לא יכול לשנות את המאגר הזה. יש לפתוח את GitHub ולתת לו גישה.",
-  "error.workflow.githubLocked": "השיחה הזו נעולה ב-GitHub.",
-  "error.workflow.githubRefused": "GitHub דחה את השינוי: {detail}",
-  "error.workflow.githubUnreachable": "OpenBot לא הצליח להגיע ל-GitHub. יש להריץ את השלב שוב.",
   "error.workflow.githubUncertain":
     "השינוי נעצר באמצע. ייתכן שהוא נמצא ב-GitHub. יש לבדוק שם לפני שמריצים את השלב שוב.",
   "error.workflow.githubNoEvent": "ב-GitHub אין issue או pull request שהטריגר הזה מתחיל מהם.",

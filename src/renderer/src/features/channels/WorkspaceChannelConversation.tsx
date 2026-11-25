@@ -10,13 +10,10 @@ import { useBrowserTabs } from "../browser/browser-context";
 import { useConnectors } from "../connectors/connectors-context";
 import { Conversation } from "../conversation/Conversation";
 import { trackUsageLimitShown, useUsageLimitAsk } from "../conversation/usage-limit-ask";
-import { useRemoteDesktop } from "../remote-desktop/remote-desktop-context";
 import {
   remoteMcpSignIn,
   remoteRoutineRecovery,
   serverCanAdminister,
-  serverSendsWebhookTests,
-  serverSetsWebhookSenderSecret,
   serverSupportsCapability,
 } from "../servers/server-capabilities";
 import { createServerResponseStyle } from "../servers/server-personality";
@@ -71,7 +68,6 @@ function DesktopChannelConversation(props: { channelId: string; account: () => C
     activateBrowserTab,
     closeBrowserTab,
   } = useBrowserTabs();
-  const { activeRemoteDesktopSession, remoteDesktopWorkspaceVisible, openRemoteDesktopWorkspace } = useRemoteDesktop();
   const windowPage = useWindowPage();
   const isOwnSender = (senderId: string) => {
     const state = auth.centralAuth();
@@ -99,8 +95,6 @@ function DesktopChannelConversation(props: { channelId: string; account: () => C
       onceSchedule: () => serverSupportsCapability(activeServer(), "routines-once-v1"),
       eventsServerId: () => (serverCanAdminister(activeServer(), "events-v1") ? activeServer()?.id : undefined),
       routineRecovery: () => remoteRoutineRecovery(activeServer()),
-      webhookTests: () => serverSendsWebhookTests(activeServer()),
-      webhookSenderSecret: () => serverSetsWebhookSenderSecret(activeServer()),
     },
     approvals,
     takeovers,
@@ -162,9 +156,6 @@ function DesktopChannelConversation(props: { channelId: string; account: () => C
       isOwnSender={isOwnSender}
       browserEnabled={!platform.landingPreview && activeServerSupportsCapability("browser-control")}
       openLinksInBrowser={generalSettings().externalLinkTarget.kind === "openbot"}
-      remoteDesktopSessionActive={Boolean(activeRemoteDesktopSession())}
-      remoteDesktopVisible={remoteDesktopWorkspaceVisible()}
-      remoteDesktopEnabled={!platform.landingPreview && activeServerSupportsCapability("remote-desktop")}
       prompt={view.prompt()}
       promptUiBlock={view.promptUiBlock()}
       approval={view.approval()}
@@ -199,7 +190,6 @@ function DesktopChannelConversation(props: { channelId: string; account: () => C
       onReorderQueue={() => {}}
       onActivateBrowserTab={activateBrowserTab}
       onCloseBrowserTab={closeBrowserTab}
-      onOpenRemoteDesktop={openRemoteDesktopWorkspace}
       onStop={view.onStop}
       onDeleteMessage={view.deleteMessageAction()}
       canDeleteMessage={view.canDeleteMessage}

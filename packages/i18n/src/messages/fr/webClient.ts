@@ -89,8 +89,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "L’envoi de la pièce jointe a été annulé.",
   "webClient.error.duplication": "Ce serveur ne prend pas en charge la duplication d’agents.",
   "webClient.error.connectServerFirst": "Connectez-vous d’abord à ce serveur.",
-  "webClient.error.agentInstallNotAllowed":
-    "Seul un propriétaire ou un administrateur peut ajouter un agent ici, et le serveur doit exécuter une version récente d’OpenBot.",
   "webClient.error.linkDesktopOnly": "Ce lien s’ouvre uniquement dans l’application de bureau.",
   "webClient.error.saveEndpointOffline": "Connectez-vous à votre serveur pour enregistrer un point de terminaison.",
   "webClient.error.removeEndpointOffline": "Connectez-vous à votre serveur pour supprimer un point de terminaison.",

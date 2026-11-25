@@ -9,7 +9,7 @@ import {
 import { userInitials } from "@openbot/ui";
 import { usageCompact } from "@openbot/ui/features/usage/usage-format";
 import { currentText } from "@openbot/ui/text";
-import { drawLogo, ellipsize, FONT } from "../agent-templates/agent-template-card";
+import { drawLogo, ellipsize, FONT } from "./share-image-canvas";
 
 const WIDTH = 1200;
 const HEIGHT = 690;

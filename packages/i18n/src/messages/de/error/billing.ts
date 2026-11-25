@@ -33,8 +33,6 @@ export const messages = {
     "Das EU-Mehrwertsteuersystem kann die USt-IdNr. gerade nicht prüfen. Versuche es später erneut oder fahre ohne USt-IdNr. fort.",
   "error.billing.vatUnavailable": "Die Zahlung ist gerade nicht verfügbar. Versuche es später erneut.",
   "error.billing.invalidRequest": "Die Abrechnungsanfrage ist ungültig.",
-  "error.billing.invalidResponse": "Die Abrechnungsantwort ist ungültig.",
-  "error.billing.notStripePage": "Die Abrechnungsseite ist keine Stripe-Seite.",
   "error.billing.customServerOfferMissing": "Für diesen Server gibt es keinen Tarif zum Bezahlen.",
   "error.billing.checkoutUnavailable": "Die Zahlung kann gerade nicht starten. Versuche es in einer Minute erneut.",
 } as const satisfies PartialTranslation<typeof source>;

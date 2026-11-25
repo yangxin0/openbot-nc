@@ -3,9 +3,9 @@ set -euo pipefail
 export LC_ALL=C
 umask 077
 
-STATE=/etc/openbot-pool
-INSTALL=/opt/OpenBot/hosted
-WORK=${RUNTIME_DIRECTORY:-/run/openbot-pool}
+STATE=/etc/openbot-nc-pool
+INSTALL=/opt/OpenBot-NC/hosted
+WORK=${RUNTIME_DIRECTORY:-/run/openbot-nc-pool}
 INTERVAL=10
 MOVE=$(dirname "$(readlink -f "$0")")/move-from-boat.sh
 REPORT_TRIES=90
@@ -17,7 +17,7 @@ fail() {
 
 finish() {
   rm -f "$STATE/token"
-  systemctl disable --quiet openbot-pool-wait.service || true
+  systemctl disable --quiet openbot-nc-pool-wait.service || true
   echo "$*"
   exit 0
 }
@@ -97,5 +97,5 @@ if [ -n "$sum" ]; then
   bash "$MOVE" start
   finish "Server $server is restored and starts on machine $host."
 fi
-systemctl enable --now openbot.service
+systemctl enable --now openbot-nc.service
 finish "Server $server starts on machine $host."

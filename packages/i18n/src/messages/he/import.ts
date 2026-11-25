@@ -39,16 +39,11 @@ export const messages = {
   "import.guide.hermesSetupLabel": "איך מביאים את הפרופילים",
   "import.guide.setupFolder": "קריאה מהמחשב הזה",
   "import.guide.setupServer": "קריאה מהשרת",
-  "import.guide.setupCommand": "התקנה בפקודה",
   "import.guide.hermesStepFolder": "קריאת תיקיית Hermes",
   "import.guide.hermesStep1": "הוספת מיומנות הייצוא ל-Hermes",
   "import.guide.readFolder": "קריאת תיקיית Hermes",
   "import.guide.readFolderMeta": "OpenBot קורא את ~/.hermes ואינו משנה בה דבר.",
   "import.guide.readFolderNote": "תראו כל פריט של כל פרופיל לפני שמשהו משתנה. שרתי MCP מגיעים גם הם, כבויים.",
-  "import.guide.copyCommand": "העתקת הפקודה",
-  "import.guide.commandCopied": "הפקודה הועתקה",
-  "import.guide.commandNote":
-    "יש להקליד אותה בצ'אט של Hermes. בטרמינל, יש להריץ hermes skills install עם אותו שם. Hermes סורק את המיומנות לפני שהוא מתקין אותה.",
   "import.guide.hermesSkillNote":
     "יש לשמור אותה בתור ~/.hermes/skills/openbot-export/SKILL.md. Hermes ימצא אותה בצ'אט הבא. הייצוא משמיט אותה.",
   "import.guide.hermesMessageNote":

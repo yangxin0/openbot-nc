@@ -289,11 +289,6 @@ jobs:
           bun run test:desktop -- --maxWorkers=2
           NODE_OPTIONS=--max-old-space-size=4096 bun run check:api
 
-  # Each architecture builds on a runner of its own kind. The install scripts run every provider
-  # runtime they download, and the voice runtime and the remote desktop runtime are downloaded or
-  # verified for the runner's architecture, so one runner cannot produce both. The ARM64 job keeps
-  # the asset names every earlier release used, and it alone builds the Host PKG, which is Apple
-  # silicon only.
   macos:
     name: Build signed macOS ${{ matrix.label }} release
     needs: validate
@@ -363,8 +358,6 @@ jobs:
           bun run install:codex-runtime
           bun run install:claude-runtime
           bun run install:grok-runtime
-          bun run install:remote-desktop-runtime
-          bun run verify:remote-desktop-runtime
           bun run prepare:cua-driver
 
       - name: Install Developer ID provisioning profile
@@ -420,10 +413,6 @@ jobs:
           app_path="dist/${{ matrix.app_dir }}/OpenBot.app"
           test -d "$app_path"
           codesign --verify --deep --strict --verbose=2 "$app_path"
-          runtime_path="$app_path/Contents/Resources/remote-desktop-runtime/darwin/${{ matrix.arch }}"
-          codesign --verify --deep --strict --verbose=2 "$runtime_path/Sunshine.app"
-          codesign --verify --strict --verbose=2 "$runtime_path/web-server"
-          codesign --verify --strict --verbose=2 "$runtime_path/streamer"
           verify_provider_signature() {
             local executable="$1"
             local team_id="$2"
@@ -622,13 +611,6 @@ jobs:
 
       - name: Set up Bun
         uses: ./.github/actions/setup-bun
-
-      # Without a token, the GitHub API rate limit for the runner's address can refuse the release
-      # lookup with HTTP 403.
-      - name: Install and verify remote desktop runtime
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: bun scripts/install-remote-desktop-runtime.ts win32 x64 && bun run verify:remote-desktop-runtime --windows
 
       - name: Install and verify provider control artifacts
         run: |

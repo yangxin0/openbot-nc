@@ -658,13 +658,11 @@ export class ProviderRuntime implements ProviderPort {
                 ?.map((account) => this.#extraModels(row.id, account))
             : undefined;
         const pool = accounts ? this.accountPool(row.id) : null;
-        const liveVoiceAccount = accounts && row.id === "codex" ? this.liveVoiceAccount() : null;
         const withAccounts = accounts
           ? {
               ...withSource,
               accounts,
               ...(pool ? { accountPool: pool } : {}),
-              ...(liveVoiceAccount ? { liveVoiceAccount } : {}),
             }
           : withSource;
         const endpointsPending =
@@ -1862,35 +1860,6 @@ export class ProviderRuntime implements ProviderPort {
     if (!enabled) this.#poolInUse.delete(provider);
     return this.status();
   }).bind(this);
-
-  readonly setLiveVoiceAccount = Effect.fn("ProviderRuntime.setLiveVoiceAccount")(function* (
-    this: ProviderRuntime,
-    accountId: string | null,
-  ) {
-    const accounts = yield* this.#requireAccounts("codex");
-    yield* accounts.setLiveVoiceAccount(accountId).pipe(toProviderOperationFailed);
-    return this.status();
-  }).bind(this);
-
-  liveVoiceAccount(): string | null {
-    return this.#providerAccounts?.liveVoiceAccount() ?? null;
-  }
-
-  codexPlanAccountInPlaceOfKey(): string | undefined {
-    if (this.#accounts.get("codex")?.type !== "apiKey") return undefined;
-    return this.#providerAccounts?.planAccounts("codex")[0];
-  }
-
-  otherCodexAccounts(inUse: string): boolean {
-    const ownSignIn =
-      this.status().providers?.find((row) => row.id === "codex")?.state === "available" &&
-      !this.ownSignInUsesKey("codex");
-    const accounts = [
-      ...(ownSignIn ? [DEFAULT_PROVIDER_ACCOUNT_ID] : []),
-      ...(this.#providerAccounts?.planAccounts("codex") ?? []),
-    ];
-    return accounts.some((accountId) => accountId !== inUse);
-  }
 
   accountPool(provider: AgentProvider): ProviderAccountPool | null {
     const pool = this.#providerAccounts?.pool(provider);

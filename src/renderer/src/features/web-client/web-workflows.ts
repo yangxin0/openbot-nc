@@ -21,7 +21,6 @@ import {
 import { WORKFLOWS_AGENT_FILES_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-agent-files-v1";
 import { WORKFLOWS_ANSWERS_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-answers-v1";
 import { WORKFLOWS_CHANNELS_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-channels-v1";
-import { WORKFLOWS_CHATS_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-chats-v1";
 import {
   WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_CAPABILITY,
   WORKFLOWS_CREDIT_MEDIA_UNAVAILABLE_ROUTES,
@@ -30,10 +29,6 @@ import {
   WORKFLOWS_CREDIT_MEDIA_CAPABILITY,
   WORKFLOWS_CREDIT_MEDIA_ROUTES,
 } from "@openbot/contracts/team-protocol/workflows-credit-media-v1";
-import {
-  WORKFLOWS_GITHUB_CAPABILITY,
-  WORKFLOWS_GITHUB_ROUTES,
-} from "@openbot/contracts/team-protocol/workflows-github-v1";
 import {
   WORKFLOWS_HIGGSFIELD_CAPABILITY,
   WORKFLOWS_HIGGSFIELD_ROUTES,
@@ -96,9 +91,6 @@ import {
   decodeRemoteMediaServiceCredits,
   decodeRemoteWorkflowDetail,
   decodeRemoteWorkflowFileExport,
-  decodeRemoteWorkflowGitHubCatalog,
-  decodeRemoteWorkflowGitHubHistory,
-  decodeRemoteWorkflowGitHubOptions,
   decodeRemoteWorkflowList,
   decodeRemoteWorkflowMediaCatalog,
   decodeRemoteWorkflowMediaCredits,
@@ -109,7 +101,6 @@ import {
   decodeRemoteWorkflowRunDetail,
   decodeRemoteWorkflowRunPage,
   decodeRemoteWorkflowSaveResult,
-  decodeRemoteWorkflowSecret,
   decodeRemoteWorkflowStep,
   decodeRemoteWorkflowStepSettings,
   decodeRemoteWorkflowSummary,
@@ -122,7 +113,6 @@ import type { AttachmentMediaSource } from "@openbot/ui/features/conversation/At
 import { currentText } from "@openbot/ui/text";
 import { Effect } from "effect";
 import { createSignal } from "solid-js";
-import type { GitHubConnectorPort } from "../connectors/github-connector-port";
 import { checkPicture, keptPicture, libraryPictures, type WorkflowHost } from "../workflows/workflows-port";
 import { openWebLink } from "./web-attachments";
 
@@ -133,7 +123,6 @@ export interface WebWorkflowHostOptions {
   hostName: () => string | undefined;
   onHostEvent: (listener: (event: AgentEvent | TeamRealtimeEvent) => void) => () => void;
   onReconnect: (listener: () => void) => () => void;
-  githubConnector: GitHubConnectorPort;
   attachmentMedia: AttachmentMediaSource | undefined;
   previewMedia: AttachmentMediaSource | undefined;
   download: (attachmentId: string) => Promise<{ base64: string }>;
@@ -156,9 +145,7 @@ function mediaSummary(id: string, kind: WorkflowMediaKind): AttachmentSummary {
 export function webWorkflowHost(options: WebWorkflowHostOptions): WorkflowHost {
   const has = (capability: string) => options.capabilities().includes(capability);
   const placesSupported = () => options.admin() && has(ROUTINE_RESULTS_CAPABILITY);
-  const chatsSupported = () => placesSupported() && has(WORKFLOWS_CHATS_CAPABILITY);
   const channelsSupported = () => options.admin() && has(WORKFLOWS_CHANNELS_CAPABILITY);
-  const githubSupported = () => has(WORKFLOWS_GITHUB_CAPABILITY);
   const tooOld = () => new Error(currentText().t("error.workflow.serverTooOld"));
   const [unloaded, setUnloaded] = createSignal<ReadonlySet<string>>(new Set());
   options.onReconnect(() => setUnloaded(new Set()));
@@ -183,10 +170,6 @@ export function webWorkflowHost(options: WebWorkflowHostOptions): WorkflowHost {
   const post = async <T>(path: string, decode: (value: unknown) => T, body: unknown): Promise<T> => {
     if (!has(WORKFLOWS_CAPABILITY)) throw tooOld();
     return options.request()("POST", path, decode, decodeTeamProtocolV2Json(body));
-  };
-  const postGitHub = async <T>(path: string, decode: (value: unknown) => T, body: unknown): Promise<T> => {
-    if (!githubSupported()) throw tooOld();
-    return post(path, decode, body);
   };
   const postMedia = async <T>(path: string, decode: (value: unknown) => T, body: unknown): Promise<T> => {
     if (!has(WORKFLOWS_MEDIA_CAPABILITY)) throw tooOld();
@@ -296,13 +279,6 @@ export function webWorkflowHost(options: WebWorkflowHostOptions): WorkflowHost {
         if (!has(WORKFLOWS_STEP_SETTINGS_CAPABILITY)) throw tooOld();
         return post(WORKFLOWS_STEP_SETTINGS_ROUTES.read, decodeRemoteWorkflowStepSettings, { stepId });
       },
-      rotateWebhookSecret: (input) => post(WORKFLOWS_ROUTES.rotateWebhookSecret, decodeRemoteWorkflowSecret, input),
-      githubCatalog: () => postGitHub(WORKFLOWS_GITHUB_ROUTES.catalog, decodeRemoteWorkflowGitHubCatalog, {}),
-      githubOptions: (input) => postGitHub(WORKFLOWS_GITHUB_ROUTES.options, decodeRemoteWorkflowGitHubOptions, input),
-      githubHistory: (workflowId) =>
-        postGitHub(WORKFLOWS_GITHUB_ROUTES.history, decodeRemoteWorkflowGitHubHistory, { workflowId }),
-      githubRunLastEvent: (input) =>
-        postGitHub(WORKFLOWS_GITHUB_ROUTES.runLastEvent, decodeRemoteWorkflowRunDetail, input),
       keepPicture: (draftId) => postMedia(WORKFLOWS_MEDIA_ROUTES.keepPicture, decodeRemoteWorkflowPicture, { draftId }),
       mediaProviders: async () => ({
         ...(await serviceProviders()),
@@ -380,25 +356,6 @@ export function webWorkflowHost(options: WebWorkflowHostOptions): WorkflowHost {
       const channels = await teamChannelsApi(options.request()).listChannels();
       return channels.filter((channel) => !channel.archived).map((channel) => ({ id: channel.id, name: channel.name }));
     },
-    async discordServers() {
-      return [];
-    },
-    async telegramChats() {
-      if (!chatsSupported()) return [];
-      return (await connectionOptions())
-        .filter((option) => option.platform === "telegram")
-        .map((option) => ({ connectionId: option.connectionId, name: option.connectionName }));
-    },
-    async slackWorkspaces() {
-      if (!chatsSupported()) return [];
-      return (await connectionOptions())
-        .filter((option) => option.platform === "slack")
-        .map((option) => ({
-          connectionId: option.connectionId,
-          name: option.connectionName,
-          channels: option.places.map((place) => ({ id: place.id, name: place.name.replace(/^#/u, "") })),
-        }));
-    },
     async agentLevels() {
       if (options.admin() || !has(AGENT_ACCESS_CAPABILITY)) return null;
       return (await run(getHostAgentAccess)).mine;
@@ -431,7 +388,6 @@ export function webWorkflowHost(options: WebWorkflowHostOptions): WorkflowHost {
       });
       return keptPicture(fileId, file, null);
     },
-    githubSupported,
     mediaSupported: () => has(WORKFLOWS_MEDIA_CAPABILITY),
     mediaAccountSupported: () => has(WORKFLOWS_MEDIA_CAPABILITY) && has(WORKFLOWS_MEDIA_ACCOUNT_CAPABILITY),
     mediaTransparentSupported: () => has(WORKFLOWS_MEDIA_CAPABILITY) && has(WORKFLOWS_MEDIA_TRANSPARENT_CAPABILITY),
@@ -450,7 +406,6 @@ export function webWorkflowHost(options: WebWorkflowHostOptions): WorkflowHost {
       }
       return loaded(previews, attachmentId, "image", "thumbnail", key);
     },
-    githubConnector: options.githubConnector,
     hostName: options.hostName,
     openUrl: openWebLink,
   };

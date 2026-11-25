@@ -86,8 +86,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "Ek yüklemesi iptal edildi.",
   "webClient.error.duplication": "Bu sunucu ajan çoğaltmayı desteklemiyor.",
   "webClient.error.connectServerFirst": "Önce bu sunucuya bağlanın.",
-  "webClient.error.agentInstallNotAllowed":
-    "Buraya yalnızca bir sahip veya yönetici bir ajan ekleyebilir ve sunucu güncel bir OpenBot çalıştırmalıdır.",
   "webClient.error.linkDesktopOnly": "Bu bağlantı yalnızca masaüstü uygulamasında açılır.",
   "webClient.error.saveEndpointOffline": "Bir uç noktayı kaydetmek için sunucunuza bağlanın.",
   "webClient.error.removeEndpointOffline": "Bir uç noktayı kaldırmak için sunucunuza bağlanın.",

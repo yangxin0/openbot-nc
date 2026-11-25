@@ -420,7 +420,6 @@ export const messages = {
   "mobile.settings.voice.elevenLabs.keyPlaceholder": "sk_…",
   "mobile.settings.voice.tab.listening": "聆听",
   "mobile.settings.voice.tab.speaking": "朗读",
-  "mobile.settings.voice.tab.gptLive": "GPT 实时",
   "mobile.settings.voice.pause.title": "发送前的停顿",
   "mobile.settings.voice.pause.label": "等待新词",
   "mobile.settings.voice.pause.footer":
@@ -429,21 +428,6 @@ export const messages = {
   "mobile.settings.voice.speed.title": "回复速度",
   "mobile.settings.voice.speed.footer": "OpenBot 朗读回复的速度，语音对话中也适用。",
   "mobile.settings.voice.speed.value": "{speed}×",
-  "mobile.settings.voice.gptLive.title": "GPT Live Voice",
-  "mobile.settings.voice.gptLive.footer":
-    "在与智能体的语音对话中，GPT Live Voice 代替这部手机聆听和说话。它使用运行服务器的电脑上的 Codex（ChatGPT）登录。你的声音在这部手机和 OpenAI 之间传输，由 OpenAI 说出智能体的回复。需要支持它的服务器；其他服务器使用这部手机的语音。",
-  "mobile.settings.voice.gptLive.automatic": "自动",
-  "mobile.settings.voice.gptLive.choiceFooter":
-    "OpenAI 会在你的下一次语音对话中使用此声音。选择“自动”时由 OpenAI 选择声音。",
-  "mobile.settings.voice.gptLive.serversTitle": "服务器",
-  "mobile.settings.voice.gptLive.serversFooter":
-    "点按需要登录的服务器，即可将 Codex 连接到 ChatGPT 账户。只有所有者或管理员能看到服务器的登录状态。",
-  "mobile.settings.voice.gptLive.account": "GPT 实时语音账号",
-  "mobile.settings.voice.gptLive.status.ready": "就绪",
-  "mobile.settings.voice.gptLive.status.supported": "支持",
-  "mobile.settings.voice.gptLive.status.offline": "离线",
-  "mobile.settings.voice.gptLive.status.update": "其电脑上需要更新版本的 OpenBot",
-  "mobile.settings.voice.gptLive.status.signIn": "使用 ChatGPT 登录 Codex",
   "mobile.settings.voice.server.title": "语音服务器",
   "mobile.settings.voice.server.row": "兼容 OpenAI 的服务器",
   "mobile.settings.voice.server.notSetUp": "未设置",

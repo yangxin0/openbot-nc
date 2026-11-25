@@ -1,11 +1,8 @@
-import { randomUUID } from "node:crypto";
 import { Socket } from "node:net";
 import { isAbsolute } from "node:path";
 import type { Readable } from "node:stream";
 import type { AgentSummary } from "@openbot/contracts/ipc";
-import { sourceText } from "@openbot/i18n/source";
 import { Deferred, Effect, Exit, Schema, Semaphore } from "effect";
-import { CentralAuthOperationError } from "./central-auth-effects";
 import { decodeRemoteMembers, type RemoteMemberRecord } from "./central-auth-records";
 import type { HostService } from "./host-service";
 import { RemoteWorkflowError } from "./remote-service-effects";
@@ -17,8 +14,6 @@ export const LOCAL_SERVER_MEMBERS_REQUEST = "OPENBOT_LOCAL_SERVER_REQUEST member
 export const LOCAL_SERVER_WORKING_PREFIX = "OPENBOT_LOCAL_SERVER_WORKING ";
 const LOCAL_SERVER_WORKING_DELAY_MS = 100;
 const LOCAL_SERVER_MEMBERS_TIMEOUT_MS = 30_000;
-const LOCAL_SERVER_MARKETPLACE_REQUEST_PREFIX = "OPENBOT_LOCAL_SERVER_REQUEST marketplace ";
-const LOCAL_SERVER_MARKETPLACE_TIMEOUT_MS = 60_000;
 
 export const LOCAL_SERVER_CONTROL_FD = 3;
 
@@ -64,13 +59,6 @@ const localServerCommandSchema = Schema.Union([
   Schema.Struct({ type: Schema.Literal("unpublish") }),
   Schema.Struct({ type: Schema.Literal("members"), members: Schema.Unknown }),
   Schema.Struct({ type: Schema.Literal("members-unavailable") }),
-  Schema.Struct({
-    type: Schema.Literal("marketplace"),
-    id: Schema.String,
-    value: Schema.optional(Schema.Unknown),
-    bytes: Schema.optional(Schema.String),
-    error: Schema.optional(Schema.String),
-  }),
 ]);
 export type LocalServerCommand = typeof localServerCommandSchema.Type;
 type ParsedLocalServerCommand =
@@ -90,25 +78,6 @@ function parseLocalServerCommand(line: string): ParsedLocalServerCommand | null 
   try {
     const command = decodeLocalServerCommand(JSON.parse(line));
     return command.type === "members" ? { type: "members", members: decodeRemoteMembers(command) } : command;
-  } catch {
-    return null;
-  }
-}
-
-const localServerMarketplaceRequestSchema = Schema.Struct({
-  id: Schema.String,
-  method: Schema.Literals(["GET", "POST"]),
-  path: Schema.String,
-  download: Schema.Boolean,
-  body: Schema.optional(Schema.String),
-});
-export type LocalServerMarketplaceRequest = typeof localServerMarketplaceRequestSchema.Type;
-const decodeLocalServerMarketplaceRequest = Schema.decodeUnknownSync(localServerMarketplaceRequestSchema);
-
-export function parseLocalServerMarketplaceRequest(line: string): LocalServerMarketplaceRequest | null {
-  if (!line.startsWith(LOCAL_SERVER_MARKETPLACE_REQUEST_PREFIX)) return null;
-  try {
-    return decodeLocalServerMarketplaceRequest(JSON.parse(line.slice(LOCAL_SERVER_MARKETPLACE_REQUEST_PREFIX.length)));
   } catch {
     return null;
   }
@@ -155,91 +124,6 @@ export class LocalServerMembers {
     this.#pending = null;
     Deferred.doneUnsafe(pending, members ? Exit.succeed(members) : Exit.fail(membersUnavailable()));
     return true;
-  }
-}
-
-type LocalServerMarketplaceAnswer = Extract<LocalServerCommand, { type: "marketplace" }>;
-
-function requestFailed(): CentralAuthOperationError {
-  return new CentralAuthOperationError({ cause: new Error(sourceText("error.team.requestFailed")) });
-}
-
-export class LocalServerMarketplace {
-  readonly #write: (line: string) => void;
-  readonly #resolveApiUrl: (path: string) => string;
-  readonly #pending = new Map<string, Deferred.Deferred<LocalServerMarketplaceAnswer, CentralAuthOperationError>>();
-
-  constructor(write: (line: string) => void, resolveApiUrl: (path: string) => string) {
-    this.#write = write;
-    this.#resolveApiUrl = resolveApiUrl;
-  }
-
-  resolveApiUrl(path: string): string {
-    return this.#resolveApiUrl(path);
-  }
-
-  requestAuthorized<T>(
-    path: string,
-    init: RequestInit,
-    decoder: (value: unknown) => T,
-  ): Effect.Effect<T, CentralAuthOperationError> {
-    return this.#ask(path, init, false).pipe(
-      Effect.flatMap((answer) =>
-        Effect.try({ try: () => decoder(answer.value), catch: (cause) => new CentralAuthOperationError({ cause }) }),
-      ),
-    );
-  }
-
-  downloadAuthorized(path: string): Effect.Effect<Uint8Array, CentralAuthOperationError> {
-    return this.#ask(path, { method: "GET" }, true).pipe(
-      Effect.flatMap((answer) =>
-        answer.bytes === undefined
-          ? Effect.fail(requestFailed())
-          : Effect.succeed(new Uint8Array(Buffer.from(answer.bytes, "base64"))),
-      ),
-    );
-  }
-
-  answer(answer: LocalServerMarketplaceAnswer): boolean {
-    const pending = this.#pending.get(answer.id);
-    if (!pending) return false;
-    this.#pending.delete(answer.id);
-    Deferred.doneUnsafe(
-      pending,
-      answer.error === undefined
-        ? Exit.succeed(answer)
-        : Exit.fail(new CentralAuthOperationError({ cause: new Error(answer.error) })),
-    );
-    return true;
-  }
-
-  #ask(
-    path: string,
-    init: RequestInit,
-    download: boolean,
-  ): Effect.Effect<LocalServerMarketplaceAnswer, CentralAuthOperationError> {
-    return Effect.suspend(() => {
-      const method = init.method ?? "GET";
-      if (method !== "GET" && method !== "POST") return Effect.fail(requestFailed());
-      const id = randomUUID();
-      const pending = Deferred.makeUnsafe<LocalServerMarketplaceAnswer, CentralAuthOperationError>();
-      this.#pending.set(id, pending);
-      const request: LocalServerMarketplaceRequest = {
-        id,
-        method,
-        path,
-        download,
-        ...(typeof init.body === "string" ? { body: init.body } : {}),
-      };
-      this.#write(`${LOCAL_SERVER_MARKETPLACE_REQUEST_PREFIX}${JSON.stringify(request)}\n`);
-      return Deferred.await(pending).pipe(
-        Effect.timeoutOrElse({
-          duration: LOCAL_SERVER_MARKETPLACE_TIMEOUT_MS,
-          orElse: () => Effect.fail(requestFailed()),
-        }),
-        Effect.ensuring(Effect.sync(() => this.#pending.delete(id))),
-      );
-    });
   }
 }
 
@@ -294,7 +178,6 @@ export interface StartLocalServerChildOptions {
   teamStore: Pick<TeamStore, "configured" | "configure" | "getIdentity" | "getOwnerMemberId">;
   host: Pick<HostService, "startLoopbackOnly" | "applyAccountDirectory">;
   members: Pick<LocalServerMembers, "answer">;
-  marketplace: Pick<LocalServerMarketplace, "answer">;
   writeReady: (line: string) => void;
   readCommands: (onLine: (line: string) => void) => void;
   publisher: LocalServerPublisher;
@@ -309,7 +192,6 @@ export const startLocalServerChild = Effect.fn("LocalServerChild.start")(functio
   readCommands,
   publisher,
   members,
-  marketplace,
   warn,
 }: StartLocalServerChildOptions) {
   if (!teamStore.configured)
@@ -323,10 +205,6 @@ export const startLocalServerChild = Effect.fn("LocalServerChild.start")(functio
   readCommands((line) => {
     const command = parseLocalServerCommand(line);
     if (!command) return;
-    if (command.type === "marketplace") {
-      marketplace.answer(command);
-      return;
-    }
     if (command.type === "members-unavailable") {
       members.answer(null);
       return;

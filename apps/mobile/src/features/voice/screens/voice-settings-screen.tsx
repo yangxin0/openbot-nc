@@ -1,4 +1,4 @@
-import { type CodexLiveVoice, cloudSpeechModel, SPEECH_SPEEDS, type SpeechVoice } from "@openbot/contracts/ipc";
+import { cloudSpeechModel, SPEECH_SPEEDS, type SpeechVoice } from "@openbot/contracts/ipc";
 import { shortVoiceServerModel, voiceServerHost } from "@openbot/contracts/voice-server";
 import type { MobileTextKey, MobileTranslate } from "@openbot/i18n/mobile";
 import { isRunningInExpoGo } from "expo";
@@ -7,7 +7,7 @@ import { Button, Typography } from "heroui-native";
 import Check from "lucide-react-native/icons/check";
 import { useEffect, useRef, useState } from "react";
 import { Alert, View } from "react-native";
-import { useCSSVariable, useUniwind } from "uniwind";
+import { useCSSVariable } from "uniwind";
 import { UsageSegments } from "@/features/agents/components/usage-segments";
 import { modelCaptureAvailable } from "@/features/chat/components/use-model-dictation";
 import {
@@ -16,16 +16,13 @@ import {
   SettingsRow,
   SettingsSection,
 } from "@/features/settings/components/settings-content";
-import { SettingsSwitch } from "@/features/settings/components/settings-controls";
 import { haptics } from "@/shared/lib/haptics";
 import { currentText, useText } from "@/shared/lib/text";
 import { DictationLanguageSection } from "../components/dictation-language-section";
-import { GptLiveServerRows } from "../components/gpt-live-servers";
 import { PauseSlider } from "../components/pause-slider";
 import { useVoicePreview } from "../components/use-voice-preview";
 import { elevenLabsVoiceParts } from "../model/elevenlabs";
 import { clearElevenLabsVoices, loadElevenLabsVoices, useElevenLabsVoices } from "../model/elevenlabs-voices";
-import { liveVoiceWebRtc } from "../model/live-voice-webrtc";
 import type { ModelDownload, ModelState } from "../model/model-download";
 import {
   checkRecognitionModels,
@@ -61,10 +58,6 @@ export function supertonicVoiceLabel(voice: SpeechVoice, t: MobileTranslate): st
     : t("mobile.settings.voice.supertonic.male", { number });
 }
 
-export function gptLiveVoiceLabel(voice: CodexLiveVoice | null, t: MobileTranslate): string {
-  return voice ? voice.charAt(0).toUpperCase() + voice.slice(1) : t("mobile.settings.voice.gptLive.automatic");
-}
-
 const layoutPreview = __DEV__ && isRunningInExpoGo();
 
 function downloadStatus(model: ModelState, t: MobileTranslate, percent: (value: number) => string): string | null {
@@ -91,7 +84,7 @@ function useSupertonicStatus(): string {
   );
 }
 
-export function ChoiceRow({
+function ChoiceRow({
   checked,
   disabled,
   supportingText,
@@ -609,49 +602,6 @@ function ElevenLabsModelSection({ onChange, onError }: { onChange: () => void; o
   );
 }
 
-function GptLiveSection({ onError }: { onError: (message: string) => void }) {
-  const { t } = useText();
-  const { theme } = useUniwind();
-  const ready = useVoiceSettings((state) => state.ready);
-  const enabled = useVoiceSettings((state) => state.gptLive);
-  const voice = useVoiceSettings((state) => state.gptLiveVoice);
-  return (
-    <>
-      <SettingsSection footer={t("mobile.settings.voice.gptLive.footer")}>
-        <SettingsRow>
-          <SettingsSwitch
-            value={enabled}
-            disabled={!ready}
-            label={t("mobile.settings.voice.gptLive.title")}
-            dark={theme === "dark"}
-            onValueChange={(gptLive) =>
-              void saveVoiceSettings({ gptLive }).catch(() => onError(t("mobile.settings.saveFailed")))
-            }
-          />
-        </SettingsRow>
-      </SettingsSection>
-      {enabled ? (
-        <>
-          <SettingsSection>
-            <SettingsRow
-              supportingText={gptLiveVoiceLabel(voice, t)}
-              onPress={() => router.push({ pathname: "/settings/voice-choice", params: { engine: "gpt-live" } })}
-            >
-              <Typography.Paragraph>{t("mobile.settings.voice.voice")}</Typography.Paragraph>
-            </SettingsRow>
-          </SettingsSection>
-          <SettingsSection
-            title={t("mobile.settings.voice.gptLive.serversTitle")}
-            footer={t("mobile.settings.voice.gptLive.serversFooter")}
-          >
-            <GptLiveServerRows />
-          </SettingsSection>
-        </>
-      ) : null}
-    </>
-  );
-}
-
 export function VoiceSettingsScreen() {
   const { t } = useText();
   const preview = useVoicePreview();
@@ -660,7 +610,7 @@ export function VoiceSettingsScreen() {
   const hasKey = useVoiceSettings((state) => state.hasElevenLabsKey);
   const serverSpeaks = useVoiceServer((state) => state.server?.routes.speech === true);
   const canRecognize = modelCaptureAvailable() || layoutPreview;
-  const [tab, setTab] = useState<"listening" | "speaking" | "gptLive">("listening");
+  const [tab, setTab] = useState<"listening" | "speaking">("listening");
   const [error, setError] = useState<string | null>(null);
   const showError = useRef((message: string) => {
     setError(message);
@@ -703,14 +653,12 @@ export function VoiceSettingsScreen() {
       {canChangeReplySpeed || layoutPreview ? <ReplySpeedSection onError={showError} /> : null}
     </>
   );
-  const gptLive = liveVoiceWebRtc || layoutPreview ? <GptLiveSection onError={showError} /> : null;
   if (!canRecognize)
     return (
       <SettingsContent>
         {speaking}
         <DictationLanguageSection />
         <TurnPauseSection onError={showError} />
-        {gptLive}
       </SettingsContent>
     );
   return (
@@ -719,7 +667,6 @@ export function VoiceSettingsScreen() {
         options={[
           { value: "listening", label: t("mobile.settings.voice.tab.listening") },
           { value: "speaking", label: t("mobile.settings.voice.tab.speaking") },
-          ...(gptLive ? [{ value: "gptLive" as const, label: t("mobile.settings.voice.tab.gptLive") }] : []),
         ]}
         value={tab}
         onChange={(next) => {
@@ -740,10 +687,8 @@ export function VoiceSettingsScreen() {
           <VoiceServerSection />
           <TurnPauseSection onError={showError} />
         </>
-      ) : tab === "speaking" ? (
-        speaking
       ) : (
-        gptLive
+        speaking
       )}
       {error || preview.error ? (
         <Typography.Paragraph accessibilityRole="alert" type="body-xs" className="px-4 text-danger-text">

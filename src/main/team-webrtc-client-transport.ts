@@ -112,10 +112,6 @@ interface TeamWebRtcClientTransportOptions {
   setHostHidden: (hostId: string, hidden: boolean) => Effect.Effect<void, CentralAuthOperationError>;
   getPrincipalId: () => string;
   controlPlaneUrl: string;
-  downloadHostLogo: (
-    hostId: string,
-    version: string,
-  ) => Effect.Effect<{ bytes: Uint8Array; mimeType: string }, CentralAuthOperationError>;
   transferDirectory: string;
   connectTrace?: RemoteConnectTrace;
   sessionCache?: RemoteSessionCache;
@@ -280,10 +276,6 @@ export class TeamWebRtcClientTransport extends EventEmitter<TeamWebRtcClientTran
 
   get controlPlaneUrl(): string {
     return this.#options.controlPlaneUrl;
-  }
-
-  downloadHostLogo(hostId: string, version: string) {
-    return this.#owned(this.#options.downloadHostLogo(hostId, version).pipe(toRemoteWorkflowError));
   }
 
   createInvite(hostId: string, input: { role: "admin" | "member"; email?: string }) {

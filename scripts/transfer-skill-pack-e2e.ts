@@ -5,11 +5,10 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
-import type { AgentSummary, MarketplaceSkillDetail } from "@openbot/contracts/ipc";
+import { type AgentSummary, githubSkillId, type MarketplaceSkillDetail } from "@openbot/contracts/ipc";
 import { Effect, Schema } from "effect";
 import { zipSync } from "fflate";
-import { CentralAuthOperationError } from "../src/main/central-auth-effects";
-import { CentralAuthManager } from "../src/main/central-auth-manager";
+import type { GithubSkillSourceReader } from "../src/main/github-skill-source";
 import { type InstanceTransferOptions, InstanceTransferService } from "../src/main/instance-transfer-service";
 import { LocalSkillLibrary } from "../src/main/local-skill-library";
 import { SkillMarketplaceService } from "../src/main/skill-marketplace-service";
@@ -44,7 +43,7 @@ const packFiles: Record<string, Uint8Array> = {
 };
 const bundle = zipSync(packFiles);
 const detail: MarketplaceSkillDetail = {
-  id: "kit-pack",
+  id: githubSkillId({ owner: "openbot-test", repo: "kit", commit: "a".repeat(40), path: "" }),
   versionId: "kit-pack-version-1",
   slug: "kit",
   name: "kit",
@@ -62,23 +61,10 @@ const detail: MarketplaceSkillDetail = {
   bundleSha256: createHash("sha256").update(bundle).digest("hex"),
 };
 
-class CatalogAuth extends CentralAuthManager {
-  override requestAuthorized<T>(
-    path: string,
-    init: RequestInit,
-    decode: (value: unknown) => T,
-  ): Effect.Effect<T, CentralAuthOperationError> {
-    if (init.method === "GET" && path === `/v1/skills/${detail.id}`) return Effect.succeed(decode(detail));
-    if (init.method === "POST" && path === `/v1/skills/${detail.id}/install`)
-      return Effect.succeed(decode({ installed: true }));
-    return Effect.fail(new CentralAuthOperationError({ cause: "unexpected request" }));
-  }
-
-  override readonly downloadAuthorized = (path: string): Effect.Effect<Uint8Array, CentralAuthOperationError> =>
-    path === `/v1/skills/${detail.id}/content`
-      ? Effect.succeed(bundle)
-      : Effect.fail(new CentralAuthOperationError({ cause: "unexpected download" }));
-}
+const github: GithubSkillSourceReader = {
+  read: () => Effect.die(new Error("unexpected GitHub read")),
+  download: () => Effect.succeed({ detail, bundle }),
+};
 
 function agentSummary(id: string, name: string): AgentSummary {
   return {
@@ -137,16 +123,10 @@ try {
   await mkdir(source.workspacePath, { recursive: true });
   const library = new LocalSkillLibrary(join(root, "local-skills"), () => agents);
   const skills = new SkillMarketplaceService(
-    new CatalogAuth({
-      apiUrl: "https://example.invalid",
-      storagePath: join(root, "auth.json"),
-      canPersist: () => false,
-      encrypt: (value) => Buffer.from(value),
-      decrypt: (value) => value.toString("utf8"),
-    }),
     () => agents,
     () => Effect.void,
     library,
+    github,
   );
   await run(skills.install({ agentId: source.id, skillId: detail.id }));
   await mkdir(join(source.workspacePath, ".agents/skills/notes"), { recursive: true });

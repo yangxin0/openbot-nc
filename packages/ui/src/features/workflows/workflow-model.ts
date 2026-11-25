@@ -41,7 +41,7 @@ export interface WorkflowFeatures {
 
 export const WORKFLOW_FEATURES_V1: WorkflowFeatures = {
   kinds: WORKFLOW_NODE_KINDS.filter((kind) => kind !== "image" && kind !== "asset"),
-  triggers: ["manual", "schedule", "webhook"],
+  triggers: ["manual", "schedule"],
   outputs: ["notify", "channel"],
   uploads: false,
   presence: false,

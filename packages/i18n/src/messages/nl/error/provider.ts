@@ -218,7 +218,6 @@ export const messages = {
   "error.provider.codexModelProvider":
     "Codex op deze computer gebruikt een andere modelaanbieder, en die aanbieder gebruikt geen ChatGPT-aanmelding of OpenAI-API-sleutel. ChatGPT-agents kunnen die aanbieder nu gebruiken. Zet de modelaanbieder van Codex terug op OpenAI om je ChatGPT-account te gebruiken.",
   "error.provider.signInExpired": "Je inlog bij {provider} is verlopen. Log opnieuw in om door te gaan.",
-  "error.provider.cliActivateFailed": "OpenBot kon de beheerde CLI niet activeren.",
   "error.provider.noMainlandChinaSignIn": "{provider} heeft geen aanmelding voor het Chinese vasteland.",
   "error.provider.cliNewVersionNotStarted": "De nieuwe versie is niet gestart.",
   "error.provider.cliBusyReconnect":

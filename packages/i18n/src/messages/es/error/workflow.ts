@@ -83,8 +83,6 @@ export const messages = {
     "Este flujo de trabajo es demasiado grande para guardarlo. Quita algunos dibujos o textos largos e inténtalo de nuevo.",
   "error.workflow.tooLargeToSend":
     "Este flujo de trabajo es demasiado grande para enviarlo a otro ordenador. Ábrelo en el ordenador que ejecuta el servidor.",
-  "error.workflow.webhookMissing":
-    "Este paso no es un disparador de webhook. Guarda el flujo de trabajo y vuelve a intentarlo.",
   "error.workflow.githubActionMissing": "Elige qué hace esta salida en GitHub.",
   "error.workflow.githubRepositoryMissing": "Elige un repositorio para esta salida.",
   "error.workflow.githubItemMissing":
@@ -96,13 +94,6 @@ export const messages = {
   "error.workflow.githubChoiceMissing": "Elige las etiquetas o la persona para esta salida.",
   "error.workflow.githubChoseNothing": "El modelo no eligió ninguna etiqueta ni persona de este repositorio.",
   "error.workflow.githubNotConnected": "Conecta GitHub en el ordenador que ejecuta este flujo de trabajo.",
-  "error.workflow.githubNoAccess":
-    "La aplicación de GitHub de OpenBot no puede ver este repositorio ni este elemento. Abre GitHub y dale acceso.",
-  "error.workflow.githubNoWrite":
-    "La aplicación de GitHub de OpenBot no puede cambiar este repositorio. Abre GitHub y dale acceso.",
-  "error.workflow.githubLocked": "Esta conversación está bloqueada en GitHub.",
-  "error.workflow.githubRefused": "GitHub rechazó el cambio: {detail}",
-  "error.workflow.githubUnreachable": "OpenBot no pudo conectar con GitHub. Ejecuta el paso de nuevo.",
   "error.workflow.githubUncertain":
     "El cambio se detuvo a medio camino. Puede que ya esté en GitHub. Revísalo antes de ejecutar el paso de nuevo.",
   "error.workflow.githubNoEvent":

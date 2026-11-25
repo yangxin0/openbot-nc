@@ -246,7 +246,7 @@ enum TenantSetupCommand {
                     credentialFile: "/private/var/root/\(setup.credentialFilename)"))
                 FileHandle.standardOutput.write(data)
             } else {
-                print("Account setup complete. Log each user into a GUI session, then enroll them with the host installer. In that account, open OpenBot → Server Settings → Remote desktop access. Grant Screen Recording and Accessibility, then select Check again. Use another computer to run Test remote desktop.")
+                print("Account setup complete. Log each user into a GUI session, then enroll them with the host installer.")
             }
         } catch {
             fputs("Account setup stopped. Existing accounts are not reset. If a credential file was saved, keep it and inspect the partial setup as administrator before retrying.\n", stderr)

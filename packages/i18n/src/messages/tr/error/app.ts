@@ -9,6 +9,4 @@ export const messages = {
   "error.app.macSecureStorageUnavailable": "macOS güvenli depolaması kullanılamıyor.",
   "error.app.secretStorageUnavailable": "Sistem gizli anahtar depolaması kullanılamıyor.",
   "error.app.remoteIdentityUnavailable": "Uzak ana makine kimliği kullanılamıyor.",
-  "error.app.iceServersMissing": "Remote Signal henüz ICE sunucularını sağlamadı.",
-  "error.app.finishLocalTest": "Ekranları değiştirmeden önce yerel testi bitirin.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -94,7 +94,6 @@ export interface MarketplacePluginSummary {
 }
 
 export interface MarketplacePluginDetail extends MarketplacePluginSummary {
-  shareUrl: string;
   prompts: MarketplacePluginPrompt[];
   apps: MarketplacePluginApp[];
   skills: MarketplacePluginSkill[];

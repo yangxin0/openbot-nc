@@ -20,9 +20,7 @@ export const messages = {
   "error.skill.frontmatterInvalid": "Метаданные SKILL.md — некорректный YAML.",
   "error.skill.descriptionLength": "В SKILL.md нужно описание длиной от 1 до {limit} символов.",
   "error.skill.nameMismatch": "В SKILL.md нужна строка «name: {slug}», такая же, как имя папки.",
-  "error.skill.draftExpired": "Выбранный пакет навыка устарел. Выберите его снова.",
   "error.skill.localHasNoVersion": "У локального навыка нет опубликованной версии.",
-  "error.skill.publishLocalFirst": "Опубликуйте локальные навыки отдельно, прежде чем публиковать этого агента.",
   "error.skill.bundleMismatch": "Загруженный навык не совпал с подписанной записью каталога.",
   "error.skill.metadataMismatch": "Метаданные загруженного навыка не совпадают с каталогом.",
   "error.skill.folderTaken": "Другой установленный навык использует это имя папки.",
@@ -39,15 +37,9 @@ export const messages = {
   "error.skill.localLibraryUnavailable": "Библиотека локальных навыков недоступна.",
   "error.skill.lockInvalid": "Запись об установленном навыке некорректна. Она оставлена без изменений.",
   "error.skill.installPathSymlink": "Пути установки навыков не могут содержать символические ссылки.",
-  "error.skill.duplicateSlug": "Два навыка называются «{slug}». Переименуйте один из них, прежде чем публиковать.",
-  "error.skill.publishNeedsRepair":
-    "В {name} есть локальные изменения, или его нужно исправить, прежде чем публиковать.",
-  "error.skill.publishUntracked":
-    "{name} установлен до появления отслеживания точных версий. Обновите или исправьте его, прежде чем публиковать.",
   "error.skill.tooManySkills": "У агента может быть не более {limit} навыков.",
   "error.skill.unmanagedExists": "Неуправляемый навык уже существует по пути {path}.",
   "error.skill.managedSlug": "OpenBot даёт каждому агенту свой навык {slug}. Дайте этому навыку другое имя.",
-  "error.skill.templateMarkdownTooLarge": "{name}: SKILL.md больше 64 КБ. Сократите его, прежде чем публиковать.",
   "error.skill.localNoRevisions": "У локального навыка нет опубликованных ревизий.",
   "error.skill.localNotFound": "Этого локального навыка нет. Проверьте его ID в списке локальных навыков.",
   "error.skill.localRevisionNotFound": "У этого локального навыка нет ревизии {revision}. Последняя ревизия: {latest}.",
@@ -69,5 +61,4 @@ export const messages = {
     "GitHub ограничивает, как часто OpenBot может читать его без аккаунта. Повторите попытку через час.",
   "error.skill.githubTooLarge": "OpenBot не может прочитать все файлы {repository}. Репозиторий слишком большой.",
   "error.skill.githubHostTooOld": "Обновите этот сервер, чтобы добавлять навыки из GitHub.",
-  "error.skill.publishGithub": "{name} взят из GitHub. Публиковать можно только навыки, которые вы создали.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -11,7 +11,6 @@ import { useCustomAgents } from "../custom-agents/custom-agents-context";
 import { useCustomProviders } from "../custom-providers/custom-providers-context";
 import { useSetup } from "../onboarding/onboarding-context";
 import { remoteAdminServer } from "../servers/server-capabilities";
-import { useServerSettings } from "../servers/server-settings";
 import { useServers } from "../servers/servers-context";
 import { useSidebar } from "../sidebar/sidebar-context";
 import { hostBitwardenConnectorPort } from "./bitwarden-connector-port";
@@ -21,18 +20,14 @@ import {
   createConnectorSet,
   LOCAL_CONNECTOR_TRANSPORTS,
 } from "./connector-registry";
-import { githubConnectorPort, hostGitHubConnectorPort } from "./github-connector-port";
-import { hostMessagingApi } from "./host-messaging-port";
-import { localMessagingApi, type MessagingApi, type MessagingConnectorOptions } from "./messaging-connector";
 import { hostOnePasswordConnectorPort } from "./onepassword-connector-port";
 import { hostPasswordManagerPort } from "./password-manager-port";
-import { hostWhatsAppPort, whatsappPort } from "./whatsapp-connector";
+import { hostWhatsAppPort, type MessagingConnectorOptions, whatsappPort } from "./whatsapp-connector";
 
 const context = createSimpleContext({
   name: "ConnectorsProvider",
   init: () => {
-    const { activeServer, hostStatus } = useServers();
-    const { publishLocalServer } = useServerSettings();
+    const { activeServer } = useServers();
     const { agentList, agentStatus, modelOptions, serverSetupChoice, developmentCreation } = useAgents();
     const { setupState } = useSetup();
     const endpoints = useCustomProviders();
@@ -54,27 +49,8 @@ const context = createSimpleContext({
         customAgents: localAgents.customAgents(),
       };
     };
-    const localMessaging = localMessagingApi();
-    const publishFirst = async () => {
-      if (hostStatus().phase !== "online") await publishLocalServer().catch(() => undefined);
-    };
-    const messaging: MessagingApi = {
-      ...localMessaging,
-      connect: async (target) => {
-        await publishFirst();
-        await localMessaging.connect(target);
-      },
-      reconnect: async (platform, workspaceId) => {
-        await publishFirst();
-        await localMessaging.reconnect(platform, workspaceId);
-      },
-      setEnabled: async (platform, workspaceId, enabled) => {
-        if (enabled) await publishFirst();
-        await localMessaging.setEnabled(platform, workspaceId, enabled);
-      },
-    };
     const computer = createConnectorSet(
-      { github: githubConnectorPort, ...LOCAL_CONNECTOR_TRANSPORTS, messaging, whatsapp: whatsappPort },
+      { ...LOCAL_CONNECTOR_TRANSPORTS, whatsapp: whatsappPort },
       {
         agents: agentList,
         models,
@@ -84,7 +60,6 @@ const context = createSimpleContext({
       },
     );
     const registry = (server: () => ServerSummary | undefined): ConnectorRegistry => {
-      const target = createMemo(() => remoteAdminServer(server(), "connectors-v1"));
       const onePasswordTarget = createMemo(() => remoteAdminServer(server(), ONEPASSWORD_CONNECTOR_CAPABILITY));
       const bitwardenTarget = createMemo(() => remoteAdminServer(server(), BITWARDEN_CONNECTOR_CAPABILITY));
       const whatsappTarget = createMemo(() => remoteAdminServer(server(), WHATSAPP_CONNECTOR_CAPABILITY));
@@ -92,21 +67,17 @@ const context = createSimpleContext({
       const options: MessagingConnectorOptions = {
         agents: agentList,
         hostName: () =>
-          (target() ?? onePasswordTarget() ?? bitwardenTarget() ?? whatsappTarget() ?? passwordManagersTarget())?.name,
-        serverId: () => target()?.id,
+          (onePasswordTarget() ?? bitwardenTarget() ?? whatsappTarget() ?? passwordManagersTarget())?.name,
       };
-      const github = hostGitHubConnectorPort(() => target()?.id);
       const onePassword = hostOnePasswordConnectorPort(() => onePasswordTarget()?.id);
       const bitwarden = hostBitwardenConnectorPort(() => bitwardenTarget()?.id);
       const whatsapp = hostWhatsAppPort(() => whatsappTarget()?.id);
       const passwordManagers = hostPasswordManagerPort(() => passwordManagersTarget()?.id);
       const host = createConnectorSet(
         {
-          github: () => github,
           onePassword: () => onePassword,
           bitwarden: () => bitwarden,
           passwordManagers: () => passwordManagers,
-          messaging: hostMessagingApi(() => target()?.id),
           whatsapp: () => whatsapp,
         },
         options,

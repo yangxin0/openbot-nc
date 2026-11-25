@@ -9,7 +9,6 @@ import {
   startVoiceMeter as startLevelMeter,
 } from "@openbot/ui/voice-recording";
 import { onCleanup } from "solid-js";
-import { desktopAnalytics } from "../../../analytics";
 import { unlockCompletionSound } from "../../../completion-sound";
 import { playVoiceLimitStop, playVoiceLimitWarning } from "../../../voice-limit-sound";
 import { forgetDictatedMessage, noteDictatedMessage, stopSpokenReply } from "../../speech/speech-replies";
@@ -382,9 +381,6 @@ export function createVoiceStore(deps: VoiceStoreDeps) {
       }
       return;
     }
-    const analytics = desktopAnalytics.scope();
-    const audioDurationSeconds = deps.voiceElapsedSeconds();
-    const startedAt = performance.now();
     try {
       await resources.voiceLiveRequest;
       const voice = conversationRuntime(deps.props).voice;
@@ -404,11 +400,6 @@ export function createVoiceStore(deps: VoiceStoreDeps) {
         result = await voice.transcribe({ audio });
       }
       if (!result.text.trim()) throw new Error(currentText().t("composer.voice.noSpeechDetected"));
-      analytics.track("voice_transcription", {
-        result: "succeeded",
-        audio_duration_seconds: audioDurationSeconds,
-        duration_ms: Math.max(0, Math.round(performance.now() - startedAt)),
-      });
       if (resources.voiceDisposed) return;
       if (threadKey !== undefined) {
         deps.thread?.appendTranscript(threadKey, result.text);
@@ -455,12 +446,6 @@ export function createVoiceStore(deps: VoiceStoreDeps) {
         }
       }
     } catch (error) {
-      analytics.track("voice_transcription", {
-        result: "failed",
-        audio_duration_seconds: audioDurationSeconds,
-        duration_ms: Math.max(0, Math.round(performance.now() - startedAt)),
-        failure_code: "transcription_failed",
-      });
       if (!resources.voiceDisposed && threadKey !== undefined) deps.thread?.reportError(voiceTranscriptionError(error));
       else if (!resources.voiceDisposed) {
         const target = { agentId: targetAgentId, serverId: targetServerId };

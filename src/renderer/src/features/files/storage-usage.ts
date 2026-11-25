@@ -32,10 +32,6 @@ export function serverHasChannelStorage(server: ServerSummary | undefined): serv
   return Boolean(server && (server.kind === "local" || serverSupportsCapability(server, STORAGE_CHANNEL_CAPABILITY)));
 }
 
-export function hostedPlanStorageGb(server: ServerSummary | undefined): number | null {
-  return server?.hosted === true && server.storageGb !== undefined ? server.storageGb : null;
-}
-
 export function canManageStorage(server: ServerSummary): boolean {
   return serverRoleCanAdminister(server);
 }

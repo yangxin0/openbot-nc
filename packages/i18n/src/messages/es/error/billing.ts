@@ -31,8 +31,6 @@ export const messages = {
     "El sistema de IVA de la UE no puede comprobar el NIF-IVA ahora. Inténtalo más tarde o continúa sin NIF-IVA.",
   "error.billing.vatUnavailable": "El pago no está disponible ahora. Inténtalo más tarde.",
   "error.billing.invalidRequest": "La solicitud de facturación no es válida.",
-  "error.billing.invalidResponse": "La respuesta de facturación no es válida.",
-  "error.billing.notStripePage": "La página de facturación no es una página de Stripe.",
   "error.billing.customServerOfferMissing": "Este servidor no tiene un plan que pagar.",
   "error.billing.checkoutUnavailable": "El pago no puede empezar ahora. Inténtalo de nuevo en un minuto.",
 } as const satisfies PartialTranslation<typeof source>;

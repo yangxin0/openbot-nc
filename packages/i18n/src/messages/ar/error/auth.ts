@@ -17,8 +17,6 @@ export const messages = {
   "error.auth.serviceUnreachable": "تعذّر على OpenBot الوصول إلى خدمة الحساب. تحقّق من اتصالك، ثم أعد المحاولة.",
   "error.auth.serviceTimeout": "لم تستجب خدمة الحساب في الوقت المحدد. أعد المحاولة.",
   "error.auth.serviceStatus": "أعادت خدمة الحساب خطأً ({status}). أعد المحاولة لاحقًا.",
-  "error.auth.invalidHostedServer": "أعادت خدمة الحساب خادمًا مستضافًا غير صالح.",
-  "error.auth.invalidServerClaim": "أعادت خدمة الحساب رمز خادم غير صالح.",
   "error.auth.codeNotSent": "تعذّر على OpenBot إرسال رمز تسجيل الدخول.",
   "error.auth.deliveryTimeout":
     "تعذّر على OpenBot تأكيد التسليم في الوقت المحدد. قد يصل الرمز رغم ذلك؛ تحقّق من التسليم قبل الإرسال مرة أخرى.",
@@ -37,5 +35,4 @@ export const messages = {
   "error.auth.companySignInTokenInvalid": "أعطى المزوّد تسجيل دخول لا يستطيع OpenBot التحقق منه.",
   "error.auth.companySignInProviderUnreachable": "لم يردّ مزوّد تسجيل الدخول بحساب الشركة.",
   "error.auth.companySignInDomainTaken": "أحد هذه النطاقات يسجّل الدخول من خلال خادم آخر.",
-  "error.auth.companySignInNoServer": "شغّل هذا الخادم قبل أن تُعدّ تسجيل الدخول بحساب الشركة.",
 } as const satisfies PartialTranslation<typeof source>;

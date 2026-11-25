@@ -1,11 +1,9 @@
-import type { CustomServerPlan } from "./custom-server-plans";
 import { type AvatarColor, isAvatarColor } from "./ipc-agent-identity";
 import type { AvatarImageInput } from "./ipc-agents";
 import type { IceServer } from "./signal-protocol/messages";
 import type { ClientBrowserCommandEvent } from "./team-protocol/client-browser-v1";
 import type { HostAppearanceEvent, ServerAppearance } from "./team-protocol/host-appearance-v1";
 import type { HostRestartEvent, HostRestartState } from "./team-protocol/host-update-v1";
-import type { LiveVoiceEvent } from "./team-protocol/live-voice-v1";
 import type { MachineAlertEvent } from "./team-protocol/machine-resources-v1";
 
 export type { HostAppearanceEvent, ServerAppearance, ServerAppearanceShape } from "./team-protocol/host-appearance-v1";
@@ -81,17 +79,11 @@ export interface ServerSummary {
   kind: "local" | "remote";
   state: ServerConnectionState;
   apiUrl: string | null;
-  remoteDesktopAvailable: boolean;
   logoUrl: string | null;
   appearance?: ServerAppearance | null;
   role: TeamRole | null;
   active: boolean;
-  memberLimit?: number;
-  hosted?: boolean;
   restartAvailable?: boolean;
-  storageGb?: number;
-  paymentRequired?: true;
-  customPlan?: CustomServerPlan;
   keyChangedAt?: number;
   thisComputer?: true;
   hidden?: boolean;
@@ -100,21 +92,15 @@ export interface ServerSummary {
   connectionSequence?: number;
   capabilitiesPending?: true;
   hostRestart?: { state: Exclude<HostRestartState, "none">; version: string | null } | null;
-  hostedSleep?: HostedServerSleep | null;
-  hostedIssue?: HostedServerIssue | null;
-  hostedStart?: HostedServerStart | null;
+  relayHost?: ServerRelayHost;
 }
 
-export type HostedServerIssue = "plan_ended" | "wake_failed" | "start_timeout";
+export interface ServerRelayHost {
+  user: string;
+  device: string | null;
+}
 
 export type HostedServerStartStep = "machine" | "restore" | "openbot" | "provider_limit";
-
-export interface HostedServerStart {
-  step: HostedServerStartStep;
-  startedAt: number;
-}
-
-export type HostedServerSleep = "sleeping" | "waking";
 
 export interface JoinServerInput {
   inviteUrl: string;
@@ -150,12 +136,6 @@ export interface HostStatus {
   logoUrl: string | null;
   appearance: ServerAppearance | null;
   apiOnline: boolean;
-  remoteDesktopReady: boolean;
-  remoteDesktopScreenRecordingDenied: boolean;
-  remoteDesktopNeedsX11Session: boolean;
-  remoteDesktopUnattended: boolean;
-  remoteDesktopActiveSessions: number;
-  remoteDesktopMaxSessions: number;
   message: string | null;
 }
 
@@ -300,7 +280,6 @@ export type TeamRealtimeEvent =
     }
   | HostRestartEvent
   | HostAppearanceEvent
-  | LiveVoiceEvent
   | MachineAlertEvent
   | ClientBrowserCommandEvent;
 
@@ -451,89 +430,7 @@ export interface UpdateTeamMemberInput {
   disabled?: boolean;
 }
 
-export interface RemoteDesktopDisplay {
-  id: string;
-  label: string;
-  width: number;
-  height: number;
-  primary: boolean;
-}
-
 export type RemoteDesktopIceServer = IceServer;
 
-export interface RemoteDesktopCapabilities {
-  ready: boolean;
-  platform: "darwin" | "win32" | "linux";
-  unattended: boolean;
-  runtime: "sunshine-moonlight";
-  protocolVersion: 2;
-  displays: RemoteDesktopDisplay[];
-  selectedDisplayId: string | null;
-  activeSessions: number;
-  maxSessions: number;
-}
-
-export type RemoteDesktopPhase = "starting_host" | "connecting" | "connected" | "disconnecting" | "error";
-export type RemoteDesktopTransport = "unknown" | "p2p" | "relay";
-
-export const REMOTE_DESKTOP_ERROR_CODES = [
-  "host_unavailable",
-  "host_permissions_required",
-  "session_capacity_reached",
-  "session_expired",
-  "session_revoked",
-  "protocol_mismatch",
-  "connection_failed",
-] as const;
-
-export type RemoteDesktopErrorCode = (typeof REMOTE_DESKTOP_ERROR_CODES)[number];
-
-export const REMOTE_CONTROL_ACCESS_LEVELS = ["owner", "admins", "members"] as const;
-export type RemoteControlAccess = (typeof REMOTE_CONTROL_ACCESS_LEVELS)[number];
-
-export interface RemoteControlPolicy {
-  access: RemoteControlAccess;
-  askOnHost: boolean;
-}
-
-export const DEFAULT_REMOTE_CONTROL_POLICY: RemoteControlPolicy = { access: "members", askOnHost: false };
-
-export function isRemoteControlAccess(value: unknown): value is RemoteControlAccess {
-  return isOneOf(REMOTE_CONTROL_ACCESS_LEVELS, value);
-}
-
-export function remoteControlAllowsRole(access: RemoteControlAccess, role: TeamRole): boolean {
-  if (access === "members") return true;
-  return access === "admins" ? canAdministerServer(role) : role === "owner";
-}
-
-export interface RemoteDesktopSession {
-  id: string;
-  serverId: string;
-  viewerUrl: string;
-  viewerGrant: string;
-  displays: RemoteDesktopDisplay[];
-  selectedDisplayId: string | null;
-  phase: RemoteDesktopPhase;
-  transport: RemoteDesktopTransport;
-  errorCode: RemoteDesktopErrorCode | null;
-  message: string | null;
-  createdAt: string;
-  grantExpiresAt: string;
-}
-
-export type RemoteDesktopConnectResult =
-  | { status: "connected"; session: RemoteDesktopSession }
-  | { status: "refused"; errorCode: RemoteDesktopErrorCode; message: string };
-
-export interface RemoteDesktopConnectInput {
-  serverId: string;
-}
-
-export interface RemoteDesktopSelectDisplayInput {
-  serverId: string;
-  displayId: string;
-}
-
 import { INPUT_LIMITS } from "./input-limits";
-import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "./runtime-values";
+import { isBoolean, isDynamicRecord, isNumber, isString } from "./runtime-values";

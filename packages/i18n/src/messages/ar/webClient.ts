@@ -83,8 +83,6 @@ export const messages = {
   "webClient.error.uploadCancelled": "تم إلغاء رفع المرفق.",
   "webClient.error.duplication": "لا يدعم هذا الخادم تكرار الوكلاء.",
   "webClient.error.connectServerFirst": "اتصل بهذا الخادم أولًا.",
-  "webClient.error.agentInstallNotAllowed":
-    "يمكن للمالك أو المسؤول فقط إضافة وكيل هنا، ويجب أن يشغّل الخادم إصدارًا حديثًا من OpenBot.",
   "webClient.error.linkDesktopOnly": "يُفتح هذا الرابط في تطبيق سطح المكتب فقط.",
   "webClient.error.saveEndpointOffline": "اتصل بخادمك لحفظ نقطة نهاية.",
   "webClient.error.removeEndpointOffline": "اتصل بخادمك لإزالة نقطة نهاية.",

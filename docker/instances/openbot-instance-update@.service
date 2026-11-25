@@ -4,5 +4,5 @@ After=docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/openbot-docker/instances/openbot-instance update-request %i
+ExecStart=/opt/openbot-nc-docker/instances/openbot-instance update-request %i
 TimeoutStartSec=45min

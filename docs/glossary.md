@@ -5,7 +5,7 @@ table, IPC channel or product string, or when a term in the code disagrees with 
 [AGENTS.md](../AGENTS.md#terms) carries the two naming rules that are decisions rather than lookup.
 
 - **agent**: the product object (`AgentStore`, `AgentSummary`, `agent-${uuid}`,
-  `~/OpenBot/Agents/<id>`, `projection_agents`), a coding agent, or a marketplace agent
+  `~/OpenBot-NC/Agents/<id>`, `projection_agents`), a coding agent, or a marketplace agent
   (`ipc-marketplace-agents.ts`). **teammate** is prompt and marketing text, never a type.
   Human members use `TeamMemberSummary`.
 - **agent template**: a public, link-only copy of one agent's instructions, skills and routines
@@ -19,7 +19,7 @@ table, IPC channel or product string, or when a term in the code disagrees with 
   display data of an agent) or the account profile (`v1/me/profile`).
 - **bot**: do not use for new product code. Keep released names: Team API v1-v3
   `bot`/`botId`/`bots-changed` (`current-agent-keys.ts` translates), `bots.json`, `mailbox.json`,
-  `legacy-import:bots:v1`, and readable `~/OpenBot/Bots` path prefixes. Accept `bot-<uuid>` IDs from
+  `legacy-import:bots:v1`, and readable `~/OpenBot-NC/Bots` path prefixes. Accept `bot-<uuid>` IDs from
   databases that did not run migration v13. `"first-bot"` is an avatar seed; `BloubBot` and the
   lucide `Bot` icon are library names.
 - **channel**: the shared multi-agent chat (`ChannelStore`, `ChannelSummary`, `projection_channels`,
@@ -81,7 +81,7 @@ table, IPC channel or product string, or when a term in the code disagrees with 
   (`workflow_versions`). A **workflow webhook trigger** is a trigger node with a webhook route of
   the `workflow` owner kind (`workflow_trigger_webhooks`).
 - **shared table**: a table an agent created in the one file every agent shares
-  (`~/OpenBot/Shared/Data/agent-data.db`, `SharedTable`, `AgentTables`). `openbot.db` is the
+  (`~/OpenBot-NC/Shared/Data/agent-data.db`, `SharedTable`, `AgentTables`). `openbot.db` is the
   application's database and holds none of these. **owner**: the agent whose id
   `openbot_metadata` records for a table, and the only agent that can drop or alter it; every other
   agent can still read and write its rows, and the user can delete any table in agent settings.

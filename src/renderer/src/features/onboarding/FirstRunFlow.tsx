@@ -3,7 +3,6 @@ import type { AgentModelId, AgentProviderId, AppSetupState, DesktopPlatform } fr
 import { Button, ErrorReference } from "@openbot/ui";
 import { useText } from "@openbot/ui/text";
 import { createEffect, createSignal, createStore, createUniqueId, For, Match, Show, Switch, untrack } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
 import { ComputerUseSetup } from "../computer-use/ComputerUseSetup";
 import { FirstRunChoice, FirstRunTeam } from "./FirstRunChoice";
 import { FirstRunExistingServers, type FirstRunServer } from "./FirstRunExistingServers";
@@ -12,8 +11,6 @@ import { FirstRunPlanStep } from "./FirstRunPlanStep";
 import { firstRunTransition } from "./first-run-transition";
 import { OnboardingComputerVisual } from "./OnboardingComputerVisual";
 import { createOnboardingAvatarVariant, createOnboardingTeam, onboardingSessionSeed } from "./onboarding-avatars";
-import type { OnboardingJourney } from "./onboarding-context";
-import { onboardingPort } from "./onboarding-port";
 import { FREE_PROVIDER } from "./onboarding-provider-rows";
 import { createSetupProviders, type SetupProviderProps } from "./SetupProviderPicker";
 import { createSetupNext } from "./setup-next";
@@ -21,17 +18,18 @@ import { createSetupNext } from "./setup-next";
 export interface FirstRunFlowProps extends SetupProviderProps {
   state: AppSetupState;
   platform: DesktopPlatform;
-  onSave: (provider: AgentProviderId, model: AgentModelId | null, journey: OnboardingJourney) => Promise<void>;
-  onAnalyticsChoice: (enabled: boolean, chosen: boolean) => void;
+  onSave: (provider: AgentProviderId, model: AgentModelId | null) => Promise<void>;
   onProviderStepShown?: () => void;
   logoVariant?: AppLogoVariant;
   existingServers?: readonly FirstRunServer[];
   onOpenServer?: (serverId: string, provider: AgentProviderId) => Promise<boolean>;
+  teamName?: string | null;
+  teamBusy?: boolean;
+  teamError?: string | null;
+  onConnectTeam?: () => void;
 }
 
 const TEAM_SIZE = 7;
-const TERMS_URL = "https://openbot.run/terms";
-const PRIVACY_URL = "https://openbot.run/privacy";
 
 type FirstRunStep = "choose" | "plan" | "computer";
 type FirstRunPath = "free" | "plan" | null;
@@ -41,9 +39,6 @@ interface FirstRunState {
   path: FirstRunPath;
   saving: boolean;
   finishWhenReady: boolean;
-  skipped: boolean;
-  analytics: boolean;
-  analyticsTouched: boolean;
   startNew: boolean;
   openingServer: string | null;
 }
@@ -55,20 +50,9 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
     path: null,
     saving: false,
     finishWhenReady: false,
-    skipped: false,
-    analytics: false,
-    analyticsTouched: false,
     startNew: false,
     openingServer: null,
   });
-  void onboardingPort()
-    .getAnalyticsDefault()
-    .then(({ enabled }) =>
-      setState((current) => {
-        if (!current.analyticsTouched) current.analytics = enabled;
-      }),
-    )
-    .catch(() => undefined);
   const [screenElement, setScreenElement] = createSignal<HTMLElement | undefined>();
   const providers = createSetupProviders(props, undefined, { includeFree: () => state.path !== "plan" });
   const next = createSetupNext(providers);
@@ -144,20 +128,8 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
   );
 
   const existingShown = () =>
-    state.step === "choose" &&
-    !state.startNew &&
-    state.path === null &&
-    !state.analyticsTouched &&
-    (props.existingServers?.length ?? 0) > 0;
+    state.step === "choose" && !state.startNew && state.path === null && (props.existingServers?.length ?? 0) > 0;
   const shownStep = () => (existingShown() ? "existing" : state.step);
-
-  function trackStep(
-    action: "viewed" | "next" | "back" | "skipped",
-    path: FirstRunPath | "existing" = state.path,
-  ): void {
-    desktopAnalytics.track("onboarding_step", { step: shownStep(), action, ...(path ? { path } : {}) });
-  }
-  createEffect(shownStep, () => untrack(() => trackStep("viewed")));
 
   function moveTo(step: FirstRunStep): void {
     providers.clearErrors();
@@ -169,13 +141,9 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
   }
 
   function startFree(): void {
-    const fromPlan = state.step === "plan";
-    if (!fromPlan) props.onAnalyticsChoice(state.analytics, state.analyticsTouched);
-    trackStep(fromPlan ? "skipped" : "next", "free");
     providers.chooseProvider(FREE_PROVIDER);
     setState((current) => {
       current.path = "free";
-      if (fromPlan) current.skipped = true;
     });
     retryFree();
     const following = stepsFor("free")[1];
@@ -191,8 +159,6 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
 
   function usePlan(): void {
     if (providers.selectedProvider() === FREE_PROVIDER && !providers.customSelected()) providers.clearChoice();
-    props.onAnalyticsChoice(state.analytics, state.analyticsTouched);
-    trackStep("next", "plan");
     setState((current) => {
       current.path = "plan";
     });
@@ -205,7 +171,6 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
       next.connectSelected();
       return;
     }
-    trackStep("next");
     if (following) moveTo(following);
     else openWhenReady();
   }
@@ -248,8 +213,6 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
 
   async function openServer(server: FirstRunServer): Promise<void> {
     if (state.openingServer !== null || !props.onOpenServer) return;
-    props.onAnalyticsChoice(state.analytics, state.analyticsTouched);
-    trackStep("next", "existing");
     setState((current) => {
       current.openingServer = server.id;
     });
@@ -267,7 +230,6 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
   }
 
   function startNew(): void {
-    trackStep("skipped");
     providers.clearErrors();
     void firstRunTransition("step", () => {
       setState((current) => {
@@ -279,7 +241,6 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
   function previousStep(): void {
     const previous = steps()[stepNumber() - 2];
     if (!previous) return;
-    trackStep("back");
     moveTo(previous);
   }
 
@@ -292,10 +253,7 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
     });
     providers.setError("");
     try {
-      await props.onSave(provider, providers.customSelected() ? providers.customModel() : null, {
-        ...(state.path ? { path: state.path } : {}),
-        skipped: state.skipped,
-      });
+      await props.onSave(provider, providers.customSelected() ? providers.customModel() : null);
     } catch (cause) {
       providers.setError(errorMessage(cause, t("onboarding.error.finish")), cause);
       setState((current) => {
@@ -382,15 +340,9 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
                         reason={blockedReason()}
                         onStartFree={startFree}
                         onUsePlan={usePlan}
-                        analytics={state.analytics}
-                        onAnalyticsChange={(enabled) =>
-                          setState((current) => {
-                            current.analytics = enabled;
-                            current.analyticsTouched = true;
-                          })
-                        }
-                        onOpenTerms={() => void onboardingPort().openUrl(TERMS_URL)}
-                        onOpenPrivacy={() => void onboardingPort().openUrl(PRIVACY_URL)}
+                        teamName={props.teamName}
+                        teamBusy={props.teamBusy}
+                        onConnectTeam={props.onConnectTeam}
                       />
                     }
                   >
@@ -400,8 +352,6 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
                       disabled={busy()}
                       onOpen={(server) => void openServer(server)}
                       onStartNew={startNew}
-                      onOpenTerms={() => void onboardingPort().openUrl(TERMS_URL)}
-                      onOpenPrivacy={() => void onboardingPort().openUrl(PRIVACY_URL)}
                     />
                   </Show>
                 </section>
@@ -420,6 +370,14 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
               </Match>
             </Switch>
           </div>
+
+          <Show when={state.step === "choose" ? props.teamError : null}>
+            {(message) => (
+              <p class="onboarding-error" role="alert">
+                {message()}
+              </p>
+            )}
+          </Show>
 
           <Show when={providers.error()}>
             <p class="onboarding-error" role="alert">

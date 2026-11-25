@@ -23,7 +23,7 @@ export function createLoginItem(options: { appVariant: AppVariant; server: boole
   const configHome = process.env.XDG_CONFIG_HOME;
   return linuxAutostartLoginItem({
     configHome: configHome && isAbsolute(configHome) ? configHome : join(homedir(), ".config"),
-    fileName: options.appVariant === "production" ? "openbot.desktop" : `openbot-${options.appVariant}.desktop`,
+    fileName: options.appVariant === "production" ? "openbot-nc.desktop" : `openbot-nc-${options.appVariant}.desktop`,
     executablePath: process.env.APPIMAGE || process.execPath,
   });
 }

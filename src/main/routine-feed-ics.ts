@@ -29,7 +29,7 @@ export function routineFeedIcs(calendar: RoutineCalendar, text: RoutineFeedText,
     const start = icsUtc(new Date(run.at));
     lines.push(
       "BEGIN:VEVENT",
-      `UID:${icsText(`${run.routineId}-${start}@routines.openbot.run`)}`,
+      `UID:${icsText(`${run.routineId}-${start}@routines.openbot.local`)}`,
       `DTSTAMP:${stamp}`,
       `DTSTART:${start}`,
       `DURATION:${EVENT_DURATION}`,

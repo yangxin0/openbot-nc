@@ -161,7 +161,6 @@ import {
   LIBRARY_FOLDERS_CAPABILITY,
   LIBRARY_FOLDERS_ROUTES,
 } from "@openbot/contracts/team-protocol/library-folders-v1";
-import { LIVE_VOICE_CAPABILITY } from "@openbot/contracts/team-protocol/live-voice-v1";
 import {
   MACHINE_RESOURCES_CAPABILITY,
   MACHINE_RESOURCES_ROUTES,
@@ -203,7 +202,6 @@ import {
 } from "@openbot/contracts/team-protocol/storage-user-files-v1";
 import { STORAGE_ROUTES } from "@openbot/contracts/team-protocol/storage-v1";
 import { USAGE_CREDITS_CAPABILITY } from "@openbot/contracts/team-protocol/usage-credits-v1";
-import type { TeamProtocolV1Capability } from "@openbot/contracts/team-protocol/v1";
 import type { TeamProtocolV2Json } from "@openbot/contracts/team-protocol/v2";
 import { decodeTeamProtocolV2Json } from "@openbot/contracts/team-protocol/v2";
 import { VAULT_IMPORT_CAPABILITY } from "@openbot/contracts/team-protocol/vault-import-v1";
@@ -402,8 +400,6 @@ import {
   stageAgentImportInParts,
   stageInstanceTransfer,
   startAgentTask,
-  startLiveVoice,
-  stopLiveVoice,
   type TeamApiRequest,
   TeamRequestError,
 } from "@openbot/team-client/team-api-requests";
@@ -441,8 +437,6 @@ export type WorkspaceRequest = <T>(
   largeDownload?: RemoteLargeDownload,
   download?: RemoteDownloadWatch,
 ) => Promise<T>;
-
-const REMOTE_DESKTOP_CAPABILITY = "remote-desktop" satisfies TeamProtocolV1Capability;
 
 export type HostRequestChecks = Pick<
   MobileWorkspaceState,
@@ -530,8 +524,6 @@ type HostRequestActions = Pick<
   | "loadPlanLimits"
   | "setAgentProviderAccount"
   | "startNewChat"
-  | "startLiveVoice"
-  | "stopLiveVoice"
   | "compactContext"
   | "deleteAgentHistory"
   | "loadAgentSessionSettings"
@@ -758,7 +750,6 @@ export function createHostRequestChecks(capabilities: ServerCapabilities): HostR
     canPauseWorkflows: (serverId) => has(serverId, WORKFLOWS_CAPABILITY) && has(serverId, WORKFLOWS_PAUSE_CAPABILITY),
     canReadServerStorage: (serverId) => has(serverId, STORAGE_CAPABILITY),
     canOrganizeLibrary: (serverId) => has(serverId, STORAGE_CAPABILITY) && has(serverId, LIBRARY_FOLDERS_CAPABILITY),
-    canControlComputer: (serverId) => has(serverId, REMOTE_DESKTOP_CAPABILITY),
     canSetAgentNotificationLevel: (serverId) => has(serverId, AGENT_NOTIFICATION_LEVELS_CAPABILITY),
     canStartNewChat: (serverId) => has(serverId, CONTEXT_RESET_CAPABILITY),
     canCompactContext: (serverId) => has(serverId, CONTEXT_COMPACT_CAPABILITY),
@@ -770,7 +761,6 @@ export function createHostRequestChecks(capabilities: ServerCapabilities): HostR
     canRetryMessage: (serverId) => has(serverId, TEAM_MESSAGE_CLIENT_ID_CAPABILITY),
     canDeleteMessages: (serverId) => has(serverId, MESSAGE_DELETE_CAPABILITY),
     canMarkUnreadFrom: (serverId) => has(serverId, CONVERSATION_UNREAD_FROM_CAPABILITY),
-    canUseLiveVoice: (serverId) => has(serverId, LIVE_VOICE_CAPABILITY),
     attachmentSupport: (serverId) => {
       const advertised = capabilities.get(serverId) ?? [];
       return {
@@ -1689,17 +1679,6 @@ export function createHostRequestActions({
       requireCapability(capabilities, serverId, CONTEXT_RESET_CAPABILITY, "mobile.agent.newChat.unsupported");
       await runTeamRequest(clearAgentContext(teamApi(serverId), agentId));
     },
-    startLiveVoice: async (input, serverId) =>
-      runTeamRequest(
-        startLiveVoice(capabilityApi(serverId, LIVE_VOICE_CAPABILITY, "mobile.chat.liveVoice.gptUnsupported"), input),
-      ),
-    stopLiveVoice: async (sessionId, serverId) =>
-      runTeamRequest(
-        stopLiveVoice(
-          capabilityApi(serverId, LIVE_VOICE_CAPABILITY, "mobile.chat.liveVoice.gptUnsupported"),
-          sessionId,
-        ),
-      ),
     compactContext: async (agentId, serverId, taskId) => {
       requireCapability(capabilities, serverId, CONTEXT_COMPACT_CAPABILITY, "mobile.agent.compact.unsupported");
       if (taskId === undefined)

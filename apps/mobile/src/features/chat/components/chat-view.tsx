@@ -51,10 +51,8 @@ import {
 } from "@/features/chat/model/turn-thinking";
 import { useChatBackgroundColor } from "@/features/settings/model/chat-background";
 import { useChatRowShown, useThinkingDisplayPreference } from "@/features/settings/model/chat-details";
-import { liveVoiceWebRtc } from "@/features/voice/model/live-voice-webrtc";
 import { replyVoiceReady } from "@/features/voice/model/reply-voice";
 import { speechNative } from "@/features/voice/model/speech-native";
-import { useVoiceSettings } from "@/features/voice/model/voice-settings";
 import { ConnectionStatus } from "@/features/workspace/components/connection-status";
 import { useTurnStepLinesOf } from "@/features/workspace/components/use-agent-activity";
 import { useBrowserRequests } from "@/features/workspace/components/use-live-workspace";
@@ -105,7 +103,6 @@ import { addPastedFiles, ChatDropTarget } from "./composer-paste-target";
 import { type ComposerVoice, liveVoice } from "./composer-voice";
 import type { ChatQueueController } from "./use-chat-queue";
 import { useComposerDictation, useComposerDictationWithSettings } from "./use-composer-dictation";
-import { useGptLiveConversation } from "./use-gpt-live-conversation";
 import { type LiveChannel, useLiveConversation } from "./use-live-conversation";
 
 export interface ChatViewProps {
@@ -638,23 +635,8 @@ export function ChatView({
   const writable = canSend && !readOnly && !notice;
   const voiceMissing = !speechNative;
   const composerDictation = useComposerDictationWithSettings(dictation);
-  const gptLiveChosen = useVoiceSettings((state) => state.gptLive);
-  const gptLiveVoice = useVoiceSettings((state) => state.gptLiveVoice);
-  const serverLiveVoice = useMobileWorkspaceSelector((current) => current.canUseLiveVoice(target.serverId));
-  const gptLive = useGptLiveConversation({
-    active: target.kind === "agent" && gptLiveChosen && serverLiveVoice && liveVoiceWebRtc !== null,
+  const live = useLiveConversation({
     enabled: isFocused && writable,
-    online: serverOnline,
-    focused: isFocused,
-    foreground: foregroundVisit,
-    agentId: target.id,
-    voice: gptLiveVoice,
-    serverId: target.serverId,
-    startSession: (input) => workspace().startLiveVoice(input, target.serverId),
-    stopSession: (sessionId) => workspace().stopLiveVoice(sessionId, target.serverId),
-  });
-  const phoneLive = useLiveConversation({
-    enabled: isFocused && writable && !gptLive.open,
     online: serverOnline,
     focused: isFocused,
     foreground: foregroundVisit,
@@ -665,8 +647,6 @@ export function ChatView({
     outboxMessages,
     send: (text) => (writable ? deliver(text, null, []) : null),
   });
-  const usesGptLive = gptLive.open || (gptLive.available && !phoneLive.open);
-  const live = usesGptLive ? gptLive : phoneLive;
   const voiceAgent =
     target.kind === "agent"
       ? target
@@ -713,7 +693,7 @@ export function ChatView({
       return { ...liveVoice(source, voiceName, t), available: true, start: openSettings };
     return {
       ...liveVoice(source, voiceName, t),
-      start: () => (usesGptLive || replyVoiceReady() ? liveStart() : openSettings()),
+      start: () => (replyVoiceReady() ? liveStart() : openSettings()),
     };
   }, [
     liveAvailable,
@@ -731,7 +711,6 @@ export function ChatView({
     liveError,
     liveCaption,
     voiceName,
-    usesGptLive,
     liveVoiceMissing,
     t,
   ]);

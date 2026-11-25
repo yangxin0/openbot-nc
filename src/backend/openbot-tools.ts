@@ -5,13 +5,6 @@ import {
   CHAT_VISUAL_MIN_HEIGHT,
   CHAT_VISUAL_TITLE_LIMIT,
 } from "@openbot/contracts/chat-visual";
-import {
-  BUG_REPORT_AREAS,
-  BUG_REPORT_SEVERITIES,
-  FEATURE_REQUEST_TYPES,
-  FEEDBACK_FINDERS,
-  FEEDBACK_SURFACES,
-} from "@openbot/contracts/feedback";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import { API_KEY_NAME_PATTERN, CONNECTOR_IDS, VAULT_API_KEY_LIMIT, VAULT_NOTES_LIMIT } from "@openbot/contracts/ipc";
 import { isUiBlockId, UI_BLOCK_LIMITS } from "@openbot/contracts/ui-blocks";
@@ -51,7 +44,6 @@ import {
 } from "./agent/sidebar-tools";
 import { LOCAL_SKILL_TOOL_DEFINITIONS } from "./agent/skill-tools";
 import { readVideoToolShape } from "./agent/video-reader";
-import { CREATE_WEBHOOK_ROUTINE_TOOL, UPDATE_WEBHOOK_ROUTINE_TOOL } from "./agent/webhook-routine-tool";
 import {
   CLOSE_TASK_TOOL,
   closeTaskToolSchema,
@@ -72,15 +64,12 @@ import { CHANNEL_TOOL_DEFINITIONS } from "./channel-tools";
 import { MESSAGING_TOOL_DEFINITIONS } from "./messaging/messaging-tools";
 import { ROUTINE_FLOW_TOOL_DEFINITIONS } from "./routine-flows/routine-flow-tools";
 import {
-  ROUTINE_INSTRUCTION_RULE,
   routineInstructionZodSchema,
   routineLimitPolicyZodSchema,
   routineMissedPolicyUpdateZodSchema,
   routineMissedPolicyZodSchema,
   routineRunPlaceZodSchema,
   routineScheduleZodSchema,
-  webhookEventTypeZodSchema,
-  webhookFiltersZodSchema,
 } from "./routine-tool-schema";
 import { WORKFLOW_ANSWER_TOOL_DEFINITION, WORKFLOW_TOOL_DEFINITIONS } from "./workflows/workflow-tools";
 
@@ -259,15 +248,6 @@ export const webSearchToolSchema = z.strictObject({
   query: z.string().trim().min(1).max(1_000).describe("The whole question, with its context."),
 });
 
-export const serverInstallCommandToolSchema = z.strictObject({
-  name: z
-    .string()
-    .trim()
-    .min(INPUT_LIMITS.serverNameMin)
-    .max(INPUT_LIMITS.serverName)
-    .describe("The server name, such as the host name."),
-});
-
 export const sendToChannelToolSchema = z.strictObject({
   channelId: z.string().min(1).max(INPUT_LIMITS.identifier),
   text: z.string().trim().min(1).max(INPUT_LIMITS.messageText),
@@ -275,9 +255,11 @@ export const sendToChannelToolSchema = z.strictObject({
   paths: z.array(z.string().min(1).max(INPUT_LIMITS.path)).max(INPUT_LIMITS.attachments).optional(),
 });
 
+const REMOVED_CONNECTOR_IDS: ReadonlySet<string> = new Set(["slack", "discord", "telegram", "github"]);
+
 export const MARKETPLACE_APP_IDS: readonly string[] = [
   ...pluginCatalog.plugins.map((plugin) => plugin.slug),
-  ...CONNECTOR_IDS,
+  ...CONNECTOR_IDS.filter((id) => !REMOVED_CONNECTOR_IDS.has(id)),
 ];
 
 export const OPENBOT_TOOL_DEFINITIONS: readonly OpenBotToolDefinition[] = [
@@ -291,40 +273,6 @@ export const OPENBOT_TOOL_DEFINITIONS: readonly OpenBotToolDefinition[] = [
   WORKFLOW_ANSWER_TOOL_DEFINITION,
   ...CRM_TOOL_DEFINITIONS,
   ...MCP_SERVER_TOOL_DEFINITIONS,
-  {
-    name: "list_sites",
-    description:
-      "List the static sites of this OpenBot server, with its site limit and the slots in use. Use this before retrying a hosting mutation.",
-    shape: {},
-  },
-  {
-    name: "publish_site",
-    description:
-      "Publish a new static site after the user explicitly asks to publish it. The source must be inside this agent's workspace or OpenBot Shared.",
-    shape: {
-      sourcePath: z.string().min(1).max(INPUT_LIMITS.path),
-      title: z.string().min(1).max(120),
-      description: z.string().min(1).max(500),
-      spaFallback: z.boolean().optional(),
-    },
-  },
-  {
-    name: "replace_site",
-    description:
-      "Replace an owned static site after the user explicitly asks to replace it. This keeps the URL and resets expiry to 30 days.",
-    shape: {
-      siteId: z.string().min(1).max(INPUT_LIMITS.identifier),
-      sourcePath: z.string().min(1).max(INPUT_LIMITS.path),
-      title: z.string().min(1).max(120),
-      description: z.string().min(1).max(500),
-      spaFallback: z.boolean().optional(),
-    },
-  },
-  {
-    name: "delete_site",
-    description: "Delete an owned static site after the user explicitly asks to delete it.",
-    shape: { siteId: z.string().min(1).max(INPUT_LIMITS.identifier) },
-  },
   {
     name: "attach_files_to_response",
     description:
@@ -378,12 +326,6 @@ export const OPENBOT_TOOL_DEFINITIONS: readonly OpenBotToolDefinition[] = [
     description:
       "Search the web for current facts. Returns a short answer with source URLs. One question per call. To read or use a page, use openbot_browser.",
     shape: webSearchToolSchema.shape,
-  },
-  {
-    name: "create_server_install_command",
-    description:
-      'Make a one-time command that installs OpenBot as a server on a Linux computer or VPS, signed in to the user\'s account. Get the SSH address from the user. Run it as root over SSH; it asks nothing and ends with "OpenBot is connected to your account." It works once, for 15 minutes: never save, show or share it.',
-    shape: serverInstallCommandToolSchema.shape,
   },
   {
     name: "read_video",
@@ -542,46 +484,9 @@ export const OPENBOT_TOOL_DEFINITIONS: readonly OpenBotToolDefinition[] = [
     },
   },
   {
-    name: CREATE_WEBHOOK_ROUTINE_TOOL,
-    description:
-      "Create a routine that a signed HTTP request starts, for this agent or for another local agent when agentId is provided. Use it when the user wants work to start when something happens in another system. It works only in a turn that a person's message started, not in a routine run or for an agent's message. It is active by default. The result has the webhook URL and the request format. The signing secret is not in the result; the result says where the user gets it. Never ask the user for the secret. A null url means the URL is not ready yet; the Routines settings show it when it is.",
-    shape: {
-      agentId: z.string().min(1).max(INPUT_LIMITS.identifier).optional(),
-      name: z.string().min(1).max(INPUT_LIMITS.routineName),
-      instruction: z
-        .string()
-        .min(1)
-        .max(INPUT_LIMITS.routineInstruction)
-        .describe(
-          `What to do with each request. OpenBot adds the request body to the run as untrusted data. ${ROUTINE_INSTRUCTION_RULE}`,
-        ),
-      eventType: webhookEventTypeZodSchema.optional(),
-      filters: webhookFiltersZodSchema.optional(),
-      active: z.boolean().optional(),
-      limitPolicy: routineLimitPolicyZodSchema.optional(),
-      runIn: routineRunPlaceZodSchema.optional(),
-    },
-  },
-  {
-    name: UPDATE_WEBHOOK_ROUTINE_TOOL,
-    description:
-      "Change a webhook routine of this agent, or of another local agent when agentId is provided: its event type, filters, name, instruction, or pause and resume it. Get its routineId from webhookRoutines of list_routines. Fields you leave out keep their saved values; filters replaces the whole list, and an empty list removes all filters. The URL and the signing secret stay the same. It works only in a turn that a person's message started.",
-    shape: {
-      agentId: z.string().min(1).max(INPUT_LIMITS.identifier).optional(),
-      routineId: z.string().min(1).max(INPUT_LIMITS.identifier),
-      name: z.string().min(1).max(INPUT_LIMITS.routineName).optional(),
-      instruction: z.string().min(1).max(INPUT_LIMITS.routineInstruction).optional(),
-      eventType: webhookEventTypeZodSchema.optional(),
-      filters: webhookFiltersZodSchema.optional(),
-      active: z.boolean().optional(),
-      limitPolicy: routineLimitPolicyZodSchema.optional(),
-      runIn: routineRunPlaceZodSchema.optional(),
-    },
-  },
-  {
     name: "update_routine",
     description:
-      "Update, pause, or resume an existing routine for this agent, or for another local agent when agentId is provided. Fields you leave out keep their saved values. Replacement schedules must not run more often than every 3 minutes. A one-time routine that already ran resumes only with a new once schedule in the future. The result is the saved routine. For a webhook routine, use update_webhook_routine.",
+      "Update, pause, or resume an existing routine for this agent, or for another local agent when agentId is provided. Fields you leave out keep their saved values. Replacement schedules must not run more often than every 3 minutes. A one-time routine that already ran resumes only with a new once schedule in the future. The result is the saved routine.",
     shape: {
       agentId: z.string().min(1).max(INPUT_LIMITS.identifier).optional(),
       routineId: z.string().min(1).max(INPUT_LIMITS.identifier),
@@ -790,56 +695,6 @@ export const OPENBOT_TOOL_DEFINITIONS: readonly OpenBotToolDefinition[] = [
         .max(200)
         .describe("A setting id from an earlier result, or a few words for the feature, such as dark mode or speech."),
     },
-  },
-  {
-    name: "send_feedback",
-    description:
-      "Send a bug report or a feature idea for OpenBot itself as a public GitHub issue. OpenBot adds the version, system, model and errors. The user reads the text and approves it before it is sent.",
-    shape: {
-      kind: z
-        .enum(["bug", "idea"])
-        .describe(
-          "bug: something in OpenBot does not work. idea: a feature request or another change that the user wants.",
-        ),
-      title: z.string().min(1).max(200).describe("A short summary in English, no prefix: the feature and the symptom."),
-      text: z
-        .string()
-        .min(1)
-        .max(1000)
-        .describe(
-          "In one to three plain sentences, always in English. For a bug: what went wrong and what the user expected, with the exact error text. For an idea: what the user wants OpenBot to do.",
-        ),
-      details: z
-        .string()
-        .min(1)
-        .max(1000)
-        .describe(
-          "In English. For a bug: what the user did before it, as short numbered steps. For an idea: the problem that it solves. Leave it out when you do not know.",
-        )
-        .optional(),
-      type: z.enum(FEATURE_REQUEST_TYPES).describe("Ideas only. Your choice from the chat.").optional(),
-      area: z.enum(BUG_REPORT_AREAS).describe("Bugs only, when the chat makes it clear.").optional(),
-      severity: z.enum(BUG_REPORT_SEVERITIES).describe("Bugs only, when the chat makes it clear.").optional(),
-      found_by: z
-        .enum(FEEDBACK_FINDERS)
-        .describe(
-          "Default user. agent: you found it yourself; send that unasked only when OpenBot fails again after one retry, not for the user's code, network, accounts or provider limits.",
-        )
-        .optional(),
-      surface: z.enum(FEEDBACK_SURFACES).describe("Where the user saw it, when the chat makes it clear.").optional(),
-      same_as: z
-        .number()
-        .int()
-        .positive()
-        .describe("A similar issue that is the same problem. The report becomes a comment on it.")
-        .optional(),
-    },
-  },
-  {
-    name: "withdraw_feedback",
-    description:
-      "Remove a report that the user sent from GitHub, when they ask. The user approves first. To correct one, remove it, then send it again.",
-    shape: { issue: z.number().int().min(1).describe("Its issue number.") },
   },
   {
     name: "react_to_user_message",

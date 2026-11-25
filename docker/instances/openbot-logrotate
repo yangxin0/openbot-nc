@@ -1,4 +1,4 @@
-/var/log/openbot/*.log {
+/var/log/openbot-nc/*.log {
 	su syslog adm
 	daily
 	maxsize 200M

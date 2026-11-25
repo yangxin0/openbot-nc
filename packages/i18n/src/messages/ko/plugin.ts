@@ -5,7 +5,6 @@ export const messages = {
   "plugin.link.website": "웹사이트",
   "plugin.link.privacyPolicy": "개인정보 처리방침",
   "plugin.link.terms": "서비스 약관",
-  "plugin.copyLink": "링크 복사",
   "plugin.askPrompt": "{name}에게 질문: {prompt}",
   "plugin.section.skills": "스킬",
   "plugin.section.information": "정보",

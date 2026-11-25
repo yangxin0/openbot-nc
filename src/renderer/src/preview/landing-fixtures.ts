@@ -269,7 +269,6 @@ function landingServers(): ServerSummary[] {
       kind: "local",
       state: "online",
       apiUrl: null,
-      remoteDesktopAvailable: false,
       role: null,
       active: false,
     },
@@ -283,7 +282,6 @@ function landingServers(): ServerSummary[] {
       kind: "remote",
       state: "online",
       apiUrl: "https://team.example.com",
-      remoteDesktopAvailable: true,
       role: "owner",
       active: true,
       compatibility: {
@@ -649,7 +647,6 @@ export function createLandingPreviewOptions(now: Date): MockOpenBotOptions {
     sidebarLayout: landingSidebarLayout(),
     browserTabs: [],
     browserControlState: { sessions: [] },
-    remoteDesktopSessions: [],
     hostUpdate: {
       phase: "idle",
       currentVersion: "0.49.0",

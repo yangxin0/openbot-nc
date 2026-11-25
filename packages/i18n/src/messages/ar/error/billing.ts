@@ -27,8 +27,6 @@ export const messages = {
     "لا يستطيع نظام ضريبة القيمة المضافة في الاتحاد الأوروبي التحقق من الرقم الآن. أعد المحاولة لاحقًا أو تابع بدون رقم ضريبي.",
   "error.billing.vatUnavailable": "الدفع غير متاح الآن. أعد المحاولة لاحقًا.",
   "error.billing.invalidRequest": "طلب الفوترة غير صالح.",
-  "error.billing.invalidResponse": "استجابة الفوترة غير صالحة.",
-  "error.billing.notStripePage": "صفحة الفوترة ليست صفحة Stripe.",
   "error.billing.customServerOfferMissing": "لا توجد خطة للدفع لهذا الخادم.",
   "error.billing.checkoutUnavailable": "لا يمكن بدء الدفع الآن. حاول مرة أخرى بعد دقيقة.",
 } as const satisfies PartialTranslation<typeof source>;
