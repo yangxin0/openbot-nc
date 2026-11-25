@@ -100,6 +100,12 @@ that runs loads a new identity certificate in 5 seconds or less.
    The file holds the certificate, the private key, the root certificate and the server address.
    Move it to the device safely, then delete it.
 
+5. To serve the web client at `/app`, build it with `bun run web-client:build`. Then set
+   `RELAY_WEB_CLIENT_DIR` in `remote/.env.relay` to the build folder, as an absolute path or a path
+   that starts with `./` (relative to `remote/`), and start the server again with `$compose up -d`.
+   Compose mounts that folder read-only at `/web-client` in the container and sets
+   `RELAY_WEB_CLIENT_DIR=/web-client` for the server. With no value, the server does not serve `/app`.
+
 Not confirmed: the Docker image and `remote/compose.relay.yaml` were not built on the computer that
 wrote this guide. The server and the commands were tested with Bun 1.3.11 outside Docker.
 

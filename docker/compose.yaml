@@ -1,6 +1,6 @@
 services:
   openbot:
-    image: ghcr.io/nightly-labs/openbot:latest
+    image: ${OPENBOT_IMAGE:-openbot-nc}:${OPENBOT_TAG:-latest}
     restart: unless-stopped
     security_opt:
       - seccomp=./seccomp.json

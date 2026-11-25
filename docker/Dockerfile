@@ -28,8 +28,7 @@ RUN install -d -m 0755 /opt/OpenBot-NC/hosted \
 
 ARG VERSION=unknown
 ARG REVISION=unknown
-LABEL org.opencontainers.image.title=OpenBot \
-  org.opencontainers.image.source=https://github.com/nightly-labs/openbot \
+LABEL org.opencontainers.image.title=OpenBot-NC \
   org.opencontainers.image.licenses=PolyForm-Noncommercial-1.0.0 \
   org.opencontainers.image.version=${VERSION} \
   org.opencontainers.image.revision=${REVISION}

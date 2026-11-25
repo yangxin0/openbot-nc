@@ -221,10 +221,9 @@ turn, so the answer of a run in a routine thread is found. A turn in a routine t
 `turn-completed` event outside `AgentTasks`, as for other side threads, so the chat keeps its turn
 state. When the turn of a side thread is not quiet, `AgentTasks` sends the local-only
 `thread-turn-completed` event (`taskId`, `routine` and the inner `turn`). For a routine thread
-(`routine: true`), the desktop notification, the phone push and the completion sound use it as a
+(`routine: true`), the desktop notification and the completion sound use it as a
 `turn-completed`, read the answer from the routine thread (`readTask`), and a click opens the routine
-thread. For another side thread, only the phone push uses it (see
-[side thread notifications](channels-and-messaging.md#side-thread-notifications)). The Team API
+thread. Another side thread gives no notification. The Team API
 adapters drop this event, so a remote client gets no notification for a turn in a side thread. The released `agent-tasks-v1` routes do not send
 `routineId`; only this computer's IPC list has it.
 
@@ -365,20 +364,9 @@ changed, on this computer and on a joined host.
   extra due source. An occurrence is skipped while the workflow has an open run, and missed
   occurrences become one run. A schedule trigger gives the next steps the run time in UTC and in
   the time zone of the trigger, the same "Local time of this run" line that a routine prompt has.
-  A manual run of a schedule trigger gives its start time. A webhook trigger has a route of its own owner kind (`workflow`); see
-  [Route lifecycle](events.md#route-lifecycle).
-- A GitHub trigger starts a run for each event of the OpenBot GitHub App that matches it
-  (`github-matching.ts`); see [Workflow GitHub triggers](events.md#workflow-github-triggers). A
-  GitHub run blocks only its own issue or pull request: a second event for the same item waits, and
-  events for other items run at the same time. Schedule and webhook triggers keep one open run per
-  workflow. A GitHub output (`github-output.ts`) changes GitHub as the App's bot through
-  `src/main/github-rest.ts`, with 10 actions. "Agent chooses" asks a model to choose labels or a
-  person from the repository's own lists, and drops other values. `workflow_github_actions` keeps
-  each change, so a restart does not post a comment, review or issue again. When a Discord mention
-  started the run, a new issue or a comment links the files of the mention and of the message that it
-  replies to (`discordTriggerFiles` in `discord-matching.ts`). GitHub has no attachment API for an App
-  token, so `attachFiles` in `github-rest.ts` commits them, before the change is recorded as sent, with the Git Data API to the orphan `openbot-attachments` branch, which has no workflow files
-  and so starts no Actions. A file that it cannot copy keeps its Discord link, which expires.
+  A manual run of a schedule trigger gives its start time.
+- OpenBot-NC runs no webhook, GitHub, Discord, Telegram or Slack trigger or output. Saved steps of
+  these kinds stay in the graph and do not run.
 - Typed answers (`ipc-workflow-answers.ts` in the contracts, `workflow-answers.ts` in the backend) are
   plain text in `node.fields`, so the wire and the database do not change, and a client that does not
   know them keeps them. `answer` on an agent, a model step or a webhook trigger lists the fields of
@@ -539,7 +527,7 @@ does not move the switch.
 - Agents use four `openbot` tools (`agent/crm-tool.ts`): `crm_find`, `crm_customer`,
   `crm_payments` and `crm_propose`. They are not in the visible set. Only agents that an owner or
   admin let in (`crm_agent_access`) get answers. A turn from a remote member is refused, and so is a
-  turn in an external chat (Slack, Telegram, Discord) or a channel thread, whose readers can be people
+  turn in an external chat (WhatsApp) or a channel thread, whose readers can be people
   who are not owners or admins. An agent that an active member (not an owner or admin) can see is
   refused too (`HostService.agentVisibleToMembers`): the member reads the agent's chat and can add a
   routine to it. A routine run of an agent that no member can see can read the CRM. An agent
@@ -874,7 +862,7 @@ frozen `agent-tasks-v1` conversation shape. The page has whole turns: the host a
 `limit` (0 to 100) messages or the next turn does not fit, so it can have more or fewer than `limit`, and
 never more than 100. A turn of more than 100 messages is split over pages. A limit of 0
 asks only for `hasOlder`, and a message that the thread does not hold has none. The host makes a page smaller
-until it fits one WebRTC frame. A thread tab on desktop and the web asks once after its read, and shows "Load older
+until it fits one Team V2 frame. A thread tab on desktop and the web asks once after its read, and shows "Load older
 messages" when the thread has more; a new conversation of the thread keeps the pages that it read
 (`src/renderer/src/features/agent-tasks/agent-tasks-state.ts`). A server without the capability shows only the
 newest messages. The Tasks rail page and the phone do not read older pages. The `agent-tasks-v1` list has at most
@@ -1189,7 +1177,7 @@ result with `send_message`. The turn's answer is for the person or another reque
 never relays it for a steered request, and sends no "no reply" note: Claude can still answer a late
 steer in a turn of its own (`moveSteerToTurn`). When the turn ends as interrupted before a reply (a
 stop, or an exit of the provider process), the sender gets an OpenBot note (`MailboxStore.answerFailedRequest`), and does not wait for a result that
-never comes. Routine runs, channel work and messages from Slack, Telegram or
+never comes. Routine runs, channel work and messages from
 WhatsApp do not steer automatically: each starts a turn of its own. A question back (a reply that
 expects a reply) asks for no `send_message` reply, so it stays queued and its own turn's answer goes
 back. Channel and messaging work, and each answer to a request that went to two or more teammates, stay queued
@@ -1602,30 +1590,3 @@ the agent on the default model with a warning. Last, it adds MCP servers whose n
 missing sidebar sections by name and assigns the new agents, connects routine flows with the new
 routine ids, and copies Shared files that are not already there. The result lists the providers that
 were signed in on the other computer and are not signed in here, each with a sign-in button.
-
-## Agent templates
-
-An agent template is a link-only copy of one local agent: the name, title and instructions, the
-avatar, the routines, marketplace skills as references to approved versions, and local skills as
-their `SKILL.md` text. It has no workspace files and no memories. The Publish button in the chat
-header opens `PublishAgentDialog`; `src/main/agent-template-service.ts` builds the snapshot, stops
-when a text field looks like a secret, and posts it to the Account Worker. The Worker keeps one row
-per account and local agent in D1 `agent_templates`, so a second publish updates the same link.
-Unpublish clears the row's content and images and sets `unpublished_at`, but keeps the row, so the
-same agent published again gets the same link. An account can have up to 5 published agents; the
-Worker checks this in the statement that writes the row, so a client or two requests at once cannot
-pass it, and unpublished rows do not count.
-There is no review and no marketplace listing. Before a publish, the renderer draws a 1200×630 share
-card (`agent-template-card.tsx`) with the agent's avatar and text. It draws it there because the
-avatar and its fonts are there, and it uses a `data:` URL because the Content Security Policy
-refuses `blob:` images. The Worker accepts only a PNG of that size, stores it in R2, and serves it
-as the page's `og:image`, so a post on X shows the agent. `openbot.run/agents/<id>` is a public
-card page, tinted with the avatar colour. The Bloub library uses browser-only APIs when its module
-loads, so the page loads the avatar and its colour in the browser after hydration. Its button opens
-`openbot://agents/<id>`, the third renderer link kind in
-`src/main/deep-link-router.ts`. The app then shows the template in `AgentTemplateInstallDialog`;
-like a plugin link, the link itself installs nothing. The page's fallback line also links
-`/app?agent=<id>`, where the browser client shows the same preview. In the same way, the invitation
-page links `/app` with the four invitation fields, and a plugin page links `/app?plugin=<slug>`. The
-browser client removes these fields after it reads them and opens the join dialog or the marketplace
-listing. It never joins or installs without a press.

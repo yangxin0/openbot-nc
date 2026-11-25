@@ -19,4 +19,4 @@ new version section of `CHANGELOG.md`, in the order that the pull requests merge
 files. The pre-commit hook and the Changelog workflow check each file. A pull request with no change
 that a user can see gets the `no-changelog` label.
 
-The notes of the iPhone app go in [`apps/mobile/changelog.d/`](../apps/mobile/changelog.d/README.md).
+The notes of the phone app go in [`apps/mobile/changelog.d/`](../apps/mobile/changelog.d/README.md).

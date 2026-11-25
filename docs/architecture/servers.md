@@ -1,4 +1,4 @@
-# Servers, storage, and billing
+# Servers and storage
 
 ## Storage and files
 
@@ -54,14 +54,8 @@ capability shows no card.
 The optional `storage-user-files-v1` capability (`team-protocol/storage-user-files-v1.ts`, protocol 9
 only) adds `POST /v1/storage/user-files`. It answers the same free and total bytes, plus `userBytes`:
 the bytes that the home folder and the temporary folders of the server's user use on that disk. The
-frozen `storage-disk-v1` reply cannot get a new field, so this is a new route. Only a hosted server
-measures it (`src/backend/user-files-bytes.ts`, `nice -n 19 du -s -x -c`), at most each 10 minutes,
-in the background after the first value. It is null on another host, and on a machine with Docker,
-because `du` cannot read the Docker folder. The clients count the plan storage that is left
-(`hostedPlanDisk` in `@openbot/contracts/hosted-servers`) from `userBytes`. When it is null or the
-host does not have the capability, they subtract `HOSTED_SERVER_BASE_IMAGE_GB` for the system, which
-is correct only for a boat sandbox. Every member can read it. The desktop, the web client and mobile
-prefer this route and use `storage-disk-v1` with an older host.
+frozen `storage-disk-v1` reply cannot get a new field, so this is a new route. The host measures it (`src/backend/user-files-bytes.ts`). Every member can read it. The desktop,
+the web client and mobile prefer this route and use `storage-disk-v1` with an older host.
 
 The optional `library-folders-v1` capability (`team-protocol/library-folders-v1.ts`, protocol 9 only)
 adds `POST /v1/library-folders` and `POST /v1/library-folders/actions` for the folders of the Library
@@ -108,64 +102,10 @@ the metric furthest above its level in place of the storage card, which then doe
 above the level (95%, or 10 points above a higher level) it is red and cannot be closed. A closed card
 stays closed for that metric and level until the use goes below every level.
 
-### Hosted sites per server
-
-A hosted site belongs to the server that published it (`hosted_sites.server_id`, D1 `0024`). The user
-stays the accountable owner, for abuse reports, blocks and account deletion. The desktop sends
-`OpenBot-Host-Id` and `OpenBot-Host-Token` (the machine token of `/v2/remote/hosts/register`) on each
-`/v1/sites` request when it is a registered server. The Worker checks the hash and that the host owner
-is the request user; a wrong token is refused with 401, never counted as unlinked. A server with a
-custom limit (see below) or an entitled plan (`siteLimitForPlan`: Starter 3, Standard 10, Pro 50) has its
-own active-site limit. The other servers of the account share one pool: 3 sites for each user of an
-entitled license (`LICENSE_SITES_PER_USER`), else 1 (`HOSTED_SITE_SHARED_FREE_LIMIT`). The pool is for
-the account, not for each server, so more self-hosted servers do not give more sites. An account has at
-most 300 active sites on its pool and plan servers (`HOSTED_SITE_LIMITS.accountSites`); sites on a
-custom-limit server do not count, so staff can lift the cap for one customer with a custom row. A
-license that lapses gives the free pool again and deletes nothing. A request with no server headers creates only into the account's
-unlinked bucket (limit 1, `server_id IS NULL`); with no `?scope=unlinked`, it still lists and deletes every site of the account,
-the released meaning of `/v1/sites`. Replace and delete in a server scope refuse a site of another
-bucket with 409 `site_other_server`. Every slot count is one SQL condition (`bucketHasRoomSql`,
-`holdsSiteSlotSql`) inside the insert or update that creates or activates the site, so two requests
-cannot take the same last slot, and each count reads the `hosted_sites_owner_status` index. A server's
-list returns its own sites as `used`, and as `limit` the sites it can have now: its own sites plus the
-free slots of its bucket and of the account cap. This keeps the meaning of the frozen `hosted-sites-v1`
-list. The optional `limitReason` tells why that limit can be lower than the bucket's own limit:
-`shared` for a server in the shared pool, `account` when the account cap is full. The desktop uses it
-only for the text of a `site_limit` error; the Team API list does not send it. A server that adopts unlinked sites at registration takes only the free slots of its bucket.
-A downgrade deletes nothing: a server above its limit cannot
-create a site, but it can replace one, and the extra sites end at their expiry. Removing a server moves its sites to the owner's unlinked bucket, so the owner's desktop can still delete them. A registered server updates a site that it published before registration in the unlinked scope.
-
-A row in the D1 table `server_site_limits` (`0048`) replaces the plan's site limit for one server, such
-as an enterprise customer's, from 1 to 1000. It has the rules of `server_member_limits` (see
-[hosted servers](../hosted-servers.md)): the row names the owner account and applies only while that
-account owns the server, it stays when the owner registers the host again, and it stops when the
-account is deleted. The unlinked bucket has no custom limit. No route writes the row; add, change or
-delete it by hand (`openbot-auth-test` for the test Worker):
-
-```sh
-bunx wrangler d1 execute openbot-auth --cwd apps/auth-api --remote --command \
-  "INSERT INTO server_site_limits(server_id, owner_user_id, site_limit, created_at, updated_at)
-   SELECT host_id, owner_user_id, 200, unixepoch() * 1000, unixepoch() * 1000
-     FROM remote_hosts WHERE host_id = '<server id>'
-   ON CONFLICT(server_id) DO UPDATE SET owner_user_id = excluded.owner_user_id,
-     site_limit = excluded.site_limit, updated_at = excluded.updated_at"
-```
-
-For a hosted server that has not published its host, read the owner from `hosted_servers`. Delete the
-row to go back to the plan's limit. A lower limit deletes no site, as a downgrade does. Clients see the
-new limit in the next `GET /v1/sites`.
-
-`hostedSites.list` and `hostedSites.delete` IPC are server-scoped; publish and replace stay local. The
-optional `hosted-sites-v1` capability exposes `POST /v1/hosted-sites/list` for every member and
-`POST /v1/hosted-sites/delete` for an owner or admin, with the frozen codec in
-`team-protocol/hosted-sites-v1.ts`. The host answers with its own account and credential, and only with the server's own sites: the owner's unlinked sites never reach a member, and the Team API has no fallback to delete one. Sites are
-managed in Server settings > Sites, on the desktop and in the browser.
-
 ### Leaving a server
 
 Leaving a joined server has the same effect as an admin removal: the membership and every session of
-it end, on all of the member's devices. On WebRTC, the account service revokes the membership, as it
-does for the owner's removal. On HTTP, `member-leave-v1` adds a bodyless `POST /v1/team/leave`, which
+it end, on all of the member's devices. `member-leave-v1` adds a bodyless `POST /v1/team/leave`, which
 runs the steps of the admin `DELETE /v1/team/members/:id` for the caller; the owner is refused. A host
 without the capability answers 404, so the client only logs out: that token stops working, and the
 membership stays for an admin to remove. Either way the client removes the server, also when the host
@@ -245,7 +185,7 @@ question.
 ### Dictation for a member
 
 `voice-transcription-v1` (`team-protocol/voice-transcription-v1.ts`) lets any member have the host turn
-a short recording into text. `POST /v1/voice/transcribe` takes the raw body (over WebRTC, a file upload):
+a short recording into text. `POST /v1/voice/transcribe` takes the raw body (over Team V2, a file upload):
 a WAV file of 16 kHz mono 16-bit PCM, at most `VOICE_AUDIO_LIMITS.maximumWavBytes` (120 seconds). The
 host answers `{ text }`; the text goes to no agent. The host uses its own speech recognition, as a video
 transcription does (`application-services.ts`): its voice server when it dictates, else the model of
@@ -260,7 +200,7 @@ transcribes on its own computer, and the web client and the phone do not use it 
 
 `agent-import-v1` lets any member, not only an owner or admin, import a Grok Bot export into the host.
 `POST /v1/agent-import/stage` takes the raw `.zip` (at most 100 MB) and answers the preview without
-avatars, so the preview stays under the 2 MB WebRTC frame limit. `AgentImportService.stageUpload` writes
+avatars, so the preview stays under the 2 MB Team V2 frame limit. `AgentImportService.stageUpload` writes
 the file to `agent-import-uploads/` in the host's user data and keeps it under a token that only the
 caller's member id can apply or discard. One member keeps one export, the host keeps four uploads at
 most, and an upload nobody applies is released after 30 minutes; the folder is cleared on the first
@@ -277,7 +217,7 @@ that its free disk space cannot hold (`error.import.uploadDiskSpace`). `POST /v1
 takes the next part, at most 8 MiB, as the raw body, and answers `{ received }`; the offset must be the
 bytes the host has, so a part is never written twice or out of order. `POST /v1/agent-import/v2/stage`
 takes `{ uploadId }` and answers the v1 preview; `apply` and `discard` stay the v1 routes. Every part
-is far under the 100 MB WebRTC file limit, so the transport does not change. The upload holds one of the
+is far under the 100 MB Team V2 file limit, so the transport does not change. The upload holds one of the
 four upload slots, the same member keeps one upload or export, and an upload that gets no part for
 10 minutes is released. A complete upload has the limits of a local import (200,000 files, no byte
 limit, and the free disk space check of each agent's files). Desktop main reads the file one part at a
@@ -290,7 +230,7 @@ handle. A client sends v1 to an older host, and refuses a file over 100 MB there
 `instance-transfer-v1` moves a server's agents and server settings to or from an OpenBot transfer file
 (see [Instance transfer](agents.md#instance-transfer)). Only an owner or admin can use it: the file holds
 every agent's memories and files, and an import adds server settings. It is protocol 7 only. Every file
-that crosses the connection is at most 100 MB, the size of one WebRTC file transfer; a computer's own
+that crosses the connection is at most 100 MB, the size of one Team V2 file transfer; a computer's own
 server keeps the 2 GB limit. `POST /v1/instance-transfer/summary` lists the agents with their counts and
 no avatar address. `POST /v1/instance-transfer/export` takes `{ agentIds, includeFiles, includeSettings }`,
 writes the file to `instance-transfer-uploads/` in the host's user data, sends it as an attachment and
@@ -377,7 +317,7 @@ the agent routine routes; it is not an admin capability. A member sees a routine
 agent it touches is visible, and the host answers a hidden or unknown agent, routine or link with
 404. A webhook trigger's URL goes only to an owner or admin; a member reads it as null. Step input,
 output and error cross with at most 4,000 characters each, and the host empties the step texts of the
-routines with the oldest runs first when a canvas would pass three quarters of one WebRTC frame. The
+routines with the oldest runs first when a canvas would pass three quarters of one Team V2 frame. The
 optional event `routine-flows-changed { agentId }` names the canvas that changed; the host sends it
 only to a connection with the capability and never for a hidden agent. Webhook config, secret
 rotation and webhook test runs stay on `events-v1`.
@@ -387,6 +327,10 @@ that has not ended and answers `{}`. The member needs manage access to each agen
 of the run's steps, and every one of them must be visible.
 
 ### Workflows
+
+In OpenBot-NC, new steps cannot use webhook, GitHub, Discord, Telegram or Slack triggers or outputs.
+Saved steps of these kinds stay in the graph and do not run. The text below still names them where
+the wire format carries them.
 
 `workflows-v1` serves the workflow canvas (see [Workflows](agents.md#workflows)) to a joined desktop,
 to the web client and to the mobile app. Its routes are `POST /v1/workflows/<name>` with the input in the body:
@@ -414,7 +358,7 @@ with the same filter as `get`. The contract header in `team-protocol/workflows-v
 - A webhook trigger's URL goes only to an owner or admin; a member reads it as null. Only an owner
   or admin can make a new secret.
 - Step output and error cross with at most 32,000 characters each, and a run sends its newest
-  2,000 steps. When a page of runs would not fit one WebRTC frame, the host empties the step texts
+  2,000 steps. When a page of runs would not fit one Team V2 frame, the host empties the step texts
   of the oldest runs first, then answers 413 `tooLargeToSend`.
 
 Node kinds, port types, statuses, run sources, trigger types and version kinds cross as open names,
@@ -720,7 +664,7 @@ It adds `olderCount` and `oldestAt` (at most 64 characters) beside the frozen ke
 level of the `POST /v1/channels/read` page. The host adds them only on protocol 7 and only when the
 request advertises the capability, so a released client reads the same bytes as before. A host
 without the capability never sends them, so a client keeps them whenever they are present, and a
-malformed value fails closed. The WebRTC host peer encodes the local response again with the same
+malformed value fails closed. The Team V2 host peer encodes the local response again with the same
 option, so the fields reach the web client and a joined desktop through the data channel too.
 
 ### UI blocks
@@ -748,7 +692,7 @@ the same normalization and wire budget, to the task conversations of `agent-task
 of `POST /v1/agent-tasks/read` and the `snapshot` of the `agent-task-conversation` event. A client
 then shows a question in a side thread as its form, such as the API key card. The host adds it only
 for a connection that advertises the capability; the frozen agent-tasks-v1 decoder drops it for
-every other client. The HTTP and WebRTC clients accept it whenever it is present, and the WebRTC host
+every other client. The HTTP and Team V2 clients accept it whenever it is present, and the Team V2 host
 peer encodes the local response and the events again with the same option.
 
 `ui-block-auto-answer-v1` (`team-protocol/ui-block-auto-answer-v1.ts`, protocol 9 only) adds
@@ -756,7 +700,7 @@ peer encodes the local response and the events again with the same option.
 host presses when nobody answers, its time, and `done` after the host pressed it. The plan card of
 `acknowledge_request` uses it. The frozen `ui-blocks-v1` codecs leave the key out in both
 directions, so the host adds it after it encodes a response or an event (`withUiBlockAutoAnswers`),
-and the WebRTC host peer adds it again after its own encoding. A client copies it back from the wire
+and the Team V2 host peer adds it again after its own encoding. A client copies it back from the wire
 value after it decodes (`addUiBlockAutoAnswers`); the shared team client does this, and the mobile
 app shows the countdown with it. The desktop transports do not copy it yet.
 
@@ -795,7 +739,7 @@ A released client reads the message as its fallback: a `subagents` message whose
 subagents by title. A host without the capability never sends `subagents`, so a client keeps it
 whenever it is present, and a list that the contract refuses fails closed. The host sends each list
 through `clampConversationSubagents`, so only known keys go out, and the lists of one page share a
-wire budget, newest first. The task conversations of `agent-tasks-v1` do not carry it. The WebRTC
+wire budget, newest first. The task conversations of `agent-tasks-v1` do not carry it. The Team V2
 host peer encodes the local response and the events again with the same option.
 
 ### Video generation
@@ -810,7 +754,7 @@ message as its fallback: the mp4 in `attachments`, with no prompt or aspect rati
 the capability never sends `videoGeneration`, so a client keeps it whenever it is present, and a
 value that `isVideoGenerationInfo` refuses fails closed. Only known keys go out, and the values of
 one page share a wire budget, newest first. Channel messages and the task conversations of
-`agent-tasks-v1` do not carry it. The WebRTC host peer encodes the local response and the events
+`agent-tasks-v1` do not carry it. The Team V2 host peer encodes the local response and the events
 again with the same option.
 
 ### Prompt multi-select
@@ -824,7 +768,7 @@ event, and in the `pendingPrompts` of the `runtime-snapshot` event. The host add
 7 or 8 and only for a connection that advertises the capability. A released client shows the question as a
 single choice, and its one answer is valid for the question. A host without the capability never
 sends the flag, so a client keeps it whenever it is present, and a value that is not a boolean fails
-closed. The WebRTC host peer encodes the local response and the events again with the same option.
+closed. The Team V2 host peer encodes the local response and the events again with the same option.
 The iPhone app advertises it through the shared team client, but it still shows the question as a
 single choice.
 
@@ -834,12 +778,11 @@ single choice.
 commands that `ask_user` asks the user to run (see `team-protocol/prompt-detail-v1.ts`). It goes in
 the same places as `prompt-multi-select-v1`. The frozen codecs leave `detail` out. The host adds it
 after the frozen projection, only for a connection that advertises the capability: `team-api-server.ts`
-for HTTP responses and events, and the WebRTC host peer for its responses and event frames. A question
+for HTTP responses and events, and the Team V2 host peer for its responses and event frames. A question
 gets the detail of the source question with the same message id, or, for a `prompt` event and a
 `pendingPrompts` item, the same agent, thread, turn and `requestId`, and the same question `id`. A
 client copies `detail` back from the wire value after it decodes: the shared team client (web client
-and phone) and, on desktop, `remote-server-http.ts`, `remote-server-event-stream.ts` and
-`team-webrtc-client-transport.ts`. Both sides keep only a nonempty string of at most
+and phone) and, on desktop, `remote-server-http.ts` and `remote-server-event-stream.ts`. Both sides keep only a nonempty string of at most
 `INPUT_LIMITS.promptQuestion` characters. A client or a host without the capability sends and shows the
 question as before. The iPhone app shows the detail under the question in the question card.
 
@@ -852,7 +795,7 @@ protocol 9 advertises it. For a connection without the capability, the host chan
 fields in every response, event and agent view to the nearest released level: `none` and `minimal`
 become `low`, `ultra` becomes `max`, and a list keeps each level once. A workflow step `effort` and
 text do not change. A released peer that saves an agent with the changed level replaces the exact
-level. The WebRTC host peer sends the local request and the events socket with the peer's
+level. The Team V2 host peer sends the local request and the events socket with the peer's
 capabilities, so a relayed peer gets the same levels.
 
 ### Context usage
@@ -869,7 +812,7 @@ shape cannot describe, such as a later compaction status, so a client never refu
 it. A host without the
 capability never sends the fields, so a client keeps them whenever they are present, and a value that
 the runtime snapshot decoder refuses fails closed. A new socket gets a new snapshot, so the meter
-comes back after a reconnect. The WebRTC host peer encodes the events again with the same option.
+comes back after a reconnect. The Team V2 host peer encodes the events again with the same option.
 Compacting the context of a joined server's agent stays local only: the Team API has no route for it.
 The iPhone app advertises the capability through the shared team client, but it shows no meter.
 
@@ -886,7 +829,7 @@ Claude agent reports background work. The iPhone app does not show the row.
 
 ### Queue window
 
-`queue-window-v1` keeps the queue snapshot of a long-lived agent inside one WebRTC frame. The
+`queue-window-v1` keeps the queue snapshot of a long-lived agent inside one Team V2 frame. The
 mailbox keeps every finished delivery, and the released `GET /v1/agents/:id/queue` answers all of
 them. After some weeks of use, that answer is larger than the 2 MiB JSON frame, so the host peer
 answers `error.remote.responseTooLarge` and the phone and the web client cannot read the queue.
@@ -894,7 +837,7 @@ answers `error.remote.responseTooLarge` and the phone and the web client cannot 
 On protocol 7, when the request advertises the capability, `GET /v1/agents/:id/queue` and
 `POST /v1/agents/:id/queue/edit` keep every queued, starting and running delivery, the `editing`
 mark included. Then they keep every failed, interrupted and cancelled delivery, newest first, while
-it fits in `WEBRTC_FRAME_BODY_BUDGET`: the phone and the web client show the failure reason of a
+it fits in `TEAM_V2_FRAME_BODY_BUDGET`: the phone and the web client show the failure reason of a
 failed message, and hide a cancelled message, at any age. Only completed deliveries leave the
 window: the newest 100 by `createdAt` stay, while they fit, for the receipts of recent messages.
 The kept deliveries stay in queue order, and the wire shape and keys do not change. A request
@@ -911,7 +854,7 @@ capability.
 each visible agent (queued, starting and running deliveries, the failed deliveries of a failed turn,
 and the welcome mark) in one request, not one `GET /v1/agents/:id/queue` for each agent. On a server
 with many agents, those reads filled the data channel after connect and delayed the chat. The
-answer has no finished history; agents that do not fit in one WebRTC frame, or that have more than 200
+answer has no finished history; agents that do not fit in one Team V2 frame, or that have more than 200
 open deliveries, are in `omitted`, and the client reads them on the released route. The web client and a joined desktop use the route on
 connect, resync, agent changes and `queue-invalidated`, and read the full queue of an agent when the
 user opens its chat. A host without the capability gets the released per-agent reads.
@@ -1022,45 +965,10 @@ another device while the page is open.
 
 The host counts each authenticated request that is not `GET`, `HEAD` or `OPTIONS` as use of its
 session (`isClientUse` in `src/main/team-api/client-use.ts`), unless its path is in `PASSIVE_ROUTES`
-or `PASSIVE_PATTERNS`. Use from another session of the member stops the phone push for 30 seconds,
-and use keeps a hosted server running. A client sends some `POST` reads by itself: on a timer, on a
+or `PASSIVE_PATTERNS`. A client sends some `POST` reads by itself: on a timer, on a
 host event such as `runtime-snapshot`, or when a page loads. Put each such read route in
-`PASSIVE_ROUTES` in the change that adds it, so that an open client that nobody uses does not stop the
-phone push. Keep a route that changes data out of the list. `scripts/computer-activity-e2e.ts` checks
+`PASSIVE_ROUTES` in the change that adds it, so that an open client that nobody uses does not count as use. Keep a route that changes data out of the list. `scripts/computer-activity-e2e.ts` checks
 both cases through the Team API.
-
-### Focus use
-
-`focus-use-v1` adds `POST /v1/client/focus` with an empty body. Only a hosted server advertises it
-(`focusUse` in `TeamApiOptions`), and the capability is v7 only. A client sends it while its app has
-focus and the server is online, through `createFocusUsePing` in `packages/team-client`: the desktop
-main process, the web client and the mobile app each give it their own focus signal and transport.
-The host keeps the focus period of each session apart from `#sessionUse`, so a focused desktop does
-not stop the phone's push notifications. A ping moves `lastClientUseAt` only for 30 minutes after the
-later of the last user action of its session and the start of its focus period. The route is in `PASSIVE_ROUTES`, so the generic client use path
-does not count it. See [hosted servers](../hosted-servers.md) step 5.
-
-### Computer activity
-
-`computer-activity-v1` adds `POST /v1/client/activity` with `{ idleSeconds }`, the whole seconds since
-the last keyboard or mouse input on the computer of a desktop app, in any app. The host answers
-`{ phones }`: whether it sends notifications to a phone of the calling member. A host advertises it
-when it sends phone notifications (`pushNotifications` in `TeamApiOptions`), and the capability is v9
-only. `PushNotificationService.computerInput` keeps the input time of each session in memory and
-uses it for the away time only. It removes an old time at the next report and at the end of the
-session. A phone of the same member stays quiet until that time passes, as after a send
-from another session. The route is in `PASSIVE_ROUTES`: input on a computer does not keep a hosted
-server running.
-
-The desktop main process sends it through `ComputerActivityReport`, owned by `RemoteServerManager`. It
-reads `powerMonitor.getSystemIdleTime` each sixth of the away time (at most 5 seconds, at least 1) and
-tells each joined server that is online, advertises the capability, and whose events the desktop shows
-now: a focused main or chat window, or desktop notifications on with the server not muted and its level
-not "Nothing". It sends only when there was input after its last send, so the last send after the
-member leaves gives the time of the last input. A host that answers `phones: false` is not told again
-for 5 minutes, so a host without a phone of the member does not learn when the member is at the
-computer. The web client cannot read the idle time of the computer and does not send it. The owner of
-the host computer needs no report: the host reads `powerMonitor` itself (`hostComputerInUse`).
 
 ### Library folder events
 
@@ -1103,7 +1011,6 @@ host advertises a capability only when its `TeamApiAdmin` member exists.
 | `agent-instructions-v1` | Read and save the instruction file at the root of an agent's workspace (`AGENTS.md`, or `CLAUDE.md` in an older workspace). A save sends the text that the edit started from; the host refuses it with 409 when the file changed. The workspace path does not cross the wire, and a client cannot show the file in its file manager. Protocol 9 only | `agentInstructions` |
 | `browser-profiles-v1` | Named browser profiles of the host: list, create, rename, recolor, clear, delete, and the profile of each agent. One route, `/v1/browser/tab-profiles`, also answers a member: the profile label of each tab that the member can see. Cookies and site data stay on the host. Advertised when the host has `browserProfiles` | `agentAdmin` |
 | `browser-proxies-v1` | Saved proxies of the host's named browser profiles: list, save, delete, and the proxy of each named profile (`/v1/admin/browser-proxies`, `/save`, `/delete`, `/v1/admin/browser-profiles/proxy`). The list also has the computers of members, and `/computer` adds the computer of the member who sends it; no member can add the computer of another. A password goes to the host only in a save request and never comes back. Advertised when the host has `browserProfiles` | `agentAdmin` |
-| `browser-egress-v1` | The data channel `openbot.browser-egress.v1`, which a desktop client opens only while its member shares the internet connection of that computer with the server. Only the host opens streams: each is one TCP connection of a browser profile with that member's computer as its proxy. The client connects only to a public internet address that it resolved itself, on any port. At most 256 streams, 256 KiB of credit for each stream. A lost egress channel never closes the connection. Advertised when the host has `browserProfiles` | the member's own computer |
 | `browser-profiles-events-v1` | One event with no data, `browser-profiles-changed`, after each change of the named browser profiles or of an agent's profile. A client reads the `browser-profiles-v1` routes again. Advertised when the host has `browserProfiles` | `browserProfiles` |
 | `skills-admin-v1` | List, install, remove, enable skills by marketplace id | `agentAdmin` |
 | `shared-tables-v1` | List and delete shared tables | `sharedTables` |
@@ -1127,13 +1034,11 @@ host advertises a capability only when its `TeamApiAdmin` member exists.
 | `host-admin-v1` | Server name and logo | `hostAdmin` |
 | `host-update-v1` | Check for, download and restart into an app update; cancel a restart that waits | `hostAdmin` |
 | `host-timezone-v1` | Read and set the server timezone | `hostAdmin` |
-| `host-signal-home-v1` | Read (any member) the Signal servers of the host with the latency that the host measures, and choose (owner or admin) one or automatic. Protocol 10 only | `hostAdmin` |
 | `host-voice-model-v1` | Read the speech recognition model of the host and its downloads, and select, download, stop or remove a model. Owner or admin. Only a server in server mode, a hosted server or a server on a computer advertises it: the desktop app of a person keeps the model in its own Settings > Voice. Protocol 10 only | `hostAdmin` |
 | `host-turn-limits-v1` | Read and set the turns at the same time on the host (1 to 128, unlimited, or automatic) and the default task limit of an agent (1 to 64). Owner or admin. Protocol 9 only | `hostAdmin` |
 | `host-personality-v1` | Read (any member) and set (owner or admin) the response style of the agents | `hostAdmin` |
 | `host-key-rotation-v1` | Change the host's key. Owner only: an admin gets 403 | none: only the mobile app sends it |
 | `host-restart-v1` | Restart a self-hosted server now. Owner or admin. Only a host in server mode advertises it. Protocol 9 only | `hostAdmin` |
-| `owner-transfer-v1` | No routes. The host can take a new owner: the owner gives the server to another account through the account service, and the host applies the change. Only a host in server mode that OpenBot does not host advertises it | none: the client calls the account service |
 | `local-servers-v1` | List the servers that the desktop app runs on the host computer, create one, and delete one. Owner only: an admin gets 403. Only the desktop app's own server advertises it | none: only the mobile app sends it |
 | `agent-memory-limit-v1` | Read and set how many memories each agent keeps | `hostAdmin` |
 | `memory-review-v1` | Read and set how often the host's agents review their memories in the background, or Off | `hostAdmin` |
@@ -1155,14 +1060,9 @@ host advertises a capability only when its `TeamApiAdmin` member exists.
 | `provider-default-v1` | Read and set the provider that a new agent of the host starts on | none: only the mobile app sends it |
 | `agent-access-v1` | Read and set the roles that give members access to agents (see [Roles](#roles)) | `hostAdmin` |
 | `server-audit-v1` | Read the changes to the members, roles and agent access of the server (see [Audit log](#audit-log)). Protocol 9 only | `hostAdmin` |
-| `discord-access-v1` | Read and set which Discord roles can use OpenBot in a Discord server; list its roles | `messaging` |
-| `events-v1` | Manage webhook routines, their secrets, and activity | `events` |
 | `routine-recovery-v1` | Read and set a routine's missed-run policy; read its runs with the missed occurrences | `events` |
 | `routine-results-v1` | List the messaging connections and their places; read and set where an agent routine sends its answers. Deliveries stay on the host | none: only the mobile app sends it |
 | `routine-results-whatsapp-v1` | No route or field of its own. The `routine-results-v1` answers can name `whatsapp`, so the options list the host's WhatsApp numbers and a routine can send its answers to one. The host sends WhatsApp only to a client that sends it. Protocol 10 only | none |
-| `webhook-tests-v1` | Send one signed test event to a webhook routine | `events` |
-| `webhook-sender-secret-v1` | Set a webhook routine's signing secret to a secret that the sender made | `events` |
-| `webhook-agent-secret-v1` | Give a new signing secret of an agent's webhook routine to that agent as an API key. The answer has only the key name | `events` |
 | `vault-v1` | The host's Vault: list, add, change and delete logins, cards and contact info; show one saved password, card number or security code; reset a Vault that the host cannot read. No CSV import. A change sends `vault-changed` with no data, so a client reads the list again | `vault` |
 | `vault-v2` | All of `vault-v1`, under `/v1/admin/vault/v2/`, and API keys as a fourth item kind: list each key's variable name and notes, add, change and delete keys, and show one saved key. The host leaves API keys out of every `vault-v1` answer, and `vault-v1` cannot delete or show one, so an older client keeps a valid list. It uses the `vault-changed` event of `vault-v1` | `vault` |
 | `vault-v3` | All of `vault-v2`, under `/v1/admin/vault/v3/`, and a two-step (TOTP) key on a login: list items carry `hasTwoStep`, save adds, replaces or removes the key (absent keeps it, empty removes it), and `codes` answers the current code of each login with a key. No route answers with a key. `vault-v1` and `vault-v2` lists leave out `hasTwoStep`, and their save keeps the saved key. It uses the `vault-changed` event of `vault-v1` | `vault` |
@@ -1177,7 +1077,7 @@ sign-in and folder import stay on the host.
 
 `providers-v1` signs in Codex only, with a device code. A host that serves `providers-v3` also signs
 in Grok (`grok login --device-auth`) and Claude (`claude auth login`), for a host with no visible
-browser, such as a hosted server. `src/backend/agent/cli-code-login.ts` reads the link, and for Grok
+browser, such as a self-hosted server. `src/backend/agent/cli-code-login.ts` reads the link, and for Grok
 the code, from the CLI output. The Claude CLI shows its paste prompt only on a terminal, so the host
 runs it under the util-linux `script`, and the admin sends back the code that the Claude page shows
 (`code-login/submit`). This flow runs only on a Linux host: the macOS `script` refuses a socket for
@@ -1212,26 +1112,6 @@ of the download arrives, and the download continues on the host; a client reads 
 second while a model downloads. The desktop and web clients show it in Server settings > Agent
 defaults for a joined server; mobile shows it in Server settings > Agents.
 
-`host-signal-home-v1` gives the Signal server (Signal home) of the host to an owner or an admin
-(`HostSignalHomeService`, `src/main/host-signal-home.ts`). The host asks the account service for the
-homes (`POST /v2/remote/hosts/:hostId/signal-homes`, machine token) and measures the latency of each
-one: one `GET /health/ready` to open the connection, then the median of three more. A home that does
-not answer in 3 seconds has no latency. The host uses a measurement again for 60 seconds, because any
-member can read the list. The choice is in `openbot-signal-home-v1.json` (`null` is
-automatic) and does not go with an instance transfer, because the latency belongs to the computer.
-Each host ticket that asks for a home sends it as `preferredSignalHome`. The account service gives
-the chosen home when it answers, and the automatic home when it fails or does not answer. A change
-asks for a new ticket one second after the answer, so the answer reaches a remote admin first; when
-the URL changes, the host moves to the new Signal and its members connect again. While the host is on another home than the chosen one, it checks every 15 minutes that the
-chosen home answers from its own network, and only then asks again, so it goes back when the chosen
-home answers. When a move fails after the host left its old Signal, the host asks for another home
-with the failed URL, as after a Signal failure. A change made while a Signal recovery runs waits
-for the recovery to end. The desktop app shows the row in Server settings > General
-only while the host is published and the account service lists two or more homes; the web client
-shows it for a joined server. Mobile shows a Signal server row in Server settings to each member when the
-host lists two or more homes, with the colored latency of the home in use (green under 100 ms, yellow
-under 200 ms, red above or with no answer). Only an owner or an admin can open the list and choose. Safe mode reads the saved choice and sends it too.
-
 `host-timezone-v1` reads and sets the server timezone (`openbot-server-timezone-v1.json`; `null` is
 automatic, the system zone of the host). When an agent creates a routine, the zone comes from the tool
 call first, then from the sender's last message in that turn, then from this setting. The sender's
@@ -1259,41 +1139,11 @@ agents' threads, so the next turn uses the new prompt. A host without the capabi
 
 `host-restart-v1` lets an owner or admin restart a self-hosted server from Restart server in the
 server menu (desktop and web client) or in Server settings (mobile). Only a host in server mode
-(`OPENBOT_SERVER=1`, not a hosted server) advertises it, because only there does a service manager
+(`OPENBOT_SERVER=1`) advertises it, because only there does a service manager
 start the app again: systemd (`Restart=always` in `openbot-nc.service`) or the Docker restart policy.
 The host answers, then quits; it does not use `app.relaunch`, which would start the app outside
-`xvfb-run`. Running agent turns stop, as on any restart. A hosted server still restarts through the
-account service, and a server on this computer through `localServers`. A host that does not answer
+`xvfb-run`. Running agent turns stop, as on any restart. A server on this computer restarts through `localServers`. A host that does not answer
 cannot get the request; then the owner runs `sudo openbot-nc restart`.
-
-`owner-transfer-v1` lets the owner give the server to another OpenBot account from Server Settings ›
-Members (desktop, web client and mobile). The owner enters an email; the account service stores a
-request in `remote_owner_transfers`, sends an email and an `account-servers-changed` event to that
-account, and the new owner accepts or declines in the app while signed in with that email. The
-request expires after 7 days, and a new request replaces it. A server with a `hosted_servers` row
-(OpenBot hosts it) is refused with `owner_transfer_hosted`, when the request is made and when it is
-accepted. Accept changes, in one D1 batch, `remote_hosts.owner_user_id`, the owner membership (the
-earlier owner is removed), the member and site limits, the hosted sites and the Slack, Discord,
-Telegram and webhook routes of the server, and it raises the auth epoch. A server plan stays with
-the earlier owner's Stripe subscription and still counts for the server
-(`subscriptionPaysForOwnerSql`) until someone cancels it. The host notices
-the change when its account registration gets `host_owner_mismatch` or when a renewed Signal ticket
-names another account. It then asks `POST /v2/remote/hosts/:hostId/owner-session` with its machine
-token for a session of the new owner, which revokes the session of the earlier owner on the host,
-rebinds the owner of its team file and signs in as the new owner. Only a host in server mode that
-OpenBot does not host does this, because a desktop app must keep the account of the person at the
-computer.
-Agents, chats, provider sign-ins, saved keys, Vault logins and browser sign-ins stay on the server.
-
-`host-key-rotation-v1` lets the owner change the host's key from another device, with the same steps
-as Server settings → General → Server key on the host computer (`HostService.rotateIdentityKey`).
-The host makes the new key, signs one handover with the current and the new key, and answers with the
-new public key only after the account service accepts the handover. No private key leaves the host.
-The client does not trust the answer: it reads the server list again and follows the signed handover
-from the key that it trusts. The desktop and mobile apps show the time of the last verified handover
-to every member, in Server settings → Server key (`hostKeyChangedAt`, `ServerSummary.keyChangedAt` on
-desktop). The mobile app reads the server list again when Server settings opens. The host advertises the capability only when it can send a
-handover to the account service.
 
 `agent-memory-limit-v1` reads and sets how many memories each agent of the host can keep. It is the
 same value as "Memories per agent" in the host's own Server settings. The snapshot gives the limit and
@@ -1331,12 +1181,11 @@ local handler) and for a joined server.
 The capability also carries the skill question card (see [providers.md](providers.md#skill-suggestions)).
 A skill question message (`itemType` `skill-suggestion:*`) gets `skillSuggestion: { name }` on the
 wire. The frozen protocol 9 projection drops it, so the host adds it after the projection, for a
-connection that advertises the capability only: in HTTP bodies, WebSocket events, and WebRTC bodies
-and event frames (`withSkillSuggestionNames`, `addSkillSuggestionNames`), as `ui-block-vault-v1`
+connection that advertises the capability only: in HTTP bodies, WebSocket events, and Team V2
+bodies and event frames (`withSkillSuggestionNames`, `addSkillSuggestionNames`), as `ui-block-vault-v1`
 does for Vault requests. The filtered conversation cache key includes the capability. The team
 client (`remote-peer.ts`, web) and the desktop joined-server transports
-(`team-webrtc-client-transport.ts` for a host on protocol 9, `remote-server-http.ts` and
-`remote-server-event-stream.ts` when they advertise the capability) copy the key back after the
+(`remote-server-http.ts` and `remote-server-event-stream.ts` when they advertise the capability) copy the key back after the
 frozen decode.
 `POST /v1/skill-suggestions/save` (`{ agentId, messageId }` → `{ saved }`) saves the skill of that
 question with the host's background writer. A member needs chat level on the agent: a viewer gets
@@ -1357,9 +1206,7 @@ a server connects; the desktop reads them for each notification too. The server 
 server before (the effective level is `server ?? the device level`); the agent level replaces the
 server level for that agent (`agentNotificationLevel` in `@openbot/team-client`), in both directions.
 A server set to Nothing, or muted on a device, stays quiet for all agents. A mute stays on each device.
-The shared switch of the agent (`notifications`) still turns notifications off for every member, because the released Team API carries it. Current clients do not show it in the agent settings any more: the matrix shows such an agent with a "Turn on" button, which sets the switch back on. The
-host applies the levels to phone notifications itself (`PushNotificationService`), so phones of every
-version follow them. On the desktop, `RemoteServerManager` reports the effective level in each
+The shared switch of the agent (`notifications`) still turns notifications off for every member, because the released Team API carries it. Current clients do not show it in the agent settings any more: the matrix shows such an agent with a "Turn on" button, which sets the switch back on. On the desktop, `RemoteServerManager` reports the effective level in each
 `ServerSummary`, so the rail, the menus and the island follow it.
 
 Settings › Notifications is the one place that changes these levels: a matrix of the servers and their
@@ -1504,7 +1351,7 @@ the new version. A hidden dialog keeps a notice with the live status, also after
 (`waiting`, `restarting`, `none`) from the host's event stream, and the host sends the current state
 again when a client declares the capability. Like `channelEvent`, the event skips the frozen v1-v3
 event encoders at each hop (host peer, client transport, `remote-peer.ts`, SSE stream). A client that
-loses the host while a restart waits treats it as the restart: desktop keeps the fast WebRTC retry
+loses the host while a restart waits treats it as the restart: desktop keeps the fast retry
 instead of the `host_unavailable` wait for 10 minutes, and web tries again every 5 s for 3 minutes.
 `host-restart-toast.ts` shows the notice until the host is back, for 10 minutes at most.
 
@@ -1516,7 +1363,7 @@ agent has one of four levels for a member:
 
 | Level | The member can |
 | --- | --- |
-| `none` | Not see the agent. The host treats it as hidden for that member: its list, events, push and Live Activity leave it out, and its routes answer 404. |
+| `none` | Not see the agent. The host treats it as hidden for that member: its list and events leave it out, and its routes answer 404. |
 | `view` | Read the agent's conversations and files. Each write answers 403 `error.team.agentViewOnly`. |
 | `chat` | Also send, react, interrupt, edit the queue, ask a side question, reset the context, use tasks, and answer the agent's prompts, approvals and browser requests. |
 | `manage` | Also change the agent's settings, routines, memories, skills and publication (403 `error.team.agentManageDenied` below it). Delete stays admin only. |
@@ -1541,7 +1388,7 @@ agent with Full access can still read the files of other agents on the host.
 The host keeps the roles in `openbot-agent-access-v1.json`, by server ID (`src/main/agent-access-store.ts`).
 It is a preference file, not the database: there is no migration, and an older build ignores it, so a
 downgrade keeps the roles. A file that does not decode closes every agent to members until the next
-save. Nothing goes to the account service. An owner or admin reads the whole set; a member reads only
+save. Nothing goes to another service. An owner or admin reads the whole set; a member reads only
 `mine`. A save sends the whole set with the revision that it read, and the host answers 409 when another
 admin saved after it; the client then reads the set again. A save changes only the levels of the agents
 that the admin can see, and drops the levels of deleted agents. A duplicated agent gets the levels of its
@@ -1605,95 +1452,6 @@ over the Team API (`getHostAuditLog`) each time it opens, and keeps no copy.
 Known limits: a host with no account directory records no join from a local-store invite, and the log
 has no page or date filter.
 
-### Company sign-in
-
-Company sign-in connects one server to the company's OpenID Connect provider (Entra ID, Okta, Google
-Workspace or another one). The account service does all provider work
-(`apps/auth-api/src/server/company-sign-in.ts`); the host and the clients see only OpenBot sessions.
-Migration `0047_company_sign_in.sql` adds the tables. SAML is not supported.
-
-Setup is desktop only: Server settings → Members → Company sign-in (`ServerCompanySignInSection.tsx`),
-for the owner. The owner routes are `/v2/remote/hosts/:hostId/company-sign-in`, `.../test` and
-`.../scim-token`. The dialog sends the issuer, the client ID, the client secret and the domains, and
-starts a test sign-in at the provider. Only a test that passes saves the values. The rules:
-
-- A domain belongs to the first server whose test passes with it. Public mail domains (`gmail.com`
-  and others) are refused.
-- A production account service also needs the TXT record `_openbot.<domain>` with the value of the
-  server. A development API does not check DNS.
-- The issuer field also accepts the metadata URL (the issuer with `/.well-known/openid-configuration`)
-  and an Entra ID tenant domain. The discovery document can give an issuer on the same origin, such as
-  the tenant ID form; that issuer is saved and checked in tokens. Entra ID `common` and
-  `organizations` are refused, because their issuer is a placeholder that no token has.
-- All Google accounts have the issuer `https://accounts.google.com`. For it, the token must also have
-  an `hd` claim (the Workspace domain) that is one of the domains. A personal Google account with a
-  company email has no `hd`, and is refused.
-- The client secret is encrypted with `COMPANY_SIGN_IN_SECRET` (32 bytes or more). Never change this
-  value: it makes the saved secrets unreadable. Without it, the routes answer 503
-  `company_sign_in_not_configured`, and everyone signs in with an email code.
-- When the connection is on, an email code for its domains answers 409 `company_sign_in_required`,
-  and the client goes to company sign-in.
-
-Sign-in routes are `/v1/auth/company/start`, `/callback` and `/exchange`. The flow uses PKCE twice:
-once between the account service and the provider, and once between the app and the account service.
-
-- Desktop (`src/main/company-sign-in-browser.ts`): the main process opens a loopback listener on
-  `127.0.0.1`, opens the provider page in the user's browser, and gets a one-time code (2 minutes)
-  at the listener. It exchanges the code and its verifier for an account session.
-- Web `/app`: `POST /api/browser/company/start` keeps the state and the verifier in the HttpOnly
-  `__Host-openbot-company` cookie (10 minutes) and opens the provider in the same tab.
-  `GET /api/browser/company/return` exchanges the code, sets the `__Host-openbot-web` session cookie,
-  and answers 303 to `/app`. The cookie stops a login CSRF.
-- Phone (`signInMobileWithCompany` in `apps/mobile/src/features/auth/api/mobile-auth.ts`): the start
-  names the return `openbot://company-sign-in` (`MOBILE_COMPANY_SIGN_IN_RETURN`), which only a
-  sign-in start accepts, not a test. `openAuthSessionAsync` opens the provider page and takes the
-  return, and `+native-intent.tsx` ignores another copy of the link. The app gives the code, its
-  verifier and its device to `POST /v1/mobile-auth/company/exchange`, which makes a mobile session
-  (`mobile_auth_sessions`, no host) and replaces the earlier session of that device. The stored
-  session has the marker `signIn: "company"`. A custom scheme is not private on Android, so the
-  verifier, not the link, proves the app.
-
-The provider's subject is linked to an account (`company_sign_in_identities`). A first sign-in uses
-the account with the same email, or makes a new one. When the ID token has no `email`, the service
-uses `preferred_username` (Entra ID). A claim `email_verified: false` is refused.
-
-A person who finishes company sign-in joins the server as `member` with no invitation
-(`RemoteControlPlane.joinByCompanySignIn`). The join uses the same seat checks as an invitation: the
-member limit of the server and the license users of the owner. The rules:
-
-- A revoked membership (the owner removed the person, or the person left) stays revoked at sign-in.
-- With no free seat, the sign-in still gives a session, the join does not occur, and the Worker logs
-  a warning with the host ID.
-- A join ends the earlier remote sessions of the person on that server and sends
-  `account-servers-changed`, so the clients of the person show the server.
-
-SCIM 2.0 (`/scim/v2/Users`, `company-sign-in-scim.ts`) supports what Entra ID and Okta send: list
-with the filter `userName eq "…"`, create, read, and PATCH, PUT and DELETE of `active`. The bearer
-token starts with `obscim_`, shows once, and D1 keeps only its hash. Other attributes belong to the
-OpenBot account and do not change. `active` accepts the strings `"True"` and `"False"`. Off, and
-DELETE, end every session of the account, spend its open email and company sign-in codes, and revoke the membership. A
-create for a person who exists sets `active` as a PATCH does. Off → on joins the person again,
-also after that revocation. A repeated on does not change a membership that the owner revoked.
-
-The daily retention task removes flows after 10 minutes, and codes after they expire or are used.
-
-Known limits:
-
-- The local development host reads its members from its team file, not from D1, so the desktop
-  Members list in `bun run dev` does not show a company sign-in join. Check D1 or the
-  `/v2/remote/hosts` list of the person.
-- The mobile app signs in with a company account, but has no setup.
-- No full sign-in with a real Entra ID tenant has been made. Discovery, the authorize parameters and
-  the token request were checked against the live Microsoft endpoints with a fake application.
-
-### Webhook routines
-
-A webhook belongs to its routine. The host keeps the trigger, the encrypted secret, and receipts in
-SQLite. D1 keeps only the route ID, the host, and the owner account.
-Signal sends each signed request to the connected host without a cloud queue. All `events-v1`
-routes need a host administrator. See [Webhook routines](events.md) and the
-[webhook guide](../webhooks.md).
-
 ## Desktop server notifications
 
 Each desktop profile stores muted server IDs in `servers.json`. `RemoteServerStore` saves a
@@ -1702,199 +1460,8 @@ reconciliation. The server context menu controls mute for local and remote serve
 
 `renderer-forwarders.ts` continues to deliver live events for muted servers, but suppresses
 system notifications. Remote notification content uses the source server's agent list. Both
-server mute and per-agent notification settings apply. Unread state is unchanged. The iPhone app
-has its own level and mute for each server, which the host applies to the notifications it sends to
-that phone (see [iPhone notifications](channels-and-messaging.md#iphone-notifications)). Mute
+server mute and per-agent notification settings apply. Unread state is unchanged. Mute
 settings are not synchronized between devices.
-
-## Billing
-
-Billing is per server. One account can pay for several servers; each server has its own Stripe
-subscription. The Account Worker (`apps/auth-api/src/server/billing-service.ts`) talks to the Stripe
-REST API with `fetch`; there is no Stripe SDK. The plan catalog in `packages/contracts/src/billing.ts`
-holds the plan IDs, storage, member and site limits, relative speed and lookup keys, and no amounts. The amounts are six Stripe Prices with the lookup
-keys `openbot_{plan}_{interval}`. `bun run api:stripe:bootstrap` (`scripts/stripe-bootstrap.ts`)
-creates them and the Customer Portal settings.
-
-- The add server dialog starts a plan. The hosting service
-  (`apps/auth-api/src/server/hosted-billing.ts`) makes the Stripe customer before the Checkout, so
-  two open Checkouts use one customer. The Checkout sets the subscription metadata
-  `openbot_user_id` and `openbot_server_id` (`BILLING_METADATA`). The billing service calls the
-  `onSubscriptionSynced` hook after each subscription sync; the hosting side uses it to provision,
-  stop and resume servers, so billing does not know about boat. See
-  [hosted servers](../hosted-servers.md#lifecycle). The webhook links a new Stripe customer to the
-  account from `openbot_user_id`. It never moves a known
-  customer to another account, and it skips a subscription that names no account.
-- Desktop Settings → Billing and the web Billing dialog render `@openbot/ui/features/billing`: one
-  row for each open plan, with the server name, the plan, its price, and its renewal controls.
-  Hosted plans support cancellation that keeps data, Keep server, and explicit deletion now or
-  after the paid period. A stored deletion date and subscription ID drive the cron; a fresh
-  terminal Stripe state and a per-server operation lease guard deletion. See
-  [server deletion](../hosted-servers.md#billing-and-server-deletion). The price is the list price of the Stripe Price in the subscription's currency (from
-  `currency_options` when that is not the Price's base currency), before discounts and tax. The
-  webhook stores it with the subscription. The
-  account button opens the Customer Portal for the payment method and invoices.
-- Desktop calls the `billing` IPC group; the main process gets a Customer Portal URL from the Worker,
-  checks that it is a `billing.stripe.com` page, and opens it with `shell.openExternal`. The IPC takes
-  no URL. The web client does the same check before `location.assign`. Checkout URLs get the same
-  check for `checkout.stripe.com` (`isStripeCheckoutUrl`).
-- VAT does not use Stripe Tax. The seller is in Poland and is not in the EU One Stop Shop
-  (`apps/auth-api/src/server/billing-tax.ts`). Before a server or license Checkout, the client saves
-  the billing country and an optional EU VAT ID with `GET`/`PUT /v1/me/billing/details` (desktop IPC
-  `billing:get-details`/`billing:set-details`, shared form `BillingDetailsFields`). The Worker keeps
-  them on the Stripe customer: the address country, an `eu_vat` tax ID and `tax_exempt`. While no
-  country is saved, the `GET` adds `suggestedCountry`, the Cloudflare `CF-IPCountry` of the request
-  (not `XX` or `T1`). The form starts on it; only the country that the buyer sends is saved.
-  - A buyer in Poland, and a buyer in another EU country with no valid VAT ID, pay Polish VAT: the
-    Checkout and the license split subscription get the `default_tax_rates` of the Tax Rate with the
-    metadata `openbot_vat=pl_standard` (`VAT_TAX_RATE`, made by `api:stripe:bootstrap`).
-  - A VAT ID of another EU country gets reverse charge (`tax_exempt=reverse`, no Tax Rate) only after
-    the EU VIES REST service confirms it. An unknown ID returns 400 `vat_id_invalid`; no answer from
-    VIES returns 503 `vat_id_unverified`, and nothing changes. The optional setting
-    `VIES_REQUESTER_VAT_ID` (the seller's VAT ID) makes VIES return a consultation number, which the
-    customer metadata `openbot_vies_request` keeps as proof.
-  - A buyer outside the EU (also the UK, Norway and Switzerland) pays no VAT.
-  - A `PUT` of new details also sets the Tax Rate of each open subscription with the metadata
-    `openbot_vat_treatment`, so that the next invoice of a plan that runs gets the new VAT. Checkout,
-    the license split and `scripts/stripe-vat-migrate.ts` write that metadata. A plan from before VAT
-    has none and keeps its tax. The buyer declares the new country with no proof, so each subscription
-    whose VAT treatment changes writes a log line and sends a [pool alert](../hosted-servers.md#pool-alerts)
-    with the customer, the subscription and the two countries.
-  - A customer with no country (a client from before this step) gets a Checkout with Stripe Tax
-    (`automatic_tax`, tax ID collection) and no VAT metadata, as before. With the Worker setting
-    `BILLING_COUNTRY_REQUIRED=true` it gets 409 `billing_country_required` and must update. Production
-    sets it in `wrangler.jsonc` since desktop 0.72.0; run `scripts/stripe-vat-migrate.ts` once more
-    after the deploy, for plans that older clients bought with Stripe Tax before it. Checkout requires the billing address; when its country differs from the saved
-    one, the webhook writes a log line and sends a [pool alert](../hosted-servers.md#pool-alerts)
-    with the Checkout session ID and the two countries.
-  - Consumers in other EU countries pay Polish VAT only below the EU limit of EUR 10,000 a year.
-    `BillingOss` (`apps/auth-api/src/server/billing-oss.ts`) keeps the net euro amount of each paid
-    invoice of such a consumer in D1 (`billing_vat_oss_sales`) and sends one pool alert for a year at
-    EUR 9,000 (`billing_vat_oss_alerts`). It converts other currencies with the ECB rates of
-    `BillingUsd`. Refunds do not lower the total.
-  - `scripts/stripe-vat-migrate.ts` (a dry run by default; `--apply`, `--live`) moves the existing
-    subscriptions from Stripe Tax to the Tax Rate. A customer with no country, or in another EU
-    country with an EU VAT ID that no check confirmed, keeps Stripe Tax and is named for a manual check.
-- The change and cancel actions open the Portal flow of one subscription. The Worker first checks
-  that the subscription belongs to the account.
-- The server name comes only from a `remote_hosts` row that the same account owns. A plan whose
-  server was removed stays in the list, because Stripe bills it until the account cancels it.
-- The webhook (`/v1/stripe/webhook`) checks the Stripe signature, records the event ID to ignore a
-  repeat, and gets the subscription from Stripe again before it writes the D1 row. So the order of
-  events has no effect.
-- Without `STRIPE_SECRET_KEY` billing is off: the state is `available: false`, and the Portal route
-  and the webhook answer 503.
-
-Rule: plan limits read `getServerEntitlement` (`apps/auth-api/src/server/billing-entitlement.ts`)
-only. It decides which statuses and grace periods give a server a plan, and it counts a plan only
-for a server that the paying account owns. Do not read `billing_subscriptions` or a Stripe status in
-another place.
-
-### Commercial license
-
-The license is a second Stripe product next to the server plans
-(`packages/contracts/src/license.ts`). One account has at most one open license. Its subscription
-quantity is the number of users. There are two tiers, Starter and Team. Each tier has a monthly and a
-yearly price, and each of these has a bundle price for an account that pays for a hosted server. That
-gives 8 Stripe prices (`LICENSE_PLANS`):
-
-| Plan | Lookup key | Month (EUR) | Year (EUR) | Users |
-| --- | --- | --- | --- | --- |
-| Starter | `openbot_license_starter_{month,year}` | 10 | 96 | 1 |
-| Starter bundle | `openbot_license_starter_bundle_{month,year}` | 9 | 86.40 | 1 |
-| Team | `openbot_license_{month,year}` | 25 for 2 users, + 15 for each extra user | 240, + 144 | 2–10 |
-| Team bundle | `openbot_license_bundle_{month,year}` | 22.50, + 13.50 | 216, + 129.60 | 2–10 |
-
-A year is 12 months less 20% (`LICENSE_YEAR_DISCOUNT_PERCENT`). The bundle discount
-(`LICENSE_BUNDLE_DISCOUNT_PERCENT`: 10%) comes off after it. The amounts are
-in `LICENSE_PLAN_PRICES` (EUR is the base currency; USD and PLN are `currency_options` with their own
-amounts). Team prices are graduated; the 1-user prices are flat. `stripe-bootstrap.ts` creates each
-price with the metadata `openbot_license_tier`, `openbot_license_interval` and
-`openbot_license_bundle`, and `licensePlanFromPrice` reads them. A price with no metadata is Team monthly: the license from before
-the tiers used the same lookup key. The license terms allow 3 devices for each user
-(`LICENSE_DEVICES_PER_USER`); the app shows this and does not count devices.
-
-- A checkout names `tier: "starter" | "team"` and `interval`. A request with no tier is Team monthly,
-  as an app before the tiers sends. The Worker sells the bundle price when the account pays for any
-  hosted server plan (`accountHasServerPlan`: active, trialing, or past due in the grace period). The
-  `licenses` row stores `bundle`. After each server plan sync, `LicenseService.alignBundlePrice` moves
-  an open license to the price of its tier and interval with the bundle that the account now has, with
-  `proration: none`, so the change starts at the next renewal. It logs a Stripe failure and does not
-  fail the sync.
-- A server create can order a license (`license: {tier, users}` in `POST /v2/hosting/servers`). The
-  Worker refuses a Team license on a Starter server, and more Team users than the server plan has
-  members (400 `invalid_hosted_server_request`). An account with an open license gets 409
-  `license_exists`. Fewer users than the people in use get 409
-  `license_users_in_use`, as a license checkout does. One Checkout page then has 2 line items: the server price, and the license bundle
-  price for the same interval and currency, with the users as its quantity. The customer pays one
-  invoice. On the first sync of the paid subscription, `LicenseService.splitOrder` makes a license
-  subscription with the metadata `openbot_order_subscription` (the server subscription), anchored at
-  the server period end with `proration_behavior=none`, so its first invoice is 0. Then it deletes the
-  license item from the server subscription, also with no proration. Each later sync runs the split
-  again until it is done, and the metadata stops a second license subscription. The sales ledger
-  divides the order invoice into a server fact and a license fact, and ignores the 0 invoice of the
-  split. The Checkout session metadata keeps the order, so "Open the payment page again" makes a page
-  with the same license, unless the account has a license by then.
-- Promotion: the Worker setting `LICENSE_TRIAL_END` (ISO 8601, in `wrangler.jsonc`; empty turns it
-  off) makes each new license free until that time. `LicenseService.trialEnd()` gives it while it is
-  at least 49 hours away, because Stripe Checkout needs a `trial_end` 48 hours ahead; after that the
-  license sells at full price. `GET /v1/me/license` then has `trialEnd` (ms), and the app shows
-  "Free until" with the date in UTC. A license checkout sets `subscription_data[trial_end]`, so the
-  license is `trialing` and the first charge is on the trial end. A server order during the promotion
-  has no license item: the server is the only line, and the session and subscription metadata keep
-  the order (`openbot_order_license_{tier,users,interval,trial_end}`). `splitOrder` then makes the
-  license subscription at the bundle price with `trial_end` (at least 1 hour ahead, for a late
-  webhook) and removes the order metadata from the server subscription. The 0 trial invoice is a
-  `first_purchase` sales fact of 0, and the charge on the trial end is a `renewal`. Apps before the
-  promotion ignore `trialEnd`; Stripe Checkout still shows the trial.
-- The 1-user tier refuses `POST /v1/me/license/users` with 409 `license_one_user`.
-  `POST /v1/me/license/plan` sells upgrades only: Starter to Team monthly or yearly, and
-  Team monthly to yearly. It bills the difference now (`always_invoice`,
-  `payment_behavior=error_if_incomplete`). Any other change is 409 `license_plan_change`: to go down,
-  the owner cancels at the period end and buys again.
-- The `licenses` table stores `tier`, `billing_interval` and `bundle` (migration `0041`). NULL is Team
-  monthly.
-- Users are people, not servers or computers: the owner, plus each distinct account that is an
-  active member (`remote_memberships`) of a server that the owner owns. AI agents and chat-app
-  participants do not count.
-- While the license is open, it is a hard limit. `RemoteControlPlane` adds
-  `LICENSE_SEAT_AVAILABLE_SQL` to the member seat check of an invite accept and a reactivation, in the
-  same statement as the server plan limit. A full license refuses a new person with 409
-  `license_users_full`. A person that the license already counts can join another server of the
-  owner. Members who joined before are never removed. Without an open license, only the server plan
-  limit (`getServerEntitlement`) applies.
-- `apps/auth-api/src/server/license-service.ts` owns the `licenses` D1 table (migration `0038`).
-  The billing webhook gives a subscription with the license lookup key to `LicenseService.sync` and
-  writes nothing to `billing_subscriptions`. A Worker before the license sees an unknown plan and
-  skips the event, so an old Worker keeps working.
-- Routes: `GET /v1/me/license`, and `POST /v1/me/license/checkout`, `/users`, `/plan` and `/renewal`. The
-  state is `available: false` only when the Worker has no billing, and the app then shows nothing.
-  When Stripe has no active license price (it is archived to pause sales), checkout returns 503
-  `license_unavailable`, and the app shows a toast with the sales address. An app on a Worker
-  without these routes gets 404 and also shows nothing.
-- A Stripe customer pays in one currency, so a new license uses the currency of the account's open
-  subscriptions, and a server checkout in another currency gets 409 `billing_currency`. Add server
-  opens in that currency and does not let the user change it. Checkout cannot buy fewer users than are in use. An increase is charged at once
-  (`always_invoice`). A decrease starts at the next invoice and cannot go below the users in use or
-  below 5. The subscription metadata `openbot_paid_users` and `openbot_paid_period_end` keep the
-  users paid in the current period, so an increase after a decrease charges only the users above
-  that number.
-- Checkout keeps one open page that sells a license for each account: a license page, or a server
-  order page with a license. After it makes a page, it closes the older pages of the customer that
-  sell a license, so two requests at the same time return the same page. When a newer page sells a
-  license, the new page closes with `license_exists`. It then reads the customer's subscriptions in
-  Stripe, not only D1, so a license paid before its webhook, or a paid order before its split, stops
-  the new page with `license_exists`. A second open license can still come from the
-  Stripe Dashboard; `sync` logs a warning, and a person refunds it.
-- Refunds are by email only; the app and the Worker have no refund action. A customer emails
-  licenses@openbot.run within 24 hours of the first payment for a refund less a €3 / $3.60 /
-  13.20 zł fee, once per account. There are no refunds for later changes.
-- When the owner of a full license creates an invite, the members section asks to add 1 user and
-  shows the extra price, then adds the user and creates the invite. A 1-user license changes to Team
-  monthly for 5 users in place of the added user. At 25 users it shows "Contact
-  us" and creates no invite. Admins get no step; the join tells the person that the license is full.
-- Desktop calls the `license` IPC group; the web client calls the browser routes. Both render
-  `@openbot/ui/features/billing/LicenseSection` in the license slot of `BillingPanel`.
 
 ## Servers on this computer
 
@@ -1941,39 +1508,14 @@ the server as a joined server with `thisComputer: true`. `kind` stays `"remote"`
   with `shell.trashItem`. It never deletes them.
 - **Rename.** The `host-admin` identity route, as on any joined server that the user owns. The child has
   no account session, so it skips the account owner check and the account steps (`passwordOwner`) (#5092).
-- **Account.** While the desktop app is signed in, `LocalServers` registers each running server for
-  the account (`centralAuth.registerRemoteHost`), with the child's key, its name, and its owner member
-  as the owner membership. The ready line carries that member id. The desktop app keeps the machine
-  token with its session and writes it to the child's control pipe, one JSON line
-  (`local-server-child.ts`). The child keeps it in memory only (`CentralAuthManager.useHostCredential`)
-  and calls `HostService.publishLocalServer`: it gets Signal tickets, meets devices, and sends push
-  notifications and Live Activity updates with that token, as a published host does. Its Team API
-  stays on loopback for the desktop app. A device ticket names the child's owner member, so the
-  owner's phone acts as the owner. A sign-out or another account sends `unpublish`. A sign-in, and
-  each start, registers again. A start on this computer does not wait for the account service.
-- **Members and invitations.** The child has no account session, so the desktop app sends the member
-  and invitation calls of a registered server to the account service with its own session
-  (`RemoteTeamDirectory`, `isRegisteredThisComputer`), as for a WebRTC server. Before the
-  registration, they go to the child's Team API, which lists its owner. Invited people join over WebRTC.
-  The child reads its members through the desktop app: it writes the line
-  `OPENBOT_LOCAL_SERVER_REQUEST members` to stdout, and the desktop app answers on the control pipe
-  with `members` (the account directory) or `members-unavailable` (not registered, or the read
-  failed). After the desktop app changes or removes a member, it writes `members` without a request,
-  and the child syncs it and closes the sessions that the directory no longer allows. The sync keeps
-  the child's owner row (`passwordOwner`), because the desktop app logs in with its username.
-- **Directory.** The account then lists the server. `reconcileWebRtcHosts` leaves out every server
-  that `setThisComputerServers` names, so the desktop app keeps its loopback entry. Other computers
-  and phones of the account list it as a WebRTC server.
-- **Delete from the account.** A delete records the server id in `removedHostIds` of the registry and
-  removes the host from the account (`removeOwnedRemoteHost`) when signed in. A 403 or 404 counts as
-  removed; a 401 does not. The id stays until then, so a sign-in retries it, and the directory sync does not
-  list it meanwhile. An earlier build ignores the field.
+- **Team.** OpenBot-NC registers no server of this computer with any service. Not confirmed: whether
+  team members can reach a child server through the central server.
 - **From a phone.** `local-servers-v1` on the desktop app's own server lists the servers and creates
   one. The create does not change the server that the desktop app shows. It answers after the child
-  started and was registered, so the phone reads its server list again and finds the new server.
-  A delete from the phone runs the desktop delete and answers after the account removal. The phone
+  started, so the phone reads its server list again and finds the new server.
+  A delete from the phone runs the desktop delete. The phone
   shows Delete server for such a server, through its computer's server, which must be online. It shows
-  no Remove server for the desktop app's own server, which the app registers again at each start.
+  no Remove server for the desktop app's own server.
   The phone knows both kinds after the computer's server was online in that session.
 
 Limits:
@@ -1984,11 +1526,8 @@ Limits:
   they type a name.
 - A child server is reached as a joined server. Features behind `kind === "local"`, such as
   Computer Use, voice and the local browser dock, work only as far as the Team API carries them.
-- While the desktop app is signed out or closed, only this computer can connect: members reach the
-  server only while the desktop app runs and is signed in.
-- The child has no account session, so an owner that ends a device's session from the child's Server
-  settings does not end it on the account service. The account has the name of the child's last start,
-  and no logo of the child.
+- While the desktop app is closed, nobody can connect: members reach the server only while the
+  desktop app runs.
 - The provider CLI sign-ins in the home folder (`~/.codex`, `~/.claude`) and `~/.agents/skills` are
   shared with the other servers.
 - Not confirmed: the memory of each child, the agent browser in a child with no window, and which
@@ -2004,8 +1543,9 @@ The Host PKG installs this as `create-tenants`, alongside the standalone `openbo
 operations. Passwords cross only the native helper's captured pipe and the administrator's tty,
 not the host protocol. The root-only recovery file is removed after successful presentation.
 `build-host-installer.ts` and `verify-host-installer.ts` own release packaging and the exact
-payload manifest. Package installation preserves host registration and state; only the application
-is automatically updated. A Host Manager upgrade requires an administrator-installed signed PKG.
+payload manifest. Package installation preserves host registration and state. The Host Manager downloads no
+application release (`stageLatest` returns no version). An administrator replaces the shared
+application and installs a new signed PKG to upgrade the Host Manager.
 
 The optional standalone root helper (`scripts/host-manager.ts`) uses the lifecycle in
 `src/main/host-manager.ts` and fixed macOS operations in `scripts/host-manager-macos.ts`.
@@ -2018,127 +1558,6 @@ Backend work and main-process sessions advance it, so work between status polls 
 grace. This counter contains no user data and is never sent to the host. Health and restart
 readiness remain false until agent initialization succeeds.
 See [multi-tenant hosting](../multi-tenant-hosting.md) for installation, permissions, and acceptance.
-
-## Hosted servers
-
-A hosted server is one [boat](https://boat.dev) sandbox for one account. It runs the Linux
-OpenBot build under Xvfb and is a normal Remote host after its first start. The account Worker
-owns the sandbox lifecycle: it creates, resumes and deletes sandboxes, and D1 keeps the desired
-and observed state. A server reports each minute while it is in use, and the Worker stops it after
-15 minutes with no report. boat also stops each sandbox at the end of a 2-hour lease that activity
-extends. When boat stops a server in use, the Worker resumes it, and clients ask the Worker to
-start a stopped server when a connection fails. No message
-waits in the Worker while a server is stopped; the client keeps it and connects again. The Worker's boat key cannot read files or run commands in a
-sandbox. On a hosted server only, main reads the memory of the machine, and the backend holds new
-turns while it is low and limits the turns that run at the same time. See
-[hosted servers](../hosted-servers.md) for the flow, the configuration, the memory guards and the template.
-
-A self-hosted server uses the same Linux build, scripts and units on the owner's own computer, with
-`/opt/OpenBot-NC/hosted/mode` set to `self`. It has no claim: main starts in server mode
-(`src/main/server-mode.ts`, `OPENBOT_SERVER=1`), and the `openbot` terminal command signs it in over
-a Unix socket in the 0700 runtime directory of the service user. Main publishes the host after each
-sign-in. See [self-hosted servers](../self-hosted-server.md).
-
-### Remote release checks
-
-`host-release-v1` adds release status and check routes for all signed-in server members. It does not change
-`host-update-v1`, which still refuses installation requests and checks when updates are managed
-or disabled. The new check reads only the official stable release manifest for the host platform
-and architecture. It never installs files, restarts the host, or changes update preferences.
-The host checks that the manifest contains a compatible asset and returns only version, phase,
-and installation method. Feed errors return a safe status and can be retried.
-The method is `self-update` when the host's updater can install, also in a container of
-`docker/instances`, whose host pulls the image on request
-([Updates from the app](../docker.md#updates-from-the-app)). Other containers report `container`.
-
-`HostReleaseService` owns release discovery. `RequestedUpdate` still owns idle restarts and
-`UpdateService` still owns app updates. Desktop and web use the new capability when available;
-older hosts keep their existing update controls. The status poll is passive and does not keep a
-hosted server awake. Mobile shares the protocol codecs but has no new update screen.
-
-`host-member-update-v1` adds `/v1/host/update/status`, `/check`, and `/start` for all active,
-signed-in server members. It reuses the released update snapshot. The start body is empty:
-requests always wait for idle time and preserve any existing schedule. Host restrictions still
-apply. Cancellation, preferences, and forced restarts stay on the administrator-only
-`host-update-v1` routes. Desktop and web clients show member controls only after this capability
-is negotiated; older hosts keep the administrator-only panel.
-
-## Remote connect measurement
-
-`bun run perf:remote` (`scripts/remote-sync-perf-e2e.ts`) is the baseline for lazy sync. It reports
-the time until the workspace can be used, and the host requests that block that point.
-
-- `packages/team-client/src/sync-profile.ts` records each request of `RemotePeer` (web, mobile), of
-  `TeamWebRtcClientTransport` and of the HTTPS arm `requestJson` (desktop main): route template,
-  method, transport, times, bytes and the requests in flight. The dev test client uses the HTTPS arm
-  when its account has no WebRTC membership of the host, so the report names the transport. It records only when a sink is installed. The web harness installs
-  `globalThis.__openbotSyncProfile` before the page loads. Desktop main installs a file sink only in an
-  unpackaged build with `OPENBOT_DEV_SYNC_PROFILE=1`; it writes `dev-sync-profile.ndjson` in the profile
-  root, which no export reads. A route keeps its words and `v<n>` segments; every other segment becomes
-  `:id`, and query values are dropped. Records never go to the trace file, the logs or analytics.
-- Marks use fixed names only, `openbot:remote-<step>`. Web: `session`, `workspace-code`,
-  `hosts-start`, `hosts`, `connect-start`, `peer:<step>`, `connected`, `workspace-ready`,
-  `panels-ready` and `conversation-ready`. Desktop renderer:
-  `workspace-load`, `workspace-shell`, `workspace-ready` and `conversation-ready`. Desktop main keeps
-  its `remote-connect:*` spans in `logs/trace.ndjson`; the harness aligns them by their `at` time.
-- A request that ends before `workspace-ready` is a gate request. The report gives their count, bytes,
-  critical-path depth (the longest chain of requests that do not overlap) and repeated routes, and the
-  count and bytes of the background requests until the client is idle for 500 ms. A repeat is the same
-  method and route template, so one read for each agent also counts; the route table separates them.
-- The `desktop` client has one cold sample, the process that is running, and with
-  `--allow-mutations` it reloads the renderer for the next runs. Main keeps its connection during a
-  reload, so those runs measure the renderer gate only. The cold sample starts with the host when
-  `dev:test-client` starts both, so it includes the host start.
-- The `desktop-start` client (`--allow-mutations`) restarts only the test client with
-  `bun run dev:restart-client`, while the host stays live. The supervisor stops its own test-client
-  child by PID on `SIGUSR2` and starts it again. The run measures from the main process start, which
-  is the first line of `dev-sync-profile.ndjson`. It writes `steps.md`, the time of each step from
-  that origin.
-- `OPENBOT_DEV_CLIENT_TRANSPORT=webrtc` makes the test client sign in as the dev host user. The
-  account directory then lists the host, and the client connects over `webrtc-v2` as real users do.
-  Without it, the client joins over the HTTPS arm. A new `dev:seed` gives the host a new id while the account keeps the old one; pass
-  `--host-id=<id>` so the web client opens the new host.
-- `web` runs start with no saved workspace frame and `web-warm` runs start with the frame of the
-  first load; `frameMs` is the time to the `workspace-frame` mark. The first warm web run and the
-  first desktop reload write `web-warm-frame.png` and `desktop-frame.png`. A desktop reload keeps
-  the connection of main, so the host often answers before the screenshot ends; the log says which. `--latency=<ms>` delays
-  each document and fetch request of the web page by that time, and each WebSocket message by half
-  of it. Module files keep their time, because the dev server sends hundreds of them. The page wrapper
-  also delays each `RTCDataChannel` send and message by half of it. For the desktop client, start
-  the stack with `OPENBOT_DEV_RTT_MS=<ms>`: an unpackaged main then delays the account service calls
-  by the full time and each data-channel send and message by half of it. The desktop Signal socket is
-  in the hidden peer window, so it keeps its time. The report warns when this value is not equal to
-  `--latency`. `OPENBOT_DEV_DOWNLINK_KBPS=<kbit/s>` also limits the data that an unpackaged desktop
-  client receives on the data channel to that rate. `scripts/workflow-canvas-pictures-perf-e2e.ts`
-  uses both values to measure the pictures of the Workflows canvas on a joined server.
-- A failed request records a safe code (`http/<status>/<code>`, `errno/<code>` or `error/<tag>`), and
-  an interrupted one is `aborted`. The report counts them by route. It never records a message, a URL
-  or a host.
-
-## Remote connect order
-
-A client connects to a live host with as few serial round trips as it can.
-
-- Desktop main does not wait for the Dynamic Island before it loads the main window. Startup reads
-  only the Island preference, and the Island pages load at the same time as the main window.
-- After the WebRTC peer is `connected`, desktop main reads `/v1/compatibility` once
-  (`refreshWebRtcCompatibility` forces the read). It does not read it twice in sequence.
-- The web app loads the workspace code at the same time as the session request.
-- The web client stores the negotiated host protocol in `localStorage`
-  (`openbot.web.host-protocol:<account>:<host>`). It holds the protocol number only. When it has one,
-  the gate reads start with that protocol at the same time as the compatibility read. When the new
-  compatibility gives a different protocol, the client drops the early results and reads again. A
-  first connection, with no stored protocol, reads compatibility first: without it the request frames
-  name the bootstrap capabilities only, and the host answers less or fails.
-- A web server switch does not wait for the old host's session end (`POST .../sessions/<id>/end`).
-  Each switch gives the opened host a new peer, and the old peer ends its sessions in the
-  background. The old host's tab lock stays held until the end returns: the account service gives
-  a new connection to that host the same session while it is active, and a late end would close it.
-- When this tab has an online status connection to the target host, that connection becomes the
-  opened host (`WebHostConnections.handOver`). It keeps its session, Signal socket, WebRTC path and
-  tab lock, and takes the opened host's actions and `waitForHost`. The switch then sends no session,
-  ticket, Signal or ICE step. Status connections use the same stored host protocols as the opened
-  host, so a handed-over peer sends the right capabilities.
 
 ## Remote workspace frame
 

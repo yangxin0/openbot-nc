@@ -1,189 +1,5 @@
 # Channels, messaging, and mobile
 
-## iPhone Live Activity updates
-
-The phone and a host build the same Live Activity view with `@openbot/team-client`:
-`dynamic-island-coordinator.ts` gives the state, and `live-activity-props.ts` turns it into the props
-that the widget shows. While the app runs, `use-live-activity.ts` publishes them itself.
-
-iOS stops the app and its connections in the background. So the phone registers the push token of
-its activity with the active host (`live-activity-push-v1`, `POST /v1/live-activity/registration`),
-with `away: true` when it leaves the foreground. `LiveActivityPushService` in `src/main` keeps the
-registration in memory for that session. While the phone is away, each agent event (at most once a
-second) reads the runtime snapshot of the agents the member can see and the member's read state,
-builds the props, and sends a change. iOS has a budget of priority 10 updates for each
-hour and can delay or drop the updates above it, and several agents change the state often. So priority
-10 is only for an alert, a new request, failure or reply, and an agent that finishes its work. Each
-other change has priority 5, which does not use the budget: work that starts, a request that someone
-answered on another device, and a count or a text that changes. The first update after the phone
-says that it goes away also has priority 5, because it repeats the view that the phone showed a moment
-before; after a closed connection the phone can show an old view, so a request, a failure or a reply
-has priority 10 then. A priority 5 change inside a state
-waits 5 seconds. An unchanged state is sent again every 10 minutes, so its stale
-date moves on; a host that sleeps stops this, and the view then shows that it is out of date. An idle
-state ends the activity.
-
-`live-activity-seal.ts` seals the props with keys derived from a secret that the phone makes for
-that host (an HMAC of the phone secret and the server ID). The
-host sends the sealed text to `POST /v2/remote/hosts/:hostId/live-activity` with its machine
-credential. The Worker checks the credential and a per-host rate limit, makes the APNs payload and
-provider token itself, and forwards the request. It stores and logs nothing. The widget cannot load a
-library, so the phone composes its layout with the two widget keys and the App Group folder, and
-`live-activity-open.ts` opens the sealed props with its own SHA-256. Button links that change host
-state carry an HMAC signature, which the app checks with the key of the host that the action goes
-to, so one host cannot sign an action for another.
-
-A question, an approval or a browser step can be of a side thread of an agent or of a channel thread.
-The tap link and the button links of such a view name the thread of the request in a `thread`
-parameter (`DynamicIslandCoordinator.requestThreadId`). The runtime work of an agent has the work of
-its side threads too, so a view that shows work names the side thread that runs the turn
-(`DynamicIslandCoordinator.workingTurn`; the host reads the thread from `AgentService.listTasks`, the
-phone from the thread lists that it has read). The parameter only says which conversation
-the app opens, so it is outside the signed action, and an app from before it reads the same links
-and opens the agent's chat. The app opens the thread as it opens the thread of a notification (see
-[Side thread notifications](#side-thread-notifications)). A link that starts the app gives the
-route of the agent's chat, and the thread opens when the app can navigate
-(`live-activity-link.ts`).
-
-## iPhone notifications
-
-A host sends an iOS notification when an agent finishes a turn, stops with an error, cannot start a
-message or a routine run (`error` with the code `delivery_start_failed`), or waits for input, an
-approval, or a step in the browser (`browser-takeover-requested`, also for a password or a code).
-The desktop and the web client notify about the same events (`agentEventCanNotify`), and all three
-decide as one: `notificationForAgentEvent` in `@openbot/team-client` applies the level of the server
-(`all`, or `needs-me` for the events that wait for the user), or the member's own level of the agent
-(`agent-notification-levels-v1`, see [servers](servers.md)), the switch of the agent, and the quiet
-routine runs. The desktop and the web client close the notification of a request when an
-`agent-input-resolved` or `browser-takeover-resolved` event comes, also for an answer from another
-device. The title is the agent name. When the phone shows previews, the text is the
-preview of a desktop notification: the lead of the answer of that turn, the question, or the action
-to approve, with secrets redacted. The lead (`messageSummary` in `packages/team-client`) is the first
-sentences of the message, without code blocks, tables, headings or mail headers, with tool names as
-words and redaction marks as `•••`. The Live Activity shows the same lead. Otherwise it is the fixed desktop text, such as "Finished working.".
-
-Channels are an exception. The desktop and the web client notify an agent reply in a channel from
-the channel list (`channelReplyNotifications`), because the channel service consumes the
-`turn-completed` event of a channel thread. On a host with `channel-attention-v1`, each summary names
-the author and status of its newest message, the thread of each member, and `openTasks`: its
-queued, waiting and running tasks. The released `activeTasks` counts only running tasks, so it is 0
-while a task waits for the tasks it passed on. A reply notifies once, when the work of the channel
-ends (its newest message is an agent's and stopped streaming, and `openTasks` is 0), while the
-channel has unread messages. Work that writes many messages, asks a question on the way, or passes
-parts to other agents thus notifies once, at its end. The desktop reads the agent list for a
-notification only when a reply is new, and it reads no channel list for a server whose replies
-cannot notify. The title of a prompt, an approval or
-a takeover on a channel thread names the agent and the channel (`notification.channelTitle`), and a
-click opens the channel. The phone gets no channel reply notification. For a phone that sends
-`channel-attention-v1`, the host names the channel in the title of a prompt, an approval or a
-takeover on a channel thread (`PushNotificationService` reads `HostService.channelForThread`), and a
-tap opens the channel. An older phone gets the agent name as the title, as before.
-
-The phone registers with every connected server that supports `push-notifications-v1`
-(`POST /v1/push-notifications/registration`): the APNs token of the app, the secret of that host (the
-same one as for the Live Activity), the language, the level, a mute end, the preview switch, the sound
-(`none` when Play sound is off), the start of its Live Activity of that host, and `away`. One sound is for notifications and the Live Activity. With
-notifications off, Live Activities on and Play sound on, it registers with no token: the host then
-sends no notification, and uses the registration only to make the Live Activity play the sound. It
-tells each host again after each connection and when a choice changes, and removes the registration
-when nothing is left for that host or the user signs out. A level of
-"Nothing" and a mute with no end remove it too. `PushNotificationService` in `src/main` keeps the
-registrations in `openbot-push-notifications-v1.json` in the user data folder, readable only by the
-user, so a phone that does not connect after the host restarts still gets notifications. It sends
-only while the phone is away or its connection is closed. iOS can suspend the app before it says
-that it goes away, and the host sees the lost path about 30 seconds later. So an event that comes
-while the phone looks on screen is kept in memory for 5 minutes (`HELD_EVENT_MS`). When the phone
-says that it is away, or its path fails, and does not come back within 3 seconds, the host sends
-each kept event that the member has not seen: a reply that is still unread in the agent's own chat,
-a failed turn that still shows as failed, or a request that nobody answered. A send that the
-account service, Apple or Google does not take goes again after 10 and 60 seconds. No event goes while the member uses a
-desktop app, which shows the event and asks for input, an approval, or a browser step itself: that
-computer had input in the last 30 seconds (`powerMonitor.getSystemIdleState`), and
-the window of the host's own desktop app has focus or shows the event as a desktop notification, for
-the owner (`desktopShowsAgentEvent`: desktop notifications on, and the mute and the level of this
-computer's server let the event through); or the member sent, answered, or typed from another session in the last 30
-seconds (`TeamApiServer.lastMemberUseElsewhere`, kept in memory); or the computer of the member's
-desktop app had input, in any app, in the last 30 seconds (`computer-activity-v1`, see
-[servers](servers.md#computer-activity)). The time is short because a task can end at any time after
-the member leaves the computer. An unpackaged app reads another time in whole seconds from
-`OPENBOT_DEV_AWAY_SECONDS`, for the host and for the desktop that reports its input, so a check
-need not wait 30 seconds. While the phone shows a Live Activity of
-this host that iOS still updates (8 hours from its start, which the phone gives because a host that
-restarted does not know it), and the next view of the activity shows the event, the host sends no
-notification (`LiveActivityPushService.showsEvent`). The view shows one item, so a reply while
-another agent works, or a failure while another agent waits, still notifies. An activity whose last
-update did not go out does not replace notifications. With a sound (Settings > Notifications > Sound), the next
-update of the activity alerts at once, so iOS lights up the screen, shows the activity, and plays
-that sound; with Play sound off, the activity updates silently. iOS does not tell the host when
-the user removes the activity, so until the app runs again such an event shows nowhere.
-
-`push-notification-seal.ts` seals the notification with keys of their own, made from the host secret.
-The host sends it to `POST /v2/remote/hosts/:hostId/notification` with its machine credential and the
-account session of the phone. The Worker checks the credential and a per-host rate limit, and sends
-nothing for a session that has ended, a revoked membership, or a signed-out device, because the host
-does not learn about these. It makes the APNs alert itself, with "OpenBot" as the only text,
-`mutable-content`, the sound, and the sealed bytes. It stores and logs nothing. A `410` answer, from
-the Worker or Apple, removes the registration.
-
-The OpenBot-NC phone app has no push notifications and no Notification Service Extension: it does
-not register a device token, so a host sends it nothing.
-
-### Side thread notifications
-
-A turn in a side thread sends no `turn-completed` outside `AgentTasks`. When the turn is not quiet,
-`AgentTasks` sends the local `thread-turn-completed` event, with `routine: true` for the thread of a
-routine. `PushNotificationService` sends a routine thread turn to each phone, as it did when a
-routine ran in the agent's chat. It sends the turn of another side thread only to a phone that
-advertises `push-notification-threads-v1`, because an app from before it opens the agent's chat, and
-only while that phone did not turn these notifications off (`POST /v1/push-notifications/threads`
-with `replies`; Settings > Notifications > Thread replies). The host keeps the choice with the
-registration of the session in `openbot-push-notifications-v1.json` (`threadReplies`), also when the
-phone registers again. A request for input, an approval or a browser step of a side thread does not
-read the choice. The level, the mute, the preview and the Live Activity check apply as for the
-agent's chat, but the Live Activity shows the replies and the failed turn of the agent's own chat
-only, so it never replaces the notification of a side thread turn. The desktop notification and the
-completion sound still use routine thread turns only. So for the turn of another side thread, the
-phone stays quiet only while the member uses OpenBot: the window of the host's desktop app has focus,
-or the member sent, answered, or typed from another session in the last 30 seconds. Input in another
-app on a computer does not count for it, because no desktop then tells about that turn. A host does
-not keep such a turn for a phone that does not take it.
-
-The notification data has the thread of the event, not a task id, and the phone does not know the
-thread of an agent's own chat. So the app (`outside-target.ts`, used by `(app)/_layout.tsx`) opens
-the channel whose thread it is, or the side thread when the phone has read the agent's thread list.
-Else it opens the agent's chat at once and reads the thread list from the host
-(`agent-tasks-v1`); when the thread is a side thread, it opens on top of that chat. While the app is
-on screen, a notification of the chat or the side thread that shows is not shown again.
-
-## Android notifications
-
-An Android phone gets the same notifications in the same conditions, through Firebase Cloud
-Messaging. Android has no Live Activity, so the host does not check one. The phone registers with
-every connected server that supports `push-notifications-android-v1`
-(`POST /v1/push-notifications/android-registration`): the Firebase token of the app, the secret of
-that host, the language, the level, a mute end, the preview switch, and the sound. A registration
-always has a token. `PushNotificationService` keeps it in the same file, as an entry with
-`platform: "android"`; a host from before this capability drops such an entry when it reads the file.
-
-The host sends the sealed notification to `POST /v2/remote/hosts/:hostId/android-notification`. The
-Worker checks the credential, the notification limit of the host and the session, as for an iPhone.
-It signs an OAuth token with the Firebase service account key (`FCM_SERVICE_ACCOUNT`) and sends a
-high-priority data message with `sealed` and, unless the notification is silent, `sound`. It stores
-and logs nothing. Firebase answers `UNREGISTERED` or `SENDER_ID_MISMATCH` for a token that no longer
-reaches the app, and the Worker answers `410`, which removes the registration.
-
-`OpenBotMessagingService.kt` (`apps/mobile/modules/android-notifications`) gets the message, also
-while the app does not run. It opens the seal with the keys that the app writes into
-`push-notifications.json` in its files folder, and gives the notification to `expo-notifications`,
-so a tap reaches the app as on iOS. Android plays the sound of the notification channel, so the app
-makes one channel for each sound (`android-notification-channels.ts`), and the service picks the
-channel of the sound in the message.
-
-Notifications only inform; they have no buttons on either platform. An answer from a button would
-have to reach the computer over the WebRTC connection of the app, which Android does not let a
-closed or frozen app build: React Native stops its timers and its view updates in the background,
-and the web view that holds the connection does not connect again after Android froze the app.
-
 ## Shared channel chats
 
 Channels are separate from sidebar sections. A channel has one host, a purpose, participating agents,
@@ -582,7 +398,7 @@ the capability only when its channel service is connected. When a host does not 
 client, a `channels-changed` event of the open channel reads the list and the page; an event of
 another channel reads only the list. The six channels the reader left last keep their page, so a
 visit shows it at once while the read brings it up to date; a change in such a channel drops its page.
-A stopped-task card names the owner and the start of the request, so several cards differ (#5413). For a run that the assignment limit stopped, the card compares the reason with `CHANNEL_ASSIGNMENT_LIMIT_ERROR` and names the members that passed the work between them. Saved tasks and every host version keep that exact English. The mobile app still shows the English reason. The account API and Signal service add no channel storage or routing.
+A stopped-task card names the owner and the start of the request, so several cards differ (#5413). For a run that the assignment limit stopped, the card compares the reason with `CHANNEL_ASSIGNMENT_LIMIT_ERROR` and names the members that passed the work between them. Saved tasks and every host version keep that exact English. The mobile app still shows the English reason.
 
 Mobile shows channels only on a host that advertises `channel-chats-v1`, and Delete and Restore only
 with `channel-delete-v1`, and Cancel task only with `channel-task-cancel-v1`. It uses the same host channel IDs and commands. The host database stores
@@ -655,86 +471,14 @@ channel thread opens the channel, when the phone has the channel list of that se
 Mobile channel settings use one native sheet with a nested stack for memories and routines. The
 memory and routine editors share their controls with agent settings and use channel API operations.
 Channel settings have no provider or model controls because each member retains its own runtime.
-No account API, Signal, IPC contract, or database migration changes are required for mobile channels.
+No IPC contract or database migration changes are required for mobile channels.
 
 ## Messaging connections
 
-The agents of a computer can answer in an external chat platform: Slack, Discord (see **Discord**
-below), Telegram and WhatsApp (see **WhatsApp** below). [messaging.md](../messaging.md) has the setup, the limits and how to add a
-platform. Every workspace
-installs the one OpenBot Slack app (`apps/slack-app`), and the workspace is linked to the host that
-connected it. People mention @OpenBot or send it a direct message. The workspace's Slack Orchestrator,
-an agent that the connect dialog adds, receives each new conversation, asks its teammates and posts
-the answer. Every answer comes from OpenBot.
-
-- **Install.** The desktop asks `POST /v2/slack/authorize` for Slack's install URL, with a one-use host
-  key. The Worker exchanges the code at `/v2/slack/callback`, because the app's client secret lives
-  there. It links the workspace to the host in D1 (`slack_workspace_routes`: team, host, account; no
-  token) and seals the bot token to the host key (`@openbot/contracts/slack-workspace-grant`). The
-  page `/slack/connect` opens `openbot://slack-workspace`. Only the account that linked a workspace
-  can move it to another of its hosts; another account gets `slack_workspace_taken`.
-- **Events.** Slack posts every workspace's events and button presses to one URL,
-  `https://signal.openbot.run/v1/slack/events`. Signal checks Slack's signature with the app's
-  signing secret, answers `url_verification`, and reads only the app ID and the workspace ID. Each
-  signing secret is bound to its app, and a route is one app in one workspace, so the production and
-  development apps can share a workspace. It passes the exact body to the `ingress` socket (`SignalIngress` in main, a plain `ws` client: no WebRTC, so no hidden
-  window) that holds a route ticket for that workspace, and returns the host's answer within 2.5 s,
-  or 503 so that Slack sends it again. The route ticket is an ES256 JWT that `apps/auth-api` signs
-  with its own key for a host that proves its machine token. It names only the workspaces that D1
-  links to that host, expires after 5 minutes, and the host asks for a new one each time the socket
-  connects. Each workspace in the ticket carries the time D1 linked it. When a workspace is unlinked
-  or moved, the Worker sends Signal `slack-route-revoked` through the signed auth-event outbox:
-  Signal drops the route and refuses tickets with that link or an older one, so a host that lost the
-  workspace cannot keep it with the ticket it holds. Signal keeps these revocations in memory, so for
-  one ticket lifetime after it starts it asks the Worker (`/v2/remote/slack-route/validate`, signed
-  like `/v2/remote/resume/validate`) which links of each ticket D1 still has. The host trusts a delivery because Signal checked the signature; no host has the
-  signing secret.
-- **Not linked.** The account service names the workspace IDs beside the ticket, and the host keeps
-  them for the open socket (`SignalIngress.onLinkedRoutes`). A workspace connection that is not in them
-  reports `not_linked`, not `connected`: Signal sends its events to another host, such as after the
-  workspace moved or the saved settings were copied to a new server. It is not fatal and unlinks
-  nothing. Reconnect opens the Slack install page, which links the workspace to this host. A new
-  workspace opens a new socket before its connection starts, so an older list does not judge it.
-
-Telegram uses the same socket with one difference: one OpenBot bot serves every user, so its token
-must not reach any host. Only Signal has it (`TELEGRAM_BOT_TOKENS`), and the contract is
-`@openbot/contracts/signal-protocol/telegram-route`.
-
-- **Link.** A connection is one chat. The desktop asks `POST /v2/remote/hosts/<id>/telegram-link`
-  (machine token) for a one-use code, and opens `t.me/<bot>?startgroup=<code>` or `?start=<code>`.
-  Telegram sends `/start <code>` in the chat that adds the bot. Signal asks the Worker
-  (`/v2/remote/telegram-route/link`, signed) to link the chat to the host of the code
-  (`telegram_chat_routes`, `telegram_link_codes`: hashes only, no chat name), routes the chat to that
-  host's socket at once, and passes the update on with `linked: true`; the host makes the
-  connection only on that flag, because anyone in a routed chat can send a `/start` with any code.
-  The open code holds the host's socket until the link or its expiry, as no connection may hold it. Another
-  account's host gets `telegram_chat_taken`.
-- **Updates.** Telegram posts to `https://signal.openbot.run/v1/telegram/updates/<bot ID>` with a
-  secret header that Signal derives for each bot. Signal reads only the chat ID, a link code and a
-  callback query ID, and sends `telegram-delivery` to the socket that holds the chat. It always
-  answers 200: Telegram would hold back the bot's other chats behind one offline host. When the
-  route lookup (`/v2/remote/route-wake`) answers `hostId: null`, the chat has no link: a direct
-  message, a mention or a command there gets one `status.messaging.telegramNotLinked` notice from
-  Signal, at most once a day for each chat. A failed lookup, or a chat that this Signal saw linked,
-  revoked or named in a route ticket, gets none. The Telegram
-  route ticket (`telegramRoute` in the hello, audience `openbot-telegram-route`, the Slack route key)
-  and `telegram-route-revoked` work as the Slack ones do. A chat that is not in the ticket's chat list
-  reports `not_linked` as a Slack workspace does, and Reconnect opens a new link for the chat. A chat
-  that Signal links on the open socket joins the socket's list at once.
-- **Calls.** The host sends `telegram-call` only to a Signal whose `ready` names the `telegram`
-  capability, because Signal closes a socket on a frame it does not know. Signal accepts only the
-  methods and parameters of `TelegramCallParams`, as strict objects, only for a chat routed to that
-  socket, and `answerCallbackQuery` only for a press it delivered to it. It returns only message IDs
-  and tokens. `getFile` and `sendDocument` give signed one-use tokens for
-  `GET /v1/telegram/files/<token>` and `POST /v1/telegram/uploads/<token>` (20 MB).
-- **Conversations.** In a supergroup, each reply chain is one conversation: Telegram gives it a
-  `message_thread_id`, the ID of its first message. A forum topic is one conversation, a direct chat
-  is one, and a basic group finds the chain in an in-memory reply map, which a restart forgets. A
-  mention starts or continues a conversation; a reply without a mention continues only a linked one.
-  Telegram has no history API, so `TelegramChatState` keeps the names and last messages it saw, in
-  memory. One Telegram Orchestrator (`telegram-orchestrator.ts`) answers every chat. A new
-  conversation in a group goes first to the workflows' Telegram triggers; a message that starts a run
-  does not go to the orchestrator ([events.md](events.md#workflow-telegram-triggers)).
+The agents of a computer can answer in WhatsApp (see **WhatsApp** below and
+[messaging](../messaging.md)). OpenBot-NC has no Slack, Discord or Telegram app: they connected
+through the OpenBot service. The core below is platform-neutral, and old chats from these apps stay
+readable. Some names and examples below still say Slack, because the core was first written for it.
 
 The code has two halves. `MessagingThreads` (`src/backend/messaging/`) is built by `AgentService`
 beside `ChannelService` and knows no platform. `MessagingService` is built in the main process and
@@ -761,15 +505,11 @@ transport for its events. `messaging-types.ts` is the seam; the core never reads
   (`AgentService.deleteAgent`, which also removes its links), and then the section when no agent is
   assigned to it. It checks first that the agent can be deleted, so a busy orchestrator stops the
   disconnect before the token is revoked or the place unlinked.
-- **Execution threads.** Each Slack thread is a link with its own execution thread in
+- **Execution threads.** Each external thread is a link with its own execution thread in
   `projection_threads`, as a channel-agent pair is. A direct message is answered in a thread under
   it, so each one is its own conversation. `MessagingThreads.event` takes that thread's conversation
   and turn events, so the public chat, the renderer and Team peers never see them. Approvals still
   reach the host.
-- **Workflows.** Before a channel mention that is not in a linked thread goes to the orchestrator,
-  `MessagingService` gives it to `Workflows.receiveSlack`. A matched Slack trigger takes the mention,
-  and no agent conversation starts. A Slack output replies, posts or reacts through
-  `MessagingThreads.slackSend`. See [Workflow Slack triggers](events.md#workflow-slack-triggers).
 - **Deliveries.** An external message is a mailbox message from `user` with a `messaging` origin
   (link, author, platform message). No new sender kind, so the frozen Team protocol codecs are
   unchanged. The queue and the public chat hide it like channel work. A request the agent sends from
@@ -836,70 +576,9 @@ transport for its events. `messaging-types.ts` is the seam; the core never reads
 - **Approvals and stop.** An approval of a messaging thread is also posted with buttons. Only the
   Slack user whose message started the turn can answer or stop it; the host can always answer. The
   button value is a random token that exists only in memory.
-- **Channels.** When a connection starts, OpenBot joins every public channel it is not in
-  (`conversations.list`, `conversations.join`, scope `channels:join`), so people can mention it with
-  no invitation. It joins each new public channel on `channel_created`. A private channel needs
-  `/invite`.
-- **Deduplication.** An in-memory set drops a redelivered event at once; the mailbox idempotency key
-  covers a restart, and a kept event that Signal sends again. Events that arrive while no socket is
-  open are lost after Slack's retries, except for a hosted server that starts. A message that does
-  not address OpenBot gets 200 from Signal and is lost at once; other events get 503. Slack turns
-  off events for the whole app when more than 95% of deliveries fail for 60 minutes, and a computer
-  that is off would otherwise fail every channel message of its workspace.
-- **Screen.** **Marketplace → Apps → Slack** on the computer that runs the agents shows
-  each workspace and its orchestrator, and a two-step dialog connects the workspace and adds the
-  orchestrator on the model the user picks (`messaging:*`). A remote server shows no Slack page,
-  because the install returns to the host's own browser. A live connection does not count as use:
-  a hosted server sleeps, and Signal starts it for the next message that addresses OpenBot and keeps
-  that message, sealed to the host, until the host connects
-  ([Connector events](../hosted-servers.md#connector-events)). **Apps → Discord** is the same page for Discord
-  (`SlackIntegrationPanel` with `platform="discord"`). **Apps → Telegram** has its own page
-  (`TelegramIntegrationPanel`), with one row per chat and one orchestrator for all chats.
-
-**Discord.** Every guild installs the one OpenBot Discord app (`apps/discord-app`), and a guild is a
-connection with its own Discord Orchestrator (`discord-orchestrator.ts`). Discord pushes a bot's
-messages only over its Gateway WebSocket, and the bot token cannot go to each host, so Signal holds
-the token and does the platform work for the hosts:
-
-- **Install.** As for Slack: `POST /v2/discord/authorize`, `/v2/discord/callback` (scope `bot`, the
-  Worker exchanges the code, revokes the user token it gets, and links the guild in D1
-  `discord_guild_routes`), the page `/discord/connect` and `openbot://discord-guild`. The sealed grant
-  (`@openbot/contracts/discord-guild-grant`, on `host-grant.ts`) names the guild and holds no token.
-  Another account gets `discord_guild_taken`.
-- **Events.** Signal keeps one Gateway connection (`@discordjs/ws`) with the guilds, guild messages
-  and direct messages intents, and no privileged intent. It passes on only a guild message that
-  mentions the bot or the bot's own role, and a press of an OpenBot button, which it acknowledges to
-  Discord at once. Discord makes that role, with the bot's name, when the bot joins a guild, and its
-  autocomplete can choose it instead of the bot. Signal finds the role by its `tags.bot_id` in the
-  guild and role events, and keeps only its ID in memory. It normalizes each message into
-  `DiscordDelivery` (`@openbot/contracts/signal-protocol/discord-api`), takes the bot's own mention
-  and role mention out, and sends a `discord-delivery` frame to the `ingress` socket that holds a
-  Discord route ticket for the guild. The ticket mirrors the Slack one (audience
-  `openbot-discord-route`, `/v2/remote/hosts/:id/discord-route`, `discord-route-revoked`,
-  `/v2/remote/discord-route/validate`). The socket asks for a route only for the platforms whose
-  connections hold it.
-- **Removal.** When the bot leaves a guild, Signal drops its route and asks the account service to
-  unlink it (`/v2/remote/discord-route/removed`, signed), so an offline host does not keep it. After
-  the Gateway lists every guild of the bot, and every 30 minutes, Signal sends those guild IDs
-  (`/v2/remote/discord-route/reconcile`), and the account service unlinks each link of another guild
-  that is older than five minutes. It sends nothing while a Gateway shard is closed, because the list
-  can miss a guild that installed the bot meanwhile. A route ticket that still names a guild the bot is not in is not
-  routed. The `discord-session` frame lists the guilds
-  routed to the socket; a host connection whose guild is not listed stops, and **Reconnect** starts
-  the install again.
-- **Calls.** After `ready`, Signal sends the socket a `discord-session` token. The host's adapter
-  (`discord-driver.ts`) sends typed operations (`DiscordApiRequest`: post, edit, delete, react, list
-  messages, names, a private reply to a button press, upload) to `POST /v1/discord/api` with that
-  bearer. Signal accepts an operation only for a guild routed to that socket, and only for a channel
-  of that guild, and makes the call with `@discordjs/rest`. A new text post allows only user mentions,
-  so it pings each user that it mentions, never a role or `@everyone`. Other posts and edits ping
-  nobody. Attachments are signed CDN addresses, which the host downloads directly.
-- **Conversations.** A conversation is a reply chain, keyed by its first message. Every OpenBot post
-  replies to that message, so a reply to an OpenBot post names the conversation through the replied
-  post's own reference. A direct message has no guild, so Signal answers it once with a fixed line.
 
 **WhatsApp.** A WhatsApp number links as a device of the host, so the host holds its own session and
-no OpenBot service takes part: no Signal route, no account service row, no route ticket. A connection
+no other service takes part, and the central server does not see it. A connection
 is one linked number (`workspace_id` is the number in digits).
 
 - **Client.** `packages/whatsapp` vendors Baileys v7.0.0-rc14 (MIT) without its copyleft parts

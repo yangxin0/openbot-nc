@@ -1,5 +1,5 @@
 umask 077
-test "$APPLE_TEAM_ID" = ZTRDTUL87R
+printf '%s' "$APPLE_TEAM_ID" | grep -Eqx '[A-Z0-9]{10}'
 host_signing_dir="$(mktemp -d "$RUNNER_TEMP/openbot-host-signing.XXXXXX")"
 export HOST_SIGNING_KEYCHAIN="$host_signing_dir/host.keychain-db"
 host_previous_keychains=()
@@ -25,8 +25,8 @@ security import "$host_signing_dir/application.p12" -k "$HOST_SIGNING_KEYCHAIN" 
 security import "$host_signing_dir/installer.p12" -k "$HOST_SIGNING_KEYCHAIN" -P "$CSC_INSTALLER_KEY_PASSWORD" -T /usr/bin/productsign -T /usr/bin/pkgbuild >/dev/null
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$host_keychain_password" "$HOST_SIGNING_KEYCHAIN" >/dev/null
 security list-keychains -d user -s "$HOST_SIGNING_KEYCHAIN" ${host_previous_keychains[@]+"${host_previous_keychains[@]}"} >/dev/null
-export HOST_APPLICATION_IDENTITY="$(security find-identity -v -p codesigning "$HOST_SIGNING_KEYCHAIN" | sed -n 's/.*"\(Developer ID Application:.*(ZTRDTUL87R)\)".*/\1/p')"
-export HOST_INSTALLER_IDENTITY="$(security find-identity -v -p basic "$HOST_SIGNING_KEYCHAIN" | sed -n 's/.*"\(Developer ID Installer:.*(ZTRDTUL87R)\)".*/\1/p')"
+export HOST_APPLICATION_IDENTITY="$(security find-identity -v -p codesigning "$HOST_SIGNING_KEYCHAIN" | sed -n 's/.*"\(Developer ID Application:.*('"$APPLE_TEAM_ID"')\)".*/\1/p')"
+export HOST_INSTALLER_IDENTITY="$(security find-identity -v -p basic "$HOST_SIGNING_KEYCHAIN" | sed -n 's/.*"\(Developer ID Installer:.*('"$APPLE_TEAM_ID"')\)".*/\1/p')"
 test -n "$HOST_APPLICATION_IDENTITY" || { echo 'Developer ID Application identity missing.' >&2; exit 1; }
 test -n "$HOST_INSTALLER_IDENTITY" || { echo 'Developer ID Installer identity missing.' >&2; exit 1; }
 cp /usr/bin/true "$host_signing_dir/probe"

@@ -4,8 +4,8 @@
 
 Service workflows use the catalog-pinned `effect` 4.0.0 package. Read the source and
 reference material in the installed package when changing these workflows. The Electron
-main process, account Worker, site-router Worker, Signal service, and shared team client
-use the same version. Framework routing, IPC validation, UI rendering, and event delivery
+main process, the central relay server (`remote/api`), and the shared team client use the same
+version. Framework routing, IPC validation, UI rendering, and event delivery
 keep their native interfaces.
 
 Effects compose domain operations and typed failures. Promise interfaces remain at
@@ -15,9 +15,9 @@ mapping and secret redaction remain the responsibility of each boundary.
 
 Long-lived service graphs own their managed runtime and dispose it at shutdown. Provider
 discovery registers disposal in the desktop teardown registry. Each remote peer owns its
-runtime until peer disposal. Signal owns a process runtime. Worker service dependencies
-belong to a request or invocation; they must not retain request bindings in a global
-runtime. Response streams and `waitUntil` tasks retain their framework lifetimes.
+runtime until peer disposal. The relay server runs its Effects at its command and reload boundaries. Request dependencies belong
+to a request or invocation; they must not retain request bindings in a global runtime. Response
+streams retain their framework lifetimes.
 
 Constructor-injected services expose one Effect operation per async method. Service ports
 accept Effects, and callers compose them directly. There are no paired Promise facades.

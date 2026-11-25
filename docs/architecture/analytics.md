@@ -1,81 +1,7 @@
-# Analytics
+# Local diagnostics and usage
 
-## Mobile product analytics
-
-`apps/mobile/src/features/analytics` owns the React Native OpenPanel client, typed event allowlists,
-account-scoped operations, the local SecureStore preference, and foreground/connection events.
-Before session creation, it buffers at most 100 sanitized events in memory for 30 minutes from the
-first buffered event. The next account claims this buffer; identify precedes ordered delivery with
-original timestamps. Reconnects do not replay it. Expiry, opt-out, and process exit discard it.
-Account changes invalidate prior operation scopes; the anonymous-to-account transition retains the
-pairing scope so its completion can be recorded. Mobile uses a write-only client in the existing
-Openbot OpenPanel project shared with desktop and the website.
-Workspace command wrappers record outcomes once at the mobile caller; conversation availability is measured in
-the visible chat view, including cached reads, not from background broadcasts. The host remains the only source of turn lifecycle
-events. No Team API or database schema changes are required.
-
-Only native production builds with mobile write credentials initialize the client, after the
-preference is loaded. UI actions never await analytics transport. Account/consent generations
-reject late results; ordered identity changes preserve attribution of already accepted events.
-A final SDK filter replaces properties to remove SDK-added Android referrers and route paths.
-The SDK's optional persistent queue and screen tracking are not enabled. Configuration, event
-semantics and native verification steps are in [the mobile README](../../apps/mobile/README.md#openpanel-product-analytics).
-
-## Chrome extension analytics
-
-The Chrome extension (`apps/browser-extension`) sends no analytics. It has no event list, no
-analytics choice and no connection to OpenPanel; it connects only to the central server of its
-identity file.
-
-## Website analytics
-
-Public website tracking lives in `apps/auth-api/src/lib/analytics.ts`. It runs only on the
-production `openbot.run` hostname. Landing and invitation events carry a bounded
-`source_platform`, the existing `acquisition_source` category, and a domain-only referrer.
-
-A recognized `utm_source` tag takes precedence over the referring domain. Exact domain and
-subdomain matches select known platforms; URL paths and substring matches do not. Unrecognized
-platforms use `unknown`. No referral signal retains the coarse `direct` category, which does
-not prove a visitor typed the address.
-
-An article reports its own path, so one article can be told from another. `safeScreenPath` and the
-`slug` property check resolve the path against the `src/lib/news.ts` and `src/lib/guides.ts`
-registries, so the reportable set stays closed: an unknown slug reports `/` and is dropped from the
-payload. `articleFromPath` gives the delegated click listener the same lookup, which is what lets it
-track article cards at all; their hrefs carry a slug and cannot be matched by the exact-href
-allowlist the other links use. The hero selector reports its detected platform through
-`trackDownloadSelected` before the page component calls `start`, so a short bounded queue holds
-events until the client exists rather than dropping the first one.
-
-`landingCampaignPath` rebuilds the reported screen path with only the five allowlisted `utm_*` tags,
-lowercased and bounded to 64 safe characters; every other parameter and the hash are dropped by
-construction. The path travels on every event of the page load, not only `screen_view`, because
-OpenPanel reads campaign attribution from whichever event creates the session, and the two events
-are sent concurrently.
-See [PRIVACY.md](../../PRIVACY.md) for the data boundary.
-
-`rememberLandingFirstTouch` saves the first visit in `localStorage` (`@openbot/contracts/first-touch`
-owns the shape, the parser and the 90-day age). The web client sends it with `email/verify`, and
-`/billing/return` sends it with the Checkout Session ID to `POST /api/browser/checkout-attribution`.
-`AccountAttribution` (`src/server/account-attribution.ts`) checks it again, keeps the first value
-for each account in D1 `account_attribution`, and sends `account_attributed`. `BillingSales` copies
-it to the `payment_succeeded` and `revenue` ledger events. The flow and its limits are in
-[ANALYTICS.md](../../ANALYTICS.md#first-touch-attribution).
-
-The OpenPanel Growth dashboard uses a session funnel from `landing_viewed` to
-`landing_download_clicked`. A download click is not a completed download or installation.
-Break down the funnel by `acquisition_source`, then `source_platform` once schema version 8
-events reach OpenPanel. Historical events do not contain the new platform property.
-
-The `/download/<os>/latest` Worker handler falls back to the releases page when the GitHub manifest cannot be
-read. That fallback is written to the Worker log, not to OpenPanel: a server event has no session,
-and the landing dashboards are defined on sessions.
-
-For download-click reports, `platform` means the requested macOS, Windows, or Linux download;
-`placement` means the button location. These properties exist only on the download step.
-Use them to compare click counts, not as a shared visit-to-click funnel breakdown.
-The invitation-page funnel is separate: `join_page_action` with `action=view` followed by
-`action=download` or `action=open_app`.
+OpenBot-NC sends no product analytics and no failure reports. This page describes the local
+resource records and the usage aggregates that stay on the host.
 
 ## Resource sampling
 
@@ -114,9 +40,8 @@ the next start, `RunMarker.start` reads the file before it writes the new one. A
 `quitting` or `quit_timeout` file is an unclean exit, except a quit for `update` or `session_end`
 and a run that saw the `powerMonitor` `shutdown` event. It counts the `.dmp` files in
 `crashDumps` with a time after that run's last sign of life, by name and time only, and compares
-that time with the boot time. `HostAnalytics` sends the result once as `system_unclean_exit` and
-keeps it in memory only. `scripts/unclean-exit-e2e.ts` kills the dev app's main process, quits
-it with SIGTERM, and checks the event and the marker on each start. `bun run dev:stop` sends SIGKILL
+that time with the boot time. It keeps the result in memory only. `scripts/unclean-exit-e2e.ts` kills the dev app's main process, quits
+it with SIGTERM, and checks the marker on each start. `bun run dev:stop` sends SIGKILL
 to the process group after 3 s, so a dev stop can count as `quitting`.
 
 `start-attempts.ts` keeps `openbot-start-attempts-v1.json` beside the run marker. It counts the
@@ -131,18 +56,16 @@ in-memory session, no preload and no IPC: the page is a `data:` URL whose links 
 `https://openbot.invalid/recovery/<action>` URLs, and `will-navigate` stops each navigation and runs
 only an exact action URL. After a failed start, macOS gets the in-memory default
 `ApplePersistenceIgnoreState`: else AppKit asks with a modal alert, before `ready`, whether to reopen
-the windows, and the start waits for that answer. A server or a hosted server shows no window; it
+the windows, and the start waits for that answer. A server shows no window; it
 logs the loop and starts as before. `scripts/start-recovery-e2e.ts` forces crashes and a hang with
 `OPENBOT_E2E_FORCE_START_FAILURE`, which a packaged app ignores.
 
 The pure part (`resource-summary.ts`) keeps each day as sparse histograms with two significant digits,
 peaks and counters, so p95 stays exact enough without a sample list. The summary file holds the
 current day and the last closed day; it is written at most every 15 minutes, at a day change and at
-shutdown, and a damaged file starts a new day. `HostAnalytics.checkResources()` sends the closed day
-as `system_resources` and marks it handled in the file before the send, so a crash cannot send it
-twice. The file keeps the handled day for the diagnostics export until a newer day replaces it.
-Nothing leaves the process with a PID, a command or a path: the summary keys are group names,
-provider ids and reason words, and the analytics allowlist checks each value again. The day also
+shutdown, and a damaged file starts a new day. The file keeps the last closed day for the
+diagnostics export until a newer day replaces it. The summary keys are group names, provider ids and
+reason words, with no PID, command or path. The day also
 keeps the phase of the longest main-loop delay (`mainLoopPeak`, optional so older files still
 decode; the phase is any string in the file and the event drops a value outside its enum), and
 child exits by process type. A minute with a delay of 1 s or more writes a `stall` span to the
@@ -160,21 +83,9 @@ App windows (`src/renderer/src/renderer-timing.ts`) count long tasks and input d
 `PerformanceObserver` and send the counts at most once a minute over `app:report-renderer-timing`.
 The main handler decodes bounded counts only; `ResourceMonitor` buffers them and adds them to the day
 at the next sample. The same channel carries the main window's `workspaceReady` flag:
-`StartupTiming` (`src/main/startup-timing.ts`) reads the time on the main clock and sends one
-`system_startup` per main process from the `openbot:*` startup marks. It keeps the last start in
-`startup-history.json` to tell a cold start from a warm one. Turn timing comes from the drain
-scheduler and `TurnLifecycle`, which keep the queue pick, the provider start and the first output of
-each turn until `HostAnalytics` takes them at `turn-completed`.
-
-`RemoteConnectTrace` (`src/main/remote-connect-trace.ts`) times each connection to a remote host for
-the trace file and gives `HostAnalytics` one summary, sent as `system_remote_connect`: when an attempt
-makes its first request, and for the first failed attempt after a connection or a cancel. Later
-failures are counted in the next connection. An attempt is keyed by the id that `begin` returns, so
-an old attempt that ends late does not change a newer one. The host id stays in memory and is never
-sent. The Signal home is the `signal` claim of the ticket (`signalHomeOf`), `entry` when there is
-no claim; the Signal address and the ticket are not sent. `RemoteServerManager` adds the time since its hosted start request. The account service times
-the hosted start itself: `start_requested_at` on `hosted_servers` holds the request time, and the
-first observation of a usable sandbox clears it and sends the `ready` action once.
+`StartupTiming` (`src/main/startup-timing.ts`) reads the time on the main clock from the
+`openbot:*` startup marks. It keeps the last start in
+`startup-history.json` to tell a cold start from a warm one.
 
 ## Agent usage analytics
 
@@ -204,7 +115,7 @@ They are separate from provider account limits. A request names the agent, inclu
 and viewer time zone. The host groups records into calendar days in that zone. Date comparisons use
 an inclusive start and exclusive next-day boundary; custom ranges are limited to 367 days. Desktop
 names the host explicitly, and mobile binds reads to its authenticated active host. Every member of
-that host team can read totals. The public web and Signal service store no usage records.
+that host team can read totals. The central server stores no usage records.
 
 The Usage views show 7, 30, 90, or custom days, with 30 days as the default. Both expose exact daily
 values beside the SVG charts. Cost is a USD API-equivalent estimate, not a subscription charge.
@@ -237,10 +148,9 @@ host-wide response carries per-agent rows that the client labels from the agent 
 reads. The same pass also groups by day and provider, which is what lets the chart draw one area
 per provider over a shared baseline; a cell carries only the token count and the cost estimate,
 because those are the two measures the chart reads. Both arrays are on the host report only, which
-is why the agent-scoped route and its codec are unchanged. Session and turn identities include agent and provider. HTTP and
-WebRTC use an explicit host analytics codec. Existing agent analytics and account limits keep their
-contracts. All authenticated team members can read these aggregates; no additional analytics data
-is stored by the account service or Signal service.
+is why the agent-scoped route and its codec are unchanged. Session and turn identities include agent and provider. HTTP uses an explicit host analytics codec. Existing agent analytics and account limits keep their
+contracts. All authenticated team members can read these aggregates. The central server stores no
+analytics data.
 
 The desktop chart adapts Zaidan's chart and interactive area composition. The pinned
 `solid-recharts` dependency has a Solid 2 compatibility patch and uses the application's single

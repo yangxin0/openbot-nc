@@ -42,8 +42,6 @@ const IGNORED_SPELLINGS: readonly IgnoredSpelling[] = [
 
 const VENDOR_URL_BUILDERS =
   "vendor link and contact builders that desktop, team client or phone code still imports; Stage 3 and Stage 4 remove those callers.";
-const RELEASE_SOURCE =
-  "names the vendor GitHub repository or container image as the release source; the fork's own repository and image are a developer decision (update feeds).";
 
 const ALLOWED_PATHS: readonly AllowedPath[] = [
   { path: "scripts/check-vendor-endpoints.ts", reason: "the vendor pattern of this check." },
@@ -76,16 +74,6 @@ const ALLOWED_PATHS: readonly AllowedPath[] = [
     path: "src/renderer/src/features/updates/whats-new/*.json",
     reason: "translations of released What's new notes; history text, not an address.",
   },
-  { path: "package.json", reason: RELEASE_SOURCE },
-  { path: "nix/package.nix", reason: RELEASE_SOURCE },
-  { path: "docker/Dockerfile", reason: RELEASE_SOURCE },
-  { path: "docker/compose.yaml", reason: RELEASE_SOURCE },
-  { path: "docker/instances/compose.yaml", reason: RELEASE_SOURCE },
-  { path: "docker/umbrel/openbot/*", reason: RELEASE_SOURCE },
-  { path: "scripts/umbrel-app.ts", reason: RELEASE_SOURCE },
-  { path: "scripts/host-manager-macos.ts", reason: RELEASE_SOURCE },
-  { path: "scripts/hermes-server-e2e.ts", reason: RELEASE_SOURCE },
-  { path: "scripts/instance-backup-e2e.ts", reason: RELEASE_SOURCE },
 ];
 
 const logger = createOpenBotLogger("check-vendor-endpoints");

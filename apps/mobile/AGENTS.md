@@ -84,26 +84,8 @@ Both are scoped to this app: `lint` is `biome check --max-diagnostics=none src` 
 
 ## Building with EAS
 
-Once authorized under "Execution and verification limits", EAS performs the operation in the cloud (`eas build`, `eas submit`, or `eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
+Once authorized under "Execution and verification limits", EAS performs the operation in the cloud (`eas build` or `eas submit`) — no local Xcode or Android Studio required. The app has no over-the-air updates. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
 For a build profile, credential or submission option the command needs, see https://docs.expo.dev/eas/index.md.
-
-## Over-the-air updates
-
-Phones get JavaScript updates from `apps/mobile-updates`, not from EAS Update. Read
-[README.md — Over-the-air updates](./README.md#over-the-air-updates) before a change to `app.json`,
-`eas.json`, `fingerprint.config.js`, `plugins/`, `modules/`, `certs/` or a native dependency.
-
-- A change to a file that the native build reads makes a new runtime version. After it, `main`
-  cannot go to the current store build as an update. Say so in the change, and do not add such a
-  change to a fix that must go out over the air.
-- The `scripts` of this `package.json` are in the runtime version. Put a new script in the root
-  `package.json`.
-- Do not change `updates.url`, `updates.codeSigningCertificate` or `updates.codeSigningMetadata`
-  without an explicit developer decision: binaries with the old values get no update.
-- New JavaScript must not write data that the bundle in the binary cannot read, because a rollback
-  runs that bundle.
-- Do not start `bun run mobile:ota:publish`, `mobile:ota:rollout` or `mobile:ota:rollback` without an
-  explicit user request. `bun run mobile:ota:check` and `mobile:ota:status` are read-only.
 
 ## Rules
 

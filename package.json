@@ -9,14 +9,6 @@
     "url": "https://x.com/norbertbodziony"
   },
   "license": "PolyForm-Noncommercial-1.0.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nightly-labs/openbot.git"
-  },
-  "bugs": {
-    "url": "https://github.com/nightly-labs/openbot/issues"
-  },
-  "homepage": "https://github.com/nightly-labs/openbot#readme",
   "keywords": [
     "ai-agents",
     "bun",
@@ -97,11 +89,9 @@
     "mobile:go:tunnel": "bun scripts/mobile-go.ts --tunnel",
     "mobile:android": "bun run --cwd apps/mobile android",
     "mobile:android:build:local": "bun run --cwd apps/mobile android:build:local",
-    "mobile:android:release:play": "bun run --cwd apps/mobile android:release:play",
     "mobile:ios": "bun run --cwd apps/mobile ios",
     "mobile:ios:rocketsim": "bun run --cwd apps/mobile ios:rocketsim",
     "mobile:ios:build:local": "bun run --cwd apps/mobile ios:build:local",
-    "mobile:ios:release:testflight": "bun run --cwd apps/mobile ios:release:testflight",
     "mobile:release:patch": "bun scripts/prepare-release.ts patch --mobile",
     "mobile:release:minor": "bun scripts/prepare-release.ts minor --mobile",
     "mobile:release:major": "bun scripts/prepare-release.ts major --mobile",

@@ -147,9 +147,8 @@ The explicit `Promise<RouteOutcome>` return annotation produces `TS2366` when a 
 end. This project has no `noImplicitReturns` guard. Without the annotation, inference can accept
 `undefined`, which becomes a silent 404.
 
-Host and preload decoders remain separate because they validate different trust boundaries. HTTPS
-V1/V3 and WebRTC V2 remain separate because their encodings are released contracts. Control-plane
-methods remain on `RemoteTeamDirectory` because they contact a different server from the host.
+Host and preload decoders remain separate because they validate different trust boundaries. HTTP
+V1/V3 and Team V2 remain separate because their encodings are released contracts.
 
 `ipc-channel-coverage.test.ts` checks a name bijection between `decode*FromHost` under `src/main`
 and `decode*FromMain` in the preload. This prevents deleting one side and redirecting its callers

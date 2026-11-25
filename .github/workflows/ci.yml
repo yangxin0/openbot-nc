@@ -58,7 +58,7 @@ jobs:
           fi
           # Markdown that no build or test reads changes no lane. Not every Markdown file: the API
           # bundles CHANGELOG.md, and the renderer bundles Markdown from `resources/`.
-          docs='^((docs|plans|changelog\.d)/.+\.md|(.+/)?AGENTS\.md|(ANALYTICS|CODE_OF_CONDUCT|CONTRIBUTING|PRIVACY|README|SECURITY|SUPPORT)\.md)$'
+          docs='^((docs|plans|changelog\.d)/.+\.md|(.+/)?AGENTS\.md|(CODE_OF_CONDUCT|CONTRIBUTING|PRIVACY|README|SECURITY|SUPPORT)\.md)$'
           all="$changed"
           changed="$(grep -Ev "$docs" <<<"$changed" || true)"
           shared='^(package\.json|bun\.lock|bunfig\.toml|\.nvmrc|biome\.json|tsconfig[^/]*\.json|\.github/|packages/|patches/|tools/|vendor/)'

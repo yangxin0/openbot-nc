@@ -1,8 +1,8 @@
 # AWS ECS
 
-You can run the [OpenBot image](docker.md) as an Amazon ECS service on an EC2 instance. AWS Fargate
-is not supported (see [Fargate](#fargate)). The service is a normal Remote host of your account, as
-any [Docker](docker.md) container. It publishes no port.
+You can run the [OpenBot-NC image](docker.md) as an Amazon ECS service on an EC2 instance. AWS
+Fargate is not supported (see [Fargate](#fargate)). The service is a server of your team, as any
+[Docker](docker.md) container. It publishes no port.
 
 Read [Docker](docker.md) first. This page gives only the ECS settings for its options.
 
@@ -40,7 +40,7 @@ chown 1000:1000 /srv/openbot-nc-data
 # The seccomp profile of that image version, and no-new-privileges, for each container.
 [ ! -e /etc/docker/daemon.json ] || { echo "Add the two keys to /etc/docker/daemon.json." >&2; exit 1; }
 curl -fsSL -o /etc/docker/openbot-seccomp.json \
-  "https://raw.githubusercontent.com/nightly-labs/openbot/v$version/docker/seccomp.json"
+  "https://raw.githubusercontent.com/<owner>/<repository>/v$version/docker/seccomp.json"
 cat >/etc/docker/daemon.json <<'EOF'
 { "seccomp-profile": "/etc/docker/openbot-seccomp.json", "no-new-privileges": true }
 EOF
@@ -64,7 +64,7 @@ the profile of that version again.
   "containerDefinitions": [
     {
       "name": "openbot",
-      "image": "ghcr.io/nightly-labs/openbot:<version>",
+      "image": "ghcr.io/<owner>/<repository>:<version>",
       "essential": true,
       "memory": 4096,
       "linuxParameters": { "sharedMemorySize": 1024 },
@@ -105,31 +105,33 @@ it other permissions.
 
 Make a service with `desiredCount` 1, `minimumHealthyPercent` 0 and `maximumPercent` 100. Two tasks
 must never use the same `/data`: a deployment then stops the old task before it starts the new one.
-Turn on `enableExecuteCommand` for the [sign-in](#sign-in).
+Turn on `enableExecuteCommand` for the [identity import](#identity).
 
 Use a version tag. To upgrade, register the task definition with the new tag and update the service.
 Do not go back to an older tag (see [Upgrades](docker.md#upgrades)).
 
-## Sign-in
+## Identity
 
-ECS Exec opens a terminal in the container. The task role needs `ssmmessages:CreateControlChannel`,
+Copy the identity file of the server (`ca issue ... --device <name>`) to
+`/srv/openbot-nc-data/identity.json` on the instance, with the owner 1000. ECS Exec opens a terminal in
+the container. The task role needs `ssmmessages:CreateControlChannel`,
 `ssmmessages:CreateDataChannel`, `ssmmessages:OpenControlChannel` and
 `ssmmessages:OpenDataChannel`. Install the Session Manager plugin for the AWS CLI on your computer,
 then:
 
 ```sh
 aws ecs execute-command --cluster openbot --task <task ID> --container openbot \
-  --interactive --command "openbot login"
+  --interactive --command "openbot-nc import-identity /data/identity.json --hosting on"
 ```
 
-`openbot-nc status`, `logout` and `name` work in the same way. The log is in the CloudWatch log group
+Delete the file after the import. `openbot-nc status`, `hosting` and `name` work in the same way. The log is in the CloudWatch log group
 `/ecs/openbot`, not in `openbot-nc logs`.
 
 ## Network
 
 The task only connects out. Allow HTTPS to the hosts in
 [A company firewall or proxy blocks OpenBot](TROUBLESHOOTING.md#a-company-firewall-or-proxy-blocks-openbot),
-to your providers, and the UDP and TCP ports of the TURN relay for remote use. The security group
+to your providers, and to the central server of your team. The security group
 needs no inbound rule.
 
 ## Backups
@@ -150,12 +152,12 @@ Fargate cannot run the image with the Electron sandbox on:
 Fargate does not let you set the shared memory size. When `/dev/shm` is smaller than 1 GiB, the image
 tells Chromium to use `/tmp`.
 
-Do not turn off the sandbox to use Fargate. Use EC2, or a [hosted server](hosted-servers.md).
+Do not turn off the sandbox to use Fargate. Use EC2.
 
 ## Not confirmed
 
 This setup was not tested on AWS. Not confirmed: the user data on the ECS-optimized Amazon Linux 2023
 AMI, a user namespace on that AMI with the profile of the image, the start of the image on Fargate,
 the user that ECS Exec uses, the `/dev/sdf` link to the NVMe device, and the effect of
-`no-new-privileges` in `daemon.json` on the ECS agent and ECS Exec. From its script, the `openbot` command works as root and as the
+`no-new-privileges` in `daemon.json` on the ECS agent and ECS Exec. From its script, the `openbot-nc` command works as root and as the
 user of the image.

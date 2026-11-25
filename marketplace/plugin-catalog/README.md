@@ -5,12 +5,13 @@ For a worked example and the sign-in on a joined server, read
 
 One developer bundle per directory: `plugins/<slug>/plugin.json`.
 `catalog.json` sets the order and the featured flags.
-`scripts/build-plugin-catalog.ts` validates the source and writes three
+`scripts/build-plugin-catalog.ts` validates the source and writes two
 generated outputs; never edit those by hand:
 
 - `src/renderer/src/features/settings/marketplace-plugin-catalog.ts` (Apps tab)
-- `apps/auth-api/src/lib/plugin-catalog.generated.ts` (Worker JSON routes)
-- `resources/plugin-catalog/` (offline snapshot shipped with the app)
+- `resources/plugin-catalog/` (the catalog that ships with the app)
+
+OpenBot-NC has no served catalog and no public plugin pages.
 
 ```sh
 bun run marketplace:build:plugins
@@ -365,7 +366,7 @@ in the browser (with 2FA for a delete). Cloud 66 does not document the elicitati
 shows a `form` request as a question card in the chat and declines a `url` request
 (`mcpElicitationQuestions` in `src/backend/agent/prompts.ts`). Cloud 66 supports only MCP
 `2025-06-18`, which has no `url` mode, so the request is probably a `form`. Not confirmed with a
-Cloud 66 account. A chat in Slack, Discord or Telegram cancels the request. When the request fails,
+Cloud 66 account. When the request fails,
 the tool fails with "this tool requires an MCP client with elicitation support" or a decline; do
 the action in the Cloud 66 dashboard. The other tools do not need it.
 

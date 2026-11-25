@@ -1,8 +1,9 @@
 # Multi-tenant hosting on one Mac
 
 Use one native macOS **Standard user** and one OpenBot instance per tenant. The shared
-application is `/Applications/OpenBot.app`. Client connections use the existing Team API,
-WebRTC, and the operator's STUN/TURN infrastructure. No VM or Docker is involved.
+application is `/Applications/OpenBot-NC.app`. Clients connect to the Team API of each tenant
+through the central server of the team (see [central server](central-server.md)). No VM or Docker
+is involved.
 
 This setup protects tenant files through macOS ownership and permissions. It does **not**
 provide resource isolation against a hostile tenant: native users share CPU, memory, storage
@@ -34,7 +35,8 @@ A standalone compiled helper runs as the root LaunchDaemon `app.openbot.host-man
 Its entry point is `scripts/host-manager.ts`. It owns only these functions:
 
 1. Read the admin configuration and non-sensitive tenant status.
-2. Download the latest stable Apple Silicon release from the fixed OpenBot GitHub repository.
+2. Stage a new release. OpenBot-NC stages none (`stageLatest` returns no version), so steps 3 to 9
+   do not start.
 3. Check code signing, notarization assessment, bundle version, ownership, and permissions.
 4. Wait for every registered tenant to report safe status for five minutes.
 5. Publish a stop request; each tenant rechecks its own state and quits itself.
@@ -48,6 +50,10 @@ conversation, or attachment. It does not copy or back up tenant data. It reads e
 and UIDs from `ps`, not process arguments. Downloads and app-only staging are root-private.
 The retired application is removed after verification; it is never used for automatic rollback.
 The helper itself is updated separately by an administrator, not by a tenant or downloaded code.
+
+To install a new OpenBot-NC.app, an administrator quits all tenants, replaces the shared bundle with
+a build signed by the same team, makes root the owner with no group or public write access, and runs
+`sudo openbot-host verify`.
 
 ```text
 /Library/Application Support/OpenBot-NC/HostManager/    root:wheel 0755
@@ -82,14 +88,15 @@ The host download does not use or change a tenant's `autoDownload` preference.
 
 ## Production installation
 
-Normal desktop users need only `OpenBot-<VERSION>-arm64.dmg`. Managed multi-tenant hosts also
-need `OpenBot-Host-<VERSION>-arm64.pkg` from the same GitHub Release. The Host package contains
+Normal desktop users need only `OpenBot-NC-<VERSION>-arm64.dmg`. Managed multi-tenant hosts also
+need `OpenBot-Host-<VERSION>-arm64.pkg` from the same build. The Host package contains
 standalone ARM64 executables, the global Aqua LaunchAgent, the root LaunchDaemon, and the
 `/usr/local/bin/openbot-host` administrator command. The target Mac needs no Git checkout, Bun,
 Node, Xcode, or compilation.
 
-1. Download the normal DMG and the Host PKG from the same release.
-2. Open the DMG and copy OpenBot.app to `/Applications`. Quit OpenBot before initial host setup.
+1. Build the DMG and the Host PKG from the same commit. The release workflow
+   (`.github/workflows/release.yml`) builds both.
+2. Open the DMG and copy OpenBot-NC.app to `/Applications`. Quit OpenBot-NC before initial host setup.
 3. Open the Host PKG in Installer, or run the command below with the downloaded filename.
 4. Create and register the new Standard accounts. Save the passwords shown at completion.
 5. Log into `client-acme` once and sign into that client's OpenBot and providers.
@@ -140,7 +147,7 @@ The package installs the LaunchAgent globally in `/Library/LaunchAgents`. Logged
 it at their next Aqua login; setup does not need every user logged in. The per-user wrapper checks
 only its own UID. Acme running cannot prevent Bravo from launching. A 15-second retry covers
 session startup and failed launches. No tenant GUI app is launched from root with `sudo -u`.
-Every registered tenant must eventually be running and healthy for automatic app updates.
+Every registered tenant must eventually be running and healthy.
 
 ## Verification
 
@@ -161,7 +168,8 @@ start an unconfigured daemon. Existing config, state and tenant status directori
 package payload and remain in place. A failed package installation can leave the daemon stopped;
 resolve the package failure and run verification before returning the host to service.
 
-OpenBot.app continues to update through the Host Manager. The Host Manager does not update itself,
+The Host Manager does not install a new OpenBot-NC.app by itself (see
+[Host Manager boundary](#host-manager-boundary)). It does not update itself,
 download a Host PKG, or alter its own executable. A newer application may run with an older Host
 package. Initial setup requires the matching or a newer application. Host PKGs are never listed in
 `latest-mac.yml` and normal desktop users never receive them through Electron auto-update.
@@ -170,7 +178,7 @@ package. Initial setup requires the matching or a newer application. Host PKGs a
 
 The repository-only `scripts/install-host-update-agent.sh` remains a development setup path.
 Production uses the release PKG and installed CLI. Release CI builds the binaries from the same
-release commit as OpenBot.app. Native tests use a fake account service and temporary files:
+release commit as OpenBot-NC.app. Native tests use a fake account service and temporary files:
 
 ```sh
 xcrun swiftc -parse-as-library -D TENANT_SETUP_TESTS scripts/macos-tenant-setup.swift scripts/macos-tenant-setup-tests.swift -o /tmp/openbot-tenant-setup-tests
@@ -244,7 +252,7 @@ root-owned configuration. Tenants regain ordinary desktop controls. The shared r
 application still requires administrator maintenance; do not make it tenant-writable. To enable
 management again, verify that no maintenance was interrupted before restarting the daemon.
 
-## Target-host acceptance (required before paying-client use)
+## Target-host acceptance (required before tenants use the host)
 
 This is not replaced by tests that run under one UID:
 
@@ -264,6 +272,6 @@ This is not replaced by tests that run under one UID:
 - Confirm fresh health reports for the new version. Disable and re-enable management and verify
   that unmanaged mode never requests automatic tenant shutdown.
 
-The development computer used for this change has no `/Applications/OpenBot.app` and no
+The development computer used for this change has no `/Applications/OpenBot-NC.app` and no
 two-tenant acceptance setup. Actual signing assessment,
 DMG installation, cross-UID permissions, and Aqua relaunch still require this target-host run.

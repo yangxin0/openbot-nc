@@ -152,7 +152,7 @@ and not encrypted. A failed save leaves the form open. The agent gets only the n
 reads the file in its own command. Only the server owner or an admin can answer. The
 value is registered for log redaction when it is saved and at startup, and the stored block keeps no
 secret field value. `list_api_keys` and `remove_api_key` are the reverse actions, and deleting the agent
-deletes its folder. The form is refused in Slack, Discord and Telegram chats.
+deletes its folder.
 
 When the agent already has a secret, such as one that the user pasted in the chat, `openbot.save_api_key`
 saves it in the encrypted Vault as an `apiKey` item for every agent (`VaultItems.saveApiKey`), and
@@ -193,57 +193,13 @@ any `bw` configuration of the user. Without `bw` on `PATH`, it downloads the rel
 idle hours, the next vault call unlocks again from the stored record. Disconnect removes the record and
 the CLI data. The phone shows the connector with no action.
 
-The GitHub connector is built in and has no SQLite row. `src/main/github-connector-service.ts` signs
-in to the `openbotgit` GitHub App with the device flow, which needs only the public Client ID, and keeps
-the tokens in `openbot-github-connector-v1.json`, encrypted with `safeStorage`. While it is
-connected, `McpGateway.enabled()` adds the `openbot-github` server (`api.githubcopilot.com/mcp/`),
-and `mcpAuthorization()` gives it a fresh bearer at each hand-off. An enabled server that the user added
-with the name `github` wins. For `gh` and `git`, the service writes the token to
-`<userData>/provider-state/github` (mode 0600), and each provider gets `GH_CONFIG_DIR` and a
-`GIT_CONFIG_*` credential helper that reads that file. The environment holds only paths, never the
-token. The helper gives the `openbotgit[bot]` token for a repository that has one. For other
-repositories, it first asks the git credential helpers that the computer had before (with the
-original `GH_CONFIG_DIR` and no prompts), and gives the connector's user token only when they have
-no credential. The OpenBot GitHub App reaches only the repositories where it is installed, so this
-keeps git working on private repositories that the user's own login reaches. The fallback only
-reads: git does not send a store or an erase to the helpers of the computer, and when GitHub refuses
-the computer's credential, git does not try the connector token in the same command. Codex gets
-these values through `shell_environment_policy.set` in the thread config.
-
-A user token makes GitHub show "user with OpenBotGit". To show `openbotgit[bot]`, the desktop sends
-the user token to `POST /v1/github/installation-tokens` on the account Worker
-(`apps/auth-api/src/server/github-installation-tokens.ts`). The Worker holds the app's private key
-(`GITHUB_APP_PRIVATE_KEY`, PKCS #8) and signs an app JWT. It mints one installation token for each
-installation of this app, limited to the repositories where the user can push, maintain or
-administer, and stores nothing. The request names the permissions that the installation granted,
-without `administration`: GitHub limits a user token to what its user can do, but not an
-installation token, so a user with push access would get admin access through one. The app asks
-for `administration: write` only because GitHub needs it to create a repository. Creation uses the
-user token, so a user creates only where GitHub lets that user create. When an installation has not
-granted the permission, the proxy adds an explanation to the `create_repository` error that the
-agent can give to the user. With no key it answers 503, and the desktop keeps the user token.
-`src/main/github-bot-tokens.ts` renews the set ten minutes before the first token expires.
-- `git`: the helper runs with `useHttpPath`, and takes the bot token for the repository from
-  `provider-state/github/repositories`, or else the computer's own git login,
-  or else the user token.
-- MCP: `src/main/github-mcp-proxy.ts` is a loopback MCP server with a secret bearer. It forwards to
-  `api.githubcopilot.com/mcp/` with one upstream client for each token, because GitHub binds an MCP
-  session to its token. A tool call with `owner` and `repo` arguments uses that repository's bot
-  token. The port and the secret stay in the encrypted record, so a resumed Codex session keeps its
-  URL and header.
-- `gh` has one token for each host, so it acts as the user.
-
-A pull request that an agent opens with a bot token has `openbotgit[bot]` as its author, so the user
-who asked for it can approve it. A branch rule that needs one approval then passes with no second
-person.
-
 ## Local skill library
 
 `src/main/local-skill-library.ts` owns immutable revisions under the application's user-data directory, in `local-skills/<local-skill-uuid>/<revision>/bundle.zip`. A staging directory is renamed only after the bundle is written; reads ignore unpublished staging directories. Revisions are serialized and checked against the caller's expected revision. No SQLite migration is required.
 
 `create_skill` and `revise_skill` publish a folder of the agent's workspace. An agent often writes a plain frontmatter value with a colon, such as `description: Use when: ...`, which YAML refuses. When the frontmatter does not parse, the library quotes each top-level plain value that has a colon and tries again. When that parses, the bundle gets the quoted `SKILL.md`; the folder in the workspace does not change. Otherwise the publish fails as before.
 
-The shared package validator handles local and marketplace bundles. The existing installer owns per-agent files, hashes, disabled storage, and both provider directories. Local installations skip marketplace downloads and receipt requests. Installation operations are serialized per agent; a library revision does not update installed copies.
+The shared package validator handles local and marketplace bundles. The existing installer owns per-agent files, hashes, disabled storage, and both provider directories. Local installations need no download. Installation operations are serialized per agent; a library revision does not update installed copies.
 
 A pack is one bundle that holds skills of its own in `skills/<slug>-<name>/SKILL.md`. The installer writes each one as the sibling folder `<slug>-<name>` in both provider directories, so a provider finds it and `$<slug>-<name>` lists it, and keeps them all under the pack's one lock entry: install, update, disable, enable and removal act on every folder together, with one download and one install receipt.
 
@@ -251,6 +207,10 @@ The backend local skill tools derive the agent from the calling provider session
 
 ## Plugin distribution
 
-A plugin is one developer's bundle: an MCP server, shown as an app, the skills that drive it, and the listing text. The catalog of available plugins is a static file set that the Account Worker serves from `openbot.run` without an account, and the main process keeps a copy in the user-data directory rather than in SQLite, because a remote catalog is a cache and not the source of truth. An install saves the app as a host-global MCP server and installs the pinned skills into the chosen agent. A share link at `openbot.run/plugins/<slug>` opens a public page, and `openbot://plugins/<slug>` opens the listing in the app; neither one installs anything.
-
-See [plugin distribution and sharing](../plugin-distribution.md) for the catalog shape, the fetch and cache rules, the install and uninstall order, the deep-link parser rules, and the security review. Three parts of that design run today. The Apps tab installs the listing's pinned skills into the chosen agent and saves its app as a host-global MCP server. The links work: `openbot.run/marketplace/apps` (which `openbot.run/plugins` redirects to) and `openbot.run/plugins/<slug>` are pages on the public site, and `openbot://plugins/<slug>` opens that listing in the app, which is one of the link kinds that `src/main/deep-link-router.ts` recognises beside an invitation. Both sides read one catalog, generated from `marketplace/plugin-catalog/`, because a listing that said one thing on the page and another in the app would be two catalogs. The Apps tab also uninstalls a listing. The catalog files, the Worker routes that serve them, and the cache in the main process are still design.
+A plugin is one developer's bundle: an MCP server, shown as an app, the skills that drive it, and the
+listing text. The catalog comes with the app. `bun run marketplace:build:plugins` builds it from
+`marketplace/plugin-catalog/` into `resources/plugin-catalog/` and
+`src/renderer/src/features/settings/marketplace-plugin-catalog.ts`, and the packaged app reads it from
+`plugin-catalog` in its resources (`src/main/analytics-plugin-catalog.ts`). The Apps tab installs the
+pinned skills of a listing into the chosen agent and saves its app as a host-global MCP server.
+OpenBot-NC has no served catalog, no public plugin page and no share link.

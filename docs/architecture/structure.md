@@ -4,28 +4,21 @@
 
 ```text
 apps/
-  auth-api/          Public web and /app browser entry, accounts, memberships, connection tickets, and billing
-  browser-extension/ Chrome side panel (Manifest V3) that chats with the agents of a joined server, as the phone app does, and sends X posts to the X agent
-  discord-app/       Developer Portal settings of the OpenBot Discord app (no code)
-  mobile/            Expo React Native client for remote team hosts
-  mobile-updates/    Cloudflare Worker that gives the mobile app its over-the-air updates from private R2 storage
-  site-router/       Cloudflare Worker that serves published sites from private R2 storage
-  slack-app/         Slack CLI projects with the OpenBot Slack app manifests (production, development)
-  status/            Public status page on GitHub Pages, and the check and webhook scripts of its workflow
-  telegram-app/      BotFather settings of the OpenBot Telegram bot (no code)
+  browser-extension/ Chrome side panel (Manifest V3) that chats with the agents of a joined server through the central server
+  mobile/            Expo React Native client for team hosts, through the central server
 packages/
   ui/                Shared SolidJS controls and primitive styles for desktop, web, and Storybook
   brand/             Shared logos, avatars, and design tokens
-  contracts/         Process and network boundary types, limits, and pure validation
+  contracts/         Process and network boundary types, limits, and pure validation, with the relay protocol
   i18n/              Message catalogs, translate and format functions for desktop, shared UI and mobile
   logging/           ts-log Logger interface plus the redacting console/file implementation
   telemetry/         Safe error reports, bounded retry queue, and local storage/HTTP adapters
-  team-client/       Shared team connection, recovery, WebRTC framing, Dynamic Island state, and routine schedules
+  team-client/       Shared team connection, relay client and tunnels, Team V2 framing, and routine schedules
   user-errors/       Shared user-facing error messages for desktop and mobile
   whatsapp/          WhatsApp client: vendored Baileys without its copyleft parts, clean-room Signal code, device store
 remote/
-  api/               Bun Signal service for SDP, ICE, ticket checks, TURN credentials, and the Slack, Discord, Telegram and webhook relays
-  scripts/           Bun checks and update commands for Signal and coturn
+  api/               Bun central relay server: certificate authority, WebSocket relay and web client at /app
+  scripts/           Relay build and the relay E2E test
 src/
   backend/           Agent runtime, provider adapters, event storage, queues, and browser host
   main/              Electron lifecycle, trusted IPC, host server, and operating-system adapters
@@ -46,8 +39,8 @@ Dependencies point toward stable boundaries:
 
 ```text
 renderer ──► @openbot/contracts ◄── preload ◄── main ──► backend
-                        ▲                             │
-                        └──────── auth-api ──────────┘
+                        ▲
+                        └──────── remote/api (central relay)
 ```
 
 - `packages/contracts` has no Electron, Node.js, SolidJS, provider, or Cloudflare dependency.
@@ -56,25 +49,20 @@ renderer ──► @openbot/contracts ◄── preload ◄── main ──►
 - Electron main validates untrusted IPC input before it calls a service.
 - Provider code cannot write UI state. It sends events to `AgentService`, which writes SQLite
   projections before the main process sends changes to the renderer.
-- The auth API server cannot import desktop implementation files. Browser-only route composition
-  can import renderer UI through the explicit preview and web aliases. These entry points do not
-  load Electron, preload, setup, or updater providers.
+- The central relay (`remote/api`) imports only `@openbot/contracts` of the workspace, not desktop
+  files. The web client build (`web-client.vite.config.ts`) can import renderer UI through the
+  explicit web aliases. It does not load Electron, preload, setup, or updater providers.
 
 `noRestrictedImports` overrides in `biome.json` enforce the import rules above: renderer and shared
 UI to main, backend, and preload; main, backend, and preload to renderer; contracts to Electron,
-SolidJS, provider, Cloudflare, and application code; and the account server to desktop code.
+SolidJS, provider, Cloudflare, and application code.
 `noNodejsModules` keeps Node.js out of contracts and the team client.
 
 ## State ownership
 
 - `openbot.db` is the source of truth for OpenBot agents, conversations, queues, reactions,
   attachments, and provider-session bindings.
-- `RoutineStore` saves a routine and its webhook trigger in one transaction. `WebhookRouteStore`
-  owns route IDs, encrypted secrets, receipts, and route revocations. `RoutineRecords` gives main one
-  owner-neutral view of these. Webhook runs use the existing agent and channel queues. Main owns
-  signature checks, the secret cipher, and Signal ingress (`HostEventsService`, `WebhookRelay`). D1
-  stores route metadata only.
-  See [Webhook routines](events.md).
+- `RoutineStore` saves a routine. A saved webhook trigger stays in its row and does not run.
 - `MailboxStore` owns attachment records, staged generated attachments, mailbox commits, and the
   file-deletion outbox. `AttachmentFiles` owns draft and transfer files: copying, size limits,
   hashes, manifests, managed-path checks, and cleanup. It does not read or write the database.
@@ -91,9 +79,8 @@ SolidJS, provider, Cloudflare, and application code; and the account server to d
 - `~/.codex`, `~/.claude`, `~/.grok`, `~/.gemini`, `~/.cursor`, `~/.cline`, `~/.kimi`, `~/.pi`, `~/.devin`, `~/.copilot`, `~/.vibe`, and the OpenCode,
   Muse and Devin XDG folders are provider-owned login and resume state. They are not OpenBot
   conversation storage.
-- D1 is the source of truth for central accounts, remote membership, invitations, and logical sessions.
-- Stripe is the source of truth for paid plans. D1 `billing_subscriptions` is a copy that the Stripe
-  webhook keeps current; see [Billing](servers.md#billing).
+- The central server is the source of truth for certificates, teams and revocations (`RELAY_DATA_DIR`).
+  It keeps no member list: a valid certificate is the membership.
 - A local team host owns conversations, files, agents, and the local member projection used by Team API.
 - `openbot-approval-automation-v3.json` holds which agents have Full access: the `autoApprove` half of
   each agent's Permissions level (Workspace only, Ask first, Full access). OpenBot reads an older

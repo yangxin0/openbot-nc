@@ -101,10 +101,6 @@ fold, run `bun scripts/thread-event-compaction-e2e.ts`.
   `MEASURED_LARGE_TABLE_CHANGES`. Data-only rewrites leave no trace in the schema history, so review
   covers them.
 
-The account service has a second, unrelated database — Cloudflare D1 — and its rule is the opposite
-shape: those migrations are reversible but race a deploy. `apps/auth-api/AGENTS.md` owns it — nothing in this
-directory touches `apps/auth-api/migrations/`.
-
 ## Transactions
 
 - Run each SQLite transaction through `withTransaction` (synchronous work) or `withTransactionAsync`

@@ -75,7 +75,7 @@ stop in a row turns it off. An update with a new Chromium version tries the GPU 
 ignores these files when OpenBot 0.75.0 or earlier wrote them: those versions could write them by
 mistake after a reboot or a GPU reset. A GPU process restart after a lost GPU context, for example
 after suspend, does not count. A GPU process that stops while OpenBot quits or the computer shuts down
-or restarts does not count either. A server (`OPENBOT_SERVER=1` or a hosted server) always renders on the
+or restarts does not count either. A server (`OPENBOT_SERVER=1`) always renders on the
 CPU, and its browser runs WebGL on the CPU (SwiftShader) for sites such as the Figma editor. A GPU
 process crash on a server writes `gpu-crash.json` and turns off WebGL at the next start. Chromium
 also renders on the CPU when it blocks the GPU driver, for example in a remote desktop.
@@ -227,15 +227,9 @@ An older OpenBot started after a newer one opened your data, for example from an
 second installation. An older OpenBot cannot read data that a newer one updated, so it stops before
 it writes anything. Your data is intact.
 
-Do not follow the reset steps below, and do not move the folder. When in-app updates and automatic
-downloads are on, OpenBot installs the latest version and opens again. Otherwise, or when the
-update fails, install the latest version from [openbot.run/download](https://openbot.run/download).
-
-When the latest version is the one that did not open several times in a row, OpenBot does not install
-it again. It says that the latest OpenBot did not open, and it keeps your data as it is. Install a
-version newer than the one it names when one is available on the
-[releases page](https://github.com/nightly-labs/openbot/releases), and report the problem with the
-details below.
+Do not follow the reset steps below, and do not move the folder. OpenBot-NC does not update itself.
+Install the newest build of your team, and report the problem with the details below when that build
+does not open.
 
 Then remove the older copy. On Windows, look for a second OpenBot in Settings → Apps, and pin the
 new OpenBot again if a taskbar or desktop shortcut opens the old one. Older versions show the
@@ -257,14 +251,10 @@ laptop lid, or a sleep that you select, still sleeps the computer, unless macOS 
 display (closed-display mode). On battery power, the computer sleeps as usual, unless you also turn
 on **Also on battery**.
 
-`pmset -g assertions` can show an OpenBot entry named `WebRTC has active PeerConnections`. It
-exists only while another device is connected to this computer, so the computer can sleep after that
-device disconnects. With the setting on, the entry is named `Electron`.
-
 To see when a Mac slept, run `pmset -g log | grep -E " Sleep | Wake "`. `logs/main/main.log` (see
 [Report a problem](#report-a-problem)) has a `Keeping this computer awake.` line when OpenBot
 starts to keep it awake. For routines that run when no computer of yours is on, use a
-[hosted server](hosted-servers.md) or a [self-hosted server](self-hosted-server.md).
+[self-hosted server](self-hosted-server.md).
 
 ## A company firewall or proxy blocks OpenBot
 
@@ -278,43 +268,16 @@ company installs its inspection certificate on the computer, OpenBot accepts it.
 OpenBot starts, such as Codex and Claude, check certificates by their own rules. Do not turn off
 certificate checks to work around a block.
 
-Ask the network administrator to allow these hosts over HTTPS (TCP 443) and WebSocket:
-
-| Host | Use |
-| --- | --- |
-| `api.openbot.run` | Accounts, sign-in, teams, and hosted servers |
-| `signal.openbot.run` | Connection setup for teams and remote servers |
-| `openbot.run` | Public site and images in invitation emails |
-| `*.openbot.run` | Hosted servers and sites, and `analytics.openbot.run` |
-| `github.com`, `*.githubusercontent.com` | App updates |
-
-Teams and remote servers also send WebRTC traffic to the other device or to the TURN relay that
-Signal names, on the UDP and TCP ports that it names. A filter that blocks WebRTC makes these
-connections slow or stops them. Conversations stay on the computer; the [privacy policy](../PRIVACY.md) lists what each
-host receives.
-
-If the filter puts `openbot.run` in a blocked category, the administrator can ask the vendor to
-review it. For Fortinet, use the FortiGuard web filter lookup.
+Ask the network administrator to allow the central server of your team over HTTPS (TCP 443) and
+WebSocket (`wss://<your server>/v1/relay`), and the hosts of your providers. OpenBot-NC connects to no
+other OpenBot host. The [privacy policy](../PRIVACY.md) lists what each host receives.
 
 ## A server connects slowly through a VPN or proxy app
 
 A proxy app, such as Clash, Mihomo, Shadowrocket, or Surge, can send OpenBot traffic through a
-remote proxy. Many proxies do not carry UDP. Then the connection to a joined server uses a slower
-path, it fails more frequently, and it must reconnect more often when you open the app again.
-
-Send OpenBot traffic directly, not through the proxy. Add this rule above the other rules of the
-proxy app:
-
-```text
-DOMAIN-SUFFIX,openbot.run,DIRECT
-```
-
-If the app uses fake-IP DNS, also add `+.openbot.run` to the fake-IP filter (`fake-ip-filter` in a
-Clash or Mihomo configuration). Then the connection uses the real addresses of the OpenBot hosts.
-
-This rule covers sign-in, Signal, and the TURN relays. It does not cover a direct path to the
-server, because that path uses an address, not a name. When the direct path fails, OpenBot uses a
-TURN relay.
+remote proxy. All connections to joined servers go through the central server over one WebSocket. To
+send them directly, add a `DOMAIN` rule with the host of your central server and `DIRECT` above the
+other rules of the proxy app.
 
 ## Reset OpenBot
 
@@ -328,7 +291,7 @@ keeping agent workspaces, move this folder somewhere safe:
 To also reset agent workspaces, managed transfers, and downloads, move this folder as well:
 
 ```text
-~/OpenBot
+~/OpenBot-NC
 ```
 
 OpenBot creates fresh folders on the next launch. Review and back up their contents first. Do not
@@ -336,7 +299,7 @@ remove `~/.codex` or `~/.claude` unless you intentionally want to manage CLI log
 
 ## Uninstall
 
-Quit OpenBot. On macOS remove `OpenBot.app` from Applications; on Windows use the installer's
+Quit OpenBot. On macOS remove `OpenBot-NC.app` from Applications; on Windows use the installer's
 uninstaller; on Linux delete the AppImage, `~/.local/share/applications/openbot-nc.desktop`,
 `~/.local/share/icons/openbot-nc.png`, and `/etc/apparmor.d/openbot-nc` if you installed the profile. If
 you also want to remove local OpenBot data, follow the reset steps above. Agent CLIs and their data
@@ -344,17 +307,12 @@ are independent and are not removed with OpenBot.
 
 ## Report a problem
 
-Use the [bug report form](https://github.com/nightly-labs/openbot/issues/new?template=bug_report.yml)
-for reproducible bugs. It asks for the platform, the OpenBot version (Settings → Updates on the
-desktop), the operating system and hardware, the provider and its CLI version, the steps, and the
-expected and actual results. When a provider row shows an error, select **Copy diagnostics** in its
-menu and paste the result into the form.
-
-For a problem in the iPhone or Android app, use the
-[mobile app bug report form](https://github.com/nightly-labs/openbot/issues/new?template=mobile_bug_report.yml).
-It asks for the full app version line from Settings → About. Settings → Support → **Save log file**
-makes a log that you can attach. Attach it for a connection or network problem: we will most
-probably close such a report without it.
+Report a reproducible bug to the maintainer of your fork. Give the platform, the OpenBot-NC version
+(Settings → Updates on the desktop), the operating system and hardware, the provider and its CLI
+version, the steps, and the expected and actual results. When a provider row shows an error, select
+**Copy diagnostics** in its menu and add the result. For a problem in the phone app, give the full
+app version line from Settings → About, and attach the log of Settings → Support → **Save log file**
+for a connection or network problem.
 
 Never publish tokens, `~/.codex`,
 `~/.claude`, conversations, private files, Electron user data, or full unreviewed diagnostics.

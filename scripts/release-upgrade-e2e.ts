@@ -19,6 +19,7 @@ import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { setTimeout as sleep } from "node:timers/promises";
+import { APP_HOME_FOLDER, APP_NAME } from "@openbot/contracts/app-identity";
 import { LOCAL_SERVER_ID, type OpenBotDesktopApi } from "@openbot/contracts/ipc";
 import { isNumber } from "@openbot/contracts/runtime-values";
 import { createOpenBotLogger } from "@openbot/logging";
@@ -86,6 +87,7 @@ interface Report {
   target: Target;
   arch: string;
   previousVersion?: string;
+  skipped?: boolean;
   history: boolean;
   newVersion: string;
   installedVersion?: string;
@@ -134,7 +136,11 @@ const userDataPath = join(root, "user-data");
 const homePath = join(root, "home");
 await mkdir(userDataPath);
 await mkdir(homePath);
-const agentsFolder = join(target === "windows" ? (process.env.USERPROFILE ?? homePath) : homePath, "OpenBot", "Agents");
+const agentsFolder = join(
+  target === "windows" ? (process.env.USERPROFILE ?? homePath) : homePath,
+  APP_HOME_FOLDER,
+  "Agents",
+);
 const earlierWorkspaces = new Set(await listWorkspaces());
 const current: { process: LaunchedProcess | null; app: RunningApp | null } = { process: null, app: null };
 
@@ -151,6 +157,8 @@ function compareVersions(left: string, right: string): number {
   }
   return 0;
 }
+
+class NoPreviousRelease extends Error {}
 
 function previousTag(ageDays?: number): string {
   const listed = z
@@ -184,6 +192,14 @@ function previousTag(ageDays?: number): string {
     .filter((version) => compareVersions(version, newVersion) < 0)
     .sort(compareVersions);
   const newest = versions.at(-1);
+  const anyOlder = listed.some(
+    (entry) => /^v\d+\.\d+\.\d+$/u.test(entry.tagName) && compareVersions(entry.tagName.slice(1), newVersion) < 0,
+  );
+  if (!newest && !anyOlder) {
+    throw new NoPreviousRelease(
+      `${REPOSITORY} has no published release older than ${newVersion}. Nothing to upgrade from.`,
+    );
+  }
   check(
     newest,
     `No published release is older than ${newVersion}${ageDays === undefined ? "" : ` and ${ageDays} days`}.`,
@@ -192,9 +208,9 @@ function previousTag(ageDays?: number): string {
 }
 
 function artifactName(version: string): string {
-  if (target === "macos") return `OpenBot-${version}-${process.arch === "arm64" ? "arm64" : "x64"}.zip`;
-  if (target === "windows") return `OpenBot-${version}-x64.exe`;
-  return `OpenBot-${version}-${target === "linux" ? "x86_64" : "arm64"}.AppImage`;
+  if (target === "macos") return `${APP_NAME}-${version}-${process.arch === "arm64" ? "arm64" : "x64"}.zip`;
+  if (target === "windows") return `${APP_NAME}-${version}-x64.exe`;
+  return `${APP_NAME}-${version}-${target === "linux" ? "x86_64" : "arm64"}.AppImage`;
 }
 
 async function sha256(path: string): Promise<string> {
@@ -246,13 +262,14 @@ async function newArtifact(): Promise<string> {
 }
 
 const macApplications = join(root, "Applications");
-const macBundle = join(macApplications, "OpenBot.app");
-const windowsFolder = join(process.env.LOCALAPPDATA ?? "", "Programs", "OpenBot");
-const linuxAppImage = "/opt/OpenBot/OpenBot.AppImage";
+const macBundle = join(macApplications, `${APP_NAME}.app`);
+const windowsFolder = join(process.env.LOCALAPPDATA ?? "", "Programs", APP_NAME);
+const linuxFolder = `/opt/${APP_HOME_FOLDER}`;
+const linuxAppImage = join(linuxFolder, `${APP_NAME}.AppImage`);
 
 function executablePath(): string {
-  if (target === "macos") return join(macBundle, "Contents", "MacOS", "OpenBot");
-  if (target === "windows") return join(windowsFolder, "OpenBot.exe");
+  if (target === "macos") return join(macBundle, "Contents", "MacOS", APP_NAME);
+  if (target === "windows") return join(windowsFolder, `${APP_NAME}.exe`);
   return linuxAppImage;
 }
 
@@ -291,16 +308,19 @@ async function installPrevious(artifact: string): Promise<void> {
   }
   if (target === "windows") {
     check(process.env.LOCALAPPDATA, "LOCALAPPDATA is not set.");
-    check(!existsSync(executablePath()), `${windowsFolder} already has OpenBot. Use a computer with no OpenBot.`);
+    check(
+      !existsSync(executablePath()),
+      `${windowsFolder} already has ${APP_NAME}. Use a computer with no ${APP_NAME}.`,
+    );
     const exitCode = await runInstaller(artifact, "/S");
     check(exitCode === 0, `The installer of the previous release exited with code ${exitCode}.`);
-    check(existsSync(executablePath()), "The installer of the previous release did not install OpenBot.exe.");
+    check(existsSync(executablePath()), `The installer of the previous release did not install ${APP_NAME}.exe.`);
     return;
   }
-  await access("/opt/OpenBot", constants.W_OK).catch(() => {
-    throw new Error("/opt/OpenBot must exist and be writable, with the AppArmor profile installed.");
+  await access(linuxFolder, constants.W_OK).catch(() => {
+    throw new Error(`${linuxFolder} must exist and be writable, with the AppArmor profile installed.`);
   });
-  check(!existsSync(linuxAppImage), `${linuxAppImage} already exists. Use a computer with no OpenBot there.`);
+  check(!existsSync(linuxAppImage), `${linuxAppImage} already exists. Use a computer with no ${APP_NAME} there.`);
   await copyFile(artifact, linuxAppImage);
   await chmod(linuxAppImage, 0o755);
 }
@@ -311,7 +331,7 @@ async function installNew(artifact: string): Promise<void> {
     await mkdir(staging);
     extractMacZip(artifact, staging);
     await rm(macBundle, { recursive: true, force: true });
-    await rename(join(staging, "OpenBot.app"), macBundle);
+    await rename(join(staging, `${APP_NAME}.app`), macBundle);
     verifyMacSignature();
     return;
   }
@@ -963,12 +983,18 @@ try {
   report.passed = true;
   logger.info(`Upgrade from ${tag} to ${newVersion} passed.`);
 } catch (error) {
-  report.error = error instanceof Error ? error.message : String(error);
-  logger.error(`Release upgrade check failed: ${report.error}`);
-  const running = current.app ?? current.process;
-  if (running) logger.error(`OpenBot stderr (last lines):\n${running.stderr()}`);
-  await printLogs().catch(() => undefined);
-  process.exitCode = 1;
+  if (error instanceof NoPreviousRelease) {
+    report.passed = true;
+    report.skipped = true;
+    logger.info(error.message);
+  } else {
+    report.error = error instanceof Error ? error.message : String(error);
+    logger.error(`Release upgrade check failed: ${report.error}`);
+    const running = current.app ?? current.process;
+    if (running) logger.error(`OpenBot stderr (last lines):\n${running.stderr()}`);
+    await printLogs().catch(() => undefined);
+    process.exitCode = 1;
+  }
 } finally {
   await current.app?.browser.close().catch(() => undefined);
   const running = current.process;

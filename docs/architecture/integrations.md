@@ -21,10 +21,10 @@ computer of the user who signs in. A sign-in uses one of these kinds:
 | Kind | Example | On this computer | On a joined server |
 | --- | --- | --- | --- |
 | Loopback callback | URL MCP servers (`McpOAuth`), Codex browser sign-in, a page that an agent's CLI prints | The page sends the browser to `http://127.0.0.1:<port>/...`. The MCP listener uses port 28417 and path `/mcp-auth` ([`mcp-oauth-redirect-server.ts`](../../src/main/mcp-oauth-redirect-server.ts)). | The [callback relay](#remote-sign-in-the-callback-relay) (`sign-in-relay-v1`). MCP on an older host: the host's live view (`mcp-sign-in-v1`). |
-| Device code | Codex (`codex-device`), Grok, Cline, Kimi, Muse, the GitHub connector | The user types a short code on the provider's page. Nothing comes back to OpenBot. | The host starts it and the client shows the code (`providers-v1` to `providers-v5`; Kimi `providers-v8` only). Muse: the relay opens its device page with no callback. GitHub: `connectors-v1`. |
+| Device code | Codex (`codex-device`), Grok, Cline, Kimi, Muse | The user types a short code on the provider's page. Nothing comes back to OpenBot. | The host starts it and the client shows the code (`providers-v1` to `providers-v5`; Kimi `providers-v8` only). Muse: the relay opens its device page with no callback. GitHub: `connectors-v1`. |
 | Pasted code | Claude on Linux (`cli` / `paste`), Cursor (`cli` / `link`) | The page shows a code, and the user pastes it into OpenBot. | The host starts it and the client takes the code (`providers-v3` to `providers-v5`). |
 | CLI-owned browser login | Claude (`auth login`), Codex, Gemini (`acp-authenticate`) | The provider's CLI opens the browser and takes its own callback. | The relay (`provider/start`): the host captures the page, and the client sends the callback query to the CLI's listener on the host. Grok, Cursor and Cline: a code kind. Mistral: the host takes the page from Vibe (`acp-delegated`) and the client shows it as a link (`providers-v8` with `mistral-code-sign-in-v1`). |
-| Deep link | Slack, Discord (`openbot://slack-workspace`, `openbot://discord-guild`), MCP fallback (`openbot://mcp-auth`) | A hosted page ends in an `openbot://` link, which reaches only the computer that opened it. | Slack and Discord: `connectors-v1`. The client sends the sealed grant on to the host that started the install. The browser client gets the grant from a return page of its own origin (`web-messaging-install.ts`). |
+| Deep link | MCP fallback (`openbot-nc://mcp-auth`, `src/main/deep-link-router.ts`) | An `openbot-nc://` link reaches only the computer that opened it. | No relay route. |
 | Terminal | Pi | OpenBot opens the CLI in a terminal on the host ([`provider-terminal-login.ts`](../../src/backend/provider-terminal-login.ts)). | Sign in on the host. |
 | Key or local session | API keys, 1Password, Bitwarden, Proton Pass | The user types a key or gives a CLI session. Proton Pass also signs in on Proton's web page. | Keys go to the host over the encrypted channel. Vault approval stays on the host. A Bitwarden session key works only on the computer that made it; a joined server gets an API key and the master password. Proton Pass: `password-managers-v1`; the client opens the host's sign-in page. |
 
@@ -268,7 +268,7 @@ capability answers that the sign-in must be done on the host.
   is not GET or HEAD, and any other path. Its page is a fixed catalog message.
 - The code is a secret. The host calls `registerSecretValue` on it before delivery. No log line,
   analytics event or diagnostic export contains the code, the `state` or the query.
-- The code travels only on the encrypted Team channel. The account Worker never sees it.
+- The code travels only on the Team channel, through the central server in transit.
 - Replay delivery sends one GET to the loopback address of the host's own page. It follows no
   redirect, keeps only the status code and drops the body.
 - `link/start` accepts only an https page with a `state` and a loopback `redirect_uri`
@@ -395,11 +395,8 @@ is one folder per plugin in [`marketplace/plugin-catalog/`](../../marketplace/pl
    bun run marketplace:build:plugins
    bun run marketplace:build:plugins -- --check
    ```
-   The build writes `src/renderer/src/features/settings/marketplace-plugin-catalog.ts`,
-   `apps/auth-api/src/lib/plugin-catalog.generated.ts`,
-   `apps/mobile/src/features/marketplace/model/plugin-catalog.generated.ts` and
-   `resources/plugin-catalog/`. Do not edit them by hand. The mobile copy states its own types and
-   leaves out the vendor icon addresses: the phone loads icons from `/plugins/icon/<slug>?app=<id>`.
+   The build writes `src/renderer/src/features/settings/marketplace-plugin-catalog.ts` and
+   `resources/plugin-catalog/`. Do not edit them by hand.
 5. For an `http` server, run `bun run test:mcp-catalog`
    ([`mcp-catalog-smoke.ts`](../../scripts/mcp-catalog-smoke.ts)). It connects to the live servers
    with no account and writes `.openbot-build/mcp-catalog-smoke/report.json`. It needs the network,
@@ -466,10 +463,6 @@ state on each of them.
 
 | Connector | Service | Sign-in | Contract |
 | --- | --- | --- | --- |
-| GitHub | [`github-connector-service.ts`](../../src/main/github-connector-service.ts), `github-device-flow.ts` | Device flow of a GitHub App with only the public client ID | `ipc-github-connector.ts`; joined server: `connectors-v1` GitHub routes |
-| Slack | `src/backend/messaging/slack/` | Hosted OAuth in the account Worker, which ends in `openbot://slack-workspace` with a sealed grant | `slack-workspace-grant.ts`, `ipc-messaging.ts` |
-| Discord | `src/backend/messaging/discord/` | The same, with `openbot://discord-guild` | `discord-guild-grant.ts`, `ipc-messaging.ts` |
-| Telegram | `src/backend/messaging/telegram/` | A one-use link code in a `t.me` link. No OAuth | `telegram-app.ts`, `ipc-messaging.ts` |
 | 1Password | [`onepassword-connector-service.ts`](../../src/main/onepassword-connector-service.ts) | The user's `op` session creates a read-only service account, or the user pastes a token | `ipc-onepassword-connector.ts`; joined server: `onepassword-connector-v1` (token only) |
 | Bitwarden | [`bitwarden-connector-service.ts`](../../src/main/bitwarden-connector-service.ts) | A `bw` session key, kept in memory only; a joined server signs in with an API key and the master password | `ipc-bitwarden-connector.ts`; joined server: `bitwarden-connector-v1` |
 | Proton Pass | [`proton-pass-driver.ts`](../../src/main/password-managers/proton-pass-driver.ts) | A web sign-in in a temporary `pass-cli` session makes an agent access key, or the user pastes one | `ipc-password-managers.ts`; joined server: `password-managers-v1` |
@@ -506,35 +499,13 @@ To add a connector:
 two registries on the desktop: one for the server on screen (Marketplace and chat cards) and one
 for the server whose settings are open. The browser client makes one in `WebWorkspace.tsx`. A
 registry gives each connector its access: `available` with its controller, `local-only`,
-`hidden`, `unsupported` (such as GitHub with no GitHub App), or `loading` before the first read.
+`hidden`, `unsupported`, or `loading` before the first read.
 
 On a joined server, the optional capability `connectors-v1`
 ([`connectors-v1.ts`](../../packages/contracts/src/team-protocol/connectors-v1.ts), host route
-[`route-connectors.ts`](../../src/main/team-api/route-connectors.ts)) carries GitHub, Slack, Discord
-and Telegram:
-
-- **GitHub**: the host runs the device flow. The client shows `userCode` and opens
-  `verificationUri`. The host sees the sign-in by itself.
-- **Slack and Discord**: the host answers the install page and a `nonce`, and opens nothing. The
-  client opens the page. The install ends in an `openbot://` link on the client, with a grant that is
-  sealed to a one-use key of the host. `RelayedMessagingInstalls`
-  ([`relayed-messaging-installs.ts`](../../src/main/relayed-messaging-installs.ts)) sends the grant
-  with `messagingComplete` only to the server whose install this computer opened, and only once. The
-  client cannot open the grant.
-- **Telegram**: the client opens the `t.me` link. There is no callback.
-- No route carries a token. The overview drops the bot token.
-
-A new connector on a joined server needs new routes in a new capability, because `connectors-v1`
-is frozen once it ships.
-
-The optional capability `discord-access-v1`
-([`discord-access-v1.ts`](../../packages/contracts/src/team-protocol/discord-access-v1.ts), host route
-[`route-discord-access.ts`](../../src/main/team-api/route-discord-access.ts)) reads and sets which
-Discord roles can use OpenBot in each Discord server of the host, and lists the server's roles through
-Signal (`listRoles`). The host keeps the list in `projection_messaging_allowed_roles`. An empty list
-lets everyone. With a list, `MessagingService` ignores a mention from a member who has none of the
-roles, before it reacts or posts. Signal passes the author's role IDs with each mention; a mention
-from an older Signal has none, so a server with a list ignores it.
+[`route-connectors.ts`](../../src/main/team-api/route-connectors.ts)) carried GitHub, Slack, Discord
+and Telegram. OpenBot-NC has none of these connectors. A new connector on a joined server needs new
+routes in a new capability, because `connectors-v1` is frozen once it ships.
 
 The optional capability `whatsapp-connector-v1`
 ([`whatsapp-connector-v1.ts`](../../packages/contracts/src/team-protocol/whatsapp-connector-v1.ts), host
@@ -720,7 +691,6 @@ Use `bun run dev:automation` for snapshots and screenshots. Do not drive another
 | A sign-in that returns to a public `https:` address of the provider | The provider finishes it by itself. The host only waits. Nothing comes back to a loopback port. |
 | A sign-in that opens an app on the host, such as Pi, which opens Terminal | The step happens on the host's screen. There is no page address to open somewhere else. |
 | A vault that approves in its desktop app, such as 1Password or Bitwarden | The approval is in the vault app on the host. A relay cannot approve for it. 1Password on a joined server uses a service account token (`onepassword-connector-v1`); Bitwarden uses an API key and the master password (`bitwarden-connector-v1`). Proton Pass signs in on the host and the client opens Proton's page (`password-managers-v1`). |
-| The Slack development return address (`returnUrl`) | Development builds only. It returns to `http://127.0.0.1:<port>/...` on the host, and the relay does not carry it. Use the hosted install. |
 | An agent link for a member who is not an admin | The relay routes are admin only. The link opens as it is, and its callback cannot reach the host. |
 | An agent link in a command, tool output or commentary | The host relays only a link that the text of an agent message holds. |
 | A CLI that opens its own browser and honors no `BROWSER` | The host never gets the page address. Grok, Cursor and Cline use a code kind. |

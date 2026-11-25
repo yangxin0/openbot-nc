@@ -9,7 +9,6 @@ const ALLOWED_DIRECTORIES = [
   "apps/mobile/assets/",
   "apps/browser-extension/public/icons/",
   "scripts/hosting/desktop/",
-  "docs/store-assets/",
 ] as const;
 
 const IMAGE_FILE = /\.(avif|bmp|gif|heic|icns|ico|jpe?g|mov|mp4|png|svg|tiff?|webm|webp)$/i;

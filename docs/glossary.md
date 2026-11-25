@@ -1,6 +1,6 @@
 # Glossary
 
-The product terms OpenBot uses, and the identifiers each one owns. Read this when naming a new type,
+The product terms OpenBot-NC uses, and the identifiers each one owns. Read this when naming a new type,
 table, IPC channel or product string, or when a term in the code disagrees with the term in the UI.
 [AGENTS.md](../AGENTS.md#terms) carries the two naming rules that are decisions rather than lookup.
 
@@ -8,10 +8,8 @@ table, IPC channel or product string, or when a term in the code disagrees with 
   `~/OpenBot-NC/Agents/<id>`, `projection_agents`), a coding agent, or a marketplace agent
   (`ipc-marketplace-agents.ts`). **teammate** is prompt and marketing text, never a type.
   Human members use `TeamMemberSummary`.
-- **agent template**: a public, link-only copy of one agent's instructions, skills and routines
-  (`ipc-agent-templates.ts`, `agent-templates:*`, D1 `agent_templates`, `openbot.run/agents/<id>`).
-  It holds no workspace files and no memories. It is not a marketplace agent: it has no review and
-  no listing.
+- **agent template**: a link-only copy of one agent's instructions, skills and routines
+  (`ipc-agent-templates.ts`, `agent-templates:*`). OpenBot-NC cannot publish one; the code names stay.
 - **browser profile**: a named, persistent browser session on the computer that runs the agents
   (`browser_profiles`, `BrowserProfileSummary`, `AgentBrowserProfile`, `agent:admin:*-browser-profile*`,
   `persist:openbot-browser-profile-<id>`). The built-in choices "Shared" and "Only this agent" (shown
@@ -28,24 +26,17 @@ table, IPC channel or product string, or when a term in the code disagrees with 
   `define-ipc-group.ts`), or an ARIA `role="group"`. An IPC **channel** is the wire name of an
   endpoint in `IPC_ENDPOINTS` (`ipc-endpoints.ts`); the product contract is `ipc-chat-channels.ts`.
 - **connector**: a built-in sign-in to an outside service that OpenBot turns into agent tools, one
-  for each OpenBot computer (`GitHubConnectorService`, `github-connector:*`,
-  `GITHUB_CONNECTOR_MCP_SERVER_ID`). A user-added MCP server or a marketplace plugin is not a
-  connector.
-- **messaging connection**: one workspace of an external chat platform (a Slack workspace, a Discord
-  guild or a Telegram chat), where this computer's agents answer (`projection_messaging_connections`,
-  `MessagingConnection`, `messaging:*`). Its **Slack Orchestrator** is the agent that receives each
-  new conversation and asks its teammates. A **messaging thread** is one external conversation (a Slack thread) that one agent
-  answers in its own execution thread (`projection_messaging_threads`, `MessagingLink`). A Slack
-  channel is a `platformChannelId`, never a **channel**.
-- **OpenBot credits**: prepaid points that an account buys with Stripe Checkout for its own balance
-  or for a server, and that an owner moves between the two (`@openbot/contracts/credits`,
-  `CreditsState`, `CreditServerWallet`, `credits.*` IPC, `v1/me/credits`, D1 `credit_purchases` and
-  `credit_ledger`, Stripe lookup keys `openbot_credits_<n>`). They are not the Stripe customer
-  credit of invite links (`billing-referral.ts`), the usage credits of `usage-credits-v1`, or the media credits of a provider
-  (`mediaCredits`).
+  for each OpenBot computer (see [Add a connector](architecture/integrations.md#add-a-connector)). A
+  user-added MCP server or a marketplace plugin is not a connector.
+- **messaging connection**: one linked WhatsApp number, where this computer's agents answer
+  (`projection_messaging_connections`, `MessagingConnection`, `messaging:*`). Its **orchestrator** is
+  the agent that receives each new conversation and asks its teammates. A **messaging thread** is one
+  external conversation that one agent answers in its own execution thread
+  (`projection_messaging_threads`, `MessagingLink`). A chat of the platform is a `platformChannelId`,
+  never a **channel**.
 - **server**: a joined team server (`ServerSummary`, `servers:*`), the local Team API host
-  (`HostStatus`, `host:*`, `src/main/team-api-server.ts`), the account API (`apps/auth-api`,
-  `auth:*`), or an MCP server (`createSdkMcpServer`).
+  (`HostStatus`, `host:*`, `src/main/team-api-server.ts`), the central relay server (`remote/api`),
+  or an MCP server (`createSdkMcpServer`).
 - **thread**: durable `projection_threads` record. **conversation**: its read projection, with no
   separate table. **provider session**: private CLI resume state (`projection_provider_sessions`).
   **team session**: authenticated remote connection. **turn**: one exchange in a thread.
@@ -65,12 +56,11 @@ table, IPC channel or product string, or when a term in the code disagrees with 
 - **routine**: a saved instruction for an agent or channel, with one schedule or webhook trigger
   (`EventRoutineTrigger`). Agent routines use `projection_agent_routines`. This is not Claude Code
   `/schedule`.
-- **webhook routine**: a routine with a webhook trigger (`RoutineWebhookTrigger`). A signed request
-  to its URL starts a run. The trigger can require one event type and data filters
+- **webhook routine**: a routine with a webhook trigger (`RoutineWebhookTrigger`). OpenBot-NC makes no
+  new one, and a saved one does not run. The trigger can require one event type and data filters
   (`projection_routine_webhooks`, `projection_channel_routine_webhooks`). There is no shared event
   source.
-- **webhook route**: the opaque route ID of one webhook routine, and the public Signal URL that
-  contains it (`WebhookRouteStore`, D1 `webhook_routes`). A **receipt** records one received
+- **webhook route**: the opaque route ID of one webhook routine (`WebhookRouteStore`). A **receipt** records one received
   delivery ID for deduplication.
 - **workflow**: a graph of steps on the Workflows page that can name several agents, models,
   conditions, approvals and outputs (`WorkflowStore`, `Workflows`, `workflows`, `workflows-v1`). It

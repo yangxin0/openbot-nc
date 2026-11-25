@@ -54,7 +54,7 @@
 5. **Restore target.** A ready pool machine with the product of the plan, in the locations of the
    currency (`poolLocations`), as for a new payment. When no machine is ready, the server restores into
    a new boat sandbox, and an operator moves it to a VPS later with the existing move
-   ([Move a server from boat](../docs/hosted-servers.md#move-a-server-from-boat)). This is the same
+   (Move a server from boat, in the deleted `docs/hosted-servers.md`). This is the same
    rule as for a new server today.
 
 ## Failed payments

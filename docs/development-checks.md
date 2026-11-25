@@ -30,15 +30,9 @@ therefore checks with TypeScript 6 without a warning.
 
 The `tsrs` version is exact and must be older than `minimumReleaseAge` in `bunfig.toml` (3 days).
 
-Signal had a similar gap: `remote:check` was its only entry point and also required Compose
-validation. `typecheck:remote` now runs in CI. `remote:check:compose` validates both
-Compose files with the Docker CLI; it does not need a daemon. `remote:check` remains the combined
-local command.
-
-`remote/api/tsconfig.json` also covers `remote/scripts/*.ts`. These scripts use Bun, while root
-`scripts/**` and Electron main use Node types. Keep Bun types within the remote project rather than
-adding Bun globals at the root. `remote/scripts/update.ts` drains and recreates the live coturn
-container, so its type coverage matters.
+`typecheck:remote` checks the central relay server (`remote/api`) and `remote/scripts/*.ts`. These
+scripts use Bun, while root `scripts/**` and Electron main use Node types. Keep Bun types within the
+remote project rather than adding Bun globals at the root.
 
 `tsconfig.node.json` and `tsconfig.web.json` set `verbatimModuleSyntax`: a file compiles alone the
 same way under `tsc` and the bundler, because a type-only import must say `import type`. It had no
@@ -49,11 +43,10 @@ those counts.
 The root `dependencies` are what electron-builder copies into `app.asar`, and what the main and
 preload builds load from `node_modules` at run time. A package that the renderer uses, or that the
 main build bundles (the `@openbot/*` workspaces), goes in `devDependencies`: Vite puts its code in
-`out/`, and a copy in `app.asar` only makes each download and hosted server wake larger.
+`out/`, and a copy in `app.asar` only makes each download larger.
 
-The Signal Dockerfile installs from a pruned checkout with one manifest copy per workspace.
-CI does not build that image. When you change workspace dependencies, make sure that the copied
-manifests cover the workspace dependency graph.
+CI does not build the relay image (`remote/api/Dockerfile`). When you change workspace dependencies,
+make sure that the image still installs them.
 
 `check:assets` reads `git ls-files` and fails on an image or video file outside the directories
 listed in `scripts/check-image-assets.ts`. `AGENTS.md` does not permit pull request screenshots in
@@ -74,8 +67,8 @@ of only text or data JSON is fast.
 see a staged file: the file is under a fixed part of the project's tsconfig `include`, in its
 workspace package, in a workspace package that it depends on (also through other workspace
 packages), or in a folder that it imports through a relative path. That last list is in the script:
-`scripts` imports mobile and account Worker modules, the account Worker imports the site router, a
-renderer story imports a preload helper, and `.storybook/preview.tsx` imports the renderer.
+`scripts` imports mobile modules, the renderer imports a preload helper, and Storybook imports the
+renderer.
 A root `tsconfig*.json`, `package.json` or `bun.lock` selects all projects. A mobile codegen input,
 such as `app.json` or the brand CSS, selects mobile. `biome.json` and GritQL files select no project:
 TypeScript does not read them. The script runs the projects one at a time and reports each one that
@@ -110,13 +103,13 @@ Its main jobs are:
 | Check | `ubuntu-latest` | `bun run knip:check`, `bun run check:assets`, `bun run check:doc-links`, `bun run check:desktop:static`, then `bun run i18n:check`, `bun run types:ratchet`, `bun run check:agent-context`, `bun run check:migrations` and `bun scripts/whats-new-translations.ts` in parallel |
 | Browser smoke | `ubuntu-latest` | `xvfb-run -a bun run test:browser`, then `xvfb-run -a bun run test:browser-agent-session` |
 | Tests (desktop 1/2, 2/2) | `ubuntu-latest` | `bun run test:desktop -- --shard=<n>/2` |
-| Signal E2E | `ubuntu-latest` | `bun run test:signal`, when `remote/` or `scripts/` changes |
+| Central relay E2E | `ubuntu-latest` | `bun run test:relay`, when `remote/`, `scripts/` or `src/` changes |
+| Central relay desktop E2E | `ubuntu-latest` | `xvfb-run -a bun run test:relay-app`, then `xvfb-run -a bun run test:relay-team-ui`, when `remote/`, `scripts/` or `src/` changes |
 | Local scripts CLI E2E | `ubuntu-latest` | `bun run test:automation-cli` |
 | Team API routes E2E | `ubuntu-latest` | `bun run test:team-api-routes`, when desktop code changes |
-| Team API and reverse actions E2E | `ubuntu-latest` | `test:team-legacy-clients`, `test:team-protocol-v10`, `test:team-webrtc-wire-parity`, `test:server-safe-mode`, `test:team-session-revoke`, `test:sign-in-relay-paste`, `test:server-mute`, `test:routine-pause-resume`, `test:agent-hide-restore`, `test:messaging-pause-resume`, `test:messaging-discord-access`, `test:messaging-discord-embeds`, `test:messaging-place-history`, `test:messaging-slack-ping-reply`, `test:turn-input`, `test:provider-update-busy`, `test:provider-update-automatic`, `test:provider-runtime-remove`, `test:provider-exit-session`, `test:acp-subagents`, `test:codex-subagent-steps`, `test:subagent-status`, `test:codex-hung-app-server`, `test:codex-missing-rollout`, `test:codex-idle-thread-release`, `test:zip-attachments`, `test:mp4-attachments`, `test:svg-attachments`, `test:any-file-attachments`, `test:channel-notifications`, `test:memory-review` and `test:skill-revision`, each with `bun run` in its own step, when the `desktop` lane runs |
+| Team API and reverse actions E2E | `ubuntu-latest` | `test:team-legacy-clients`, `test:team-protocol-v10`, `test:team-webrtc-wire-parity`, `test:server-safe-mode`, `test:team-session-revoke`, `test:sign-in-relay-paste`, `test:server-mute`, `test:routine-pause-resume`, `test:agent-hide-restore`, `test:turn-input`, `test:provider-update-busy`, `test:provider-update-automatic`, `test:provider-runtime-remove`, `test:provider-exit-session`, `test:acp-subagents`, `test:codex-subagent-steps`, `test:subagent-status`, `test:codex-hung-app-server`, `test:codex-missing-rollout`, `test:codex-idle-thread-release`, `test:zip-attachments`, `test:mp4-attachments`, `test:svg-attachments`, `test:any-file-attachments`, `test:channel-notifications`, `test:memory-review` and `test:skill-revision`, each with `bun run` in its own step, when the `desktop` lane runs |
 | Provider fakes E2E | `ubuntu-latest` | `test:custom-agents`, `test:custom-agents:login-path`, `test:acp-directories`, `test:acp-flavors`, `test:acp-turn-stall`, `test:agent-database-host-start`, `test:acp-mcp-names`, `test:provider-conformance`, `test:opencode-expired-key`, `test:opencode-downgraded-session`, `test:cline-free-models`, `test:cline-plan-limit-failover` and `test:provider-transcript-replay`, each with `bun run` in its own step, when the `desktop` lane runs. The fake agents are in `scripts/provider-fakes/`; the replayed transcripts of released CLIs are in `scripts/provider-fakes/transcripts/`, and `bun scripts/record-provider-transcript.ts` records a new one |
-| Surfaces | `ubuntu-latest` | Parallel groups described below, then `bun run remote:check:compose` |
-| API | `ubuntu-latest` | `bun run check:api`, then, for a pull request from this repository, upload `apps/auth-api/dist` |
+| Surfaces | `ubuntu-latest` | Parallel groups described below, and the browser extension build |
 | Storybook build | `ubuntu-latest` | `bun run build-storybook` |
 
 CI uses native GitHub Actions `parallel` groups. Each group waits for all its steps and fails
@@ -127,66 +120,45 @@ if a step fails. The steps have separate logs. The groups run in this order:
   check after setup. The desktop build still completes before `verify:preload`.
 - `Browser smoke` completes checkout, then runs `Set up Bun` and virtual-display installation
   together. The smoke test starts only after both succeed.
-- `Surfaces` completes setup, then runs three groups: `mobile:typecheck` with
-  `typecheck:team-client`; `typecheck:sites`, `typecheck:remote` and `typecheck:status`; and `typecheck:logging`,
-  `typecheck:telemetry`, `typecheck:user-errors`, and `typecheck:i18n`. Each command uses `bun run`
-  in its own step. Mobile generation stays inside `mobile:typecheck`. Compose validation starts
-  after all groups succeed.
+- `Surfaces` completes setup, then runs `mobile:typecheck` with `typecheck:team-client`, then
+  `typecheck:remote` with `typecheck:extension`, then builds the browser extension, then runs
+  `typecheck:logging`, `typecheck:telemetry`, `typecheck:user-errors`, and `typecheck:i18n`. Each
+  command uses `bun run` in its own step. Mobile generation stays inside `mobile:typecheck`.
 
-The desktop test shards keep separate runners. The API checks, artifact uploads, and production
-deployment dependencies keep their existing order. Local commands do not change. Compare job
+The desktop test shards keep separate runners. Local commands do not change. Compare job
 times on GitHub before claiming a time reduction; parallel steps share the runner's resources.
 
-The `Provider CLI canary` workflow is not a pull request check. It runs every six hours on the newest
-upstream provider CLIs, which reach users without an OpenBot release; see
+The `Provider CLI canary` workflow is not a pull request check. It runs on the newest upstream
+provider CLIs, which reach users without an OpenBot release: every six hours when the repository
+variable `PROVIDER_CLI_CANARY` is `true`, and when somebody starts it; see
 [Provider CLI updates](architecture/providers.md#provider-cli-updates).
 
 The `Provider live E2E` workflow is not a pull request check either. It runs only when somebody
 starts it; the release-upgrade-safety skill starts it before a release. On the Mac mini runner, it sends one real message to Codex, Claude and Gemini through the desktop app
 (`bun run test:provider-live`). See [Live provider test](provider-live-e2e.md).
 
-The `Release regression report` workflow is not a pull request check either. Once a day, it compares
-the two newest releases from production analytics and posts the result to a private Discord channel
-when a status changed, on Monday, or on a manual run. It runs only on `main`, with the secrets of the
-`analytics` environment, and its log shows no data. A regression does not fail the run; only a broken
-run fails. See the `openpanel` skill.
-
-`check:api` ends with `api:build:check`, which is the preview build of the Worker, so the API job
-uploads that build as the `cloudflare-preview` artifact. The job has no secrets. After the CI run completes, the trusted
-[cloudflare-preview.yml](../.github/workflows/cloudflare-preview.yml) workflow runs its `main`
-version with the preview deploy token. It skips a closed pull request, a newer commit, and a fork. It
-builds the `main` Worker config, and `scripts/check-preview-worker-config.ts` stops the upload when
-the pull request's generated `wrangler.json` differs from it in anything but the code entry and the
-compatibility settings. Thus a pull request that changes the preview Worker name, bindings, vars, or
-routes gets no preview. A change to `cloudflare-preview.yml` takes effect only after it merges.
-
-All of these jobs gate Cloudflare production deployment on `main`. Surfaces was previously missing from
-that dependency list, which allowed deployment despite a failed mobile or remote check.
 These long suites belong in CI; local desktop runs can reach their time limits under load.
 
 The `Detect changed areas` job lets a pull request skip the lanes it cannot affect. It compares the
 merge commit with its first parent and first removes Markdown that no build or test reads: `docs/`,
-`plans/` and `changelog.d/` Markdown, every `AGENTS.md`, and the root Markdown files except
-`CHANGELOG.md`, which the API bundles, and `CLA.md`. Markdown under `resources/` is not removed either, because the
-renderer bundles it. Then it selects the lanes:
+`plans/` and `changelog.d/` Markdown, every `AGENTS.md`, and the root Markdown files
+`CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `PRIVACY.md`, `README.md`, `SECURITY.md` and `SUPPORT.md`.
+Markdown under `resources/` is not removed, because the renderer bundles it. Then it selects the lanes:
 
 | Lane | Jobs | Runs when a changed path is |
 | --- | --- | --- |
 | `code` | Check, Tests (desktop) | anything that is left |
 | `docs` | Check, with only `check:doc-links` when `code` is off | any Markdown file, before the removal above, or `scripts/check-doc-links.ts` |
-| `desktop` | Browser smoke, Local scripts CLI E2E, Team API and reverse actions E2E | outside `apps/auth-api`, `apps/mobile`, `apps/mobile-updates`, `apps/site-router`, `apps/status`, `remote` and `docker` |
-| `api` | API | in `apps/auth-api`, `apps/site-router`, `src/renderer` or `resources`, or a `CHANGELOG.md` |
-| `remote` | Signal E2E | in `remote` or `scripts` |
-| `storybook` | Storybook build | in `src`, `apps/auth-api`, `apps/status`, `.storybook`, `resources`, `marketplace` or `build` |
-| `surfaces` | Surfaces, Mobile update server E2E, Mobile runtime version | in `apps/mobile`, `apps/mobile-updates`, `apps/site-router`, `apps/status`, `remote` or `scripts` |
+| `desktop` | Browser smoke, Local scripts CLI E2E, Team API and reverse actions E2E | outside `apps/browser-extension`, `apps/mobile`, `docker` and `remote` |
+| `remote` | Central relay E2E, Central relay desktop E2E | in `remote`, `scripts` or `src` |
+| `storybook` | Storybook build | in `src`, `.storybook`, `resources`, `marketplace` or `build` |
+| `schema` | The released database schema check of Check | in `src/backend/` or `scripts/released-schema-fixtures.ts` |
+| `surfaces` | Surfaces | in `apps/browser-extension`, `apps/mobile`, `remote` or `scripts` |
 
 A path every workspace reads (`package.json`, `bun.lock`, `bunfig.toml`, `.nvmrc`, `tsconfig*.json`, `biome.json`,
 `.github/`, `packages/`, `tools/`, `patches/`, `vendor/`) runs every lane. `code` runs for a
 mobile-only pull request: the desktop test run holds a mobile test, and lint and knip cover every
-workspace. The API Worker bundles the
-renderer preview and web client and imports `apps/site-router/src`, so `api` reads them. A push to
-`main` and a manual run always run every lane, because a skipped need would skip
-`deploy-production`. When a lane reads another directory, add it to that lane's pattern in the
+workspace. A push to `main` and a manual run always run every lane. When a lane reads another directory, add it to that lane's pattern in the
 `detect` job. When in doubt, let the lane run.
 
 `All required checks pass` needs every other check job and fails when one of them failed or was
@@ -328,10 +300,8 @@ to 141.5s, and reached 2.64 on four. Use it, or repeat the run, before believing
 `deps.optimizer` is not enabled: it left `import` unchanged, at 26.1s against 26.2s, because that
 phase is this repository's own module graph re-executing per file rather than dependency resolution.
 
-The development setup script checks Bun, migrates local D1, and creates missing local state in
-`.openbot/dev-state.json`. The committed `apps/auth-api/.env.dev` is encrypted; a missing
-development key does not block ordinary local setup. Existing state is reused. Values stored only
-in the old generated `.env.dev` are reset on update.
+The development setup script checks Bun and creates missing local state in
+`.openbot/dev-state.json`. Existing state is reused.
 
 ## Lint and UI rules
 

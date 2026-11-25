@@ -612,7 +612,7 @@ backfill", for any version. `ProviderRuntime` replaces that exit text with
 `error.provider.codexStateBusy`, and an update whose new copy fails this way keeps the copy. Codex
 gets `LONG_START_TIMEOUT_MS` on each start that has no wait of its own: at launch, also when the
 launch starts all providers, and for an agent's own process. A stop in the request timeout during a
-slow backfill (the first start after a hosted server's restore) starts the lease. At launch this
+slow backfill starts the lease. At launch this
 default is not a learned wait: a timeout after it gives the next start `LONG_START_TIMEOUT_MS` again,
 not twice that time.
 
@@ -932,8 +932,8 @@ absolute path, so a folder on `PATH` cannot catch the link. There OpenBot makes 
 with 1.4.5 (#4521), so OpenBot refuses a sign-in from another device before the process starts, and
 a Reconnect does not sign the account out. A relayed sign-in from the desktop app that runs a server
 on this computer is not from another device: its Team API session is a password session of the
-owner, which only that app can open. The owner's other devices connect through Signal and stay
-refused. The sign-in runs as a Connect on this computer, the CLI opens the page here, and the relay
+owner, which only that app can open. The owner's other devices connect through the central server and
+stay refused. The sign-in runs as a Connect on this computer, the CLI opens the page here, and the relay
 ends with no page (#11677). The Windows test of 1.5.4 confirmed this. A valid saved Google token answers `authenticate` with no browser page.
 So a Reconnect of a connected Google sign-in, with no saved key, first calls ACP `logout`, which
 `initialize` advertises in `agentCapabilities.auth.logout`. `logout` deletes `antigravity-oauth-token`
@@ -1376,17 +1376,17 @@ state from peers below protocol 8, and `providers-v8` carries it.
 Team API v4 has its own frozen provider-aware schema and adapters. Versions 1–3 remain registered
 with their released provider vocabulary. The host filters OpenCode agents, models, status,
 sidebar references, and runtime events before encoding an older client's response. Requests for
-an OpenCode agent from those clients return 404. WebRTC keeps its v2 frame transport and selects
+an OpenCode agent from those clients return 404. Team V2 keeps its frame transport and selects
 the v4 application codec when the peer advertises the `opencode` capability.
 
 Team API v5 is the v4 schema with `antigravity` and `acp` added to the providers and auth kinds
-(`v5-base.ts`). WebRTC selects it when the peer advertises `local-providers`, and HTTPS negotiates
+(`v5-base.ts`). Team V2 selects it when the peer advertises `local-providers`, and HTTPS negotiates
 it from the protocol range. A v4 peer still gets the filtered view. A peer counts the host's
 custom agents from the `acp` models; the host never sends an agent's command, arguments or
 environment.
 
 Team API v6 is the v5 schema with `cursor` and `cline` added to the providers and auth kinds, and
-`=` and `,` added to the agent model charset for Cursor model ids (`v6-base.ts`). WebRTC and the
+`=` and `,` added to the agent model charset for Cursor model ids (`v6-base.ts`). Team V2 and the
 event stream select it when the peer advertises `local-providers-v2`, and HTTPS negotiates it from
 the protocol range. `GET /v1/agents/models` sends a v1–v5 peer only the ids its charset accepts. A
 v5 peer still gets the filtered view.

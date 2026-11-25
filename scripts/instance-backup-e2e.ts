@@ -151,7 +151,7 @@ async function main(): Promise<void> {
     const fixtureCopied = run("docker", ["cp", `${fixture}/.`, `${dind}:/fixture`]);
     if (fixtureCopied.status !== 0) throw new Error(`The instance fixture did not copy: ${fixtureCopied.stderr}`);
     must(`mkdir -p /stand-in && cat >/stand-in/Dockerfile <<'EOF'\n${standIn}EOF`);
-    must("docker build --quiet --tag ghcr.io/nightly-labs/openbot:latest /stand-in >/dev/null");
+    must("docker build --quiet --tag openbot-nc:latest /stand-in >/dev/null");
 
     must(`mkdir -p /srv/openbot-nc/main/data /backups
       fallocate --length 256M /srv/openbot-nc/main/data.img
@@ -159,7 +159,7 @@ async function main(): Promise<void> {
       mount -o loop /srv/openbot-nc/main/data.img ${data}
       cp -a /fixture/. ${data}/ && chown -R 1000:1000 ${data} && chmod 0700 ${data}
       printf 'OPENBOT_NAME=main\\nOPENBOT_CPUS=1\\nOPENBOT_MEM=1g\\nOPENBOT_DISK=256M\\nOPENBOT_BACKUP_DIR=/backups\\nOPENBOT_BACKUP_KEEP=2\\nOPENBOT_BACKUP_MAX_AGE=24\\n' >/opt/openbot-nc-docker/instances/main.env
-      docker run --detach --name openbot-main --stop-timeout 20 -v ${data}:/data ghcr.io/nightly-labs/openbot:latest >/dev/null`);
+      docker run --detach --name openbot-main --stop-timeout 20 -v ${data}:/data openbot-nc:latest >/dev/null`);
     const dataHash = must(`sha256sum ${data}/.config/OpenBot-NC/openbot.db | cut -d ' ' -f 1`);
 
     let result = instance("backups", "main");
@@ -407,9 +407,7 @@ async function main(): Promise<void> {
     const removedVersion = must(
       `sed -n 's/^  "openbotVersion": "\\(.*\\)",$/\\1/p' /backups/main/${removedBackup}/manifest.json`,
     );
-    must(
-      `docker run --detach --name openbot-main --stop-timeout 20 -v ${data}:/data ghcr.io/nightly-labs/openbot:latest >/dev/null`,
-    );
+    must(`docker run --detach --name openbot-main --stop-timeout 20 -v ${data}:/data openbot-nc:latest >/dev/null`);
     check(
       "a backup without a container has the version of the image",
       result.status === 0 && removedVersion === "0.40.0",

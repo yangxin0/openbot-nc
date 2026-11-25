@@ -1,18 +1,13 @@
-# Releasing OpenBot
+# Releasing OpenBot-NC
 
-For iOS builds uploaded to TestFlight through GitHub Actions, see
-[the mobile release guide](../apps/mobile/README.md#github-actions-testflight-release). For Android
-builds uploaded to Google Play, see
-[the Google Play release guide](../apps/mobile/README.md#github-actions-google-play-release).
-The mobile workflows are separate from the desktop tag release described below.
+A version tag runs `.github/workflows/release.yml` in your own GitHub repository. It builds the
+desktop app for macOS, Windows and Linux, the macOS Host package and the Docker images, and publishes
+them in the GitHub Releases of that repository and in its container registry. OpenBot-NC does not
+update itself: people install a new build by hand. Release packages are not built on a developer
+machine.
 
-OpenBot updates are published through GitHub Releases and installed with `electron-updater`.
-macOS requires every auto-updatable build to be signed with a Developer ID Application certificate.
-The release workflow also notarizes and staples the macOS application before publishing it. A Windows
-x64 tag release is signed with Azure Artifact Signing (see [Windows signing](#windows-signing)). Linux
-releases are unsigned, and the Linux AppImage carries no signature.
-All three platforms must pass before one release is published. Release packages are not built
-on a developer machine.
+The phone app has no release workflow. Build it as [central server](central-server.md#phone-app)
+says.
 
 Codex, Claude, and Grok runtimes are optional downloads. They are not part of the application package.
 Release CI downloads the pinned macOS, Windows, and Linux provider artifacts as control artifacts. It
@@ -20,143 +15,57 @@ checks their SHA-256 values, versions, licenses, and vendor signatures without c
 OpenBot. Linux has no code-signature contract to check, so its provider artifacts are verified by
 SHA-256 and version only.
 
-Installed apps do not wait for a release to get a new provider CLI: they offer the latest upstream
-release (see [Provider CLI updates](architecture/providers.md#provider-cli-updates)). The pinned version is the
+Installed apps offer the latest upstream release of a provider CLI (see
+[Provider CLI updates](architecture/providers.md#provider-cli-updates)). The pinned version is the
 first-install fallback. To stop a broken upstream release, add its version to the provider's list in
-`provider-runtime-blocklist.json` and merge it to `main`. Apps read the list at their next check. A
-blocked version is no longer offered. An OpenBot copy that already runs a blocked version moves to the
-newest version that is not blocked, also when that version is older. A CLI that the user installed stays.
+`provider-runtime-blocklist.json`. The list comes with the app, so a new release carries the change.
 
 ## One-time GitHub setup
 
-Create the `release` environment in `nightly-labs/openbot`, then add these environment secrets:
+Create the `release` environment in your repository, then add these environment secrets:
 
 - `CSC_LINK` — a base64-encoded Developer ID Application `.p12` file.
 - `MAC_PROVISIONING_PROFILE` — the base64-encoded Developer ID provisioning profile for
-  `app.openbot.desktop`, with the `applinks:openbot.run` entitlement.
+  `app.openbotnc.desktop`.
 - `CSC_KEY_PASSWORD` — the application `.p12` export password.
-- `CSC_INSTALLER_LINK` — a base64-encoded **Developer ID Installer** `.p12` file for team `ZTRDTUL87R`.
+- `CSC_INSTALLER_LINK` — a base64-encoded **Developer ID Installer** `.p12` file of the same team.
 - `CSC_INSTALLER_KEY_PASSWORD` — the installer `.p12` export password.
 - `APPLE_ID` — the Apple Account used for notarization.
 - `APPLE_APP_SPECIFIC_PASSWORD` — a dedicated app-specific password for `notarytool`.
 - `APPLE_TEAM_ID` — the Apple Developer team ID.
 
-Do not use an Apple Development certificate. Direct distribution and native macOS updates require a
-Developer ID Application certificate. Never commit signing credentials to the repository.
+The macOS job stops when one of these secrets is missing. The workflow compares the team of the built
+app with `APPLE_TEAM_ID`. These files still hold the team ID `ZTRDTUL87R` of the original vendor.
+Replace it with your team ID before the first tag:
+
+- `electron-builder.yml` (`mac.extendInfo.ElectronTeamID`);
+- `build/entitlements.mac.plist` (`com.apple.developer.team-identifier`);
+- `scripts/host-installation.ts` (`HOST_TEAM_ID`);
+- `scripts/host-manager-macos.ts` (`SIGNING_REQUIREMENT`);
+- `scripts/verify-macos-package.ts` (the expected `ElectronTeamID`).
+
+Do not use an Apple Development certificate. Direct distribution requires a Developer ID Application
+certificate. Never commit signing credentials to the repository.
+
+### Windows signing
+
+The Windows installer is unsigned unless the repository variable `AZURE_CLIENT_ID` is set. To sign
+with Azure Artifact Signing, set the repository variables `AZURE_CLIENT_ID`, `AZURE_TENANT_ID` and
+`AZURE_SUBSCRIPTION_ID` of an app registration whose federated credential trusts the `release`
+environment of your repository. Then replace the publisher name, endpoint, account and certificate
+profile in `electron-builder.windows-signing.yml`, which still name the signing account of the
+original vendor. The `windows` job logs in with `azure/login` and runs
+`bun run dist:win --config electron-builder.windows-signing.yml`.
 
 ### Docker package access
 
-The Docker image needs no secret: the `docker-publish` job pushes with `GITHUB_TOKEN`.
-[GHCR makes new packages private](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry),
-even when the source repository is public. A successful push does not confirm public access.
-
-After the first push, a package administrator must open the
-[OpenBot package](https://github.com/orgs/nightly-labs/packages/container/package/openbot):
-
-1. Open **Package settings** and set **Change visibility** to **Public**.
-2. Check that the package is linked to `nightly-labs/openbot`. The Dockerfile sets the
-   `org.opencontainers.image.source` label for this link.
-3. Under **Manage Actions access**, check that `nightly-labs/openbot` has write access.
-
-If **Public** is disabled by organization administrators, an organization owner must enable
-**Public** under **Package creation** in the
-[organization package settings](https://github.com/organizations/nightly-labs/settings/packages).
-Make OpenBot public, then restore the previous organization policy. Existing public packages stay
-public when this creation permission is disabled again.
-
-If a release pushed its image but users cannot pull it, check these settings first. Changing
-visibility makes the existing tags public; no rebuild is needed. Tags `0.30.0` and `0.31.0` have
-no `v` prefix. Later releases also publish `v<version>` as an alias.
-
-Check access with an empty Docker configuration, so a saved login cannot hide the fault:
-
-```sh
-anonymous_config=$(mktemp -d)
-docker --config "$anonymous_config" manifest inspect ghcr.io/nightly-labs/openbot:latest
-docker --config "$anonymous_config" manifest inspect ghcr.io/nightly-labs/openbot:0.30.0
-rm -rf "$anonymous_config"
-```
-
-The release workflow checks anonymous access to the version, `v<version>` and `latest` tags,
-including both Linux architectures. A failure leaves the GitHub Release and pushed images in
-place. Correct the package settings, then run the failed job again.
-
-## Hosted-server snapshots
-
-After GitHub publication, `Publish boat server snapshot` builds the Linux x64 release into a boat
-named snapshot (`openbot-server-production-<version>` with dots replaced by hyphens), then selects
-it for new production servers. It uses the tagged hosting scripts,
-the published `SHA256SUMS-linux.txt`, and `https://api.openbot.run`. The builder checks the AppImage
-checksum and installed version and requires an empty host profile before saving the snapshot.
-Existing servers and the test Worker do not change.
-
-Before the first release with this job, configure the `cloudflare-production` GitHub Environment:
-
-- Add `BOAT_TEMPLATE_API_KEY`, a separate boat key with sandbox, file, command and named snapshot
-  access. Keep the limited `BOAT_API_KEY` on the Worker.
-- Keep `CLOUDFLARE_PRODUCTION_DEPLOY_TOKEN` and the `CLOUDFLARE_ACCOUNT_ID` variable used by deployment.
-- Permit the tag pattern `v*.*.*` in addition to the `main` branch. The release job runs on a tag.
-
-`release:preflight` checks these settings. The hosted job and production Worker deployment share
-one concurrency group. The job checks GitHub's latest stable release before building and again
-before selection. It writes only the Worker's `HOSTED_SERVER_TEMPLATE` secret. Normal CI and local
-production deployments preserve it; the old GitHub variable is ignored. `hosting:setup` now sets
-up billing and webhooks only and no longer accepts `--template`.
-
-A failed hosted job leaves the GitHub Release published and the previous template selected.
-Run the failed job again after correcting the cause. A ready snapshot is reused; a save in progress
-is polled; a failed snapshot requires operator inspection. The builder never replaces an existing
-snapshot. It stops at 10 snapshots even if boat permits paid storage above that count.
-
-Before the build, the job removes production snapshots of older releases. It keeps the 2 newest
-ready ones, so 3 releases remain with the new one; the newest of them stays selected until the new
-release replaces it. A failed snapshot of an older release is removed too. It keeps a snapshot that
-is saving or has an unknown status, any snapshot newer than the release, and each
-`provider_template` of a production server that is not deleted and has no sandbox yet, because a
-create retry sends its first request again. The job reads these from the production D1
-database and stops if it cannot. Servers already made from a removed snapshot keep running. Names
-without the `openbot-server-production-` prefix are never removed; confirm that neither Worker nor
-any pending create needs one before removing it by hand.
-
-A successful job reports the selected version in its Actions summary. Verify the first rollout by
-creating a temporary production server and checking its initial installed version. Record the
-result under `.openbot-build/`; remove only that temporary server after the check. This remote check
-is separate from local checks and requires production access.
-
-## Windows signing
-
-A tag build signs the Windows release with Azure Artifact Signing. It needs no secret:
-
-- The Artifact Signing account `synthetifyartifactsign` (East US, `https://eus.codesigning.azure.net/`)
-  holds the Public Trust certificate profile `SYNTHETIFY`, issued to
-  `SYNTHETIFY LABS SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ`. Microsoft issues a new short-lived
-  certificate each day with the same subject.
-- The Entra app registration `openbot-release-signing` has the **Artifact Signing Certificate Profile
-  Signer** role on that profile only. Its federated credential trusts the subject
-  `repo:nightly-labs@100160810/openbot@1332461149:environment:release`, because this repository uses
-  GitHub's immutable OIDC subject format. A dry run has no environment, so it cannot sign.
-- The `windows` job logs in with `azure/login`, caches a token for the signing service, and runs
-  `bun run dist:win --config electron-builder.windows-signing.yml`, then runs `az account clear`, so
-  the steps after the build have no Azure session. That overlay adds
-  `win.azureSignOptions` and `forceCodeSigning`. electron-builder signs `OpenBot.exe`, every `.exe` from
-  `extraResources` (the Computer Use driver), the NSIS
-  installer, and its uninstaller. It does not sign the `.node` and `.dll` files of the voice runtime,
-  because the overlay sets no `win.signExts`. The provider CLIs are not packaged on Windows, so their
-  vendor signatures do not change.
-- `verify:package:win --require-signature` requires a valid signature with the `app-update.yml`
-  publisher on each of those executables, and the next step requires the same signer on the
-  installer. A dry run requires `NotSigned` instead.
-- `-f mode=windows-signing` checks the login and the signing service without a release (see
-  [Publish a version](#publish-a-version) for the command).
-
-electron-builder writes `publisherName` to `app-update.yml`. An installed signed build accepts an
-update only when its installer certificate has that CN. A change of the legal name or of the identity
-validation therefore stops auto-updates for every signed install: ship a release that lists both names
-in `publisherName` before the certificate changes. An unsigned install has no `publisherName` and
-accepts the first signed update.
-
-The signature removes the Unknown publisher warning. SmartScreen can still warn until the new
-certificate builds download reputation.
+The Docker image needs no secret: the `docker-publish` job pushes to `ghcr.io/<owner>/<repository>`
+with `GITHUB_TOKEN`.
+[GHCR makes new packages private](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
+After the first push, a package administrator opens **Package settings** and sets
+**Change visibility** to **Public**, or leaves it private and signs in to pull. The release workflow
+checks anonymous access to the version, `v<version>` and `latest` tags. A failure leaves the GitHub
+Release and the pushed images in place. Correct the package settings, then run the failed job again.
 
 ## Pin the Gemini CLI
 
@@ -317,7 +226,7 @@ OpenBot release. One reviewed commit per release.
 
 ## Release notes
 
-`CHANGELOG.md` is the text of the `/changelog` page on the public site. Each pull request writes its
+`CHANGELOG.md` holds the release notes. Each pull request writes its
 notes in its own file, `changelog.d/<branch>.md` with `-` for `/`, so two pull requests never change
 the same lines. The version bump moves the items of every file into `CHANGELOG.md`, in the order
 that the pull requests merged, and deletes the files. Items that are still under `## [Unreleased]`
@@ -331,38 +240,9 @@ in `CHANGELOG.md` go first.
   stop, for example `**Sign in again after you upgrade.**`. The page shows these items under "Action
   needed after you upgrade". Do not use bold for other sentences.
 
-The iPhone app has its own versions and its own notes, in the Mobile tab of `/changelog`. Write the
-notes of a change to the iPhone app in `apps/mobile/changelog.d/<branch>.md`, with the same rules.
-A change to the desktop app or the web client and the iPhone app gets one file in each folder.
-`bun run mobile:release:patch`, `mobile:release:minor` and `mobile:release:major` move these files
-into `apps/mobile/CHANGELOG.md` and set the version in `apps/mobile/app.json`,
-`apps/mobile/package.json` and the copy of it in `bun.lock`. The pre-commit hook checks the new section when a commit changes the
-`app.json` version. The new section is `## [x.y.z] - In review`, and `/changelog` does not show it
-until a store makes the build available. Each store reviews the build on its own. When one store has
-it, `bun run mobile:release:published ios` (or `android`) writes the date of that store, such as
-`## [x.y.z] - 2026-10-14 (Android)`. Run it again for the other store:
-`## [x.y.z] - 2026-10-14 (Android), 2026-10-16 (iOS)`. A date with no store is the date of both
-stores. `/changelog` shows each store, and a store that does not have the version as "In review".
-A store that a newer version replaced is `Skipped (Android)`, and `/changelog` shows it as skipped.
-`bun run mobile:release` does each step from a menu and opens the pull request
-(`apps/mobile/README.md#release-menu`).
-
-A fix with no native change can go to the phones of a store version with no store review, as an
-over-the-air update: `bun run mobile:ota:publish`. Its notes get a section with a fourth number, such
-as `1.5.0.1`, from `bun run mobile:release:ota`; the store version and `app.json` do not change. The
-steps, the limits and the rollback are in
-[the mobile README](../apps/mobile/README.md#over-the-air-updates).
-
-The same step sets that version for the store in `MOBILE_LATEST_VERSIONS` and in the `upTo` of each
-feature in `apps/auth-api/src/server/mobile-features-config.ts`. The merge deploys the account
-service. An app with an older version then shows the update header on home. Set it only after the
-store has the build: before, Update opens a store page that cannot install the version.
-
-The Android version in `MOBILE_LATEST_VERSIONS` is also the version of the APK that openbot.run
-offers for a phone with no Google Play. The APK of a store build is a draft GitHub release, which is
-not public. The merge of this step makes it public (the `Publish the Android APK` workflow), before
-the account service deploys. That workflow fails when the version has no draft
-`android-v<version>`: see [Android APK](../apps/mobile/README.md#android-apk).
+Write the notes of a change to the phone app in `apps/mobile/changelog.d/<branch>.md`, with the same
+rules. `bun run mobile:release:patch`, `mobile:release:minor` and `mobile:release:major` move these
+files into `apps/mobile/CHANGELOG.md` and set the version of the phone app.
 
 `scripts/check-release-notes.ts` stops a release when the section is missing, empty or appears two
 times, or when it has an unknown group, a group with no items, an item with no text or outside a
@@ -417,59 +297,12 @@ automatic display is disabled; manual opening still works.
 Mobile has its own store version and `apps/mobile/CHANGELOG.md`. It must use a native screen and
 its own local marker when post-update notes are added there. Desktop notes must not use a mobile
 version or the version of a connected server. This desktop feature does not change mobile,
-public web, Signal, database schemas, or Team API contracts.
-
-### Discord announcement
-
-Each desktop release posts a message in the OpenBot Discord. Before publishing a desktop release,
-select the 3 to 5 changes in its `CHANGELOG.md` section that have the largest effect on users, and
-write them with the version in `.github/release-announcement.json`:
-
-```json
-{ "version": "x.y.z", "highlights": ["...", "...", "..."] }
-```
-
-Write each highlight as one short, plain sentence that tells the user what they can do now. Put a
-required upgrade step first. Use the rules of the post-update notes: do not copy commit messages,
-developer setup, internal paths, credentials, or unpublished plans. Replace the highlights of the
-previous release; the file holds only one version.
-
-`scripts/discord-release-announcement.ts` builds the message: a mention of the `Release Pings`
-role, the title `OpenBot vx.y.z is out`, the highlights, and a link to the version on `/changelog`.
-It notifies only that role, not `@everyone` or `@here`. Run
-`bun scripts/discord-release-announcement.ts check x.y.z` to see it. The tag workflow and
-`bun run release:preflight` stop when the file is not for the release version, has fewer than 3 or
-more than 5 highlights, has a highlight that is empty or has a placeholder, a line break or a
-mention, or makes a message longer than 2000 characters. They also stop when the
-`DISCORD_RELEASE_ROLE_ID` repository variable is not set or is not a Discord role ID. After the GitHub Release, the Docker image and the
-boat snapshot are published, the `discord-announce` job posts the message as OpenBot through the
-channel webhook in the `DISCORD_RELEASE_WEBHOOK_URL` secret of the `release` environment. The job
-fails, and posts nothing, when `DISCORD_RELEASE_ROLE_ID` is not set. A failed post does not undo the
-release: re-run the job. A re-run after a successful post posts the message again.
-
-One-time setup:
-
-1. In Discord, open the settings of the announcement channel, then Integrations > Webhooks. Make a
-   webhook named `OpenBot` with the OpenBot icon. Add its URL as the secret
-   `DISCORD_RELEASE_WEBHOOK_URL` of the `release` environment.
-2. In Discord, turn on Developer Mode, open Server Settings > Roles, right-click `Release Pings` and
-   select Copy Role ID. Add the ID as the repository variable `DISCORD_RELEASE_ROLE_ID`.
-
-The mobile app has its own post, file, webhook and workflow. It waits until both stores have the
-version. See [the mobile Discord announcement](../apps/mobile/README.md#discord-announcement).
+the central server, database schemas, or Team API contracts.
 
 ## Publish a version
 
-Start from a clean, up-to-date `main` branch. For the first release, `package.json` and
-`CHANGELOG.md` are already prepared as `0.1.0`; after CI passes, create its annotated tag directly:
-
-```bash
-git tag -a v0.1.0 -m "OpenBot v0.1.0"
-git push origin v0.1.0
-```
-
-For later releases, the release notes are in `changelog.d/`. Choose the appropriate semantic version
-bump:
+Start from a clean, up-to-date `main` branch. The release notes are in `changelog.d/`. Choose the
+semantic version bump:
 
 ```bash
 bun run release:patch
@@ -479,64 +312,43 @@ bun run release:patch
 
 The command updates `package.json`, moves the `changelog.d` items and the items under `Unreleased`
 under the new dated version heading, and deletes the `changelog.d` files. Review and publish that
-preparation before creating the tag:
+preparation before you create the tag:
 
 ```bash
-git add package.json CHANGELOG.md changelog.d .github/release-announcement.json
+git add package.json CHANGELOG.md changelog.d
 git commit -m "release: prepare vX.Y.Z"
 git push origin main
 bun run release:preflight
-git tag -a vX.Y.Z -m "OpenBot vX.Y.Z"
-# When Signal changed since the previous tag, deploy and check Signal from
-# vX.Y.Z now (preflight item 16). Push the tag only after that.
+git tag -a vX.Y.Z -m "OpenBot-NC vX.Y.Z"
 git push origin vX.Y.Z
 ```
 
-Before the merge of the preparation, the release-upgrade-safety skill starts the `Provider live E2E`
-workflow on that branch (Step 2c). It sends one real message to each provider
+Before the merge of the preparation, the release-upgrade-safety skill can start the
+`Provider live E2E` workflow on that branch. It sends one real message to each provider
 ([Live provider test](provider-live-e2e.md)). Do not push the tag when it has a stop.
-
-Pushing the version tag runs `.github/workflows/release.yml`.
-The tag workflow builds nothing until `https://openbot.run/join` and the Apple association file return
-direct `200` responses: `/join` with `Cache-Control: no-store`, and the association file as
-`application/json` with the exact app IDs and paths: `/join` for the desktop app, and `/join` and
-`/agents/*` for the mobile app.
 
 The workflow:
 
-1. verifies the tag matches `package.json`;
-2. runs the complete offline repository check on its own macOS runner, in parallel with the builds;
-3. builds signed and notarized ARM64 DMG and ZIP artifacts plus a separately signed/notarized Host PKG on a GitHub Apple silicon runner,
-   and signed and notarized x64 DMG and ZIP artifacts on a GitHub Intel runner (`macos-15-intel`). Each
-   architecture builds on its own runner, because the install scripts run each provider runtime that
-   they download, and the voice runtime is prepared for the architecture of the build machine. The
-   Host PKG is ARM64 only. The x64 job does not run on an Apple silicon runner under Rosetta: there,
-   the packaged app checks take about ten times longer, and the upgrade check does not finish.
-   When `hdiutil create` fails with "Device not configured" or "Resource busy", or a network
-   connection drops, the app build of each architecture starts again, up to 3 attempts, because
-   these runner errors are not caused by the app;
-4. builds a signed Windows x64 NSIS installer on a GitHub Windows runner (unsigned in a dry run);
-5. builds unsigned Linux x64 and arm64 AppImages on GitHub Ubuntu 24.04 runners of each architecture,
-   with the launch check under `xvfb-run`. A further check mounts each AppImage with only `fusermount3`,
-   because its static runtime must start on systems with no libfuse2, such as Arch Linux and Omarchy;
-6. verifies all three unpacked applications, update metadata, included runtimes, provider control
-   artifacts, licenses, checksums, platform signing contracts, launch behavior, and update artifact
-   size limits;
-7. generates SPDX SBOMs and GitHub build-provenance attestations for all three platforms;
-8. publishes one non-draft GitHub Release only after all platform jobs pass. It joins the ARM64 and
-   x64 `latest-mac.yml` files with `scripts/merge-mac-update-manifests.ts`: electron-updater selects
-   the ZIP whose name contains `arm64` on Apple silicon and the other ZIP on Intel. Then it writes the
-   first rollout percentage into the four update manifests (see [Staged rollout](#staged-rollout)).
-9. builds a Docker image (`docker/Dockerfile`) from each Linux AppImage on a runner of that
-   architecture, after it checks the AppImage against its `SHA256SUMS` file. It starts each image
-   with `docker/seccomp.json`, waits for `openbot-nc status`, and stops it, which must exit with 0;
-10. after the GitHub Release is published, pushes both images to `ghcr.io/nightly-labs/openbot`
-    with the tags `<version>-amd64` and `<version>-arm64`, joins them under `<version>`, `v<version>`,
-    `latest` and `sha-<commit>`, and attests the build provenance of that image. It then checks
-    anonymous access to both architectures. See [Docker](docker.md).
+1. verifies that the tag matches `package.json`;
+2. runs the offline repository check on its own macOS runner, in parallel with the builds;
+3. builds signed and notarized ARM64 DMG and ZIP artifacts and a signed and notarized Host PKG on an
+   Apple silicon runner, and signed and notarized x64 DMG and ZIP artifacts on an Intel runner;
+4. builds a Windows x64 NSIS installer, signed when [Windows signing](#windows-signing) is set up;
+5. builds unsigned Linux x64 and arm64 AppImages, with the launch check under `xvfb-run`;
+6. verifies the unpacked applications, included runtimes, provider control artifacts, licenses,
+   checksums, platform signing contracts, launch behavior, and artifact size limits;
+7. generates SPDX SBOMs and GitHub build-provenance attestations;
+8. publishes one GitHub Release only after all platform jobs pass. The update manifests get the
+   percentage of the `RELEASE_STAGING_PERCENTAGE` repository variable (100 when it is not set). The
+   app does not read them;
+9. builds a Docker image (`docker/Dockerfile`) from each Linux AppImage, starts it with
+   `docker/seccomp.json`, waits for `openbot-nc status`, and stops it;
+10. after the GitHub Release is published, pushes both images to `ghcr.io/<owner>/<repository>`
+    with the tags `<version>-amd64` and `<version>-arm64`, joins them under `<version>`,
+    `v<version>`, `latest` and `sha-<commit>`, and attests the build provenance of that image.
 
 Users can verify a downloaded artifact with
-`gh attestation verify <file> --repo nightly-labs/openbot`.
+`gh attestation verify <file> --repo <owner>/<repository>`.
 
 Before a tag, run the release path without publishing:
 
@@ -546,48 +358,16 @@ gh workflow run release.yml --ref <branch> -f mode=dry-run
 
 The dry run runs the tag validation (without the tag and `main` checks), the Windows, Linux and
 Docker builds, and all their verification steps. It does not run the macOS job or the publish jobs,
-and it makes no attestation: the macOS job needs the `release` secrets, which only tag runs receive,
-and an attestation of this public repository is a public Sigstore record. Use `-f mode=host-signing` on a
-tag ref to check the macOS Host signing keychain, and `-f mode=windows-signing` on a tag ref to check
-Windows signing. `--ref` selects the workflow and the overlay, so the tag must point to the commit
-to test. Use a temporary `v0.0.0-*` tag. It matches the `release` environment policy. Its push
-starts a release run, but `Validate release tag` stops that run, because the tag never matches the
-`package.json` version:
+and it makes no attestation.
 
-```sh
-git tag v0.0.0-windows-signing-test <commit>
-git push origin v0.0.0-windows-signing-test
-gh workflow run release.yml --ref v0.0.0-windows-signing-test -f mode=windows-signing
-# After the run:
-git tag -d v0.0.0-windows-signing-test
-git push origin :refs/tags/v0.0.0-windows-signing-test
-```
+Each build job also runs `scripts/release-upgrade-e2e.ts` before `publish`. It installs the previous
+release of your repository, starts it on a new profile, seeds data, and quits it. It then installs
+the new build over it, starts it on the same profile, and checks the version, the schema version,
+every migration, table and column, `PRAGMA integrity_check`, the foreign keys, and the seeded data. A
+failure stops the release before `publish`. Not confirmed: the first release of a repository has no
+previous release, and this step then fails; publish the first release with this step removed, or
+give it `--previous-artifact`.
 
-It logs in to Azure, then signs a throwaway executable once immediately and once 20 minutes later,
-the delay between login and signing in a release build. It uploads and publishes nothing. Run it once
-after a change to the Azure setup or to `electron-builder.windows-signing.yml`, before the next tag.
-
-Installed OpenBot builds check for updates shortly after launch and every four minutes. A new version
-goes to a part of the installs first (see [Staged rollout](#staged-rollout)). New versions
-download automatically while **Automatically download updates** is on, which is the default and is
-persisted per user in `openbot-update-preference-v1.json`; with the setting off, a download starts
-only on a user action. The update notice in the sidebar and Settings > Updates show the current
-state and let the user download an available version, then restart into it. The restart action appears as
-soon as the download completes, and no platform installs without that
-explicit action, because `autoInstallOnAppQuit` stays off so shutdown preparation always runs. Every
-stage the user waits on is bounded by a timeout and recorded in `logs/update/update.log`, so a failed
-check, download, or restart reports an actionable error and can be retried in place.
-
-The voice runtime (the sherpa-onnx N-API addon and ONNX Runtime, from the pinned `sherpa-onnx-*`
-npm packages) is part of the macOS, Windows and Linux applications, in `voice/runtime`. Each Linux
-AppImage carries the runtime of its architecture. The NVIDIA Parakeet TDT 0.6B v3 int8 model is not part of an application or update
-artifact. OpenBot downloads its four pinned files on first voice use, checks the size and SHA-256 of
-each, and keeps the verified files in `runtimes/parakeet-tdt-0.6b-v3-int8` in the user data directory
-for later offline use. The Whisper large-v3 turbo model (an int8 encoder and a full-precision
-decoder), which takes a fixed dictation language, is downloaded the same way when the user selects
-Download in Settings > Voice or dictates with it. Its three pinned files go in
-`runtimes/whisper-turbo-int8`. The int8 decoder of earlier versions in that directory is deleted
-after the three files are verified. The Underdog Bark 3.0 Plus int8 model,
 which recognizes English only, is no longer offered: Settings > Voice shows it only while it is in
 use or downloaded, and a saved choice of it still works. Its four pinned files go in
 `runtimes/bark-3.0-plus-int8`. They come from an
@@ -610,276 +390,37 @@ The release workflow stops if the macOS update ZIP, the Windows NSIS installer, 
 is larger than 700 MiB, or if the DMG is larger than 750 MiB. It also stops if update metadata has a wrong size or SHA-512, if
 a voice model is present, or if the application contains a second native Claude runtime.
 
-If a release is bad, pause its rollout and publish a newer patch version (see
-[Staged rollout](#staged-rollout)). Do not replace an already published version with different
-binaries.
-
-## Staged rollout
-
-A new desktop release goes first to a part of the installed apps. electron-updater reads
-`stagingPercentage` in the update manifest (`latest.yml`, `latest-mac.yml`, `latest-linux.yml` and
-`latest-linux-arm64.yml`). Each install has a random ID in `.updaterId` in its user data folder.
-An install gets the release only when its ID is in the first `stagingPercentage` percent. The IDs
-do not change, so the same installs are first in each release, and an install that is in a 10% stage
-is also in the 50% stage. A manifest with no `stagingPercentage` goes to all installs.
-
-At an automatic check, an install outside the stage does not get the release. The sidebar shows
-nothing, and Settings > Updates says that the new version is rolling out to some computers and that
-**Check for updates** gets it now (`UpdateStatus.stagedVersion`). It shows no error. At 0%, the tab
-shows that OpenBot is up to date. A check that a person asks for skips the stage and gets the
-release. These checks are **Check for updates** in Settings > Updates or in the app menu, an update
-that a member of a joined server asks for, and the recovery when an older app opens newer data.
-After such a check, the other checks and download retries of that session also get that release. A
-later release keeps its stage. No check gets a paused release (0%). A member of a joined server does
-not see the rolling-out text, because `host-update-v1` has no field for it. `UpdateService` does this through the `isUserWithinRollout` test of electron-updater.
-
-The publish job writes the percentage into the four manifests before it uploads them, with
-`scripts/update-rollout.ts`. The default is 10. To use a different first percentage, set the
-`RELEASE_STAGING_PERCENTAGE` repository variable to a whole number from 0 to 100 before you push the
-tag. 100 releases to all installs at once. The `Validate release tag` job stops the run when the
-value is not valid. The manifests are not in a `SHA256SUMS` file or in an attestation, so the
-percentage changes no checksum. The script stops when any value other than the percentage changes,
-such as the SHA-512 or the size of a file.
-
-### Release to all installs
-
-1. Push the tag. The release goes to 10% of the installs.
-2. Wait about one day. Then examine the release:
-   - Run the release regression report:
-     `gh workflow run release-regression.yml`. It posts to the private Discord channel. It compares
-     the two newest releases that each have 30 computers in the last 14 days. For some hours, a
-     10% stage can have fewer. When the report says that there is nothing to compare, or it does not
-     name the new release, wait and run it again.
-   - With the `openpanel` skill, compare `system_unclean_exit` (by `previous_app_version`) and
-     `system_startup` of the new and the previous version. The report does not show unclean exits.
-   - Read the new crash reports and feedback for the new version.
-3. When the numbers are good, release to all installs:
-
-   ```sh
-   gh workflow run release-rollout.yml --ref main -f tag=vX.Y.Z -f percentage=100
-   ```
-
-   You can go to 50 first. Add `-f dry-run=true` to see the change in the run summary and upload
-   nothing.
-
-`release-rollout.yml` downloads the four manifests, changes only `stagingPercentage`, and checks
-that each other value is the same. It uploads only these four `.yml` files, downloads them again and
-compares them. It never uploads, replaces or deletes a binary. It refuses a draft, and only a run
-from `main` uploads. At 100 it removes the field, so the manifests are the same as before the stage.
-Installs read the new percentage at their next check, which is at most four minutes later.
-
-### Pause a release
-
-```sh
-gh workflow run release-rollout.yml --ref main -f tag=vX.Y.Z -f percentage=0
-```
-
-Installs that do not have the release yet stop getting it at their next check, also when a person
-asks for the check. A pause does not stop these:
-
-- An install that already downloaded the release keeps it ready. It installs the release at its
-  next restart: by the user, by an idle restart that the user asked for, or by an update that the
-  admin of a joined server asked for.
-- New downloads from the website, Nix, the Docker image, and hosted and self-installed servers.
-  These do not read `stagingPercentage` (see [Servers and Docker](#servers-and-docker)).
-- The Discord announcement. It says that the release is out when the release is published.
-
-### Ship a patch over a paused release
-
-Merge the fix to `main` and publish vX.Y.(Z+1) as usual. The patch becomes the latest release and
-starts at `RELEASE_STAGING_PERCENTAGE`. The same installs are first, so the installs that got the
-paused release get the patch first, while its percentage is not less than the highest percentage
-of the paused release. electron-updater reads only the latest release, so the paused release goes
-to no other install. Do not raise the paused release again.
-
-To stop a bad release on each path at once, before the patch is ready, make the previous release
-the latest one:
-
-```sh
-gh release edit vX.Y.(Z-1) --latest --repo nightly-labs/openbot
-```
-
-electron-updater then sees an older version and offers no update. The update script of hosted and
-self-installed servers removes a staged copy of the bad release at its next check, but a server that
-boots before that check installs it. The Docker `latest` tag and the template of new hosted servers
-do not change back.
-
-### Servers and Docker
-
-Servers do not use the stage. Hosted and self-installed Linux servers update with
-`scripts/hosting/openbot-hosted-update` and `HostedUpdateAdapter`. They read `latest-linux.yml` or
-`latest-linux-arm64.yml`, check for an update 5 minutes after start and then every 6 hours, and
-install a downloaded release at the next boot or when an owner, an admin or a permitted member installs
-it in Server Settings > Updates. A hosted server also installs it when it is idle and no client uses
-it, because its automatic update switch is always on. A self-installed server or a container
-installs it when idle only when an owner turns on the switch (it is off by default). The version check is
-`isNewerRelease` in `packages/contracts/src/release-version.ts`, and the `newer()` of the update
-script gives the same result for each X.Y.Z release (`scripts/release-version-comparator-e2e.ts`). The `docker-publish` job moves the Docker `latest` tag when the
-release is published, and the `hosted-release` job selects the release for new hosted servers. So
-all servers get a new release in about 6 hours, and a pause does not stop them.
-
-### Notes
-
-- A re-run of the publish job writes `RELEASE_STAGING_PERCENTAGE` again. After a re-run, set the
-  percentage again with `release-rollout.yml`.
-- `gh release upload --clobber` deletes each manifest and then uploads it again. A check in that
-  short time gets no manifest. Settings > Updates can then show a check error until the next check.
-
-## Minimum app version
-
-Each surface has a minimum app version: the desktop app, the server, iOS and Android. A version below
-it shows **Update required**. The web client has no minimum: the Worker serves it, so it is always
-current. The values are in `APP_MINIMUM_VERSIONS` (`apps/auth-api/src/server/app-minimum-version.ts`).
-They are `null` (nothing blocked) until we raise one.
-
-To raise a minimum:
-
-1. Raise it only in a PR that deletes old code or needs the newer client. The support window is 2
-   months (see [Team API support window](../AGENTS.md#non-negotiable)).
-2. Set the value to a released version that is 60 days old or older: the date in `CHANGELOG.md` for
-   `desktop` and `host`, the store date in `apps/mobile/CHANGELOG.md` for `ios` and `android`.
-   Over-the-air versions do not count.
-3. `bun run check:app-minimum-version` (in the CI `Check` job) fails for a newer or unknown version.
-4. The value is live when the account service Worker deploys.
-
-How the apps use it:
-
-- `GET /v1/app/minimum-version?surface=desktop|host|ios|android` answers `{ minimumVersion }`
-  (`null` for none or an unknown surface). `GET /v1/mobile/features` has the same field for the phone
-  platform.
-- A packaged desktop app or server asks 15 seconds after start and every 6 hours
-  (`src/main/required-update.ts`). Below the minimum, the desktop app shows **Update required** in
-  place of the workspace. The update downloads and installs when the agents are idle
-  (`RequestedUpdate`: agent turns, routines, browser control and transfers), or at once with the
-  button. A server does the same without the screen. A tenant whose Host Manager manages updates, a
-  development build and a local server child do not ask.
-- A signed-in phone below the minimum shows **Update required** with the store link.
-- A failed check never blocks. A failed request (offline, timeout, error status) keeps the last
-  confirmed state. An answer with no readable minimum removes the block.
-- An install that cannot update itself (a Linux package, Nix) shows only the download page.
-
-## Release health after publishing
-
-Before a staged rollout goes to 100%, run the release health check. It compares how the new release
-starts and keeps running with the release before it, over the same hours after each GitHub Release was
-published, from production analytics. Run it with the read-only ClickHouse access of the `openpanel`
-skill (`.agents/skills/openpanel/SKILL.md`):
-
-```sh
-MAIN="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
-./node_modules/.bin/dotenvx run -q -f apps/auth-api/.env.dev -fk "$MAIN/.env.keys" -- \
-  bun scripts/release-health.ts <version>
-```
-
-It prints a table per platform and for servers, and writes `.openbot-build/release-health/report.json`.
-The metrics are finished starts, crashes, startup crashes, quit hangs, and update arrivals: the share
-of the computers that started an update install and then started a version other than the one that
-installed it, before the end of the window. An install of an older release that a computer downloaded
-earlier counts for the window in which it started. The thresholds are in the script header.
-
-- Exit code 0: no metric is clearly worse. Raise the rollout.
-- Exit code 1: a metric is clearly worse. Keep the rollout where it is, find the cause, and publish a
-  patch version if the release is bad.
-- Exit code 3: not enough data yet. Run it again later. The previous release gets the same number of
-  hours, so a check soon after the release is fair, but it needs 200 starts in each group.
-
-`.github/workflows/release-health.yml` runs the check for the newest release every two hours in its
-first 72 hours. When a metric is worse, or the check fails, it posts to the private release regression
-Discord channel, not to the public release channel.
-
-Before working this checklist, audit the changes since the last released tag with the
-`.agents/skills/release-upgrade-safety/` skill: it covers the upgrade and data-loss hazards an
-installed user cannot undo — the in-place database migration, the `userData` files nothing backs up,
-the frozen Team API adapters, and the D1 migrations that race their own deploy.
-
 ## Preflight checklist
 
-Before creating the first tag or any later release:
+Before a tag:
 
-0. run the Team API compatibility matrix for every protocol that remains in the adapter registry. The matrix must cover an older client with the new host, the new client with an older host, matching versions, no shared protocol, capability omission, unknown optional events, and malformed known events. Do not reduce this matrix because a protocol is old or because many application versions separate the peers. Confirm that each supported protocol still has unchanged client and host fixtures;
-
-1. run `bun run release:preflight` and resolve every reported release-secret or repository gate.
-   It also stops when the live Marketplace does not have the catalog of `main`: publish it as
-   [the catalog README](../marketplace/production-catalog/README.md#prepare-and-publish) says;
-2. confirm the `release` environment contains all eight macOS secrets above; Windows signs through
-   the Azure federated credential and needs no secret; Linux remains unsigned;
-3. confirm the production `/join` page and Apple association file pass the deployment checks in CI;
+1. run the Team API compatibility matrix for every protocol that remains in the adapter registry;
+2. run `bun run release:preflight` and resolve every reported release-secret or repository gate;
+3. confirm the `release` environment contains all eight macOS secrets above and that the Apple team
+   ID is replaced in the files above;
 4. run `bun install --frozen-lockfile` and `bun run check` from a clean clone;
 5. run `bun run package:verify` on macOS; Windows and Linux packaging and launch verification run on
    the release runners;
 6. confirm that the lock file contains all six provider artifacts, their download and install sizes,
    and that their install checks pass;
-7. smoke-test sign-in/setup, chat streaming, queues, attachments, agent messaging, browser control,
-   context compaction, and the update popover;
-8. on macOS ARM64, macOS x64, Windows x64, and Linux x64, update from the last public version and confirm check,
-   download, preparation, explicit restart, new version, local agents, conversations, and queues. A
-   Linux build only auto-updates when it runs from the AppImage, which the runtime reports through
-   `APPIMAGE`;
+7. smoke-test setup, the identity import, chat streaming, queues, attachments, agent messaging,
+   browser control and context compaction;
+8. on macOS ARM64, macOS x64, Windows x64, and Linux x64, install the new build over the previous one
+   and confirm that local agents, conversations, and queues stay;
 9. test first voice use, download progress, retry after a stopped download, transcription, and cached
    offline use;
-10. build a signed and notarized canary and test an update from the official `0.1.21` application on
-   macOS 26 with a separate `userData` directory;
-11. confirm the canary update does not crash in `CFURLConnectionSynchronous`, preserves data, starts
-    the new version, and can run three provider downloads with restricted memory;
-12. on Windows 10 and 11 x64, confirm that normal exit, restart, and sign-out do not start NSIS, while
-    `Restart and install` does start it, shows no installer page, and opens OpenBot again. With
-    OpenBot closed and with it open, confirm that Open OpenBot on a `/join` page opens OpenBot and
-    shows the invitation once, and that uninstall
-    removes `HKCU\Software\Classes\openbot`. Update from the previous release, then install to a
-    folder on a second disk. Confirm that the installer has no "All users" page, that an update
-    installs to the same folder, that `icacls` on that folder lists only the user, `SYSTEM` and
-    `Administrators`, and that the uninstaller removes only that folder. Choose
-    `%USERPROFILE%\OpenBot` with an agent workspace in it, and confirm that OpenBot installs to
-    `%USERPROFILE%\OpenBot\OpenBot` and that uninstall keeps the workspace. As a second account,
-    make an empty `D:\OpenBot`. As the first account, choose it, and confirm that OpenBot installs to
-    `D:\OpenBot\OpenBot` and that the second account cannot write there;
-13. on Ubuntu 24.04 x64 with the AppArmor profile from `build/linux/openbot.apparmor` installed,
-    confirm the AppImage starts with the sandbox on, that `xdg-open 'openbot://join?...'` focuses the
-    running application, that a provider downloads in-app, that the page rail is drawn, and that the
+10. on Ubuntu 24.04 x64 with the AppArmor profile from `build/linux/openbot.apparmor` installed,
+    confirm the AppImage starts with the sandbox on, that a provider downloads in-app, and that the
     microphone control is absent;
-14. confirm `CHANGELOG.md` and `.github/release-announcement.json` describe the version and the
-    working tree is clean;
-15. create and push the version commit, and create the tag locally, only after CI passes on `main`;
-16. read the running Signal commit of both machines from `curl -fsS https://signal1.openbot.run/health/live`
-    and `curl -fsS https://signal2.openbot.run/health/live`, not from `signal.openbot.run`, which reaches only
-    the entry machine. If a commit is missing or `unknown`, or if `git diff --quiet <running commit> <new tag> -- remote packages/contracts/src/signal-protocol`
-    finds changes for either commit, deploy Signal from the local tag before you push the tag. Compare with the running
-    commit, not with the previous tag: an earlier release can have left Signal behind. Pushing the tag starts the
-    release workflow, and nothing in it waits for Signal. Use the Signal-only procedure in
-    [remote-session-deployment.md](remote-session-deployment.md#deployment-procedure--requires-separate-approval);
-    the `.agents/skills/signal-deploy/` skill adds the checks before and after it.
-    Confirm that `/health/live` of `signal1.openbot.run` and of `signal2.openbot.run` shows the tag commit. A client
-    that needs a newer Signal fails until then: v0.33.0 shipped webhook routines while Signal was older
-    than #1520, so every webhook route answered 404 (#1661);
-17. push the tag.
+11. confirm `CHANGELOG.md` describes the version and the working tree is clean;
+12. create and push the version commit, and create the tag locally, only after CI passes on `main`;
+13. when the change needs a new central server, update the central server before people install the
+    new build;
+14. push the tag.
 
-The macOS ZIP must be smaller than 800,000,000 bytes and smaller than the official `0.1.21` ZIP.
-Do not publish when either size gate fails, the `0.1.21` canary update crashes, or Windows starts NSIS
-during shutdown or sign-out.
-
-Each build job also runs `scripts/release-upgrade-e2e.ts` before `publish`. It installs the previous
-public release, starts it on a new profile, makes two agents with an answered chat, two memories, a
-channel and a custom agent, and quits it. It then installs the new build over it as an update does,
-starts it on the same profile, and checks the version, the schema version, every migration, table and
-column, `PRAGMA integrity_check`, the foreign keys, and that the seeded data is still there. A failure
-stops the release before `publish`. The report is `.openbot-build/release-upgrade-e2e/report.json`,
-with counts only. The script does not use the real `electron-updater` download: its header says why.
-
-`Release upgrade history` (`.github/workflows/release-upgrade-history.yml`) runs the same script each
-week and on demand, outside the release time. It installs the newest public release over the oldest
-public release with a database (`v0.1.14`) and over the newest release that is at least 60 days old,
-on macOS ARM64. `--history` seeds only what the old release has, compares the row count of each table,
-and records a forced end of the old release as a warning. A red run means that an install that skipped
-releases cannot upgrade; fix it in the next release.
-
-The unsigned local macOS package is a development artifact. It does not prove Gatekeeper,
-notarization, or auto-update readiness. Those are proven only by the signed release workflow's
-`codesign`, `spctl`, and `stapler` checks.
-
-After publishing `v0.1.0`, keep one installed copy and use the first signed patch (`v0.1.1`) as the
-end-to-end updater acceptance test: check, download, restart, and confirm the version changed without
-losing local agents or queues. This cannot be proven with an unsigned development build because macOS
-updaters require both versions to share a valid Developer ID signature.
+The unsigned local macOS package is a development artifact. It does not prove Gatekeeper or
+notarization. Only the `codesign`, `spctl`, and `stapler` checks of the signed release workflow prove
+them.
 
 ## Managed-host release package
 
@@ -891,16 +432,16 @@ or checksum generation fails; it never publishes a release with the Host package
 Expected macOS assets:
 
 ```text
-OpenBot-<VERSION>-arm64.dmg
-OpenBot-<VERSION>-arm64.zip
+OpenBot-NC-<VERSION>-arm64.dmg
+OpenBot-NC-<VERSION>-arm64.zip
 OpenBot-Host-<VERSION>-arm64.pkg
 latest-mac.yml
 SHA256SUMS-macos.txt
 OpenBot-<VERSION>-macos.spdx.json
 OpenBot-Host-<VERSION>-macos.spdx.json
 OpenBot-<VERSION>-macos.sigstore.json
-OpenBot-<VERSION>-x64.dmg
-OpenBot-<VERSION>-x64.zip
+OpenBot-NC-<VERSION>-x64.dmg
+OpenBot-NC-<VERSION>-x64.zip
 SHA256SUMS-macos-x64.txt
 OpenBot-<VERSION>-macos-x64.spdx.json
 OpenBot-<VERSION>-macos-x64.sigstore.json
@@ -912,14 +453,14 @@ The publish job downloads `release-macos` and `release-macos-x64` and publishes 
 other assets. `SHA256SUMS-macos-x64.txt` covers the x64 DMG and ZIP.
 `latest-mac.yml` still describes only Electron application updates; a `.pkg` reference is rejected.
 
-After verifying OpenBot.app, the macOS job:
+After verifying OpenBot-NC.app, the macOS job:
 
 1. runs native account tests without creating users;
 2. imports the application and installer certificates into a temporary, isolated keychain;
 3. compiles standalone ARM64 `host-manager` and `openbot-host` executables with Bun, and the native
    account helper with Swift; no target-machine runtime or compiler is required;
 4. signs all executables with **Developer ID Application**, hardened runtime and timestamp, and
-   checks their fixed identifiers and team `ZTRDTUL87R`;
+   checks their fixed identifiers and the team in `HOST_TEAM_ID` (`scripts/host-installation.ts`);
 5. creates the fixed root:wheel package payload and signs the PKG with **Developer ID Installer**;
 6. expands it and rejects extra files, symlinks, unsafe modes/owners, version mismatches, changed
    installer scripts, unexpected destinations, or non-system dynamic runtime dependencies;
@@ -942,6 +483,7 @@ and never uploaded as a release asset.
 CI does not install the root daemon or create tenant accounts on the runner. Package expansion,
 BOM ownership/mode verification, plist/signature checks, standalone smoke checks, and mocked CLI
 checks run there. Actual signed PKG installation/upgrade, new-account login, private-home isolation,
-and two-user Aqua relaunch remain the [target-host acceptance gate](multi-tenant-hosting.md#target-host-acceptance-required-before-paying-client-use).
+and two-user Aqua relaunch remain the [target-host acceptance gate](multi-tenant-hosting.md#target-host-acceptance-required-before-tenants-use-the-host).
 No tenant-data backup is made. Infrastructure updates require administrator installation of a
 newer signed Host PKG; the daemon never replaces itself.
+

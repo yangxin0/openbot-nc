@@ -249,8 +249,10 @@ jobs:
 
       - name: Verify application signature and notarization
         shell: bash
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          app_path="dist/${{ matrix.app_dir }}/OpenBot.app"
+          app_path="dist/${{ matrix.app_dir }}/OpenBot-NC.app"
           test -d "$app_path"
           codesign --verify --deep --strict --verbose=2 "$app_path"
           verify_provider_signature() {
@@ -267,14 +269,14 @@ jobs:
           test -s "$RUNNER_TEMP/openbot-entitlements.plist"
           plutil -lint "$RUNNER_TEMP/openbot-entitlements.plist"
           /usr/libexec/PlistBuddy -c 'Print :com.apple.developer.team-identifier' \
-            "$RUNNER_TEMP/openbot-entitlements.plist" | grep -Fx 'ZTRDTUL87R'
+            "$RUNNER_TEMP/openbot-entitlements.plist" | grep -Fx "$APPLE_TEAM_ID"
           /usr/libexec/PlistBuddy -c 'Print :com.apple.security.device.audio-input' \
             "$RUNNER_TEMP/openbot-entitlements.plist" | grep -Fx 'true'
           /usr/libexec/PlistBuddy -c 'Print :com.apple.security.automation.apple-events' \
             "$RUNNER_TEMP/openbot-entitlements.plist" | grep -Fx 'true'
           plutil -extract NSUserActivityTypes.0 raw "$app_path/Contents/Info.plist" \
             | grep -Fx 'NSUserActivityTypeBrowsingWeb'
-          plutil -extract ElectronTeamID raw "$app_path/Contents/Info.plist" | grep -Fx 'ZTRDTUL87R'
+          plutil -extract ElectronTeamID raw "$app_path/Contents/Info.plist" | grep -Fx "$APPLE_TEAM_ID"
           spctl --assess --type execute --verbose=2 "$app_path"
           # `stapler` reads the ticket from Apple's ticket service. The connection to it can drop
           # (Error 68 in v0.38.1), so the check gets five attempts. It must pass to continue.
@@ -305,21 +307,6 @@ jobs:
           current_size=$(stat -f%z "${zips[0]}")
           if (( current_size >= 800000000 )); then
             echo "The macOS ZIP is ${current_size} bytes. The limit is 800000000 bytes." >&2
-            exit 1
-          fi
-          # v0.1.21 shipped only an ARM64 ZIP, so only that one has a size to stay under.
-          if [[ "${{ matrix.arch }}" != "arm64" ]]; then exit 0; fi
-          mkdir -p "$RUNNER_TEMP/openbot-0.1.21"
-          gh release download v0.1.21 --repo "$GITHUB_REPOSITORY" --pattern '*.zip' \
-            --dir "$RUNNER_TEMP/openbot-0.1.21"
-          old_zips=("$RUNNER_TEMP/openbot-0.1.21"/*.zip)
-          if (( ${#old_zips[@]} != 1 )); then
-            echo "Expected one macOS ZIP in v0.1.21." >&2
-            exit 1
-          fi
-          old_size=$(stat -f%z "${old_zips[0]}")
-          if (( current_size >= old_size )); then
-            echo "The macOS ZIP is not smaller than v0.1.21 (${current_size} >= ${old_size})." >&2
             exit 1
           fi
 
@@ -380,7 +367,7 @@ jobs:
       - name: Generate macOS release SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
-          path: dist/${{ matrix.app_dir }}/OpenBot.app
+          path: dist/${{ matrix.app_dir }}/OpenBot-NC.app
           format: spdx-json
           output-file: dist/OpenBot-${{ env.RELEASE_VERSION }}-${{ matrix.suffix }}.spdx.json
           artifact-name: OpenBot-${{ env.RELEASE_VERSION }}-${{ matrix.suffix }}-SBOM
@@ -440,7 +427,7 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.validate.outputs.release_version }}
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
-      WINDOWS_SIGNED: ${{ github.event_name == 'push' }}
+      WINDOWS_SIGNED: ${{ github.event_name == 'push' && vars.AZURE_CLIENT_ID != '' }}
     steps:
       - name: Check out tagged source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -456,16 +443,13 @@ jobs:
           bun scripts/install-claude-runtime.ts win32 x64
           bun scripts/install-grok-runtime.ts win32 x64
 
-      # Azure Artifact Signing: the `openbot-release-signing` app registration in the Synthetify
-      # tenant holds the Signer role on the SYNTHETIFY certificate profile only. These IDs are not
-      # secrets; the federated credential admits only this repository's `release` environment.
       - name: Log in to Azure Artifact Signing
         if: env.WINDOWS_SIGNED == 'true'
         uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
-          client-id: d6b8edfc-2bac-4da5-969a-64101dd2ec02
-          tenant-id: 286de395-f5c5-499b-9999-5cff1631ef5a
-          subscription-id: 3004c497-bc0d-40ca-b79d-be9ff034692f
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       # The GitHub token that the login exchanged can expire before electron-builder signs, about
       # 15 minutes later. Azure CLI caches this token for the signing service for about an hour,
@@ -510,7 +494,7 @@ jobs:
           # A signed install verifies the next update's installer against that publisher.
           $signature = Get-AuthenticodeSignature -LiteralPath $installers[0].FullName
           if ($env:WINDOWS_SIGNED -eq "true") {
-            $applicationSigner = (Get-AuthenticodeSignature -LiteralPath dist/win-unpacked/OpenBot.exe).SignerCertificate.Subject
+            $applicationSigner = (Get-AuthenticodeSignature -LiteralPath dist/win-unpacked/OpenBot-NC.exe).SignerCertificate.Subject
             if ($signature.Status -ne "Valid" -or $signature.SignerCertificate.Subject -ne $applicationSigner) {
               Write-Error "The installer signer differs from the application signer: $($signature.Status) $($signature.SignerCertificate.Subject)."
             }
@@ -719,15 +703,12 @@ jobs:
           kill "$runtime" 2>/dev/null || true
           wait "$runtime" || true
 
-      # The AppImage must replace the previous public release and start on its data, as an update
-      # does. It runs from /opt/OpenBot, where the shipped AppArmor profile permits the sandbox, as on
-      # a user's computer. A failure stops the publish job.
       - name: Upgrade from the previous release
         run: |
           set -euo pipefail
           sudo install -m 0644 build/linux/openbot.apparmor /etc/apparmor.d/openbot
           sudo apparmor_parser -r /etc/apparmor.d/openbot
-          sudo install -d -o "$(id -u)" -g "$(id -g)" /opt/OpenBot
+          sudo install -d -o "$(id -u)" -g "$(id -g)" /opt/OpenBot-NC
           xvfb-run -a bun scripts/release-upgrade-e2e.ts "$SUFFIX"
         env:
           GH_TOKEN: ${{ github.token }}
@@ -1064,102 +1045,3 @@ jobs:
             jq -e '[.manifests[].platform | select(.os == "linux") | .architecture] | sort == ["amd64", "arm64"]' \
               "$anonymous_config/manifest.json" >/dev/null
           done
-
-  # `nix/sources.json` names the release that the Nix flake installs. It can only name a published
-  # release, because its hashes come from the release's SHA256SUMS.txt. So the update goes to main in
-  # its own PR. The PR's own workflow runs wait for approval because GITHUB_TOKEN opened it, and the
-  # merge waits for them, so the job approves them. It also starts CI on the branch. The PR merges
-  # itself when the required checks pass.
-  nix-sources:
-    name: Open Nix sources PR
-    needs: [validate, publish]
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      actions: write
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Check out main
-        id: checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: main
-          persist-credentials: false
-
-      - name: Set up Bun
-        uses: ./.github/actions/setup-bun
-        with:
-          install: ignore-scripts
-
-      - name: Update nix/sources.json
-        env:
-          RELEASE_VERSION: ${{ needs.validate.outputs.release_version }}
-        run: bun scripts/nix-sources.ts "$RELEASE_VERSION"
-
-      # Only this step gets the write token: the steps before it run dependency code, which can change
-      # the Git configuration and hooks of the checkout. So this step runs outside the checkout and
-      # makes the branch and the commit with the GitHub API, from the commit that the checkout fetched.
-      - name: Open the PR
-        shell: bash
-        working-directory: ${{ runner.temp }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_VERSION: ${{ needs.validate.outputs.release_version }}
-          BASE_SHA: ${{ steps.checkout.outputs.commit }}
-        run: |
-          set -euo pipefail
-          path=nix/sources.json
-          file="$GITHUB_WORKSPACE/$path"
-          current="$(gh api "repos/$GITHUB_REPOSITORY/contents/$path?ref=$BASE_SHA")"
-          if jq -r .content <<<"$current" | base64 -d | cmp -s - "$file"; then
-            echo "$path needs no change."
-            exit 0
-          fi
-          branch="build/nix-sources-$RELEASE_VERSION"
-          created=false
-          if gh pr list --repo "$GITHUB_REPOSITORY" --head "$branch" --state open --json number --jq 'length > 0' | grep -Fx true; then
-            echo "A Nix sources PR already exists."
-          else
-            created=true
-            # A rerun after a failed run can find the branch. No open PR uses it, so reset it.
-            if ! gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/heads/$branch" -f "sha=$BASE_SHA" >/dev/null; then
-              gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/$branch" -f "sha=$BASE_SHA" -F force=true >/dev/null
-            fi
-            gh api -X PUT "repos/$GITHUB_REPOSITORY/contents/$path" \
-              -f "branch=$branch" \
-              -f "sha=$(jq -r .sha <<<"$current")" \
-              -f "message=build(nix): install OpenBot $RELEASE_VERSION" \
-              -f "content=$(base64 -w0 "$file")" >/dev/null
-            gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" --label no-changelog \
-              --title "build(nix): install OpenBot $RELEASE_VERSION" \
-              --body "Points the Nix flake at the published v$RELEASE_VERSION release. The hashes come from its \`SHA256SUMS.txt\`."
-          fi
-          # A failed call below gives a warning, so that the steps after it still run.
-          if ! gh pr merge "$branch" --repo "$GITHUB_REPOSITORY" --auto --squash; then
-            echo "::warning::Auto-merge is not on for the Nix sources PR. Merge it when its checks pass."
-          fi
-          head_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$branch" --jq .object.sha)"
-          waiting_runs() {
-            gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$head_sha&event=pull_request&status=action_required" \
-              --jq '.workflow_runs[].id' || echo "::warning::Could not list the PR workflow runs." >&2
-          }
-          # The runs of a new PR can appear some seconds after the PR. The runs of an existing PR are there.
-          attempts=1
-          if [ "$created" = true ]; then attempts=12; fi
-          approved=0
-          for attempt in $(seq 1 "$attempts"); do
-            runs="$(waiting_runs)"
-            for run in $runs; do
-              if gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$run/approve" >/dev/null; then
-                approved=$((approved + 1))
-              fi
-            done
-            if [ -z "$runs" ] && { [ "$approved" -ge 1 ] || [ "$created" = false ]; }; then break; fi
-            if [ "$attempt" -lt "$attempts" ]; then sleep 5; fi
-          done
-          if [ -n "$(waiting_runs)" ] || { [ "$created" = true ] && [ "$approved" -eq 0 ]; }; then
-            echo "::warning::Some PR workflow runs were not approved. Approve the waiting runs on the PR so that it can merge."
-          fi
-          gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$branch"

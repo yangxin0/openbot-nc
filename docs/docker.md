@@ -1,57 +1,53 @@
 # Docker
 
-The OpenBot image is the Linux release, run as a [self-hosted server](self-hosted-server.md) in a
-container. It is a normal Remote host of your account. You use it from the desktop app, the iPhone
-app or `openbot.run/app`. The image is `ghcr.io/nightly-labs/openbot`, for `linux/amd64` and
-`linux/arm64`.
+The OpenBot-NC image is the Linux build, run as a [self-hosted server](self-hosted-server.md) in a
+container. It joins your team through the central server. You use it from the desktop app, the web
+client at `https://<your server>/app`, the Chrome extension or the phone app. There is no public
+image: build it from an AppImage, for `linux/amd64` or `linux/arm64`.
+
+## Build
+
+On a computer with the repository:
+
+```sh
+bun run dist:linux
+mkdir -p image && cp dist/OpenBot-NC-*-x86_64.AppImage image/OpenBot.AppImage
+docker build --file docker/Dockerfile --tag openbot-nc:latest image
+```
+
+For arm64, use `bun run dist:linux:arm64` and the `arm64` AppImage. To use the image on another host,
+push it to your own registry and set `OPENBOT_IMAGE` (and `OPENBOT_TAG`) for Compose.
 
 ## Run
 
-With Docker Compose:
+With Docker Compose (`docker/compose.yaml` uses `${OPENBOT_IMAGE:-openbot-nc}:${OPENBOT_TAG:-latest}`):
 
 ```sh
-curl -fsSLO https://raw.githubusercontent.com/nightly-labs/openbot/main/docker/compose.yaml
-curl -fsSLO https://raw.githubusercontent.com/nightly-labs/openbot/main/docker/seccomp.json
-docker compose up -d
-docker compose exec openbot openbot-nc login
+docker compose -f docker/compose.yaml up -d
 ```
 
 With `docker run`:
 
 ```sh
-curl -fsSLO https://raw.githubusercontent.com/nightly-labs/openbot/main/docker/seccomp.json
 docker run -d --name openbot --restart unless-stopped \
-  --security-opt seccomp=seccomp.json --security-opt no-new-privileges:true \
+  --security-opt seccomp=docker/seccomp.json --security-opt no-new-privileges:true \
   --shm-size 1g --stop-timeout 60 \
   -v openbot-nc-data:/data \
-  ghcr.io/nightly-labs/openbot:latest
-docker exec -it openbot openbot login
+  openbot-nc:latest
 ```
 
-These commands get the files from `main` and run `latest`. To pin a release (see [Tags](#tags)),
-get the files of the same release tag, and use its version in the image. For example, for 0.76.1:
+Then import the identity file of the container (`ca issue ... --device <name>`) and share its agents
+with the team. Delete the copy after the import:
 
 ```sh
-curl -fsSLO https://raw.githubusercontent.com/nightly-labs/openbot/v0.76.1/docker/compose.yaml
-curl -fsSLO https://raw.githubusercontent.com/nightly-labs/openbot/v0.76.1/docker/seccomp.json
+docker cp office-server.json openbot:/data/identity.json
+docker exec openbot openbot-nc import-identity /data/identity.json --hosting on
+docker exec openbot rm /data/identity.json
 ```
 
-Then set `image: ghcr.io/nightly-labs/openbot:0.76.1` in `compose.yaml`, or use
-`ghcr.io/nightly-labs/openbot:0.76.1` in `docker run`.
-
-`openbot-nc login` asks for your email and the code that OpenBot sends to it. An operator who sets up
-the container for somebody else can use `openbot-nc login --claim` instead (see
-[server claims](self-hosted-server.md#sign-in-with-a-server-claim)). After the sign-in, the
-server shows in the server list of that account. Then connect a provider from the app, as on a
-[hosted server](hosted-servers.md#providers).
-
-To connect the phone app, show a Mobile Connect code in the terminal and scan it with the app:
-
-```sh
-docker exec -it openbot openbot mobile-connect
-```
-
-See [Phone app](self-hosted-server.md#phone-app).
+With Compose, use `docker compose -f docker/compose.yaml exec openbot` in place of
+`docker exec openbot`, and the container name that Compose shows for `docker cp`. Then connect a
+provider from the app: open the server and follow the provider step.
 
 The options in both examples are necessary:
 
@@ -62,29 +58,17 @@ The options in both examples are necessary:
 | `--stop-timeout 60` | OpenBot stops its agents and closes its database before it exits. |
 | `-v openbot-nc-data:/data` | All data is in `/data`. Without a volume, it goes away with the container. |
 
-For Amazon ECS, see [AWS ECS](aws-ecs.md).
-
-The container publishes no port. OpenBot only connects out: to the account server, to the providers,
-and to Signal and TURN for remote use. The Team API listens on `127.0.0.1` in the container.
-The container does not serve a web interface, except the setup page of
-`OPENBOT_SETUP_PAGE_PORT` (see [Umbrel](umbrel.md#the-setup-page)). After `openbot-nc login`, use
-[`openbot.run/app`](https://openbot.run/app) with the same account to select the server. A web
-client at your own origin is not included in this image. The
-[self-hosted account service](self-hosting.md#what-changes) is a separate deployment with its own
-client limits.
+The container publishes no port. OpenBot only connects out: to the central server and to the
+providers. The Team API listens on `127.0.0.1` in the container. The container does not serve a web
+interface. The central server serves the web client (see
+[central server](central-server.md#web-client)).
 
 ## Network
 
-The container uses the Docker bridge network. In the container, OpenBot sees only its bridge
-address. Devices connect to it through the public address of the host or through TURN. On a public
-server, this is sufficient: a test on a VPS gave the same connection time with the bridge network
-and with host networking.
-
-When the devices are on the same local network or Tailscale tailnet as the host, the bridge network
-can make the connection slow: the container does not see the local or `tailscale0` addresses of the
-host, so devices often use TURN. With host networking, OpenBot sees all addresses of the host, and
-devices can connect directly. Add `network_mode: host` to the service in `compose.yaml`, or
-`--network host` to `docker run`. Host networking is available on Linux with Docker Engine.
+The container uses the Docker bridge network and connects out to the central server. Members reach
+it only through the central server, so the bridge network needs no change. Host networking (add
+`network_mode: host` to the service in `compose.yaml`, or `--network host` to `docker run`) gives no
+faster path, because no connection goes directly between devices.
 
 Host networking removes the network isolation of the container:
 
@@ -101,16 +85,9 @@ Use it only on a host where you trust the other programs and users. Do not use i
 
 ## Tags
 
-| Tag | Image |
-| --- | --- |
-| `latest` | The newest release. |
-| `<version>`, for example `0.30.0` | One release. Use it to choose when to upgrade. |
-| `v<version>` | Alias for `<version>` in releases published after 0.31.0. Earlier releases use the tag without `v`. |
-| `sha-<commit>` | The release of that commit. |
-| `<version>-amd64`, `<version>-arm64` | One release for one architecture. |
-
-Public images need no GHCR sign-in. If `latest` or a version without `v` returns `denied`,
-`unauthorized` or `not found`, a maintainer must check the package visibility. See
+The release workflow pushes the image to the GitHub Container Registry of the repository that runs it
+(`ghcr.io/<owner>/<repository>`), with the tags `<version>`, `v<version>`, `latest` and
+`sha-<commit>`. Set `OPENBOT_IMAGE=ghcr.io/<owner>/<repository>` to use it. See
 [Docker package access](RELEASING.md#docker-package-access).
 
 ## Data
@@ -140,41 +117,45 @@ For a bind mount, give the folder to the user of the image first:
 mkdir openbot-nc-data && sudo chown 1000:1000 openbot-nc-data
 ```
 
-The data has your account session, your provider sign-ins and your conversations. Protect it as you
+The data has your identity, your provider sign-ins and your conversations. Protect it as you
 protect a home folder. To back it up, stop the container and copy the volume. An instance of
 `docker/instances` has commands for this, see [Backups](#backups).
 
 ## Commands
 
-In the container, `openbot-nc status`, `login`, `mobile-connect`, `logout`, `name` and `version` work as on a
+In the container, `openbot-nc status`, `import-identity`, `hosting`, `name` and `version` work as on a
 [self-hosted server](self-hosted-server.md#commands). Do the other tasks with Docker on the host:
 
 | Task | Command |
 | --- | --- |
 | Read the log | `docker logs openbot` |
 | Stop, start, restart | `docker stop openbot`, `docker start openbot`, `docker restart openbot` |
-| Upgrade | `docker compose pull && docker compose up -d`, or pull the image and make the container again with the same volume |
-| Remove | `docker exec openbot openbot-nc logout`, then `docker stop openbot && docker rm openbot`. The data stays in the volume. `docker volume rm openbot-nc-data` deletes it. |
+| Upgrade | Build or pull a newer image, then make the container again with the same volume (`docker compose -f docker/compose.yaml up -d`) |
+| Remove | `docker stop openbot && docker rm openbot`, and revoke the certificate with `ca revoke`. The data stays in the volume. `docker volume rm openbot-nc-data` deletes it. |
 
 ## Several instances on one host
 
 `docker/instances/` runs more than one OpenBot container on one Linux host with systemd. Each
-instance has its own CPU, memory and disk limit, its own data and its own account. Copy the `docker`
+instance has its own CPU, memory and disk limit, its own data and its own identity. Copy the `docker`
 folder of the repository to the host, for example to `/opt/openbot-docker`, and run as root:
 
 ```sh
 /opt/openbot-docker/instances/openbot-instance setup
 /opt/openbot-docker/instances/openbot-instance create main --cpus 8 --mem 32g --disk 200G
-/opt/openbot-docker/instances/openbot-instance run main login
+/opt/openbot-docker/instances/openbot-instance run main import-identity /data/identity.json --hosting on
 ```
+
+Copy the identity file of the instance to `/srv/openbot-nc/main/data/identity.json` (owner 1000)
+before the `run` command, and delete it after. Set `OPENBOT_IMAGE` in the env file of the instance
+when the image is not `openbot-nc:latest`.
 
 | Path | Contents |
 | --- | --- |
 | `instances/<name>.env` | The name and the limits of the instance. Change `OPENBOT_CPUS` or `OPENBOT_MEM`, then run `openbot-instance up <name>`. `OPENBOT_DISK` is for information only: a change to it does nothing. |
-| `/srv/openbot/<name>/data.img` | An ext4 image. Its size is the disk limit. `create` reserves all of it on the disk of the host, so the images can never need more space than the host has. |
-| `/srv/openbot/<name>/data` | The mount of the image, which is `/data` in the container. `/etc/fstab` mounts it before Docker starts. `X-fstrim.notrim` stops `fstrim.timer` from freeing the reserved space. |
-| `/srv/openbot/<name>/update-requests` | The update requests of the app. The container writes empty files here. It is a tmpfs of 64 KiB and 16 files, which `/etc/fstab` mounts. |
-| `/srv/openbot/<name>/update-status` | The state of an update, which root writes. The container can only read it. |
+| `/srv/openbot-nc/<name>/data.img` | An ext4 image. Its size is the disk limit. `create` reserves all of it on the disk of the host, so the images can never need more space than the host has. |
+| `/srv/openbot-nc/<name>/data` | The mount of the image, which is `/data` in the container. `/etc/fstab` mounts it before Docker starts. `X-fstrim.notrim` stops `fstrim.timer` from freeing the reserved space. |
+| `/srv/openbot-nc/<name>/update-requests` | The update requests of the app. The container writes empty files here. It is a tmpfs of 64 KiB and 16 files, which `/etc/fstab` mounts. |
+| `/srv/openbot-nc/<name>/update-status` | The state of an update, which root writes. The container can only read it. |
 
 The container is `openbot-<name>`. Its root file system is read-only: the container layer is on the
 disk of the host, where Docker on ext4 cannot limit its size. Outside `/data`, the container writes
@@ -192,7 +173,7 @@ prints a warning and the rest of the setup stays done. When LXCFS runs, `openbot
 `lxcfs.yaml`: the container then reads its own CPU limit in `/proc/cpuinfo`, and its memory limit in
 `/proc/meminfo` and `/proc/swaps`. On cgroup v2, LXCFS 5.0 does not limit the CPU lines of
 `/proc/stat`, which Node's `os.cpus()` counts, so OpenBot limits the Node programs of agents itself
-(see [agent processes](hosted-servers.md#memory)). `nproc`, Python's `os.cpu_count()` and other
+(see [Memory](#memory)). `nproc`, Python's `os.cpu_count()` and other
 programs that read the CPU affinity or `/sys/devices/system/cpu/online` still see the CPUs of the
 host. That file is not mounted: LXCFS lists CPUs 0 to limit-1 in it, but a process still runs on any
 CPU of the host, and the Gemini CLI then exits with SIGILL. Without LXCFS, an instance still starts
@@ -211,7 +192,7 @@ lose the connection.
 
 The container log goes through the `syslog` log driver to a socket of rsyslog,
 `/var/lib/openbot-docker/dev/log`, and not to the journal or `/var/log/syslog`, whose size limits
-other services share. rsyslog writes `/var/log/openbot/openbot-<name>.log`. logrotate rotates it each
+other services share. rsyslog writes `/var/log/openbot-nc/openbot-<name>.log`. logrotate rotates it each
 day, or sooner when it is larger than 200 MB. `openbot-logrotate.timer` checks every 5 minutes. It keeps
 the 30 newest rotated files and none older than 30 days, so one instance keeps at most 31 files of
 about 200 MB. An instance that writes very much keeps less than 30 days. `docker logs` reads the local
@@ -246,7 +227,7 @@ Agents have full access in their container, so the host limits what a container 
   no rights there. `create` gives the data to that user. This setting is for the whole Docker
   daemon: Docker then uses another data folder, so containers, images and networks made before are
   not visible until it is removed. To turn it on for existing instances: `down` each instance, add
-  the setting, restart Docker, run `setup`, `chown -R <uid>:<gid>` each `/srv/openbot/<name>/data`,
+  the setting, restart Docker, run `setup`, `chown -R <uid>:<gid>` each `/srv/openbot-nc/<name>/data`,
   then `up` each instance. `setup` shows a warning when it is off.
 - **DNS.** Docker sends the DNS queries of a container from the network of the container, so the
   firewall also applies to them. When the host uses a resolver on a private or link-local address,
@@ -259,21 +240,19 @@ Agents have full access in their container, so the host limits what a container 
 | --- | --- |
 | Show the instances | `openbot-instance list` |
 | Stop, start, restart | `openbot-instance down <name>`, `up <name>`, `restart <name>` |
-| Read the log | `openbot-instance logs <name> -f` (recent lines), or `/var/log/openbot/openbot-<name>.log*` (30 days) |
+| Read the log | `openbot-instance logs <name> -f` (recent lines), or `/var/log/openbot-nc/openbot-<name>.log*` (30 days) |
 | Upgrade | In the app (see [Updates from the app](#updates-from-the-app)), or `openbot-instance upgrade <name>` or `upgrade --all` |
-| `openbot` commands | `openbot-instance run <name> status`, `login`, `mobile-connect`, `name <name>` |
-| Make the disk larger | `down <name>`, `umount /srv/openbot/<name>/data`, `fallocate --length <new size> data.img`, `e2fsck -f data.img`, `resize2fs data.img`, `mount /srv/openbot/<name>/data`, `up <name>` |
+| `openbot` commands | `openbot-instance run <name> status`, `import-identity <file>`, `hosting on\|off`, `name <name>` |
+| Make the disk larger | `down <name>`, `umount /srv/openbot-nc/<name>/data`, `fallocate --length <new size> data.img`, `e2fsck -f data.img`, `resize2fs data.img`, `mount /srv/openbot-nc/<name>/data`, `up <name>` |
 
-There is no command to remove an instance. To remove one and delete its data: `run <name> logout`,
-`down <name>`, `systemctl disable --now openbot-instance-update@<name>.path`,
-`umount /srv/openbot/<name>/data /srv/openbot/<name>/update-requests`, delete its two lines in
-`/etc/fstab`, then delete `/srv/openbot/<name>` and `instances/<name>.env`.
+There is no command to remove an instance. To remove one and delete its data: `down <name>`, `systemctl disable --now openbot-instance-update@<name>.path`,
+`umount /srv/openbot-nc/<name>/data /srv/openbot-nc/<name>/update-requests`, delete its two lines in
+`/etc/fstab`, then delete `/srv/openbot-nc/<name>` and `instances/<name>.env`.
 
 ### Updates from the app
 
-The owner or an admin updates an instance in Server settings › Updates, or in the update dialog, as on a
-hosted server. The container never gets the Docker socket. OpenBot writes an empty request file to
-`/srv/openbot/<name>/update-requests`. `openbot-instance-update@<name>.path` sees it and runs
+The owner or an admin updates an instance in Server settings › Updates, or in the update dialog. The container never gets the Docker socket. OpenBot writes an empty request file to
+`/srv/openbot-nc/<name>/update-requests`. `openbot-instance-update@<name>.path` sees it and runs
 `openbot-instance update-request <name>` as root. Root only tests and removes the request; it never
 reads or follows it. It pulls the image of the instance and writes its version to `update-status` only
 when it is newer than the container. For an install, it makes the container again from that image,
@@ -341,7 +320,7 @@ error when one failed. `--json` gives the same for a monitor, with `lastBackup` 
 `ok`, `failed`, `running`, `stopped` or `none`. `stopped` means that the run ended without a result, for
 example when it was killed or the host restarted. It exits with 1 when the last backup or verification
 failed or stopped, or the newest backup is overdue. Root keeps the state in
-`/srv/openbot/<name>/backup-status`.
+`/srv/openbot-nc/<name>/backup-status`.
 
 A daily backup at 04:00, with a verification after it:
 
@@ -371,25 +350,25 @@ the backup next to the data. Only when the archive is unpacked does it replace `
 instance has data, `restore` needs `--replace`, which deletes that data, so back it up first.
 Because the old data stays until the end, the disk of the instance needs free space for the data of
 the backup. When it has less, copy the old data to another disk, delete it from
-`/srv/openbot/<name>/data`, and restore into the empty folder.
+`/srv/openbot-nc/<name>/data`, and restore into the empty folder.
 `restore` does not start the instance:
 
 - Start it only when the instance of the backup does not run anywhere else. Two copies would use the
-  same server identity and the same account session.
+  same identity.
 - `restore` refuses a backup from a newer OpenBot than the image of the instance. Pull a newer image
   first. An older OpenBot cannot open a database that a newer one migrated. Do not use a backup to go
   back to an older version.
 - A newer OpenBot migrates the database on its first start. Back up the restored data again before you
   upgrade when you want to keep the version that the backup had.
 - The provider sign-ins are in the backup. A provider can still ask for a new sign-in when its session
-  expired. The account session is in the backup too.
+  expired. The identity is in the backup too.
 
 ## Upgrades
 
 When OpenBot cannot start, for example after a failed start of a new image, it stops its start loop
 and runs its safe mode: each member's app shows why the server does not start and which version it
 runs. The safe mode opens no database. After one hour it exits, and the restart policy starts the
-container again. A newer image is the fix. See [hosted servers](hosted-servers.md#start-loop).
+container again. A newer image is the fix. See [Start loop](self-hosted-server.md#start-loop).
 
 OpenBot does not update itself in a container. A new image replaces it. An instance of
 `docker/instances` can ask the host for that from the app, see
@@ -402,12 +381,13 @@ open a database that a newer one migrated, so it does not start.
 minor tag such as `0.39`, or a separate `stable` tag. For a controlled upgrade, keep an exact
 version in your Compose file or `OPENBOT_TAG` in the instance env file.
 
-The [GitHub latest-release API](https://docs.github.com/en/rest/releases/releases#get-the-latest-release)
+When your repository publishes releases, the
+[GitHub latest-release API](https://docs.github.com/en/rest/releases/releases#get-the-latest-release)
 is the machine-readable source for the newest full release. For example, this read-only command
 prints its tag:
 
 ```sh
-gh api repos/nightly-labs/openbot/releases/latest --jq '.tag_name'
+gh api repos/<owner>/<repository>/releases/latest --jq '.tag_name'
 ```
 
 Automation can poll that metadata and download an image. Installation needs these checks:
@@ -440,8 +420,8 @@ a compatible release, not an image-tag rollback of the live volume.
 
 ## Memory
 
-The container uses the memory guards of a hosted server (see [Memory](hosted-servers.md#memory)).
-When free memory is low, new turns wait in the queue and start again when memory is available. A
+The container uses the memory guards of a self-hosted server (see
+[Memory](self-hosted-server.md#memory)). When free memory is low, new turns wait in the queue and start again when memory is available. A
 message from a person starts first. The browser opens no new tab and unloads idle pages sooner.
 
 The memory ceiling is the smaller of the memory of the host and the memory limit of the container
@@ -456,8 +436,7 @@ sees only the memory of the host, so the guard uses it, and the log has one warn
 Main has an OOM score adjustment of 0 in the container, and each process that it starts gets 500.
 So when the container is out of memory, the kernel is more likely to stop a provider CLI, an MCP
 server or an agent tool than OpenBot. Agent processes also run at nice 10, and at the `critical` level
-main stops leftover agent processes, such as the workers of a build whose parent was stopped. See
-[agent processes](hosted-servers.md#memory).
+main stops leftover agent processes, such as the workers of a build whose parent was stopped.
 
 ## Environment
 
@@ -468,10 +447,7 @@ environment of OpenBot, so they can read these values.
 | --- | --- |
 | `XAI_API_KEY`, `CURSOR_API_KEY`, `CLINE_API_KEY` | A provider API key. |
 | `OPENBOT_CODEX_PATH`, `OPENBOT_CLAUDE_PATH`, `OPENBOT_GROK_PATH`, `OPENBOT_OPENCODE_PATH`, `OPENBOT_CURSOR_PATH`, `OPENBOT_CLINE_PATH`, `OPENBOT_KIMI_PATH`, `OPENBOT_DEVIN_PATH`, `OPENBOT_COPILOT_PATH`, `OPENBOT_MISTRAL_PATH`, `OPENBOT_ANTIGRAVITY_PATH`, `OPENBOT_PI_PATH`, `OPENBOT_MUSE_PATH`, `OPENBOT_HERMES_PATH` | Another provider executable. Mount it read-only in the container. With `OPENBOT_HERMES_PATH`, OpenBot does not offer the Hermes download. |
-| `OPENBOT_AUTH_API_URL` | Another account server, for example a [self-hosted account service](self-hosting.md). |
-| `OPENBOT_REMOTE_SIGNAL_URL` | The Signal of a [self-hosted account service](self-hosting.md#4-start-the-app), as a `wss:` URL. Set it together with `OPENBOT_AUTH_API_URL`. Without that variable, OpenBot does not start. |
 | `OPENBOT_DISPLAY_SIZE` | The size of the virtual display that computer use reads, as `WIDTHxHEIGHT` from 640x480 to 2576x2576. The default is 1280x800. A value that is not valid writes a warning in `docker logs`, and the container starts with 1280x800. See [Display size](self-hosted-server.md#display-size) for when to use 1920x1080. `docker/instances/compose.yaml` does not pass it, so an instance uses 1280x800. |
-| `OPENBOT_SETUP_PAGE_PORT` | A port from 1024 to 65535 for the [setup page](umbrel.md#the-setup-page), which signs the server in from a browser. The Umbrel app sets it. Publish the port only behind a proxy that asks for a password: any client that reaches it can sign in a server that is signed out. |
 
 ## Security
 
@@ -489,15 +465,8 @@ environment of OpenBot, so they can read these values.
   Put agents that must not share keys in different containers. Do not mount the Docker socket, your home folder or another
   host folder that agents must not change.
 - **Check the image.** Each release image has a build provenance attestation from the release
-  workflow. This command accepts only an attestation that this workflow made for the tag of that
-  release:
-
-  ```sh
-  gh attestation verify oci://ghcr.io/nightly-labs/openbot:<version> \
-    --repo nightly-labs/openbot \
-    --signer-workflow nightly-labs/openbot/.github/workflows/release.yml \
-    --source-ref refs/tags/v<version>
-  ```
+  workflow of the repository that built it. Check it with `gh attestation verify
+  oci://ghcr.io/<owner>/<repository>:<version> --repo <owner>/<repository>`.
 
 ## How it works
 
@@ -505,7 +474,7 @@ The release workflow (`.github/workflows/release.yml`) builds the image on a run
 architecture from the AppImage of that release, after it checks the AppImage against the release
 checksums. `docker/Dockerfile` unpacks the AppImage to `/opt/OpenBot-NC/app` and installs the packages
 of a self-hosted server from that release. The workflow starts and stops each image once, and pushes
-the images to GHCR only after the GitHub Release is published.
+the images to the registry of the repository only after the GitHub Release is published.
 
 `tini` is process 1. It starts `resources/hosting/openbot-container` from the release, which checks
 that it can make a user namespace, starts D-Bus, two virtual displays and the keyring, and then
@@ -514,7 +483,7 @@ work on `:1`, at the size of `OPENBOT_DISPLAY_SIZE`, which the script names in
 `OPENBOT_AGENT_DISPLAY`. Computer Use uses `:1`, so it does not show the OpenBot
 window. `:1` has a window manager (Openbox, from `openbot-desktop`), which tini adopts as it adopts
 Xvfb. On a stop, tini gives the signal to OpenBot and waits for it.
-`/opt/OpenBot-NC/hosted/mode` is `container`, so the `openbot` command talks to the control socket and
+`/opt/OpenBot-NC/hosted/mode` is `container`, so the `openbot-nc` command talks to the control socket and
 does not use systemd.
 
 ## Limits
@@ -535,13 +504,10 @@ does not use systemd.
   scripts of this image: the start with the sandbox on, `openbot-nc status`, a restart, a new container
   on the same volume after a kill, a stop that exits with 0, and the messages for a missing seccomp
   profile and for a volume that the user cannot write. The release workflow also starts each image.
-- Not tested: a sign-in with `openbot-nc login` in a container, remote use of a container from the app,
+- Not tested: an identity import in a container, remote use of a container through the central server,
   Podman, Kubernetes, rootless Docker, and hosts that restrict user namespaces with AppArmor, such as
   Ubuntu 23.10 or newer. On such a host, the container can need an AppArmor profile that permits
   `userns`.
-- Host networking: users report that it makes the connection fast on a local network and on a
-  Tailscale tailnet. This was not tested here. On a public Ubuntu 24.04 VPS with Docker 29, the
-  bridge network connected in 2.0 to 2.6 s and host networking in 2.0 to 2.4 s.
 - The two displays of the entrypoint were tested with a stand-in for OpenBot: `:0` is 1280x800 and
   `:1` has the display size. Computer Use on `:1` was not tested.
 - The Openbox desktop on `:1` was tested in Ubuntu 24.04 and 26.04 containers (arm64) with the

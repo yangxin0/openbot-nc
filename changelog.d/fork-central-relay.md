@@ -34,6 +34,8 @@
 
 ### Changed
 
+- The app now shows its name as OpenBot-NC in windows, menus, notifications, the web client, the
+  browser extension and the phone app, in all 15 languages.
 - OpenBot opens with no sign-in. It makes a local profile on this computer, with your name and chat
   color, and never connects to an account service. You cannot set a profile picture.
 - The "+" menu of the server list no longer offers "Add remote server" with an invitation, and the
@@ -68,6 +70,15 @@
   menu show the team, user, device, central server, expiry date and connection, and remove the
   identity after a confirm step. The extension is now named OpenBot-NC. Build it with
   `bun run extension:build` and load `.openbot-build/browser-extension/` with Load unpacked.
+- The documents describe OpenBot-NC: the README, the privacy policy, the contribution rules, the
+  release guide, the self-hosted server, Docker and phone app guides, and the architecture notes. The
+  documents of removed parts are gone: hosted servers, the account service and Signal set-up, chat
+  apps other than WhatsApp, webhook routines, plugin sharing, status webhooks and Umbrel.
+- The Docker image comes from your own build. `docker/compose.yaml` and `docker/instances` take the
+  image name from `OPENBOT_IMAGE` and `OPENBOT_TAG`, with `openbot-nc:latest` as the default.
+- The release workflow reads the Apple team ID from the `APPLE_TEAM_ID` secret, and signs the Windows
+  installer only when the repository variable `AZURE_CLIENT_ID` is set. The scheduled provider CLI
+  canary runs only when the repository variable `PROVIDER_CLI_CANARY` is `true`.
 
 ### Removed
 
@@ -174,3 +185,7 @@
 - Upload progress of attachments sent to a team server from the desktop. The upload still works.
 - A server in safe mode starts its safe mode service on this computer only; team members cannot
   read the safe mode reason until the central server carries it.
+- The Nix flake and the Umbrel app. They installed vendor releases.
+- The update check of the macOS Host Manager. It no longer downloads releases from the vendor
+  repository; an administrator replaces the shared application.
+- The `--auth-api-url` option of `install-server.sh`. Nothing read it.

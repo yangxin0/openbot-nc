@@ -137,8 +137,8 @@ Openbox and the menu programs get the OOM value (500) and the nice value (10) of
 a build in that terminal does not take memory or CPU from main. The menu labels are in the Openbox
 configuration and are not translated.
 
-A boat hosted server names its desktop `:0`, and OpenBot
-runs on an Xvfb display. Electron keeps its own `DISPLAY`: the built-in browser draws its tabs in
+A server that names an agent display in `OPENBOT_AGENT_DISPLAY` runs OpenBot
+on another Xvfb display. Electron keeps its own `DISPLAY`: the built-in browser draws its tabs in
 the OpenBot window, and under Xvfb a hidden view gives no capture and no clicks, so OpenBot cannot
 only hide its window. On Linux, `agent-display.ts` sets `DISPLAY` to the agent display for the
 driver daemon and in `agentEnvironment` for every agent process. The driver opens the display that

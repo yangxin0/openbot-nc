@@ -1,4 +1,4 @@
-import { generateKeyPairSync, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import {
   chmodSync,
   closeSync,
@@ -16,7 +16,6 @@ import {
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const TICKET_KEY_ID = "openbot-remote-1";
 const DEVELOPMENT_STATE_VERSION = 1 as const;
 const DEVELOPMENT_STATE_DIRECTORY = ".openbot";
 const DEVELOPMENT_STATE_FILE = "dev-state.json";
@@ -26,48 +25,6 @@ export interface DevelopmentState {
   version: typeof DEVELOPMENT_STATE_VERSION;
   defaults: Record<string, string>;
   overrides: Record<string, string>;
-}
-
-const REQUIRED_DEFAULT_NAMES = ["REMOTE_TICKET_PRIVATE_JWK", "REMOTE_TICKET_PUBLIC_JWKS"] as const;
-
-export interface DevelopmentTicketKeyPair {
-  privateJwk: string;
-  publicJwks: string;
-}
-
-export function createDevelopmentTicketKeyPair(keyId: string = TICKET_KEY_ID): DevelopmentTicketKeyPair {
-  const { privateKey, publicKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
-  const privateJwk = { ...privateKey.export({ format: "jwk" }), kid: keyId, alg: "ES256", use: "sig" };
-  const publicJwk = { ...publicKey.export({ format: "jwk" }), kid: keyId, alg: "ES256", use: "sig" };
-  return {
-    privateJwk: JSON.stringify(privateJwk),
-    publicJwks: JSON.stringify({ keys: [publicJwk] }),
-  };
-}
-
-function developmentSecret(): string {
-  return randomBytes(32).toString("hex");
-}
-
-export function createDevelopmentDefaults(): Record<string, string> {
-  const tickets = createDevelopmentTicketKeyPair();
-  return {
-    AUTH_EXPOSE_DEVELOPMENT_CODE: "true",
-    EMAIL_SMTP_HOST: "",
-    EMAIL_SMTP_PORT: "",
-    EMAIL_SMTP_USERNAME: "",
-    EMAIL_FROM: "",
-    EMAIL_REPLY_TO: "",
-    EMAIL_LICENSE_FROM: "",
-    EMAIL_LICENSE_REPLY_TO: "",
-    EMAIL_SMTP_PASSWORD: "",
-    SKILLS_ADMIN_TOKEN: developmentSecret(),
-    SITE_REPORT_HASH_SECRET: developmentSecret(),
-    COMPANY_SIGN_IN_SECRET: developmentSecret(),
-    REMOTE_AUTH_WEBHOOK_SECRET: developmentSecret(),
-    REMOTE_TICKET_PRIVATE_JWK: tickets.privateJwk,
-    REMOTE_TICKET_PUBLIC_JWKS: tickets.publicJwks,
-  };
 }
 
 export type DevelopmentStateOutcome = "created" | "kept";
@@ -84,7 +41,7 @@ export function readDevelopmentState(projectRoot: string): DevelopmentState {
   ensurePrivateDirectory(paths.directory);
 
   const current = readStateIfPresent(paths.state);
-  if (current) return addMissingSecrets(paths, current);
+  if (current) return current;
 
   const lock = acquireStateLock(paths.lock);
   try {
@@ -123,23 +80,6 @@ export function setDevelopmentOverrides(
   }
 }
 
-const ADDED_SECRET_NAMES = ["COMPANY_SIGN_IN_SECRET"] as const;
-
-function addMissingSecrets(paths: DevelopmentStatePaths, state: DevelopmentState): DevelopmentState {
-  if (ADDED_SECRET_NAMES.every((name) => state.defaults[name])) return state;
-  const lock = acquireStateLock(paths.lock);
-  try {
-    const current = readStateIfPresent(paths.state) ?? state;
-    const defaults = { ...current.defaults };
-    for (const name of ADDED_SECRET_NAMES) defaults[name] ||= developmentSecret();
-    const next: DevelopmentState = { ...current, defaults };
-    publishState(paths.state, next);
-    return next;
-  } finally {
-    releaseStateLock(paths.lock, lock);
-  }
-}
-
 interface DevelopmentStatePaths {
   directory: string;
   state: string;
@@ -164,7 +104,7 @@ function developmentStatePaths(projectRoot: string): DevelopmentStatePaths {
 function createInitialState(): DevelopmentState {
   return {
     version: DEVELOPMENT_STATE_VERSION,
-    defaults: createDevelopmentDefaults(),
+    defaults: {},
     overrides: {},
   };
 }
@@ -191,11 +131,7 @@ function isDevelopmentState(value: unknown): value is DevelopmentState {
   if (!value || typeof value !== "object") return false;
   const state: ParsedDevelopmentState = value;
   if (state.version !== DEVELOPMENT_STATE_VERSION) return false;
-  if (!isStringRecord(state.defaults) || !isStringRecord(state.overrides)) return false;
-  for (const name of REQUIRED_DEFAULT_NAMES) {
-    if (!state.defaults[name]) return false;
-  }
-  return true;
+  return isStringRecord(state.defaults) && isStringRecord(state.overrides);
 }
 
 function isStringRecord(value: unknown): value is Record<string, string> {

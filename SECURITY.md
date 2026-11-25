@@ -2,8 +2,8 @@
 
 ## Supported versions
 
-OpenBot ships a new release almost every day. Security fixes are made on `main` and included in the
-next release. No older release line is guaranteed to receive backports.
+OpenBot-NC has no fixed release schedule. Security fixes are made on `main` and included in the next
+release. No older release line is guaranteed to receive backports.
 
 | Version | Supported |
 | --- | --- |
@@ -13,8 +13,8 @@ next release. No older release line is guaranteed to receive backports.
 ## Reporting a vulnerability
 
 Do not open a public issue. Use GitHub's **Security → Report a vulnerability** flow to submit a private
-security advisory. If private vulnerability reporting is unavailable, contact the maintainer through
-[their GitHub profile](https://github.com/NorbertBodziony) without publishing technical details.
+security advisory. If private vulnerability reporting is unavailable, contact the maintainer of the fork privately.
+Do not publish technical details.
 
 Include:
 

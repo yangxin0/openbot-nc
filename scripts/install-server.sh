@@ -5,7 +5,6 @@ export LC_ALL=C DEBIAN_FRONTEND=noninteractive
 release_source=""
 release_sha512=""
 service_user=""
-auth_api_url=""
 display_size=""
 identity_file=""
 server_name=""
@@ -33,8 +32,6 @@ Options:
   --user <name>             The user that runs OpenBot and its agents. Default: the user of the
                             installed server, else openbot, which the install makes when it does
                             not exist.
-  --auth-api-url <origin>   Another account server, for development. Default: the one of the
-                            installed server, else the one in the build.
   --display-size <W>x<H>    The size of the virtual display that computer use reads, from 640x480
                             to 2576x2576. Default: the one of the installed server, else 1280x800.
   --name <name>             The server name. Default: OpenBot.
@@ -64,11 +61,6 @@ while [ "$#" -gt 0 ]; do
     --user)
       [ "$#" -ge 2 ] || fail "Add a user name after --user."
       service_user=$2
-      shift 2
-      ;;
-    --auth-api-url)
-      [ "$#" -ge 2 ] || fail "Add a URL after --auth-api-url."
-      auth_api_url=$2
       shift 2
       ;;
     --display-size)
@@ -141,7 +133,7 @@ setup="$work/squashfs-root/resources/hosting/openbot-server-setup"
 if [ -n "$display_size" ] && ! grep -q OPENBOT_DISPLAY_SIZE "$setup"; then
   fail "OpenBot $version has no --display-size. Install without it."
 fi
-bash "$setup" "$service_user" "$work/squashfs-root" "$auth_api_url" ${display_size:+"$display_size"}
+bash "$setup" "$service_user" "$work/squashfs-root" "" ${display_size:+"$display_size"}
 
 if [ -n "$server_name" ]; then openbot-nc name "$server_name" >/dev/null; fi
 if [ -n "$identity_file" ]; then

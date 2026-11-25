@@ -46,7 +46,7 @@ Keep these implementations separate:
 - `FromHost` decoders and preload `FromMain` decoders: they protect different trust boundaries.
   Add each decoder to both sides. `ipc-channel-coverage.test.ts` checks matching names; review must
   also check that the two names do not share one decoder.
-- HTTPS V1/V3 and WebRTC V2 encodings: these are released wire protocols.
+- HTTP V1/V3 and Team V2 encodings: these are released wire protocols.
 
 ## Tests
 

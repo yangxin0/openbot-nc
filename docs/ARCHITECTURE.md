@@ -1,7 +1,7 @@
-# OpenBot architecture
+# OpenBot-NC architecture
 
-OpenBot is a Bun workspace with desktop, browser, and mobile applications, two Cloudflare Workers,
-a self-hosted Signal service, and shared packages.
+OpenBot-NC is a Bun workspace with desktop, web client, browser extension and phone applications, a
+central relay server (`remote/api`, see [central server](central-server.md)), and shared packages.
 
 The architecture notes are in one file for each topic:
 
@@ -34,21 +34,15 @@ The architecture notes are in one file for each topic:
   - [Prompt-driven agent profiles](architecture/agents.md#prompt-driven-agent-profiles)
   - [Agent import](architecture/agents.md#agent-import)
   - [Instance transfer](architecture/agents.md#instance-transfer)
-  - [Agent templates](architecture/agents.md#agent-templates)
-- [Analytics](architecture/analytics.md)
-  - [Mobile product analytics](architecture/analytics.md#mobile-product-analytics)
-  - [Website analytics](architecture/analytics.md#website-analytics)
+- [Local diagnostics and usage](architecture/analytics.md)
+  - [Resource sampling](architecture/analytics.md#resource-sampling)
   - [Agent usage analytics](architecture/analytics.md#agent-usage-analytics)
-- [Servers, storage, and billing](architecture/servers.md)
+- [Servers and storage](architecture/servers.md)
   - [Storage and files](architecture/servers.md#storage-and-files)
   - [Desktop server notifications](architecture/servers.md#desktop-server-notifications)
-  - [Billing](architecture/servers.md#billing)
+  - [Servers on this computer](architecture/servers.md#servers-on-this-computer)
   - [macOS Host Manager](architecture/servers.md#macos-host-manager)
-  - [Hosted servers](architecture/servers.md#hosted-servers)
 - [Channels, messaging, and mobile](architecture/channels-and-messaging.md)
-  - [iPhone Live Activity updates](architecture/channels-and-messaging.md#iphone-live-activity-updates)
-  - [iPhone notifications](architecture/channels-and-messaging.md#iphone-notifications)
-  - [Android notifications](architecture/channels-and-messaging.md#android-notifications)
   - [Shared channel chats](architecture/channels-and-messaging.md#shared-channel-chats)
   - [Messaging connections](architecture/channels-and-messaging.md#messaging-connections)
   - [Mobile chat queue](architecture/channels-and-messaging.md#mobile-chat-queue)

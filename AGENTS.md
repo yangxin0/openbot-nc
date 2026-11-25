@@ -48,32 +48,28 @@ adding a module or moving ownership between workspaces.
 ## Product constraints
 
 - Workspaces, conversations, attachments, browser data, and team data stay on the computer that
-  runs OpenBot. Providers, visited pages, and plugins can use the network. Exception: a signed-in
-  phone keeps an encrypted, read-only copy of the agents, sections, recent chats, channels and drawer
-  values of its servers (`apps/mobile/src/features/workspace/model/workspace-cache.ts`). The copy stays
-  on that phone, the host stays the source of truth, and sign-out, session expiry and server removal delete it.
+  runs OpenBot. Providers, visited pages, and plugins can use the network. Exception: a phone with an
+  identity keeps an encrypted, read-only copy of the agents, sections, recent chats, channels and
+  drawer values of its servers (`apps/mobile/src/features/workspace/model/workspace-cache.ts`). The
+  copy stays on that phone, the host stays the source of truth, and the removal of the identity, an
+  expired or revoked certificate and server removal delete it.
   The phone also keeps the newest backdrop page that an agent set for its user with `set_backdrop`
-  (`apps/mobile/src/features/settings/model/chat-backdrop.ts`); sign-out, session expiry and server
-  removal delete it too.
+  (`apps/mobile/src/features/settings/model/chat-backdrop.ts`); the same events delete it too.
   A desktop or browser client also keeps a copy of the agent and channel pictures that it loaded from a
   joined server (`src/main/remote-picture-cache.ts`,
   `src/renderer/src/features/web-client/web-agent-pictures.ts`), so the saved workspace shows the agent
-  pictures while the host is offline. Sign-out, server removal and the end of access delete it.
-- Cloudflare holds accounts, avatars, host configuration, memberships, invitations, and logical
-  sessions; it does not hold chats, files, or commands. It also holds the signed JavaScript bundles
-  of mobile over-the-air updates (`apps/mobile-updates`), which are public code and have no user data.
-  Exception: a workflow step with an OpenBot credits model sends its prompt and input pictures through
-  the account service (`/v1/media/*`) to the media generation processor, and the result file comes
-  back the same way. The account service passes them through in transit only: it does not store or
-  log them, and keeps only the credit hold record. Keep the processor's name, address, key and model
-  mapping in secrets and D1, never in the repository.
+  pictures while the host is offline. Server removal and the end of access delete it.
+- The central relay server (`remote/api/src/relay`) holds the CA files, the team registry and the
+  revocation list. It passes connection bytes in transit and does not store or log them. It does not
+  hold chats, files, or commands.
 - The user's SQLite database is the source of truth, not a remote cache.
 - Agents keep their workspace, thread, and identity across provider switches and restarts.
   Do not reset an agent to simplify state.
 
 ## Joined servers
 
-Many users run OpenBot only on a joined server: a VPS, a hosted server, or another member's computer.
+Many users run OpenBot only on a joined server: a VPS, a home server, or another member's computer.
+Clients reach every joined server through the central relay server.
 A feature for agents, chats, channels, routines or server settings must work there as it does on
 this computer. Make it local only when it needs this computer itself: its files and folders, its
 windows, its OS dialogs or its native notifications.
@@ -91,8 +87,8 @@ windows, its OS dialogs or its native notifications.
 - Test the host route through the Team API (as `scripts/team-api-routes-e2e.ts` does), not only the
   local IPC path.
 - A server installs a staged release at its next boot, or when an owner, an admin or a permitted
-  member installs it in Server Settings > Updates. A hosted server, and a server with the automatic
-  update switch on, also installs it when idle. When a feature needs the new host, the release
+  member installs it in Server Settings > Updates. A server with the automatic update switch on also
+  installs it when idle. When a feature needs the new host, the release
   notes say that the server must also be on the new version.
 
 ## Effect
@@ -110,8 +106,8 @@ windows, its OS dialogs or its native notifications.
   or run an Effect only to wrap its Promise in another Effect. Adapt browser and mobile native
   callbacks at their call sites; preserve released wire and event contracts.
 - Reuse process-owned managed runtimes and await disposal in existing shutdown paths. Preserve
-  desktop teardown ordinals. Worker bindings and background I/O belong to their invocation;
-  retain `waitUntil` and streaming lifetimes rather than adding a process shutdown hook.
+  desktop teardown ordinals. Background I/O belongs to its invocation; retain streaming lifetimes
+  rather than adding a process shutdown hook.
 - Tie owned resources to finalizers. Preserve existing deadlines and retries, and forward cancellation
   where the API supports it. Do not add generic retry, fallback, or service-wrapper policies.
 - Keep business authorization and validation in domain operations, and centralize public error mapping.
@@ -123,7 +119,7 @@ windows, its OS dialogs or its native notifications.
 ## Shared UI
 
 `packages/ui` (`@openbot/ui`) owns shared SolidJS controls and feature components used by
-desktop, public web, and Storybook. Reuse these components before adding UI. Import primitives
+desktop, the web client, and Storybook. Reuse these components before adding UI. Import primitives
 from `@openbot/ui` and feature components from explicit subpaths such as
 `@openbot/ui/features/sidebar/Sidebar`. Do not copy them back into an app.
 
@@ -147,12 +143,10 @@ are designed for a computer screen only.
   On a tiling Linux desktop (`src/main/linux-tiling-desktop.ts`) the compositor sets the size and
   the windows have no minimum. Below 721 px the main window zooms out, so its layout stays at
   least 721 CSS px wide and keeps the desktop layout.
-- On a phone (narrow screen and touch pointer), the web client opens on `WebPhoneAppScreen`, which
-  links to the App Store and Google Play. "Continue in browser" keeps the old phone layout
+- On a phone (narrow screen and touch pointer), the web client opens in the old phone layout
   (`WebMobileNavigation` and the `max-width: 720px` rules in `web-client.css`). Keep it working;
   do not add to it.
 - Put a phone feature in `apps/mobile`. [Joined servers](#joined-servers) says when one is needed.
-- The public site (`apps/auth-api` pages other than `/app`) stays responsive: phone visitors read it.
 
 ## Comments
 
@@ -164,12 +158,11 @@ commit message, the PR description or `docs/`.
 Only these remain, because a tool reads them: license headers, shebangs, `/// <reference>`,
 `@vitest-environment`, `@ts-expect-error`, `biome-ignore`, `#__PURE__`, `# shellcheck`,
 `# syntax=`, JSDoc types in plain `.js` files, file headers that a generator writes, the
-`// scope:` line of each GritQL rule, the `// flag` markers of lint fixtures, and the `# openbot-boat-pre-stop:` marker. Comments that are data
+`// scope:` line of each GritQL rule, and the `// flag` markers of lint fixtures. Comments that are data
 in a string stay too, such as a sample file or a task for a model.
 
 These files keep their comments: vendored code, fixtures, released schemas, released migrations
-(`check:migrations` compares them byte for byte), and the native build inputs of `apps/mobile`
-(a change makes a new runtime version, see `apps/mobile/AGENTS.md`).
+(`check:migrations` compares them byte for byte), and the native build inputs of `apps/mobile`.
 
 ## Interface text
 
@@ -213,11 +206,10 @@ and the separate Node and Bun type environments. Read them when changing checks 
 
 State which surfaces a change touches. Check all affected consumers and reverse actions.
 
-- Desktop renderer (`src/renderer`), mobile (`apps/mobile`), public web (`apps/auth-api`; no separate
-  landing app), hosted-site routing (`apps/site-router`), the mobile update server
-  (`apps/mobile-updates`), and Signal (`remote/api`).
-- Joined servers: the desktop with a joined server, the web client (`openbot.run/app`), and mobile.
-  See [Joined servers](#joined-servers).
+- Desktop renderer (`src/renderer`), mobile (`apps/mobile`), and the central relay server
+  (`remote/api/src/relay`, tested by `bun run test:relay` and the `test:relay-*` scripts).
+- Joined servers: the desktop with a joined server, the web client (`/app` on the central server),
+  and mobile. See [Joined servers](#joined-servers).
 - IPC contracts (`packages/contracts`) and their preview implementation
   (`src/renderer/src/preview/mock-openbot.ts`).
 - Reverse actions: snooze/unsnooze, pause/resume, revoke/reconnect, mute/unmute.
@@ -240,7 +232,7 @@ State which surfaces a change touches. Check all affected consumers and reverse 
   when it cannot confirm a PID's identity; resolve the process, then `bun run dev:forget`. Dead
   records do not reserve ports.
 - Reuse a running dev instance. `bun run dev` opens a profile tied to this worktree; `--shared`
-  opens the shared `OpenBot Dev` profile. Use the ports the stack reports rather than a fixed port.
+  opens the shared `OpenBot-NC Dev` profile. Use the ports the stack reports rather than a fixed port.
 
 See [README.md — Commands](README.md#commands) for the flags these commands take, and
 [docs/architecture/change-rules.md](docs/architecture/change-rules.md#change-rules) for why the registry works this way, when a dev command
@@ -274,7 +266,7 @@ Read the instruction file for each directory you change. Use the
 | [remote/api/AGENTS.md](remote/api/AGENTS.md) | Central relay server: TLS, CA files, server identity |
 
 Write release notes in a new `changelog.d/<branch>.md` file, not in `CHANGELOG.md`, as
-[docs/RELEASING.md](docs/RELEASING.md#release-notes) says. Notes for the iPhone app go in
+[docs/RELEASING.md](docs/RELEASING.md#release-notes) says. Notes for the phone app go in
 `apps/mobile/changelog.d/<branch>.md`. CI fails a PR with no notes unless it
 has the `no-changelog` label. A version bump with no notes fails.
 
@@ -321,9 +313,8 @@ They describe the enforced syntax, fixture behavior, and reasons for removed rul
 ## Pull requests
 
 - Open a PR only when asked.
-- Write the PR body from `.github/PULL_REQUEST_TEMPLATE.md`. Organization members and users with
-  write access do not sign the Contributor License Agreement. An author who must sign sends a signed
-  PDF by email. Never sign, fill in, or send the agreement for the author.
+- Write the PR body from `.github/PULL_REQUEST_TEMPLATE.md`. The fork has no Contributor License
+  Agreement.
 - For UI changes, show before and after. State the model and harness in the PR body.
   Do not commit screenshots or other PR review image assets to the repository.
 - Do not run wider checks locally before a PR. Report focused checks and leave broad checks to CI.

@@ -2,85 +2,30 @@
 
 ## Browser client
 
-`apps/auth-api` serves `/app`. Its lazy route mounts the interactive client after browser startup.
+The central server serves the web client at `/app` (`RELAY_WEB_CLIENT_DIR`, see
+[central server](../central-server.md#web-client) and [web client delivery](../web-client.md)).
 `src/renderer/src/features/web-client` owns the browser composition and its typed
-`WebWorkspaceRuntime` interface. It mounts the existing account login, page rail, server rail,
-sidebar, and full conversation view. `ConversationRuntime` routes host actions through
-the browser connection; its desktop default is the preload API. The desktop `WorkspaceShell` and the
-web client draw the same `WorkspaceFrame` under `LayoutProvider`, so the rail geometry, the sidebar
-resizer and compact modes, the compatibility screen, and the usage report slot are the same on both.
-The overlays that both clients raise - join, marketplace, shared agent, server settings, global
-search and channel creation - are prop-driven views in `WorkspaceOverlayViews.tsx`.
-`WorkspaceOverlays` fills them from the desktop contexts, and the web client fills them from its
-host connection, so what an overlay decides from its server is decided in one place.
-An open overlay hides the page of a local tab, because that page is a native view above the window.
-A toast does not hide the page. While the full view shows the page of a local tab, the toasts are
-hidden (`native-browser-page.ts`), so the page does not cut them. A toast that stays until the user
-closes it shows again when the page is hidden; a toast with a timer can end while it is hidden, and
-it is then not reported as shown. A host's tab shows in the window, under the toasts.
-The web client gives `PlatformProvider` a fixed `appInfo` in place of the main-process answer.
-There is no separate web dashboard.
-On a phone, `WebPhoneAppScreen` first points to the phone app. After "Continue in browser", small
-screens switch between the same conversation and workspace components. The shared browser
-panel receives the web live-view runtime and hides unsupported native controls. `BrowserLiveView`
-accepts an explicit runtime; desktop and the existing preview still default to the preload-compatible
-API. The web Storybook runtime uses
-`preview/mock-openbot.ts` through `preview/mock-web-runtime.ts`.
+`WebWorkspaceRuntime` interface. `ConversationRuntime` routes host actions through the browser
+connection; its desktop default is the preload API. The desktop `WorkspaceShell` and the web client
+draw the same `WorkspaceFrame` under `LayoutProvider`.
 
-The browser runtime uses `packages/team-client` for the directory, authenticated WebRTC peer,
-Signal recovery, file transfers, and browser-view streams. The stream codec lives in contracts;
-the old main-process import re-exports that codec without changing its wire format. Account
-requests use a closed list of `/api/browser/*` operations. They cannot carry chat requests.
-Browser tickets and session termination require the same account-session hash that created the
-remote session. Existing bearer-token endpoints retain their behavior. The browser edits the
-account's name, avatar, and sessions through `v1/me/profile`, `v1/me/avatar`, and `v1/me/sessions`,
-which call the same `AuthService` methods and avatar storage (`avatar-storage.ts`) as the bearer
-routes. The avatar upload is the one write that is not JSON; the origin and `X-OpenBot-Browser`
-checks still apply. `web-account.ts` makes these calls, and the Profile tab of the web Settings dialog
-(`WebAccountSettings.tsx`) shows them.
+The browser runtime uses `packages/team-client` for the relay control socket, Team protocol V2 over
+relay tunnels, file transfers, and browser-view streams. The browser keeps the private key of its
+identity in IndexedDB as a key that cannot be exported. One tab holds the relay control socket (Web
+Lock) and shares the roster with the other tabs (`BroadcastChannel`).
 
-An owner or admin gets the host controls of a desktop remote admin. Shared components keep their
-desktop port as the default and take injected calls: `web-server-settings.ts` gives
-`ServerSettingsModal` the host identity and storage routes through
-`@openbot/team-client/team-admin-requests`, and member and invitation calls through the closed
-`/api/browser/*` list. The Worker applies the same `RemoteControlPlane` role checks as the bearer
-routes. A member or role change revokes every session on the host; the browser reconnects once when
-the directory still lists the host. `ConversationRuntime.admin` carries the skills and shared-table
-calls to the agent settings panel, which shows only Skills and Tables in the browser. Memories,
-routines, and files stay on the desktop. The Permissions select writes access and auto-approve through
-the agent-admin route. `web-marketplace.ts` gives `MarketplaceModal` its calls: the public catalog routes of
-the account service that serves `/app` (`@openbot/team-client/marketplace-catalog`), and installs on
-the host over `skills-admin-v1`, `agent-install-v1`, `agent-update-v1`, and `mcp-servers-v1`. Try skill and a plugin
-prompt add a line to the agent's draft, as on desktop. A shared agent page also links
-`/app?agent=<id>`: `WebApp` reads the id once, removes the query, and keeps it through sign-in;
-`AgentTemplateInstall` then shows the preview, and the host adds the agent over `agent-install-v1`.
-A browser submits nothing to the marketplace. It can publish a host agent's share link over
-`agent-publish-v1`, in `ConversationRuntime.admin.agentTemplates`: the host builds the template,
-checks it for secrets and publishes it with the account signed in on the host; the browser draws only
-the share card from the preview. An agent that the host added from a
-listing gets Update when the host serves `agent-update-v1`; the host downloads the current version.
-`web-provider-admin.ts` answers the desktop `providerAdmin` group over the `providers-v1` routes, so
-the Providers section of `ServerSettingsModal` uses the same runtime, key, custom provider, and code
-sign-in logic (`provider-connection.ts`, `ProviderSettingsSection.tsx`) as the desktop app. On
-desktop the section shows the providers of the active server only, because provider state exists
-only for that server; for another server it offers to switch. The
-browser applies host `status` events, and reads the status every 3 seconds while a code sign-in waits.
-A provider key stays in the dialog input until it is sent to the host.
+An owner or admin gets the host controls of a desktop remote admin through the Team API routes of
+the host: `web-server-settings.ts` gives `ServerSettingsModal` the host identity and storage routes
+through `@openbot/team-client/team-admin-requests`, and members through the host routes
+`/v1/team/members`. `web-provider-admin.ts` answers the desktop `providerAdmin` group over the
+`providers-v1` routes, so the Providers section of `ServerSettingsModal` uses the same runtime, key,
+custom provider, and code sign-in logic as the desktop app. A provider key stays in the dialog input
+until it is sent to the host.
 
-Browser sign-in, account reads, and connection tickets are always available. No host or D1
-migration is needed. See [web client delivery](../web-client.md) for the seven review scopes, local
-commands, and release checks.
-
-Browser chat pages, drafts, file bytes, and chat visibility preferences stay in memory. A protected
-cookie holds the account credential. Local storage holds account-scoped trusted host public keys,
-the shared file panel's width, and for each account and host the pinned item ids (a copy of the list
-that a host with `sidebar-pins-v1` keeps), collapsed section ids and selected channel id, not chat
-content. The channel UI takes a `ChannelsPort` runtime; its
-desktop default is the preload API. A Web Lock permits one live tab per account
-and host because the existing control plane reuses that credential's logical host session.
-Host switches discard the prior host's chat state. Temporary connection loss keeps drafts; a
-failed send stays in the chat and is never sent again on its own. BroadcastChannel, account
-checks on focus, and signed session invalidation clear access when a session ends.
+Browser chat pages, drafts, file bytes, and chat visibility preferences stay in memory. Local storage
+holds the shared file panel's width and, for each server, the pinned item ids, collapsed section ids
+and selected channel id, not chat content. Temporary connection loss keeps drafts; a failed send
+stays in the chat and is never sent again on its own.
 
 MP3 and MOV attachments use the existing file attachment contract with no inline preview. Import
 copies and hashes the original bytes under the shared attachment limits; it does not run media
@@ -702,8 +647,9 @@ streams the tab through CDP, and the gateway sends each frame as bytes and dispa
 key input that comes back, in fractions of the last frame, through the same access checks. Frames stay
 outside the per-tab operation queue, so watching never delays a tool call. `browser-view-client.ts` is
 the client half, and it uses the websocket tunnel of the `desktop` data channel (`remote-stream-v1`)
-rather than a WebRTC channel of its own.
-The `browser-view` capability says whether a host has both.
+rather than a channel of its own.
+The `browser-view` capability says whether a host has both. In OpenBot-NC, the phone and the web client cannot open
+the live view yet: it needs a relay stream.
 
 The mobile app (iOS and Android) draws the pointer itself, so it needs the page's cursor. A host with
 `browser-view-cursor` sends a `cursor` text message, from the tab's `cursor-changed` event, to a
@@ -731,8 +677,7 @@ phone with `expo-clipboard`. The phone asks for 1280x800. On the phone, the view
 hidden page that holds the Team peer (`features/browser/model/browser-view-bridge.ts`). That page
 sends each frame to the screen as base64 and holds the newest frame until the screen has drawn the
 previous one. Back, forward, reload, new tab and close tab use the released `browser-control`
-routes. The account server's `browser` mobile feature flag turns the phone's browser off for an app
-version (`apps/auth-api/src/server/mobile-features-config.ts`).
+routes.
 
 ## Secure browser authentication
 

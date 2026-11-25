@@ -1,63 +1,50 @@
 # Self-hosted servers
 
-A self-hosted server is the Linux OpenBot build on your own computer with no screen: a VPS, a home
-server or a cloud VM. It is a normal Remote host of your account. You use it from the desktop app,
-the iPhone app or `openbot.run/app`, as you use a [hosted server](hosted-servers.md). You install
-and control it from a terminal.
+A self-hosted server is the Linux OpenBot-NC build on your own computer with no screen: a VPS, a home
+server or a cloud VM. It joins your team through the central server (see
+[central server](central-server.md)). You use it from the desktop app, the web client at
+`https://<your server>/app`, the Chrome extension or the phone app. You install and control it from a
+terminal.
 
 To run it in a container, see [Docker](docker.md).
 
 ## Install
 
-On Ubuntu 24.04 or 26.04 (x86_64 or arm64) with systemd:
+OpenBot-NC has no public release feed. Build the AppImage on a computer with the repository, or use
+one that your team built:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/nightly-labs/openbot/main/scripts/install-server.sh | sudo bash
-sudo openbot-nc login
+bun run dist:linux
 ```
 
-`openbot-nc login` asks for your email and the code that OpenBot sends to it. After the sign-in, the
-server shows in the server list of that account. Its name is "OpenBot"; give another one with
-`sudo openbot-nc login --name <name>` or `sudo openbot-nc name <name>`. A name has 6 to 32 characters.
-Then connect a provider from the app, as on a hosted server (see
-[Providers](hosted-servers.md#providers)).
+The build writes `dist/OpenBot-NC-<version>-x86_64.AppImage` (`bun run dist:linux:arm64` for arm64).
+Make an identity file for the server on the central server, for example
+`ca issue --team "My Team" --user alice --device office-server --out office-server.json`.
 
-### Install from the app
-
-In the desktop app, select Add server, then Other options, then New server on another computer.
-The app shows one command with a one-time claim of your account:
+Copy the AppImage, `scripts/install-server.sh` and the identity file to the server. On Ubuntu 24.04
+or 26.04 (x86_64 or arm64) with systemd, run:
 
 ```sh
-{ echo OPENBOT_CLAIM=<claim>; curl -fsSL https://raw.githubusercontent.com/nightly-labs/openbot/main/scripts/install-server.sh; } | sudo bash -s
+sudo bash install-server.sh --release OpenBot-NC-<version>-x86_64.AppImage --identity office-server.json
 ```
 
-Run it on the server, or give it to an AI agent there with Copy for an AI agent. It asks no
-questions. It installs OpenBot, signs the server in with the claim (`openbot-nc login --claim`), waits
-until the server is online, and ends with "OpenBot is connected to your account." and exit code 0.
-The app sees the new server in the server list and shows Open server.
+The install imports the identity and shares the agents of the server with the team. The service user
+must be able to read the identity file. Delete the file after the install. Then connect a provider
+from the app: open the server and follow the provider step.
 
-- The account service makes the claim for the signed-in user with `POST /v2/server-claims` (at most
-  20 claims in 15 minutes). The claim works once, for 15 minutes. The service keeps only its hash.
-- The claim goes to the install script on standard input, in a line before the script. It is not an
-  argument or a sudo variable, because sudo logs both (`COMMAND=` and `ENV=` in `/var/log/auth.log`
-  and the journal), and `ps` shows arguments to each user. A command that you paste stays in the
-  history of your shell. Make a new command when it expired or when somebody else saw it.
-- The install refuses a claim on a server that is signed in already. Run `sudo openbot-nc logout` first.
+| Option | Default | Use |
+| --- | --- | --- |
+| `--release <file or URL>` | none (required) | The AppImage to install: a local file or an https URL. The install downloads nothing else. |
+| `--sha512 <base64>` | none | The SHA-512 of the AppImage. The install stops when the file does not match. |
+| `--user <name>` | the installed user, else `openbot-nc` | The user that runs OpenBot and its agents. The install makes it when it does not exist, with its home folder in `/var/lib/<name>`. |
+| `--display-size <W>x<H>` | the installed one, else `1280x800` | The size of the virtual display that computer use reads (see [Display size](#display-size)). |
+| `--name <name>` | `OpenBot` | The server name. |
+| `--identity <file>` | none | The identity file of this server. Without it, import one later with `openbot-nc import-identity`. |
 
-### Install from a chat
-
-An agent can install the server over SSH. Write the request in a chat, for example "Install
-OpenBot on root@203.0.113.7 and name it Office server", or select Set up with an agent in the
-install dialog: it puts a short request into the composer of the open chat.
-
-The agent calls the OpenBot tool `create_server_install_command` with the server name. The owner
-of the agent's server approves each command. The tool then makes a claim, as the dialog does, and
-gives the command with `--name` only to the agent. The agent runs it as root over SSH.
-
-The chat shows a card with the name. It waits for a new server with that name, then shows Open
-server when the server is online. The card keeps only the name and the expiry time. The claim is
-not in the chat, and OpenBot logs redact it. The agent's own tool history keeps the command; the
-claim in it stops working after one use or 15 minutes.
+Run the install again to reinstall or upgrade. The data stays in the home folder of the service
+user. A reinstall keeps the user and refuses another `--user`. A reinstall without `--display-size`
+keeps the display size. The install refuses an older release than the installed one, because an
+older OpenBot cannot open a database that a newer one migrated.
 
 ### Hermes Agent
 
@@ -87,66 +74,18 @@ the Hermes row of the server's provider settings: it shows a Nous Portal code. A
 The Hermes installer needs `git` and `curl`, and downloads Node.js, which needs `libatomic1`. The
 service user has no sudo, so the server packages include them. `bun run test:hermes-server` checks this setup in Docker.
 
-### Sign in with a server claim
-
-An operator who sets up a server for somebody else can sign it in with no code. The operator makes a
-one-time claim for the owner's email, and the server redeems it. The owner does nothing: when they
-sign in to OpenBot with that email, the server is in their server list.
-
-```sh
-printf '{"email":"%s"}' owner@example.com |
-  curl --fail -sS -X POST https://api.openbot.run/v2/admin/server-claims \
-    -H @server-claims.header -H 'content-type: application/json' --data-binary @- |
-  sed -n 's/.*"claim":"\([A-Za-z0-9_-]*\)".*/\1/p' |
-  sudo openbot-nc login --claim --name <name>
-```
-
-`server-claims.header` holds one line, `Authorization: Bearer <token>`, so the token is in no process
-argument. `openbot-nc login --claim` reads the claim from standard input, or asks for it without an echo
-in a terminal, for the same reason.
-
-- `POST /v2/admin/server-claims` needs the `SERVER_CLAIMS_ADMIN_TOKEN` of the account service. It
-  makes the account of the email when there is none, and answers `{"claim", "expiresAt"}`.
-- The claim works once, for 15 minutes. The account service keeps only its hash.
-- The server sends it to `POST /v2/server-claims/redeem` and gets a session of the owner. The owner
-  is then the only owner of the server. The operator does not need the owner's email or password.
-- A claim that was used, or that expired, gives `server_claim_invalid`. If the server did not get the
-  answer, make a new claim.
-
-Anyone with the admin token can get a session for any email, also of an existing account. Keep the
-token on the operator's computer only: it is in the encrypted `apps/auth-api/.env.production`. For a
-Leaseweb VPS, `leaseweb-pool.ts custom` makes the claim and does all the other steps
-(see [Leaseweb VPS](hosted-servers.md#leaseweb-vps)). The owner sees each claimed server session in their account
-sessions, and can revoke it there.
-
-Install options go after `sudo bash -s --`:
-
-| Option | Default | Use |
-| --- | --- | --- |
-| `--user <name>` | the installed user, else `openbot-nc` | The user that runs OpenBot and its agents. The install makes it when it does not exist, with its home folder in `/var/lib/<name>`. |
-| `--auth-api-url <origin>` | the installed one, else the URL in the build | Another account server, for example the `test` Worker or a [self-hosted account service](self-hosting.md). |
-| `--display-size <W>x<H>` | the installed one, else `1280x800` | The size of the virtual display that computer use reads (see [Display size](#display-size)). |
-| `--name <name>` | `OpenBot` | The server name, with a claim from the app (see [Install from the app](#install-from-the-app)). |
-
-Run the install again to reinstall or upgrade. The data stays in the home folder of the service
-user. A reinstall keeps the user and the account server, because the sign-in belongs to them, and
-refuses another `--user`. A reinstall without `--display-size` keeps the display size. The install refuses an older release than the installed one, because an older OpenBot cannot
-open a database that a newer one migrated. It also refuses a computer that is a hosted server.
-
 ## Commands
 
 | Command | Use |
 | --- | --- |
-| `openbot-nc status` | Show the version, the account, the server state, the memory and a staged update. |
-| `openbot-nc login [<email>] [--name <name>]` | Sign in with an email code. |
-| `openbot-nc login --claim [--name <name>]` | Sign in with an operator's one-time claim (see [Sign in with a server claim](#sign-in-with-a-server-claim)). |
-| `openbot-nc mobile-connect` | Show a Mobile Connect QR code for the phone app (see [Phone app](#phone-app)). |
-| `openbot-nc logout` | Sign out. The server is not available until the next sign-in. |
+| `openbot-nc status` | Show the identity, the connection to the central server and the server. |
+| `openbot-nc import-identity <file> [--replace] [--hosting on\|off]` | Import the identity file of `ca issue`. The server then joins its team. `--replace` changes an identity that the server has already. |
+| `openbot-nc hosting on\|off` | Share the agents of this server with the team, or stop. |
 | `openbot-nc name <name>` | Change the server name. |
 | `openbot-nc logs [-f]` | Show the journal of `openbot-nc.service`. |
 | `sudo openbot-nc start\|stop\|restart` | Control `openbot-nc.service`. |
-| `sudo openbot-nc update` | Download, check and install the newest release now. |
-| `sudo openbot-nc uninstall` | Sign out and remove OpenBot. The data stays (see [Remove](#remove)). |
+| `sudo openbot-nc update <file or URL> [sha512]` | Install an AppImage that you give. The SHA-512 in base64 is optional. |
+| `sudo openbot-nc uninstall` | Remove OpenBot. The data stays (see [Remove](#remove)). |
 | `openbot-nc version` | Show the installed version. |
 
 An owner or admin can also restart the server from the app: select Restart server in the server
@@ -156,18 +95,17 @@ unless-stopped`; without one, the container stays stopped. When the server does 
 `sudo openbot-nc restart`.
 
 When the start of OpenBot fails again and again, the service stops, and systemd does not start it again
-(see [Start loop](hosted-servers.md#start-loop)). `openbot-nc status` then says so. Read the reason with
-`openbot-nc logs`. Install a newer release with `sudo openbot-nc update`, or try again with
-`sudo openbot-nc restart`. The update timer also starts the service again about each hour, with a
-newer release when one is staged.
+(see [Start loop](#start-loop)). `openbot-nc status` then says so. Read the reason with
+`openbot-nc logs`. Install a newer release with `sudo openbot-nc update <file or URL>`, or try again
+with `sudo openbot-nc restart`. The update timer also starts the service again about each hour, with a
+staged release when there is one.
 
-Run the account commands with `sudo` or as the service user. Other users cannot open the control
+Run the identity commands with `sudo` or as the service user. Other users cannot open the control
 socket.
 
 ## Memory
 
-A self-hosted server uses the memory guards of a hosted server (see
-[Memory](hosted-servers.md#memory)). When free memory is low, new turns wait in the queue and start
+A self-hosted server guards its memory. When free memory is low, new turns wait in the queue and start
 again when memory is available. A message from a person starts first. The browser opens no new tab
 and unloads idle pages sooner. By default, a fixed number of turns run at the same time: 2 up to
 5 GiB of memory, 8 up to 10 GiB, and 16 above. An owner or admin can choose another number, 1 to 128, or
@@ -189,14 +127,86 @@ one warning.
 
 Agent processes run at nice 10 with an OOM value of 500, also a job that an agent detaches. At the
 `critical` level, OpenBot stops leftover agent processes first. Node programs of agents see the CPU
-limit of the unit in `os.cpus()`. See [agent processes](hosted-servers.md#memory).
+limit of the unit in `os.cpus()`.
+
+## Watchdog
+
+Before it starts OpenBot, `openbot-hosted-server` starts itself again with `--watchdog` in the
+background. Main rewrites `~/.config/OpenBot-NC/openbot-run-marker-v1.json` every 60 s from its event
+loop (`src/main/run-marker.ts`). The watchdog reads the file every 30 s. When the content does not
+change in 20 reads (10 minutes) after it changed once in this run, the watchdog logs "OpenBot did not
+update its heartbeat for 600 seconds" and sends `SIGKILL` to the process in
+`/run/openbot-nc/openbot.pid`. `Restart=always` starts the service again 10 s later. The watchdog does
+nothing:
+
+- before the first change of the file in this run;
+- until the start finishes: `openbot-start-attempts-v1.json` in the same folder has
+  `"attempt":null` only after the migrations, the services and the renderer load. Migrations and the
+  database `quick_check` run on the main thread and can take longer than 10 minutes on a large
+  database;
+- while the run marker does not have `"state":"running"`. Quitting and the server safe mode stop the
+  heartbeat, and the safe mode stays alive to keep the host reachable;
+- when the folder of the file has less than 1 MB free, because main ignores a failed write;
+- when the process in the pid file is not `openbot` in the cgroup of the service.
+
+The watchdog counts reads and does not compare clock times, so a resume that moves the clock forward
+does not stop OpenBot. It does not help when the whole machine stops responding; that needs a
+reboot of the VM.
+
+`scripts/hosted-watchdog-e2e.ts` (`bun run test:hosted-watchdog`) runs the watchdog with a 1 s
+interval against fake apps that write, stop writing or never write the file, that did not finish
+their start, that quit, or that are not `openbot`.
+
+## Start loop
+
+A server has no window for the recovery window of the desktop. A server whose start
+failed started again each 10 seconds, without an end, in earlier releases. Now main stops the loop
+(`src/main/server-start-halt.ts`):
+
+- at the first failure when the database is from a newer OpenBot (`newer_database`): a restart
+  cannot help;
+- for all other failures, at the third failed start in a row of the same version (`start_failed`).
+  A failed migration rolls back and counts as a failed start, because its cause can be temporary
+  (a full disk, a lock). A start that fails with an error stops the loop at once; after a crash,
+  the next start stops it. This is the count of the desktop recovery window (`start-attempts.ts`).
+
+Main then writes `openbot-start-halt-v1.json` in its user data folder. The file has the reason
+word, the app version and a time only. The journal shows the reason. Then main runs its safe mode
+(`src/main/server-safe-mode.ts`): it keeps a minimal Team API up, so each member's app shows why
+the server does not start and which version it runs. The safe mode opens no database and changes
+no user data. It writes the empty file `/run/openbot-nc/server-safe-mode` while it runs. See
+[Team API](architecture/team-api.md#server-safe-mode).
+
+When the safe mode cannot start, main exits with 78 as before.
+`openbot-nc.service` has `RestartPreventExitStatus=78`, so systemd does not start it again.
+
+The next start reads and removes the file, logs the reason, and tries once more. A failure of that
+start stops the loop again. These start OpenBot again:
+
+- a restart or a resume of the server, or `sudo openbot-nc restart` or `start`;
+- `sudo openbot-nc update <file or URL>`;
+- `check` of `openbot-nc-update.timer`, about each hour: when `openbot-nc.service` is stopped with
+  status 78, or runs its safe mode, it runs `stage`, stops the safe mode, and starts the service
+  again, after `apply` when a newer release is staged. A failure can be temporary (a full disk, no
+  network), so each run tries once more. It reads only the state of the unit (`ActiveState`, `ExecMainStatus`) and the
+  existence of the empty safe-mode file, never the content of a file of the service user.
+
+When OpenBot is not running or runs its safe mode, `openbot` commands that need the control socket
+say that the start loop stopped it, and name `openbot-nc logs`, `sudo openbot-nc update <file or URL>` and
+`sudo openbot-nc restart`. The safe mode has no control socket.
+
+A Docker container has no systemd and no `openbot-nc-update.timer`. There the safe mode ends after one
+hour with exit 78, and the restart policy starts the container again, with the backoff of Docker.
+Each second start after a halt tries again.
+
+There is no install or rollback action in the safe mode: a newer release is the fix, through the
+update paths above.
 
 ## Display size
 
 A self-hosted server gives the agents a virtual display (Xvfb), and computer use reads that display.
 The default size is 1280x800. A [Docker](docker.md#environment) container uses the same setting
-and the same default. A hosted server gives the agents its boat desktop, and this setting does not
-change that desktop.
+and the same default.
 
 The display size does not change the OpenBot browser (`openbot_browser`). Its pages have their own
 size, 1200x800 when no panel shows them, and its clicks go to page elements.
@@ -276,48 +286,36 @@ A 1280x800 screenshot is not made smaller by any Claude or Codex model.
 
 ## Phone app
 
-The phone app has no email sign-in. It signs in with a Mobile Connect code. A server has no screen
-for the code, so `openbot-nc mobile-connect` shows it in the terminal:
-
-1. Sign in the server with `openbot-nc login`.
-2. Run `openbot-nc mobile-connect`. In a container, run `docker exec -it <container> openbot mobile-connect`.
-3. In the phone app, select **Scan QR code** and scan the code in the terminal.
-
-The code signs the phone in to the account of the server. It works for one sign-in and expires after
-two minutes. The phone then shows all servers of the account, and it opens this server first. The
-phone connects through the account server and Signal, as the desktop app does. The server publishes
-no port.
-
-If the phone app is already connected to the same account from the desktop app, the server is
-already in its server list. Remove a phone from the account in the desktop app, in
-**Settings > Mobile Connect**.
+The phone app connects to the servers of the team through the central server. Issue an identity for
+the phone only (`ca issue ... --device phone`) and import it in the app. The server needs no extra
+step and publishes no port. See [central server](central-server.md#phone-app).
 
 ## Remove
 
-`sudo openbot-nc uninstall` signs out, then removes the service, the units, the AppArmor profile, the
-`openbot-nc` command and the server files in `/opt/OpenBot-NC`. It keeps the home folder of the service user
-and the keyring in `/srv/openbot-nc-hosted`. The keyring has the key of the encrypted data in that home
+`sudo openbot-nc uninstall` removes the service, the units, the AppArmor profile, the `openbot-nc`
+command and the server files in `/opt/OpenBot-NC`. It keeps the home folder of the service user and
+the keyring in `/srv/openbot-nc-hosted`. The keyring has the key of the encrypted data in that home
 folder, so keep or delete the two together. An install with the same `--user` uses them again. To
 delete the data too:
 
 ```sh
-sudo userdel --remove openbot && sudo rm -rf /srv/openbot-nc-hosted
+sudo userdel --remove openbot-nc && sudo rm -rf /srv/openbot-nc-hosted
 ```
 
-The server stays in the server list of the account, offline. Remove it there.
+To keep the server out of the team, revoke its certificate on the central server with `ca revoke`.
 
 ## How it works
 
-`install-server.sh` only downloads the release. It reads `latest-linux.yml`
-(`latest-linux-arm64.yml` on arm64) of the latest GitHub release, checks the SHA-512 of the
-AppImage, unpacks it and runs `resources/hosting/openbot-server-setup` from that release. So the
+`install-server.sh` takes the AppImage that you give (a local file or an https URL), checks its
+SHA-512 when you give one, unpacks it and runs `resources/hosting/openbot-server-setup` from that
+release. So the
 install steps always match the build that they install. A release before this feature has no setup
 file, and the install stops with a message.
 
-`openbot-server-setup` uses the install steps of a hosted server (`openbot-hosted-update`): it
+`openbot-server-setup` uses the install steps of `openbot-hosted-update`: it
 installs the packages in `packages.txt` and `optional-packages.txt`, copies the release to
 `/opt/OpenBot-NC/app`, and installs the scripts, the AppArmor profile and the units. It writes `self`
-to `/opt/OpenBot-NC/hosted/mode` and links `/usr/local/bin/openbot`.
+to `/opt/OpenBot-NC/hosted/mode` and links `/usr/local/bin/openbot-nc`.
 
 apt never removes a package of the computer for OpenBot (`--no-remove`). When a package in
 `packages.txt` needs a removal, the install stops. A package in `optional-packages.txt` is skipped
@@ -337,11 +335,11 @@ capabilities from the programs that `bwrap` starts, and the Claude sandbox ("Wor
 `CAP_SYS_ADMIN` there. With the rule, those programs keep the profile of `bwrap`, for all users of
 the computer. `sudo openbot-nc uninstall` removes the rule.
 
-With `mode` set to `self`, `openbot-hosted-server` does not wait for a claim or for a boat desktop.
-It starts a D-Bus session with an unlocked keyring, as on a hosted server, and runs OpenBot under
+With `mode` set to `self`, `openbot-hosted-server` starts a D-Bus session with an unlocked keyring
+and runs OpenBot under
 Xvfb with `OPENBOT_SERVER=1`. Main (`src/main/server-mode.ts`) then opens the control socket
-`/run/openbot-nc/control.sock` and publishes the host after each sign-in. The
-[watchdog](hosted-servers.md#watchdog) also runs: when main stops updating its heartbeat file for 10
+`/run/openbot-nc/control.sock` and connects to the central server when it has an identity. The
+[watchdog](#watchdog) also runs: when main stops updating its heartbeat file for 10
 minutes, the watchdog stops OpenBot and systemd starts it again.
 
 The server has two Xvfb displays, one in each of two nested `xvfb-run` commands that share one
@@ -353,20 +351,19 @@ display has a window manager (Openbox) and a dark background with the OpenBot lo
 title bars, and a right-click on the empty screen opens a menu with a terminal and a file manager. See
 [Computer Use](architecture/computer-use.md#agent-display-on-a-server).
 
-Updates work as on a hosted server (see [Updates](hosted-servers.md#updates)): the timer stages a
-new release, and it starts at the next boot, or when an owner, an admin or a permitted member
+Updates: the server never downloads a release. `sudo openbot-nc update <file or URL>` or
+`sudo /opt/OpenBot-NC/hosted/openbot-hosted-update stage <file or URL>` stages the AppImage that you
+give. A staged release starts at the next boot, or when an owner, an admin or a permitted member
 installs it in Server Settings > Updates. When an owner turns on the automatic update switch (it is
-off by default), the server also installs it when it is idle. A hosted server always does this, and
-also waits until no connected client uses it. `sudo openbot-nc update` stages, stops the service, applies
-and starts the service again. When a step fails or a signal stops it, the command completes an
-interrupted copy, starts the service, and exits with an error.
+off by default), the server also installs it when it is idle. `sudo openbot-nc update` stages, stops
+the service, applies and starts the service again. When a step fails or a signal stops it, the
+command completes an interrupted copy, starts the service, and exits with an error.
 
 ## Control socket
 
 The `openbot` command talks to main over HTTP on a Unix socket, with form bodies and `key=value`
-text answers, so it needs only `curl`. The routes are `GET /v1/status`, `POST /v1/login/start`,
-`POST /v1/login/verify`, `POST /v1/login/claim`, `POST /v1/name`, `POST /v1/mobile-connect` and
-`POST /v1/logout`.
+text answers, so it needs only `curl`. The routes are `GET /v1/status`, `POST /v1/identity` (the path of an
+identity file), `POST /v1/hosting` and `POST /v1/name`.
 
 Threat model:
 
@@ -375,10 +372,10 @@ Threat model:
   never removes a file at the socket path that is not a socket.
 - Only the service user and root can connect. Agents run as the service user and already have full
   access to its files, its keyring and the OpenBot database, so the socket gives them nothing new.
-- The socket answers a closed list of requests. It never sends the session token, the sign-in
-  code or the claim back, and a value cannot add a line to an answer. A body is at most 4 KiB.
-- Server mode starts only in a packaged Linux build with `OPENBOT_SERVER=1`, and never on a hosted
-  server, which signs in with its claim.
+- The socket answers a closed list of requests. An answer has the identity state, the team, the
+  user, the device, the relay state and the sharing state, never a key. A value cannot add a line to
+  an answer. A body is at most 4 KiB.
+- Server mode starts only in a packaged Linux build with `OPENBOT_SERVER=1`.
 
 ## Not confirmed
 
