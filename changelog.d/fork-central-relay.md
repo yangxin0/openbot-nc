@@ -4,7 +4,13 @@
   [--device <device>]` prints a join code as a link and a QR code. The device makes its own key and
   sends only its public key to `/v1/enroll`, so no identity file with a private key is copied. A code
   works once, for 15 minutes by default. `ca codes` lists the open codes and `ca code cancel` cancels
-  one. "Join with code" in the apps comes in a later version.
+  one.
+- Join a team with a one-time code. The desktop app (Settings > Team and the first start), the web
+  client, the browser extension, the phone app (paste or scan the QR code) and the Linux server
+  (`openbot-nc join`, the code on standard input) take a join code. The device makes its own key, and
+  only its public key goes to the server. A click on an `openbot-nc://enroll` link fills in the code,
+  and the app joins only when you select Join. "Use a code" replaces an identity after a
+  confirmation. The central server must also be on this version.
 - An admin page for the central server on a private address, such as the tailnet address of the
   server (`RELAY_ADMIN_HOST`, port 8992 by default). It shows the root and certificate expiry, the
   teams and members with their connection state, makes and cancels join codes with a QR code, adds

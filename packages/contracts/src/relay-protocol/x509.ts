@@ -169,6 +169,38 @@ export function readRelaySpkiPublicKey(der: Uint8Array): Uint8Array | null {
   }
 }
 
+const P256_ALGORITHM_DER = [
+  0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03,
+  0x01, 0x07,
+];
+const P256_SPKI_HEADER = [0x30, 0x59, ...P256_ALGORITHM_DER, 0x03, 0x42, 0x00];
+const P256_PKCS8_HEADER = [0x30, 0x81, 0x87, 0x02, 0x01, 0x00, ...P256_ALGORITHM_DER, 0x04, 0x6d, 0x30, 0x6b];
+const P256_EC_KEY_VERSION = [0x02, 0x01, 0x01, 0x04, 0x20];
+const P256_EC_PUBLIC_KEY_HEADER = [0xa1, 0x44, 0x03, 0x42, 0x00];
+const P256_SECRET_BYTES = 32;
+const P256_POINT_BYTES = 65;
+const UNCOMPRESSED_POINT = 0x04;
+
+export function encodeRelayP256Spki(point: Uint8Array): Uint8Array<ArrayBuffer> | null {
+  if (!isUncompressedP256Point(point)) return null;
+  return Uint8Array.from([...P256_SPKI_HEADER, ...point]);
+}
+
+export function encodeRelayP256PrivateKey(secret: Uint8Array, point: Uint8Array): Uint8Array<ArrayBuffer> | null {
+  if (secret.byteLength !== P256_SECRET_BYTES || !isUncompressedP256Point(point)) return null;
+  return Uint8Array.from([
+    ...P256_PKCS8_HEADER,
+    ...P256_EC_KEY_VERSION,
+    ...secret,
+    ...P256_EC_PUBLIC_KEY_HEADER,
+    ...point,
+  ]);
+}
+
+function isUncompressedP256Point(point: Uint8Array): boolean {
+  return point.byteLength === P256_POINT_BYTES && point[0] === UNCOMPRESSED_POINT;
+}
+
 export function relayX509NamesEqual(first: RelayX509Name, second: RelayX509Name): boolean {
   if (first.der.byteLength !== second.der.byteLength) return false;
   return first.der.every((byte, index) => byte === second.der[index]);

@@ -13,6 +13,7 @@ export default function SettingsLayout() {
     <Stack screenListeners={sheetBackHaptics} screenOptions={sheetStackOptions(background)}>
       <Stack.Screen name="index" options={{ title: t("mobile.app.route.settings") }} />
       <Stack.Screen name="identity" options={{ title: t("mobile.identity.settings.title") }} />
+      <Stack.Screen name="identity-join" options={{ title: t("mobile.identity.settings.replaceCode") }} />
       <Stack.Screen name="appearance" options={{ title: t("mobile.settings.appearance.title") }} />
       <Stack.Screen name="app-icon" options={{ title: t("mobile.settings.appearance.appIcon") }} />
       <Stack.Screen name="animations" options={{ title: t("mobile.settings.animations.title") }} />

@@ -288,7 +288,7 @@ import {
   decodePasswordManagerResponses,
 } from "./password-manager-decoding";
 import { decodeProviderRuntimeSnapshot } from "./provider-runtime";
-import { decodeRelayImportResult, decodeRelayState } from "./relay-decoding";
+import { decodeRelayImportResult, decodeRelayJoinCodeLink, decodeRelayState } from "./relay-decoding";
 import {
   decodeRoutineResultDeliveries,
   decodeRoutineResultDestination,
@@ -1414,6 +1414,10 @@ const openbotApi: OpenBotDesktopApi = {
     getState: decodeRelayState,
     importIdentity: decodeRelayImportResult,
     replaceIdentity: decodeRelayImportResult,
+    joinWithCode: decodeRelayState,
+    replaceWithCode: decodeRelayState,
+    takePendingJoinCode: decodeRelayJoinCodeLink,
+    openJoinCode: dropInvalid(decodeRelayJoinCodeLink),
     removeIdentity: decodeRelayState,
     setHosting: decodeRelayState,
     unhideHost: decodeRelayState,

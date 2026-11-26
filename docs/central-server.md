@@ -210,8 +210,42 @@ only its public key goes to the server. So no private key leaves the device.
    the private key. The server issues the member certificate with the team authority, exactly as
    `ca issue` does, and sends it with the team chain and the root.
 
-"Join with code" in the desktop, the web client, the browser extension and the phone app comes in a
-later change. The wire format is in `packages/contracts/src/relay-protocol/enrollment.ts`.
+Before the join, a device does not have the root of the team, so it checks the TLS certificate of
+`https://<server>` with the certificate authorities of its system or browser. Use a TLS certificate
+of a public authority for join codes (see
+[Use a TLS certificate of a public authority](#use-a-tls-certificate-of-a-public-authority)). A
+server that has only the certificate of `ca server` works with identity files, not with join codes.
+
+The wire format is in `packages/contracts/src/relay-protocol/enrollment.ts`. The client code is
+`joinRelayWithCode` and `enrollRelayKey` in `packages/team-client/src/relay-join.ts`. Each client
+checks the answer before it keeps the identity: the relay address must be on the server of the code,
+the SHA-256 of the root must be the `root` of the code, the certificate must have the public key of
+the device and the team, user and device of the answer, the root and the team authority must have
+issued it, and it must be valid now. A client keeps nothing when a check fails.
+
+Join with a code in each client:
+
+- **Desktop app**: Settings > Team ("Connect to your team" in the "+" menu of the server list), or
+  "Join with a code" in the first start. Paste the code and select Join. With an identity already,
+  select "Use a code" in Settings > Team: OpenBot-NC asks before it replaces the identity. A click on
+  an `openbot-nc://enroll?...` link opens the same dialog with the code in it, and OpenBot-NC joins
+  only when you select Join. The app makes a P-256 key with `node:crypto` and keeps it encrypted
+  with the identity, the same as an imported identity file.
+- **Linux server**: run `openbot-nc join` and paste the code when the command asks for it, or send
+  it on standard input (`openbot-nc join < code.txt`). The command does not take the code as an
+  argument, so the code does not show in the process list. `--replace` replaces an identity that the
+  server has already, and `--hosting on` shares the agents after the join.
+- **Web client**: paste the code under "Join code" on the identity screen. The `server` of the code
+  must be the host of the page, else the page shows an error and sends nothing. In Settings > Team
+  identity, "Use a code" replaces the identity. The browser keeps its key in IndexedDB, and the key
+  cannot be exported.
+- **Browser extension**: paste the code under "Join code" in the side panel. The extension sends the
+  request to `https://<server>/v1/enroll`. It needs no host permission, because the server permits
+  requests from any origin.
+- **Phone app**: paste the code, or select "Scan QR code" and scan the QR code of the code. The
+  iPhone Camera app opens an `openbot-nc://enroll?...` link in the app with the code filled in; the
+  app joins only when you tap Join. Settings > Team identity > "Replace with a code" asks before it
+  replaces the identity. The phone keeps the identity in its keychain, on this device only.
 
 Each code works once. A used, expired, cancelled or unknown code gets the same answer
 (`code_unknown`). When the certificate cannot be made after the server took the code, the code stays

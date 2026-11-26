@@ -381,6 +381,7 @@ type WebWorkspaceProps = {
   accountName: string;
   relay: WebRelayConnection;
   onRemoveIdentity: () => Promise<void>;
+  onJoinIdentity: (code: string) => Promise<void>;
   createRuntime?: WebRuntimeFactory | undefined;
   language: AppLanguage;
   onChangeLanguage: (language: AppLanguage) => void;
@@ -2987,6 +2988,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                         appearance={props.appearance}
                         onChangeAppearance={props.onChangeAppearance}
                         onRemoveIdentity={removeIdentity}
+                        onJoinIdentity={props.onJoinIdentity}
                         notifications={notificationSettings}
                         notificationFocusRequest={notificationFocusRequest()}
                         keyboardFocusRequest={keyboardFocusRequest()}

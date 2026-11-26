@@ -40,6 +40,7 @@ interface MobileSessionContextValue {
   sessionScope: number;
   endedKey: SessionEndKey | null;
   importIdentity: (text: string) => Promise<void>;
+  joinWithCode: (text: string) => Promise<void>;
   removeIdentity: () => Promise<void>;
 }
 
@@ -157,14 +158,23 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     return () => clearTimeout(timer);
   }, [expiresAt, foreground]);
 
-  const importIdentity = useCallback(
-    async (text: string) => {
-      const identity = await phoneIdentityStore.importText(text);
+  const adoptIdentity = useCallback(
+    (identity: RelayBrowserIdentity) => {
       if (sessionRef.current && sessionRef.current.identity.keyId !== identity.keyId) deletePhoneCopy();
       setEndedKey(null);
       setCurrentSession(identity);
     },
     [setCurrentSession],
+  );
+
+  const importIdentity = useCallback(
+    async (text: string) => adoptIdentity(await phoneIdentityStore.importText(text)),
+    [adoptIdentity],
+  );
+
+  const joinWithCode = useCallback(
+    async (text: string) => adoptIdentity(await phoneIdentityStore.joinWithCode(text)),
+    [adoptIdentity],
   );
 
   const removeIdentity = useCallback(async () => {
@@ -181,9 +191,10 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
       sessionScope: sessionScope.current,
       endedKey,
       importIdentity,
+      joinWithCode,
       removeIdentity,
     }),
-    [sessionState, endedKey, importIdentity, removeIdentity],
+    [sessionState, endedKey, importIdentity, joinWithCode, removeIdentity],
   );
 
   return <MobileSessionContext.Provider value={value}>{children}</MobileSessionContext.Provider>;

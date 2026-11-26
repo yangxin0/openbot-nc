@@ -9,8 +9,15 @@ export type { RelayMemoryKey, RelayPublicKey };
 
 export type RelayPrivateKey = RelayKeyHandle;
 
+export interface RelaySigningKey {
+  publicKey: Uint8Array<ArrayBuffer>;
+  privateKey: RelayPrivateKey;
+  pkcs8: Uint8Array<ArrayBuffer> | null;
+}
+
 export interface RelayCrypto extends RelayTunnelCrypto {
   importPrivateKey(pkcs8: Uint8Array<ArrayBuffer>): Promise<RelayPrivateKey>;
+  generateSigningKey(): Promise<RelaySigningKey>;
   sign(privateKey: RelayPrivateKey, data: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>>;
 }
 
@@ -23,6 +30,11 @@ const RELAY_TAG_BITS = 128;
 
 export const webRelayCrypto: RelayCrypto = {
   importPrivateKey: (pkcs8) => crypto.subtle.importKey("pkcs8", pkcs8, RELAY_ECDSA_P256, false, ["sign"]),
+  async generateSigningKey() {
+    const pair = await crypto.subtle.generateKey(RELAY_ECDSA_P256, false, ["sign", "verify"]);
+    const publicKey = new Uint8Array(await crypto.subtle.exportKey("spki", pair.publicKey));
+    return { publicKey, privateKey: pair.privateKey, pkcs8: null };
+  },
   async sign(privateKey, data) {
     return new Uint8Array(await crypto.subtle.sign(RELAY_ECDSA_SHA256, webKey(privateKey), data));
   },

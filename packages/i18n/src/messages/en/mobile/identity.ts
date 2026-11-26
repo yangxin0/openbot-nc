@@ -10,6 +10,16 @@ export const messages = defineMessages("mobile.identity", {
   "mobile.identity.pastePlaceholder": "Paste the text of the identity file",
   "mobile.identity.usePasted": "Use pasted identity",
   "mobile.identity.chooseFile": "Choose file",
+  "mobile.identity.joinTitle": "Join with a code",
+  "mobile.identity.joinHelp":
+    "Your administrator gives you a one-time code as a link or a QR code. This phone makes its own key, and only its public key goes to the server.",
+  "mobile.identity.joinLabel": "Join code",
+  "mobile.identity.joinPlaceholder": "Paste the join code",
+  "mobile.identity.join": "Join",
+  "mobile.identity.scan": "Scan QR code",
+  "mobile.identity.scanTitle": "Scan join code",
+  "mobile.identity.scanNoCode": "This QR code is not a join code.",
+  "mobile.identity.fileTitle": "Or use an identity file",
   "mobile.identity.error.invalid": "This identity file is not valid.",
   "mobile.identity.error.keyUnsupported": "This app supports only an unencrypted ECDSA P-256 private key.",
   "mobile.identity.error.keyMismatch": "The private key is not the key of the certificate.",
@@ -50,4 +60,10 @@ export const messages = defineMessages("mobile.identity", {
   "mobile.identity.settings.removeBody":
     "This phone deletes the identity, the saved copy of your servers and chats, and the chat backdrop. The servers keep all data.",
   "mobile.identity.settings.removeHint": "To use the app again, paste or choose an identity file.",
+  "mobile.identity.settings.replaceCode": "Replace with a code",
+  "mobile.identity.settings.replaceCodeHint": "Join with a new one-time code, for example when this identity expires.",
+  "mobile.identity.settings.replaceCodeTitle": "Replace the identity?",
+  "mobile.identity.settings.replaceCodeBody":
+    "This phone then uses the identity of the new code. The current identity stops working on this phone.",
+  "mobile.identity.settings.replaceCodeConfirm": "Replace",
 });

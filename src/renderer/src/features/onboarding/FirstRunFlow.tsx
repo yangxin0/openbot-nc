@@ -27,6 +27,7 @@ export interface FirstRunFlowProps extends SetupProviderProps {
   teamBusy?: boolean;
   teamError?: string | null;
   onConnectTeam?: () => void;
+  onJoinTeamWithCode?: (() => void) | undefined;
 }
 
 const TEAM_SIZE = 7;
@@ -343,6 +344,7 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
                         teamName={props.teamName}
                         teamBusy={props.teamBusy}
                         onConnectTeam={props.onConnectTeam}
+                        onJoinTeamWithCode={props.onJoinTeamWithCode}
                       />
                     }
                   >

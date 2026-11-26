@@ -129,6 +129,14 @@ function issue(environment: Record<string, string>, user: string, device: string
   return bundle;
 }
 
+function joinCode(user: string, device: string): string {
+  const result = command(environment, "ca", "code", "--team", TEAM, "--user", user, "--device", device);
+  assert.equal(result.status, 0, result.output);
+  const line = result.output.split("\n").find((entry) => entry.trim().startsWith("openbot-nc://enroll?"));
+  assert.ok(line, "ca code must print a join code.");
+  return line.trim();
+}
+
 function spkiDigest(certificate: string): string {
   const spki = new X509Certificate(certificate).publicKey.export({ type: "spki", format: "der" });
   return createHash("sha256").update(spki).digest("base64");
@@ -352,9 +360,9 @@ let page: Page | null = null;
 const watch: PageWatch = { errors: [], violations: [] };
 const screenshots: string[] = [];
 
-async function screenshot(target: Page, name: string): Promise<void> {
+async function screenshot(target: Page, name: string, settle = false): Promise<void> {
   const path = join(OUT, name);
-  await target.screenshot({ path });
+  await target.screenshot({ path, animations: settle ? "disabled" : "allow" });
   screenshots.push(path);
 }
 
@@ -507,6 +515,65 @@ try {
       await second.close();
     }
   });
+
+  await check(
+    "A join code on the identity screen joins, the host shows, and Replace with a code joins again",
+    async () => {
+      const third = await browser?.newContext({ viewport: VIEWPORT });
+      assert.ok(third);
+      try {
+        const joinPage = await openWebClient(third, origin, watch);
+        await identityHeading(joinPage).waitFor({ timeout: WAIT_MS });
+        const joinField = joinPage.getByRole("textbox", { name: english("settings.team.join.label") });
+        const joinButton = joinPage.getByRole("button", { name: english("settings.team.join.action"), exact: true });
+        await joinField.waitFor({ timeout: WAIT_MS });
+        await screenshot(joinPage, "identity-join.png", true);
+        const otherServer = joinCode("carol", "laptop").replace(/server=[^&]+/u, "server=relay.example.com");
+        await joinField.fill(otherServer);
+        await joinButton.click();
+        await joinPage.getByText(english("error.remote.relayJoinOtherServer")).waitFor({ timeout: WAIT_MS });
+        await screenshot(joinPage, "identity-join-error.png");
+        await joinField.fill(joinCode("carol", "browser"));
+        await joinButton.click();
+        await agentInSidebar(joinPage).waitFor({ timeout: WAIT_MS });
+        await screenshot(joinPage, "joined.png");
+        await joinPage
+          .getByRole("button", { name: english("app.rail.settings") })
+          .first()
+          .click();
+        await joinPage.getByRole("button", { name: english("settings.team.replaceCode.action") }).click();
+        await joinPage
+          .getByRole("alertdialog", { name: english("settings.team.replaceCode.confirmTitle") })
+          .getByRole("button", { name: english("settings.team.replaceCode.confirm") })
+          .click();
+        const dialog = joinPage.getByRole("alertdialog", { name: english("settings.team.join.title") });
+        await dialog
+          .getByRole("textbox", { name: english("settings.team.join.label") })
+          .fill(joinCode("carol", "tablet"));
+        await screenshot(joinPage, "replace-with-code.png", true);
+        await dialog.getByRole("button", { name: english("settings.team.join.action"), exact: true }).click();
+        await dialog.waitFor({ state: "detached", timeout: WAIT_MS });
+        await agentInSidebar(joinPage).waitFor({ timeout: WAIT_MS });
+        const device = await joinPage.evaluate(async () => {
+          const database = await new Promise<IDBDatabase>((resolveDatabase, reject) => {
+            const request = indexedDB.open("openbot-relay-identity", 1);
+            request.onsuccess = () => resolveDatabase(request.result);
+            request.onerror = () => reject(request.error);
+          });
+          const saved = await new Promise<unknown>((resolveSaved, reject) => {
+            const request = database.transaction("identity").objectStore("identity").get("current");
+            request.onsuccess = () => resolveSaved(request.result);
+            request.onerror = () => reject(request.error);
+          });
+          database.close();
+          return typeof saved === "object" && saved !== null && "device" in saved ? saved.device : null;
+        });
+        assert.equal(device, "tablet");
+      } finally {
+        await third.close();
+      }
+    },
+  );
 
   await check("Remove identity in the account settings returns to the identity screen", async () => {
     await openPage

@@ -7,6 +7,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 import { useMobileSession } from "@/features/auth/context/mobile-session-context";
+import { JoinCodeSection } from "@/features/identity/components/join-code-section";
 import {
   PhoneIdentityError,
   type PhoneIdentityErrorKey,
@@ -44,9 +45,10 @@ async function readPickedIdentity(): Promise<string | null> {
 export function IdentityScreen() {
   const { t } = useText();
   const insets = useSafeAreaInsets();
-  const { importIdentity, endedKey } = useMobileSession();
+  const { importIdentity, joinWithCode, endedKey } = useMobileSession();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState<"paste" | "file" | null>(null);
+  const [joining, setJoining] = useState(false);
   const [errorKey, setErrorKey] = useState<PhoneIdentityErrorKey | null>(null);
   const shownKey = errorKey ?? endedKey;
 
@@ -82,6 +84,15 @@ export function IdentityScreen() {
           {t("mobile.identity.phoneHelp")}
         </Typography.Paragraph>
       </View>
+      <JoinCodeSection
+        disabled={busy !== null}
+        onBusyChange={setJoining}
+        onJoin={async (code) => {
+          await joinWithCode(code);
+          return true;
+        }}
+      />
+      <Typography.Heading type="h4">{t("mobile.identity.fileTitle")}</Typography.Heading>
       <SheetFormField
         label={t("mobile.identity.pasteLabel")}
         placeholder={t("mobile.identity.pastePlaceholder")}
@@ -94,20 +105,20 @@ export function IdentityScreen() {
         tall
         autoCapitalize="none"
         autoCorrect={false}
-        editable={busy === null}
+        editable={busy === null && !joining}
         error={shownKey ? t(shownKey) : undefined}
       />
       <View className="gap-3">
         <Button
           size="lg"
           variant="primary"
-          isDisabled={busy !== null || text.trim().length === 0}
+          isDisabled={busy !== null || joining || text.trim().length === 0}
           onPress={() => void use("paste")}
         >
           {busy === "paste" ? <Spinner size="sm" /> : null}
           <Button.Label className="font-sans font-semibold">{t("mobile.identity.usePasted")}</Button.Label>
         </Button>
-        <Button size="lg" variant="secondary" isDisabled={busy !== null} onPress={() => void use("file")}>
+        <Button size="lg" variant="secondary" isDisabled={busy !== null || joining} onPress={() => void use("file")}>
           {busy === "file" ? <Spinner size="sm" /> : null}
           <Button.Label className="font-sans font-semibold">{t("mobile.identity.chooseFile")}</Button.Label>
         </Button>

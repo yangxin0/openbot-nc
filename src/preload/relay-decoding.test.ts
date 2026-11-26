@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from "vitest";
-import { decodeRelayImportResult, decodeRelayState } from "./relay-decoding";
+import { decodeRelayImportResult, decodeRelayJoinCodeLink, decodeRelayState } from "./relay-decoding";
 
 const IDENTITY = {
   team: "Acme",
@@ -80,5 +80,40 @@ describe("decodeRelayImportResult", () => {
   it("rejects an unknown result", () => {
     expect(() => decodeRelayImportResult({ status: "replaced" })).toThrow();
     expect(() => decodeRelayImportResult(null)).toThrow();
+  });
+});
+
+describe("decodeRelayJoinCodeLink", () => {
+  const LINK = `openbot-nc://enroll?v=1&server=relay.example.com&code=${"0".repeat(26)}&root=${"r".repeat(43)}`;
+
+  it("keeps a join code link, without the spaces around it", () => {
+    expect(decodeRelayJoinCodeLink(LINK)).toBe(LINK);
+    expect(decodeRelayJoinCodeLink(`  ${LINK}\n`)).toBe(LINK);
+  });
+
+  it.each([
+    ["no link", null],
+    ["a number", 7],
+    ["a different link", "openbot-nc://plugin/example"],
+    ["a code of the wrong length", LINK.replace("0".repeat(26), "0".repeat(25))],
+    ["an unknown field", `${LINK}&token=secret`],
+    ["a root fingerprint of the wrong length", LINK.replace("r".repeat(43), "r".repeat(42))],
+  ])("drops %s", (_name, value) => {
+    expect(decodeRelayJoinCodeLink(value)).toBeNull();
+  });
+});
+
+describe("join with code results", () => {
+  it("keep the relay state and drop secret fields", () => {
+    const decoded = decodeRelayState({
+      ...STATE,
+      identity: { ...IDENTITY, privateKey: "-----BEGIN PRIVATE KEY-----" },
+    });
+    expect(decoded).toEqual(STATE);
+  });
+
+  it("reject a result that is not a relay state", () => {
+    expect(() => decodeRelayState({ status: "imported", state: STATE })).toThrow();
+    expect(() => decodeRelayState(undefined)).toThrow();
   });
 });

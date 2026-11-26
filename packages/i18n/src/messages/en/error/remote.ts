@@ -159,4 +159,24 @@ export const messages = defineMessages("error.remote", {
   "error.remote.relayProtocol": "The relay server sent data that OpenBot-NC cannot read.",
   "error.remote.relayUnreachable": "OpenBot-NC cannot connect to the relay server. It tries again.",
   "error.remote.relayHostingNotSaved": "OpenBot-NC could not save the hosting choice. Try again.",
+  "error.remote.relayJoinInvalidCode":
+    "This is not a join code. Paste the whole code: it starts with openbot-nc://enroll.",
+  "error.remote.relayJoinOtherServer": "This join code is for a different server. Use a code for this server.",
+  "error.remote.relayJoinKeyUnavailable": "OpenBot-NC cannot make a key on this device.",
+  "error.remote.relayJoinUnreachable":
+    "OpenBot-NC cannot connect to the server of this join code. Check the network and try again.",
+  "error.remote.relayJoinInvalidResponse": "The server of this join code sent an answer that OpenBot-NC cannot read.",
+  "error.remote.relayJoinRefused": "The server refused the join request. Make sure that OpenBot-NC is up to date.",
+  "error.remote.relayJoinCodeUnknown": "This code is not valid any more. Ask for a new one.",
+  "error.remote.relayJoinProofInvalid": "The server did not accept the key of this device. Ask for a new code.",
+  "error.remote.relayJoinRateLimited": "The server refused too many join requests. Wait a minute and try again.",
+  "error.remote.relayJoinUnavailable":
+    "The server cannot make a certificate now. Try again later, or ask for a new code.",
+  "error.remote.relayJoinServerMismatch": "The server sent the address of a different server. OpenBot-NC did not join.",
+  "error.remote.relayJoinRootMismatch":
+    "The root certificate of the server is not the root of this code. OpenBot-NC did not join.",
+  "error.remote.relayJoinCertificateInvalid":
+    "The server sent a certificate that is not valid for this code. OpenBot-NC did not join.",
+  "error.remote.relayJoinNotInDate":
+    "The new certificate is not valid at this time. Check the date and time of this device.",
 });

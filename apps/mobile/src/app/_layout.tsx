@@ -162,6 +162,7 @@ function RootNavigator() {
                 </Stack.Protected>
                 <Stack.Screen name="incoming-link" options={{ headerShown: false }} />
                 <Stack.Screen name="incoming-share" options={{ headerShown: false }} />
+                <Stack.Screen name="scan-join-code" options={{ title: t("mobile.identity.scanTitle") }} />
               </Stack>
             </View>
           ) : null}

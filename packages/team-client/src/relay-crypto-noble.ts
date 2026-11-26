@@ -2,7 +2,12 @@ import { gcm } from "@noble/ciphers/aes.js";
 import { p256 } from "@noble/curves/nist.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { readRelayP256PrivateKey, readRelaySpkiPublicKey } from "@openbot/contracts/relay-protocol/x509";
+import {
+  encodeRelayP256PrivateKey,
+  encodeRelayP256Spki,
+  readRelayP256PrivateKey,
+  readRelaySpkiPublicKey,
+} from "@openbot/contracts/relay-protocol/x509";
 import { owned, type RelayCrypto, type RelayMemoryKey, type RelayPrivateKey } from "./relay-crypto";
 
 export interface NobleRelayCryptoOptions {
@@ -36,6 +41,14 @@ export function createNobleRelayCrypto(options: NobleRelayCryptoOptions): RelayC
       const secret = readRelayP256PrivateKey(pkcs8);
       if (!secret || !p256.utils.isValidSecretKey(secret)) throw new Error("The private key cannot be read.");
       return memoryKey(secrets, secret);
+    },
+    async generateSigningKey() {
+      const secret = p256.utils.randomSecretKey(randomBytes(p256.lengths.seed ?? P256_SEED_BYTES));
+      const point = p256.getPublicKey(secret, false);
+      const publicKey = encodeRelayP256Spki(point);
+      const pkcs8 = encodeRelayP256PrivateKey(secret, point);
+      if (!publicKey || !pkcs8) throw new Error("The new key cannot be encoded.");
+      return { publicKey, privateKey: memoryKey(secrets, secret), pkcs8 };
     },
     async sign(privateKey, data) {
       const secret = secrets.get(privateKey);

@@ -1,7 +1,11 @@
 import { APP_LINK_PROTOCOL, APP_LINK_SCHEME } from "@openbot/contracts/app-identity";
 import { parsePluginUrl } from "@openbot/contracts/plugin-links";
+import { parseRelayJoinCode } from "@openbot/contracts/relay-protocol/enrollment";
 
-export type DeepLink = { kind: "plugin"; slug: string } | { kind: "mcp-auth"; state: string; code: string };
+export type DeepLink =
+  | { kind: "plugin"; slug: string }
+  | { kind: "mcp-auth"; state: string; code: string }
+  | { kind: "relay-join"; code: string };
 
 const MCP_OAUTH_HOST = "mcp-auth";
 
@@ -12,6 +16,7 @@ export function parseDeepLink(value: string): DeepLink | null {
     return { kind: "plugin", slug: parsePluginUrl(value) };
   } catch {}
 
+  if (parseRelayJoinCode(value)) return { kind: "relay-join", code: value.trim() };
   return parseMcpAuthUrl(value);
 }
 

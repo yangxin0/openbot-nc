@@ -37,8 +37,9 @@ import type { JSX } from "@solidjs/web";
 import { createEffect, createSignal, For, Show } from "solid-js";
 import { useText } from "../../text";
 import { type IntegrationStatus, StatusPill } from "./IntegrationLayout";
+import { RelayJoinCodeDialog, RelayJoinCodeForm } from "./RelayJoinCode";
 
-export type TeamAction = "import" | "replace" | "remove" | "hosting" | "unhide";
+export type TeamAction = "import" | "replace" | "join" | "remove" | "hosting" | "unhide";
 
 export interface TeamActionError {
   action: TeamAction;
@@ -55,6 +56,7 @@ export interface SettingsTeamTabProps {
   browser?: boolean;
   onImport?: () => void;
   onReplace?: () => void;
+  onJoinCode?: (code: string, replace: boolean) => Promise<boolean>;
   onRemove: () => Promise<unknown>;
   onSetHosting?: (enabled: boolean) => void;
   onUnhide: (serverId: string) => void;
@@ -113,7 +115,8 @@ function memberOrder(left: RelayMemberSummary, right: RelayMemberSummary): numbe
 
 export function SettingsTeamTab(props: SettingsTeamTabProps) {
   const { t } = useText();
-  const [confirm, setConfirm] = createSignal<"replace" | "remove" | null>(null);
+  const [confirm, setConfirm] = createSignal<"replace" | "replaceCode" | "remove" | null>(null);
+  const [joinDialogOpen, setJoinDialogOpen] = createSignal(false);
   const identity = () => props.state?.identity ?? null;
   const copy = () => (props.browser ? BROWSER_COPY : COMPUTER_COPY);
   const errorFor = (...actions: TeamAction[]) => {
@@ -150,7 +153,14 @@ export function SettingsTeamTab(props: SettingsTeamTabProps) {
               <Show when={state().identityIssue}>{(issue) => <IdentityIssue message={issue()} />}</Show>
               <Show
                 when={identity()}
-                fallback={<NoIdentity busy={props.busy === "import"} onImport={props.onImport} />}
+                fallback={
+                  <NoIdentity
+                    busy={props.busy}
+                    joinError={errorFor("join")}
+                    onImport={props.onImport}
+                    onJoinCode={props.onJoinCode ? (code) => void props.onJoinCode?.(code, false) : undefined}
+                  />
+                }
               >
                 {(current) => (
                   <IdentityFacts identity={current()} control={state().control} receivedAt={props.receivedAt} />
@@ -210,6 +220,26 @@ export function SettingsTeamTab(props: SettingsTeamTabProps) {
                       </ItemActions>
                     </Item>
                   </Show>
+                  <Show when={props.onJoinCode}>
+                    <Item data-settings-row="settings.team.replaceCode.title" class="settings-modal-row">
+                      <ItemContent>
+                        <ItemTitle>{t("settings.team.replaceCode.title")}</ItemTitle>
+                        <ItemDescription>{t("settings.team.replaceCode.description")}</ItemDescription>
+                      </ItemContent>
+                      <ItemActions>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          loading={props.busy === "join"}
+                          disabled={props.busy !== null && props.busy !== "join"}
+                          onClick={() => setConfirm("replaceCode")}
+                        >
+                          {t("settings.team.replaceCode.action")}
+                        </Button>
+                      </ItemActions>
+                    </Item>
+                  </Show>
                   <Item data-settings-row="settings.team.remove.title" class="settings-modal-row">
                     <ItemContent>
                       <ItemTitle>{t("settings.team.remove.title")}</ItemTitle>
@@ -248,6 +278,29 @@ export function SettingsTeamTab(props: SettingsTeamTabProps) {
         }}
       />
       <ConfirmDialog
+        open={confirm() === "replaceCode"}
+        tone="default"
+        icon={<RotateCcw />}
+        title={t("settings.team.replaceCode.confirmTitle")}
+        description={t("settings.team.replaceCode.confirmDescription")}
+        confirmLabel={t("settings.team.replaceCode.confirm")}
+        onCancel={() => setConfirm(null)}
+        onConfirm={() => {
+          setConfirm(null);
+          setJoinDialogOpen(true);
+        }}
+      />
+      <RelayJoinCodeDialog
+        open={joinDialogOpen()}
+        code=""
+        busy={props.busy === "join"}
+        error={errorFor("join")}
+        onCancel={() => setJoinDialogOpen(false)}
+        onJoin={async (code) => {
+          if (await props.onJoinCode?.(code, true)) setJoinDialogOpen(false);
+        }}
+      />
+      <ConfirmDialog
         open={confirm() === "remove"}
         title={t("settings.team.remove.confirmTitle")}
         description={t(copy().removeConfirmDescription)}
@@ -276,7 +329,12 @@ function TeamLoading(props: { shown: boolean }) {
   );
 }
 
-function NoIdentity(props: { busy: boolean; onImport: (() => void) | undefined }) {
+function NoIdentity(props: {
+  busy: TeamAction | null;
+  joinError: string | null;
+  onImport: (() => void) | undefined;
+  onJoinCode: ((code: string) => void) | undefined;
+}) {
   const { t } = useText();
   return (
     <div class="settings-team-empty">
@@ -289,13 +347,25 @@ function NoIdentity(props: { busy: boolean; onImport: (() => void) | undefined }
       <Text variant="caption" tone="muted">
         {t("settings.team.empty.description")}
       </Text>
+      <Show when={props.onJoinCode}>
+        {(joinCode) => (
+          <RelayJoinCodeForm
+            busy={props.busy === "join"}
+            disabled={props.busy !== null && props.busy !== "join"}
+            error={props.joinError}
+            onJoin={(code) => joinCode()(code)}
+          />
+        )}
+      </Show>
       <Show when={props.onImport}>
         {(importIdentity) => (
           <Button
             type="button"
             size="sm"
-            loading={props.busy}
+            variant={props.onJoinCode ? "outline" : undefined}
+            loading={props.busy === "import"}
             loadingLabel={t("settings.team.importing")}
+            disabled={props.busy !== null && props.busy !== "import"}
             onClick={() => importIdentity()()}
           >
             <Upload aria-hidden="true" />

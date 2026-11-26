@@ -18,7 +18,9 @@ import {
   removeRelayIdentity,
   saveRelayIdentity,
   startRelayControl,
+  webRelayCrypto,
 } from "@openbot/team-client/relay-client";
+import { joinRelayWithCode, relayJoinErrorKey } from "@openbot/team-client/relay-join";
 
 export type WebPeerActions = { current: RelayTeamPeerActions };
 export type WebPeer = ReturnType<typeof createRelayTeamPeer>;
@@ -56,6 +58,7 @@ export class WebIdentityImportError extends Error {
 }
 
 const CONTROL_LOCK = "openbot.web.relay-control";
+const WEB_ENROLL_LABEL = "Web client";
 const CONTROL_CHANNEL = "openbot.web.relay";
 
 const FINAL_CODES: ReadonlySet<RelaySocketErrorCode | "stopped"> = new Set([
@@ -112,6 +115,22 @@ export async function importWebIdentity(
   return identity;
 }
 
+export async function joinWebIdentity(store: RelayIdentityKeyStore, code: string): Promise<RelayBrowserIdentity> {
+  let identity: RelayBrowserIdentity;
+  try {
+    const joined = await joinRelayWithCode(code, {
+      crypto: webRelayCrypto,
+      label: WEB_ENROLL_LABEL,
+      ...(import.meta.env.DEV ? {} : { server: window.location.host }),
+    });
+    identity = pageRelayIdentity(joined.identity);
+    await saveRelayIdentity(store, identity);
+  } catch (error) {
+    throw new WebIdentityImportError(identityErrorKey(error));
+  }
+  return identity;
+}
+
 export async function removeWebIdentity(store: RelayIdentityKeyStore): Promise<void> {
   try {
     await removeRelayIdentity(store);
@@ -135,6 +154,8 @@ function sameServer(relayUrl: string, pageRelay: string): boolean {
 
 export function identityErrorKey(error: unknown): AppTextKey {
   if (error instanceof WebIdentityImportError) return error.key;
+  const joinKey = relayJoinErrorKey(error);
+  if (joinKey) return joinKey;
   if (!(error instanceof RelayIdentityError)) return "webClient.identity.error.storage";
   switch (error.code) {
     case "invalid_bundle":

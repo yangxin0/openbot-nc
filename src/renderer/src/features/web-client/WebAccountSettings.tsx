@@ -45,7 +45,7 @@ import { SettingsKeyboardTab } from "../settings/SettingsKeyboardTab";
 import { relaySnapshotSignal } from "./WebRelayNotice";
 import { setWebChatBackground, useWebChatBackground } from "./web-chat-background";
 import type { WebNotificationSettings } from "./web-notification-settings";
-import { relayStateKey, type WebRelayConnection } from "./web-relay";
+import { relayStateKey, WebIdentityImportError, type WebRelayConnection } from "./web-relay";
 
 const TABS = ["team", "preferences", "keyboard"] as const;
 type WebAccountSettingsTab = (typeof TABS)[number];
@@ -81,6 +81,7 @@ export interface WebAccountSettingsProps {
   appearance: AppAppearance;
   onChangeAppearance: (appearance: AppAppearance) => void;
   onRemoveIdentity: () => Promise<void>;
+  onJoinIdentity: (code: string) => Promise<void>;
   notifications: WebNotificationSettings;
   notificationFocusRequest?: { serverId: string; nonce: number } | null | undefined;
   keyboardFocusRequest?: number | null | undefined;
@@ -110,8 +111,8 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
   createEffect(relaySnapshot, () => {
     setReceivedAt(Date.now());
   });
-  const [removing, setRemoving] = createSignal(false);
-  const [removeError, setRemoveError] = createSignal<TeamActionError | null>(null);
+  const [busy, setBusy] = createSignal<"remove" | "join" | null>(null);
+  const [teamError, setTeamError] = createSignal<TeamActionError | null>(null);
   const relayState = (): RelayState => {
     const snapshot = relaySnapshot();
     const { identity } = props.relay;
@@ -154,14 +155,30 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
     };
   };
   async function removeIdentity(): Promise<void> {
-    setRemoving(true);
-    setRemoveError(null);
+    setBusy("remove");
+    setTeamError(null);
     try {
       await props.onRemoveIdentity();
     } catch (error) {
-      setRemoveError({ action: "remove", message: errorMessage(error, t("settings.team.error.remove")) });
+      setTeamError({ action: "remove", message: errorMessage(error, t("settings.team.error.remove")) });
     } finally {
-      setRemoving(false);
+      setBusy(null);
+    }
+  }
+  async function joinIdentity(code: string): Promise<boolean> {
+    setBusy("join");
+    setTeamError(null);
+    try {
+      await props.onJoinIdentity(code);
+      return true;
+    } catch (error) {
+      setTeamError({
+        action: "join",
+        message: error instanceof WebIdentityImportError ? t(error.key) : t("settings.team.error.join"),
+      });
+      return false;
+    } finally {
+      setBusy(null);
     }
   }
   const navItem = () => TAB_ITEMS[activeTab()];
@@ -222,10 +239,11 @@ export default function WebAccountSettings(props: WebAccountSettingsProps) {
             state={relayState()}
             receivedAt={receivedAt()}
             loadError={null}
-            busy={removing() ? "remove" : null}
+            busy={busy()}
             unhidingServerId={null}
-            error={removeError()}
+            error={teamError()}
             onRemove={removeIdentity}
+            onJoinCode={joinIdentity}
             onUnhide={() => undefined}
             onRetryLoad={() => undefined}
           />

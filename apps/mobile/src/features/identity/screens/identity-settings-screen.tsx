@@ -1,4 +1,5 @@
 import type { RelayControlState } from "@openbot/team-client/relay-client";
+import { router } from "expo-router";
 import { Typography } from "heroui-native";
 import { useState } from "react";
 import { Alert } from "react-native";
@@ -80,6 +81,11 @@ export function IdentitySettingsScreen() {
         </SettingsRow>
         <SettingsRow description={t(connectionKey(snapshot.state))}>
           <Typography.Paragraph>{t("mobile.identity.settings.connection")}</Typography.Paragraph>
+        </SettingsRow>
+      </SettingsSection>
+      <SettingsSection footer={t("mobile.identity.settings.replaceCodeHint")}>
+        <SettingsRow disabled={busy} onPress={() => router.push("/settings/identity-join")}>
+          <Typography.Paragraph>{t("mobile.identity.settings.replaceCode")}</Typography.Paragraph>
         </SettingsRow>
       </SettingsSection>
       <SettingsSection footer={t("mobile.identity.settings.removeHint")}>

@@ -17,7 +17,8 @@ import {
   requiredNumber,
   requiredString,
 } from "@openbot/contracts/ipc-decoding";
-import { type DynamicRecord, isOneOf } from "@openbot/contracts/runtime-values";
+import { parseRelayJoinCode } from "@openbot/contracts/relay-protocol/enrollment";
+import { type DynamicRecord, isOneOf, isString } from "@openbot/contracts/runtime-values";
 
 function identity(value: unknown): RelayIdentitySummary | null {
   if (value === null) return null;
@@ -81,4 +82,8 @@ export function decodeRelayImportResult(value: unknown): RelayImportResult {
   if (record.status === "canceled") return { status: "canceled" };
   if (record.status !== "imported") throw new Error("Invalid relay import result.");
   return { status: "imported", state: decodeRelayState(record.state) };
+}
+
+export function decodeRelayJoinCodeLink(value: unknown): string | null {
+  return isString(value) && parseRelayJoinCode(value) !== null ? value.trim() : null;
 }

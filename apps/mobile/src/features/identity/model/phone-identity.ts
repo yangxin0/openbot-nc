@@ -6,6 +6,12 @@ import {
   type RelayCrypto,
   RelayIdentityError,
 } from "@openbot/team-client/relay-client";
+import {
+  joinRelayWithCode,
+  type RelayJoinTextKey,
+  relayJoinError,
+  relayJoinErrorKey,
+} from "@openbot/team-client/relay-join";
 
 export interface PhoneSecureStore {
   getItemAsync(key: string): Promise<string | null>;
@@ -16,6 +22,7 @@ export interface PhoneSecureStore {
 export interface PhoneIdentityStore {
   load(): Promise<RelayBrowserIdentity | null>;
   importText(text: string): Promise<RelayBrowserIdentity>;
+  joinWithCode(text: string): Promise<RelayBrowserIdentity>;
   remove(): Promise<void>;
 }
 
@@ -41,6 +48,7 @@ export const PHONE_IDENTITY_KEY = "openbot.relay-identity.v1";
 export const PHONE_IDENTITY_PART_LENGTH = 2000;
 const PHONE_IDENTITY_MAX_PARTS = 40;
 const STORED_VERSION = 1;
+const PHONE_ENROLL_LABEL = "Phone app";
 
 export function phoneIdentityPartKey(index: number): string {
   return `${PHONE_IDENTITY_KEY}.part.${index}`;
@@ -62,6 +70,26 @@ export function createPhoneIdentityStore(store: PhoneSecureStore, crypto: RelayC
   const remove = async () => {
     await store.deleteItemAsync(PHONE_IDENTITY_KEY);
     await removeParts(0);
+  };
+  const importText = async (text: string) => {
+    let identity: RelayBrowserIdentity;
+    let parts: string[];
+    try {
+      identity = await read(text);
+      parts = splitParts(storedBundleText(text));
+    } catch (error) {
+      throw new PhoneIdentityError(phoneIdentityErrorKey(error));
+    }
+    try {
+      await store.deleteItemAsync(PHONE_IDENTITY_KEY);
+      for (const [index, part] of parts.entries()) await store.setItemAsync(phoneIdentityPartKey(index), part);
+      await removeParts(parts.length);
+      await store.setItemAsync(PHONE_IDENTITY_KEY, JSON.stringify({ version: STORED_VERSION, parts: parts.length }));
+    } catch {
+      await remove().catch(() => undefined);
+      throw new PhoneIdentityError("mobile.identity.error.storage");
+    }
+    return identity;
   };
   return {
     async load() {
@@ -88,25 +116,11 @@ export function createPhoneIdentityStore(store: PhoneSecureStore, crypto: RelayC
         throw new PhoneIdentityError(phoneIdentityErrorKey(error));
       }
     },
-    async importText(text) {
-      let identity: RelayBrowserIdentity;
-      let parts: string[];
-      try {
-        identity = await read(text);
-        parts = splitParts(storedBundleText(text));
-      } catch (error) {
-        throw new PhoneIdentityError(phoneIdentityErrorKey(error));
-      }
-      try {
-        await store.deleteItemAsync(PHONE_IDENTITY_KEY);
-        for (const [index, part] of parts.entries()) await store.setItemAsync(phoneIdentityPartKey(index), part);
-        await removeParts(parts.length);
-        await store.setItemAsync(PHONE_IDENTITY_KEY, JSON.stringify({ version: STORED_VERSION, parts: parts.length }));
-      } catch {
-        await remove().catch(() => undefined);
-        throw new PhoneIdentityError("mobile.identity.error.storage");
-      }
-      return identity;
+    importText,
+    async joinWithCode(text) {
+      const joined = await joinRelayWithCode(text, { crypto, label: PHONE_ENROLL_LABEL });
+      if (joined.bundleText === null) throw relayJoinError("key_unavailable");
+      return importText(joined.bundleText);
     },
     async remove() {
       try {
@@ -116,6 +130,12 @@ export function createPhoneIdentityStore(store: PhoneSecureStore, crypto: RelayC
       }
     },
   };
+}
+
+export type PhoneJoinErrorKey = PhoneIdentityErrorKey | RelayJoinTextKey;
+
+export function phoneJoinErrorKey(error: unknown): PhoneJoinErrorKey {
+  return relayJoinErrorKey(error) ?? phoneIdentityErrorKey(error);
 }
 
 export function phoneIdentityErrorKey(error: unknown): PhoneIdentityErrorKey {

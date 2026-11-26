@@ -1,4 +1,5 @@
 import type { RelayDesktopApi, RelayMemberSummary, RelayState } from "@openbot/contracts/ipc";
+import { parseRelayJoinCode } from "@openbot/contracts/relay-protocol/enrollment";
 import { sourceText } from "@openbot/i18n/source";
 import { clone } from "./mock-support";
 
@@ -138,6 +139,17 @@ export function createMockRelay(options: MockRelayOptions = {}): RelayDesktopApi
       return { status: "imported", state: imported() };
     },
     replaceIdentity: async () => ({ status: "imported", state: imported() }),
+    joinWithCode: async (code) => {
+      if (!parseRelayJoinCode(code)) throw new Error(sourceText("error.remote.relayJoinInvalidCode"));
+      if (model.imported) throw new Error(sourceText("error.remote.relayIdentityExists"));
+      return imported();
+    },
+    replaceWithCode: async (code) => {
+      if (!parseRelayJoinCode(code)) throw new Error(sourceText("error.remote.relayJoinInvalidCode"));
+      return imported();
+    },
+    takePendingJoinCode: async () => null,
+    onOpenJoinCode: () => () => undefined,
     removeIdentity: async () => {
       model.imported = false;
       model.offline = false;

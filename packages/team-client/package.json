@@ -16,6 +16,7 @@
     "./relay-crypto": "./src/relay-crypto.ts",
     "./relay-crypto-noble": "./src/relay-crypto-noble.ts",
     "./relay-identity": "./src/relay-identity.ts",
+    "./relay-join": "./src/relay-join.ts",
     "./relay-socket": "./src/relay-socket.ts",
     "./relay-v2-tunnels": "./src/relay-v2-tunnels.ts",
     "./request-id": "./src/request-id.ts",

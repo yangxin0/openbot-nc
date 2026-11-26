@@ -134,6 +134,14 @@ function issue(environment: Record<string, string>, user: string, device: string
   return bundle;
 }
 
+function joinCode(user: string, device: string): string {
+  const result = command(environment, "ca", "code", "--team", TEAM, "--user", user, "--device", device);
+  assert.equal(result.status, 0, result.output);
+  const line = result.output.split("\n").find((entry) => entry.trim().startsWith("openbot-nc://enroll?"));
+  assert.ok(line, "ca code must print a join code.");
+  return line.trim();
+}
+
 function spkiDigest(certificate: string): string {
   const spki = new X509Certificate(certificate).publicKey.export({ type: "spki", format: "der" });
   return createHash("sha256").update(spki).digest("base64");
@@ -658,6 +666,29 @@ try {
       await identityHeading(page).waitFor({ timeout: WAIT_MS });
     },
   );
+
+  await check("A join code in the side panel joins and shows the host, and the identity has its device", async () => {
+    const page = panel;
+    assert.ok(page);
+    const joinField = page.getByRole("textbox", { name: english("settings.team.join.label") });
+    await joinField.fill("openbot-nc://enroll?v=1");
+    await page.getByRole("button", { name: english("settings.team.join.action"), exact: true }).click();
+    await page.getByText(english("error.remote.relayJoinInvalidCode")).waitFor({ timeout: WAIT_MS });
+    await screenshot(page, "identity-join-error.png");
+    await joinField.fill(joinCode("dana", "extension"));
+    await screenshot(page, "identity-join.png");
+    await page.getByRole("button", { name: english("settings.team.join.action"), exact: true }).click();
+    await agentRow(page).waitFor({ timeout: WAIT_MS });
+    await screenshot(page, "joined.png");
+    await page.getByRole("button", { name: english("extension.home.serverMenu") }).click();
+    await page.getByRole("menuitem", { name: english("extension.home.settings") }).click();
+    await page.getByText("dana", { exact: true }).waitFor({ timeout: WAIT_MS });
+    await page.getByText("extension", { exact: true }).waitFor({ timeout: WAIT_MS });
+    await page.getByRole("button", { name: english("settings.team.remove.title") }).click();
+    const confirm = page.getByRole("region", { name: english("settings.team.remove.confirmTitle") });
+    await confirm.getByRole("button", { name: english("settings.team.remove.confirm") }).click();
+    await identityHeading(page).waitFor({ timeout: WAIT_MS });
+  });
 
   await check("A picked identity file imports after the removal", async () => {
     const page = panel;

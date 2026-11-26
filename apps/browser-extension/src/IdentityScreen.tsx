@@ -10,9 +10,11 @@ import {
   Field,
   Input,
   KeyRound,
+  Text,
   Textarea,
   Upload,
 } from "@openbot/ui";
+import { RelayJoinCodeForm } from "@openbot/ui/features/settings/RelayJoinCode";
 import { useText } from "@openbot/ui/text";
 import { createStore, Show } from "solid-js";
 import { type IdentitySource, identityErrorKey } from "./extension-identity";
@@ -22,12 +24,19 @@ const variant = import.meta.env.DEV ? "dev" : "production";
 export function IdentityScreen(props: {
   error: AppTextKey | null;
   onImport: (source: IdentitySource) => Promise<void>;
+  onJoin: (code: string) => Promise<void>;
 }) {
   const { t } = useText();
-  const [state, setState] = createStore<{ text: string; busy: "text" | "file" | null; error: AppTextKey | null }>({
+  const [state, setState] = createStore<{
+    text: string;
+    busy: "text" | "file" | "code" | null;
+    error: AppTextKey | null;
+    joinError: AppTextKey | null;
+  }>({
     text: "",
     busy: null,
     error: null,
+    joinError: null,
   });
   let fileInput: HTMLInputElement | undefined;
   const shownError = () => state.error ?? props.error;
@@ -41,6 +50,24 @@ export function IdentityScreen(props: {
     } catch (error) {
       setState((draft) => {
         draft.error = identityErrorKey(error);
+      });
+    } finally {
+      setState((draft) => {
+        draft.busy = null;
+      });
+    }
+  }
+  async function join(code: string): Promise<void> {
+    setState((draft) => {
+      draft.busy = "code";
+      draft.error = null;
+      draft.joinError = null;
+    });
+    try {
+      await props.onJoin(code);
+    } catch (error) {
+      setState((draft) => {
+        draft.joinError = identityErrorKey(error);
       });
     } finally {
       setState((draft) => {
@@ -75,6 +102,15 @@ export function IdentityScreen(props: {
           <p id="extension-identity-description" class="account-login-description">
             {t("extension.identity.description")}
           </p>
+          <RelayJoinCodeForm
+            busy={state.busy === "code"}
+            disabled={state.busy !== null && state.busy !== "code"}
+            error={state.joinError ? t(state.joinError) : null}
+            onJoin={(code) => void join(code)}
+          />
+          <Text class="ext-identity-or" tone="muted" variant="caption">
+            {t("webClient.identity.fileOption")}
+          </Text>
           <form
             class="account-login-form"
             onSubmit={(event) => {

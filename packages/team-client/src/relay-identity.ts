@@ -69,11 +69,20 @@ export interface RelayIdentityReadOptions {
   crypto?: RelayCrypto;
 }
 
+export interface RelayIdentityParts {
+  relayUrl: string | null;
+  team: string;
+  user: string;
+  device: string | null;
+  certificate: string;
+  chain: readonly string[];
+  root: string;
+}
+
 export async function readRelayIdentityText(
   text: string,
   options: RelayIdentityReadOptions = {},
 ): Promise<RelayBrowserIdentity> {
-  const now = options.now ?? Date.now();
   const crypto = options.crypto ?? webRelayCrypto;
   if (text.length > RELAY_IDENTITY_TEXT_LIMIT) throw refused("invalid_bundle", "The identity file is too large.");
   let value: unknown;
@@ -84,20 +93,38 @@ export async function readRelayIdentityText(
   }
   const bundle = decodeRelayIdentityBundle(value);
   if (!bundle) throw refused("invalid_bundle", "The identity file is not valid.");
+  return verifiedIdentity(bundle, () => importPrivateKey(bundle.privateKey, crypto), options);
+}
+
+export function verifyRelayIdentity(
+  parts: RelayIdentityParts,
+  privateKey: RelayPrivateKey,
+  options: RelayIdentityReadOptions = {},
+): Promise<RelayBrowserIdentity> {
+  return verifiedIdentity(parts, async () => privateKey, options);
+}
+
+async function verifiedIdentity(
+  parts: RelayIdentityParts,
+  loadPrivateKey: () => Promise<RelayPrivateKey>,
+  options: RelayIdentityReadOptions,
+): Promise<RelayBrowserIdentity> {
+  const now = options.now ?? Date.now();
+  const crypto = options.crypto ?? webRelayCrypto;
   const [leaf = null, root = null, ...authorities] = await Promise.all([
-    readRelayCertificate(bundle.certificate, crypto),
-    readRelayCertificate(bundle.root, crypto),
-    ...bundle.chain.map((pem) => readRelayCertificate(pem, crypto)),
+    readRelayCertificate(parts.certificate, crypto),
+    readRelayCertificate(parts.root, crypto),
+    ...parts.chain.map((pem) => readRelayCertificate(pem, crypto)),
   ]);
   const chain = authorities.filter((certificate) => certificate !== null);
   if (!leaf || !root || leaf.authority || chain.length !== authorities.length) {
     throw refused("invalid_bundle", "A certificate in the identity file cannot be used.");
   }
   const names = relayCertificateNames(leaf);
-  if (!names || names.team !== bundle.team || names.user !== bundle.user || names.device !== bundle.device) {
+  if (!names || names.team !== parts.team || names.user !== parts.user || names.device !== parts.device) {
     throw refused("invalid_bundle", "The certificate does not name the team, user and device of the identity file.");
   }
-  const privateKey = await importPrivateKey(bundle.privateKey, crypto);
+  const privateKey = await loadPrivateKey();
   if (!isRelayP256Certificate(leaf) || !(await keyMatches(privateKey, leaf, crypto))) {
     throw refused("key_mismatch", "The private key is not the key of the certificate.");
   }
@@ -109,7 +136,7 @@ export async function readRelayIdentityText(
   }
   for (const issuer of path.slice(0, -1)) {
     const issuerNames = relayCertificateNames(issuer);
-    if (!issuerNames || (issuerNames.team !== null && issuerNames.team !== bundle.team)) {
+    if (!issuerNames || (issuerNames.team !== null && issuerNames.team !== parts.team)) {
       throw refused("untrusted_chain", "The team authority is for a different team.");
     }
   }
@@ -121,14 +148,14 @@ export async function readRelayIdentityText(
   if (now >= expiresAt) throw refused("expired", "The certificate is expired.");
   if (now < startsAt) throw refused("not_yet_valid", "The certificate is not valid yet.");
   return {
-    relayUrl: bundle.relayUrl,
-    team: bundle.team,
-    user: bundle.user,
-    device: bundle.device,
+    relayUrl: parts.relayUrl,
+    team: parts.team,
+    user: parts.user,
+    device: parts.device,
     keyId: leaf.keyId,
-    certificate: bundle.certificate,
-    chain: [...bundle.chain],
-    root: bundle.root,
+    certificate: parts.certificate,
+    chain: [...parts.chain],
+    root: parts.root,
     startsAt,
     expiresAt,
     privateKey,

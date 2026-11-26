@@ -12,6 +12,11 @@ usage() {
 Usage: openbot-nc <command>
 
   status                         Show the identity, the relay connection and the server.
+  join [--replace] [--hosting on|off]
+                                 Join a team with a one-time join code from your relay
+                                 server. Paste the code when the command asks for it, or
+                                 send it on standard input. The server makes its own key.
+                                 --replace changes an identity that the server has already.
   import-identity <file> [--replace] [--hosting on|off]
                                  Import the identity file that the "ca issue" command of
                                  your relay server made. The server then joins its team.
@@ -108,6 +113,8 @@ check_answer() {
       invalid_request) message="Give on or off." ;;
       invalid_name) message="Enter a server name." ;;
       identity_refused) message="OpenBot refused the identity file." ;;
+      invalid_code) message="Give a join code." ;;
+      join_refused) message="OpenBot could not join with this code." ;;
       hosting_failed) message="OpenBot could not change the hosting." ;;
       *) message="OpenBot refused the request ($(value error))." ;;
     esac
@@ -126,7 +133,7 @@ show_status() {
   echo "OpenBot $(value version)"
   case $identity in
     ready) echo "Identity: user $(value user)${device:+ ($device)} in the team $(value team)" ;;
-    missing) echo "Identity: none. Import an identity file with: openbot-nc import-identity <file>" ;;
+    missing) echo "Identity: none. Join with a code: openbot-nc join. Or import an identity file: openbot-nc import-identity <file>" ;;
     *) echo "Identity: OpenBot cannot use its identity file. $(value identity_message)" ;;
   esac
   if [ "$identity" = ready ]; then
@@ -179,6 +186,40 @@ import_identity_command() {
   [ -n "$file" ] || fail "Usage: openbot-nc import-identity <file> [--replace] [--hosting on|off]"
   path=$(readlink -f "$file") && [ -f "$path" ] || fail "$file is not a file."
   control POST /v1/identity "path=$path" ${replace:+"replace=1"}
+  check_answer || exit 1
+  if [ -n "$hosting" ]; then
+    control POST /v1/hosting "enabled=$hosting"
+    check_answer || exit 1
+  fi
+  show_status
+}
+
+join_command() {
+  local replace="" hosting="" code=""
+  while [ "$#" -gt 0 ]; do
+    case $1 in
+      --replace)
+        replace=1
+        shift
+        ;;
+      --hosting)
+        [ "$#" -ge 2 ] || fail "Add on or off after --hosting."
+        case $2 in on | off) hosting=$2 ;; *) fail "Add on or off after --hosting." ;; esac
+        shift 2
+        ;;
+      *) fail "Usage: openbot-nc join [--replace] [--hosting on|off]. Paste the join code when the command asks for it." ;;
+    esac
+  done
+  if [ -t 0 ]; then
+    read -rsp "Paste the join code, then press Enter: " code
+    echo >&2
+  else
+    IFS= read -r code || [ -n "$code" ] || true
+  fi
+  code=${code//[[:space:]]/}
+  [ -n "$code" ] || fail "Give a join code. It starts with openbot-nc://enroll?"
+  control POST /v1/join "code=$code" ${replace:+"replace=1"}
+  code=""
   check_answer || exit 1
   if [ -n "$hosting" ]; then
     control POST /v1/hosting "enabled=$hosting"
@@ -269,6 +310,7 @@ command=${1:-}
 case $command in
   status) status_command ;;
   import-identity) import_identity_command "$@" ;;
+  join) join_command "$@" ;;
   hosting)
     case ${1:-} in on | off) ;; *) fail "Usage: openbot-nc hosting on|off" ;; esac
     control POST /v1/hosting "enabled=$1"

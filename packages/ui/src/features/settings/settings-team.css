@@ -100,3 +100,7 @@
 .settings-team-members-empty {
   padding: var(--openbot-space-2) 0;
 }
+
+.settings-team-empty > .relay-join-form {
+  margin-top: var(--openbot-space-2);
+}

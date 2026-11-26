@@ -15,6 +15,11 @@
 
 ### Added
 
+- Join with a one-time code. Paste the code, or select "Scan QR code" and scan it. The iPhone Camera
+  app opens a join code link in the app with the code filled in, and the app joins only when you tap
+  Join. The phone makes its own key, and only its public key goes to the server. Settings > Team
+  identity > "Replace with a code" replaces the identity after a confirmation.
+
 - End-to-end encryption between the phone and your OpenBots. The central server cannot read or
   change chats or files in transit. All OpenBots, the web client, the extension and the phone must
   run this version.

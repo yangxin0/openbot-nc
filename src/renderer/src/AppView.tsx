@@ -8,6 +8,7 @@ import { createLanguageStep } from "./features/onboarding/language-step";
 import { useSetup } from "./features/onboarding/onboarding-context";
 import { SetupReadError } from "./features/onboarding/SetupReadError";
 import { useSetupProviderProps } from "./features/onboarding/setup-provider-props";
+import { RelayJoinCodeHost } from "./features/relay/RelayJoinCodeHost";
 import { useRelay } from "./features/relay/relay-context";
 import { useServerScope } from "./features/servers/server-scope";
 import { useServerSelection } from "./features/servers/server-selection";
@@ -136,9 +137,10 @@ export function AppAccessGate() {
                         existingServers={accountServers()}
                         onOpenServer={openServerDuringSetup}
                         teamName={relay.view.state?.identity?.team ?? null}
-                        teamBusy={relay.view.busy === "import"}
+                        teamBusy={relay.view.busy === "import" || relay.view.busy === "join"}
                         teamError={relay.view.error?.action === "import" ? relay.view.error.message : null}
                         onConnectTeam={platform.landingPreview ? undefined : () => void relay.importIdentity()}
+                        onJoinTeamWithCode={platform.landingPreview ? undefined : () => relay.requestJoin("")}
                       />
                     </Loading>
                   </Show>
@@ -156,6 +158,9 @@ export function AppAccessGate() {
       </Show>
       <WhatsNewOverlay ready={!platform.chatWindow && !updateRequired() && !splashShown() && workspaceShown()} />
       <QuitShortcutHint />
+      <Show when={!platform.chatWindow && !platform.landingPreview}>
+        <RelayJoinCodeHost />
+      </Show>
       <Show when={splashShown()}>
         <AppLoadingScreen
           label={t("app.loading")}

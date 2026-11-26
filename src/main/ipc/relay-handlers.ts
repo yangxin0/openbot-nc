@@ -1,4 +1,5 @@
 import type { RelayImportResult } from "@openbot/contracts/ipc";
+import { RELAY_JOIN_CODE_TEXT_LIMIT } from "@openbot/contracts/relay-protocol/enrollment";
 import { isBoolean } from "@openbot/contracts/runtime-values";
 import type { AppTranslate } from "@openbot/i18n";
 import { sourceText } from "@openbot/i18n/source";
@@ -9,15 +10,20 @@ import { handler, type IpcGroupHandlers, payloadHandler } from "./define-ipc-gro
 import { stringPayload } from "./validation";
 
 export interface RelayIpcDependencies {
-  relay: Pick<RelayService, "state" | "importFile" | "removeIdentity" | "setHosting" | "unhideHost">;
+  relay: Pick<RelayService, "state" | "importFile" | "joinWithCode" | "removeIdentity" | "setHosting" | "unhideHost">;
   getMainWindow: () => BrowserWindow | null;
   translate: AppTranslate;
+  takePendingJoinCode: () => string | null;
 }
+
+const DESKTOP_ENROLL_LABEL = "Desktop app";
+const joinCodePayload = stringPayload("The join code", 4 * RELAY_JOIN_CODE_TEXT_LIMIT);
 
 export function relayIpcHandlers({
   relay,
   getMainWindow,
   translate,
+  takePendingJoinCode,
 }: RelayIpcDependencies): Pick<IpcGroupHandlers, "relay"> {
   const chooseIdentityFile = async (): Promise<string | null> => {
     const parent = getMainWindow();
@@ -40,6 +46,13 @@ export function relayIpcHandlers({
       getState: handler(() => relay.state()),
       importIdentity: handler(() => importChosenFile(false)),
       replaceIdentity: handler(() => importChosenFile(true)),
+      joinWithCode: payloadHandler(joinCodePayload, (code) =>
+        runCauseEffect(relay.joinWithCode(code, false, DESKTOP_ENROLL_LABEL)),
+      ),
+      replaceWithCode: payloadHandler(joinCodePayload, (code) =>
+        runCauseEffect(relay.joinWithCode(code, true, DESKTOP_ENROLL_LABEL)),
+      ),
+      takePendingJoinCode: handler(takePendingJoinCode),
       removeIdentity: handler(() => runCauseEffect(relay.removeIdentity())),
       setHosting: payloadHandler(parseHostingChoice, (enabled) => runCauseEffect(relay.setHosting(enabled))),
       unhideHost: payloadHandler(stringPayload("serverId"), (serverId) => runCauseEffect(relay.unhideHost(serverId))),

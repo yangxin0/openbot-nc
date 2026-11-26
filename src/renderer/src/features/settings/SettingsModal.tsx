@@ -317,6 +317,7 @@ export function SettingsModal(props: SettingsModalProps) {
             error={relay.view.error}
             onImport={() => void relay.importIdentity()}
             onReplace={() => void relay.replaceIdentity()}
+            onJoinCode={relay.joinWithCode}
             onRemove={relay.removeIdentity}
             onSetHosting={(enabled) => void relay.setHosting(enabled)}
             onUnhide={(serverId) => void relay.unhideHost(serverId)}

@@ -16,6 +16,7 @@ import type { ServerMemory } from "./server-memory";
 const CONTROL_SOCKET_FILE = "control.sock";
 const MAX_BODY_BYTES = 4096;
 const MAX_PATH_LENGTH = 4096;
+const SERVER_ENROLL_LABEL = "Linux server";
 
 export interface ServerModeEnvironment {
   controlSocketPath: string;
@@ -49,7 +50,7 @@ function parseSetupPagePort(value: string | undefined): number | null {
 export interface ServerModeOptions {
   environment: ServerModeEnvironment;
   version: string;
-  relay: Pick<RelayService, "state" | "importFile" | "setHosting" | "resumeHosting">;
+  relay: Pick<RelayService, "state" | "importFile" | "joinWithCode" | "setHosting" | "resumeHosting">;
   host: Pick<HostService, "getStatus" | "configure" | "updateIdentity">;
   memory: (Pick<ServerMemory, "level" | "sample"> & { turnLimit(): number | "unlimited" }) | null;
   onError: (message: string, error: unknown) => void;
@@ -179,6 +180,8 @@ export class ServerMode {
         return this.#status();
       case "POST /v1/identity":
         return runCauseEffect(this.#importIdentity(body.get("path") ?? "", body.get("replace") === "1"));
+      case "POST /v1/join":
+        return runCauseEffect(this.#join(body.get("code") ?? "", body.get("replace") === "1"));
       case "POST /v1/hosting":
         return runCauseEffect(this.#setHosting(body.get("enabled") ?? ""));
       case "POST /v1/name":
@@ -236,6 +239,20 @@ export class ServerMode {
     if (Result.isFailure(imported)) {
       const { cause } = imported.failure;
       return failure(400, "identity_refused", cause instanceof Error ? cause.message : null);
+    }
+    return this.#status();
+  });
+
+  readonly #join = Effect.fn("ServerMode.join")(function* (
+    this: ServerMode,
+    code: string,
+    replace: boolean,
+  ): Effect.fn.Return<Answer, RemoteWorkflowError> {
+    if (code.trim() === "") return failure(400, "invalid_code");
+    const joined = yield* this.#options.relay.joinWithCode(code, replace, SERVER_ENROLL_LABEL).pipe(Effect.result);
+    if (Result.isFailure(joined)) {
+      const { cause } = joined.failure;
+      return failure(400, "join_refused", cause instanceof Error ? cause.message : null);
     }
     return this.#status();
   });

@@ -1201,6 +1201,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:relay-admin
 
+      - name: Run the relay join with code E2E test
+        if: ${{ !cancelled() }}
+        run: bun run test:relay-join-code
+
       - name: Upload the relay E2E reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -1213,6 +1217,7 @@ jobs:
             .openbot-build/relay-team-api-e2e/
             .openbot-build/relay-client-team-e2e/
             .openbot-build/relay-mobile-client-e2e/
+            .openbot-build/relay-join-code-e2e/
             .openbot-build/relay-tunnel-encryption-e2e/
             .openbot-build/relay-admin-e2e/
           if-no-files-found: ignore

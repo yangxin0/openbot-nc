@@ -73,6 +73,7 @@ const relay: ServerModeOptions["relay"] = {
       };
       return structuredClone(relayState);
     }),
+  joinWithCode: () => Effect.fail(new RelaySetupError({ cause: new Error(INVALID_IDENTITY) })),
   resumeHosting: () => Effect.void,
 };
 
@@ -130,6 +131,7 @@ interface Checks {
   controlRefusals?: Record<string, number>;
   identityMissing?: { heading: string; command: boolean };
   invalidImport?: { status: number; error: string | undefined; message: string | undefined };
+  joinRoute?: { empty: string | undefined; refused: string | undefined };
   imported?: { status: number; identity: string | undefined; team: string | undefined; user: string | undefined };
   notShared?: string;
   shared?: { hosting: string | undefined; heading: string };
@@ -223,6 +225,15 @@ try {
     assert.equal(invalid.lines.error, "identity_refused");
     assert.equal(invalid.lines.message, INVALID_IDENTITY);
     checks.invalidImport = { status: invalid.status, error: invalid.lines.error, message: invalid.lines.message };
+
+    const emptyCode = await control("POST", "/v1/join", { code: " " });
+    assert.equal(emptyCode.status, 400);
+    assert.equal(emptyCode.lines.error, "invalid_code");
+    const refusedCode = await control("POST", "/v1/join", { code: "openbot-nc://enroll?v=1" });
+    assert.equal(refusedCode.status, 400);
+    assert.equal(refusedCode.lines.error, "join_refused");
+    assert.equal(refusedCode.lines.message, INVALID_IDENTITY);
+    checks.joinRoute = { empty: emptyCode.lines.error, refused: refusedCode.lines.error };
 
     const imported = await control("POST", "/v1/identity", { path: IDENTITY_PATH });
     assert.equal(imported.status, 200);

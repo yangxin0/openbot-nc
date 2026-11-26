@@ -128,6 +128,14 @@ function issue(environment: Record<string, string>, file: string, user: string, 
   assert.equal(result.status, 0, result.output);
 }
 
+function joinCode(environment: Record<string, string>, user: string, device: string): string {
+  const result = command(environment, "ca", "code", "--team", TEAM, "--user", user, "--device", device);
+  assert.equal(result.status, 0, result.output);
+  const line = result.output.split("\n").find((entry) => entry.trim().startsWith("openbot-nc://enroll?"));
+  assert.ok(line, "ca code must print a join code.");
+  return line.trim();
+}
+
 interface Relay {
   child: ChildProcess;
   log: string[];
@@ -201,7 +209,12 @@ function newProfiles(): { instanceId: string; host: AppProfile; member: AppProfi
   }
 }
 
-function startStack(instanceId: string, hostSwitches: string[], memberSwitches: string[]): Stack {
+function startStack(
+  instanceId: string,
+  hostSwitches: string[],
+  memberSwitches: string[],
+  extraCertificates: string,
+): Stack {
   const logFile = createWriteStream(join(OUT, "stack.log"));
   const child = spawn("bun", ["scripts/dev-services.ts", "test-client"], {
     cwd: ROOT,
@@ -209,6 +222,7 @@ function startStack(instanceId: string, hostSwitches: string[], memberSwitches: 
       ...process.env,
       OPENBOT_DEV_INSTANCE_ID: instanceId,
       OPENBOT_DEV_WINDOW_FOCUS: "background",
+      NODE_EXTRA_CA_CERTS: extraCertificates,
       OPENBOT_DEV_ELECTRON_ARGS: JSON.stringify(hostSwitches),
       OPENBOT_DEV_TEST_CLIENT_ELECTRON_ARGS: JSON.stringify(memberSwitches),
     },
@@ -585,6 +599,7 @@ try {
     created.instanceId,
     [`--import-relay-identity=${hostIdentityFile}`, "--relay-hosting=on"],
     [`--import-relay-identity=${memberIdentityFile}`],
+    join(dataDirectory, "ca", "root.crt"),
   );
   stack = running;
   const [host, member] = await Promise.all([
@@ -726,6 +741,43 @@ try {
       await session.detach().catch(() => undefined);
       await image.close();
     }
+  });
+
+  await check("The member joins with a code in Settings > Team, and Replace with a code joins again", async () => {
+    await openServerMenu(memberPage);
+    await chooseMenuItem(memberPage, "Connect to your team");
+    await memberPage.getByRole("heading", { name: "Team identity" }).waitFor({ state: "visible", timeout: WAIT_MS });
+    await memberPage.getByRole("textbox", { name: "Join code" }).fill(joinCode(environment, "joiner", "laptop-2"));
+    await screenshot(memberPage, "member-join-code.png");
+    await memberPage.getByRole("button", { name: "Join", exact: true }).click();
+    await memberPage
+      .getByText("laptop-2", { exact: true })
+      .first()
+      .waitFor({ state: "visible", timeout: WAIT_MS })
+      .catch(async (error: unknown) => {
+        const alerts = await memberPage.getByRole("alert").allInnerTexts();
+        throw new Error(`The join did not finish: ${alerts.join(" | ")} ${inspect(error)}`);
+      });
+    const joined = await relayState(memberPage, false, HOST_USER);
+    assert.deepEqual(
+      [joined.identity?.team, joined.identity?.user, joined.identity?.device],
+      [TEAM, "joiner", "laptop-2"],
+    );
+    await memberPage.getByText("joiner", { exact: true }).first().waitFor({ state: "visible", timeout: WAIT_MS });
+    await screenshot(memberPage, "member-joined.png");
+    await memberPage.getByRole("button", { name: "Use a code", exact: true }).click();
+    await memberPage
+      .getByRole("alertdialog", { name: "Replace the team identity?" })
+      .getByRole("button", { name: "Continue", exact: true })
+      .click();
+    const dialog = memberPage.getByRole("alertdialog", { name: "Join with a code" });
+    await dialog.getByRole("textbox", { name: "Join code" }).fill(joinCode(environment, "joiner", "laptop-3"));
+    await dialog.getByRole("button", { name: "Join", exact: true }).click();
+    await dialog.waitFor({ state: "detached", timeout: WAIT_MS });
+    const replaced = await relayState(memberPage, false, HOST_USER);
+    assert.equal(replaced.identity?.device, "laptop-3");
+    await memberPage.getByText("laptop-3", { exact: true }).first().waitFor({ state: "visible", timeout: WAIT_MS });
+    await screenshot(memberPage, "member-replaced.png");
   });
 } catch (error) {
   checks.push({ name: "The test runs to its end", passed: false, error: inspect(error) });

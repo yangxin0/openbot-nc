@@ -11,7 +11,11 @@ import {
   type RelaySocketErrorCode,
   removeRelayIdentity,
   saveRelayIdentity,
+  webRelayCrypto,
 } from "@openbot/team-client/relay-client";
+import { joinRelayWithCode, relayJoinErrorKey } from "@openbot/team-client/relay-join";
+
+const EXTENSION_ENROLL_LABEL = "Browser extension";
 
 export type IdentitySource = { text: string } | { file: Blob };
 
@@ -50,6 +54,16 @@ export async function importIdentity(
   }
 }
 
+export async function joinIdentity(store: RelayIdentityKeyStore, code: string): Promise<RelayBrowserIdentity> {
+  try {
+    const { identity } = await joinRelayWithCode(code, { crypto: webRelayCrypto, label: EXTENSION_ENROLL_LABEL });
+    await saveRelayIdentity(store, identity);
+    return identity;
+  } catch (error) {
+    throw new IdentityImportError(identityErrorKey(error));
+  }
+}
+
 export async function removeIdentity(store: RelayIdentityKeyStore): Promise<void> {
   try {
     await removeRelayIdentity(store);
@@ -60,6 +74,8 @@ export async function removeIdentity(store: RelayIdentityKeyStore): Promise<void
 
 export function identityErrorKey(error: unknown): AppTextKey {
   if (error instanceof IdentityImportError) return error.key;
+  const joinKey = relayJoinErrorKey(error);
+  if (joinKey) return joinKey;
   if (!(error instanceof RelayIdentityError)) return "extension.identity.error.storage";
   switch (error.code) {
     case "invalid_bundle":

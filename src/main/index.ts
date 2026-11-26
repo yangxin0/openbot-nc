@@ -909,7 +909,12 @@ function registerIpcHandlers({
       relayHosting: relay,
       remoteServers,
     }),
-    ...relayIpcHandlers({ relay, getMainWindow: getDialogParent, translate: language.translate }),
+    ...relayIpcHandlers({
+      relay,
+      getMainWindow: getDialogParent,
+      translate: language.translate,
+      takePendingJoinCode: () => takePendingDeepLink("relay-join")?.code ?? null,
+    }),
     ...pluginIpcHandlers({
       takePendingPluginSlug: () => takePendingDeepLink("plugin")?.slug ?? null,
     }),
@@ -1157,6 +1162,8 @@ function sendDeepLink(window: BrowserWindow, link: RendererDeepLink): boolean {
   switch (link.kind) {
     case "plugin":
       return sendToRenderer(window, IPC_ENDPOINTS.plugins.openListing, link.slug);
+    case "relay-join":
+      return sendToRenderer(window, IPC_ENDPOINTS.relay.openJoinCode, link.code);
   }
 }
 

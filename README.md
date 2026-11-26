@@ -63,14 +63,25 @@ bun remote/api/src/relay/main.ts ca team add "My Team"
 bun remote/api/src/relay/main.ts serve
 ```
 
-### 2. Make one identity file for each device
+### 2. Make one join code for each device
+
+```sh
+bun remote/api/src/relay/main.ts ca code --team "My Team" --user alice --device laptop
+```
+
+The command prints a one-time link (`openbot-nc://enroll?...`) and a QR code. It works once, for
+15 minutes by default. The device makes its own key and sends only its public key, so no private key
+moves between computers. Make a separate code for each device: the desktop, the web client, the
+extension and the phone. The admin page makes codes too (see
+[central server](docs/central-server.md#admin-page)).
+
+The other way is an identity file that holds the private key:
 
 ```sh
 bun remote/api/src/relay/main.ts ca issue --team "My Team" --user alice --device laptop --out alice-laptop.json
 ```
 
-The file holds a private key. Move it to the device safely, then delete it. Make a separate identity
-for each device: the desktop, the web client, the extension and the phone.
+Move the file to the device safely, then delete it.
 
 ### 3. Install or build the desktop app
 
@@ -88,18 +99,20 @@ Use `bun run dist:win`, `bun run dist:linux` or `bun run dist:linux:arm64` for t
 The local macOS build is not signed. The release workflow builds signed packages in your own GitHub
 repository (see [docs/RELEASING.md](docs/RELEASING.md)).
 
-### 4. Import the identity
+### 4. Join the team
 
-Open Settings > Team, "Connect to your team" in the "+" menu of the server list, or the optional
-"Connect to your team" step of the first start. Paste the identity file or choose it. To share the
-agents of this computer with the team, turn on "Share this computer's agents with my team" in
-Settings > Team. You can also start the app with `--import-relay-identity=<file>` and
-`--relay-hosting=on`.
+Open Settings > Team ("Connect to your team" in the "+" menu of the server list), or use "Join with
+a code" in the first start. Paste the join code and select Join. A click on the `openbot-nc://enroll`
+link opens the same dialog with the code in it; OpenBot-NC joins only when you select Join. To use an
+identity file, select "Import identity file" instead. To share the agents of this computer with the
+team, turn on "Share this computer's agents with my team" in Settings > Team. You can also start the
+app with `--import-relay-identity=<file>` and `--relay-hosting=on`.
 
 ### 5. Use the other clients
 
-- **Linux server**: build the AppImage, then run
-  `sudo bash scripts/install-server.sh --release <AppImage> --identity <file>`. See
+- **Linux server**: build the AppImage, run
+  `sudo bash scripts/install-server.sh --release <AppImage>`, then `openbot-nc join` and paste the
+  join code (or `--identity <file>` at install). See
   [self-hosted servers](docs/self-hosted-server.md) and [Docker](docs/docker.md).
 - **Web client**: build it with `bun run web-client:build`, set `RELAY_WEB_CLIENT_DIR` on the central
   server, and open `https://<your server>/app`. See

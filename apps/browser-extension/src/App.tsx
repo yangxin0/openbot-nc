@@ -22,6 +22,7 @@ import {
   type IdentitySource,
   identityErrorKey,
   importIdentity,
+  joinIdentity,
   loadIdentity,
   openIdentityStore,
   relayFinalCode,
@@ -67,6 +68,13 @@ export function App() {
     setIdentity(next);
   }
 
+  async function joined(code: string): Promise<void> {
+    const next = await joinIdentity(store, code);
+    await clearIdentityData();
+    setLoadError(null);
+    setIdentity(next);
+  }
+
   async function removed(): Promise<void> {
     await removeIdentity(store);
     await clearIdentityData();
@@ -81,7 +89,7 @@ export function App() {
           keyed
           fallback={
             <div class="ext-login">
-              <IdentityScreen error={loadError()} onImport={imported} />
+              <IdentityScreen error={loadError()} onImport={imported} onJoin={joined} />
             </div>
           }
         >

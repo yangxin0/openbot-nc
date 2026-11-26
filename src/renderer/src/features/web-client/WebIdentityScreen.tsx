@@ -18,6 +18,7 @@ import {
   Textarea,
   Upload,
 } from "@openbot/ui";
+import { RelayJoinCodeForm } from "@openbot/ui/features/settings/RelayJoinCode";
 import { useText } from "@openbot/ui/text";
 import { createStore, Show } from "solid-js";
 import { identityErrorKey } from "./web-relay";
@@ -29,13 +30,20 @@ export function WebIdentityScreen(props: {
   language: TranslatedLocale;
   error: AppTextKey | null;
   onImport: (source: WebIdentitySource) => Promise<void>;
+  onJoin: (code: string) => Promise<void>;
   onChangeLanguage: () => void;
 }) {
   const { t } = useText();
-  const [state, setState] = createStore<{ text: string; busy: "text" | "file" | null; error: AppTextKey | null }>({
+  const [state, setState] = createStore<{
+    text: string;
+    busy: "text" | "file" | "code" | null;
+    error: AppTextKey | null;
+    joinError: AppTextKey | null;
+  }>({
     text: "",
     busy: null,
     error: null,
+    joinError: null,
   });
   let fileInput: HTMLInputElement | undefined;
   const shownError = () => state.error ?? props.error;
@@ -49,6 +57,24 @@ export function WebIdentityScreen(props: {
     } catch (error) {
       setState((draft) => {
         draft.error = identityErrorKey(error);
+      });
+    } finally {
+      setState((draft) => {
+        draft.busy = null;
+      });
+    }
+  }
+  async function join(code: string): Promise<void> {
+    setState((draft) => {
+      draft.busy = "code";
+      draft.error = null;
+      draft.joinError = null;
+    });
+    try {
+      await props.onJoin(code);
+    } catch (error) {
+      setState((draft) => {
+        draft.joinError = identityErrorKey(error);
       });
     } finally {
       setState((draft) => {
@@ -76,6 +102,15 @@ export function WebIdentityScreen(props: {
           </Heading>
           <Text tone="muted">{t("webClient.identity.description")}</Text>
         </header>
+        <RelayJoinCodeForm
+          busy={state.busy === "code"}
+          disabled={state.busy !== null && state.busy !== "code"}
+          error={state.joinError ? t(state.joinError) : null}
+          onJoin={(code) => void join(code)}
+        />
+        <Text class="web-identity-or" tone="muted" variant="caption">
+          {t("webClient.identity.fileOption")}
+        </Text>
         <form
           class="web-identity-form"
           onSubmit={(event) => {

@@ -26,6 +26,7 @@ import { createWebLanguagePreference } from "./web-language-preference";
 import {
   identityErrorKey,
   importWebIdentity,
+  joinWebIdentity,
   loadWebIdentity,
   openWebIdentityStore,
   relayFinalCode,
@@ -139,6 +140,17 @@ function WebAppContent(props: { createRuntime?: WebRuntimeFactory }) {
     channel?.postMessage("changed");
   }
 
+  async function joinIdentity(code: string): Promise<void> {
+    const identity = await joinWebIdentity(store, code);
+    loadGeneration += 1;
+    clearSavedWorkspace();
+    setState((draft) => {
+      draft.error = null;
+    });
+    await begin(identity);
+    channel?.postMessage("changed");
+  }
+
   async function removeIdentity(): Promise<void> {
     loadGeneration += 1;
     relay()?.stop();
@@ -196,6 +208,7 @@ function WebAppContent(props: { createRuntime?: WebRuntimeFactory }) {
                   language={resolveLocale(languagePreference.language(), navigator.language)}
                   error={state.error}
                   onImport={importIdentity}
+                  onJoin={joinIdentity}
                   onChangeLanguage={() => setLanguageWheelOpen(true)}
                 />
               </Show>
@@ -212,6 +225,7 @@ function WebAppContent(props: { createRuntime?: WebRuntimeFactory }) {
                     accountName={connection.identity.user}
                     relay={connection}
                     onRemoveIdentity={removeIdentity}
+                    onJoinIdentity={joinIdentity}
                     createRuntime={props.createRuntime}
                     language={languagePreference.language()}
                     onChangeLanguage={languagePreference.setLanguage}

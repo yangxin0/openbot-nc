@@ -70,6 +70,7 @@
 @import "@openbot/ui/features/settings/onepassword-connector.css";
 @import "@openbot/ui/features/settings/slack-integration.css";
 @import "@openbot/ui/features/settings/profile.css";
+@import "@openbot/ui/features/settings/relay-join-code.css";
 @import "@openbot/ui/features/settings/settings-team.css";
 @import "./features/computer-use/computer-use.css";
 @import "./features/servers/server-settings-modal.css";

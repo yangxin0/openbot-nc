@@ -18,6 +18,7 @@
 @import "@openbot/ui/features/channels/channel-activity.css";
 @import "@openbot/ui/styles/settings-panel.css";
 @import "@openbot/ui/features/settings/chat-color-picker.css";
+@import "@openbot/ui/features/settings/relay-join-code.css";
 @import "@openbot/ui/features/agents/avatar-editor.css";
 
 @source "../../../packages/ui/src";
@@ -1211,6 +1212,13 @@ textarea:focus-visible {
     opacity: 0;
     transform: translateY(-4px);
   }
+}
+
+.ext-identity-or {
+  width: 100%;
+  padding-top: var(--openbot-space-2);
+  border-top: 1px solid var(--openbot-border-strong);
+  text-align: center;
 }
 
 .ext-identity-text {

@@ -8,6 +8,7 @@ import type {
   RelayMemberSummary,
   RelayState,
 } from "@openbot/contracts/ipc";
+import { parseRelayJoinCode } from "@openbot/contracts/relay-protocol/enrollment";
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { sourceText } from "@openbot/i18n/source";
 import { type Logger, registerSecretValues, toLogValue } from "@openbot/logging";
@@ -16,6 +17,7 @@ import type { HostService } from "./host-service";
 import type { RelayClientCoordinator } from "./relay/client-coordinator";
 import type { RelayControlState } from "./relay/control";
 import type { RelayIdentity, RelayIdentityError, RelayIdentityStore } from "./relay/identity-store";
+import { joinRelayWithCode } from "./relay/join-code";
 import type { RelaySocketErrorCode } from "./relay/socket";
 import type { RelayHostingPreferenceStore } from "./relay-hosting-preference-store";
 import type { RelayLaunchOptions } from "./relay-launch-options";
@@ -113,6 +115,33 @@ export class RelayService extends EventEmitter<RelayServiceEvents> {
   readonly importFile = Effect.fn("RelayService.importFile")(
     function* (this: RelayService, path: string, replace: boolean): Effect.fn.Return<RelayState, RelaySetupError> {
       yield* this.#saveIdentityFile(path, replace);
+      yield* this.#restart();
+      return this.state();
+    },
+    (operation) => this.#lock.withPermit(operation),
+  ).bind(this);
+
+  readonly joinWithCode = Effect.fn("RelayService.joinWithCode")(
+    function* (
+      this: RelayService,
+      text: string,
+      replace: boolean,
+      label: string,
+    ): Effect.fn.Return<RelayState, RelaySetupError> {
+      const { identity, logger } = this.#options;
+      registerSecretValues(joinCodeSecretParts(text));
+      if (!replace && identity.current() !== null)
+        return yield* setupError(sourceText("error.remote.relayIdentityExists"));
+      const bundle = yield* joinRelayWithCode(text, { label }).pipe(
+        Effect.mapError((error) => setupError(error.message)),
+      );
+      registerSecretValues(pemSecretParts(bundle.privateKey));
+      const saved = yield* (replace ? identity.replaceBundle(bundle) : identity.importBundle(bundle)).pipe(
+        Effect.mapError((error) => setupError(identityErrorText(error))),
+      );
+      this.#identityIssue = null;
+      registerIdentitySecrets(identity);
+      logger.info(`OpenBot joined the team ${saved.team} as the user ${saved.user} with a join code.`);
       yield* this.#restart();
       return this.state();
     },
@@ -412,6 +441,11 @@ function identityErrorText(error: RelayIdentityError): string {
 function registerIdentitySecrets(identity: RelayIdentityStore): void {
   const key = identity.tlsCredentials()?.key;
   if (key) registerSecretValues(pemSecretParts(key));
+}
+
+function joinCodeSecretParts(text: string): string[] {
+  const code = parseRelayJoinCode(text);
+  return code ? [text.trim(), code.code] : [];
 }
 
 function pemSecretParts(pem: string): string[] {

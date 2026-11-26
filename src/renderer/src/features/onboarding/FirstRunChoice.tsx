@@ -15,6 +15,7 @@ export interface FirstRunChoiceProps {
   teamName?: string | null | undefined;
   teamBusy?: boolean | undefined;
   onConnectTeam?: (() => void) | undefined;
+  onJoinTeamWithCode?: (() => void) | undefined;
 }
 
 const PLAN_LOGOS: readonly ProviderLogoVariant[] = ["codex", "claude", "grok"];
@@ -25,6 +26,7 @@ export function FirstRunChoice(props: FirstRunChoiceProps) {
   const freeDetailId = createUniqueId();
   const planDetailId = createUniqueId();
   const teamDetailId = createUniqueId();
+  const joinDetailId = createUniqueId();
   const freeDescribedBy = () => (props.reason ? `${freeDetailId} ${reasonId}` : freeDetailId);
   return (
     <>
@@ -100,6 +102,25 @@ export function FirstRunChoice(props: FirstRunChoiceProps) {
               >
                 <Spinner size="sm" label={t("settings.team.importing")} />
               </Show>
+            </Button>
+          )}
+        </Show>
+        <Show when={props.onJoinTeamWithCode}>
+          {(joinWithCode) => (
+            <Button
+              type="button"
+              variant="ghost"
+              class="first-run-choice-row"
+              disabled={props.disabled || props.teamBusy === true || Boolean(props.teamName)}
+              aria-label={t("onboarding.choice.joinCode")}
+              aria-describedby={joinDetailId}
+              onClick={() => joinWithCode()()}
+            >
+              <span class="first-run-choice-row-text">
+                <strong>{t("onboarding.choice.joinCode")}</strong>
+                <span id={joinDetailId}>{t("onboarding.choice.joinCodeDetail")}</span>
+              </span>
+              <ChevronRight class="first-run-choice-row-chevron" aria-hidden="true" />
             </Button>
           )}
         </Show>

@@ -57,6 +57,8 @@ export const messages = defineMessages("onboarding", {
   "onboarding.choice.teamDetail":
     "Import the identity file from your team's central server. You can also do this later.",
   "onboarding.choice.teamConnected": "Connected to the team {team}.",
+  "onboarding.choice.joinCode": "Join with a code",
+  "onboarding.choice.joinCodeDetail": "Paste the one-time code from your team administrator.",
   "onboarding.choice.startFreeInstead": "Use free models instead",
   "onboarding.existing.title": "Welcome back.",
   "onboarding.existing.description": "Your account already has OpenBot-NC. Open a server to continue here.",

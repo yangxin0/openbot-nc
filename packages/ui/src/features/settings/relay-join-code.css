@@ -1,0 +1,10 @@
+.relay-join-form {
+  display: grid;
+  gap: var(--openbot-space-3);
+  width: 100%;
+  text-align: start;
+}
+
+.relay-join-submit {
+  justify-self: end;
+}
