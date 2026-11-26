@@ -510,12 +510,14 @@ try {
   const aliceControl = new RelayControl({ identity: aliceStore, reconnect });
   const bobControl = new RelayControl({ identity: bobStore, reconnect });
   const eveControl = new RelayControl({ identity: eveStore, reconnect });
-  controls.push(aliceControl, bobControl, eveControl);
+  const hostLaptopControl = new RelayControl({ identity: hostLaptopStore, reconnect });
+  controls.push(aliceControl, bobControl, eveControl, hostLaptopControl);
 
   await check("A member of the team sees the host in the roster, hosting, with the server name", async () => {
     await ok(aliceControl.start());
     await ok(bobControl.start());
     await ok(eveControl.start());
+    await ok(hostLaptopControl.start());
     const roster = await untilRoster(aliceControl, "alice sees the host", (members) =>
       members.some((member) => member.keyId === hostKeyId && member.hosting),
     );
@@ -528,10 +530,10 @@ try {
     );
   });
 
-  const aliceDialer = new RelayDialer({ identity: aliceStore });
-  const bobDialer = new RelayDialer({ identity: bobStore });
-  const hostLaptopDialer = new RelayDialer({ identity: hostLaptopStore });
-  const eveDialer = new RelayDialer({ identity: eveStore });
+  const aliceDialer = new RelayDialer({ control: aliceControl });
+  const bobDialer = new RelayDialer({ control: bobControl });
+  const hostLaptopDialer = new RelayDialer({ control: hostLaptopControl });
+  const eveDialer = new RelayDialer({ control: eveControl });
   const aliceFetch = createRelayFetch({ dialer: aliceDialer, target: hostKeyId });
   const bobFetch = createRelayFetch({ dialer: bobDialer, target: hostKeyId });
   const ownerFetch = createRelayFetch({ dialer: hostLaptopDialer, target: hostKeyId });

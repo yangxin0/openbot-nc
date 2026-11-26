@@ -1,18 +1,18 @@
 import { randomBytes } from "node:crypto";
-import { getCACertificates } from "node:tls";
+import { getCACertificates, TLSSocket } from "node:tls";
 import { decodeRelayServerMessage } from "@openbot/contracts/relay-protocol/decode";
 import {
-  RELAY_ACCEPT_DEADLINE_MS,
   RELAY_CLOSE_CODES,
   RELAY_CONTROL_MESSAGE_BYTES_LIMIT,
   RELAY_ERROR_CODES,
   RELAY_PROTOCOL_VERSION,
-  RELAY_TUNNEL_MESSAGE_BYTES_LIMIT,
+  RELAY_SESSIONS_FEATURE,
+  RELAY_SOCKET_MESSAGE_BYTES_LIMIT,
   type RelayClientMessage,
-  type RelayProtocolVersion,
   type RelayServerMessage,
 } from "@openbot/contracts/relay-protocol/messages";
 import { RELAY_TUNNEL_CRYPTO_ERROR_CODES } from "@openbot/contracts/relay-protocol/tunnel-crypto";
+import type { RelaySession } from "@openbot/team-client/relay-sessions";
 import { Effect, Exit, Schema } from "effect";
 import WebSocket from "ws";
 import { rawDataBytes, rawDataSize, rawDataText } from "../ws-raw-data";
@@ -41,7 +41,6 @@ export class RelaySocketError extends Schema.TaggedError<RelaySocketError>()("Re
 }) {}
 
 type RelayWelcome = Extract<RelayServerMessage, { type: "welcome" }>;
-export type RelayOpen = Extract<RelayServerMessage, { type: "open" }>;
 
 export interface RelaySocketOptions {
   connectDeadlineMs?: number | undefined;
@@ -58,19 +57,13 @@ interface RelaySocketHandlers {
   closed: (close: RelaySocketClose) => void;
 }
 
-type RelayTunnelRequest =
-  | { role: "client"; target: string; waitForTarget: boolean }
-  | { role: "accept"; connectionId: string };
+export interface RelaySessionOpener {
+  openSession(target: string): Effect.Effect<RelaySession, RelaySocketError>;
+}
 
-type RelayHello = { role: "member"; hosting: boolean; label: string | null } | RelayTunnelRequest;
-
-interface HelloCredentials {
-  version: RelayProtocolVersion;
-  audience: string;
-  clientNonce: string;
-  certificate: string;
-  chain: string[];
-  signature: string;
+interface RelayPresence {
+  hosting: boolean;
+  label: string | null;
 }
 
 type QueuedEvent =
@@ -86,10 +79,24 @@ export class RelaySocket {
   #opened = false;
   #closed = false;
 
+  #onOpen: (() => void) | null = null;
+  #tlsSession: Buffer | null = null;
+
   constructor(socket: WebSocket) {
     this.#socket = socket;
     socket.on("open", () => {
       this.#opened = true;
+      const listener = this.#onOpen;
+      this.#onOpen = null;
+      listener?.();
+    });
+    socket.on("upgrade", (response) => {
+      const tlsSocket = response.socket;
+      if (!(tlsSocket instanceof TLSSocket)) return;
+      this.#tlsSession = tlsSocket.getSession() ?? null;
+      tlsSocket.on("session", (session: Buffer) => {
+        this.#tlsSession = session;
+      });
     });
     socket.on("message", (data, isBinary) => this.#receive(data, isBinary));
     socket.on("error", (error) => {
@@ -99,6 +106,19 @@ export class RelaySocket {
       });
     });
     socket.on("close", (code, reason) => this.#finish(code, reason.toString("utf8")));
+  }
+
+  get tlsSession(): Buffer | null {
+    return this.#tlsSession;
+  }
+
+  get open(): boolean {
+    return this.#opened && !this.#closed && this.#socket.readyState === WebSocket.OPEN;
+  }
+
+  whenOpen(listener: () => void): void {
+    if (this.open) listener();
+    else this.#onOpen = listener;
   }
 
   attach(handlers: RelaySocketHandlers): void {
@@ -114,20 +134,14 @@ export class RelaySocket {
     if (this.#socket.readyState === WebSocket.OPEN) this.#socket.send(JSON.stringify(message));
   }
 
-  sendBinary(data: Uint8Array, callback: (error?: Error) => void): void {
-    if (this.#socket.readyState !== WebSocket.OPEN) {
-      callback(this.#failure ?? new RelaySocketError({ code: "closed", message: "The relay socket is closed." }));
-      return;
-    }
+  sendBinary(data: Uint8Array, callback: (error?: Error) => void): boolean {
+    if (this.#socket.readyState !== WebSocket.OPEN) return false;
     this.#socket.send(data, { binary: true }, callback);
+    return true;
   }
 
-  pauseReading(): void {
-    if (!this.#socket.isPaused) this.#socket.pause();
-  }
-
-  resumeReading(): void {
-    if (this.#socket.isPaused) this.#socket.resume();
+  bufferedAmount(): number {
+    return this.#socket.bufferedAmount;
   }
 
   close(): void {
@@ -166,8 +180,7 @@ export class RelaySocket {
   #finish(code: number, reason: string): void {
     if (this.#closed) return;
     this.#closed = true;
-    const clean =
-      this.#failure === null && (code === RELAY_CLOSE_CODES.normal || code === RELAY_CLOSE_CODES.peerClosed);
+    const clean = this.#failure === null && code === RELAY_CLOSE_CODES.normal;
     const error =
       this.#failure ??
       new RelaySocketError({
@@ -197,34 +210,15 @@ export class RelaySocket {
 
 export const openRelayControlSocket = Effect.fn("RelaySocket.openControl")(function* (
   identity: RelayCredentialSource,
-  presence: { hosting: boolean; label: string | null },
+  presence: RelayPresence,
   options: RelaySocketOptions = {},
 ): Effect.fn.Return<{ socket: RelaySocket; welcome: RelayWelcome }, RelaySocketError> {
   return yield* withSocket(identity, (socket) =>
-    authenticate(socket, identity, { role: "member", ...presence }).pipe(
+    authenticate(socket, identity, presence).pipe(
       Effect.andThen(expectMessage(socket, isMessage("welcome"))),
       deadline(options.connectDeadlineMs ?? RELAY_CONNECT_DEADLINE_MS),
       Effect.map((welcome) => ({ socket, welcome })),
     ),
-  );
-});
-
-export const openRelayTunnelSocket = Effect.fn("RelaySocket.openTunnel")(function* (
-  identity: RelayCredentialSource,
-  request: RelayTunnelRequest,
-  options: RelaySocketOptions = {},
-): Effect.fn.Return<{ socket: RelaySocket; open: RelayOpen }, RelaySocketError> {
-  const connectDeadlineMs = options.connectDeadlineMs ?? RELAY_CONNECT_DEADLINE_MS;
-  return yield* withSocket(identity, (socket) =>
-    Effect.gen(function* () {
-      const first = yield* authenticate(socket, identity, request).pipe(
-        Effect.andThen(expectMessage(socket, isMessage("open", "waiting"))),
-        deadline(request.role === "client" ? connectDeadlineMs + RELAY_ACCEPT_DEADLINE_MS : connectDeadlineMs),
-      );
-      if (first.type === "open") return { socket, open: first };
-      if (request.role !== "client" || !request.waitForTarget) return yield* unexpectedMessage();
-      return { socket, open: yield* expectMessage(socket, isMessage("open")) };
-    }),
   );
 });
 
@@ -243,8 +237,16 @@ function withSocket<A>(
   );
 }
 
+export const openRelayDataSocket = Effect.fn("RelaySocket.openData")(function* (
+  identity: RelayCredentialSource,
+  tlsSession: Buffer | null,
+): Effect.fn.Return<RelaySocket, RelaySocketError> {
+  return yield* connect(identity, tlsSession);
+});
+
 const connect = Effect.fn("RelaySocket.connect")(function* (
   identity: RelayCredentialSource,
+  tlsSession: Buffer | null = null,
 ): Effect.fn.Return<RelaySocket, RelaySocketError> {
   const current = identity.current();
   const tls = identity.tlsCredentials();
@@ -271,8 +273,9 @@ const connect = Effect.fn("RelaySocket.connect")(function* (
       new RelaySocket(
         new WebSocket(url, {
           ...(secure ? { ...tls, ca: [...getCACertificates("default"), tls.ca] } : {}),
+          ...(secure && tlsSession ? { session: tlsSession } : {}),
           perMessageDeflate: false,
-          maxPayload: RELAY_TUNNEL_MESSAGE_BYTES_LIMIT,
+          maxPayload: RELAY_SOCKET_MESSAGE_BYTES_LIMIT,
         }),
       ),
     catch: () => new RelaySocketError({ code: "connect_failed", message: "The relay socket cannot be opened." }),
@@ -282,45 +285,29 @@ const connect = Effect.fn("RelaySocket.connect")(function* (
 const authenticate = Effect.fn("RelaySocket.authenticate")(function* (
   socket: RelaySocket,
   identity: RelayCredentialSource,
-  hello: RelayHello,
+  presence: RelayPresence,
 ): Effect.fn.Return<void, RelaySocketError> {
   const challenge = yield* expectMessage(socket, isMessage("challenge"));
   const current = identity.current();
   const clientNonce = randomBytes(32).toString("base64url");
-  const target = hello.role === "client" ? hello.target : undefined;
-  const connectionId = hello.role === "accept" ? hello.connectionId : undefined;
-  const proof = identity.signHello({ nonce: challenge.nonce, clientNonce, role: hello.role, target, connectionId });
+  const proof = identity.signHello({ nonce: challenge.nonce, clientNonce, role: "member" });
   if (!current || current.relayUrl === null || !proof) {
     return yield* new RelaySocketError({ code: "identity_unavailable", message: "The relay identity cannot sign." });
   }
-  const credentials: HelloCredentials = {
+  socket.sendMessage({
+    type: "hello",
     version: RELAY_PROTOCOL_VERSION,
     audience: proof.audience,
     clientNonce,
     certificate: current.certificate,
     chain: [...current.chain],
     signature: proof.signature,
-  };
-  if (hello.role === "member") {
-    socket.sendMessage({
-      type: "hello",
-      ...credentials,
-      role: "member",
-      hosting: hello.hosting,
-      ...(hello.label === null ? {} : { label: hello.label }),
-    });
-  } else if (hello.role === "client") {
-    socket.sendMessage({
-      type: "hello",
-      ...credentials,
-      role: "client",
-      target: hello.target,
-      waitForTarget: hello.waitForTarget,
-    });
-  } else {
-    socket.sendMessage({ type: "hello", ...credentials, role: "accept", connectionId: hello.connectionId });
-  }
-  const answer = yield* expectMessage(socket, isMessage("server-proof", "welcome", "waiting", "open"));
+    role: "member",
+    hosting: presence.hosting,
+    ...(presence.label === null ? {} : { label: presence.label }),
+    features: [RELAY_SESSIONS_FEATURE],
+  });
+  const answer = yield* expectMessage(socket, isMessage("server-proof", "welcome"));
   const refusal =
     answer.type !== "server-proof"
       ? "missing"
@@ -332,10 +319,8 @@ const authenticate = Effect.fn("RelaySocket.authenticate")(function* (
             serverNonce: challenge.nonce,
             clientNonce,
             audience: proof.audience,
-            role: hello.role,
+            role: "member",
             clientKeyId: current.keyId,
-            target,
-            connectionId,
           },
           now: Date.now(),
         });

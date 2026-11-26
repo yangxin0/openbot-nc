@@ -22,20 +22,26 @@ import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/co
 import {
   RELAY_PATH,
   RELAY_PROTOCOL_VERSION,
+  RELAY_SESSION_ASSIGNED_ID_MIN,
+  RELAY_SESSIONS_FEATURE,
   type RelayPeerCertificate,
-  type RelayRole,
+  relayAudience,
   relayServerProofTranscript,
 } from "@openbot/contracts/relay-protocol/messages";
+import {
+  decodeRelaySessionFrame,
+  encodeRelaySessionEnd,
+  encodeRelaySessionFrame,
+} from "@openbot/contracts/relay-protocol/sessions";
 import { RELAY_TUNNEL_RECORD_HEADER_BYTES } from "@openbot/contracts/relay-protocol/tunnel-crypto";
 import {
   decodeRelayV2TunnelControl,
+  encodeRelayV2Chunks,
   encodeRelayV2TunnelMarker,
   encodeRelayV2TunnelRecord,
-  RELAY_V2_TUNNEL_CHANNELS,
-  RELAY_V2_TUNNEL_VERSION,
+  RelayV2ChunkDecoder,
   type RelayV2TunnelChannel,
   type RelayV2TunnelMessage,
-  RelayV2TunnelRecordDecoder,
 } from "@openbot/contracts/relay-protocol/v2-tunnel";
 import { isDynamicRecord, isNumber, isString } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
@@ -68,7 +74,7 @@ import { RelayControl, type RelayControlState } from "../src/main/relay/control"
 import { RelayDialer } from "../src/main/relay/dialer";
 import { createRelayFetch } from "../src/main/relay/fetch";
 import { type RelayCipher, RelayIdentityStore } from "../src/main/relay/identity-store";
-import { openRelayTunnelSocket, RelaySocketError } from "../src/main/relay/socket";
+import { RelaySocketError } from "../src/main/relay/socket";
 import type { RelayStream } from "../src/main/relay/stream";
 import type { TeamApiBrowser } from "../src/main/team-api/dependencies";
 import { rawDataBytes, rawDataText } from "../src/main/ws-raw-data";
@@ -83,7 +89,6 @@ const READY_LINE = "OpenBot relay is ready";
 const APP_VERSION = "0.0.0-e2e";
 const TEAM = "Acme";
 const HOST_USER = "host-user";
-const HELLO_FRAME_BYTES = RELAY_TUNNEL_RECORD_HEADER_BYTES + 99;
 const FINISH_FRAME_BYTES = RELAY_TUNNEL_RECORD_HEADER_BYTES + 66;
 const REPLY_FRAME_BYTES = RELAY_TUNNEL_RECORD_HEADER_BYTES + 163;
 const REPLY_EPHEMERAL_OFFSET = RELAY_TUNNEL_RECORD_HEADER_BYTES + 2;
@@ -102,16 +107,27 @@ const Measured = Schema.Struct({
 });
 const RelayHello = Schema.Struct({
   type: Schema.Literal("hello"),
-  role: Schema.Literals(["member", "client", "accept"]),
+  role: Schema.Literal("member"),
   certificate: Schema.String,
   clientNonce: Schema.String,
   audience: Schema.String,
-  target: Schema.optional(Schema.String),
-  connectionId: Schema.optional(Schema.String),
   hosting: Schema.optional(Schema.Boolean),
   label: Schema.optional(Schema.String),
 });
 const RelayPresence = Schema.Struct({ type: Schema.Literal("presence"), hosting: Schema.Boolean });
+const SessionMessage = Schema.Struct({
+  type: Schema.Literals(["session-open", "session-accept", "session-refuse", "session-close", "session-credit"]),
+  session: Schema.Number,
+  target: Schema.optional(Schema.String),
+  first: Schema.optional(Schema.String),
+  bytes: Schema.optional(Schema.Number),
+});
+const decodeSessionMessage = Schema.decodeUnknownOption(Schema.fromJsonString(SessionMessage));
+const DataMessage = Schema.Struct({
+  type: Schema.Literals(["data-ticket", "data-hello"]),
+  ticket: Schema.optional(Schema.String),
+});
+const decodeDataMessage = Schema.decodeUnknownOption(Schema.fromJsonString(DataMessage));
 const PhoneResult = Schema.Struct({
   subtleMissing: Schema.Boolean,
   checks: Schema.Array(
@@ -283,7 +299,9 @@ interface MitmTunnel {
   connectionId: string;
   mode: TamperMode;
   client: WebSocket;
-  accept: WebSocket | null;
+  clientSession: number;
+  host: WebSocket;
+  hostSession: number;
   clientToHost: Buffer[];
   hostToClient: Buffer[];
   clientToHostBytes: number;
@@ -301,10 +319,13 @@ interface MitmMember {
 class MitmRelay extends EventEmitter<{ closed: [tunnel: MitmTunnel] }> {
   readonly tunnels: MitmTunnel[] = [];
   readonly #members = new Map<string, MitmMember>();
-  readonly #pending = new Map<string, MitmTunnel>();
+  readonly #tickets = new Map<string, WebSocket>();
+  readonly #data = new Map<WebSocket, WebSocket>();
+  readonly #waiting = new Map<WebSocket, Buffer[]>();
   readonly #server;
   readonly #sockets;
   #mode: TamperMode = {};
+  #nextSession = RELAY_SESSION_ASSIGNED_ID_MIN;
   url = "";
 
   constructor(
@@ -336,7 +357,7 @@ class MitmRelay extends EventEmitter<{ closed: [tunnel: MitmTunnel] }> {
   }
 
   untilClosed(tunnel: MitmTunnel): Promise<void> {
-    return until<void>("the relay in the middle sees the tunnel close", (done) => {
+    return until<void>("the relay in the middle sees the session close", (done) => {
       const listener = (closed: MitmTunnel) => {
         if (closed === tunnel) done();
       };
@@ -348,41 +369,61 @@ class MitmRelay extends EventEmitter<{ closed: [tunnel: MitmTunnel] }> {
 
   #connected(socket: WebSocket): void {
     const serverNonce = randomBytes(32).toString("base64url");
-    let state: { role: RelayRole; peer: RelayPeerCertificate; tunnel: MitmTunnel | null } | null = null;
+    let peer: RelayPeerCertificate | null = null;
+    let owner: WebSocket | null = null;
     socket.send(JSON.stringify({ type: "challenge", version: RELAY_PROTOCOL_VERSION, nonce: serverNonce }));
     socket.on("message", (data, isBinary) => {
       if (isBinary) {
-        if (state?.tunnel) this.#forward(state.tunnel, socket, Buffer.from(rawDataBytes(data)));
+        if (owner) this.#forward(owner, Buffer.from(rawDataBytes(data)));
         return;
       }
       const text = rawDataText(data);
-      if (state === null) {
+      const dataMessage = decodeDataMessage(text);
+      if (peer === null && owner === null && Option.isSome(dataMessage) && dataMessage.value.type === "data-hello") {
+        const member = this.#tickets.get(dataMessage.value.ticket ?? "");
+        this.#tickets.delete(dataMessage.value.ticket ?? "");
+        if (!member) {
+          socket.close(1008);
+          return;
+        }
+        owner = member;
+        this.#data.set(member, socket);
+        for (const frame of this.#waiting.get(member)?.splice(0) ?? []) socket.send(frame);
+        return;
+      }
+      if (peer === null) {
         const hello = decodeHello(text);
-        state = Option.isSome(hello) ? this.#hello(socket, serverNonce, hello.value) : null;
+        peer = Option.isSome(hello) ? this.#hello(socket, serverNonce, hello.value) : null;
+        return;
+      }
+      if (Option.isSome(dataMessage) && dataMessage.value.type === "data-ticket") {
+        const ticket = randomBytes(32).toString("base64url");
+        this.#tickets.set(ticket, socket);
+        socket.send(JSON.stringify({ type: "data-ticket", version: RELAY_PROTOCOL_VERSION, ticket }));
         return;
       }
       const presence = decodePresence(text);
-      const member = state.role === "member" ? this.#members.get(state.peer.keyId) : undefined;
+      const member = this.#members.get(peer.keyId);
       if (member && Option.isSome(presence)) member.hosting = presence.value.hosting;
+      const session = decodeSessionMessage(text);
+      if (Option.isSome(session)) this.#session(socket, peer, session.value);
     });
     socket.on("close", () => {
-      if (state?.role === "member" && this.#members.get(state.peer.keyId)?.socket === socket) {
-        this.#members.delete(state.peer.keyId);
-      }
-      const tunnel = state?.tunnel;
-      if (!tunnel) return;
-      for (const other of [tunnel.client, tunnel.accept]) {
-        if (other && other !== socket && other.readyState === WebSocket.OPEN) other.close(4002);
-      }
-      if (!tunnel.closed) {
-        tunnel.closed = true;
-        this.emit("closed", tunnel);
+      if (owner && this.#data.get(owner) === socket) this.#data.delete(owner);
+      if (owner) return;
+      this.#data.get(socket)?.close();
+      if (peer && this.#members.get(peer.keyId)?.socket === socket) this.#members.delete(peer.keyId);
+      for (const tunnel of this.tunnels) {
+        if (tunnel.closed || (tunnel.client !== socket && tunnel.host !== socket)) continue;
+        const [other, session] =
+          tunnel.client === socket ? [tunnel.host, tunnel.hostSession] : [tunnel.client, tunnel.clientSession];
+        this.#sendClose(other, session);
+        this.#closed(tunnel);
       }
     });
   }
 
-  #hello(socket: WebSocket, serverNonce: string, hello: RelayHelloMessage) {
-    const role = hello.role;
+  #hello(socket: WebSocket, serverNonce: string, hello: RelayHelloMessage): RelayPeerCertificate | null {
     const certificate = new X509Certificate(hello.certificate);
     const names = subjectNames(certificate.subject);
     if (!names) return null;
@@ -392,15 +433,12 @@ class MitmRelay extends EventEmitter<{ closed: [tunnel: MitmTunnel] }> {
       device: names.device,
       certificate: hello.certificate,
     };
-    const { target, connectionId } = hello;
     const transcript = relayServerProofTranscript({
       serverNonce,
       clientNonce: hello.clientNonce,
       audience: hello.audience,
-      role,
+      role: "member",
       clientKeyId: peer.keyId,
-      target,
-      connectionId,
     });
     const signature = sign("sha256", Buffer.from(transcript), {
       key: this.proof.privateKey,
@@ -414,44 +452,40 @@ class MitmRelay extends EventEmitter<{ closed: [tunnel: MitmTunnel] }> {
         signature,
       }),
     );
-    if (role === "member") {
-      this.#members.set(peer.keyId, {
-        socket,
-        peer,
-        hosting: hello.hosting === true,
-        label: hello.label ?? null,
-      });
-      socket.send(
-        JSON.stringify({
-          type: "welcome",
-          version: RELAY_PROTOCOL_VERSION,
-          self: { keyId: peer.keyId, user: peer.user, device: peer.device },
-          team: { id: "t".repeat(43), name: TEAM },
-          members: [...this.#members.values()].map((member) => ({
-            keyId: member.peer.keyId,
-            user: member.peer.user,
-            device: member.peer.device,
-            label: member.label,
-            hosting: member.hosting,
-            connectedAt: Date.now(),
-          })),
-        }),
-      );
-      return { role, peer, tunnel: null };
-    }
-    if (role === "client") {
-      const member = target === undefined ? undefined : this.#members.get(target);
+    this.#members.set(peer.keyId, { socket, peer, hosting: hello.hosting === true, label: hello.label ?? null });
+    socket.send(
+      JSON.stringify({
+        type: "welcome",
+        version: RELAY_PROTOCOL_VERSION,
+        self: { keyId: peer.keyId, user: peer.user, device: peer.device },
+        team: { id: "t".repeat(43), name: TEAM },
+        members: [...this.#members.values()].map((member) => ({
+          keyId: member.peer.keyId,
+          user: member.peer.user,
+          device: member.peer.device,
+          label: member.label,
+          hosting: member.hosting,
+          connectedAt: Date.now(),
+        })),
+        features: [RELAY_SESSIONS_FEATURE],
+      }),
+    );
+    return peer;
+  }
+
+  #session(socket: WebSocket, peer: RelayPeerCertificate, message: typeof SessionMessage.Type): void {
+    if (message.type === "session-open") {
+      const member = message.target === undefined ? undefined : this.#members.get(message.target);
       if (!member?.hosting) {
         socket.send(
           JSON.stringify({
-            type: "error",
+            type: "session-failed",
             version: RELAY_PROTOCOL_VERSION,
+            session: message.session,
             code: "target_unavailable",
-            message: "No host.",
           }),
         );
-        socket.close(1013);
-        return { role, peer, tunnel: null };
+        return;
       }
       const tunnel: MitmTunnel = {
         clientPeer: peer,
@@ -460,79 +494,144 @@ class MitmRelay extends EventEmitter<{ closed: [tunnel: MitmTunnel] }> {
         connectionId: randomBytes(16).toString("base64url"),
         mode: this.#mode,
         client: socket,
-        accept: null,
-        clientToHost: [],
+        clientSession: message.session,
+        host: member.socket,
+        hostSession: this.#nextSession,
+        clientToHost: message.first === undefined ? [] : [Buffer.from(message.first, "base64url")],
         hostToClient: [],
         clientToHostBytes: 0,
         hostToClientBytes: 0,
         closed: false,
       };
+      this.#nextSession += 1;
       this.#mode = {};
       this.tunnels.push(tunnel);
-      this.#pending.set(tunnel.connectionId, tunnel);
       member.socket.send(
         JSON.stringify({
-          type: "incoming",
+          type: "session-incoming",
           version: RELAY_PROTOCOL_VERSION,
+          session: tunnel.hostSession,
           connectionId: tunnel.connectionId,
           from: peer,
+          ...(message.first === undefined ? {} : { first: message.first }),
         }),
       );
-      return { role, peer, tunnel };
+      return;
     }
-    const tunnel = connectionId === undefined ? undefined : this.#pending.get(connectionId);
-    if (!tunnel) {
-      socket.close(1008);
-      return null;
+    const tunnel = this.#find(socket, message.session);
+    if (!tunnel) return;
+    const fromClient = tunnel.client === socket && tunnel.clientSession === message.session;
+    if (message.type === "session-accept") {
+      let reply = message.first === undefined ? Buffer.alloc(0) : Buffer.from(message.first, "base64url");
+      tunnel.hostToClient.push(Buffer.from(reply));
+      if (tunnel.mode.replaceHostEphemeral && reply.byteLength >= REPLY_FRAME_BYTES) {
+        const forged = createECDH("prime256v1");
+        forged.generateKeys();
+        forged.getPublicKey().copy(reply, REPLY_EPHEMERAL_OFFSET);
+      }
+      if (tunnel.mode.replayReply) reply = Buffer.from(tunnel.mode.replayReply);
+      tunnel.client.send(
+        JSON.stringify({
+          type: "session-opened",
+          version: RELAY_PROTOCOL_VERSION,
+          session: tunnel.clientSession,
+          connectionId: tunnel.mode.splice ? randomBytes(16).toString("base64url") : tunnel.connectionId,
+          peer: this.#members.get(tunnel.hostKeyId)?.peer,
+          first: reply.toString("base64url"),
+        }),
+      );
+      return;
     }
-    this.#pending.delete(tunnel.connectionId);
-    tunnel.accept = socket;
-    const hostPeer = this.#members.get(tunnel.hostKeyId)?.peer;
-    const clientConnectionId = tunnel.mode.splice ? randomBytes(16).toString("base64url") : tunnel.connectionId;
-    tunnel.client.send(
-      JSON.stringify({
-        type: "open",
-        version: RELAY_PROTOCOL_VERSION,
-        connectionId: clientConnectionId,
-        peer: hostPeer,
-      }),
-    );
-    socket.send(
-      JSON.stringify({
-        type: "open",
-        version: RELAY_PROTOCOL_VERSION,
-        connectionId: tunnel.connectionId,
-        peer: tunnel.clientPeer,
-      }),
-    );
-    return { role, peer, tunnel };
+    if (message.type === "session-refuse") {
+      tunnel.client.send(
+        JSON.stringify({
+          type: "session-failed",
+          version: RELAY_PROTOCOL_VERSION,
+          session: tunnel.clientSession,
+          code: "refused",
+        }),
+      );
+      this.#closed(tunnel);
+      return;
+    }
+    const [other, session] = fromClient ? [tunnel.host, tunnel.hostSession] : [tunnel.client, tunnel.clientSession];
+    if (message.type === "session-credit") {
+      if (other.readyState === WebSocket.OPEN) {
+        other.send(
+          JSON.stringify({ type: "session-credit", version: RELAY_PROTOCOL_VERSION, session, bytes: message.bytes }),
+        );
+      }
+      return;
+    }
+    this.#sendClose(other, session);
+    this.#closed(tunnel);
   }
 
-  #forward(tunnel: MitmTunnel, from: WebSocket, data: Buffer): void {
-    const towardHost = from === tunnel.client;
-    const target = towardHost ? tunnel.accept : tunnel.client;
+  #find(socket: WebSocket, session: number): MitmTunnel | undefined {
+    return this.tunnels.find(
+      (tunnel) =>
+        !tunnel.closed &&
+        ((tunnel.client === socket && tunnel.clientSession === session) ||
+          (tunnel.host === socket && tunnel.hostSession === session)),
+    );
+  }
+
+  #sendClose(socket: WebSocket, session: number): void {
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: "session-close", version: RELAY_PROTOCOL_VERSION, session }));
+    }
+  }
+
+  #closed(tunnel: MitmTunnel): void {
+    if (tunnel.closed) return;
+    tunnel.closed = true;
+    this.emit("closed", tunnel);
+  }
+
+  #sendData(member: WebSocket, frame: Uint8Array): void {
+    const data = this.#data.get(member);
+    if (data?.readyState === WebSocket.OPEN) {
+      data.send(frame);
+      return;
+    }
+    const waiting = this.#waiting.get(member) ?? [];
+    if (waiting.length === 0 && member.readyState === WebSocket.OPEN) {
+      member.send(JSON.stringify({ type: "data-wanted", version: RELAY_PROTOCOL_VERSION }));
+    }
+    waiting.push(Buffer.from(frame));
+    this.#waiting.set(member, waiting);
+  }
+
+  #forward(from: WebSocket, data: Buffer): void {
+    const frame = decodeRelaySessionFrame(data);
+    const tunnel = frame ? this.#find(from, frame.session) : undefined;
+    if (!frame || !tunnel) return;
+    if (frame.kind === "end") {
+      const towardHost = from === tunnel.client && frame.session === tunnel.clientSession;
+      this.#sendData(
+        towardHost ? tunnel.host : tunnel.client,
+        encodeRelaySessionEnd(towardHost ? tunnel.hostSession : tunnel.clientSession),
+      );
+      this.#closed(tunnel);
+      return;
+    }
+    const towardHost = from === tunnel.client && frame.session === tunnel.clientSession;
+    const target = towardHost ? tunnel.host : tunnel.client;
     const offset = towardHost ? tunnel.clientToHostBytes : tunnel.hostToClientBytes;
-    let bytes = Buffer.from(data);
+    const bytes = Buffer.from(frame.payload);
     const flipAt = towardHost ? tunnel.mode.flipClientToHostAt : tunnel.mode.flipHostToClientAt;
     if (flipAt !== undefined && flipAt >= offset && flipAt < offset + bytes.byteLength) {
       bytes[flipAt - offset] = (bytes[flipAt - offset] ?? 0) ^ 0x01;
     }
-    if (!towardHost && offset === 0 && bytes.byteLength >= REPLY_FRAME_BYTES) {
-      if (tunnel.mode.replaceHostEphemeral) {
-        const forged = createECDH("prime256v1");
-        forged.generateKeys();
-        forged.getPublicKey().copy(bytes, REPLY_EPHEMERAL_OFFSET);
-      }
-      if (tunnel.mode.replayReply) bytes = Buffer.concat([tunnel.mode.replayReply, bytes.subarray(REPLY_FRAME_BYTES)]);
-    }
     if (towardHost) {
-      tunnel.clientToHost.push(Buffer.from(data));
-      tunnel.clientToHostBytes += data.byteLength;
+      tunnel.clientToHost.push(Buffer.from(frame.payload));
+      tunnel.clientToHostBytes += frame.payload.byteLength;
     } else {
-      tunnel.hostToClient.push(Buffer.from(data));
-      tunnel.hostToClientBytes += data.byteLength;
+      tunnel.hostToClient.push(Buffer.from(frame.payload));
+      tunnel.hostToClientBytes += frame.payload.byteLength;
     }
-    if (target?.readyState === WebSocket.OPEN) target.send(bytes);
+    const session = towardHost ? tunnel.hostSession : tunnel.clientSession;
+    this.#sendData(target, encodeRelaySessionFrame(session, bytes));
   }
 }
 
@@ -569,7 +668,6 @@ class EchoHost extends EventEmitter<{ changed: [] }> {
     super();
     this.control = new RelayControl({ identity, hosting: true, label: "echo", reconnect: { baseMs: 100, maxMs: 500 } });
     this.acceptor = new RelayAcceptor({
-      identity,
       control: this.control,
       onStream: (stream) => this.#serve(stream, mode),
       onRefused: (error) => {
@@ -663,29 +761,29 @@ function readLine(stream: Duplex): Promise<string> {
 
 class V2Tunnel {
   readonly messages: RelayV2TunnelMessage[] = [];
-  readonly #records = new RelayV2TunnelRecordDecoder();
   readonly #payloads = new TeamV2PayloadDecoder();
   readonly #changed = new EventEmitter<{ changed: [] }>();
   closed = false;
 
-  constructor(readonly stream: RelayStream) {
-    stream.on("data", (chunk: Buffer) => {
-      for (const record of this.#records.push(chunk)) {
-        const payload = this.#payloads.push(record);
-        if (payload !== undefined) this.messages.push(payload);
-      }
-      this.#changed.emit("changed");
-    });
-    stream.on("close", () => {
-      this.closed = true;
-      this.#changed.emit("changed");
-    });
-    stream.on("error", () => stream.destroy());
+  constructor(
+    readonly channel: RelayV2TunnelChannel,
+    readonly stream: RelayStream,
+  ) {}
+
+  deliver(record: RelayV2TunnelMessage): void {
+    const payload = this.#payloads.push(record);
+    if (payload !== undefined) this.messages.push(payload);
+    this.#changed.emit("changed");
+  }
+
+  markClosed(): void {
+    this.closed = true;
+    this.#changed.emit("changed");
   }
 
   send(data: RelayV2TunnelMessage): void {
     for (const frame of encodeTeamV2Payload(data, Number.POSITIVE_INFINITY)) {
-      this.stream.write(encodeRelayV2TunnelRecord(frame));
+      for (const chunk of encodeRelayV2Chunks(this.channel, encodeRelayV2TunnelRecord(frame))) this.stream.write(chunk);
     }
   }
 
@@ -710,6 +808,38 @@ class V2Tunnel {
       return () => this.#changed.off("changed", look);
     });
   }
+}
+
+function attachV2(stream: RelayStream): Record<RelayV2TunnelChannel, V2Tunnel> {
+  const tunnels = {
+    rpc: new V2Tunnel("rpc", stream),
+    events: new V2Tunnel("events", stream),
+    files: new V2Tunnel("files", stream),
+  };
+  const decoder = new RelayV2ChunkDecoder();
+  stream.on("data", (chunk: Buffer) => {
+    for (const { channel, message } of decoder.push(chunk)) tunnels[channel].deliver(message);
+  });
+  stream.on("close", () => {
+    for (const tunnel of Object.values(tunnels)) tunnel.markClosed();
+  });
+  stream.on("error", () => stream.destroy());
+  return tunnels;
+}
+
+async function onlineDialer(identity: RelayIdentityStore, controls: RelayControl[]): Promise<RelayDialer> {
+  const control = new RelayControl({ identity, reconnect: { baseMs: 100, maxMs: 500 } });
+  controls.push(control);
+  const online = until<void>("the member is online", (done) => {
+    const listener = (state: RelayControlState) => {
+      if (state.status === "online") done();
+    };
+    control.on("state", listener);
+    return () => control.off("state", listener);
+  });
+  await ok(control.start());
+  await online;
+  return new RelayDialer({ control });
 }
 
 const work = mkdtempSync(join(tmpdir(), "openbot-relay-tunnel-encryption-e2e-"));
@@ -863,6 +993,7 @@ const observed: Observed = {};
 let relay: Relay | null = null;
 let mitm: MitmRelay | null = null;
 const echoHosts: EchoHost[] = [];
+const memberControls: RelayControl[] = [];
 const closers: Array<() => void> = [];
 let database: OpenBotDatabaseInstance | null = null;
 let agents: AgentServiceInstance | null = null;
@@ -899,7 +1030,7 @@ try {
   };
   const hostStore = await store("host", hostBundle, middle.url);
   const aliceStore = await store("alice", aliceBundle, middle.url);
-  const aliceDialer = new RelayDialer({ identity: aliceStore });
+  const aliceDialer = await onlineDialer(aliceStore, memberControls);
   const echo = new EchoHost(await store("echo", echoBundle, middle.url), "echo");
   echoHosts.push(echo);
   await echo.start();
@@ -1010,18 +1141,10 @@ try {
     "A V2 client sends a chat message and gets the reply, and the relay sees no V2 marker or text",
     async () => {
       const from = middle.tunnels.length;
-      const key = randomBytes(16).toString("hex");
-      const opened = await Promise.all(
-        RELAY_V2_TUNNEL_CHANNELS.map(async (channel: RelayV2TunnelChannel) => {
-          const stream = await ok(aliceDialer.dial(hostKeyId));
-          closers.push(() => stream.destroy());
-          const tunnel = new V2Tunnel(stream);
-          stream.write(encodeRelayV2TunnelMarker({ version: RELAY_V2_TUNNEL_VERSION, channel, connectionKey: key }));
-          return tunnel;
-        }),
-      );
-      const [rpc, events] = opened;
-      assert.ok(rpc && events);
+      const stream = await ok(aliceDialer.dial(hostKeyId));
+      closers.push(() => stream.destroy());
+      const { rpc, events } = attachV2(stream);
+      stream.write(encodeRelayV2TunnelMarker());
       await rpc.next("relay-v2-ready", (message) =>
         isString(message) && decodeRelayV2TunnelControl(message)?.type === "relay-v2-ready" ? true : null,
       );
@@ -1061,7 +1184,8 @@ try {
       assert.ok(status >= 200 && status < 300, `The message answer was ${status}.`);
       const replyText = await reply;
       assert.ok(readFileSync(fakeCodexLog, "utf8").includes(text), "The provider did not get the message.");
-      for (const tunnel of opened) tunnel.stream.destroy();
+      stream.destroy();
+      assert.equal(tunnelsOf(aliceKeyId, hostKeyId, from).length, 1);
       observed.v2Bytes = assertNoPlaintext(tunnelsOf(aliceKeyId, hostKeyId, from), [
         "OPENBOT-V2",
         "relay-v2-ready",
@@ -1107,7 +1231,7 @@ try {
       assert.equal(result.meStatus, 200);
       throughput.noble = result.throughput;
       const phoneTunnels = tunnelsOf(phoneKeyId, hostKeyId, from);
-      assert.equal(phoneTunnels.length, RELAY_V2_TUNNEL_CHANNELS.length);
+      assert.equal(phoneTunnels.length, 1);
       observed.phoneBytes = assertNoPlaintext(phoneTunnels, ["OPENBOT-V2", "relay-v2-ready", "http.request", "/v1/me"]);
     },
   );
@@ -1116,7 +1240,7 @@ try {
     "A changed byte from the client closes the tunnel with the integrity error, and the app gets no data",
     async () => {
       const before = echo.streams.length;
-      middle.tamperNext({ flipClientToHostAt: HELLO_FRAME_BYTES + FINISH_FRAME_BYTES + FIRST_RECORD_TAMPER_OFFSET });
+      middle.tamperNext({ flipClientToHostAt: FINISH_FRAME_BYTES + FIRST_RECORD_TAMPER_OFFSET });
       const stream = await ok(aliceDialer.dial(echoKeyId));
       const ended = untilStreamEnds(stream);
       stream.write("first application bytes");
@@ -1132,7 +1256,7 @@ try {
   );
 
   await check("A changed byte from the host closes the tunnel on the client with the integrity error", async () => {
-    middle.tamperNext({ flipHostToClientAt: REPLY_FRAME_BYTES + FIRST_RECORD_TAMPER_OFFSET });
+    middle.tamperNext({ flipHostToClientAt: FIRST_RECORD_TAMPER_OFFSET });
     const stream = await ok(aliceDialer.dial(echoKeyId));
     const ended = untilStreamEnds(stream);
     stream.write("echo me");
@@ -1178,31 +1302,61 @@ try {
 
   await check("A peer that sends plain HTTP with no handshake is refused by the host and gets no answer", async () => {
     const plainRequest = Buffer.from("GET /v1/compatibility HTTP/1.1\r\nHost: relay\r\n\r\n");
-    const sendPlain = async (target: string) => {
+    const raw = new WebSocket(middle.url, { ca: aliceBundle.root });
+    closers.push(() => raw.terminate());
+    const answers: string[] = [];
+    raw.on("message", (data, isBinary) => {
+      if (!isBinary) answers.push(rawDataText(data));
+    });
+    await deadline("the raw socket opens", once(raw, "open"));
+    raw.send(
+      JSON.stringify({
+        type: "hello",
+        version: RELAY_PROTOCOL_VERSION,
+        role: "member",
+        certificate: aliceBundle.certificate,
+        clientNonce: randomBytes(32).toString("base64url"),
+        audience: relayAudience(middle.url),
+        hosting: false,
+      }),
+    );
+    const sendPlain = async (target: string, session: number) => {
       const from = middle.tunnels.length;
-      const { socket } = await ok(openRelayTunnelSocket(aliceStore, { role: "client", target, waitForTarget: false }));
-      const closed = until<void>("the plain tunnel closes", (done) => {
-        socket.attach({ message: () => {}, binary: () => {}, closed: () => done() });
-        return () => {};
+      raw.send(
+        JSON.stringify({
+          type: "session-open",
+          version: RELAY_PROTOCOL_VERSION,
+          session,
+          target,
+          first: plainRequest.toString("base64url"),
+        }),
+      );
+      await until<void>("the host refuses the plain session", (done) => {
+        const look = () => {
+          if (answers.some((answer) => answer.includes('"session-failed"') && answer.includes(`"session":${session},`)))
+            done();
+        };
+        raw.on("message", look);
+        look();
+        return () => raw.off("message", look);
       });
-      socket.sendBinary(plainRequest, () => {});
-      await closed;
       const [tunnel] = middle.tunnels.slice(from);
       assert.ok(tunnel);
-      await middle.untilClosed(tunnel);
+      assert.equal(tunnel.hostToClient.length, 0);
       assert.equal(tunnel.hostToClientBytes, 0);
     };
     const refusals = echo.refusals.length;
-    await sendPlain(echoKeyId);
+    await sendPlain(echoKeyId, 1);
     assert.equal(
-      await echo.until("the echo host refuses the plain tunnel", () => echo.refusals[refusals] ?? null),
+      await echo.until("the echo host refuses the plain session", () => echo.refusals[refusals] ?? null),
       "tunnel_handshake_failed",
     );
-    await sendPlain(hostKeyId);
+    await sendPlain(hostKeyId, 2);
+    raw.close();
   });
 
   await check("8 MiB goes from a desktop client to a desktop host through the real relay, encrypted", async () => {
-    const aliceReal = new RelayDialer({ identity: await store("alice-real", aliceBundle, realRelayUrl) });
+    const aliceReal = await onlineDialer(await store("alice-real", aliceBundle, realRelayUrl), memberControls);
     const stream = await ok(aliceReal.dial(echoKeyId));
     const payload = randomBytes(TRANSFER_BYTES);
     const started = performance.now();
@@ -1223,6 +1377,7 @@ try {
 } finally {
   for (const close of closers.splice(0)) close();
   for (const echoHost of echoHosts) await echoHost.stop().catch(() => undefined);
+  for (const control of memberControls) await Effect.runPromise(control.stop());
   if (host) await runCauseEffect(host.shutdown()).catch(() => undefined);
   if (agents) await runCauseEffect(agents.stop()).catch(() => undefined);
   database?.close();

@@ -2,11 +2,18 @@ import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "../runt
 import {
   RELAY_CERTIFICATE_PEM_LIMIT,
   RELAY_CONNECTION_ID_PATTERN,
+  RELAY_DATA_TICKET_PATTERN,
   RELAY_ERROR_CODES,
+  RELAY_FEATURE_PATTERN,
+  RELAY_FEATURES_LIMIT,
   RELAY_KEY_ID_PATTERN,
   RELAY_LABEL_LIMIT,
   RELAY_NONCE_PATTERN,
   RELAY_PROTOCOL_VERSION,
+  RELAY_SESSION_FAILURE_CODES,
+  RELAY_SESSION_FIRST_PATTERN,
+  RELAY_SESSION_ID_MAX,
+  RELAY_SESSION_WINDOW_BYTES,
   RELAY_SIGNATURE_PATTERN,
   RELAY_SUBJECT_NAME_PATTERN,
   RELAY_TEAM_ID_PATTERN,
@@ -36,28 +43,57 @@ export function decodeRelayServerMessage(value: unknown): RelayServerMessage | n
       const self = decodePeer(value.self);
       const team = decodeTeam(value.team);
       const members = decodeMembers(value.members);
-      return self && team && members ? { type: "welcome", version, self, team, members } : null;
+      const features = decodeFeatures(value.features);
+      return self && team && members && features ? { type: "welcome", version, self, team, members, features } : null;
     }
     case "members": {
       const members = decodeMembers(value.members);
       return members ? { type: "members", version, members } : null;
     }
-    case "incoming": {
+    case "data-ticket":
+      return isString(value.ticket) && RELAY_DATA_TICKET_PATTERN.test(value.ticket)
+        ? { type: "data-ticket", version, ticket: value.ticket }
+        : null;
+    case "data-wanted":
+      return { type: "data-wanted", version };
+    case "session-incoming": {
       const from = decodePeerCertificate(value.from);
-      return isConnectionId(value.connectionId) && from
-        ? { type: "incoming", version, connectionId: value.connectionId, from }
+      const first = decodeFirst(value.first);
+      return isRelaySessionId(value.session) && isConnectionId(value.connectionId) && from && first !== null
+        ? {
+            type: "session-incoming",
+            version,
+            session: value.session,
+            connectionId: value.connectionId,
+            from,
+            ...(first === undefined ? {} : { first }),
+          }
         : null;
     }
-    case "open": {
+    case "session-opened": {
       const peer = decodePeerCertificate(value.peer);
-      return isConnectionId(value.connectionId) && peer
-        ? { type: "open", version, connectionId: value.connectionId, peer }
+      const first = decodeFirst(value.first);
+      return isRelaySessionId(value.session) && isConnectionId(value.connectionId) && peer && first !== null
+        ? {
+            type: "session-opened",
+            version,
+            session: value.session,
+            connectionId: value.connectionId,
+            peer,
+            ...(first === undefined ? {} : { first }),
+          }
         : null;
     }
-    case "waiting":
-    case "pause":
-    case "resume":
-      return { type: value.type, version };
+    case "session-failed":
+      return isRelaySessionId(value.session) && isOneOf(RELAY_SESSION_FAILURE_CODES, value.code)
+        ? { type: "session-failed", version, session: value.session, code: value.code }
+        : null;
+    case "session-close":
+      return isRelaySessionId(value.session) ? { type: "session-close", version, session: value.session } : null;
+    case "session-credit":
+      return isRelaySessionId(value.session) && isCreditBytes(value.bytes)
+        ? { type: "session-credit", version, session: value.session, bytes: value.bytes }
+        : null;
     case "error":
       return isOneOf(RELAY_ERROR_CODES, value.code) && isString(value.message)
         ? { type: "error", version, code: value.code, message: value.message.slice(0, 512) }
@@ -65,6 +101,30 @@ export function decodeRelayServerMessage(value: unknown): RelayServerMessage | n
     default:
       return null;
   }
+}
+
+export function isRelaySessionId(value: unknown): value is number {
+  return isNumber(value) && Number.isSafeInteger(value) && value >= 1 && value <= RELAY_SESSION_ID_MAX;
+}
+
+function isCreditBytes(value: unknown): value is number {
+  return isNumber(value) && Number.isSafeInteger(value) && value >= 1 && value <= RELAY_SESSION_WINDOW_BYTES;
+}
+
+function decodeFirst(value: unknown): string | undefined | null {
+  if (value === undefined) return undefined;
+  return isString(value) && RELAY_SESSION_FIRST_PATTERN.test(value) ? value : null;
+}
+
+function decodeFeatures(value: unknown): string[] | null {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > RELAY_FEATURES_LIMIT) return null;
+  const features: string[] = [];
+  for (const entry of value) {
+    if (!isString(entry) || !RELAY_FEATURE_PATTERN.test(entry)) return null;
+    features.push(entry);
+  }
+  return features;
 }
 
 function isCertificate(value: unknown): value is string {

@@ -7,6 +7,7 @@ import {
   type RelayBrowserIdentity,
   type RelayControlSnapshot,
   type RelayCrypto,
+  type RelaySessionSource,
   type RelaySocketErrorCode,
   type RelayTeamPeerActions,
   relayTeamHost,
@@ -17,10 +18,12 @@ import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
 
 export type PhoneRelayPeer = ReturnType<typeof createRelayTeamPeer>;
 
-export interface PhoneRelay {
+export interface PhoneRelayKeys {
   readonly identity: RelayBrowserIdentity;
   readonly crypto: RelayCrypto;
 }
+
+export interface PhoneRelay extends PhoneRelayKeys, RelaySessionSource {}
 
 export const PHONE_RELAY_LABEL = "OpenBot-NC phone";
 
@@ -65,7 +68,7 @@ const RELAY_STATE_KEYS = {
 export type RelayStateKey = (typeof RELAY_STATE_KEYS)[RelaySocketErrorCode];
 
 export function startPhoneRelayControl(
-  relay: PhoneRelay,
+  relay: PhoneRelayKeys,
   options: { reconnect?: { baseMs?: number; maxMs?: number } } = {},
 ): RelayBrowserControl {
   return startRelayControl(relay.identity, {
@@ -117,7 +120,7 @@ export function mergeRelayHosts(
 }
 
 export function createPhoneRelayPeer(relay: PhoneRelay, actions: { current: RelayTeamPeerActions }): PhoneRelayPeer {
-  return createRelayTeamPeer(relay.identity, actions, {
+  return createRelayTeamPeer(relay, actions, {
     crypto: relay.crypto,
     clientProtocol: TEAM_WEB_CLIENT_PROTOCOL,
   });

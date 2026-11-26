@@ -28,6 +28,9 @@ import {
   RELAY_LABEL_LIMIT,
   RELAY_PATH,
   RELAY_PROTOCOL_VERSION,
+  RELAY_SESSION_FRAME_PAYLOAD_LIMIT,
+  RELAY_SESSION_WINDOW_BYTES,
+  RELAY_SESSIONS_FEATURE,
   type RelayRole,
   type RelayServerProofTranscriptInput,
   type RelayTeamMember,
@@ -291,13 +294,11 @@ function helloTranscript(serverNonce: string, text: string): RelayServerProofTra
     clientKeyId: createHash("sha256")
       .update(new X509Certificate(hello.certificate).publicKey.export({ type: "spki", format: "der" }))
       .digest("base64url"),
-    target: isString(hello.target) ? hello.target : undefined,
-    connectionId: isString(hello.connectionId) ? hello.connectionId : undefined,
   };
 }
 
 function isRole(value: unknown): value is RelayRole {
-  return value === "member" || value === "client" || value === "accept";
+  return value === "member";
 }
 
 async function startFakeRelay(tls: { cert: string; key: string }, proof: FakeServerProof): Promise<FakeRelay> {
@@ -349,6 +350,7 @@ async function startFakeRelay(tls: { cert: string; key: string }, proof: FakeSer
           self: { keyId: transcript.clientKeyId, user: "dave", device: null },
           team: { id: "t".repeat(43), name: "Alpha Team" },
           members: [],
+          features: [RELAY_SESSIONS_FEATURE],
         }),
       );
     });
@@ -625,8 +627,8 @@ try {
   const bobControl = new RelayControl({ identity: bobStore, reconnect });
   const carolControl = new RelayControl({ identity: carolStore, hosting: true, label: "Carol server", reconnect });
   controls.push(aliceControl, bobControl, carolControl);
-  const aliceDialer = new RelayDialer({ identity: aliceStore });
-  const bobDialer = new RelayDialer({ identity: bobStore });
+  const aliceDialer = new RelayDialer({ control: aliceControl });
+  const bobDialer = new RelayDialer({ control: bobControl });
 
   await check("Two members of one team go online and see each other in the roster", async () => {
     await ok(aliceControl.start());
@@ -682,7 +684,6 @@ try {
   });
   const refusedAccepts: string[] = [];
   const bobAcceptor = new RelayAcceptor({
-    identity: bobStore,
     control: bobControl,
     onStream: (stream, peer) => {
       hostPeers.push(peer.user);
@@ -788,21 +789,20 @@ try {
     assert.equal(host.accepted, POOL_SIZE);
   });
 
-  await check("A sender holds its data after pause from the relay and continues after resume", async () => {
+  await check("A sender holds its data while the receiver holds its credits, and continues when it reads", async () => {
     const held = randomBytes(HELD_BYTES);
     const stream = await deadline("the dial", ok(aliceDialer.dial(bobKeyId)));
     assert.equal(stream.connecting, false);
     assert.equal(stream.peer?.keyId, bobKeyId);
     assert.equal(stream.peer?.user, "bob");
     assert.equal(new X509Certificate(stream.peer?.certificate ?? "").subject.includes("CN=bob"), true);
-    const flows: string[] = [];
-    stream.on("flow", (flow: string) => flows.push(flow));
-    const paused = until<void>("the relay sends pause", (done) => {
-      const listener = (flow: string) => {
-        if (flow === "paused") done();
+    const blocked = until<void>("the sender uses its whole window", (done) => {
+      const look = () => {
+        if (stream.unacknowledgedBytes() + RELAY_SESSION_FRAME_PAYLOAD_LIMIT > RELAY_SESSION_WINDOW_BYTES) done();
       };
-      stream.on("flow", listener);
-      return () => stream.off("flow", listener);
+      const stop = stream.onProgress(look);
+      look();
+      return stop;
     });
     const started = deadline("the held request starts", once(hostEvents, "heldStarted"));
     const answered = new Promise<{ status: number; body: Buffer }>((resolveAnswer, reject) => {
@@ -821,8 +821,9 @@ try {
     });
     answered.catch(() => undefined);
     await started;
-    await paused;
-    assert.equal(stream.heldByPeer, true);
+    await blocked;
+    assert.ok(stream.unacknowledgedBytes() <= RELAY_SESSION_WINDOW_BYTES);
+    assert.ok(stream.queuedBytes() > 0, "The sender keeps the rest of its data.");
     host.releaseHeld();
     const answer = await deadline("the held upload", answered);
     assert.equal(answer.status, 200);
@@ -830,9 +831,6 @@ try {
       bytes: HELD_BYTES,
       sha256: sha256(held),
     });
-    assert.equal(flows[0], "paused");
-    assert.equal(flows.at(-1), "resumed");
-    assert.equal(stream.heldByPeer, false);
     stream.destroy();
   });
 
@@ -879,17 +877,18 @@ try {
     assert.equal(itself.code, "invalid_message");
   });
 
-  await check("A dial that waits gets its stream when the member starts to host", async () => {
+  await check("A dial gets its stream as soon as the member starts to host", async () => {
     const aliceAcceptor = new RelayAcceptor({
-      identity: aliceStore,
       control: aliceControl,
       onStream: (stream) => stream.pipe(stream),
     });
     acceptors.push(aliceAcceptor);
     await ok(aliceAcceptor.start());
-    const dialed = ok(bobDialer.dial(aliceKeyId, { waitForTarget: true }));
     await ok(aliceControl.setHosting(true, "Alice laptop"));
-    const stream = await deadline("the dial that waits", dialed);
+    await untilRoster(bobControl, "bob sees that alice hosts", (members) =>
+      members.some((member) => member.keyId === aliceKeyId && member.hosting),
+    );
+    const stream = await deadline("the dial", ok(bobDialer.dial(aliceKeyId)));
     assert.equal(stream.peer?.keyId, aliceKeyId);
     const echoed = deadline("the echo of the stream", once(stream, "data"));
     stream.write("ping through the relay");
@@ -1109,7 +1108,7 @@ try {
     assert.equal(control.self(), null);
     assert.equal(fake.connections, 1);
     assert.equal(fake.received[0]?.length, 1);
-    return { fake, store };
+    return { fake, store, control };
   };
 
   await check("The desktop accepts a correct server proof", async () => {
@@ -1147,8 +1146,8 @@ try {
     await refusedByProof("proof-other-host", { certificate: issued.certificate, privateKey: key.privateKey }, "host");
   });
 
-  await check("The desktop refuses a wrong server signature on control and tunnel sockets", async () => {
-    const { fake, store } = await refusedByProof(
+  await check("The desktop refuses a wrong server signature, and a dial opens no other socket", async () => {
+    const { fake, control } = await refusedByProof(
       "proof-wrong-signature",
       {
         ...teamServerProof,
@@ -1158,12 +1157,10 @@ try {
     );
     const refused = await deadline(
       "a dial to the fake relay",
-      failureOf(new RelayDialer({ identity: store }).dial(aliceKeyId)),
+      failureOf(new RelayDialer({ control }).dial(aliceKeyId)),
     );
     assert.equal(refused.code, "server_refused");
-    await untilFakeClosed(fake, 2);
-    assert.equal(fake.connections, 2);
-    assert.equal(fake.received[1]?.length, 1);
+    assert.equal(fake.connections, 1);
   });
 
   await check("The desktop trusts a TLS certificate of the system roots and of the identity root", async () => {

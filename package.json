@@ -392,6 +392,7 @@
     "test:relay-mobile-client": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-mobile-client-e2e.ts",
     "test:relay-join-code": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-join-code-e2e.ts",
     "test:relay-tunnel-encryption": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-tunnel-encryption-e2e.ts",
+    "test:relay-session-latency": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-session-latency-e2e.ts",
     "relay:build": "bun remote/scripts/build-relay.ts",
     "web-client:build": "vite build --config web-client.vite.config.ts",
     "extension:build": "bun run --cwd apps/browser-extension build --outDir ../../.openbot-build/browser-extension",

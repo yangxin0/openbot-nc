@@ -85,7 +85,6 @@ interface RelayHostingOptions {
   reconnect?: { baseMs?: number; maxMs?: number };
   control?: RelayControl;
   firstBytesDeadlineMs?: number;
-  tunnelConnectionDeadlineMs?: number;
 }
 
 interface HostServiceOptions {
@@ -410,7 +409,6 @@ export class HostService extends EventEmitter<HostEvents> {
         appVersion: this.#options.appVersion,
         transferDirectory: join(this.#options.logDirectory ?? ".openbot-remote", "relay-transfers"),
         closeSession: (sessionId) => this.#releaseTeamSession(sessionId),
-        ...(options.tunnelConnectionDeadlineMs ? { connectionDeadlineMs: options.tunnelConnectionDeadlineMs } : {}),
       });
       const relay = new HostRelay({
         identity,

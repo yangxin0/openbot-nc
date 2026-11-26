@@ -190,7 +190,7 @@ const memoryStore = {
 
 const { createNobleRelayCrypto } = await import("@openbot/team-client/relay-crypto-noble");
 const { openRelayControlSocket } = await import("@openbot/team-client/relay-socket");
-const { createRelayIdentityFromText, openRelayV2Tunnels, relayTeamHostId } = await import(
+const { createRelayIdentityFromText, openRelayV2Tunnels, relayTeamHostId, startRelayControl } = await import(
   "@openbot/team-client/relay-client"
 );
 const { TEAM_API_ROUTES } = await import("@openbot/contracts/team-api-routes");
@@ -536,7 +536,7 @@ try {
       );
       const refusal = await deadline(
         "the refused dial",
-        openRelayV2Tunnels(phoneIdentity, config.otherHostKeyId, { crypto, readyDeadlineMs: 2_000 }).then(
+        openRelayV2Tunnels(runtime, config.otherHostKeyId, { readyDeadlineMs: 2_000 }).then(
           (tunnels) => {
             tunnels.close();
             return "opened";
@@ -556,13 +556,14 @@ try {
       JSON.stringify({ ...JSON.parse(config.phoneText), relayUrl: config.otherTeamPeerRelayUrl }),
       { crypto },
     );
+    const pointedControl = startRelayControl(pointed, { crypto });
     const refusal = await deadline(
       "the dial at the fake relay",
-      openRelayV2Tunnels(pointed, config.otherHostKeyId, { crypto, readyDeadlineMs: 2_000 }).then(
+      openRelayV2Tunnels(pointedControl, config.otherHostKeyId, { readyDeadlineMs: 2_000 }).then(
         () => "opened",
         (error: unknown) => `${errorCode(error)}:${error instanceof Error ? error.message : ""}`,
       ),
-    );
+    ).finally(() => pointedControl.stop());
     assert(refusal.startsWith("peer_refused:"), refusal);
     facts.otherTeamPeerRefusal = refusal;
   });

@@ -5,16 +5,15 @@ import {
   RELAY_V2_CONNECTION_DEADLINE_MS,
   RELAY_V2_REFUSAL_CODES,
   RELAY_V2_TUNNEL_CHANNELS,
-  RELAY_V2_TUNNEL_VERSION,
+  RelayV2ChunkDecoder,
   type RelayV2TunnelChannel,
   type RelayV2TunnelControl,
   type RelayV2TunnelMessage,
-  RelayV2TunnelRecordDecoder,
 } from "@openbot/contracts/relay-protocol/v2-tunnel";
 import { Schema } from "effect";
-import { type RelayCrypto, webRelayCrypto } from "./relay-crypto";
-import type { RelayBrowserIdentity } from "./relay-identity";
-import { dialRelayPeer, type RelaySocketClose, type RelaySocketOptions, type RelayTunnel } from "./relay-socket";
+import type { RelaySession, RelaySessionSource } from "./relay-sessions";
+import type { RelaySocketClose } from "./relay-socket";
+import { RelayV2ChannelWriter } from "./relay-v2-channels";
 import type {
   RemoteTeamChannel,
   RemoteTeamChannelHandlers,
@@ -24,7 +23,6 @@ import type {
 } from "./remote-peer";
 
 const CONTROL_PREFIX = '{"type":"relay-v2-';
-const BUFFERED_LOW_CHECK_MS = 50;
 const BUFFERED_LOW_THRESHOLD = 1024 * 1024;
 const READY_DEADLINE_MS = RELAY_V2_CONNECTION_DEADLINE_MS + 15_000;
 
@@ -41,7 +39,8 @@ export class RelayV2TunnelError extends Schema.TaggedError<RelayV2TunnelError>()
   message: Schema.String,
 }) {}
 
-export interface RelayV2TunnelOptions extends RelaySocketOptions {
+export interface RelayV2TunnelOptions {
+  signal?: AbortSignal;
   readyDeadlineMs?: number;
 }
 
@@ -49,20 +48,20 @@ type Refusal = Extract<RelayV2TunnelControl, { type: "relay-v2-refused" }>;
 
 class RelayV2Channel implements RemoteTeamChannel {
   readonly bufferedAmountLowThreshold = BUFFERED_LOW_THRESHOLD;
-  readonly #tunnel: RelayTunnel;
-  readonly #records = new RelayV2TunnelRecordDecoder();
+  readonly #name: RelayV2TunnelChannel;
+  readonly #session: RelaySession;
+  readonly #writer: RelayV2ChannelWriter;
   readonly #pending: RelayV2TunnelMessage[] = [];
-  readonly #lowListeners = new Set<() => void>();
   #handlers: RemoteTeamChannelHandlers | null = null;
   #state: RemoteTeamChannelState = "open";
   #closeReason: Error | null = null;
-  #lowTimer: ReturnType<typeof setInterval> | null = null;
   onControl: ((control: RelayV2TunnelControl) => void) | null = null;
   onClosed: ((reason: Error) => void) | null = null;
 
-  constructor(tunnel: RelayTunnel) {
-    this.#tunnel = tunnel;
-    tunnel.listen({ data: (data) => this.#receive(data), closed: (close) => this.#closed(close) });
+  constructor(name: RelayV2TunnelChannel, session: RelaySession, writer: RelayV2ChannelWriter) {
+    this.#name = name;
+    this.#session = session;
+    this.#writer = writer;
   }
 
   get readyState(): RemoteTeamChannelState {
@@ -70,19 +69,13 @@ class RelayV2Channel implements RemoteTeamChannel {
   }
 
   get bufferedAmount(): number {
-    return this.#tunnel.bufferedAmount;
+    return this.#writer.bufferedAmount(this.#name);
   }
 
   send(data: string | ArrayBuffer): void {
     if (this.#state !== "open")
       throw new RelayV2TunnelError({ code: "closed", message: "The relay tunnel is closed." });
-    this.#tunnel.write(new Uint8Array(encodeRelayV2TunnelRecord(data)));
-  }
-
-  writeMarker(channel: RelayV2TunnelChannel, connectionKey: string): void {
-    this.#tunnel.write(
-      new Uint8Array(encodeRelayV2TunnelMarker({ version: RELAY_V2_TUNNEL_VERSION, channel, connectionKey })),
-    );
+    this.#writer.enqueue(this.#name, encodeRelayV2TunnelRecord(data));
   }
 
   listen(handlers: RemoteTeamChannelHandlers): void {
@@ -92,40 +85,27 @@ class RelayV2Channel implements RemoteTeamChannel {
   }
 
   onBufferedAmountLow(listener: () => void): () => void {
-    this.#lowListeners.add(listener);
-    this.#lowTimer ??= setInterval(() => this.#checkLow(), BUFFERED_LOW_CHECK_MS);
-    return () => {
-      this.#lowListeners.delete(listener);
-      if (this.#lowListeners.size === 0) this.#stopLowTimer();
-    };
+    return this.#writer.onProgress(() => {
+      if (this.bufferedAmount <= this.bufferedAmountLowThreshold) listener();
+    });
   }
 
   close(): void {
-    this.#tunnel.close();
+    this.#session.close();
   }
 
-  #receive(data: Uint8Array): void {
-    let messages: RelayV2TunnelMessage[];
-    try {
-      messages = this.#records.push(data);
-    } catch {
-      this.#tunnel.fail("protocol_error", "The host sent a relay record that is not valid.");
-      return;
-    }
-    for (const message of messages) {
-      const control =
-        typeof message === "string" && message.startsWith(CONTROL_PREFIX) ? decodeRelayV2TunnelControl(message) : null;
-      if (control?.type === "relay-v2-refused") this.#closeReason = refusalError(control);
-      if (control) this.onControl?.(control);
-      else if (this.#handlers) this.#handlers.message(message);
-      else this.#pending.push(message);
-    }
+  receive(message: RelayV2TunnelMessage): void {
+    const control =
+      typeof message === "string" && message.startsWith(CONTROL_PREFIX) ? decodeRelayV2TunnelControl(message) : null;
+    if (control?.type === "relay-v2-refused") this.#closeReason = refusalError(control);
+    if (control) this.onControl?.(control);
+    else if (this.#handlers) this.#handlers.message(message);
+    else this.#pending.push(message);
   }
 
-  #closed(close: RelaySocketClose): void {
+  closed(close: RelaySocketClose): void {
     if (this.#state === "closed") return;
     this.#state = "closed";
-    this.#stopLowTimer();
     const reason =
       this.#closeReason ??
       (close.clean
@@ -135,80 +115,71 @@ class RelayV2Channel implements RemoteTeamChannel {
     this.onClosed?.(reason);
     this.#handlers?.close(reason);
   }
-
-  #checkLow(): void {
-    if (this.bufferedAmount > this.bufferedAmountLowThreshold) return;
-    for (const listener of [...this.#lowListeners]) listener();
-  }
-
-  #stopLowTimer(): void {
-    if (this.#lowTimer !== null) clearInterval(this.#lowTimer);
-    this.#lowTimer = null;
-  }
 }
 
 export async function openRelayV2Tunnels(
-  identity: RelayBrowserIdentity,
+  sessions: RelaySessionSource,
   hostKeyId: string,
   options: RelayV2TunnelOptions = {},
 ): Promise<RemoteTeamTunnels> {
-  const abort = new AbortController();
-  const stop = () => abort.abort();
-  options.signal?.addEventListener("abort", stop, { once: true });
-  if (options.signal?.aborted) stop();
-  const dialed = await Promise.allSettled(
-    RELAY_V2_TUNNEL_CHANNELS.map(() => dialRelayPeer(identity, hostKeyId, { ...options, signal: abort.signal })),
-  );
-  const tunnels = dialed.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
-  const failure = dialed.find((result) => result.status === "rejected");
-  const [rpcTunnel, eventsTunnel, filesTunnel] = tunnels;
-  if (failure || !rpcTunnel || !eventsTunnel || !filesTunnel) {
-    options.signal?.removeEventListener("abort", stop);
-    for (const tunnel of tunnels) tunnel.close();
-    throw failure?.reason ?? new RelayV2TunnelError({ code: "closed", message: "The relay tunnels did not open." });
-  }
+  const session = await sessions.openSession(hostKeyId, { signal: options.signal });
+  const writer = new RelayV2ChannelWriter({
+    write: (bytes) => session.write(bytes),
+    queuedBytes: () => session.queuedBytes(),
+    unacknowledgedBytes: () => session.unacknowledgedBytes(),
+    onProgress: (listener) => session.onProgress(listener),
+  });
   const channels = {
-    rpc: new RelayV2Channel(rpcTunnel),
-    events: new RelayV2Channel(eventsTunnel),
-    files: new RelayV2Channel(filesTunnel),
+    rpc: new RelayV2Channel("rpc", session, writer),
+    events: new RelayV2Channel("events", session, writer),
+    files: new RelayV2Channel("files", session, writer),
   };
-  const closeAll = () => {
-    for (const channel of Object.values(channels)) channel.close();
-  };
-  abort.signal.addEventListener("abort", closeAll, { once: true });
+  const decoder = new RelayV2ChunkDecoder();
+  session.listen({
+    data: (bytes) => {
+      let messages: ReturnType<RelayV2ChunkDecoder["push"]>;
+      try {
+        messages = decoder.push(bytes);
+      } catch {
+        session.fail("protocol_error", "The host sent a relay record that is not valid.");
+        return;
+      }
+      for (const { channel, message } of messages) channels[channel].receive(message);
+    },
+    closed: (close) => {
+      writer.close();
+      for (const channel of Object.values(channels)) channel.closed(close);
+    },
+  });
+  const closeAll = () => session.close();
+  const abort = options.signal;
+  abort?.addEventListener("abort", closeAll, { once: true });
   try {
-    await waitForReady(
-      channels,
-      options.readyDeadlineMs ?? READY_DEADLINE_MS,
-      abort.signal,
-      options.crypto ?? webRelayCrypto,
-    );
+    session.write(encodeRelayV2TunnelMarker());
+    await waitForReady(channels, options.readyDeadlineMs ?? READY_DEADLINE_MS, abort);
   } catch (error) {
     closeAll();
     throw error;
   } finally {
-    options.signal?.removeEventListener("abort", stop);
-    abort.signal.removeEventListener("abort", closeAll);
+    abort?.removeEventListener("abort", closeAll);
   }
   return { ...channels, close: closeAll };
 }
 
 export function relayTeamTunnelTransport(
-  identity: RelayBrowserIdentity,
+  sessions: RelaySessionSource,
   options: Omit<RelayV2TunnelOptions, "signal"> = {},
 ): RemoteTeamTunnelTransport {
   return {
-    open: (_hostId, hostKey, signal) => openRelayV2Tunnels(identity, hostKey, { ...options, signal }),
+    open: (_hostId, hostKey, signal) => openRelayV2Tunnels(sessions, hostKey, { ...options, signal }),
   };
 }
 
 function waitForReady(
   channels: Record<RelayV2TunnelChannel, RelayV2Channel>,
   deadlineMs: number,
-  signal: AbortSignal,
-  crypto: RelayCrypto,
+  signal: AbortSignal | undefined,
 ): Promise<void> {
-  const connectionKey = randomConnectionKey(crypto);
   return new Promise<void>((resolve, reject) => {
     const timer = setTimeout(
       () =>
@@ -222,10 +193,18 @@ function waitForReady(
     );
     const onAbort = () =>
       finish(new RelayV2TunnelError({ code: "closed", message: "The relay connection was stopped." }));
-    signal.addEventListener("abort", onAbort, { once: true });
+    if (signal?.aborted) {
+      onAbort();
+      return;
+    }
+    signal?.addEventListener("abort", onAbort, { once: true });
+    if (channels.rpc.readyState === "closed") {
+      finish(new RelayV2TunnelError({ code: "closed", message: "The host closed the relay tunnel." }));
+      return;
+    }
     function finish(error: Error | null) {
       clearTimeout(timer);
-      signal.removeEventListener("abort", onAbort);
+      signal?.removeEventListener("abort", onAbort);
       for (const channel of Object.values(channels)) {
         channel.onControl = null;
         channel.onClosed = null;
@@ -248,15 +227,6 @@ function waitForReady(
           );
       };
     }
-    try {
-      for (const name of RELAY_V2_TUNNEL_CHANNELS) channels[name].writeMarker(name, connectionKey);
-    } catch (error) {
-      finish(
-        error instanceof Error
-          ? error
-          : new RelayV2TunnelError({ code: "closed", message: "The relay tunnel is closed." }),
-      );
-    }
   });
 }
 
@@ -265,8 +235,4 @@ function refusalError(refusal: Refusal): RelayV2TunnelError {
     code: refusal.code,
     message: refusal.message ?? `The host refused the relay connection (${refusal.code}).`,
   });
-}
-
-function randomConnectionKey(crypto: RelayCrypto): string {
-  return [...crypto.randomBytes(16)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }

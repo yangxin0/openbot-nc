@@ -1,6 +1,10 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { RELAY_ENROLL_PATH } from "@openbot/contracts/relay-protocol/enrollment";
-import { RELAY_PATH, RELAY_TUNNEL_MESSAGE_BYTES_LIMIT } from "@openbot/contracts/relay-protocol/messages";
+import {
+  RELAY_PATH,
+  RELAY_SESSION_WINDOW_BYTES,
+  RELAY_SOCKET_MESSAGE_BYTES_LIMIT,
+} from "@openbot/contracts/relay-protocol/messages";
 import type { ServerWebSocket } from "bun";
 import type { RelayConfig } from "./config";
 import type { EnrollHandler } from "./enroll-route";
@@ -14,7 +18,7 @@ interface SocketData {
 }
 
 const IDLE_TIMEOUT_SECONDS = 120;
-const BACKPRESSURE_LIMIT_FACTOR = 16;
+const BACKPRESSURE_LIMIT_WINDOWS = 64;
 
 interface RelayServer {
   port: number;
@@ -60,9 +64,8 @@ export function startRelayServer(
     },
     websocket: {
       idleTimeout: IDLE_TIMEOUT_SECONDS,
-      maxPayloadLength: RELAY_TUNNEL_MESSAGE_BYTES_LIMIT,
-      backpressureLimit:
-        Math.max(config.limits.highWaterBytes, RELAY_TUNNEL_MESSAGE_BYTES_LIMIT) * BACKPRESSURE_LIMIT_FACTOR,
+      maxPayloadLength: RELAY_SOCKET_MESSAGE_BYTES_LIMIT,
+      backpressureLimit: config.limits.highWaterBytes + RELAY_SESSION_WINDOW_BYTES * BACKPRESSURE_LIMIT_WINDOWS,
       closeOnBackpressureLimit: true,
       perMessageDeflate: false,
       sendPings: true,
@@ -79,8 +82,8 @@ export function startRelayServer(
       drain(ws) {
         service.drained(ws.data.id);
       },
-      close(ws) {
-        service.disconnect(ws.data.id);
+      close(ws, code) {
+        service.disconnect(ws.data.id, code);
       },
     },
   });
@@ -121,12 +124,6 @@ function socketAdapter(ws: ServerWebSocket<SocketData>): RelaySocket {
       ws.send(data);
     },
     bufferedBytes: () => ws.getBufferedAmount(),
-    pauseReading: () => {
-      if (typeof ws.pause === "function") ws.pause();
-    },
-    resumeReading: () => {
-      if (typeof ws.resume === "function") ws.resume();
-    },
     close: (code, reason) => ws.close(code, reason.slice(0, 123)),
   };
 }
@@ -142,8 +139,9 @@ function prometheusMetrics(service: RelayService): string {
     `openbot_relay_sockets ${metrics.sockets}`,
     `openbot_relay_teams ${metrics.teams}`,
     `openbot_relay_members ${metrics.members}`,
-    `openbot_relay_tunnels ${metrics.tunnels}`,
-    `openbot_relay_pending_connections ${metrics.pendingConnections}`,
+    `openbot_relay_data_sockets ${metrics.dataSockets}`,
+    `openbot_relay_sessions ${metrics.sessions}`,
+    `openbot_relay_pending_sessions ${metrics.pendingSessions}`,
     "",
   ].join("\n");
 }

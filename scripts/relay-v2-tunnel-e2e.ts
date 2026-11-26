@@ -12,15 +12,15 @@ import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/co
 import { RELAY_PATH } from "@openbot/contracts/relay-protocol/messages";
 import {
   decodeRelayV2TunnelControl,
+  encodeRelayV2Chunks,
   encodeRelayV2TunnelMarker,
   encodeRelayV2TunnelRecord,
-  RELAY_V2_TUNNEL_CHANNELS,
   RELAY_V2_TUNNEL_PREFIX,
   RELAY_V2_TUNNEL_VERSION,
+  RelayV2ChunkDecoder,
   type RelayV2TunnelChannel,
   type RelayV2TunnelControl,
   type RelayV2TunnelMessage,
-  RelayV2TunnelRecordDecoder,
 } from "@openbot/contracts/relay-protocol/v2-tunnel";
 import { isDynamicRecord, isNumber, isString } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
@@ -52,6 +52,7 @@ import { runCauseEffect } from "../src/backend/effect-boundary";
 import type { OpenBotDatabase as OpenBotDatabaseInstance } from "../src/backend/openbot-database";
 import type { HostService as HostServiceInstance } from "../src/main/host-service";
 import type { LocalProfile } from "../src/main/local-profile-store";
+import { RelayControl } from "../src/main/relay/control";
 import { RelayDialer } from "../src/main/relay/dialer";
 import { createRelayFetch } from "../src/main/relay/fetch";
 import { type RelayCipher, RelayIdentityStore } from "../src/main/relay/identity-store";
@@ -63,7 +64,6 @@ const OUT = resolve(ROOT, ".openbot-build/relay-v2-tunnel-e2e");
 const MAIN = resolve(ROOT, "remote/api/src/relay/main.ts");
 const WAIT_MS = 30_000;
 const FIRST_BYTES_DEADLINE_MS = 1_500;
-const CONNECTION_DEADLINE_MS = 2_000;
 const TRANSFER_BYTES = 3 * 1024 * 1024 + 4_321;
 const FILE_CHUNK_BYTES = 60 * 1024;
 const READY_LINE = "OpenBot relay is ready";
@@ -181,10 +181,6 @@ function sha256(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-function connectionKey(): string {
-  return randomBytes(16).toString("hex");
-}
-
 const testCipher: RelayCipher = {
   encrypt: (value) => Buffer.from(value, "utf8").reverse(),
   decrypt: (value) => Buffer.from(value).reverse().toString("utf8"),
@@ -229,37 +225,34 @@ class TestTunnel {
   readonly errors: string[] = [];
   closed = false;
   onMessage: ((message: RelayV2TunnelMessage) => void) | null = null;
-  readonly #records = new RelayV2TunnelRecordDecoder();
   readonly #payloads = new TeamV2PayloadDecoder();
   readonly #waiters = new Set<() => void>();
 
   constructor(
     readonly channel: RelayV2TunnelChannel,
     readonly stream: RelayStream,
-  ) {
-    stream.on("data", (chunk: Buffer) => {
-      for (const record of this.#records.push(chunk)) {
-        const payload = this.#payloads.push(record);
-        if (payload === undefined) continue;
-        this.messages.push(payload);
-        try {
-          this.onMessage?.(payload);
-        } catch (error) {
-          this.errors.push(error instanceof Error ? error.message : inspect(error));
-        }
-      }
-      this.#wake();
-    });
-    stream.on("close", () => {
-      this.closed = true;
-      this.#wake();
-    });
-    stream.on("error", () => stream.destroy());
+  ) {}
+
+  deliver(record: RelayV2TunnelMessage): void {
+    const payload = this.#payloads.push(record);
+    if (payload === undefined) return;
+    this.messages.push(payload);
+    try {
+      this.onMessage?.(payload);
+    } catch (error) {
+      this.errors.push(error instanceof Error ? error.message : inspect(error));
+    }
+    this.#wake();
+  }
+
+  markClosed(): void {
+    this.closed = true;
+    this.#wake();
   }
 
   send(data: RelayV2TunnelMessage): void {
     for (const frame of encodeTeamV2Payload(data, Number.POSITIVE_INFINITY)) {
-      this.stream.write(encodeRelayV2TunnelRecord(frame));
+      for (const chunk of encodeRelayV2Chunks(this.channel, encodeRelayV2TunnelRecord(frame))) this.stream.write(chunk);
     }
   }
 
@@ -326,6 +319,23 @@ interface ReceivedFile {
   bytes: Uint8Array;
   received: number;
   done: boolean;
+}
+
+function attachTunnels(stream: RelayStream): Record<RelayV2TunnelChannel, TestTunnel> {
+  const tunnels = {
+    rpc: new TestTunnel("rpc", stream),
+    events: new TestTunnel("events", stream),
+    files: new TestTunnel("files", stream),
+  };
+  const decoder = new RelayV2ChunkDecoder();
+  stream.on("data", (chunk: Buffer) => {
+    for (const { channel, message } of decoder.push(chunk)) tunnels[channel].deliver(message);
+  });
+  stream.on("close", () => {
+    for (const tunnel of Object.values(tunnels)) tunnel.markClosed();
+  });
+  stream.on("error", () => stream.destroy());
+  return tunnels;
 }
 
 class V2Client {
@@ -615,6 +625,7 @@ const localOwner: LocalProfile = { id: "local-profile-e2e", name: "Host Person",
 let relay: Relay | null = null;
 const relayLogs: string[][] = [];
 const closers: Array<() => void> = [];
+const controls: RelayControl[] = [];
 let database: OpenBotDatabaseInstance | null = null;
 let agents: AgentServiceInstance | null = null;
 let host: HostServiceInstance | null = null;
@@ -639,13 +650,27 @@ try {
     return identity;
   };
   const hostStore = await identityStore("host", hostBundle);
-  const aliceDialer = new RelayDialer({ identity: await identityStore("alice", aliceBundle) });
-  const bobDialer = new RelayDialer({ identity: await identityStore("bob", bobBundle) });
-  const eveDialer = new RelayDialer({ identity: await identityStore("eve", eveBundle) });
-  const ownerDialer = new RelayDialer({ identity: await identityStore("owner", ownerBundle) });
 
   relay = await startRelay(environment);
   relayLogs.push(relay.log);
+  const memberControl = async (name: string, bundle: RelayIdentityBundle) => {
+    const control = new RelayControl({ identity: await identityStore(name, bundle), reconnect });
+    controls.push(control);
+    await ok(control.start());
+    await until<void>(`${name} is online at the relay`, (done) => {
+      const listener = () => {
+        if (control.state().status === "online") done();
+      };
+      control.on("state", listener);
+      listener();
+      return () => control.off("state", listener);
+    });
+    return new RelayDialer({ control });
+  };
+  const aliceDialer = await memberControl("alice", aliceBundle);
+  const bobDialer = await memberControl("bob", bobBundle);
+  const eveDialer = await memberControl("eve", eveBundle);
+  const ownerDialer = await memberControl("owner", ownerBundle);
 
   database = new OpenBotDatabase(hostData);
   const agentStore = new AgentStore(hostData, join(work, "home"), database);
@@ -701,7 +726,6 @@ try {
     hostService.startRelayHosting(hostStore, {
       reconnect,
       firstBytesDeadlineMs: FIRST_BYTES_DEADLINE_MS,
-      tunnelConnectionDeadlineMs: CONNECTION_DEADLINE_MS,
     }),
   );
   await until<void>("the host is online at the relay", (done) => {
@@ -713,28 +737,21 @@ try {
     return () => hostService.off("changed", listener);
   });
 
-  const openTunnel = async (dialer: RelayDialer, channel: RelayV2TunnelChannel, key: string) => {
+  const openTunnels = async (dialer: RelayDialer) => {
     const stream = await ok(dialer.dial(hostKeyId));
     closers.push(() => stream.destroy());
-    const tunnel = new TestTunnel(channel, stream);
-    stream.write(encodeRelayV2TunnelMarker({ version: RELAY_V2_TUNNEL_VERSION, channel, connectionKey: key }));
-    return tunnel;
+    const tunnels = attachTunnels(stream);
+    stream.write(encodeRelayV2TunnelMarker());
+    return tunnels;
   };
-  const openTunnels = async (dialer: RelayDialer, key: string) => {
-    const [rpc, events, files] = await Promise.all(
-      RELAY_V2_TUNNEL_CHANNELS.map((channel) => openTunnel(dialer, channel, key)),
-    );
-    assert.ok(rpc && events && files);
-    return { rpc, events, files };
-  };
-  const connectV2 = async (dialer: RelayDialer, key = connectionKey()) => {
-    const client = new V2Client(await openTunnels(dialer, key));
+  const connectV2 = async (dialer: RelayDialer) => {
+    const client = new V2Client(await openTunnels(dialer));
     await client.rpc.next("the host sends relay-v2-ready", (message) =>
       control(message)?.type === "relay-v2-ready" ? true : null,
     );
     client.tunnels.events.send(encodeTeamProtocolV2Frame({ version: 2, type: "event-ack", throughSequence: 0 }));
     closers.push(() => client.close());
-    return { client, key };
+    return { client };
   };
 
   const desktopFetch = (dialer: RelayDialer) => {
@@ -784,7 +801,7 @@ try {
 
   let alice: Awaited<ReturnType<typeof connectV2>> | null = null;
   let aliceMemberId = "";
-  await check("Three tunnels with one connection key get relay-v2-ready and a member session for alice", async () => {
+  await check("One session with three channels gets relay-v2-ready and a member session for alice", async () => {
     alice = await connectV2(aliceDialer);
     const me = resultOf(await alice.client.request("GET", TEAM_API_ROUTES.me, null));
     assert.equal(me.status, 200);
@@ -884,28 +901,17 @@ try {
     assert.deepEqual([login.status, login.message], [403, RELAY_SIGN_IN_ONLY]);
   });
 
-  await check("A tunnel with alice's connection key from bob is refused, and alice keeps working", async () => {
+  await check("The three channels of a V2 connection share one relay session", async () => {
     assert.ok(alice);
-    const stolen = await openTunnel(bobDialer, "files", alice.key);
-    const refusal = await stolen.next("the refusal", (message) => control(message));
-    assert.deepEqual(refusal, {
-      type: "relay-v2-refused",
-      version: RELAY_V2_TUNNEL_VERSION,
-      code: "different_peer",
-      message: null,
-    });
-    await stolen.untilClosed("the refused tunnel closes");
-    const duplicate = await openTunnel(aliceDialer, "rpc", alice.key);
-    assert.equal((await duplicate.next("the refusal", (message) => control(message)))?.type, "relay-v2-refused");
-    await duplicate.untilClosed("the duplicate tunnel closes");
+    const stream = alice.client.rpc.stream;
+    assert.equal(alice.client.tunnels.events.stream, stream);
+    assert.equal(alice.client.tunnels.files.stream, stream);
+    assert.equal(stream.peer?.keyId, hostKeyId);
+    const second = await connectV2(bobDialer);
+    assert.notEqual(second.client.rpc.stream, stream);
+    assert.equal(resultOf(await second.client.request("GET", TEAM_API_ROUTES.me, null)).status, 200);
     assert.equal(resultOf(await alice.client.request("GET", TEAM_API_ROUTES.me, null)).status, 200);
-  });
-
-  await check("A connection that never opens all three tunnels is refused after its deadline", async () => {
-    const lonely = await openTunnel(aliceDialer, "rpc", connectionKey());
-    const refusal = await lonely.next("the refusal", (message) => control(message));
-    assert.equal(refusal?.type === "relay-v2-refused" ? refusal.code : null, "connection_incomplete");
-    await lonely.untilClosed("the incomplete tunnel closes");
+    second.client.close();
   });
 
   await check("A certificate of another team cannot dial the host", async () => {
@@ -926,17 +932,15 @@ try {
     assert.equal(disabled.status, 200, inspect(disabled.body));
     assert.equal(errorOf(await bob.client.request("GET", TEAM_API_ROUTES.me, null)).status, 401);
     bob.client.close();
-    const again = await openTunnels(bobDialer, connectionKey());
-    for (const tunnel of Object.values(again)) {
-      const refusal = await tunnel.next("the refusal", (message) => control(message));
-      assert.deepEqual(refusal, {
-        type: "relay-v2-refused",
-        version: RELAY_V2_TUNNEL_VERSION,
-        code: "sign_in_refused",
-        message: MEMBER_DISABLED,
-      });
-      await tunnel.untilClosed("the refused tunnel closes");
-    }
+    const again = await openTunnels(bobDialer);
+    const refusal = await again.rpc.next("the refusal", (message) => control(message));
+    assert.deepEqual(refusal, {
+      type: "relay-v2-refused",
+      version: RELAY_V2_TUNNEL_VERSION,
+      code: "sign_in_refused",
+      message: MEMBER_DISABLED,
+    });
+    await again.rpc.untilClosed("the refused connection closes");
   });
 
   const rawStream = async () => {
@@ -984,11 +988,7 @@ try {
 
   await check("A marker inside an HTTP body on a keep-alive stream stays HTTP", async () => {
     const stream = await rawStream();
-    const marker = encodeRelayV2TunnelMarker({
-      version: RELAY_V2_TUNNEL_VERSION,
-      channel: "rpc",
-      connectionKey: connectionKey(),
-    });
+    const marker = encodeRelayV2TunnelMarker();
     const exchange = (method: string, path: string, body: Uint8Array | null) =>
       deadline(
         `${method} ${path}`,
@@ -1037,6 +1037,7 @@ try {
   });
 } finally {
   for (const close of closers) close();
+  for (const control of controls) await Effect.runPromise(control.stop());
   if (host) await runCauseEffect(host.shutdown()).catch(() => undefined);
   if (agents) await runCauseEffect(agents.stop()).catch(() => undefined);
   database?.close();

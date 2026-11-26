@@ -16,8 +16,10 @@ invitation and no WebRTC.
 - Each OpenBot that connects with a valid certificate of a team is a member of that team. There is
   no other member list.
 - The server sends each member the list of the members of its team that are connected.
-- A member can open a connection to a member of the same team that hosts. The server passes the
-  bytes between the two sockets. It cannot connect members of different teams.
+- Each OpenBot keeps at most two WebSockets to the server: a control socket while it runs with an
+  identity, and one data socket that all its connections share. A connection to a member of the same
+  team that hosts is a session on these sockets. The server passes the session data between the data
+  sockets of the two members. It cannot connect members of different teams.
 - The identifier of a member is the SHA-256 of the public key in its certificate. So a member
   cannot take the address of a different member.
 - The verification goes in the two directions. The server verifies the certificate of each
@@ -26,11 +28,11 @@ invitation and no WebRTC.
 
 ## What the server can read
 
-The data of a connection goes through the server. TLS protects each of the two sockets, and the two
-OpenBots encrypt the bytes inside the connection from end to end (see
-[End-to-end encryption](#end-to-end-encryption)). The server can see who connects to whom, when, and
-the number and size of the encrypted messages. It cannot read or change chats, files or commands. It
-does not store the bytes or write them to a log.
+The data of a session goes through the server. TLS protects each socket, and the two OpenBots
+encrypt the bytes of the session from end to end (see [End-to-end encryption](#end-to-end-encryption)).
+The server can see who opens a session to whom, when, the session numbers, and the number and size of
+the encrypted frames. It cannot read or change chats, files or commands. It does not store the bytes or
+write them to a log. It keeps a data ticket in memory only as its SHA-256, for at most 60 seconds.
 
 A person who controls the server, or its root private key, controls who can connect: with the root
 key, that person can make a certificate for a new member. Keep the server and its data directory
@@ -315,8 +317,10 @@ the connections of the member at once.
 | `RELAY_HEALTH_HOST`, `RELAY_HEALTH_PORT` | `127.0.0.1`, `8080` | `/health/live`, `/health/ready` and `/metrics`. |
 | `RELAY_METRICS_TOKEN` | none | Bearer token for `/metrics`. With no token, `/metrics` answers 404. |
 | `RELAY_MAX_SOCKETS_PER_IP` | `128` | Sockets from one address. |
-| `RELAY_MAX_TUNNELS_PER_MEMBER` | `64` | Connections that one certificate can open. |
-| `RELAY_MAX_PENDING_PER_MEMBER` | `32` | Connections that wait for one member to accept. |
+| `RELAY_MAX_SESSIONS_PER_SOCKET` | `256` | Sessions of one member, opened and accepted. |
+| `RELAY_MAX_SESSIONS_PER_PAIR` | `32` | Sessions that one member opens to one other member. |
+| `RELAY_MAX_PENDING_PER_MEMBER` | `32` | Sessions that wait for one member to accept. |
+| `RELAY_HIGH_WATER_BYTES` | `262144` | Bytes in the send buffer of a data socket before the server keeps the next frames in its own queue for that member. |
 | `RELAY_ADMIN_HOST` | none | The private IP address of the admin page. With no value, there is no admin page. |
 | `RELAY_ADMIN_PORT` | `8992` | The port of the admin page. |
 | `RELAY_ADMIN_ALLOW_PUBLIC` | none | `1` permits a wildcard or public `RELAY_ADMIN_HOST`. |
@@ -334,30 +338,98 @@ is older than 30 seconds.
 
 ## Protocol
 
-The endpoint is `WSS /v1/relay`. Control messages are JSON text. Connection data is binary.
+The endpoint is `WSS /v1/relay`. Each OpenBot opens two WebSockets to it, never more: the control
+socket and the data socket. Control messages are JSON text. Session data is binary and goes only on
+the data socket.
+
+### Control socket
 
 1. The server sends `challenge` with a nonce (32 random bytes, base64url).
-2. The peer sends `hello` with its own nonce (`clientNonce`, 32 random bytes, base64url), its role,
-   its certificate, the team authority certificate, and a signature of `relayHelloTranscript`
-   (server nonce, client nonce, server address, role, target or connection).
-3. The server verifies the hello. Before any other message, it sends `server-proof` with its
-   identity certificate and a signature of `relayServerProofTranscript` (server nonce, client
-   nonce, server address, role, key identifier of the peer, target or connection). The signature is
-   ECDSA P-256 with SHA-256, in the IEEE P1363 format (64 bytes), base64url. The peer checks the
-   certificate and the signature with its own values before it accepts `welcome`, `waiting` or
-   `open`. When the check fails, or another message comes first, the peer closes the socket and
-   sends nothing more. The desktop reports `server_refused` and does not connect again.
-4. Role `member`: the control socket of an OpenBot. The server answers `welcome` with the team and
-   the members, and sends `members` after each change. `presence` changes `hosting` and the label.
-5. Role `client`: a connection to one member (`target`). The server sends `incoming` to the control
-   socket of the target.
-6. Role `accept`: the target opens a second socket for that connection. The server sends `open` to
-   the two sockets, with the certificate of the other side. Then it passes each binary message.
-7. `pause` and `resume` tell a sender that the other side is slow. On Bun 1.4 the server also stops
-   reading from the sender.
+2. The peer sends `hello` with its own nonce (`clientNonce`, 32 random bytes, base64url), the role
+   `member`, `hosting`, an optional label, `features: ["sessions-v2"]`, its certificate, the team
+   authority certificate, and a signature of `relayHelloTranscript` (server nonce, client nonce,
+   server address, role).
+3. The server verifies the hello. Before any other message, it sends `server-proof` with its identity
+   certificate and a signature of `relayServerProofTranscript` (server nonce, client nonce, server
+   address, role, key identifier of the peer). The signature is ECDSA P-256 with SHA-256, in the IEEE
+   P1363 format (64 bytes), base64url. The peer checks the certificate and the signature with its own
+   values before it accepts `welcome`. When the check fails, or another message comes first, the peer
+   closes the socket and sends nothing more. The desktop reports `server_refused` and does not connect
+   again.
+4. The server answers `welcome` with the team, the members and `features: ["sessions-v2"]`, and sends
+   `members` after each change. `presence` changes `hosting` and the label. The sharing switch only
+   changes `hosting`; it never opens or closes a socket. A client that gets no `sessions-v2` in
+   `welcome` stops with "The relay server needs an update."
+5. The control socket stays open while the app runs with an identity. The server pings it, so it has
+   no idle limit. The phone closes it when the app goes to the background (iOS stops background
+   sockets) and opens it again when the app comes back.
 
-A text message on an open connection, binary data on any other socket, or an invalid message closes
-the socket with an `error` message.
+### Data socket
+
+- The client asks for a ticket on the control socket (`data-ticket`). The server answers
+  `data-ticket` with a random 256-bit ticket, base64url. A ticket is good for one use, for 60 seconds,
+  only for that control socket and its key identifier. The server keeps only its SHA-256.
+- The client opens the data socket at the same time as it asks for the ticket. When the socket is
+  open and the ticket has come, it sends `data-hello` with the ticket as its first message. There is
+  no challenge round and no second certificate proof (the server still sends `challenge`; the data
+  socket does not answer it). The server binds the data socket to the control socket of the member. A
+  ticket that is unknown, used or expired gives `authentication_failed`.
+- The data socket carries only session frames. A text message on it, or a frame on the control
+  socket, is a protocol error.
+- The client opens it at the first need: an outgoing session, a `session-incoming`, or `data-wanted`.
+  The server sends `data-wanted` when frames wait for a member that has no data socket; it keeps the
+  frames until the data socket comes.
+- The client closes it after 5 minutes with no session data (`dataIdleMs`, default 300 seconds), with
+  the code 1000. The sessions stay open, and the control socket stays open. Another close code ends
+  all sessions of the member. When the control socket closes, or the certificate is revoked, the
+  server closes the data socket and all sessions of the member.
+- The desktop gives the data socket the TLS session of the control socket, so TLS can resume.
+
+### Sessions
+
+| Message | Direction | Fields |
+| --- | --- | --- |
+| `session-open` | client to server | `session` (number that the opener chooses, 1 to 2^31-1, not used again on that socket), `target` (key identifier), `first` (the end-to-end hello, base64url) |
+| `session-incoming` | server to target | `session` (number that the server chooses for the target, 2^31 to 2^32-1), `connectionId`, `from` (certificate of the opener), `first` |
+| `session-accept` | target to server | `session`, `first` (the end-to-end reply) |
+| `session-refuse` | target to server | `session`, `code` (`refused` or `rate_limited`) |
+| `session-opened` | server to opener | `session`, `connectionId`, `peer` (certificate of the target), `first` |
+| `session-failed` | server to opener | `session`, `code` (`target_unavailable`, `refused`, `rate_limited`, `invalid_message`) |
+| `session-credit` | both | `session`, `bytes` |
+| `session-close` | both | `session` (stops the session at once) |
+
+- The server routes only to a member of the same team that hosts and sent `sessions-v2`. It makes a
+  new random `connectionId` (16 bytes, base64url) for each session and gives the same value to both
+  sides. A target that does not answer in 15 seconds gives `target_unavailable`.
+- A data frame is one binary message: byte 0 the frame version (1), byte 1 the kind (1 data, 2 end),
+  bytes 2 to 5 the session number (32-bit big-endian, the number of the receiving socket), then the
+  payload (at most 64 KiB; none for an end frame). The payload is the end-to-end record stream. The
+  server rewrites the session number and passes the payload as it is.
+- An end frame closes the session after the data before it, so a graceful end keeps the order of the
+  data. `session-close` stops at once.
+- Flow control: each direction of a session starts with a window of 1 MiB. A sender sends at most its
+  credit; the receiver gives `session-credit` when the application has taken the bytes (in batches of
+  256 KiB). The server checks each frame against the credit and refuses a credit above the window.
+  The window is 1 MiB, not 256 KiB, so that one session can move about 10 MiB/s at a round trip of 100
+  ms.
+- Fairness: each client sends at most 64 KiB of one session in turn, round robin, and keeps the rest
+  in its own queue while the data socket buffer holds more than 128 KiB. The server keeps a queue for
+  each session of each member, and sends round robin while the send buffer holds less than
+  `RELAY_HIGH_WATER_BYTES`. Control messages go on their own socket, so a transfer never delays them.
+- Limits: sessions of one member (`RELAY_MAX_SESSIONS_PER_SOCKET`), sessions from one member to one
+  member (`RELAY_MAX_SESSIONS_PER_PAIR`), sessions that wait for one member
+  (`RELAY_MAX_PENDING_PER_MEMBER`). A frame over the credit, a frame on a session that is not open, or
+  a session number that is used again closes the control socket of the sender.
+
+A browser, extension or phone connection to a server is one session with three channels (`rpc`,
+`events`, `files`). After the end-to-end handshake, the client sends the marker `OPENBOT-V2:2\n`, then
+chunks: a channel tag (1 byte: 0 `rpc`, 1 `events`, 2 `files`), a length (2 bytes, big-endian, at most
+16381) and that many bytes of the V2 record stream of the channel. Both sides keep the order of each
+channel and interleave chunks of 16 KiB round robin. The files channel uses at most half of the window,
+so a file transfer does not delay `rpc` or `events`. A desktop client sends HTTP on its sessions, with
+keep-alive.
+
+An invalid message closes the socket with an `error` message.
 
 The rules of the server proof that need no cryptography (transcript, host name match, date and usage
 rules) are in `packages/contracts/src/relay-protocol/server-proof.ts`, so that a browser client can
@@ -365,18 +437,38 @@ use them with WebCrypto. The desktop check is in `src/main/relay/server-proof.ts
 
 The desktop accepts a TLS certificate of the system roots (the default roots of Node, with
 `NODE_EXTRA_CA_CERTS`) or of the root in its identity file, with the normal host name check. It
-refuses `ws:` except on its own computer.
+refuses `ws:` except on its own computer. Node `ws` turns off the Nagle delay on its sockets
+(`setNoDelay`).
+
+### Performance
+
+`bun run test:relay-session-latency` puts a delay of 100 ms each way between each device and the
+server, so one round trip through the server costs 400 ms. Results on this computer (2026-11-26):
+
+| Measure | Result |
+| --- | --- |
+| Desktop session ready, data socket open | 412 ms (about 1 round trip) |
+| Desktop first request on a new session, data socket open | 829 ms (about 2 round trips) |
+| Desktop first request when both data sockets were closed | 1,100 ms |
+| First request after the idle close of the data socket | 831 ms |
+| Further requests | 409 to 417 ms (1 round trip) |
+| Browser and phone: three channels ready (one session) | 844 ms and 857 ms |
+| Browser and phone requests | 414 to 436 ms |
+| A request or a new session during a 4 MiB transfer | 413 to 450 ms |
+| WebSockets for each app | 1 control and 1 data |
 
 ## End-to-end encryption
 
-Each connection starts with a handshake between the two OpenBots, before any application byte. The
-server passes it as opaque binary data and needs no change. The rules are in
-`packages/contracts/src/relay-protocol/tunnel-crypto.ts`. The desktop runs them in
-`src/main/relay/tunnel-encryption.ts` and `src/main/relay/stream.ts`, and the web client, extension
-and phone in `packages/team-client/src/relay-socket.ts`.
+Each session starts with a handshake between the two OpenBots, before any application byte. The
+rules are in `packages/contracts/src/relay-protocol/tunnel-crypto.ts`, and the desktop, the web
+client, the extension and the phone run them in `packages/team-client/src/relay-sessions.ts`. The
+handshake rides on the session messages, so a new session costs one round trip through the server
+before data flows: `e2e-hello` is `first` of `session-open`, `e2e-reply` is `first` of
+`session-accept` (and of `session-opened`), and `e2e-finish` is the first data frame, followed at once
+by application data.
 
-Each message is a frame: a length (4 bytes, big-endian) and the body. A handshake body starts with
-the version (1) and the type.
+Each handshake message and each record is a frame: a length (4 bytes, big-endian) and the body. A
+handshake body starts with the version (1) and the type.
 
 | Message | From | Body |
 | --- | --- | --- |
@@ -385,13 +477,13 @@ the version (1) and the type.
 | `e2e-finish` (type 3) | client | version, type, signature (64 bytes) |
 
 - The transcript is a sequence of items, each with a 4-byte big-endian length: the context
-  `openbot-relay-e2e-v1`, the label (`host` or `client`), the connection identifier of `open` or
-  `incoming`, the key identifier of the client, the key identifier of the host, the client ephemeral
-  key, the client nonce, the host ephemeral key and the host nonce.
+  `openbot-relay-e2e-v1`, the label (`host` or `client`), the `connectionId` of the session (from
+  `session-incoming` and `session-opened`), the key identifier of the client, the key identifier of
+  the host, the client ephemeral key, the client nonce, the host ephemeral key and the host nonce.
 - Each end signs the SHA-256 of the transcript with its label, with the key of its member
   certificate (ECDSA P-256, SHA-256, IEEE P1363). The other end verifies it with the public key of
-  the certificate that it checked for this connection. So the server cannot replace a key, replay an
-  old reply, or join two different connections.
+  the certificate that it checked for this session. So the server cannot replace a key, replay an
+  old reply, or join two different sessions.
 - Keys: the ECDH secret of the two ephemeral keys, salt = SHA-256 of the transcript with no label,
   HKDF-SHA256 with the info `openbot-relay-e2e-v1 c2h` and `openbot-relay-e2e-v1 h2c` gives one
   AES-256-GCM key for each direction. The ephemeral private keys are used once and dropped.
@@ -407,7 +499,7 @@ the version (1) and the type.
   deadline of 10 seconds on the host.
 - The encryption is mandatory. A peer that sends plain bytes (HTTP or the V2 marker) is refused.
   All OpenBots, the web client, the extension and the phone must run the same version.
-- The server can still cut a connection. The application then sees a closed connection, as with a
+- The server can still cut a session. The application then sees a closed connection, as with a
   network fault.
 
 ## Web client
@@ -566,10 +658,22 @@ bun run test:relay-tunnel-encryption
 ```
 
 This test puts a relay in the middle with a valid server proof between a desktop client and a host
-with relay hosting, and records every byte of each connection. It checks that a chat message, its
-reply and a file go through and that the recorded bytes hold no plaintext, also for V2 tunnels of a
+with relay hosting. It speaks the session protocol with control and data sockets and records every
+byte of each session. It checks that a chat message, its
+reply and a file go through and that the recorded bytes hold no plaintext, also for the V2 session of a
 phone process with noble crypto and no `crypto.subtle`. It checks that a changed byte closes the
 connection with `tunnel_integrity_failed` and the application gets no data, and that a replaced
-ephemeral key, a replayed reply, a connection with a different identifier and plain HTTP are
+ephemeral key, a replayed reply, a session with a different identifier and plain HTTP are
 refused. It measures one 8 MiB transfer through the real server for the desktop and the noble
 crypto, and writes `.openbot-build/relay-tunnel-encryption-e2e/report.json`.
+
+```sh
+bun run test:relay-session-latency
+```
+
+This test starts the real server, a host with relay hosting, a desktop client, the browser client
+code and the phone client code (noble crypto, no global `crypto`), with a TCP proxy that adds 100 ms
+each way. It checks the round trips in the table of [Performance](#performance), one session with
+three channels for each browser and phone connection, at most two WebSockets for each app, the idle
+close of the data socket and its new start, and that a 4 MiB transfer does not delay a request or a
+new session. It writes `.openbot-build/relay-session-latency-e2e/report.json`.

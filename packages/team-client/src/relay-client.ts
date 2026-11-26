@@ -10,6 +10,7 @@ import {
   readRelayIdentityFile,
   readRelayIdentityText,
 } from "./relay-identity";
+import type { RelaySessionSource } from "./relay-sessions";
 import { relayTeamTunnelTransport } from "./relay-v2-tunnels";
 import type { RemoteTeamHost } from "./remote-directory";
 import { createRemoteTeamPeer, type RemoteHostProtocols, type RemoteTeamPeerActions } from "./remote-peer";
@@ -26,6 +27,12 @@ export type {
   RelayIdentityReadOptions,
 } from "./relay-identity";
 export { RelayIdentityError } from "./relay-identity";
+export type {
+  RelayIncomingSession,
+  RelaySession,
+  RelaySessionOpenOptions,
+  RelaySessionSource,
+} from "./relay-sessions";
 export type { RelaySocketErrorCode } from "./relay-socket";
 export { RelaySocketError } from "./relay-socket";
 export type { RelayV2TunnelErrorCode } from "./relay-v2-tunnels";
@@ -99,7 +106,7 @@ export function relayTeamHost(member: RelayTeamMember, role: RemoteTeamHost["rol
 }
 
 export function createRelayTeamPeer(
-  identity: RelayBrowserIdentity,
+  sessions: RelaySessionSource,
   actions: { current: RelayTeamPeerActions },
   options: RelayTeamPeerOptions = {},
 ) {
@@ -107,9 +114,8 @@ export function createRelayTeamPeer(
     ...(options.hostProtocols ? { hostProtocols: options.hostProtocols } : {}),
     ...(options.clientProtocol ? { clientProtocol: options.clientProtocol } : {}),
     ...(options.crypto ? { randomBytes: options.crypto.randomBytes } : {}),
-    tunnels: relayTeamTunnelTransport(identity, {
+    tunnels: relayTeamTunnelTransport(sessions, {
       ...(options.readyDeadlineMs === undefined ? {} : { readyDeadlineMs: options.readyDeadlineMs }),
-      ...(options.crypto ? { crypto: options.crypto } : {}),
     }),
   });
 }

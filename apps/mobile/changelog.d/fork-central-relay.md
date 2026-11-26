@@ -1,5 +1,9 @@
 ### Changed
 
+- The app keeps one control WebSocket to the central server while it is in front, and opens one
+  data WebSocket for all its connections when it needs one; the data socket closes after 5 minutes
+  with no data. Connecting to a server takes about one round trip through the central server
+  instead of several new sockets. The app and the central server must run this version.
 - The app is OpenBot-NC: bundle identifier and package `app.openbotnc.mobile`, URL scheme
   `openbot-nc`. It installs next to the original app and does not update it.
 - The app connects to the servers of your team through your team's central server. To start, paste

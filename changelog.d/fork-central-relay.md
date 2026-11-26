@@ -54,6 +54,15 @@
 
 ### Changed
 
+- Each OpenBot-NC app (desktop, Linux server, web client, browser extension, phone) keeps at most
+  two WebSockets to the central server: one control socket while it runs with an identity, and one
+  data socket that all its connections share. The data socket opens at the first connection, signs
+  in with a single-use ticket from the control socket, and closes after 5 minutes with no data
+  (`dataIdleMs`). A connection to another device is a session on these sockets, not a new socket.
+  Connecting to another device takes about one round trip through the server, and the first request
+  about two. A browser, extension or phone connection to a server is one session with three
+  channels. A large file transfer does not delay other sessions or the control messages. All
+  devices and the central server must run this version: the older connection sockets are removed.
 - The macOS app and the iPhone app are signed with the Apple team of this fork (`HRQ4QNY8PW`), not
   the team of the original vendor. `build/entitlements.mac.development.plist` lets you sign a build
   for your own Mac with the Apple Development certificate of your Apple ID.

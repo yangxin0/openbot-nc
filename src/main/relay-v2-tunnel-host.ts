@@ -2,18 +2,19 @@ import { EventEmitter } from "node:events";
 import type { Duplex } from "node:stream";
 import type { RelayPeerCertificate } from "@openbot/contracts/relay-protocol/messages";
 import {
+  encodeRelayV2Chunks,
   encodeRelayV2TunnelControl,
   encodeRelayV2TunnelRecord,
-  RELAY_V2_CONNECTION_DEADLINE_MS,
   RELAY_V2_TUNNEL_CHANNELS,
   RELAY_V2_TUNNEL_VERSION,
+  RelayV2ChunkDecoder,
   type RelayV2RefusalCode,
   type RelayV2TunnelChannel,
-  type RelayV2TunnelMarker,
-  RelayV2TunnelRecordDecoder,
 } from "@openbot/contracts/relay-protocol/v2-tunnel";
+import { RelayV2ChannelWriter } from "@openbot/team-client/relay-v2-channels";
 import { encodeTeamV2Payload, TeamV2PayloadDecoder } from "@openbot/team-client/v2-framing";
 import { Effect, Fiber, Result } from "effect";
+import type { RelaySendProgress } from "./relay/stream";
 import { RemoteWorkflowError } from "./remote-service-effects";
 import { type TeamStore, TeamStoreError } from "./team-store";
 import type { TeamV2Channel, TeamV2ChannelTransport, TeamV2ChannelTransportEvents } from "./team-v2-channel-transport";
@@ -21,6 +22,7 @@ import { TeamV2HostPeer } from "./team-v2-host-peer";
 
 const CONNECTIONS_PER_PEER = 8;
 const CONNECTIONS_LIMIT = 64;
+const CHANNEL_QUEUE_LOW_BYTES = 256 * 1024;
 
 interface RelayV2SessionServer {
   readonly port: number | null;
@@ -34,15 +36,6 @@ interface RelayV2TunnelHostOptions {
   appVersion: string;
   transferDirectory: string;
   closeSession?: (sessionId: string) => Effect.Effect<void, RemoteWorkflowError>;
-  connectionDeadlineMs?: number;
-}
-
-interface RelayV2Tunnel {
-  channel: RelayV2TunnelChannel;
-  stream: Duplex;
-  rest: Uint8Array;
-  records: RelayV2TunnelRecordDecoder;
-  payloads: TeamV2PayloadDecoder;
 }
 
 interface RelayV2Session {
@@ -50,36 +43,51 @@ interface RelayV2Session {
   token: string;
 }
 
-type RelayV2ConnectionState = "gathering" | "opening" | "ready" | "closed";
+type RelayV2ConnectionState = "opening" | "ready" | "closed";
 
 class RelayV2Connection extends EventEmitter<TeamV2ChannelTransportEvents> implements TeamV2ChannelTransport {
-  readonly tunnels = new Map<RelayV2TunnelChannel, RelayV2Tunnel>();
   readonly peerId: string;
-  state: RelayV2ConnectionState = "gathering";
-  timer: ReturnType<typeof setTimeout> | null = null;
+  readonly writer: RelayV2ChannelWriter;
+  readonly #chunks = new RelayV2ChunkDecoder();
+  readonly #payloads = new Map<RelayV2TunnelChannel, TeamV2PayloadDecoder>(
+    RELAY_V2_TUNNEL_CHANNELS.map((channel) => [channel, new TeamV2PayloadDecoder()]),
+  );
+  #rest: Uint8Array;
+  state: RelayV2ConnectionState = "opening";
   hostPeer: TeamV2HostPeer | null = null;
   session: RelayV2Session | null = null;
 
   constructor(
-    readonly key: string,
+    readonly key: number,
     readonly peer: RelayPeerCertificate,
+    readonly stream: Duplex,
+    progress: RelaySendProgress,
+    rest: Uint8Array,
     readonly disconnect: (connection: RelayV2Connection) => void,
   ) {
     super();
     this.peerId = `relay-v2:${key}`;
+    this.#rest = rest;
+    this.writer = new RelayV2ChannelWriter({
+      write: (bytes) => {
+        if (stream.writable) stream.write(bytes);
+      },
+      queuedBytes: () => progress.queuedBytes(),
+      unacknowledgedBytes: () => progress.unacknowledgedBytes(),
+      onProgress: (listener) => progress.onProgress(listener),
+    });
   }
 
   send(peerId: string, channel: TeamV2Channel, data: string | ArrayBuffer): Effect.Effect<void, RemoteWorkflowError> {
     return Effect.suspend(() => {
       const name = relayChannel(channel);
-      const tunnel = peerId === this.peerId && this.state === "ready" && name ? this.tunnels.get(name) : undefined;
-      if (!tunnel?.stream.writable) {
+      if (peerId !== this.peerId || this.state !== "ready" || !name || !this.stream.writable) {
         return Effect.fail(new RemoteWorkflowError({ cause: new Error("The relay tunnel is not open.") }));
       }
       return Effect.try({
         try: () => encodeTeamV2Payload(data, Number.POSITIVE_INFINITY).map(encodeRelayV2TunnelRecord),
         catch: (cause) => new RemoteWorkflowError({ cause }),
-      }).pipe(Effect.flatMap((records) => writeRecords(tunnel.stream, records)));
+      }).pipe(Effect.flatMap((records) => this.#enqueue(name, records)));
     });
   }
 
@@ -90,67 +98,87 @@ class RelayV2Connection extends EventEmitter<TeamV2ChannelTransportEvents> imple
   }
 
   read(): void {
-    for (const tunnel of this.tunnels.values()) {
-      const rest = tunnel.rest;
-      tunnel.rest = new Uint8Array(0);
-      if (rest.byteLength > 0) this.#receive(tunnel, rest);
-      tunnel.stream.on("data", (chunk: Buffer) => this.#receive(tunnel, chunk));
-      tunnel.stream.resume();
-    }
+    const rest = this.#rest;
+    this.#rest = new Uint8Array(0);
+    if (rest.byteLength > 0) this.#receive(rest);
+    this.stream.on("data", (chunk: Buffer) => this.#receive(chunk));
+    this.stream.resume();
   }
 
-  #receive(tunnel: RelayV2Tunnel, bytes: Uint8Array): void {
+  #enqueue(channel: RelayV2TunnelChannel, records: readonly Uint8Array[]): Effect.Effect<void, RemoteWorkflowError> {
+    for (const record of records) this.writer.enqueue(channel, record);
+    if (this.writer.bufferedAmount(channel) <= CHANNEL_QUEUE_LOW_BYTES) return Effect.void;
+    return Effect.callback<void, RemoteWorkflowError>((resume) => {
+      const release = () => {
+        stopProgress();
+        this.stream.off("close", check);
+      };
+      const check = () => {
+        if (this.state === "closed" || !this.stream.writable) {
+          release();
+          resume(Effect.fail(new RemoteWorkflowError({ cause: new Error("The relay tunnel closed.") })));
+        } else if (this.writer.bufferedAmount(channel) <= CHANNEL_QUEUE_LOW_BYTES) {
+          release();
+          resume(Effect.void);
+        }
+      };
+      const stopProgress = this.writer.onProgress(check);
+      this.stream.once("close", check);
+      return Effect.sync(release);
+    });
+  }
+
+  #receive(bytes: Uint8Array): void {
     if (this.state !== "ready") return;
-    const payloads: Array<string | ArrayBuffer> = [];
+    const payloads: Array<{ channel: RelayV2TunnelChannel; payload: string | ArrayBuffer }> = [];
     try {
-      for (const message of tunnel.records.push(bytes)) {
-        const payload = tunnel.payloads.push(message);
-        if (payload !== undefined) payloads.push(payload);
+      for (const { channel, message } of this.#chunks.push(bytes)) {
+        const payload = this.#payloads.get(channel)?.push(message);
+        if (payload !== undefined) payloads.push({ channel, payload });
       }
     } catch {
       this.disconnect(this);
       return;
     }
-    for (const payload of payloads) {
+    for (const { channel, payload } of payloads) {
       if (this.state !== "ready") return;
-      this.emit("data", this.peerId, tunnel.channel, payload);
+      this.emit("data", this.peerId, channel, payload);
     }
   }
 }
 
 export class RelayV2TunnelHost {
   readonly #options: RelayV2TunnelHostOptions;
-  readonly #connections = new Map<string, RelayV2Connection>();
+  readonly #connections = new Map<number, RelayV2Connection>();
   readonly #operations = new Set<Fiber.Fiber<void>>();
   #stopped = false;
+  #nextKey = 0;
 
   constructor(options: RelayV2TunnelHostOptions) {
     this.#options = options;
   }
 
-  accept(stream: Duplex, peer: RelayPeerCertificate, marker: RelayV2TunnelMarker, rest: Uint8Array): void {
-    const existing = this.#connections.get(marker.connectionKey);
-    const connection = this.#stopped ? null : (existing ?? this.#startConnection(marker.connectionKey, peer));
-    const refusal = admissionRefusal(this.#stopped, existing, connection, peer, marker);
-    if (refusal || !connection) {
-      refuse(stream, refusal ?? "too_many_connections");
+  accept(stream: Duplex, progress: RelaySendProgress, peer: RelayPeerCertificate, rest: Uint8Array): void {
+    if (this.#stopped) {
+      refuse(stream, "host_unavailable");
       return;
     }
-    connection.tunnels.set(marker.channel, {
-      channel: marker.channel,
-      stream,
-      rest,
-      records: new RelayV2TunnelRecordDecoder(),
-      payloads: new TeamV2PayloadDecoder(),
-    });
-    stream.once("close", () => this.#close(connection, null));
-    if (connection.tunnels.size === RELAY_V2_TUNNEL_CHANNELS.length) {
-      this.#run(
-        this.#open(connection).pipe(
-          Effect.catchCause(() => Effect.sync(() => this.#close(connection, "host_unavailable"))),
-        ),
-      );
+    const fromPeer = [...this.#connections.values()].filter((connection) => connection.peer.keyId === peer.keyId);
+    if (fromPeer.length >= CONNECTIONS_PER_PEER || this.#connections.size >= CONNECTIONS_LIMIT) {
+      refuse(stream, "too_many_connections");
+      return;
     }
+    this.#nextKey += 1;
+    const connection = new RelayV2Connection(this.#nextKey, peer, stream, progress, rest, (closing) =>
+      this.#close(closing, null),
+    );
+    this.#connections.set(connection.key, connection);
+    stream.once("close", () => this.#close(connection, null));
+    this.#run(
+      this.#open(connection).pipe(
+        Effect.catchCause(() => Effect.sync(() => this.#close(connection, "host_unavailable"))),
+      ),
+    );
   }
 
   revokeSession(sessionId: string): Effect.Effect<void> {
@@ -171,26 +199,10 @@ export class RelayV2TunnelHost {
     yield* Fiber.awaitAll([...this.#operations]);
   }).bind(this);
 
-  #startConnection(key: string, peer: RelayPeerCertificate): RelayV2Connection | null {
-    const fromPeer = [...this.#connections.values()].filter((connection) => connection.peer.keyId === peer.keyId);
-    if (fromPeer.length >= CONNECTIONS_PER_PEER || this.#connections.size >= CONNECTIONS_LIMIT) return null;
-    const connection = new RelayV2Connection(key, peer, (closing) => this.#close(closing, null));
-    connection.timer = setTimeout(
-      () => this.#close(connection, "connection_incomplete"),
-      this.#options.connectionDeadlineMs ?? RELAY_V2_CONNECTION_DEADLINE_MS,
-    );
-    connection.timer.unref();
-    this.#connections.set(key, connection);
-    return connection;
-  }
-
   readonly #open = Effect.fn("RelayV2TunnelHost.open")(function* (
     this: RelayV2TunnelHost,
     connection: RelayV2Connection,
   ) {
-    connection.state = "opening";
-    if (connection.timer) clearTimeout(connection.timer);
-    connection.timer = null;
     const { store, server } = this.#options;
     const login = yield* Effect.result(
       store.loginWithRelayPeer({
@@ -241,13 +253,10 @@ export class RelayV2TunnelHost {
   #close(connection: RelayV2Connection, refusal: RelayV2RefusalCode | null, message: string | null = null): void {
     if (connection.state === "closed") return;
     connection.state = "closed";
-    if (connection.timer) clearTimeout(connection.timer);
-    connection.timer = null;
     if (this.#connections.get(connection.key) === connection) this.#connections.delete(connection.key);
-    for (const tunnel of connection.tunnels.values()) {
-      if (refusal) refuse(tunnel.stream, refusal, message);
-      else tunnel.stream.destroy();
-    }
+    connection.writer.close();
+    if (refusal) refuse(connection.stream, refusal, message);
+    else connection.stream.destroy();
     const { hostPeer, session } = connection;
     connection.hostPeer = null;
     connection.session = null;
@@ -285,21 +294,9 @@ function refuse(stream: Duplex, code: RelayV2RefusalCode, message: string | null
     code,
     message,
   });
-  stream.end(encodeRelayV2TunnelRecord(control));
+  for (const chunk of encodeRelayV2Chunks("rpc", encodeRelayV2TunnelRecord(control))) stream.write(chunk);
+  stream.end();
   stream.resume();
-}
-
-function admissionRefusal(
-  stopped: boolean,
-  existing: RelayV2Connection | undefined,
-  connection: RelayV2Connection | null,
-  peer: RelayPeerCertificate,
-  marker: RelayV2TunnelMarker,
-): RelayV2RefusalCode | null {
-  if (stopped) return "host_unavailable";
-  if (existing && existing.peer.keyId !== peer.keyId) return "different_peer";
-  if (existing && (existing.state !== "gathering" || existing.tunnels.has(marker.channel))) return "duplicate_channel";
-  return connection ? null : "too_many_connections";
 }
 
 function refusalMessage(cause: unknown): string | null {
@@ -308,30 +305,4 @@ function refusalMessage(cause: unknown): string | null {
 
 function relayChannel(channel: TeamV2Channel): RelayV2TunnelChannel | undefined {
   return RELAY_V2_TUNNEL_CHANNELS.find((name) => name === channel);
-}
-
-function writeRecords(stream: Duplex, records: readonly Uint8Array[]): Effect.Effect<void, RemoteWorkflowError> {
-  return Effect.callback<void, RemoteWorkflowError>((resume) => {
-    let flowing = true;
-    for (const record of records) flowing = stream.write(record);
-    if (flowing) {
-      resume(Effect.void);
-      return;
-    }
-    const onDrain = () => {
-      release();
-      resume(Effect.void);
-    };
-    const onClose = () => {
-      release();
-      resume(Effect.fail(new RemoteWorkflowError({ cause: new Error("The relay tunnel closed.") })));
-    };
-    function release(): void {
-      stream.off("drain", onDrain);
-      stream.off("close", onClose);
-    }
-    stream.once("drain", onDrain);
-    stream.once("close", onClose);
-    return Effect.sync(release);
-  });
 }

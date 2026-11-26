@@ -1,13 +1,12 @@
 import { EventEmitter } from "node:events";
 import type { Duplex } from "node:stream";
 import { RELAY_LABEL_LIMIT, type RelayPeerCertificate } from "@openbot/contracts/relay-protocol/messages";
-import type { RelayV2TunnelMarker } from "@openbot/contracts/relay-protocol/v2-tunnel";
 import { Effect } from "effect";
 import { RelayAcceptor } from "./acceptor";
 import { RelayControl, type RelayControlState } from "./control";
 import type { RelayCredentialSource } from "./identity-store";
 import type { RelaySocketError } from "./socket";
-import type { RelayStream } from "./stream";
+import type { RelaySendProgress, RelayStream } from "./stream";
 import { type RelayStreamOpening, sniffRelayStream } from "./stream-sniffer";
 
 interface RelayHostedServer {
@@ -16,7 +15,7 @@ interface RelayHostedServer {
 }
 
 interface RelayV2TunnelAcceptor {
-  accept(stream: Duplex, peer: RelayPeerCertificate, marker: RelayV2TunnelMarker, rest: Uint8Array): void;
+  accept(stream: Duplex, progress: RelaySendProgress, peer: RelayPeerCertificate, rest: Uint8Array): void;
   stop(): Effect.Effect<void>;
 }
 
@@ -62,7 +61,6 @@ export class HostRelay extends EventEmitter<HostRelayEvents> {
         ...(options.reconnect ? { reconnect: options.reconnect } : {}),
       });
     this.#acceptor = new RelayAcceptor({
-      identity: options.identity,
       control: this.#control,
       onStream: (stream, peer) => this.#accept(stream, peer),
       onRefused: (error) => this.emit("refused", error),
@@ -141,7 +139,7 @@ export class HostRelay extends EventEmitter<HostRelayEvents> {
       return;
     }
     if (opening.kind === "v2") {
-      tunnels.accept(stream, peer, opening.marker, opening.rest);
+      tunnels.accept(stream, stream, peer, opening.rest);
       return;
     }
     stream.unshift(opening.head);

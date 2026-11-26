@@ -5,8 +5,11 @@ import {
 } from "@openbot/contracts/team-protocol/client-browser-v1";
 import type { AppTextKey } from "@openbot/i18n";
 import {
+  type RelayBrowserControl,
   type RelayBrowserIdentity,
   type RelayControlSnapshot,
+  type RelaySessionSource,
+  RelaySocketError,
   relayTeamHost,
   startRelayControl,
 } from "@openbot/team-client/relay-client";
@@ -135,6 +138,13 @@ function ServerView(props: { identity: RelayBrowserIdentity; onRemoveIdentity: (
   const [screen, setScreen] = createSignal<PushedScreen>({ kind: "chat" });
   let connection: HostConnection | null = null;
   let stopControl: (() => void) | null = null;
+  let control: RelayBrowserControl | null = null;
+  const sessions: RelaySessionSource = {
+    openSession: (target, options) =>
+      control
+        ? control.openSession(target, options)
+        : Promise.reject(new RelaySocketError({ code: "closed", message: "The relay connection is not running." })),
+  };
   let savedHostId: string | null = null;
   let hosts: RemoteTeamHost[] = [];
   let selectedHostId: string | null = null;
@@ -181,10 +191,12 @@ function ServerView(props: { identity: RelayBrowserIdentity; onRemoveIdentity: (
   function startControl(): void {
     stopControl?.();
     const next = startRelayControl(props.identity);
+    control = next;
     const unsubscribe = next.subscribe(showRoster);
     stopControl = () => {
       unsubscribe();
       next.stop();
+      if (control === next) control = null;
     };
   }
 
@@ -274,7 +286,7 @@ function ServerView(props: { identity: RelayBrowserIdentity; onRemoveIdentity: (
     const saved = await readSavedHost().catch(() => null);
     savedHostId = saved?.identityKeyId === props.identity.keyId ? saved.hostId : null;
     if (closed) return;
-    connection = await createHostConnection(props.identity, {
+    connection = await createHostConnection(props.identity, sessions, {
       event: (event) => {
         browserLink?.handleEvent(event);
         workspace()?.handleEvent(event);

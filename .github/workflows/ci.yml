@@ -1197,6 +1197,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:relay-tunnel-encryption
 
+      - name: Run the relay session latency E2E test
+        if: ${{ !cancelled() }}
+        run: bun run test:relay-session-latency
+
       - name: Run the relay admin page and join code E2E test
         if: ${{ !cancelled() }}
         run: bun run test:relay-admin
@@ -1212,6 +1216,7 @@ jobs:
           name: relay-e2e
           path: |
             .openbot-build/relay-e2e/
+            .openbot-build/relay-session-latency-e2e/
             .openbot-build/relay-client-e2e/
             .openbot-build/relay-v2-tunnel-e2e/
             .openbot-build/relay-team-api-e2e/

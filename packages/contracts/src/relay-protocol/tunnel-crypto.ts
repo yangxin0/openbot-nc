@@ -238,6 +238,23 @@ async function attempt<Result>(code: RelayTunnelCryptoErrorCode, run: () => Prom
   }
 }
 
+export interface RelayTunnelOpening {
+  readonly hello: Uint8Array<ArrayBuffer>;
+  readonly agreement: RelayAgreementKeyPair;
+  readonly own: RelayTunnelContribution;
+}
+
+export async function createRelayTunnelOpening(crypto: RelayTunnelCrypto): Promise<RelayTunnelOpening | null> {
+  try {
+    const agreement = await crypto.generateAgreementKeyPair();
+    if (agreement.publicKey.byteLength !== RELAY_TUNNEL_EPHEMERAL_KEY_BYTES) return null;
+    const own = { ephemeral: agreement.publicKey, nonce: crypto.randomBytes(RELAY_TUNNEL_NONCE_BYTES) };
+    return { hello: handshakeMessage(RELAY_TUNNEL_MESSAGE_TYPES.hello, own.ephemeral, own.nonce), agreement, own };
+  } catch {
+    return null;
+  }
+}
+
 export class RelayTunnelHandshake {
   readonly #party: RelayTunnelParty;
   readonly #frames = new RelayTunnelFrameReader();
@@ -248,8 +265,13 @@ export class RelayTunnelHandshake {
   #phase: "new" | "waiting-reply" | "waiting-hello" | "waiting-finish" | "ended" = "new";
   #turn: Promise<unknown> = Promise.resolve();
 
-  constructor(party: RelayTunnelParty) {
+  constructor(party: RelayTunnelParty, opening: RelayTunnelOpening | null = null) {
     this.#party = party;
+    if (opening && party.role === "client") {
+      this.#agreement = opening.agreement;
+      this.#own = opening.own;
+      this.#phase = "waiting-reply";
+    }
   }
 
   begin(): Promise<RelayTunnelHandshakeStep> {

@@ -12,6 +12,7 @@ import {
   type RelayControlSnapshot,
   RelayIdentityError,
   type RelayIdentityKeyStore,
+  RelaySocketError,
   type RelaySocketErrorCode,
   type RelayTeamPeerActions,
   type RelayTeamPeerOptions,
@@ -261,7 +262,22 @@ export function startWebRelay(identity: RelayBrowserIdentity): WebRelayRun {
         return () => listeners.delete(listener);
       },
     },
-    createPeer: (actions, options) => createRelayTeamPeer(identity, actions, options),
+    createPeer: (actions, options) =>
+      createRelayTeamPeer(
+        {
+          openSession: (target, sessionOptions) =>
+            leading
+              ? leading.openSession(target, sessionOptions)
+              : Promise.reject(
+                  new RelaySocketError({
+                    code: "connect_failed",
+                    message: "Another tab of this browser holds the relay connection.",
+                  }),
+                ),
+        },
+        actions,
+        options,
+      ),
     stop() {
       stopping.abort();
       channel.close();

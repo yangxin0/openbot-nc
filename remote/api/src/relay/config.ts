@@ -98,10 +98,15 @@ export function readRelayConfig(environment: Environment = process.env): RelayCo
     },
     limits: {
       socketsPerIp: positiveInteger(environment.RELAY_MAX_SOCKETS_PER_IP, 128, "RELAY_MAX_SOCKETS_PER_IP"),
-      tunnelsPerMember: positiveInteger(environment.RELAY_MAX_TUNNELS_PER_MEMBER, 64, "RELAY_MAX_TUNNELS_PER_MEMBER"),
+      sessionsPerSocket: positiveInteger(
+        environment.RELAY_MAX_SESSIONS_PER_SOCKET,
+        256,
+        "RELAY_MAX_SESSIONS_PER_SOCKET",
+      ),
+      sessionsPerPair: positiveInteger(environment.RELAY_MAX_SESSIONS_PER_PAIR, 32, "RELAY_MAX_SESSIONS_PER_PAIR"),
       pendingPerTarget: positiveInteger(environment.RELAY_MAX_PENDING_PER_MEMBER, 32, "RELAY_MAX_PENDING_PER_MEMBER"),
       presenceUpdatesPerMinute: 30,
-      highWaterBytes: positiveInteger(environment.RELAY_HIGH_WATER_BYTES, 1024 * 1024, "RELAY_HIGH_WATER_BYTES"),
+      highWaterBytes: positiveInteger(environment.RELAY_HIGH_WATER_BYTES, 256 * 1024, "RELAY_HIGH_WATER_BYTES"),
     },
     sourceCommit: optional(environment.OPENBOT_SOURCE_COMMIT) ?? "unknown",
   };

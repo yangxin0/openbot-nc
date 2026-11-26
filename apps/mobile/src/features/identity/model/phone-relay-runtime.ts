@@ -1,9 +1,20 @@
-import type {
-  RelayBrowserControl,
-  RelayControlSnapshot,
-  RelaySocketErrorCode,
+import {
+  type RelayBrowserControl,
+  type RelayControlSnapshot,
+  type RelaySession,
+  type RelaySessionOpenOptions,
+  RelaySocketError,
+  type RelaySocketErrorCode,
 } from "@openbot/team-client/relay-client";
-import { type PhoneRelay, relayEndsIdentity, relayFinalCode, startPhoneRelayControl } from "./phone-relay";
+import {
+  type PhoneRelay,
+  type PhoneRelayKeys,
+  relayEndsIdentity,
+  relayFinalCode,
+  startPhoneRelayControl,
+} from "./phone-relay";
+
+const CONTROL_WAIT_MS = 15_000;
 
 const STOPPED: RelayControlSnapshot = {
   state: { status: "offline", code: "stopped", message: "Not started.", retryInMs: null },
@@ -18,12 +29,13 @@ export class PhoneRelayRuntime implements PhoneRelay {
   readonly #onEnded: (code: RelaySocketErrorCode) => void;
   readonly #reconnect: { baseMs?: number; maxMs?: number } | undefined;
   readonly #listeners = new Set<() => void>();
+  readonly #started = new Set<(control: RelayBrowserControl) => void>();
   #control: RelayBrowserControl | null = null;
   #unsubscribe: (() => void) | null = null;
   #snapshot: RelayControlSnapshot = STOPPED;
 
   constructor(
-    relay: PhoneRelay,
+    relay: PhoneRelayKeys,
     onEnded: (code: RelaySocketErrorCode) => void,
     reconnect?: { baseMs?: number; maxMs?: number },
   ) {
@@ -46,6 +58,33 @@ export class PhoneRelayRuntime implements PhoneRelay {
       this.#publish(snapshot);
       const code = relayFinalCode(snapshot);
       if (code !== null && relayEndsIdentity(snapshot)) this.#onEnded(code);
+    });
+    for (const resolve of [...this.#started]) resolve(control);
+  }
+
+  async openSession(target: string, options: RelaySessionOpenOptions = {}): Promise<RelaySession> {
+    const control = this.#control ?? (await this.#nextControl(options.signal));
+    return control.openSession(target, options);
+  }
+
+  #nextControl(signal: AbortSignal | undefined): Promise<RelayBrowserControl> {
+    return new Promise<RelayBrowserControl>((resolve, reject) => {
+      const finish = (result: RelayBrowserControl | RelaySocketError) => {
+        clearTimeout(timer);
+        this.#started.delete(onStart);
+        signal?.removeEventListener("abort", onAbort);
+        if (result instanceof RelaySocketError) reject(result);
+        else resolve(result);
+      };
+      const onStart = (control: RelayBrowserControl) => finish(control);
+      const onAbort = () => finish(new RelaySocketError({ code: "closed", message: "The relay session was stopped." }));
+      const timer = setTimeout(
+        () => finish(new RelaySocketError({ code: "closed", message: "The relay connection is not running." })),
+        CONTROL_WAIT_MS,
+      );
+      this.#started.add(onStart);
+      if (signal?.aborted) onAbort();
+      else signal?.addEventListener("abort", onAbort, { once: true });
     });
   }
 

@@ -1,15 +1,9 @@
 import type { Duplex } from "node:stream";
-import {
-  RELAY_V2_FIRST_BYTES_DEADLINE_MS,
-  type RelayV2TunnelMarker,
-  scanRelayV2TunnelMarker,
-} from "@openbot/contracts/relay-protocol/v2-tunnel";
+import { RELAY_V2_FIRST_BYTES_DEADLINE_MS, scanRelayV2TunnelMarker } from "@openbot/contracts/relay-protocol/v2-tunnel";
 import { Effect } from "effect";
 import { RelaySocketError } from "./socket";
 
-export type RelayStreamOpening =
-  | { kind: "http"; head: Buffer }
-  | { kind: "v2"; marker: RelayV2TunnelMarker; rest: Uint8Array };
+export type RelayStreamOpening = { kind: "http"; head: Buffer } | { kind: "v2"; rest: Uint8Array };
 
 export function sniffRelayStream(
   stream: Duplex,
@@ -28,7 +22,7 @@ export function sniffRelayStream(
       stream.pause();
       if (scan.status === "other") finish(Effect.succeed({ kind: "http", head }));
       else if (scan.status === "marker") {
-        finish(Effect.succeed({ kind: "v2", marker: scan.marker, rest: head.subarray(scan.length) }));
+        finish(Effect.succeed({ kind: "v2", rest: head.subarray(scan.length) }));
       } else {
         finish(
           Effect.fail(new RelaySocketError({ code: "protocol_error", message: "The relay stream marker is invalid." })),

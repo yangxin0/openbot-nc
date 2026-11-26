@@ -166,7 +166,9 @@ window.relayBrowserTest = {
     });
   },
   connect(hostKeyId) {
-    peer = createRelayTeamPeer(current(), {
+    const sessions = control;
+    if (!sessions) throw new Error("The control is not started.");
+    peer = createRelayTeamPeer(sessions, {
       current: {
         onConnectionUpdate: async (update) =>
           note(`peer: ${update.state}${update.message ? ` (${update.message})` : ""}`),
@@ -227,9 +229,14 @@ window.relayBrowserTest = {
   async dialFailure(text, target) {
     const fakeIdentity = await createRelayIdentityFromText(text);
     try {
-      const tunnels = await openRelayV2Tunnels(fakeIdentity, target);
-      tunnels.close();
-      return "accepted";
+      const fakeControl = startRelayControl(fakeIdentity, { reconnect: { baseMs: 100, maxMs: 500 } });
+      try {
+        const tunnels = await openRelayV2Tunnels(fakeControl, target);
+        tunnels.close();
+        return "accepted";
+      } finally {
+        fakeControl.stop();
+      }
     } catch (error) {
       note(`dial refused: ${errorCode(error)}`);
       return `${errorCode(error)}: ${error instanceof Error ? error.message : ""}`;

@@ -1,15 +1,16 @@
 import { isDynamicRecord } from "../runtime-values";
 import { TEAM_PROTOCOL_V2_MAX_BINARY_FRAME_BYTES } from "../team-protocol/webrtc-framing";
 
-export const RELAY_V2_TUNNEL_VERSION = 1;
+export const RELAY_V2_TUNNEL_VERSION = 2;
 export const RELAY_V2_TUNNEL_PREFIX = "OPENBOT-V2:";
 export const RELAY_V2_TUNNEL_CHANNELS = ["rpc", "events", "files"] as const;
-const RELAY_V2_CONNECTION_KEY_PATTERN = /^[0-9a-f]{32}$/u;
-const RELAY_V2_MARKER_MAX_BYTES = 64;
+const RELAY_V2_MARKER = `${RELAY_V2_TUNNEL_PREFIX}${RELAY_V2_TUNNEL_VERSION}\n`;
 export const RELAY_V2_FIRST_BYTES_DEADLINE_MS = 10_000;
 export const RELAY_V2_CONNECTION_DEADLINE_MS = 15_000;
 const RELAY_V2_RECORD_HEADER_BYTES = 5;
 const RELAY_V2_RECORD_MAX_BYTES = TEAM_PROTOCOL_V2_MAX_BINARY_FRAME_BYTES;
+export const RELAY_V2_CHUNK_HEADER_BYTES = 3;
+export const RELAY_V2_CHUNK_MAX_BYTES = 16 * 1024 - RELAY_V2_CHUNK_HEADER_BYTES;
 export const RELAY_V2_REFUSAL_CODES = [
   "sign_in_refused",
   "different_peer",
@@ -24,17 +25,11 @@ export type RelayV2TunnelChannel = (typeof RELAY_V2_TUNNEL_CHANNELS)[number];
 export type RelayV2RefusalCode = (typeof RELAY_V2_REFUSAL_CODES)[number];
 export type RelayV2TunnelMessage = string | ArrayBuffer;
 
-export interface RelayV2TunnelMarker {
-  version: typeof RELAY_V2_TUNNEL_VERSION;
-  channel: RelayV2TunnelChannel;
-  connectionKey: string;
-}
-
 type RelayV2TunnelScan =
   | { status: "partial" }
   | { status: "other" }
   | { status: "invalid" }
-  | { status: "marker"; marker: RelayV2TunnelMarker; length: number };
+  | { status: "marker"; length: number };
 
 export type RelayV2TunnelControl =
   | { type: "relay-v2-ready"; version: typeof RELAY_V2_TUNNEL_VERSION }
@@ -47,34 +42,67 @@ export type RelayV2TunnelControl =
 
 const RECORD_TEXT = 1;
 const RECORD_BINARY = 2;
-const LINE_END = 0x0a;
 const REFUSAL_MESSAGE_LIMIT = 500;
-const MARKER_PATTERN = /^OPENBOT-V2:(\d{1,3}):([a-z]{1,16}):([0-9a-f]{32})$/u;
 const textEncoder = new TextEncoder();
-const PREFIX_BYTES = textEncoder.encode(RELAY_V2_TUNNEL_PREFIX);
+const MARKER_BYTES = textEncoder.encode(RELAY_V2_MARKER);
 
-export function encodeRelayV2TunnelMarker(marker: RelayV2TunnelMarker): Uint8Array {
-  if (!relayV2TunnelChannel(marker.channel) || !RELAY_V2_CONNECTION_KEY_PATTERN.test(marker.connectionKey)) {
-    throw new Error("The relay V2 tunnel marker is invalid.");
-  }
-  return textEncoder.encode(`${RELAY_V2_TUNNEL_PREFIX}${marker.version}:${marker.channel}:${marker.connectionKey}\n`);
+export function encodeRelayV2TunnelMarker(): Uint8Array<ArrayBuffer> {
+  return new Uint8Array(MARKER_BYTES);
 }
 
 export function scanRelayV2TunnelMarker(bytes: Uint8Array): RelayV2TunnelScan {
-  const compared = Math.min(bytes.byteLength, PREFIX_BYTES.byteLength);
-  for (let index = 0; index < compared; index += 1) {
-    if (bytes[index] !== PREFIX_BYTES[index]) return { status: "other" };
+  const prefix = Math.min(bytes.byteLength, RELAY_V2_TUNNEL_PREFIX.length);
+  for (let index = 0; index < prefix; index += 1) {
+    if (bytes[index] !== MARKER_BYTES[index]) return { status: "other" };
   }
-  if (bytes.byteLength < PREFIX_BYTES.byteLength) return { status: "partial" };
-  const end = bytes.subarray(0, RELAY_V2_MARKER_MAX_BYTES).indexOf(LINE_END);
-  if (end < 0) return bytes.byteLength >= RELAY_V2_MARKER_MAX_BYTES ? { status: "invalid" } : { status: "partial" };
-  const match = MARKER_PATTERN.exec(String.fromCharCode(...bytes.subarray(0, end)));
-  const channel = relayV2TunnelChannel(match?.[2]);
-  const connectionKey = match?.[3];
-  if (!match || Number(match[1]) !== RELAY_V2_TUNNEL_VERSION || !channel || connectionKey === undefined) {
-    return { status: "invalid" };
+  const compared = Math.min(bytes.byteLength, MARKER_BYTES.byteLength);
+  for (let index = prefix; index < compared; index += 1) {
+    if (bytes[index] !== MARKER_BYTES[index]) return { status: "invalid" };
   }
-  return { status: "marker", marker: { version: RELAY_V2_TUNNEL_VERSION, channel, connectionKey }, length: end + 1 };
+  return bytes.byteLength < MARKER_BYTES.byteLength
+    ? { status: "partial" }
+    : { status: "marker", length: MARKER_BYTES.byteLength };
+}
+
+export function encodeRelayV2Chunks(channel: RelayV2TunnelChannel, bytes: Uint8Array): Uint8Array<ArrayBuffer>[] {
+  const tag = RELAY_V2_TUNNEL_CHANNELS.indexOf(channel);
+  const chunks: Uint8Array<ArrayBuffer>[] = [];
+  for (let offset = 0; offset < bytes.byteLength; offset += RELAY_V2_CHUNK_MAX_BYTES) {
+    const piece = bytes.subarray(offset, Math.min(bytes.byteLength, offset + RELAY_V2_CHUNK_MAX_BYTES));
+    const chunk = new Uint8Array(RELAY_V2_CHUNK_HEADER_BYTES + piece.byteLength);
+    chunk[0] = tag;
+    new DataView(chunk.buffer).setUint16(1, piece.byteLength);
+    chunk.set(piece, RELAY_V2_CHUNK_HEADER_BYTES);
+    chunks.push(chunk);
+  }
+  return chunks;
+}
+
+export class RelayV2ChunkDecoder {
+  #pending: Uint8Array = new Uint8Array(0);
+  readonly #records = RELAY_V2_TUNNEL_CHANNELS.map(() => new RelayV2TunnelRecordDecoder());
+
+  push(bytes: Uint8Array): Array<{ channel: RelayV2TunnelChannel; message: RelayV2TunnelMessage }> {
+    let buffer = this.#pending.byteLength === 0 ? bytes : concatenated(this.#pending, bytes);
+    const messages: Array<{ channel: RelayV2TunnelChannel; message: RelayV2TunnelMessage }> = [];
+    while (buffer.byteLength >= RELAY_V2_CHUNK_HEADER_BYTES) {
+      const tag = buffer[0] ?? -1;
+      const channel = RELAY_V2_TUNNEL_CHANNELS[tag];
+      const records = this.#records[tag];
+      const length = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength).getUint16(1);
+      if (!channel || !records || length === 0 || length > RELAY_V2_CHUNK_MAX_BYTES) {
+        throw new Error("The relay V2 chunk is invalid.");
+      }
+      const end = RELAY_V2_CHUNK_HEADER_BYTES + length;
+      if (buffer.byteLength < end) break;
+      for (const message of records.push(buffer.subarray(RELAY_V2_CHUNK_HEADER_BYTES, end))) {
+        messages.push({ channel, message });
+      }
+      buffer = buffer.subarray(end);
+    }
+    this.#pending = new Uint8Array(buffer);
+    return messages;
+  }
 }
 
 export function encodeRelayV2TunnelRecord(message: RelayV2TunnelMessage): Uint8Array {
@@ -131,10 +159,6 @@ export function decodeRelayV2TunnelControl(text: string): RelayV2TunnelControl |
     return null;
   }
   return { type: "relay-v2-refused", version: RELAY_V2_TUNNEL_VERSION, code, message };
-}
-
-function relayV2TunnelChannel(value: unknown): RelayV2TunnelChannel | undefined {
-  return RELAY_V2_TUNNEL_CHANNELS.find((channel) => channel === value);
 }
 
 function concatenated(first: Uint8Array, second: Uint8Array): Uint8Array {

@@ -129,8 +129,9 @@ function deadline<T>(description: string, promise: Promise<T>): Promise<T> {
 }
 
 const { createNobleRelayCrypto } = await import("@openbot/team-client/relay-crypto-noble");
-const { createRelayIdentityFromText, openRelayV2Tunnels } = await import("@openbot/team-client/relay-client");
-const { dialRelayPeer } = await import("@openbot/team-client/relay-socket");
+const { createRelayIdentityFromText, openRelayV2Tunnels, startRelayControl } = await import(
+  "@openbot/team-client/relay-client"
+);
 const { encodeTeamV2Payload, TeamV2PayloadDecoder } = await import("@openbot/team-client/v2-framing");
 const { decodeTeamProtocolV2RpcFrame, encodeTeamProtocolV2Frame } = await import("@openbot/contracts/team-protocol/v2");
 const { encodeTeamCapabilitiesV10, TEAM_CURRENT_CAPABILITIES } = await import("@openbot/contracts/team-protocol");
@@ -142,7 +143,13 @@ const crypto = createNobleRelayCrypto({ randomBytes: (size) => new Uint8Array(ra
 await check("The phone opens V2 tunnels through the relay with noble crypto and reads /v1/me", async () => {
   if (!result.subtleMissing) throw new Error("The global crypto must be missing in this process.");
   const identity = await createRelayIdentityFromText(config.mitmIdentityText, { crypto });
-  const tunnels = await deadline("the V2 tunnels", openRelayV2Tunnels(identity, config.hostKeyId, { crypto }));
+  const control = startRelayControl(identity, { crypto });
+  const tunnels = await deadline("the V2 tunnels", openRelayV2Tunnels(control, config.hostKeyId)).catch(
+    (error: unknown) => {
+      control.stop();
+      throw error;
+    },
+  );
   try {
     const decoder = new TeamV2PayloadDecoder();
     const requestId = `phone-${randomBytes(6).toString("hex")}`;
@@ -191,12 +198,14 @@ await check("The phone opens V2 tunnels through the relay with noble crypto and 
     if (value.status !== 200) throw new Error(`/v1/me answered ${value.status}.`);
   } finally {
     tunnels.close();
+    control.stop();
   }
 });
 
 await check("The phone sends 8 MiB over an encrypted tunnel of the real relay and gets the hash back", async () => {
   const identity = await createRelayIdentityFromText(config.realIdentityText, { crypto });
-  const tunnel = await deadline("the dial to the echo host", dialRelayPeer(identity, config.echoKeyId, { crypto }));
+  const control = startRelayControl(identity, { crypto });
+  const tunnel = await deadline("the session to the echo host", control.openSession(config.echoKeyId));
   const payload = randomBytes(config.transferBytes);
   const expected = createHash("sha256").update(payload).digest("hex");
   const started = performance.now();
@@ -217,6 +226,7 @@ await check("The phone sends 8 MiB over an encrypted tunnel of the real relay an
   const hash = await deadline("the hash of the echo host", reply);
   const milliseconds = performance.now() - started;
   tunnel.close();
+  control.stop();
   if (hash !== expected) throw new Error("The echo host got different bytes.");
   result.throughput = {
     bytes: payload.byteLength,

@@ -21,6 +21,10 @@ import {
   RELAY_CLOSE_CODES,
   RELAY_PATH,
   RELAY_PROTOCOL_VERSION,
+  RELAY_SESSION_ASSIGNED_ID_MIN,
+  RELAY_SESSION_FRAME_PAYLOAD_LIMIT,
+  RELAY_SESSION_WINDOW_BYTES,
+  RELAY_SESSIONS_FEATURE,
   type RelayRole,
   type RelayServerMessage,
   type RelayServerProofTranscriptInput,
@@ -28,6 +32,11 @@ import {
   relayHelloTranscript,
   relayServerProofTranscript,
 } from "@openbot/contracts/relay-protocol/messages";
+import {
+  decodeRelaySessionFrame,
+  encodeRelaySessionEnd,
+  encodeRelaySessionFrame,
+} from "@openbot/contracts/relay-protocol/sessions";
 import { generateSigningKey, issueCertificate } from "../api/src/relay/x509";
 
 const ROOT = resolve(import.meta.dirname, "../..");
@@ -36,7 +45,7 @@ const MAIN = resolve(ROOT, "remote/api/src/relay/main.ts");
 const BUILD = resolve(ROOT, "remote/scripts/build-relay.ts");
 const WAIT_MS = 15_000;
 const TRANSFER_BYTES = 8 * 1024 * 1024;
-const TRANSFER_CHUNK_BYTES = 64 * 1024;
+const SESSIONS_PER_PAIR = 4;
 
 const checks: Array<{ name: string; passed: boolean; error?: string }> = [];
 
@@ -200,6 +209,11 @@ class Peer {
     this.#socket.send(JSON.stringify(value));
   }
 
+  sendJsonWhenOpen(value: unknown): void {
+    if (this.#socket.readyState === WebSocket.OPEN) this.sendJson(value);
+    else this.#socket.addEventListener("open", () => this.sendJson(value), { once: true });
+  }
+
   sendBytes(bytes: Uint8Array): void {
     this.#socket.send(new Uint8Array(bytes));
   }
@@ -217,9 +231,7 @@ interface HelloFields {
   role: RelayRole;
   hosting?: boolean;
   label?: string;
-  target?: string;
-  waitForTarget?: boolean;
-  connectionId?: string;
+  features?: string[];
 }
 
 interface HelloChanges {
@@ -237,7 +249,7 @@ interface ProvedSocket {
 const provedSockets: ProvedSocket[] = [];
 
 function serverProofProblem(socket: ProvedSocket, rootPem: string): string | null {
-  const accepted = socket.peer.order.findIndex((type) => type === "welcome" || type === "waiting" || type === "open");
+  const accepted = socket.peer.order.indexOf("welcome");
   if (accepted === -1) return null;
   const proofIndex = socket.peer.order.indexOf("server-proof");
   const proof = socket.peer.serverProof;
@@ -284,8 +296,6 @@ async function hello(
       audience,
       role: fields.role,
       clientKeyId: keyId(bundle),
-      target: fields.target,
-      connectionId: fields.connectionId,
     },
   });
   const transcript = relayHelloTranscript({
@@ -293,8 +303,6 @@ async function hello(
     clientNonce,
     audience,
     role: fields.role,
-    target: fields.target,
-    connectionId: fields.connectionId,
   });
   peer.sendJson({
     type: "hello",
@@ -304,9 +312,54 @@ async function hello(
     certificate: bundle.certificate,
     chain: bundle.chain,
     signature: proofSignature(changes.signingKey ?? bundle.privateKey, transcript),
+    features: [RELAY_SESSIONS_FEATURE],
     ...fields,
   });
   return peer;
+}
+
+function frame(session: number, payload: Uint8Array): Uint8Array {
+  return encodeRelaySessionFrame(session, payload);
+}
+
+async function openData(url: string, rootPem: string, member: Peer): Promise<Peer> {
+  member.sendJson({ type: "data-ticket", version: RELAY_PROTOCOL_VERSION });
+  const { ticket } = await member.take("data-ticket");
+  const data = new Peer(url, { ca: rootPem });
+  data.sendJsonWhenOpen({ type: "data-hello", version: RELAY_PROTOCOL_VERSION, ticket });
+  await data.message("challenge");
+  return data;
+}
+
+function framesFor(peer: Peer, session: number): Uint8Array[] {
+  return peer.binary.flatMap((bytes) => {
+    const decoded = decodeRelaySessionFrame(bytes);
+    return decoded && decoded.session === session ? [decoded.payload] : [];
+  });
+}
+
+function sessionOpen(session: number, target: string, first?: string) {
+  return { type: "session-open", version: RELAY_PROTOCOL_VERSION, session, target, ...(first ? { first } : {}) };
+}
+
+async function openSession(
+  opener: Peer,
+  target: Peer,
+  targetKeyId: string,
+  session: number,
+): Promise<{ assigned: number; connectionId: string }> {
+  opener.sendJson(sessionOpen(session, targetKeyId, "aGVsbG8"));
+  const incoming = await target.take("session-incoming", (message) => message.first === "aGVsbG8");
+  target.sendJson({
+    type: "session-accept",
+    version: RELAY_PROTOCOL_VERSION,
+    session: incoming.session,
+    first: "cmVwbHk",
+  });
+  const opened = await opener.take("session-opened", (message) => message.session === session);
+  assert.equal(opened.connectionId, incoming.connectionId);
+  assert.equal(opened.first, "cmVwbHk");
+  return { assigned: incoming.session, connectionId: incoming.connectionId };
 }
 
 async function refusedWith(peer: Peer, code: string): Promise<void> {
@@ -410,7 +463,7 @@ try {
   const dave = issue(environment, work, "Acme Team", "dave", "desk");
   const carol = issue(environment, work, "Other Team", "carol", "server");
 
-  const main = await startServer(environment);
+  const main = await startServer(environment, { RELAY_MAX_SESSIONS_PER_PAIR: String(SESSIONS_PER_PAIR) });
   servers.push(main.child);
   const { url } = main;
 
@@ -463,91 +516,215 @@ try {
     );
   });
 
-  await check("A connection passes bytes in both directions and names each side from its certificate", async () => {
-    const client = await hello(url, rootPem, bob, { role: "client", target: keyId(alice) });
-    const incoming = await aliceMember.take("incoming", (message) => message.from.user === "bob");
+  const aliceData = await openData(url, rootPem, aliceMember);
+  const bobData = await openData(url, rootPem, bobMember);
+  await check("A session passes bytes in both directions and names each side from its certificate", async () => {
+    bobMember.sendJson(sessionOpen(1, keyId(alice), "aGVsbG8"));
+    const incoming = await aliceMember.take("session-incoming", (message) => message.from.user === "bob");
     assert.equal(incoming.from.keyId, keyId(bob));
     assert.equal(new X509Certificate(incoming.from.certificate).subject.includes("CN=bob"), true);
-    const accept = await hello(url, rootPem, alice, { role: "accept", connectionId: incoming.connectionId });
-    const [clientOpen, acceptOpen] = await Promise.all([client.message("open"), accept.message("open")]);
-    assert.equal(clientOpen.peer.user, "alice");
-    assert.equal(acceptOpen.peer.user, "bob");
-    assert.equal(clientOpen.connectionId, incoming.connectionId);
-    const request = randomBytes(1_000);
-    const answer = randomBytes(70_000);
-    client.sendBytes(request);
-    accept.sendBytes(answer);
-    const [received] = await accept.until(
-      () => (accept.binary.length > 0 ? accept.binary : undefined),
-      "bytes at host",
-    );
-    const [returned] = await client.until(
-      () => (client.binary.length > 0 ? client.binary : undefined),
-      "bytes at client",
-    );
-    assert.equal(Buffer.compare(Buffer.from(received ?? []), request), 0);
-    assert.equal(Buffer.compare(Buffer.from(returned ?? []), answer), 0);
-    client.close();
-    const closed = await accept.closed;
-    assert.equal(closed.code, RELAY_CLOSE_CODES.peerClosed);
+    assert.ok(incoming.session >= RELAY_SESSION_ASSIGNED_ID_MIN, "The server numbers the session of the target.");
+    assert.equal(incoming.first, "aGVsbG8");
+    aliceMember.sendJson({
+      type: "session-accept",
+      version: RELAY_PROTOCOL_VERSION,
+      session: incoming.session,
+      first: "cmVwbHk",
+    });
+    const opened = await bobMember.take("session-opened", (message) => message.session === 1);
+    assert.equal(opened.peer.keyId, keyId(alice));
+    assert.equal(opened.connectionId, incoming.connectionId);
+    assert.equal(opened.first, "cmVwbHk");
+    bobData.sendBytes(frame(1, new TextEncoder().encode("ping")));
+    await aliceData.until(() => (framesFor(aliceData, incoming.session).length > 0 ? true : undefined), "the ping");
+    assert.equal(new TextDecoder().decode(framesFor(aliceData, incoming.session)[0]), "ping");
+    aliceData.sendBytes(frame(incoming.session, new TextEncoder().encode("pong")));
+    await bobData.until(() => (framesFor(bobData, 1).length > 0 ? true : undefined), "the pong");
+    assert.equal(new TextDecoder().decode(framesFor(bobData, 1)[0]), "pong");
+    bobMember.sendJson({ type: "session-close", version: RELAY_PROTOCOL_VERSION, session: 1 });
+    await aliceMember.take("session-close", (message) => message.session === incoming.session);
   });
 
-  await check(`A connection keeps ${TRANSFER_BYTES} bytes complete and in order`, async () => {
-    const client = await hello(url, rootPem, bob, { role: "client", target: keyId(alice) });
-    const incoming = await aliceMember.take("incoming", (message) => message.from.user === "bob");
-    const accept = await hello(url, rootPem, alice, { role: "accept", connectionId: incoming.connectionId });
-    await Promise.all([client.message("open"), accept.message("open")]);
-    const sent = createHash("sha256");
-    for (let offset = 0; offset < TRANSFER_BYTES; offset += TRANSFER_CHUNK_BYTES) {
-      const chunk = randomBytes(TRANSFER_CHUNK_BYTES);
-      sent.update(chunk);
-      client.sendBytes(chunk);
+  await check(`A session keeps ${TRANSFER_BYTES} bytes complete and in order with credits of the window`, async () => {
+    const { assigned } = await openSession(bobMember, aliceMember, keyId(alice), 2);
+    const data = randomBytes(TRANSFER_BYTES);
+    let sent = 0;
+    let credit = RELAY_SESSION_WINDOW_BYTES;
+    let received = 0;
+    let granted = 0;
+    while (received < TRANSFER_BYTES) {
+      while (sent < TRANSFER_BYTES && credit > 0) {
+        const size = Math.min(RELAY_SESSION_FRAME_PAYLOAD_LIMIT, credit, TRANSFER_BYTES - sent);
+        bobData.sendBytes(frame(2, data.subarray(sent, sent + size)));
+        sent += size;
+        credit -= size;
+      }
+      received = await aliceData.until(() => {
+        const total = framesFor(aliceData, assigned).reduce((sum, part) => sum + part.byteLength, 0);
+        return total > received ? total : undefined;
+      }, "more session bytes");
+      if (received - granted >= RELAY_SESSION_WINDOW_BYTES / 4 || received === TRANSFER_BYTES) {
+        aliceMember.sendJson({
+          type: "session-credit",
+          version: RELAY_PROTOCOL_VERSION,
+          session: assigned,
+          bytes: received - granted,
+        });
+        const forwarded = await bobMember.take("session-credit", (message) => message.session === 2);
+        assert.equal(forwarded.bytes, received - granted);
+        credit += forwarded.bytes;
+        granted = received;
+      }
     }
-    const total = () => accept.binary.reduce((bytes, chunk) => bytes + chunk.byteLength, 0);
-    await accept.until(() => (total() >= TRANSFER_BYTES ? true : undefined), "all bytes at host");
-    const received = createHash("sha256");
-    for (const chunk of accept.binary) received.update(chunk);
-    assert.equal(total(), TRANSFER_BYTES);
-    assert.equal(received.digest("hex"), sent.digest("hex"));
-    accept.close();
-    await client.closed;
-  });
-
-  await check("A member cannot connect to a member of a different team", async () => {
-    await refusedWith(await hello(url, rootPem, carol, { role: "client", target: keyId(alice) }), "target_unavailable");
-  });
-
-  await check("A member that does not host cannot be a target", async () => {
-    await refusedWith(await hello(url, rootPem, alice, { role: "client", target: keyId(bob) }), "target_unavailable");
-  });
-
-  await check("A client waits for a target, and connects when the target starts to host", async () => {
-    const client = await hello(url, rootPem, dave, { role: "client", target: keyId(bob), waitForTarget: true });
-    await client.message("waiting");
-    bobMember.sendJson({ type: "presence", version: RELAY_PROTOCOL_VERSION, hosting: true, label: "Bob" });
-    const incoming = await bobMember.take("incoming", (message) => message.from.user === "dave");
-    const accept = await hello(url, rootPem, bob, { role: "accept", connectionId: incoming.connectionId });
-    const open = await client.message("open");
-    assert.equal(open.peer.user, "bob");
-    await aliceMember.message("members", (message) =>
-      message.members.some((member) => member.user === "bob" && member.hosting && member.label === "Bob"),
+    const joined = Buffer.concat(framesFor(aliceData, assigned));
+    assert.equal(joined.byteLength, TRANSFER_BYTES);
+    assert.equal(createHash("sha256").update(joined).digest("hex"), createHash("sha256").update(data).digest("hex"));
+    bobData.sendBytes(encodeRelaySessionEnd(2));
+    await aliceData.until(
+      () =>
+        aliceData.binary.some((bytes) => {
+          const decoded = decodeRelaySessionFrame(bytes);
+          return decoded?.kind === "end" && decoded.session === assigned;
+        })
+          ? true
+          : undefined,
+      "the end of the session",
     );
-    accept.close();
-    await client.closed;
+    aliceData.binary.length = 0;
+    bobData.binary.length = 0;
   });
 
-  await check("Only the target can accept a connection", async () => {
-    const client = await hello(url, rootPem, dave, { role: "client", target: keyId(bob) });
-    const incoming = await bobMember.take("incoming", (message) => message.from.user === "dave");
-    await refusedWith(
-      await hello(url, rootPem, alice, { role: "accept", connectionId: incoming.connectionId }),
-      "protocol_error",
+  await check(
+    "A data ticket works once, a bad ticket is refused, data on control is refused, and data closes with control",
+    async () => {
+      const daveControl = await hello(url, rootPem, dave, { role: "member", hosting: false });
+      await daveControl.message("welcome");
+      daveControl.sendJson({ type: "data-ticket", version: RELAY_PROTOCOL_VERSION });
+      const { ticket } = await daveControl.take("data-ticket");
+      const first = new Peer(url, { ca: rootPem });
+      first.sendJsonWhenOpen({ type: "data-hello", version: RELAY_PROTOCOL_VERSION, ticket });
+      await first.message("challenge");
+      const again = new Peer(url, { ca: rootPem });
+      again.sendJsonWhenOpen({ type: "data-hello", version: RELAY_PROTOCOL_VERSION, ticket });
+      await refusedWith(again, "authentication_failed");
+      const forged = new Peer(url, { ca: rootPem });
+      forged.sendJsonWhenOpen({
+        type: "data-hello",
+        version: RELAY_PROTOCOL_VERSION,
+        ticket: randomBytes(32).toString("base64url"),
+      });
+      await refusedWith(forged, "authentication_failed");
+      daveControl.sendBytes(frame(1, new Uint8Array(4)));
+      await refusedWith(daveControl, "protocol_error");
+      await first.closed;
+    },
+  );
+
+  await check("A session to a member of a different team, or to a member that does not host, fails", async () => {
+    carolMember.sendJson(sessionOpen(1, keyId(alice)));
+    assert.equal(
+      (await carolMember.take("session-failed", (message) => message.session === 1)).code,
+      "target_unavailable",
     );
-    await refusedWith(
-      await hello(url, rootPem, carol, { role: "accept", connectionId: incoming.connectionId }),
-      "protocol_error",
+    aliceMember.sendJson(sessionOpen(1, keyId(bob)));
+    assert.equal(
+      (await aliceMember.take("session-failed", (message) => message.session === 1)).code,
+      "target_unavailable",
     );
-    client.close();
+    bobMember.sendJson(sessionOpen(3, keyId(bob)));
+    assert.equal((await bobMember.take("session-failed", (message) => message.session === 3)).code, "invalid_message");
+  });
+
+  await check("A refusal of the target fails the session, and an answer on another socket is ignored", async () => {
+    bobMember.sendJson(sessionOpen(4, keyId(alice), "aGVsbG8"));
+    const incoming = await aliceMember.take("session-incoming", (message) => message.from.user === "bob");
+    carolMember.sendJson({ type: "session-accept", version: RELAY_PROTOCOL_VERSION, session: incoming.session });
+    aliceMember.sendJson({
+      type: "session-refuse",
+      version: RELAY_PROTOCOL_VERSION,
+      session: incoming.session,
+      code: "refused",
+    });
+    assert.equal((await bobMember.take("session-failed", (message) => message.session === 4)).code, "refused");
+    assert.equal(
+      bobMember.messages.some((message) => message.type === "session-opened" && message.session === 4),
+      false,
+    );
+  });
+
+  await check("The sessions of one pair are limited", async () => {
+    for (let session = 10; session < 10 + SESSIONS_PER_PAIR; session += 1)
+      bobMember.sendJson(sessionOpen(session, keyId(alice)));
+    bobMember.sendJson(sessionOpen(10 + SESSIONS_PER_PAIR, keyId(alice)));
+    const failed = await bobMember.take("session-failed", (message) => message.session === 10 + SESSIONS_PER_PAIR);
+    assert.equal(failed.code, "rate_limited");
+    for (let session = 10; session < 10 + SESSIONS_PER_PAIR; session += 1) {
+      bobMember.sendJson({ type: "session-close", version: RELAY_PROTOCOL_VERSION, session });
+    }
+    for (let count = 0; count < SESSIONS_PER_PAIR; count += 1) await aliceMember.take("session-incoming");
+    for (let count = 0; count < SESSIONS_PER_PAIR; count += 1) await aliceMember.take("session-close");
+  });
+
+  await check("Data beyond the window, an unknown session number and a reused number are refused", async () => {
+    const daveMember = await hello(url, rootPem, dave, { role: "member", hosting: false });
+    await daveMember.message("welcome");
+    const daveData = await openData(url, rootPem, daveMember);
+    daveData.sendBytes(frame(77, new Uint8Array(8)));
+    const { assigned } = await openSession(daveMember, aliceMember, keyId(alice), 5);
+    daveMember.sendJson(sessionOpen(5, keyId(alice)));
+    await refusedWith(daveMember, "invalid_message");
+    await daveData.closed;
+    await aliceMember.take("session-close", (message) => message.session === assigned);
+    const greedy = await hello(url, rootPem, dave, { role: "member", hosting: false });
+    await greedy.message("welcome");
+    const greedyData = await openData(url, rootPem, greedy);
+    await openSession(greedy, aliceMember, keyId(alice), 1);
+    for (let sent = 0; sent <= RELAY_SESSION_WINDOW_BYTES; sent += RELAY_SESSION_FRAME_PAYLOAD_LIMIT) {
+      greedyData.sendBytes(frame(1, new Uint8Array(RELAY_SESSION_FRAME_PAYLOAD_LIMIT)));
+    }
+    await refusedWith(greedy, "protocol_error");
+    await greedyData.closed;
+    await aliceMember.take("session-close");
+    aliceData.binary.length = 0;
+  });
+
+  await check("Frames for a member with no data socket wait, and the server asks for the data socket", async () => {
+    const erin = await hello(url, rootPem, dave, { role: "member", hosting: false });
+    await erin.message("welcome");
+    const erinData = await openData(url, rootPem, erin);
+    const { assigned } = await openSession(erin, aliceMember, keyId(alice), 1);
+    aliceData.close();
+    await aliceData.closed;
+    erinData.sendBytes(frame(1, new TextEncoder().encode("waits")));
+    await aliceMember.take("data-wanted");
+    const reopened = await openData(url, rootPem, aliceMember);
+    await reopened.until(() => (framesFor(reopened, assigned).length > 0 ? true : undefined), "the waiting frame");
+    assert.equal(new TextDecoder().decode(framesFor(reopened, assigned)[0]), "waits");
+    erin.close();
+    await erinData.closed;
+    await aliceMember.take("session-close", (message) => message.session === assigned);
+    reopened.close();
+  });
+
+  await check("A hello for the removed tunnel roles is refused", async () => {
+    const old = new Peer(url, { ca: rootPem });
+    const challenge = await old.message("challenge");
+    const clientNonce = randomBytes(32).toString("base64url");
+    old.sendJson({
+      type: "hello",
+      version: RELAY_PROTOCOL_VERSION,
+      audience: relayAudience(url),
+      clientNonce,
+      certificate: bob.certificate,
+      chain: bob.chain,
+      signature: proofSignature(
+        bob.privateKey,
+        relayHelloTranscript({ nonce: challenge.nonce, clientNonce, audience: relayAudience(url), role: "member" }),
+      ),
+      role: "client",
+      target: keyId(alice),
+    });
+    await refusedWith(old, "invalid_message");
   });
 
   await check("A certificate of a different root is refused", async () => {
@@ -634,11 +811,17 @@ try {
     await refusedWith(await hello(url, rootPem, old, { role: "member", hosting: false }), "certificate_expired");
   });
 
-  await check("Data before a connection is open, and an unknown message, close the socket", async () => {
+  await check("Data before the proof, an invalid frame, and an unknown message close the socket", async () => {
     const early = new Peer(url, { ca: rootPem });
     await early.message("challenge");
     early.sendBytes(randomBytes(16));
     await refusedWith(early, "protocol_error");
+    const invalid = await hello(url, rootPem, dave, { role: "member", hosting: false });
+    await invalid.message("welcome");
+    const invalidData = await openData(url, rootPem, invalid);
+    invalidData.sendBytes(new Uint8Array([9, 9, 0, 0, 0, 1, 0]));
+    await refusedWith(invalidData, "invalid_message");
+    invalid.close();
     const unknown = new Peer(url, { ca: rootPem });
     await unknown.message("challenge");
     unknown.sendJson({ type: "hello", version: 2 });
@@ -666,12 +849,14 @@ try {
     assert.equal(separated.status, 0, separated.output);
   });
 
-  await check("A revoked certificate loses its connection and cannot connect again", async () => {
+  await check("A revoked certificate loses its connection and its sessions and cannot connect again", async () => {
+    const { assigned } = await openSession(bobMember, aliceMember, keyId(alice), 40);
     const revoked = command(environment, "ca", "revoke", keyId(bob));
     assert.equal(revoked.status, 0, revoked.output);
     const error = await bobMember.message("error");
     assert.equal(error.code, "certificate_revoked");
     await bobMember.closed;
+    await aliceMember.take("session-close", (message) => message.session === assigned);
     await refusedWith(await hello(url, rootPem, bob, { role: "member", hosting: false }), "certificate_revoked");
     const roster = await aliceMember.message(
       "members",
@@ -1008,10 +1193,8 @@ try {
   });
 
   await check("Each authenticated socket got a server proof first, and each proof verifies with the root", () => {
-    const accepted = provedSockets.filter((socket) =>
-      socket.peer.order.some((type) => type === "welcome" || type === "waiting" || type === "open"),
-    );
-    assert.ok(accepted.length >= 10, `Only ${accepted.length} sockets were accepted.`);
+    const accepted = provedSockets.filter((socket) => socket.peer.order.some((type) => type === "welcome"));
+    assert.ok(accepted.length >= 8, `Only ${accepted.length} sockets were accepted.`);
     for (const socket of accepted) {
       assert.equal(serverProofProblem(socket, rootPem), null, `${socket.transcript.role} socket`);
     }

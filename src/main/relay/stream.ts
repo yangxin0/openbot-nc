@@ -1,65 +1,86 @@
 import { Duplex } from "node:stream";
-import type { RelayPeerCertificate, RelayServerMessage } from "@openbot/contracts/relay-protocol/messages";
-import type { RelayTunnelRole, RelayTunnelSession } from "@openbot/contracts/relay-protocol/tunnel-crypto";
-import { Effect, Exit } from "effect";
-import { peerRefusal } from "./certificates";
-import type { RelayCredentialSource } from "./identity-store";
-import { type RelayOpen, type RelaySocket, type RelaySocketClose, RelaySocketError } from "./socket";
-import { encryptRelayTunnel, type RelayTunnelCipher, relayTunnelError } from "./tunnel-encryption";
+import type { RelayPeerCertificate } from "@openbot/contracts/relay-protocol/messages";
+import type { RelaySession } from "@openbot/team-client/relay-sessions";
+import { RelaySocketError as SharedRelaySocketError } from "@openbot/team-client/relay-socket";
+import { RelaySocketError } from "./socket";
 
-const RELAY_STREAM_MESSAGE_BYTES = 256 * 1024;
+const RELAY_STREAM_QUEUE_BYTES = 256 * 1024;
 
 type WriteCallback = (error?: Error | null) => void;
 
-export class RelayStream extends Duplex {
+export interface RelaySendProgress {
+  queuedBytes(): number;
+  unacknowledgedBytes(): number;
+  onProgress(listener: () => void): () => void;
+}
+
+export function desktopRelayError(error: unknown): RelaySocketError {
+  if (error instanceof RelaySocketError) return error;
+  if (error instanceof SharedRelaySocketError)
+    return new RelaySocketError({ code: error.code, message: error.message });
+  return new RelaySocketError({
+    code: "closed",
+    message: error instanceof Error ? error.message : "The relay session failed.",
+  });
+}
+
+export class RelayStream extends Duplex implements RelaySendProgress {
   connecting = true;
   timeout = 0;
-  #socket: RelaySocket | null = null;
-  #open: RelayOpen | null = null;
-  #session: RelayTunnelSession | null = null;
-  #inbound: Promise<void> = Promise.resolve();
-  #heldByPeer = false;
-  #heldWrite: (() => void) | null = null;
-  #sentInTurn = 0;
+  #session: RelaySession | null = null;
+  #waitingWrite: WriteCallback | null = null;
+  #stopProgress: (() => void) | null = null;
   #idleTimer: ReturnType<typeof setTimeout> | null = null;
+  #ending = false;
 
   constructor() {
     super({ allowHalfOpen: false });
   }
 
   get peer(): RelayPeerCertificate | null {
-    return this.#open?.peer ?? null;
+    return this.#session?.peer ?? null;
   }
 
   get connectionId(): string | null {
-    return this.#open?.connectionId ?? null;
+    return this.#session?.connectionId ?? null;
   }
 
   get remoteAddress(): string | undefined {
-    return this.#open ? `relay:${this.#open.peer.keyId}` : undefined;
+    return this.#session ? `relay:${this.#session.peer.keyId}` : undefined;
   }
 
-  get heldByPeer(): boolean {
-    return this.#heldByPeer;
-  }
-
-  connect(socket: RelaySocket, open: RelayOpen, cipher: RelayTunnelCipher): void {
-    if (this.destroyed || this.#socket) {
-      socket.terminate();
+  connect(session: RelaySession): void {
+    if (this.destroyed || this.#session) {
+      session.close();
       return;
     }
-    this.#socket = socket;
-    this.#open = open;
-    this.#session = cipher.session;
-    this.#heldByPeer = cipher.heldByPeer;
+    this.#session = session;
     this.connecting = false;
-    if (cipher.rest.byteLength > 0) this.#receive(socket, cipher.rest);
-    socket.attach({
-      message: (message) => this.#control(message),
-      binary: (data) => this.#receive(socket, data),
-      closed: (close) => this.#closed(close),
+    this.#stopProgress = session.onProgress(() => this.#progressed());
+    session.listen({
+      data: (data) => {
+        this.#restartIdleTimer();
+        if (!this.push(Buffer.from(data.buffer, data.byteOffset, data.byteLength))) session.holdCredits();
+      },
+      closed: (close) => {
+        if (close.clean) this.push(null);
+        else this.destroy(desktopRelayError(close.error));
+      },
     });
     this.emit("connect");
+  }
+
+  queuedBytes(): number {
+    return this.writableLength + (this.#session?.queuedBytes() ?? 0);
+  }
+
+  unacknowledgedBytes(): number {
+    return this.#session?.unacknowledgedBytes() ?? 0;
+  }
+
+  onProgress(listener: () => void): () => void {
+    const session = this.#session;
+    return session ? session.onProgress(listener) : () => undefined;
   }
 
   setTimeout(milliseconds: number, listener?: () => void): this {
@@ -86,107 +107,55 @@ export class RelayStream extends Duplex {
   }
 
   override _read(): void {
-    this.#socket?.resumeReading();
+    this.#session?.releaseCredits();
   }
 
   override _write(chunk: Buffer, encoding: BufferEncoding, callback: WriteCallback): void {
-    const socket = this.#socket;
     const session = this.#session;
-    if (!socket || !session) {
+    if (!session) {
       this.once("connect", () => this._write(chunk, encoding, callback));
       return;
     }
-    void session.seal(chunk).then((sealed) => {
-      if (!sealed.ok) callback(relayTunnelError(sealed.code));
-      else if (sealed.bytes.byteLength === 0) callback();
-      else this.#send(socket, sealed.bytes, 0, callback);
-    });
+    try {
+      session.write(chunk);
+    } catch (error) {
+      callback(desktopRelayError(error));
+      return;
+    }
+    this.#restartIdleTimer();
+    if (session.queuedBytes() < RELAY_STREAM_QUEUE_BYTES) callback();
+    else this.#waitingWrite = callback;
   }
 
   override _final(callback: WriteCallback): void {
-    const socket = this.#socket;
-    if (!socket) {
+    const session = this.#session;
+    if (!session) {
       this.once("connect", () => this._final(callback));
       return;
     }
-    socket.close();
+    this.#ending = true;
+    session.end();
     callback();
   }
 
   override _destroy(error: Error | null, callback: WriteCallback): void {
     if (this.#idleTimer) clearTimeout(this.#idleTimer);
     this.#idleTimer = null;
-    this.#heldWrite = null;
-    this.#session = null;
-    this.#socket?.terminate();
+    this.#stopProgress?.();
+    this.#stopProgress = null;
+    const waiting = this.#waitingWrite;
+    this.#waitingWrite = null;
+    waiting?.(error ?? new RelaySocketError({ code: "closed", message: "The relay session is closed." }));
+    if (!this.#ending || error) this.#session?.close();
     callback(error);
   }
 
-  #send(socket: RelaySocket, chunk: Uint8Array, offset: number, callback: WriteCallback): void {
-    if (this.#heldByPeer) {
-      this.#heldWrite = () => this.#send(socket, chunk, offset, callback);
-      return;
-    }
-    const end = Math.min(chunk.length, offset + RELAY_STREAM_MESSAGE_BYTES);
-    socket.sendBinary(chunk.subarray(offset, end), (error) => {
-      if (error) {
-        callback(error);
-        return;
-      }
-      this.#restartIdleTimer();
-      this.#sentInTurn += end - offset;
-      const proceed = end >= chunk.length ? () => callback() : () => this.#send(socket, chunk, end, callback);
-      if (this.#sentInTurn < RELAY_STREAM_MESSAGE_BYTES) {
-        proceed();
-        return;
-      }
-      this.#sentInTurn = 0;
-      setImmediate(proceed);
-    });
-  }
-
-  #receive(socket: RelaySocket, data: Uint8Array): void {
-    this.#restartIdleTimer();
+  #progressed(): void {
     const session = this.#session;
-    if (!session) return;
-    const opened = session.open(data);
-    this.#inbound = this.#inbound.then(async () => {
-      const result = await opened;
-      if (this.destroyed) return;
-      for (const message of result.messages) {
-        if (!this.push(Buffer.from(message.buffer, message.byteOffset, message.byteLength))) socket.pauseReading();
-      }
-      if (result.failure) this.destroy(relayTunnelError(result.failure));
-    });
-  }
-
-  #control(message: RelayServerMessage): void {
-    if (message.type === "pause") {
-      this.#heldByPeer = true;
-      this.emit("flow", "paused");
-      return;
-    }
-    if (message.type === "resume") {
-      this.#heldByPeer = false;
-      this.emit("flow", "resumed");
-      const heldWrite = this.#heldWrite;
-      this.#heldWrite = null;
-      heldWrite?.();
-      return;
-    }
-    this.destroy(
-      new RelaySocketError({
-        code: "protocol_error",
-        message: "The relay server sent a message that is not expected.",
-      }),
-    );
-  }
-
-  #closed(close: RelaySocketClose): void {
-    this.#inbound = this.#inbound.then(() => {
-      if (close.clean) this.push(null);
-      else this.destroy(close.error);
-    });
+    const waiting = this.#waitingWrite;
+    if (!session || !waiting || session.queuedBytes() >= RELAY_STREAM_QUEUE_BYTES) return;
+    this.#waitingWrite = null;
+    waiting();
   }
 
   #restartIdleTimer(): void {
@@ -196,43 +165,4 @@ export class RelayStream extends Duplex {
     this.#idleTimer = setTimeout(() => this.emit("timeout"), this.timeout);
     this.#idleTimer.unref();
   }
-}
-
-export function verifiedRelayStream(input: {
-  credentials: RelayCredentialSource;
-  role: RelayTunnelRole;
-  socket: RelaySocket;
-  open: RelayOpen;
-  peerKeyId: string;
-  connectionId: string | null;
-  now: number;
-  stream?: RelayStream | undefined;
-}): Effect.Effect<RelayStream, RelaySocketError> {
-  const { credentials, socket, open } = input;
-  return Effect.gen(function* () {
-    const identity = credentials.current();
-    const refusal = !identity
-      ? "no_identity"
-      : open.peer.keyId !== input.peerKeyId
-        ? "different_peer"
-        : input.connectionId !== null && open.connectionId !== input.connectionId
-          ? "different_connection"
-          : peerRefusal(open.peer, identity, input.now);
-    if (refusal !== null || !identity) {
-      return yield* new RelaySocketError({
-        code: "peer_refused",
-        message: `The certificate of the peer was refused (${refusal ?? "no_identity"}).`,
-      });
-    }
-    const cipher = yield* encryptRelayTunnel({
-      socket,
-      open,
-      role: input.role,
-      credentials,
-      selfKeyId: identity.keyId,
-    });
-    const stream = input.stream ?? new RelayStream();
-    stream.connect(socket, open, cipher);
-    return stream;
-  }).pipe(Effect.onExit((exit) => (Exit.isSuccess(exit) ? Effect.void : Effect.sync(() => socket.terminate()))));
 }

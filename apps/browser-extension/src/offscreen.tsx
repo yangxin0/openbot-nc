@@ -1,5 +1,6 @@
 import { isDynamicRecord } from "@openbot/contracts/runtime-values";
 import { formatLocale, loadLocale, resolveLocale } from "@openbot/i18n";
+import { type RelayBrowserControl, startRelayControl } from "@openbot/team-client/relay-client";
 import { currentText, TextProvider } from "@openbot/ui/text";
 import { render } from "@solidjs/web";
 import { type ClientBrowserLink, createClientBrowserLink } from "./client-browser-link";
@@ -39,6 +40,7 @@ interface Target {
   identityKeyId: string;
   hostId: string;
   connection: HostConnection;
+  control: RelayBrowserControl;
   link: ClientBrowserLink;
 }
 
@@ -48,6 +50,7 @@ let queue: Promise<unknown> = Promise.resolve();
 function drop(): void {
   target?.link.dispose();
   void target?.connection.dispose();
+  target?.control.stop();
   target = null;
 }
 
@@ -61,7 +64,8 @@ async function connectSavedHost(): Promise<void> {
   if (target && target.identityKeyId === identity.keyId && target.hostId === saved.hostId) return;
   drop();
   const links: { current: ClientBrowserLink | null } = { current: null };
-  const connection = await createHostConnection(identity, {
+  const control = startRelayControl(identity);
+  const connection = await createHostConnection(identity, control, {
     event: (event) => links.current?.handleEvent(event),
     state: (update) => {
       if (update.state === "online") links.current?.refresh();
@@ -72,9 +76,10 @@ async function connectSavedHost(): Promise<void> {
     const capabilities = await connection.connect(saved);
     const link = createClientBrowserLink({ request: connection.request, capabilities });
     links.current = link;
-    target = { identityKeyId: identity.keyId, hostId: saved.hostId, connection, link };
+    target = { identityKeyId: identity.keyId, hostId: saved.hostId, connection, control, link };
   } catch (error) {
     await connection.dispose();
+    control.stop();
     throw error;
   }
 }

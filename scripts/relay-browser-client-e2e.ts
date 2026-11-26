@@ -22,6 +22,7 @@ import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/co
 import {
   RELAY_PATH,
   RELAY_PROTOCOL_VERSION,
+  RELAY_SESSIONS_FEATURE,
   type RelayRole,
   type RelayServerProofTranscriptInput,
   relayServerProofTranscript,
@@ -206,13 +207,21 @@ function helloTranscript(serverNonce: string, text: string): RelayServerProofTra
     audience: hello.audience,
     role: hello.role,
     clientKeyId: spkiDigest(hello.certificate, "base64url"),
-    target: isString(hello.target) ? hello.target : undefined,
-    connectionId: isString(hello.connectionId) ? hello.connectionId : undefined,
   };
 }
 
+function sessionOpenOf(text: string): { session: number; target: string } | null {
+  const value = JSON.parse(text);
+  return isDynamicRecord(value) &&
+    value.type === "session-open" &&
+    typeof value.session === "number" &&
+    isString(value.target)
+    ? { session: value.session, target: value.target }
+    : null;
+}
+
 function isRole(value: unknown): value is RelayRole {
-  return value === "member" || value === "client" || value === "accept";
+  return value === "member";
 }
 
 async function startFakeRelay(tls: { cert: string; key: string }, behavior: FakeRelayBehavior): Promise<FakeRelay> {
@@ -235,9 +244,22 @@ async function startFakeRelay(tls: { cert: string; key: string }, behavior: Fake
     let answered = false;
     socket.send(JSON.stringify({ type: "challenge", version: RELAY_PROTOCOL_VERSION, nonce: serverNonce }));
     socket.on("message", (data) => {
-      const transcript = answered
-        ? null
-        : helloTranscript(serverNonce, Buffer.from(rawDataBytes(data)).toString("utf8"));
+      const text = Buffer.from(rawDataBytes(data)).toString("utf8");
+      const later = answered ? sessionOpenOf(text) : null;
+      const peer = behavior.openPeer;
+      if (later && peer) {
+        socket.send(
+          JSON.stringify({
+            type: "session-opened",
+            version: RELAY_PROTOCOL_VERSION,
+            session: later.session,
+            connectionId: randomBytes(16).toString("base64url"),
+            peer: { keyId: later.target, ...peer },
+          }),
+        );
+        return;
+      }
+      const transcript = answered ? null : helloTranscript(serverNonce, text);
       if (!transcript) return;
       answered = true;
       const signature = sign("sha256", Buffer.from(relayServerProofTranscript(transcript)), {
@@ -252,18 +274,6 @@ async function startFakeRelay(tls: { cert: string; key: string }, behavior: Fake
           signature,
         }),
       );
-      const peer = behavior.openPeer;
-      if (transcript.role === "client" && transcript.target && peer) {
-        socket.send(
-          JSON.stringify({
-            type: "open",
-            version: RELAY_PROTOCOL_VERSION,
-            connectionId: randomBytes(16).toString("base64url"),
-            peer: { keyId: transcript.target, ...peer },
-          }),
-        );
-        return;
-      }
       socket.send(
         JSON.stringify({
           type: "welcome",
@@ -271,6 +281,7 @@ async function startFakeRelay(tls: { cert: string; key: string }, behavior: Fake
           self: { keyId: transcript.clientKeyId, user: "alice", device: "browser" },
           team: { id: "t".repeat(43), name: TEAM },
           members: [],
+          features: [RELAY_SESSIONS_FEATURE],
         }),
       );
     });

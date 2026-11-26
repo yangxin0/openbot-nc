@@ -56,10 +56,7 @@ export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
       ...(options.reconnect ? { reconnect: options.reconnect } : {}),
       ...(options.socket ? { socket: options.socket } : {}),
     });
-    this.#dialer = new RelayDialer({
-      identity: options.identity,
-      ...(options.socket ? { socket: options.socket } : {}),
-    });
+    this.#dialer = new RelayDialer({ control: this.control });
     this.#poolSize = options.poolSize ?? RELAY_POOL_SIZE;
     this.#logger = options.logger ?? createOpenBotLogger("relay-client");
   }
