@@ -31,7 +31,7 @@ interface RelayClientCoordinatorOptions {
   reconnect?: { baseMs?: number; maxMs?: number };
   socket?: RelaySocketOptions;
   poolSize?: number;
-  logger?: Pick<Logger, "warn">;
+  logger?: Pick<Logger, "info" | "warn">;
 }
 
 interface Running {
@@ -45,20 +45,21 @@ export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
   readonly control: RelayControl;
   readonly #dialer: RelayDialer;
   readonly #poolSize: number;
-  readonly #logger: Pick<Logger, "warn">;
+  readonly #logger: Pick<Logger, "info" | "warn">;
   readonly #pools = new Map<string, RelayFetch>();
   #running: Running | null = null;
 
   constructor(options: RelayClientCoordinatorOptions) {
     super();
+    this.#logger = options.logger ?? createOpenBotLogger("relay-client");
     this.control = new RelayControl({
       identity: options.identity,
+      logger: this.#logger,
       ...(options.reconnect ? { reconnect: options.reconnect } : {}),
       ...(options.socket ? { socket: options.socket } : {}),
     });
     this.#dialer = new RelayDialer({ control: this.control });
     this.#poolSize = options.poolSize ?? RELAY_POOL_SIZE;
-    this.#logger = options.logger ?? createOpenBotLogger("relay-client");
   }
 
   readonly start = Effect.fn("RelayClientCoordinator.start")(function* (

@@ -2230,6 +2230,38 @@
     "tr",
     "zh"
   ],
+  "mobile.identity.settings.onlineRtt": [
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "he",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "tr",
+    "zh"
+  ],
+  "mobile.identity.settings.reconnecting": [
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "he",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "tr",
+    "zh"
+  ],
   "mobile.identity.settings.remove": [
     "ar",
     "de",
@@ -3873,6 +3905,22 @@
     "zh"
   ],
   "settings.team.connection.online": [
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "he",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "tr",
+    "zh"
+  ],
+  "settings.team.connection.reconnecting": [
     "ar",
     "de",
     "es",

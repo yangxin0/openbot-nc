@@ -159,7 +159,7 @@ import {
   retainLocationAlwaysAllowed,
 } from "@/features/chat/model/location-always-allowed";
 import { deleteServerSideQuestions } from "@/features/chat/model/side-questions";
-import { mergeRelayHosts, relayStateKey } from "@/features/identity/model/phone-relay";
+import { listedRelayHostIds, mergeRelayHosts, relayStateKey } from "@/features/identity/model/phone-relay";
 import { QuickActionsSync } from "@/features/quick-actions/quick-actions-sync";
 import { decodeServerMember } from "@/features/servers/model/server-members";
 import { forgetAgentBackdrops, retainAgentBackdrops } from "@/features/settings/model/chat-backdrop";
@@ -693,6 +693,16 @@ export function MobileWorkspaceProvider({ children }: PropsWithChildren) {
     if (!hostsRestored) return;
     const snapshot = relay.snapshot();
     const { state } = snapshot;
+    const listed = listedRelayHostIds(snapshot, relay.identity);
+    setServers((current) => {
+      let changed = false;
+      const next = current.map((server) => {
+        if ((server.listed === true) === listed.has(server.id)) return server;
+        changed = true;
+        return { ...server, listed: listed.has(server.id) };
+      });
+      return changed ? next : current;
+    });
     if (state.status === "online") {
       directoryLoaded.current = true;
       installHosts(mergeRelayHosts(keptHosts.current ?? [], snapshot, relay.identity));

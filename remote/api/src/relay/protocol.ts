@@ -8,6 +8,7 @@ import {
   RELAY_KEY_ID_PATTERN,
   RELAY_LABEL_LIMIT,
   RELAY_NONCE_PATTERN,
+  RELAY_PING_ID_MAX,
   RELAY_PROTOCOL_VERSION,
   RELAY_SESSION_FIRST_PATTERN,
   RELAY_SESSION_ID_MAX,
@@ -42,6 +43,11 @@ const presenceSchema = z.object({
   version: z.literal(RELAY_PROTOCOL_VERSION),
   hosting: z.boolean(),
   label: labelSchema.optional(),
+});
+const pingSchema = z.object({
+  type: z.literal("ping"),
+  version: z.literal(RELAY_PROTOCOL_VERSION),
+  id: z.number().int().min(1).max(RELAY_PING_ID_MAX),
 });
 const dataTicketSchema = z.object({ type: z.literal("data-ticket"), version: z.literal(RELAY_PROTOCOL_VERSION) });
 const dataHelloSchema = z.object({
@@ -84,6 +90,7 @@ const sessionCreditSchema = z.object({
 const clientMessageSchema = z.discriminatedUnion("type", [
   helloSchema,
   presenceSchema,
+  pingSchema,
   dataTicketSchema,
   dataHelloSchema,
   sessionOpenSchema,

@@ -1,5 +1,13 @@
 ### Changed
 
+- When the app comes back to the front, it checks its connection to the central server and opens a
+  new connection at the same time, and keeps the one that answers first. A connection to a server is
+  ready in about one second. Before, the app could wait 15 seconds or more on a connection that iOS
+  had closed in the background. While the app
+  runs, it sends a heartbeat every 10 seconds; it stops in the background.
+- Settings > Team identity > Connection shows the connection to the central server with its round
+  trip time, or "Reconnecting…" while the app waits to connect again. A server stays bright in the
+  list while it is online on the central server and only the connection to it reconnects.
 - The app keeps one control WebSocket to the central server while it is in front, and opens one
   data WebSocket for all its connections when it needs one; the data socket closes after 5 minutes
   with no data. Connecting to a server takes about one round trip through the central server

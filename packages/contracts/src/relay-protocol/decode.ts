@@ -9,6 +9,7 @@ import {
   RELAY_KEY_ID_PATTERN,
   RELAY_LABEL_LIMIT,
   RELAY_NONCE_PATTERN,
+  RELAY_PING_ID_MAX,
   RELAY_PROTOCOL_VERSION,
   RELAY_SESSION_FAILURE_CODES,
   RELAY_SESSION_FIRST_PATTERN,
@@ -50,6 +51,8 @@ export function decodeRelayServerMessage(value: unknown): RelayServerMessage | n
       const members = decodeMembers(value.members);
       return members ? { type: "members", version, members } : null;
     }
+    case "pong":
+      return isRelayPingId(value.id) ? { type: "pong", version, id: value.id } : null;
     case "data-ticket":
       return isString(value.ticket) && RELAY_DATA_TICKET_PATTERN.test(value.ticket)
         ? { type: "data-ticket", version, ticket: value.ticket }
@@ -105,6 +108,10 @@ export function decodeRelayServerMessage(value: unknown): RelayServerMessage | n
 
 export function isRelaySessionId(value: unknown): value is number {
   return isNumber(value) && Number.isSafeInteger(value) && value >= 1 && value <= RELAY_SESSION_ID_MAX;
+}
+
+export function isRelayPingId(value: unknown): value is number {
+  return isNumber(value) && Number.isSafeInteger(value) && value >= 1 && value <= RELAY_PING_ID_MAX;
 }
 
 function isCreditBytes(value: unknown): value is number {

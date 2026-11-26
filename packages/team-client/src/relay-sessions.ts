@@ -440,6 +440,10 @@ export class RelaySessionMux {
     return this.#sessions.size;
   }
 
+  get closedWith(): RelaySocketError | null {
+    return this.#closedWith;
+  }
+
   idleFor(): number {
     for (const session of this.#sessions.values()) if (session.queuedBytes() > 0 || session.endPending) return 0;
     return this.#now() - this.#lastActivity;

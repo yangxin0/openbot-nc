@@ -8,6 +8,7 @@ import {
 } from "@openbot/team-client/relay-client";
 import {
   type PhoneRelay,
+  type PhoneRelayControlOptions,
   type PhoneRelayKeys,
   relayEndsIdentity,
   relayFinalCode,
@@ -27,7 +28,7 @@ export class PhoneRelayRuntime implements PhoneRelay {
   readonly identity: PhoneRelay["identity"];
   readonly crypto: PhoneRelay["crypto"];
   readonly #onEnded: (code: RelaySocketErrorCode) => void;
-  readonly #reconnect: { baseMs?: number; maxMs?: number } | undefined;
+  readonly #options: PhoneRelayControlOptions;
   readonly #listeners = new Set<() => void>();
   readonly #started = new Set<(control: RelayBrowserControl) => void>();
   #control: RelayBrowserControl | null = null;
@@ -38,11 +39,12 @@ export class PhoneRelayRuntime implements PhoneRelay {
     relay: PhoneRelayKeys,
     onEnded: (code: RelaySocketErrorCode) => void,
     reconnect?: { baseMs?: number; maxMs?: number },
+    options: Omit<PhoneRelayControlOptions, "reconnect"> = {},
   ) {
     this.identity = relay.identity;
     this.crypto = relay.crypto;
     this.#onEnded = onEnded;
-    this.#reconnect = reconnect;
+    this.#options = reconnect ? { ...options, reconnect } : options;
   }
 
   get running(): boolean {
@@ -51,7 +53,7 @@ export class PhoneRelayRuntime implements PhoneRelay {
 
   start(): void {
     if (this.#control) return;
-    const control = startPhoneRelayControl(this, this.#reconnect ? { reconnect: this.#reconnect } : {});
+    const control = startPhoneRelayControl(this, this.#options);
     this.#control = control;
     this.#unsubscribe = control.subscribe((snapshot) => {
       if (this.#control !== control) return;
@@ -60,6 +62,14 @@ export class PhoneRelayRuntime implements PhoneRelay {
       if (code !== null && relayEndsIdentity(snapshot)) this.#onEnded(code);
     });
     for (const resolve of [...this.#started]) resolve(control);
+  }
+
+  resume(): void {
+    this.#control?.resume();
+  }
+
+  pause(): void {
+    this.#control?.pause();
   }
 
   async openSession(target: string, options: RelaySessionOpenOptions = {}): Promise<RelaySession> {

@@ -5,6 +5,7 @@ import {
   RELAY_CLOSE_CODES,
   RELAY_CONTROL_MESSAGE_BYTES_LIMIT,
   RELAY_ERROR_CODES,
+  RELAY_HEARTBEAT_FEATURE,
   RELAY_PROTOCOL_VERSION,
   RELAY_SESSIONS_FEATURE,
   RELAY_SOCKET_MESSAGE_BYTES_LIMIT,
@@ -42,6 +43,12 @@ export class RelaySocketError extends Schema.TaggedError<RelaySocketError>()("Re
 
 type RelayWelcome = Extract<RelayServerMessage, { type: "welcome" }>;
 
+export interface RelayConnectTiming {
+  startedAt: number;
+  openedAt: number;
+  welcomedAt: number;
+}
+
 export interface RelaySocketOptions {
   connectDeadlineMs?: number | undefined;
 }
@@ -77,6 +84,7 @@ export class RelaySocket {
   #handlers: RelaySocketHandlers | null = null;
   #failure: RelaySocketError | null = null;
   #opened = false;
+  #openedAt: number | null = null;
   #closed = false;
 
   #onOpen: (() => void) | null = null;
@@ -86,6 +94,7 @@ export class RelaySocket {
     this.#socket = socket;
     socket.on("open", () => {
       this.#opened = true;
+      this.#openedAt = Date.now();
       const listener = this.#onOpen;
       this.#onOpen = null;
       listener?.();
@@ -110,6 +119,10 @@ export class RelaySocket {
 
   get tlsSession(): Buffer | null {
     return this.#tlsSession;
+  }
+
+  get openedAt(): number | null {
+    return this.#openedAt;
   }
 
   get open(): boolean {
@@ -212,12 +225,16 @@ export const openRelayControlSocket = Effect.fn("RelaySocket.openControl")(funct
   identity: RelayCredentialSource,
   presence: RelayPresence,
   options: RelaySocketOptions = {},
-): Effect.fn.Return<{ socket: RelaySocket; welcome: RelayWelcome }, RelaySocketError> {
+): Effect.fn.Return<{ socket: RelaySocket; welcome: RelayWelcome; timing: RelayConnectTiming }, RelaySocketError> {
+  const startedAt = Date.now();
   return yield* withSocket(identity, (socket) =>
     authenticate(socket, identity, presence).pipe(
       Effect.andThen(expectMessage(socket, isMessage("welcome"))),
       deadline(options.connectDeadlineMs ?? RELAY_CONNECT_DEADLINE_MS),
-      Effect.map((welcome) => ({ socket, welcome })),
+      Effect.map((welcome) => {
+        const welcomedAt = Date.now();
+        return { socket, welcome, timing: { startedAt, openedAt: socket.openedAt ?? welcomedAt, welcomedAt } };
+      }),
     ),
   );
 });
@@ -305,7 +322,7 @@ const authenticate = Effect.fn("RelaySocket.authenticate")(function* (
     role: "member",
     hosting: presence.hosting,
     ...(presence.label === null ? {} : { label: presence.label }),
-    features: [RELAY_SESSIONS_FEATURE],
+    features: [RELAY_SESSIONS_FEATURE, RELAY_HEARTBEAT_FEATURE],
   });
   const answer = yield* expectMessage(socket, isMessage("server-proof", "welcome"));
   const refusal =

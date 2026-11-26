@@ -1482,6 +1482,7 @@ if (!hasSingleInstanceLock) {
       powerMonitor.on("resume", reconcileAgentDock);
       powerMonitor.on("resume", () => void Effect.runPromise(remoteServers.wake()));
       powerMonitor.on("resume", () => built.messaging.resume());
+      powerMonitor.on("resume", () => built.relay.wake());
       const routineWake = new RoutineWake({ routines: service, isOnline: () => net.isOnline() });
       powerMonitor.on("suspend", () => routineWake.suspend());
       powerMonitor.on("resume", () => routineWake.resume());

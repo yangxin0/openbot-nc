@@ -3,6 +3,7 @@ import {
   RELAY_CLOSE_CODES,
   RELAY_CONTROL_MESSAGE_BYTES_LIMIT,
   RELAY_ERROR_CODES,
+  RELAY_HEARTBEAT_FEATURE,
   RELAY_PROTOCOL_VERSION,
   RELAY_SESSIONS_FEATURE,
   type RelayClientMessage,
@@ -40,6 +41,12 @@ export class RelaySocketError extends Schema.TaggedError<RelaySocketError>()("Re
 
 export type RelayWelcome = Extract<RelayServerMessage, { type: "welcome" }>;
 
+export interface RelayConnectTiming {
+  startedAt: number;
+  openedAt: number;
+  welcomedAt: number;
+}
+
 export interface RelaySocketClose {
   clean: boolean;
   error: RelaySocketError;
@@ -56,6 +63,7 @@ export interface RelaySocketOptions {
   signal?: AbortSignal;
   now?: () => number;
   crypto?: RelayCrypto;
+  onHello?: () => void;
 }
 
 interface RelayPresence {
@@ -76,6 +84,7 @@ export class RelayBrowserSocket {
   #handlers: RelaySocketHandlers | null = null;
   #failure: RelaySocketError | null = null;
   #opened = false;
+  #openedAt: number | null = null;
   #closed = false;
   #onOpen: (() => void) | null = null;
 
@@ -84,6 +93,7 @@ export class RelayBrowserSocket {
     socket.binaryType = "arraybuffer";
     socket.addEventListener("open", () => {
       this.#opened = true;
+      this.#openedAt = Date.now();
       const listener = this.#onOpen;
       this.#onOpen = null;
       listener?.();
@@ -105,6 +115,10 @@ export class RelayBrowserSocket {
 
   get open(): boolean {
     return !this.#closed && this.#socket.readyState === WebSocket.OPEN;
+  }
+
+  get openedAt(): number | null {
+    return this.#openedAt;
   }
 
   whenOpen(listener: () => void): void {
@@ -140,6 +154,11 @@ export class RelayBrowserSocket {
   fail(code: RelaySocketErrorCode, message: string): void {
     this.#failure ??= new RelaySocketError({ code, message });
     this.close();
+  }
+
+  abandon(code: RelaySocketErrorCode, message: string): void {
+    this.fail(code, message);
+    this.#finish(RELAY_CLOSE_CODES.normal, message);
   }
 
   #receive(data: unknown): void {
@@ -196,10 +215,13 @@ export async function openRelayControlSocket(
   identity: RelayBrowserIdentity,
   presence: { hosting: boolean; label: string | null },
   options: RelaySocketOptions = {},
-): Promise<{ socket: RelayBrowserSocket; welcome: RelayWelcome }> {
+): Promise<{ socket: RelayBrowserSocket; welcome: RelayWelcome; timing: RelayConnectTiming }> {
+  const startedAt = Date.now();
   return withSocket(identity, options, options.connectDeadlineMs ?? RELAY_CONNECT_DEADLINE_MS, async (socket) => {
     await authenticate(socket, identity, presence, options);
-    return { socket, welcome: await expectMessage(socket, isMessage("welcome")) };
+    const welcome = await expectMessage(socket, isMessage("welcome"));
+    const welcomedAt = Date.now();
+    return { socket, welcome, timing: { startedAt, openedAt: socket.openedAt ?? welcomedAt, welcomedAt } };
   });
 }
 
@@ -284,6 +306,10 @@ async function authenticate(
   } catch {
     throw new RelaySocketError({ code: "identity_unavailable", message: "The relay identity cannot sign." });
   }
+  if (options.signal?.aborted || !socket.open) {
+    throw new RelaySocketError({ code: "closed", message: "The relay connection was stopped." });
+  }
+  options.onHello?.();
   socket.sendMessage({
     type: "hello",
     version: RELAY_PROTOCOL_VERSION,
@@ -295,7 +321,7 @@ async function authenticate(
     role: "member",
     hosting: presence.hosting,
     ...(presence.label === null ? {} : { label: presence.label }),
-    features: [RELAY_SESSIONS_FEATURE],
+    features: [RELAY_SESSIONS_FEATURE, RELAY_HEARTBEAT_FEATURE],
   });
   const answer = await expectMessage(socket, isMessage("server-proof", "welcome"));
   const refusal =

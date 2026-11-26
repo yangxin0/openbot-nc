@@ -88,6 +88,11 @@ const CONNECTION_STATUS = {
   offline: { status: "attention", label: "settings.team.connection.offline" },
 } as const satisfies Record<RelayConnectionState["status"], { status: IntegrationStatus; label: AppTextKey }>;
 
+const RECONNECTING_STATUS = {
+  status: "connecting",
+  label: "settings.team.connection.reconnecting",
+} as const satisfies { status: IntegrationStatus; label: AppTextKey };
+
 const HOSTING_STATUS = {
   no_identity: { status: "unavailable", label: "settings.team.hosting.status.noIdentity" },
   starting: { status: "connecting", label: "settings.team.hosting.status.starting" },
@@ -394,7 +399,10 @@ function IdentityIssue(props: { message: string }) {
 function IdentityFacts(props: { identity: RelayIdentitySummary; control: RelayConnectionState; receivedAt: number }) {
   const { t, format } = useText();
   const daysLeft = () => Math.ceil((props.identity.expiresAt - Date.now()) / DAY_MS);
-  const connection = () => CONNECTION_STATUS[props.control.status];
+  const connection = () =>
+    props.control.status === "offline" && props.control.retryInMs !== null
+      ? RECONNECTING_STATUS
+      : CONNECTION_STATUS[props.control.status];
   return (
     <>
       <Show when={daysLeft() < EXPIRY_WARNING_DAYS}>

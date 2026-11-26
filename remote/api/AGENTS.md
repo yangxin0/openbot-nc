@@ -10,6 +10,11 @@ See [docs/central-server.md](../../docs/central-server.md).
   as their SHA-256, single use, 60 seconds, bound to the control socket and its key identifier. Close
   the data socket and the sessions of a member when its control socket closes or its certificate is
   revoked. There is no other socket kind: the old `client` and `accept` sockets are removed.
+- Heartbeat: answer each `ping` on a control or data socket at once with a `pong` of the same `id`.
+  Close a control socket that announced `heartbeat` in `hello` and sent no `ping` for
+  `RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS` (30 s), with its data socket and sessions. Do not apply the
+  timeout to a socket that did not announce `heartbeat`. A `data-ticket` request closes the data
+  socket that the member still has, with the code 1000, and keeps its sessions.
 - Keep the per-session credit check (window `RELAY_SESSION_WINDOW_BYTES`), the round-robin outbox of
   each member, and the limits of sessions per socket, per pair and pending.
 

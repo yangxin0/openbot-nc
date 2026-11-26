@@ -208,6 +208,10 @@ export class RelayService extends EventEmitter<RelayServiceEvents> {
     (operation) => this.#lock.withPermit(operation),
   ).bind(this);
 
+  wake(): void {
+    this.#options.client.control.resume();
+  }
+
   state(): RelayState {
     const { identity, client, hosting } = this.#options;
     const current = identity.current();
@@ -368,6 +372,7 @@ function identitySummary(identity: RelayIdentity): RelayIdentitySummary {
 }
 
 function connectionState(state: RelayControlState): RelayConnectionState {
+  if (state.status === "online") return { status: "online" };
   if (state.status !== "offline") return state;
   return {
     status: "offline",
@@ -405,6 +410,7 @@ function connectionMessage(code: RelaySocketErrorCode): string {
     case "connect_failed":
     case "closed":
     case "deadline_exceeded":
+    case "heartbeat_timeout":
     case "target_unavailable":
     case "peer_refused":
     case "tunnel_handshake_failed":

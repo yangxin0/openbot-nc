@@ -10,7 +10,7 @@ import { useCSSVariable } from "uniwind";
 import { thumbnailColor } from "@/features/agents/components/bloub-avatar";
 import { useServerPlush } from "@/features/servers/model/server-plush";
 import { DISCONNECTED_APPEARANCE } from "@/features/workspace/components/use-connection-appearance";
-import { showsOnline } from "@/features/workspace/model/server-status";
+import { showsPresent } from "@/features/workspace/model/server-status";
 import type { MobileServer } from "@/features/workspace/model/workspace-types";
 import { END_X } from "@/shared/lib/text-direction";
 
@@ -54,7 +54,7 @@ export function ServerAvatar({
   const warning = String(useCSSVariable("--openbot-warning"));
   const danger = String(useCSSVariable("--openbot-danger"));
   const offline = String(useCSSVariable("--openbot-text-dim"));
-  const online = showsOnline(server);
+  const online = showsPresent(server);
   const dot = online
     ? success
     : server.state === "error"

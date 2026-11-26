@@ -1,7 +1,9 @@
 import {
   RELAY_DATA_IDLE_MS,
+  RELAY_HEARTBEAT_FEATURE,
   RELAY_LABEL_LIMIT,
   RELAY_PROTOCOL_VERSION,
+  RELAY_RESUME_CHECK_TIMEOUT_MS,
   RELAY_SESSIONS_FEATURE,
   type RelayPeer,
   type RelayPeerCertificate,
@@ -11,6 +13,7 @@ import {
 import type { RelayPublicKey } from "@openbot/contracts/relay-protocol/tunnel-crypto";
 import { readRelayCertificate, relayPeerCertificateRefusal } from "./relay-certificates";
 import { type RelayCrypto, webRelayCrypto } from "./relay-crypto";
+import { RelayHeartbeat, type RelayHeartbeatTiming } from "./relay-heartbeat";
 import type { RelayBrowserIdentity } from "./relay-identity";
 import {
   type RelaySession,
@@ -24,6 +27,7 @@ import {
   openRelayDataSocket,
   RELAY_CONNECT_DEADLINE_MS,
   type RelayBrowserSocket,
+  type RelayConnectTiming,
   type RelaySocketClose,
   RelaySocketError,
   type RelaySocketErrorCode,
@@ -34,6 +38,7 @@ const RECONNECT_BASE_MS = 1_000;
 const RECONNECT_MAX_MS = 60_000;
 const RECONNECT_JITTER = 0.2;
 const HEALTHY_AFTER_MS = 30_000;
+const RTT_REPORT_MS = 60_000;
 
 const FINAL_CODES: ReadonlySet<RelaySocketErrorCode> = new Set([
   "replaced",
@@ -48,8 +53,10 @@ const FINAL_CODES: ReadonlySet<RelaySocketErrorCode> = new Set([
 
 export type RelayControlState =
   | { status: "connecting" }
-  | { status: "online" }
+  | { status: "online"; rttMs?: number }
   | { status: "offline"; code: RelaySocketErrorCode | "stopped"; message: string; retryInMs: number | null };
+
+export type RelayControlLog = (level: "info" | "warn", line: string) => void;
 
 export interface RelayControlSnapshot {
   state: RelayControlState;
@@ -63,6 +70,8 @@ export interface RelayControlOptions {
   dataIdleMs?: number;
   reconnect?: { baseMs?: number; maxMs?: number };
   connectDeadlineMs?: number;
+  heartbeat?: RelayHeartbeatTiming;
+  log?: RelayControlLog;
   now?: () => number;
   crypto?: RelayCrypto;
 }
@@ -71,11 +80,23 @@ interface RelayControlRun {
   readonly abort: AbortController;
 }
 
+type RelayOpened = Awaited<ReturnType<typeof openRelayControlSocket>>;
+
+interface RelayCandidate {
+  readonly abort: AbortController;
+  readonly promise: Promise<RelayOpened>;
+  readonly progress: { helloSent: boolean };
+  opened: RelayOpened | null;
+  taken: boolean;
+}
+
 interface RelayDataLink {
   readonly socket: RelayBrowserSocket;
+  readonly requestedAt: number;
   ticket: string | null;
   ready: boolean;
   closing: boolean;
+  heartbeat: RelayHeartbeat | null;
 }
 
 export class RelayBrowserControl implements RelaySessionSource {
@@ -86,11 +107,20 @@ export class RelayBrowserControl implements RelaySessionSource {
   readonly #connectDeadlineMs: number | undefined;
   readonly #now: () => number;
   readonly #crypto: RelayCrypto | undefined;
+  readonly #heartbeatTiming: RelayHeartbeatTiming;
+  readonly #log: RelayControlLog;
   readonly #listeners = new Set<(snapshot: RelayControlSnapshot) => void>();
+  readonly #waiters = new Set<() => void>();
   #run: RelayControlRun | null = null;
   #socket: RelayBrowserSocket | null = null;
   #mux: RelaySessionMux | null = null;
   #data: RelayDataLink | null = null;
+  #heartbeat: RelayHeartbeat | null = null;
+  #heartbeatsSupported = false;
+  #rttTimer: ReturnType<typeof setInterval> | null = null;
+  #reconnectAtOnce = false;
+  #candidate: RelayCandidate | null = null;
+  #wake: (() => void) | null = null;
   #idleTimer: ReturnType<typeof setInterval> | null = null;
   readonly #dataIdleMs: number;
   #snapshot: RelayControlSnapshot = {
@@ -109,6 +139,8 @@ export class RelayBrowserControl implements RelaySessionSource {
     this.#connectDeadlineMs = options.connectDeadlineMs;
     this.#now = options.now ?? Date.now;
     this.#crypto = options.crypto;
+    this.#heartbeatTiming = options.heartbeat ?? {};
+    this.#log = options.log ?? (() => undefined);
     this.#dataIdleMs = options.dataIdleMs ?? RELAY_DATA_IDLE_MS;
   }
 
@@ -126,6 +158,8 @@ export class RelayBrowserControl implements RelaySessionSource {
     this.#run = null;
     if (!run) return;
     run.abort.abort();
+    this.#dropCandidate();
+    this.#endHeartbeat();
     this.#mux?.closeAll(new RelaySocketError({ code: "closed", message: "The relay connection was stopped." }));
     this.#mux = null;
     this.#closeData();
@@ -141,6 +175,34 @@ export class RelayBrowserControl implements RelaySessionSource {
     return this.#snapshot;
   }
 
+  heartbeatRttMs(): number | null {
+    return this.#heartbeat?.rttMs() ?? null;
+  }
+
+  pause(): void {
+    this.#heartbeat?.pause();
+    this.#data?.heartbeat?.pause();
+  }
+
+  resume(timeoutMs: number = RELAY_RESUME_CHECK_TIMEOUT_MS): void {
+    const run = this.#run;
+    if (!run) return;
+    const heartbeat = this.#heartbeat;
+    if (heartbeat && this.#snapshot.state.status === "online") {
+      this.#log("info", "relay resume check, and a new control socket at the same time");
+      this.#reconnectAtOnce = true;
+      heartbeat.resume(timeoutMs);
+      this.#data?.heartbeat?.resume(timeoutMs);
+      this.#startCandidate(run);
+      this.#notifyWaiters();
+      return;
+    }
+    if (this.#snapshot.state.status === "offline") {
+      this.#reconnectAtOnce = true;
+      this.#wake?.();
+    }
+  }
+
   hosts(): RelayTeamMember[] {
     const selfKeyId = this.#snapshot.self?.keyId ?? this.#identity.keyId;
     return this.#snapshot.roster.filter((member) => member.hosting && member.keyId !== selfKeyId);
@@ -148,17 +210,32 @@ export class RelayBrowserControl implements RelaySessionSource {
 
   async openSession(target: string, options: RelaySessionOpenOptions = {}): Promise<RelaySession> {
     const mux = await this.#onlineMux(options.signal);
-    return mux.open(target, options);
+    try {
+      return await mux.open(target, options);
+    } catch (error) {
+      if (mux.closedWith === null || !this.#run) throw error;
+      const next = await this.#onlineMux(options.signal);
+      return next.open(target, options);
+    }
+  }
+
+  #confirmedMux(): RelaySessionMux | null {
+    const mux = this.#mux;
+    if (!mux || this.#candidate || this.#snapshot.state.status !== "online") return null;
+    const heartbeat = this.#heartbeat;
+    if (!heartbeat || heartbeat.confirmed()) return mux;
+    heartbeat.ping(heartbeat.timeoutMs);
+    return null;
   }
 
   #onlineMux(signal: AbortSignal | undefined): Promise<RelaySessionMux> {
-    const ready = this.#mux;
-    if (ready && this.#snapshot.state.status === "online") return Promise.resolve(ready);
+    const ready = this.#confirmedMux();
+    if (ready) return Promise.resolve(ready);
     return new Promise<RelaySessionMux>((resolve, reject) => {
       let timer: ReturnType<typeof setTimeout> | undefined;
       const finish = (result: RelaySessionMux | RelaySocketError) => {
         clearTimeout(timer);
-        this.#listeners.delete(check);
+        this.#waiters.delete(check);
         signal?.removeEventListener("abort", onAbort);
         if (result instanceof RelaySocketError) reject(result);
         else resolve(result);
@@ -166,9 +243,9 @@ export class RelayBrowserControl implements RelaySessionSource {
       const onAbort = () =>
         finish(new RelaySocketError({ code: "closed", message: "The relay connection was stopped." }));
       const check = () => {
-        const mux = this.#mux;
+        const mux = this.#confirmedMux();
         const { state } = this.#snapshot;
-        if (mux && state.status === "online") finish(mux);
+        if (mux) finish(mux);
         else if (state.status === "offline" && (state.retryInMs === null || !this.#run)) {
           finish(
             new RelaySocketError(
@@ -186,7 +263,7 @@ export class RelayBrowserControl implements RelaySessionSource {
           ),
         (this.#connectDeadlineMs ?? RELAY_CONNECT_DEADLINE_MS) + RELAY_CONNECT_DEADLINE_MS,
       );
-      this.#listeners.add(check);
+      this.#waiters.add(check);
       if (signal?.aborted) onAbort();
       else signal?.addEventListener("abort", onAbort, { once: true });
       check();
@@ -202,19 +279,16 @@ export class RelayBrowserControl implements RelaySessionSource {
   async #loop(run: RelayControlRun): Promise<void> {
     let failures = 0;
     while (!run.abort.signal.aborted) {
-      this.#update({ state: { status: "connecting" } });
+      if (!this.#candidate?.opened) this.#update({ state: { status: "connecting" } });
       let failure: RelaySocketError;
+      let online = false;
+      const candidate = this.#candidate;
+      if (candidate) candidate.taken = true;
       try {
-        const { socket, welcome } = await openRelayControlSocket(
-          this.#identity,
-          { hosting: false, label: this.#label },
-          {
-            signal: run.abort.signal,
-            now: this.#now,
-            connectDeadlineMs: this.#connectDeadlineMs,
-            ...(this.#crypto ? { crypto: this.#crypto } : {}),
-          },
-        );
+        const { socket, welcome, timing } = candidate
+          ? await candidate.promise
+          : await this.#openControl(run.abort.signal);
+        if (this.#candidate === candidate) this.#candidate = null;
         if (run.abort.signal.aborted) {
           socket.close();
           return;
@@ -223,37 +297,49 @@ export class RelayBrowserControl implements RelaySessionSource {
           socket.close();
           throw new RelaySocketError({ code: "protocol_error", message: "The relay server needs an update." });
         }
+        online = true;
+        this.#reconnectAtOnce = false;
+        this.#logConnected(timing);
         const onlineAt = this.#now();
         const mux = new RelaySessionMux(this.#wire(socket), this.#security(), this.#now);
         this.#socket = socket;
         this.#mux = mux;
+        this.#heartbeatsSupported = welcome.features.includes(RELAY_HEARTBEAT_FEATURE);
         this.#update({ state: { status: "online" }, roster: welcome.members, self: welcome.self, team: welcome.team });
         const close = await this.#serve(socket, mux);
+        this.#endHeartbeat();
         if (this.#mux === mux) this.#mux = null;
         mux.closeAll(close.error);
         this.#closeData();
         failure = close.error;
-        failures = this.#now() - onlineAt >= HEALTHY_AFTER_MS ? 1 : failures + 1;
+        failures = this.#now() - onlineAt >= HEALTHY_AFTER_MS ? 0 : failures + 1;
+        this.#log("warn", `relay control closed (${failure.code}) after ${this.#now() - onlineAt} ms`);
       } catch (error) {
+        if (candidate && this.#candidate === candidate) this.#candidate = null;
         failure = relaySocketError(error);
         failures += 1;
+        this.#log("warn", `relay connect failed (${failure.code})`);
       }
       if (run.abort.signal.aborted) return;
       this.#socket = null;
       this.#mux = null;
-      if (FINAL_CODES.has(failure.code)) {
+      const switching = this.#candidate;
+      if (switching?.opened) continue;
+      if (FINAL_CODES.has(failure.code) && !switching) {
         this.#update({
           state: { status: "offline", code: failure.code, message: failure.message, retryInMs: null },
           roster: [],
         });
         return;
       }
-      const retryInMs = this.#retryDelay(failures);
+      if (switching || this.#reconnectAtOnce || (online && failure.code === "heartbeat_timeout")) failures = 0;
+      this.#reconnectAtOnce = false;
+      const retryInMs = failures === 0 ? 0 : this.#retryDelay(failures);
       this.#update({
         state: { status: "offline", code: failure.code, message: failure.message, retryInMs },
         roster: [],
       });
-      await sleep(retryInMs, run.abort.signal);
+      if (retryInMs > 0) await this.#sleep(retryInMs, run.abort.signal);
     }
   }
 
@@ -261,7 +347,8 @@ export class RelayBrowserControl implements RelaySessionSource {
     return new Promise((resolve) => {
       socket.attach({
         message: (message) => {
-          if (message.type === "members") this.#update({ roster: message.members });
+          if (message.type === "pong") this.#heartbeat?.receive(message.id);
+          else if (message.type === "members") this.#update({ roster: message.members });
           else if (message.type === "data-ticket") this.#ticket(message.ticket);
           else if (message.type === "data-wanted") this.#wantData(socket);
           else if (!mux.receiveMessage(message)) {
@@ -271,7 +358,133 @@ export class RelayBrowserControl implements RelaySessionSource {
         binary: () => socket.fail("protocol_error", "The relay server sent data on the control socket."),
         closed: resolve,
       });
+      if (this.#heartbeatsSupported) this.#startHeartbeat(socket);
     });
+  }
+
+  #openControl(signal: AbortSignal, onHello?: () => void): Promise<RelayOpened> {
+    return openRelayControlSocket(
+      this.#identity,
+      { hosting: false, label: this.#label },
+      {
+        signal,
+        now: this.#now,
+        connectDeadlineMs: this.#connectDeadlineMs,
+        ...(this.#crypto ? { crypto: this.#crypto } : {}),
+        ...(onHello ? { onHello } : {}),
+      },
+    );
+  }
+
+  #startCandidate(run: RelayControlRun): void {
+    if (this.#candidate) return;
+    const abort = new AbortController();
+    const progress = { helloSent: false };
+    const promise = this.#openControl(abort.signal, () => {
+      progress.helloSent = true;
+    });
+    const candidate: RelayCandidate = { abort, promise, progress, opened: null, taken: false };
+    this.#candidate = candidate;
+    promise.then(
+      (opened) => {
+        if (this.#candidate !== candidate || run.abort.signal.aborted) {
+          opened.socket.close();
+          return;
+        }
+        candidate.opened = opened;
+        if (candidate.taken) return;
+        this.#log("info", "relay resume: the new control socket won; closing the old one");
+        this.#socket?.abandon("heartbeat_timeout", "The relay server stopped answering.");
+      },
+      () => {
+        if (this.#candidate !== candidate || candidate.taken) return;
+        this.#candidate = null;
+        this.#notifyWaiters();
+      },
+    );
+  }
+
+  #dropCandidate(): void {
+    const candidate = this.#candidate;
+    this.#candidate = null;
+    if (!candidate) return;
+    candidate.abort.abort();
+    candidate.opened?.socket.close();
+    this.#notifyWaiters();
+  }
+
+  #startHeartbeat(socket: RelayBrowserSocket): void {
+    const heartbeat = new RelayHeartbeat(
+      {
+        ...this.#heartbeatTiming,
+        now: this.#now,
+        send: (message) => socket.sendMessage(message),
+        dead: () => {
+          this.#log("warn", `relay heartbeat missed; closing the control socket`);
+          socket.abandon("heartbeat_timeout", "The relay server stopped answering.");
+        },
+        answered: () => this.#heartbeatAnswered(heartbeat),
+      },
+      this.#now(),
+    );
+    this.#heartbeat = heartbeat;
+    heartbeat.start();
+    heartbeat.ping(heartbeat.timeoutMs);
+    this.#rttTimer = setInterval(() => this.#reportRtt(heartbeat), RTT_REPORT_MS);
+  }
+
+  #heartbeatAnswered(heartbeat: RelayHeartbeat): void {
+    if (this.#heartbeat !== heartbeat) return;
+    this.#reconnectAtOnce = false;
+    const candidate = this.#candidate;
+    if (candidate && !candidate.progress.helloSent && !candidate.taken) {
+      this.#log("info", "relay resume: the control socket answered; closing the new one");
+      this.#dropCandidate();
+    }
+    const { state } = this.#snapshot;
+    if (state.status === "online" && state.rttMs === undefined) this.#reportRtt(heartbeat);
+    this.#notifyWaiters();
+  }
+
+  #reportRtt(heartbeat: RelayHeartbeat): void {
+    const rttMs = heartbeat.rttMs();
+    if (this.#heartbeat !== heartbeat || rttMs === null || this.#snapshot.state.status !== "online") return;
+    this.#log("info", `relay heartbeat rtt median ${rttMs} ms (${heartbeat.samples()} samples)`);
+    if (this.#snapshot.state.rttMs !== rttMs) this.#update({ state: { status: "online", rttMs } });
+  }
+
+  #endHeartbeat(): void {
+    this.#heartbeat?.stop();
+    this.#heartbeat = null;
+    if (this.#rttTimer !== null) clearInterval(this.#rttTimer);
+    this.#rttTimer = null;
+  }
+
+  #logConnected(timing: RelayConnectTiming): void {
+    const open = timing.openedAt - timing.startedAt;
+    const welcome = timing.welcomedAt - timing.openedAt;
+    this.#log(
+      "info",
+      `relay connected in ${open + welcome} ms (TCP+TLS+WebSocket open ${open} ms, challenge to welcome ${welcome} ms)`,
+    );
+  }
+
+  #sleep(milliseconds: number, signal: AbortSignal): Promise<void> {
+    return new Promise((resolve) => {
+      const done = () => {
+        clearTimeout(timer);
+        signal.removeEventListener("abort", done);
+        if (this.#wake === done) this.#wake = null;
+        resolve();
+      };
+      const timer = setTimeout(done, milliseconds);
+      signal.addEventListener("abort", done, { once: true });
+      this.#wake = done;
+    });
+  }
+
+  #notifyWaiters(): void {
+    for (const waiter of [...this.#waiters]) waiter();
   }
 
   #wire(socket: RelayBrowserSocket) {
@@ -292,12 +505,20 @@ export class RelayBrowserControl implements RelaySessionSource {
     } catch {
       return;
     }
-    const link: RelayDataLink = { socket, ticket: null, ready: false, closing: false };
+    const link: RelayDataLink = {
+      socket,
+      requestedAt: this.#now(),
+      ticket: null,
+      ready: false,
+      closing: false,
+      heartbeat: null,
+    };
     this.#data = link;
     control.sendMessage({ type: "data-ticket", version: RELAY_PROTOCOL_VERSION });
     socket.attach({
       message: (message) => {
-        if (message.type !== "challenge")
+        if (message.type === "pong") link.heartbeat?.receive(message.id);
+        else if (message.type !== "challenge")
           socket.fail("protocol_error", "The relay server sent a message on the data socket.");
       },
       binary: (data) => {
@@ -321,10 +542,30 @@ export class RelayBrowserControl implements RelaySessionSource {
     if (this.#data !== link || link.ready || link.ticket === null || !link.socket.open) return;
     link.socket.sendMessage({ type: "data-hello", version: RELAY_PROTOCOL_VERSION, ticket: link.ticket });
     link.ready = true;
+    this.#log("info", `relay data socket bound in ${this.#now() - link.requestedAt} ms`);
+    if (this.#heartbeatsSupported) link.heartbeat = this.#dataHeartbeat(link.socket);
     this.#mux?.drained();
   }
 
+  #dataHeartbeat(socket: RelayBrowserSocket): RelayHeartbeat {
+    const heartbeat = new RelayHeartbeat(
+      {
+        ...this.#heartbeatTiming,
+        now: this.#now,
+        send: (message) => socket.sendMessage(message),
+        dead: () => {
+          this.#log("warn", "relay data heartbeat missed; closing the data socket");
+          socket.abandon("heartbeat_timeout", "The relay data socket stopped answering.");
+        },
+      },
+      this.#now(),
+    );
+    heartbeat.start();
+    return heartbeat;
+  }
+
   #dataClosed(link: RelayDataLink, error: RelaySocketError): void {
+    link.heartbeat?.stop();
     if (this.#data !== link) return;
     this.#data = null;
     if (!link.closing) this.#mux?.failSessions(error);
@@ -340,6 +581,7 @@ export class RelayBrowserControl implements RelaySessionSource {
     }
     if (!link.ready || !mux || mux.idleFor() < this.#dataIdleMs) return;
     link.closing = true;
+    link.heartbeat?.stop();
     this.#data = null;
     link.socket.close();
   }
@@ -351,6 +593,7 @@ export class RelayBrowserControl implements RelaySessionSource {
     this.#idleTimer = null;
     if (!link) return;
     link.closing = true;
+    link.heartbeat?.stop();
     link.socket.close();
   }
 
@@ -380,17 +623,6 @@ export class RelayBrowserControl implements RelaySessionSource {
   #update(change: Partial<RelayControlSnapshot>): void {
     this.#snapshot = { ...this.#snapshot, ...change };
     for (const listener of [...this.#listeners]) listener(this.#snapshot);
+    this.#notifyWaiters();
   }
-}
-
-function sleep(milliseconds: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve) => {
-    const timer = setTimeout(done, milliseconds);
-    signal.addEventListener("abort", done, { once: true });
-    function done() {
-      clearTimeout(timer);
-      signal.removeEventListener("abort", done);
-      resolve();
-    }
-  });
 }

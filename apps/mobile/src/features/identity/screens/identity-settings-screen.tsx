@@ -18,10 +18,12 @@ function connectionKey(
   | RelayStateKey
   | "mobile.identity.settings.online"
   | "mobile.identity.settings.connecting"
+  | "mobile.identity.settings.reconnecting"
   | "mobile.identity.settings.stopped" {
   if (state.status === "online") return "mobile.identity.settings.online";
   if (state.status === "connecting") return "mobile.identity.settings.connecting";
   if (state.code === "stopped") return "mobile.identity.settings.stopped";
+  if (state.retryInMs !== null) return "mobile.identity.settings.reconnecting";
   return relayStateKey(state.code);
 }
 
@@ -79,7 +81,13 @@ export function IdentitySettingsScreen() {
         <SettingsRow value={format.date(new Date(identity.expiresAt), LONG_DATE)}>
           <Typography.Paragraph>{t("mobile.identity.settings.expires")}</Typography.Paragraph>
         </SettingsRow>
-        <SettingsRow description={t(connectionKey(snapshot.state))}>
+        <SettingsRow
+          description={
+            snapshot.state.status === "online" && snapshot.state.rttMs !== undefined
+              ? t("mobile.identity.settings.onlineRtt", { ms: snapshot.state.rttMs })
+              : t(connectionKey(snapshot.state))
+          }
+        >
           <Typography.Paragraph>{t("mobile.identity.settings.connection")}</Typography.Paragraph>
         </SettingsRow>
       </SettingsSection>

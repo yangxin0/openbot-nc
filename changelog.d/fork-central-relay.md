@@ -54,6 +54,20 @@
 
 ### Changed
 
+- Each app sends a heartbeat to the central server on its control socket every 10 seconds and knows
+  within 3 seconds when the server stops answering. It then closes the socket and connects again at
+  once, then with the usual backoff. A new connection waits for a confirmed control socket, so it
+  never waits on a dead one. The data socket gets the same heartbeat: when it stops answering, its
+  connections fail at once with a clear error and the next connection opens a new data socket. When
+  the Mac wakes from sleep, OpenBot-NC checks the connection at once. The connection state in
+  Settings > Team is the connection to the central server: "Online" after the server welcomes the
+  app and while heartbeats come back, "Reconnecting" while it waits to connect again. The log has
+  one line for each connection with the time of each phase, and one line each minute with the
+  heartbeat round trip.
+- The central server closes a control socket that sent no heartbeat for 30 seconds
+  (`RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS`), with its data socket and connections, so the member list
+  shows a stopped app as offline quickly. The server must be on this version; apps of the previous
+  version keep working with it, without the heartbeat.
 - Each OpenBot-NC app (desktop, Linux server, web client, browser extension, phone) keeps at most
   two WebSockets to the central server: one control socket while it runs with an identity, and one
   data socket that all its connections share. The data socket opens at the first connection, signs

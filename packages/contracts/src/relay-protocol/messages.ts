@@ -12,6 +12,12 @@ export const RELAY_SESSION_OPENER_ID_MAX = 0x7fff_ffff;
 export const RELAY_SESSION_ASSIGNED_ID_MIN = 0x8000_0000;
 export const RELAY_SESSION_ID_MAX = 0xffff_ffff;
 export const RELAY_SESSIONS_FEATURE = "sessions-v2";
+export const RELAY_HEARTBEAT_FEATURE = "heartbeat";
+export const RELAY_HEARTBEAT_INTERVAL_MS = 10_000;
+export const RELAY_HEARTBEAT_TIMEOUT_MS = 3_000;
+export const RELAY_RESUME_CHECK_TIMEOUT_MS = 1_500;
+export const RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS = 30_000;
+export const RELAY_PING_ID_MAX = 0x7fff_ffff;
 export const RELAY_DATA_TICKET_TTL_MS = 60_000;
 export const RELAY_DATA_IDLE_MS = 300_000;
 export const RELAY_FEATURES_LIMIT = 16;
@@ -46,6 +52,7 @@ export const RELAY_ERROR_CODES = [
   "authentication_failed",
   "certificate_expired",
   "certificate_revoked",
+  "heartbeat_timeout",
   "invalid_message",
   "protocol_error",
   "rate_limited",
@@ -111,6 +118,7 @@ interface RelayHello {
 export type RelayClientMessage =
   | RelayHello
   | { type: "presence"; version: RelayProtocolVersion; hosting: boolean; label?: string }
+  | { type: "ping"; version: RelayProtocolVersion; id: number }
   | { type: "data-ticket"; version: RelayProtocolVersion }
   | { type: "data-hello"; version: RelayProtocolVersion; ticket: string }
   | { type: "session-open"; version: RelayProtocolVersion; session: number; target: string; first?: string }
@@ -131,6 +139,7 @@ export type RelayServerMessage =
       features: string[];
     }
   | { type: "members"; version: RelayProtocolVersion; members: RelayTeamMember[] }
+  | { type: "pong"; version: RelayProtocolVersion; id: number }
   | { type: "data-ticket"; version: RelayProtocolVersion; ticket: string }
   | { type: "data-wanted"; version: RelayProtocolVersion }
   | {

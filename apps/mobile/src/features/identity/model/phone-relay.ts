@@ -5,6 +5,7 @@ import {
   createRelayTeamPeer,
   type RelayBrowserControl,
   type RelayBrowserIdentity,
+  type RelayControlOptions,
   type RelayControlSnapshot,
   type RelayCrypto,
   type RelaySessionSource,
@@ -49,6 +50,7 @@ const RELAY_STATE_KEYS = {
   insecure_relay_url: "mobile.identity.relay.insecure",
   server_refused: "mobile.identity.relay.serverRefused",
   replaced: "mobile.identity.relay.replaced",
+  heartbeat_timeout: "mobile.identity.relay.unreachable",
   rate_limited: "mobile.identity.relay.rateLimited",
   team_full: "mobile.identity.relay.teamFull",
   protocol_error: "mobile.identity.relay.protocol",
@@ -67,14 +69,16 @@ const RELAY_STATE_KEYS = {
 
 export type RelayStateKey = (typeof RELAY_STATE_KEYS)[RelaySocketErrorCode];
 
+export type PhoneRelayControlOptions = Pick<RelayControlOptions, "reconnect" | "heartbeat" | "log">;
+
 export function startPhoneRelayControl(
   relay: PhoneRelayKeys,
-  options: { reconnect?: { baseMs?: number; maxMs?: number } } = {},
+  options: PhoneRelayControlOptions = {},
 ): RelayBrowserControl {
   return startRelayControl(relay.identity, {
+    ...options,
     label: PHONE_RELAY_LABEL,
     crypto: relay.crypto,
-    ...(options.reconnect ? { reconnect: options.reconnect } : {}),
   });
 }
 
@@ -101,6 +105,11 @@ export function rosterHosts(snapshot: RelayControlSnapshot, identity: RelayBrows
     if (!hosts.has(hostId)) hosts.set(hostId, member);
   }
   return [...hosts.values()];
+}
+
+export function listedRelayHostIds(snapshot: RelayControlSnapshot, identity: RelayBrowserIdentity): Set<string> {
+  if (snapshot.state.status !== "online") return new Set();
+  return new Set(rosterHosts(snapshot, identity).map(relayTeamHostId));
 }
 
 export function mergeRelayHosts(

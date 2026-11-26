@@ -111,6 +111,7 @@ const RELAY_STATE_KEYS = {
   connect_failed: "error.remote.relayUnreachable",
   closed: "error.remote.relayUnreachable",
   deadline_exceeded: "error.remote.relayUnreachable",
+  heartbeat_timeout: "error.remote.relayUnreachable",
   target_unavailable: "error.remote.relayUnreachable",
   peer_refused: "error.remote.relayUnreachable",
   tunnel_handshake_failed: "error.remote.relayUnreachable",

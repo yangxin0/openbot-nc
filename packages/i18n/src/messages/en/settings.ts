@@ -746,6 +746,7 @@ export const messages = defineMessages("settings", {
   "settings.team.connection.connecting": "Connecting",
   "settings.team.connection.online": "Online",
   "settings.team.connection.offline": "Offline",
+  "settings.team.connection.reconnecting": "Reconnecting",
   "settings.team.connection.retry": { one: "Next try in {count} second.", other: "Next try in {count} seconds." },
   "settings.team.members.title": "Members",
   "settings.team.members.description": "The members of your team that are connected now.",

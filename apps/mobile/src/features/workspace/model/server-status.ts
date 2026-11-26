@@ -20,6 +20,10 @@ export function showsOnline(server: Pick<MobileServer, "state" | "resuming"> | u
   return server?.state === "online" || server?.resuming === true;
 }
 
+export function showsPresent(server: Pick<MobileServer, "state" | "resuming" | "listed"> | undefined): boolean {
+  return showsOnline(server) || (server?.listed === true && server.state !== "error");
+}
+
 export function serverStatusLabel(
   server: Pick<MobileServer, "state" | "initialConnectionPending" | "resuming">,
   t: MobileTranslate,
@@ -102,6 +106,7 @@ export function serverFromHost(
     connectionFailure: previous?.connectionFailure,
     recoveryStatus: previous?.recoveryStatus,
     resuming: previous?.resuming,
+    ...(previous?.listed ? { listed: true } : {}),
     address: null,
     accent: serverAccent(host.hostId),
     publicKey: host.devicePublicKey,

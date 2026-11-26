@@ -15,6 +15,7 @@
     "./relay-control": "./src/relay-control.ts",
     "./relay-crypto": "./src/relay-crypto.ts",
     "./relay-crypto-noble": "./src/relay-crypto-noble.ts",
+    "./relay-heartbeat": "./src/relay-heartbeat.ts",
     "./relay-identity": "./src/relay-identity.ts",
     "./relay-join": "./src/relay-join.ts",
     "./relay-sessions": "./src/relay-sessions.ts",

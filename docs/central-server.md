@@ -320,6 +320,7 @@ the connections of the member at once.
 | `RELAY_MAX_SESSIONS_PER_SOCKET` | `256` | Sessions of one member, opened and accepted. |
 | `RELAY_MAX_SESSIONS_PER_PAIR` | `32` | Sessions that one member opens to one other member. |
 | `RELAY_MAX_PENDING_PER_MEMBER` | `32` | Sessions that wait for one member to accept. |
+| `RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS` | `30000` | The server closes a control socket that sent no `ping` for this time, with its data socket and sessions, and removes the member from the roster. Only for an app that sends `heartbeat` in `hello`. |
 | `RELAY_HIGH_WATER_BYTES` | `262144` | Bytes in the send buffer of a data socket before the server keeps the next frames in its own queue for that member. |
 | `RELAY_ADMIN_HOST` | none | The private IP address of the admin page. With no value, there is no admin page. |
 | `RELAY_ADMIN_PORT` | `8992` | The port of the admin page. |
@@ -346,9 +347,9 @@ the data socket.
 
 1. The server sends `challenge` with a nonce (32 random bytes, base64url).
 2. The peer sends `hello` with its own nonce (`clientNonce`, 32 random bytes, base64url), the role
-   `member`, `hosting`, an optional label, `features: ["sessions-v2"]`, its certificate, the team
-   authority certificate, and a signature of `relayHelloTranscript` (server nonce, client nonce,
-   server address, role).
+   `member`, `hosting`, an optional label, `features: ["sessions-v2", "heartbeat"]`, its certificate,
+   the team authority certificate, and a signature of `relayHelloTranscript` (server nonce, client
+   nonce, server address, role).
 3. The server verifies the hello. Before any other message, it sends `server-proof` with its identity
    certificate and a signature of `relayServerProofTranscript` (server nonce, client nonce, server
    address, role, key identifier of the peer). The signature is ECDSA P-256 with SHA-256, in the IEEE
@@ -356,13 +357,62 @@ the data socket.
    values before it accepts `welcome`. When the check fails, or another message comes first, the peer
    closes the socket and sends nothing more. The desktop reports `server_refused` and does not connect
    again.
-4. The server answers `welcome` with the team, the members and `features: ["sessions-v2"]`, and sends
-   `members` after each change. `presence` changes `hosting` and the label. The sharing switch only
+4. The server answers `welcome` with the team, the members and
+   `features: ["sessions-v2", "heartbeat"]`, and sends `members` after each change. `presence` changes `hosting` and the label. The sharing switch only
    changes `hosting`; it never opens or closes a socket. A client that gets no `sessions-v2` in
    `welcome` stops with "The relay server needs an update."
-5. The control socket stays open while the app runs with an identity. The server pings it, so it has
-   no idle limit. The phone closes it when the app goes to the background (iOS stops background
-   sockets) and opens it again when the app comes back.
+5. The control socket stays open while the app runs with an identity. The phone closes it when the
+   app goes to the background (iOS stops background sockets) and opens it again when the app comes
+   back.
+
+### Heartbeat
+
+A browser cannot send WebSocket ping frames, so the heartbeat is a JSON message on the control
+socket. The app sends it only when `welcome` lists `heartbeat`; the server applies its timeout only to
+an app that sent `heartbeat` in `hello`. So an app and a server of the previous version keep working
+with this version, without the heartbeat.
+
+| Message | Direction | Fields |
+| --- | --- | --- |
+| `ping` | app to server, control or data socket | `id` (a counter, 1 to 2^31-1) |
+| `pong` | server to app, on the same socket, at once | the same `id` |
+
+| Rule | Value |
+| --- | --- |
+| The app sends a `ping` on the control socket | right after `welcome`, then every 10 s (`RELAY_HEARTBEAT_INTERVAL_MS`) |
+| No `pong` within 3 s (`RELAY_HEARTBEAT_TIMEOUT_MS`) | the app closes the control socket at once (it does not wait for the close handshake), shows the connection as down with the code `heartbeat_timeout`, and connects again at once, then with the usual backoff |
+| A connection that was online for 30 s or more drops | the first new attempt starts at once |
+| The phone comes back to the front | the app sends a `ping` on the old control socket (1.5 s timeout, `RELAY_RESUME_CHECK_TIMEOUT_MS`) and at the same moment opens a new control socket. When the `pong` comes before the new socket sends `hello`, the app closes the new socket and keeps the old one. Otherwise the new socket wins: after its `welcome`, the app closes the old control socket (its data socket and sessions fail with `heartbeat_timeout`) and uses the new one. The server replaces the old control socket of the member when it verifies the new `hello`, so the roster shows the member once. A second control socket exists for at most one connect time |
+| The Mac wakes | the app sends a `ping` at once with a 1.5 s timeout; with no `pong`, it connects again with no backoff |
+| The phone goes to the background | it stops the heartbeat |
+| A data socket is open | the app sends the same `ping` on it every 10 s; with no `pong` within 3 s it closes the data socket, its sessions fail with `heartbeat_timeout`, and the next need opens a new data socket |
+| The server gets no `ping` on a control socket for 30 s (`RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS`) | it sends `error` `heartbeat_timeout`, closes the socket, its data socket and its sessions, and sends the new roster |
+
+A `ping` on the data socket does not count for the control socket. A `ping` before `welcome` is a
+protocol error.
+
+A new session (`session-open`) goes only on a confirmed control socket: one that answered a `ping`
+within the last 10 s, or the resume check, and never while the resume race runs. Otherwise the app
+sends a `ping` and waits for the `pong`, or for the new connection. When the control socket drops while a session opens, the app opens the
+session again once on the new connection.
+
+The connection state that an app shows is the state of its control socket: "Online" (phone:
+"Connected", with the heartbeat round trip) only after `welcome` and while `pong` messages come back,
+"Reconnecting" while it waits to connect again. The state of each server of the team is separate:
+online or offline from the roster, and the session to it on that server's row or screen. On the phone,
+a server stays bright while it is in the roster and only its session reconnects.
+
+Each app writes one log line for each connection with its phases, one line when a data socket binds,
+and one line each minute with the median of the last 5 heartbeat round trips (desktop: the main log,
+`relay-client`; phone: the support log). The lines hold only times and codes, for example:
+
+```text
+relay connected in 437 ms (TCP+TLS+WebSocket open 293 ms, challenge to welcome 144 ms)
+relay data socket bound in 300 ms
+relay heartbeat rtt median 138 ms (5 samples)
+relay heartbeat missed; closing the control socket
+relay control closed (heartbeat_timeout) after 7011 ms
+```
 
 ### Data socket
 
@@ -376,6 +426,9 @@ the data socket.
   ticket that is unknown, used or expired gives `authentication_failed`.
 - The data socket carries only session frames. A text message on it, or a frame on the control
   socket, is a protocol error.
+- The client asks for a ticket only when it has no data socket. So a `data-ticket` request closes the
+  data socket that the server still has for the member (for example one that stopped answering) with
+  the code 1000. The sessions stay, and frames wait for the new data socket.
 - The client opens it at the first need: an outgoing session, a `session-incoming`, or `data-wanted`.
   The server sends `data-wanted` when frames wait for a member that has no data socket; it keeps the
   frames until the data socket comes.
@@ -666,6 +719,36 @@ connection with `tunnel_integrity_failed` and the application gets no data, and 
 ephemeral key, a replayed reply, a session with a different identifier and plain HTTP are
 refused. It measures one 8 MiB transfer through the real server for the desktop and the noble
 crypto, and writes `.openbot-build/relay-tunnel-encryption-e2e/report.json`.
+
+```sh
+bun run test:relay-heartbeat
+```
+
+This test starts the real server with a heartbeat timeout of 5 s, a host with relay hosting, a desktop
+client, the phone runtime (noble crypto) and the browser control, with a TCP proxy that adds 67 ms each
+way (134 ms round trip, as from the developer's Mac to the server) and that can stop a connection in
+both directions without closing it, like an iOS suspension. It checks that the heartbeat round trip is
+about one round trip to the server; that a stopped control socket is found within the interval and
+3 s, and that a session opened meanwhile works on the new connection; that on phone resume a new control
+socket races a stopped one, the session is ready in about one connect time and one round trip, and
+`session-open` goes only on the new socket; that a live old socket wins the race, the extra socket
+closes and no session is lost; that the server
+closes a control socket with no `ping` and the others see the member go offline; that a data socket with
+no `pong` is replaced and a new session works; and that the app state stays online while only a host
+session reconnects. It measures the parts of one request round trip (client, server, host) from the
+times at which the proxy sees each part. It writes `.openbot-build/relay-heartbeat-e2e/report.json`.
+
+Results on this computer (2026-11-26), 67 ms each way:
+
+| Measure | Result |
+| --- | --- |
+| Heartbeat round trip (desktop, host, phone) | 139, 151, 147 ms |
+| One request through the server and the host | 280 to 284 ms: network 268 ms, server 0 to 2 ms each way, host 4 to 9 ms, client 3 to 6 ms |
+| Stopped control socket found (interval 1 s in the test) | 3,710 ms; new connection 424 ms |
+| Phone resume, old control socket stopped: new connection, session ready | 437 ms, 757 ms after resume; state stays online |
+| Phone resume, old control socket alive: extra socket lifetime, session ready | 90 ms, 402 ms after resume; the kept session still answers |
+| Server closes a control socket with no `ping` (timeout 5 s) | the member leaves the roster after 5,138 ms |
+| Stopped data socket found, next request | 2,884 ms, 587 ms |
 
 ```sh
 bun run test:relay-session-latency

@@ -259,6 +259,7 @@ export interface MobileServer {
   connectionFailure?: RemoteConnectionFailure | null;
   recoveryStatus?: RemoteRecoveryStatus;
   resuming?: boolean;
+  listed?: boolean;
   address: string | null;
   accent: string;
   publicKey: string;

@@ -4,6 +4,7 @@ import {
   RELAY_CLOSE_CODES,
   RELAY_CONTROL_MESSAGE_BYTES_LIMIT,
   RELAY_DATA_TICKET_TTL_MS,
+  RELAY_HEARTBEAT_FEATURE,
   RELAY_HELLO_DEADLINE_MS,
   RELAY_PROTOCOL_VERSION,
   RELAY_SESSION_ASSIGNED_ID_MIN,
@@ -42,6 +43,7 @@ export interface RelayLimits {
   pendingPerTarget: number;
   presenceUpdatesPerMinute: number;
   highWaterBytes: number;
+  clientHeartbeatTimeoutMs: number;
 }
 
 interface RelayMetrics {
@@ -85,6 +87,7 @@ interface MemberPhase {
   connectedAt: number;
   presenceUpdates: number[];
   sessionsFeature: boolean;
+  heartbeatDeadline: Deadline | null;
   dataSocketId: string | null;
   dataWanted: boolean;
 }
@@ -187,6 +190,11 @@ export class RelayService {
       this.#fail(socketId, "invalid_message", "The message is invalid.");
       return;
     }
+    if (message.type === "ping" && state.phase.kind !== "challenge") {
+      this.#send(state.socket, { type: "pong", version: VERSION, id: message.id });
+      if (state.phase.kind === "member") this.#expectHeartbeat(state, state.phase);
+      return;
+    }
     if (state.phase.kind === "challenge" && message.type === "hello") {
       this.#authenticate(state, state.phase, message);
       return;
@@ -195,7 +203,12 @@ export class RelayService {
       this.#bindData(state, state.phase, message.ticket);
       return;
     }
-    if (state.phase.kind !== "member" || message.type === "hello" || message.type === "data-hello") {
+    if (
+      state.phase.kind !== "member" ||
+      message.type === "hello" ||
+      message.type === "data-hello" ||
+      message.type === "ping"
+    ) {
       this.#fail(socketId, "protocol_error", "The message is not expected now.");
       return;
     }
@@ -344,9 +357,11 @@ export class RelayService {
       connectedAt: this.#now(),
       presenceUpdates: [],
       sessionsFeature: hello.features?.includes(RELAY_SESSIONS_FEATURE) ?? false,
+      heartbeatDeadline: null,
       dataSocketId: null,
       dataWanted: false,
     };
+    if (hello.features?.includes(RELAY_HEARTBEAT_FEATURE)) this.#expectHeartbeat(state, state.phase);
     members.set(identity.keyId, state.socket.id);
     this.#teams.set(teamId, members);
     if (replacedSocketId !== undefined) {
@@ -358,9 +373,18 @@ export class RelayService {
       self: { keyId: identity.keyId, user: identity.user, device: identity.device },
       team: identity.team,
       members: this.#roster(teamId),
-      features: [RELAY_SESSIONS_FEATURE],
+      features: [RELAY_SESSIONS_FEATURE, RELAY_HEARTBEAT_FEATURE],
     });
     this.#broadcastRoster(teamId, state.socket.id);
+  }
+
+  #expectHeartbeat(state: SocketState, phase: MemberPhase): void {
+    if (phase.heartbeatDeadline) clearTimeout(phase.heartbeatDeadline);
+    const socketId = state.socket.id;
+    phase.heartbeatDeadline = setTimeout(
+      () => this.#fail(socketId, "heartbeat_timeout", "No heartbeat arrived in time."),
+      this.#limits.clientHeartbeatTimeoutMs,
+    );
   }
 
   #updatePresence(state: SocketState, phase: MemberPhase, presence: Presence): void {
@@ -380,6 +404,12 @@ export class RelayService {
   }
 
   #issueTicket(state: SocketState, phase: MemberPhase): void {
+    const previous = phase.dataSocketId === null ? undefined : this.#sockets.get(phase.dataSocketId);
+    if (previous) {
+      phase.dataSocketId = null;
+      this.#release(previous.socket.id, true);
+      previous.socket.close(RELAY_CLOSE_CODES.normal, "The member asked for a new data socket.");
+    }
     const now = this.#now();
     const own = [...this.#tickets].filter(([, ticket]) => ticket.ownerId === state.socket.id);
     for (const [hash] of own.slice(0, Math.max(0, own.length - TICKETS_PER_MEMBER + 1))) this.#tickets.delete(hash);
@@ -696,6 +726,8 @@ export class RelayService {
       else this.#flush(owner);
       return;
     }
+    if (phase.heartbeatDeadline) clearTimeout(phase.heartbeatDeadline);
+    phase.heartbeatDeadline = null;
     for (const [hash, ticket] of [...this.#tickets]) if (ticket.ownerId === socketId) this.#tickets.delete(hash);
     state.outbox.clear();
     state.order.length = 0;

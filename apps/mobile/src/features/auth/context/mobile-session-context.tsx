@@ -10,6 +10,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { AppState } from "react-native";
 import { deleteComposerDrafts } from "@/features/chat/model/composer-drafts";
 import { deleteLocationAlwaysAllowed } from "@/features/chat/model/location-always-allowed";
 import { deleteSideQuestions } from "@/features/chat/model/side-questions";
@@ -18,6 +19,7 @@ import { phoneIdentityStore, phoneRelayCrypto } from "@/features/identity/model/
 import { type RelayStateKey, relayStateKey } from "@/features/identity/model/phone-relay";
 import { PhoneRelayRuntime } from "@/features/identity/model/phone-relay-runtime";
 import { deleteAgentBackdrops } from "@/features/settings/model/chat-backdrop";
+import { supportLog } from "@/features/support/model/support-log";
 import { deleteAgentAvatars } from "@/features/workspace/model/agent-avatar-cache";
 import type { QueryScope } from "@/features/workspace/model/query-keys";
 import { deleteWorkspaceCaches } from "@/features/workspace/model/workspace-cache";
@@ -89,9 +91,14 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
             relayUrl,
             user: { id: identity.keyId, name: identity.user },
             identity,
-            relay: new PhoneRelayRuntime({ identity, crypto: phoneRelayCrypto }, (code) => {
-              void endSession.current(relayStateKey(code));
-            }),
+            relay: new PhoneRelayRuntime(
+              { identity, crypto: phoneRelayCrypto },
+              (code) => {
+                void endSession.current(relayStateKey(code));
+              },
+              undefined,
+              { log: (level, line) => supportLog.add(level, "connection", line) },
+            ),
           }
         : null;
     sessionRef.current = session;
@@ -142,6 +149,15 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
     relay.start();
     return () => relay.stop();
   }, [relay, foreground]);
+
+  useEffect(() => {
+    if (!relay) return;
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") relay.resume();
+      else if (state === "background") relay.pause();
+    });
+    return () => subscription.remove();
+  }, [relay]);
 
   const expiresAt = sessionState?.identity.expiresAt ?? null;
   useEffect(() => {

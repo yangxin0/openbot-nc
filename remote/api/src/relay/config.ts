@@ -1,6 +1,10 @@
 import { join } from "node:path";
 import { isRelayUrl } from "@openbot/contracts/relay-protocol/identity-bundle";
-import { RELAY_PATH, relayAudience } from "@openbot/contracts/relay-protocol/messages";
+import {
+  RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS,
+  RELAY_PATH,
+  relayAudience,
+} from "@openbot/contracts/relay-protocol/messages";
 import { tlsPaths } from "./certificate-authority";
 import type { RelayLimits } from "./service";
 
@@ -107,6 +111,11 @@ export function readRelayConfig(environment: Environment = process.env): RelayCo
       pendingPerTarget: positiveInteger(environment.RELAY_MAX_PENDING_PER_MEMBER, 32, "RELAY_MAX_PENDING_PER_MEMBER"),
       presenceUpdatesPerMinute: 30,
       highWaterBytes: positiveInteger(environment.RELAY_HIGH_WATER_BYTES, 256 * 1024, "RELAY_HIGH_WATER_BYTES"),
+      clientHeartbeatTimeoutMs: positiveInteger(
+        environment.RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS,
+        RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS,
+        "RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS",
+      ),
     },
     sourceCommit: optional(environment.OPENBOT_SOURCE_COMMIT) ?? "unknown",
   };

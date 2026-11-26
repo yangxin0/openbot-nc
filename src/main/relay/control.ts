@@ -1,8 +1,10 @@
 import { EventEmitter } from "node:events";
 import {
   RELAY_DATA_IDLE_MS,
+  RELAY_HEARTBEAT_FEATURE,
   RELAY_LABEL_LIMIT,
   RELAY_PROTOCOL_VERSION,
+  RELAY_RESUME_CHECK_TIMEOUT_MS,
   RELAY_SESSIONS_FEATURE,
   type RelayPeer,
   type RelayPeerCertificate,
@@ -10,7 +12,9 @@ import {
   type RelayTeamMember,
 } from "@openbot/contracts/relay-protocol/messages";
 import type { RelayPublicKey } from "@openbot/contracts/relay-protocol/tunnel-crypto";
+import type { Logger } from "@openbot/logging";
 import { webRelayCrypto } from "@openbot/team-client/relay-crypto";
+import { RelayHeartbeat, type RelayHeartbeatTiming } from "@openbot/team-client/relay-heartbeat";
 import {
   type RelayIncomingSession,
   type RelaySession,
@@ -24,6 +28,7 @@ import type { RelayCredentialSource } from "./identity-store";
 import {
   openRelayControlSocket,
   openRelayDataSocket,
+  type RelayConnectTiming,
   type RelaySocket,
   type RelaySocketClose,
   RelaySocketError,
@@ -36,6 +41,7 @@ const RECONNECT_BASE_MS = 1_000;
 const RECONNECT_MAX_MS = 60_000;
 const RECONNECT_JITTER = 0.2;
 const HEALTHY_AFTER_MS = 30_000;
+const RTT_REPORT_MS = 60_000;
 
 const FINAL_CODES: ReadonlySet<RelaySocketErrorCode> = new Set([
   "replaced",
@@ -50,7 +56,7 @@ const FINAL_CODES: ReadonlySet<RelaySocketErrorCode> = new Set([
 
 export type RelayControlState =
   | { status: "connecting" }
-  | { status: "online" }
+  | { status: "online"; rttMs?: number }
   | { status: "offline"; code: RelaySocketErrorCode | "stopped"; message: string; retryInMs: number | null };
 
 interface RelayControlEvents {
@@ -66,6 +72,8 @@ interface RelayControlOptions {
   label?: string | null;
   reconnect?: { baseMs?: number; maxMs?: number };
   socket?: RelaySocketOptions;
+  heartbeat?: RelayHeartbeatTiming;
+  logger?: Pick<Logger, "info" | "warn">;
   now?: () => number;
 }
 
@@ -76,9 +84,11 @@ interface Presence {
 
 interface RelayDataLink {
   readonly socket: RelaySocket;
+  readonly requestedAt: number;
   ticket: string | null;
   ready: boolean;
   closing: boolean;
+  heartbeat: RelayHeartbeat | null;
 }
 
 export class RelayControl extends EventEmitter<RelayControlEvents> {
@@ -87,6 +97,14 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
   readonly #baseMs: number;
   readonly #maxMs: number;
   readonly #now: () => number;
+  readonly #heartbeatTiming: RelayHeartbeatTiming;
+  readonly #logger: Pick<Logger, "info" | "warn"> | null;
+  readonly #waiters = new Set<() => void>();
+  #heartbeat: RelayHeartbeat | null = null;
+  #heartbeatsSupported = false;
+  #rttTimer: ReturnType<typeof setInterval> | null = null;
+  #reconnectAtOnce = false;
+  #wake: (() => void) | null = null;
   #presence: Presence;
   #sentPresence: Presence | null = null;
   #socket: RelaySocket | null = null;
@@ -108,6 +126,8 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
     this.#maxMs = options.reconnect?.maxMs ?? RECONNECT_MAX_MS;
     this.#now = options.now ?? Date.now;
     this.#dataIdleMs = options.dataIdleMs ?? RELAY_DATA_IDLE_MS;
+    this.#heartbeatTiming = options.heartbeat ?? {};
+    this.#logger = options.logger ?? null;
     this.#presence = { hosting: options.hosting ?? false, label: options.label ?? null };
   }
 
@@ -125,6 +145,7 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
     this.#fiber = null;
     if (!fiber) return;
     yield* Fiber.interrupt(fiber);
+    this.#endHeartbeat();
     const socket = this.#socket;
     this.#socket = null;
     this.#sentPresence = null;
@@ -162,24 +183,61 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
     return this.#team;
   }
 
+  heartbeatRttMs(): number | null {
+    return this.#heartbeat?.rttMs() ?? null;
+  }
+
+  resume(timeoutMs: number = RELAY_RESUME_CHECK_TIMEOUT_MS): void {
+    if (!this.#fiber) return;
+    const heartbeat = this.#heartbeat;
+    if (heartbeat && this.#state.status === "online") {
+      this.#info("relay resume check");
+      this.#reconnectAtOnce = true;
+      heartbeat.resume(timeoutMs);
+      this.#data?.heartbeat?.resume(timeoutMs);
+      this.#notifyWaiters();
+      return;
+    }
+    if (this.#state.status === "offline") {
+      this.#reconnectAtOnce = true;
+      this.#wake?.();
+    }
+  }
+
   readonly openSession = Effect.fn("RelayControl.openSession")(function* (
     this: RelayControl,
     target: string,
     deadlineMs?: number,
   ): Effect.fn.Return<RelaySession, RelaySocketError> {
     const mux = yield* this.#onlineMux();
-    return yield* Effect.tryPromise({
+    const first = yield* Effect.result(this.#openOn(mux, target, deadlineMs));
+    if (Result.isSuccess(first)) return first.success;
+    if (mux.closedWith === null || !this.#fiber) return yield* first.failure;
+    return yield* this.#openOn(yield* this.#onlineMux(), target, deadlineMs);
+  }).bind(this);
+
+  #openOn(mux: RelaySessionMux, target: string, deadlineMs: number | undefined) {
+    return Effect.tryPromise({
       try: (signal) => mux.open(target, { signal, deadlineMs }),
       catch: desktopRelayError,
     });
-  }).bind(this);
+  }
+
+  #confirmedMux(): RelaySessionMux | null {
+    const mux = this.#mux;
+    if (!mux || this.#state.status !== "online") return null;
+    const heartbeat = this.#heartbeat;
+    if (!heartbeat || heartbeat.confirmed()) return mux;
+    heartbeat.ping(heartbeat.timeoutMs);
+    return null;
+  }
 
   #onlineMux(): Effect.Effect<RelaySessionMux, RelaySocketError> {
     return Effect.callback<RelaySessionMux, RelaySocketError>((resume) => {
       const check = () => {
-        const mux = this.#mux;
+        const mux = this.#confirmedMux();
         const state = this.#state;
-        if (mux && state.status === "online") {
+        if (mux) {
           release();
           resume(Effect.succeed(mux));
         } else if (state.status === "offline" && (state.retryInMs === null || !this.#fiber)) {
@@ -195,8 +253,8 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
           );
         }
       };
-      const release = () => this.off("state", check);
-      this.on("state", check);
+      const release = () => this.#waiters.delete(check);
+      this.#waiters.add(check);
       check();
       return Effect.sync(release);
     }).pipe(
@@ -226,33 +284,74 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
         ),
       );
       let failure: RelaySocketError;
+      let online = false;
       if (Result.isFailure(opened)) {
         failure = opened.failure;
         failures += 1;
+        this.#warn(`relay connect failed (${failure.code})`);
       } else if (!opened.success.welcome.features.includes(RELAY_SESSIONS_FEATURE)) {
         opened.success.socket.close();
         this.#socket = null;
         failure = new RelaySocketError({ code: "protocol_error", message: "The relay server needs an update." });
         failures += 1;
       } else {
-        const { socket, welcome } = opened.success;
+        const { socket, welcome, timing } = opened.success;
+        online = true;
+        this.#reconnectAtOnce = false;
+        this.#logConnected(timing);
         const onlineAt = this.#now();
         this.#self = welcome.self;
         this.#team = welcome.team;
+        this.#heartbeatsSupported = welcome.features.includes(RELAY_HEARTBEAT_FEATURE);
         const close = yield* this.#serve(socket, presence, welcome.members);
         failure = close.error;
-        failures = this.#now() - onlineAt >= HEALTHY_AFTER_MS ? 1 : failures + 1;
+        failures = this.#now() - onlineAt >= HEALTHY_AFTER_MS ? 0 : failures + 1;
+        this.#warn(`relay control closed (${failure.code}) after ${this.#now() - onlineAt} ms`);
       }
       this.#setRoster([]);
       if (FINAL_CODES.has(failure.code)) {
         this.#setState({ status: "offline", code: failure.code, message: failure.message, retryInMs: null });
         return;
       }
-      const retryInMs = this.#retryDelay(failures);
+      if (this.#reconnectAtOnce || (online && failure.code === "heartbeat_timeout")) failures = 0;
+      this.#reconnectAtOnce = false;
+      const retryInMs = failures === 0 ? 0 : this.#retryDelay(failures);
       this.#setState({ status: "offline", code: failure.code, message: failure.message, retryInMs });
-      yield* Effect.sleep(retryInMs);
+      if (retryInMs > 0) yield* this.#sleep(retryInMs);
     }
   });
+
+  #sleep(milliseconds: number): Effect.Effect<void> {
+    return Effect.callback<void>((resume) => {
+      const done = () => {
+        clearTimeout(timer);
+        if (this.#wake === done) this.#wake = null;
+        resume(Effect.void);
+      };
+      const timer = setTimeout(done, milliseconds);
+      this.#wake = done;
+      return Effect.sync(() => {
+        clearTimeout(timer);
+        if (this.#wake === done) this.#wake = null;
+      });
+    });
+  }
+
+  #logConnected(timing: RelayConnectTiming): void {
+    const open = timing.openedAt - timing.startedAt;
+    const welcome = timing.welcomedAt - timing.openedAt;
+    this.#info(
+      `relay connected in ${open + welcome} ms (TCP+TLS+WebSocket open ${open} ms, challenge to welcome ${welcome} ms)`,
+    );
+  }
+
+  #info(line: string): void {
+    this.#logger?.info(line);
+  }
+
+  #warn(line: string): void {
+    this.#logger?.warn(line);
+  }
 
   #serve(
     socket: RelaySocket,
@@ -282,7 +381,8 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
       this.#sendPresence();
       socket.attach({
         message: (message) => {
-          if (message.type === "members") this.#setRoster(message.members);
+          if (message.type === "pong") this.#heartbeat?.receive(message.id);
+          else if (message.type === "members") this.#setRoster(message.members);
           else if (message.type === "data-ticket") this.#ticket(message.ticket, mux);
           else if (message.type === "data-wanted") this.#wantData(socket, mux);
           else if (!mux.receiveMessage(message)) {
@@ -295,12 +395,56 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
           resume(Effect.succeed(close));
         },
       });
+      if (this.#heartbeatsSupported) this.#startHeartbeat(socket);
       return Effect.sync(() => {
         this.#release(socket, mux, new RelaySocketError({ code: "closed", message: "The relay connection stopped." }));
         socket.detach();
         socket.close();
       });
     });
+  }
+
+  #startHeartbeat(socket: RelaySocket): void {
+    const heartbeat = new RelayHeartbeat(
+      {
+        ...this.#heartbeatTiming,
+        now: this.#now,
+        send: (message) => socket.sendMessage(message),
+        dead: () => {
+          this.#warn("relay heartbeat missed; closing the control socket");
+          socket.fail("heartbeat_timeout", "The relay server stopped answering.");
+        },
+        answered: () => this.#heartbeatAnswered(heartbeat),
+      },
+      this.#now(),
+    );
+    this.#heartbeat = heartbeat;
+    heartbeat.start();
+    heartbeat.ping(heartbeat.timeoutMs);
+    this.#rttTimer = setInterval(() => this.#reportRtt(heartbeat), RTT_REPORT_MS);
+    this.#rttTimer.unref();
+  }
+
+  #heartbeatAnswered(heartbeat: RelayHeartbeat): void {
+    if (this.#heartbeat !== heartbeat) return;
+    this.#reconnectAtOnce = false;
+    const state = this.#state;
+    if (state.status === "online" && state.rttMs === undefined) this.#reportRtt(heartbeat);
+    this.#notifyWaiters();
+  }
+
+  #reportRtt(heartbeat: RelayHeartbeat): void {
+    const rttMs = heartbeat.rttMs();
+    if (this.#heartbeat !== heartbeat || rttMs === null || this.#state.status !== "online") return;
+    this.#info(`relay heartbeat rtt median ${rttMs} ms (${heartbeat.samples()} samples)`);
+    if (this.#state.rttMs !== rttMs) this.#setState({ status: "online", rttMs });
+  }
+
+  #endHeartbeat(): void {
+    this.#heartbeat?.stop();
+    this.#heartbeat = null;
+    if (this.#rttTimer !== null) clearInterval(this.#rttTimer);
+    this.#rttTimer = null;
   }
 
   #security(): RelaySessionSecurity {
@@ -325,12 +469,20 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
     const opened = Effect.runSyncExit(openRelayDataSocket(this.#identity, control.tlsSession));
     if (Exit.isFailure(opened)) return;
     const socket = opened.value;
-    const link: RelayDataLink = { socket, ticket: null, ready: false, closing: false };
+    const link: RelayDataLink = {
+      socket,
+      requestedAt: this.#now(),
+      ticket: null,
+      ready: false,
+      closing: false,
+      heartbeat: null,
+    };
     this.#data = link;
     control.sendMessage({ type: "data-ticket", version: RELAY_PROTOCOL_VERSION });
     socket.attach({
       message: (message) => {
-        if (message.type !== "challenge")
+        if (message.type === "pong") link.heartbeat?.receive(message.id);
+        else if (message.type !== "challenge")
           socket.fail("protocol_error", "The relay server sent a message on the data socket.");
       },
       binary: (data) => {
@@ -354,10 +506,30 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
     if (this.#data !== link || link.ready || link.ticket === null || !link.socket.open) return;
     link.socket.sendMessage({ type: "data-hello", version: RELAY_PROTOCOL_VERSION, ticket: link.ticket });
     link.ready = true;
+    this.#info(`relay data socket bound in ${this.#now() - link.requestedAt} ms`);
+    if (this.#heartbeatsSupported) link.heartbeat = this.#dataHeartbeat(link.socket);
     mux.drained();
   }
 
+  #dataHeartbeat(socket: RelaySocket): RelayHeartbeat {
+    const heartbeat = new RelayHeartbeat(
+      {
+        ...this.#heartbeatTiming,
+        now: this.#now,
+        send: (message) => socket.sendMessage(message),
+        dead: () => {
+          this.#warn("relay data heartbeat missed; closing the data socket");
+          socket.fail("heartbeat_timeout", "The relay data socket stopped answering.");
+        },
+      },
+      this.#now(),
+    );
+    heartbeat.start();
+    return heartbeat;
+  }
+
   #dataClosed(link: RelayDataLink, mux: RelaySessionMux, error: RelaySocketError): void {
+    link.heartbeat?.stop();
     if (this.#data !== link) return;
     this.#data = null;
     if (!link.closing) mux.failSessions(new SharedRelaySocketError({ code: error.code, message: error.message }));
@@ -373,6 +545,7 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
     }
     if (!link.ready || !mux || mux.idleFor() < this.#dataIdleMs) return;
     link.closing = true;
+    link.heartbeat?.stop();
     this.#data = null;
     link.socket.close();
   }
@@ -384,10 +557,12 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
     this.#idleTimer = null;
     if (!link) return;
     link.closing = true;
+    link.heartbeat?.stop();
     link.socket.close();
   }
 
   #release(socket: RelaySocket, mux: RelaySessionMux, error: RelaySocketError): void {
+    if (this.#socket === socket) this.#endHeartbeat();
     mux.closeAll(new SharedRelaySocketError({ code: error.code, message: error.message }));
     if (this.#mux === mux) {
       this.#mux = null;
@@ -421,6 +596,11 @@ export class RelayControl extends EventEmitter<RelayControlEvents> {
   #setState(state: RelayControlState): void {
     this.#state = state;
     this.emit("state", state);
+    this.#notifyWaiters();
+  }
+
+  #notifyWaiters(): void {
+    for (const waiter of [...this.#waiters]) waiter();
   }
 
   #setRoster(members: readonly RelayTeamMember[]): void {
