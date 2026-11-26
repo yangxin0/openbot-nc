@@ -41,6 +41,8 @@ interface RelayBrowserTestApi {
   stopAll(): Promise<void>;
   controlStates(text: string): Promise<RelayControlState[]>;
   dialFailure(text: string, target: string): Promise<string>;
+  dialMain(target: string): Promise<string>;
+  rosterHas(keyId: string): boolean;
 }
 
 declare global {
@@ -225,6 +227,20 @@ window.relayBrowserTest = {
     const final = states.at(-1);
     note(`control at the fake relay: ${final?.status === "offline" ? final.code : "online"}`);
     return states;
+  },
+  async dialMain(target) {
+    if (!control) return "no control";
+    try {
+      const tunnels = await relayHubTunnelTransport(control).open("relay:check", target, new AbortController().signal);
+      tunnels.close();
+      return "accepted";
+    } catch (error) {
+      note(`dial refused: ${errorCode(error)}`);
+      return `${errorCode(error)}: ${error instanceof Error ? error.message : ""}`;
+    }
+  },
+  rosterHas(keyId) {
+    return control?.member(keyId) !== null && control !== null;
   },
   async dialFailure(text, target) {
     const fakeIdentity = await createRelayIdentityFromText(text);

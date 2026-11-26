@@ -27,10 +27,11 @@ import { RELAY_PATH, RELAY_PROTOCOL_VERSION } from "@openbot/contracts/relay-pro
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import type { TeamProtocolV2Json } from "@openbot/contracts/team-protocol";
+import { RelayHubClient, webRelayCrypto } from "@openbot/team-client/relay-client";
 import type { RemoteTeamCommandResult } from "@openbot/team-client/remote-peer";
 import { Effect, Result } from "effect";
 import { type Browser, chromium, type Page } from "playwright-core";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket as WsSocket } from "ws";
 import type { AgentBrowserHost } from "../src/backend/agent/turn-lifecycle";
 import type { AgentService as AgentServiceInstance } from "../src/backend/agent-service";
 import { runCauseEffect } from "../src/backend/effect-boundary";
@@ -191,7 +192,13 @@ interface FakeRelay {
 
 interface FakeRelayBehavior {
   proof: { certificate: string; privateKey: KeyObject };
-  openPeer?: { user: string; device: string | null; certificate: string };
+  rosterMember?: {
+    user: string;
+    device: string | null;
+    certificate: string;
+    messageKey: string;
+    messageKeySignature: string;
+  };
 }
 
 function helloTranscript(text: string): RelayServerProofTranscriptInput | null {
@@ -259,7 +266,25 @@ async function startFakeRelay(tls: { cert: string; key: string }, behavior: Fake
             lastHeardAt: 0,
           },
           team: { id: "t".repeat(43), name: TEAM },
-          roster: [],
+          roster: behavior.rosterMember
+            ? [
+                {
+                  keyId: spkiDigest(behavior.rosterMember.certificate, "base64url"),
+                  user: behavior.rosterMember.user,
+                  device: behavior.rosterMember.device,
+                  label: null,
+                  hosting: true,
+                  capabilities: [],
+                  suspendable: false,
+                  certificate: behavior.rosterMember.certificate,
+                  messageKey: behavior.rosterMember.messageKey,
+                  messageKeySignature: behavior.rosterMember.messageKeySignature,
+                  keyTimestamp: Date.now(),
+                  connectedAt: Date.now(),
+                  lastHeardAt: Date.now(),
+                },
+              ]
+            : [],
         }),
       );
     });
@@ -720,22 +745,92 @@ try {
     assert.equal(fake.connections, 1);
   });
 
-  await check("A host certificate of another team is refused by the dial", async () => {
-    const fake = await startFakeRelay(serverTls, {
-      proof: { certificate: serverTls.cert, privateKey: createPrivateKey(serverTls.key) },
-      openPeer: { user: "eve", device: "server", certificate: eveBundle.certificate },
+  await check("A host of another team is not in the roster and the page cannot reach it", async () => {
+    const eveKey = createPrivateKey(eveBundle.privateKey);
+    const eve = new RelayHubClient({
+      identity: {
+        relayUrl: eveBundle.relayUrl,
+        team: eveBundle.team,
+        keyId: eveKeyId,
+        certificate: eveBundle.certificate,
+        chain: eveBundle.chain,
+        root: eveBundle.root,
+      },
+      sign: async (data) => sign("sha256", data, { key: eveKey, dsaEncoding: "ieee-p1363" }),
+      crypto: webRelayCrypto,
+      hosting: true,
+      openSocket: (url, events) => {
+        const socket = new WsSocket(url, { ca: eveBundle.root });
+        socket.on("open", () => events.open());
+        socket.on("message", (data, binary) => {
+          const bytes = rawDataBytes(data);
+          if (binary) events.binary(new Uint8Array(bytes));
+          else events.text(Buffer.from(bytes).toString("utf8"));
+        });
+        socket.on("close", (code, reason) => events.closed(code, reason.toString("utf8")));
+        socket.on("error", () => undefined);
+        return {
+          get bufferedAmount() {
+            return socket.bufferedAmount;
+          },
+          send: (data) => socket.send(data),
+          close: (code, reason) => socket.close(code, reason),
+        };
+      },
     });
-    closers.push(fake.stop);
-    const refusal = await deadline(
-      "the dial at the fake relay",
-      openPage.evaluate(({ text, target }) => window.relayBrowserTest.dialFailure(text, target), {
-        text: JSON.stringify({ ...aliceBundle, relayUrl: fake.url }),
-        target: eveKeyId,
+    eve.start();
+    closers.push(() => eve.stop());
+    await deadline(
+      "the other team's host online",
+      new Promise<void>((resolveOnline) => {
+        const stop = eve.subscribe((snapshot) => {
+          if (snapshot.state.status !== "online") return;
+          stop();
+          resolveOnline();
+        });
       }),
     );
-    assert.ok(refusal.startsWith("peer_refused:") && refusal.includes("(name_mismatch)"), refusal);
-    assert.ok(fake.connections >= 1);
+    assert.equal(await openPage.evaluate((keyId) => window.relayBrowserTest.rosterHas(keyId), eveKeyId), false);
+    const refusal = await deadline(
+      "the dial to the other team's host",
+      openPage.evaluate((target) => window.relayBrowserTest.dialMain(target), eveKeyId),
+    );
+    assert.ok(refusal.startsWith("host_offline:"), refusal);
+    eve.stop();
   });
+
+  await check(
+    "A roster member whose message key is not signed by its certificate is refused (fake server)",
+    async () => {
+      const { publicKey } = generateKeyPairSync("ec", { namedCurve: "prime256v1" });
+      const jwk = publicKey.export({ format: "jwk" });
+      const point = Buffer.concat([
+        Buffer.from([4]),
+        Buffer.from(String(jwk.x), "base64url"),
+        Buffer.from(String(jwk.y), "base64url"),
+      ]);
+      const fake = await startFakeRelay(serverTls, {
+        proof: { certificate: serverTls.cert, privateKey: createPrivateKey(serverTls.key) },
+        rosterMember: {
+          user: "host-user",
+          device: "server",
+          certificate: hostBundle.certificate,
+          messageKey: point.toString("base64url"),
+          messageKeySignature: randomBytes(64).toString("base64url"),
+        },
+      });
+      closers.push(fake.stop);
+      const refusal = await deadline(
+        "the dial at the fake relay",
+        openPage.evaluate(({ text, target }) => window.relayBrowserTest.dialFailure(text, target), {
+          text: JSON.stringify({ ...aliceBundle, relayUrl: fake.url }),
+          target: spkiDigest(hostBundle.certificate, "base64url"),
+        }),
+      );
+      assert.ok(refusal.startsWith("peer_refused:"), refusal);
+      assert.ok(fake.connections >= 1);
+    },
+  );
 
   await check("A bundle with a wrong private key or a key of another type is refused at import", async () => {
     const wrongKey = await openPage.evaluate(

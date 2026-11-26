@@ -1,6 +1,7 @@
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 
 export const PANEL_PORT = "openbot-panel";
+export const PANEL_READY = "openbot-panel-ready";
 export const STORAGE_MESSAGE = "openbot-storage";
 
 export type StorageRequest =

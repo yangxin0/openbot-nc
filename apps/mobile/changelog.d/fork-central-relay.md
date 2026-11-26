@@ -1,5 +1,15 @@
 ### Changed
 
+- In the background the app keeps its connection to the central server and to your servers, and stops
+  its heartbeats; the central server keeps the connection of a phone for 5 minutes with no message.
+  When the app comes back, it sends a heartbeat with a 1.5 second answer time and opens a new
+  connection at the same time. When the old connection answers first, the app goes on with no new
+  sign-in and no reload; the next request takes about one round trip. Otherwise the new connection
+  takes over and the app gets the events that it missed from the server. The data that the app shows
+  stays on the screen while it refreshes. A server that is offline gets no new attempts until the
+  central server says that it is online. The support log has one line for each return with the
+  result and the time, and the median heartbeat round trip once a minute. The central server must be
+  on the hub version.
 - The app uses the new central server hub: one WebSocket, a sign-in with one message, and each
   message encrypted from end to end with a key of this connection. The central server must also be
   on this version.

@@ -1,5 +1,5 @@
 import { startClientBrowser } from "./client-browser-worker";
-import { decodeStorageRequest, PANEL_PORT, type StorageRequest } from "./extension-messages";
+import { decodeStorageRequest, PANEL_PORT, PANEL_READY, type StorageRequest } from "./extension-messages";
 
 void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
@@ -35,7 +35,12 @@ const panels = new Set<chrome.runtime.Port>();
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== PANEL_PORT || !port.sender?.url?.startsWith(chrome.runtime.getURL(PANEL_PAGE))) return;
   panels.add(port);
-  void chrome.offscreen.closeDocument().catch(() => undefined);
+  void chrome.offscreen
+    .closeDocument()
+    .catch(() => undefined)
+    .then(() => {
+      if (panels.has(port)) port.postMessage(PANEL_READY);
+    });
   port.onDisconnect.addListener(() => {
     panels.delete(port);
     clientBrowser.panelClosed();

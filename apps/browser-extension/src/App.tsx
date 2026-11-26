@@ -32,7 +32,7 @@ import {
   relayStateKey,
   removeIdentity,
 } from "./extension-identity";
-import { PANEL_PORT } from "./extension-messages";
+import { PANEL_PORT, PANEL_READY } from "./extension-messages";
 import { clearIdentityData, readSavedHost, saveHost } from "./extension-storage";
 import { HomeScreen } from "./HomeScreen";
 import { createHostConnection, type HostConnection } from "./host-connection";
@@ -153,6 +153,14 @@ function ServerView(props: { identity: RelayBrowserIdentity; onRemoveIdentity: (
   let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
   let reconnectAttempt = 0;
   let closed = false;
+  let panelReady = false;
+  let onPanelReady: (() => void) | null = null;
+  const untilPanelReady = () =>
+    panelReady
+      ? Promise.resolve()
+      : new Promise<void>((resolve) => {
+          onPanelReady = resolve;
+        });
   const [presence, setPresence] = createSignal<ClientBrowserPresence>({ sharing: false, tabs: [] });
   const [canShare, setCanShare] = createSignal(false);
   const [settingsAlone, setSettingsAlone] = createSignal(false);
@@ -205,9 +213,17 @@ function ServerView(props: { identity: RelayBrowserIdentity; onRemoveIdentity: (
     reconnectTimer = undefined;
   }
 
+  function selectedHostListed(): boolean {
+    const snapshot = relay();
+    return (
+      snapshot.state.status === "online" &&
+      snapshot.roster.some((member) => member.hosting && relayTeamHost(member, "member").hostId === selectedHostId)
+    );
+  }
+
   function scheduleReconnect(): void {
-    if (closed || reconnectTimer !== undefined || view.status !== "ready") return;
-    const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** reconnectAttempt);
+    if (closed || reconnectTimer !== undefined || view.status !== "ready" || !selectedHostListed()) return;
+    const delay = reconnectAttempt === 0 ? 0 : Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** reconnectAttempt);
     reconnectAttempt += 1;
     reconnectTimer = setTimeout(() => {
       reconnectTimer = undefined;
@@ -307,7 +323,8 @@ function ServerView(props: { identity: RelayBrowserIdentity; onRemoveIdentity: (
       void connection.dispose();
       return;
     }
-    startControl();
+    await untilPanelReady();
+    if (!closed) startControl();
   }
 
   function retry(): void {
@@ -329,6 +346,12 @@ function ServerView(props: { identity: RelayBrowserIdentity; onRemoveIdentity: (
     const holdPort = () => {
       if (closed) return;
       port = chrome.runtime.connect({ name: PANEL_PORT });
+      port.onMessage.addListener((message) => {
+        if (message !== PANEL_READY || panelReady) return;
+        panelReady = true;
+        onPanelReady?.();
+        onPanelReady = null;
+      });
       port.onDisconnect.addListener(() => window.setTimeout(holdPort, 1_000));
     };
     holdPort();

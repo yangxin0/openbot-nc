@@ -6,14 +6,10 @@ import {
   type RemoteRecoveryStatus,
   remoteConnectionFailureDetails,
 } from "@openbot/team-client";
-import {
-  REMOTE_PEER_LOST_AFTER_MS,
-  type RemoteTeamConnectionUpdate,
-  type RemoteTeamEvent,
-} from "@openbot/team-client/remote-peer";
+import type { RemoteTeamConnectionUpdate, RemoteTeamEvent } from "@openbot/team-client/remote-peer";
 import { errorReference } from "@openbot/user-errors/reference";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import type { PhoneRelay } from "@/features/identity/model/phone-relay";
+import { memo, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { type PhoneRelay, relayHostListed } from "@/features/identity/model/phone-relay";
 import { supportLog, supportLogValue } from "@/features/support/model/support-log";
 import { referencedError } from "@/features/workspace/model/referenced-error";
 import { subscribeNetworkMoves } from "@/shared/lib/network-path";
@@ -78,6 +74,9 @@ export const ServerConnection = memo(function ServerConnection({
   const controller = useRef<ReturnType<typeof createRemoteConnectionRecovery> | null>(null);
   const activeRef = useRef(active);
   activeRef.current = active;
+  const hostListed = useSyncExternalStore(relay.subscribe, () => relayHostListed(relay.snapshot(), publicKey));
+  const hostListedRef = useRef(hostListed);
+  hostListedRef.current = hostListed;
   const generation = useRef(0);
   const membershipRefreshPending = useRef(false);
   const inactiveSince = useRef<number | null>(null);
@@ -124,7 +123,6 @@ export const ServerConnection = memo(function ServerConnection({
       else networkMoved.current = true;
     });
   }, [client, hostId]);
-  const lostAfterMs = useRef(REMOTE_PEER_LOST_AFTER_MS);
   const handleConnectionUpdate = useCallback(
     (update: RemoteTeamConnectionUpdate) => {
       if (update.hostId !== hostId) return;
@@ -134,7 +132,6 @@ export const ServerConnection = memo(function ServerConnection({
         `${hostId} ${update.state}${update.code ? ` (${update.code})` : ""}${update.message ? `: ${update.message}` : ""}${update.reference ? ` [${update.reference}]` : ""}${update.hostOffline ? ", host offline" : ""}${update.resync ? ", resync" : ""}`,
       );
       if (update.hostOffline && activeRef.current) onUnavailableRef.current?.(hostId);
-      if (update.state === "online" && update.lostAfterMs !== undefined) lostAfterMs.current = update.lostAfterMs;
       if (update.state === "offline") {
         if (update.code === "session_revoked") {
           if (activeRef.current) void onMembershipChangedRef.current?.().catch(() => undefined);
@@ -208,7 +205,7 @@ export const ServerConnection = memo(function ServerConnection({
     );
     controller.current = recovery;
     register(hostId, { client, refresh: () => recovery.refresh(), quietStart });
-    recovery.setActive(activeRef.current);
+    recovery.setActive(activeRef.current && hostListedRef.current);
     return () => {
       disposed = true;
       generation.current += 1;
@@ -235,10 +232,9 @@ export const ServerConnection = memo(function ServerConnection({
         const last = lastStatus.current;
         if (last && last.status.phase !== "online") onStatusRef.current(hostId, last.status, last.failure, true);
       }
-      if (Date.now() - inactiveSince.current >= lostAfterMs.current) controller.current?.offline();
       inactiveSince.current = null;
     }
-    controller.current?.setActive(active);
+    controller.current?.setActive(active && hostListedRef.current);
     if (active && networkMoved.current) {
       networkMoved.current = false;
       clientRef.current?.networkChanged();
@@ -250,6 +246,11 @@ export const ServerConnection = memo(function ServerConnection({
       void onMembershipChanged?.().catch(() => undefined);
     }
   }, [active, hostId, onMembershipChanged, endResume]);
+
+  useEffect(() => {
+    if (!hostListed) supportLog.add("info", "connection", `${hostId} not in the roster; waiting for its online notice`);
+    controller.current?.setActive(activeRef.current && hostListed);
+  }, [hostId, hostListed]);
 
   return (
     <RemoteTeamTransport

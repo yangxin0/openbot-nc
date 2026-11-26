@@ -54,6 +54,16 @@
 
 ### Changed
 
+- The web client, the browser extension and the phone use the central server hub. Each has one
+  connection to the central server, lists the servers of the team from its roster, and sends
+  requests, events and files to a server as messages encrypted for that server. When the connection
+  changes, the app asks the server for the events after the last one it got, so it does not load
+  again from the start. When a server is offline, the app waits for the central server to say that it
+  is online again; it does not try again on a timer. The extension side panel waits until the
+  background document has closed its connection, so the two do not replace each other. Files from
+  the web client, the extension and the phone reach the server again (the hub sent them in a wrong
+  frame). The status of the app shows its own connection to the central server; the state of a server
+  shows only on that server.
 - The central server is now a hub. Each app (desktop, Linux server, web client, extension, phone)
   keeps one WebSocket to it and talks only to it; there are no sessions, data sockets or tunnels
   between devices. An app signs in with one message, so it is online about one round trip after the

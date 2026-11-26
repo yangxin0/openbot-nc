@@ -241,8 +241,8 @@ class DelayProxy {
     });
     const end = () => {
       setTimeout(() => {
-        client.destroy();
         upstream.destroy();
+        if (!connection.frozen) client.destroy();
       }, DELAY_MS);
     };
     client.on("close", end);
@@ -643,6 +643,7 @@ try {
     mallory: issue(environment, work, "mallory", "laptop"),
     lenny: issue(environment, work, "lenny", "laptop"),
     sue: issue(environment, work, "sue", "phone"),
+    petra: issue(environment, work, "petra", "phone"),
     rita: issue(environment, work, "rita", "laptop"),
     raw: issue(environment, work, "raw", "laptop"),
   };
@@ -881,6 +882,89 @@ try {
       assert.ok(JSON.stringify(agents.body).includes(fixture.id));
       await peer.dispose();
       measures.phoneSocketsOpened = carol.socketsOpened();
+    },
+  );
+
+  await check(
+    "Phone return: a live connection is kept with no new sign-in, a dead one is replaced, and the host answers",
+    async () => {
+      const noble = createNobleRelayCrypto({ randomBytes: (size) => randomBytes(size) });
+      const lines: string[] = [];
+      const firstProxyConnection = delayed.connections.length;
+      const petra = hubClient(bundles.petra, {
+        crypto: noble,
+        suspendable: true,
+        liveness: { idleMs: 10_000, answerMs: 3_000 },
+        log: (_level, line) => lines.push(line),
+      });
+      hubs.push(petra);
+      petra.start();
+      await until("petra sees the host", () => petra.member(hostKeyId) !== null);
+      const phoneConnection = delayed.connections[firstProxyConnection];
+      assert.ok(phoneConnection, "No proxy connection for the phone.");
+      const updates: string[] = [];
+      const peer = createRelayTeamPeer(
+        petra,
+        {
+          current: {
+            onConnectionUpdate: async (update) => {
+              updates.push(update.state);
+            },
+            onTeamEvent: async () => undefined,
+          },
+        },
+        { crypto: noble, clientProtocol: TEAM_WEB_CLIENT_PROTOCOL },
+      );
+      let commands = 0;
+      const command = () => `petra-${++commands}`;
+      const connect = () =>
+        deadline(
+          "petra connects",
+          peer.execute({ id: command(), type: "connect", hostId: "relay:host", hostPublicKey: hostKeyId }),
+        );
+      const listAgents = () =>
+        deadline(
+          "petra lists agents",
+          peer.execute({ id: command(), type: "request", method: "GET", path: TEAM_API_ROUTES.agents.all, body: null }),
+        );
+      assert.equal((await connect()).ok, true);
+      assert.equal((await listAgents()).ok, true);
+
+      petra.suspend();
+      const generation = petra.connectionGeneration();
+      const socketsBefore = petra.socketsOpened();
+      const liveStarted = performance.now();
+      petra.resume(1_500);
+      const live = await listAgents();
+      const liveMs = Math.round(performance.now() - liveStarted);
+      assert.equal(live.ok, true, inspect(live));
+      await until("the return log line", () => lines.some((line) => line.startsWith("relay return: connection kept")));
+      assert.equal(petra.connectionGeneration(), generation, "The live connection was replaced.");
+      assert.ok(petra.socketsOpened() - socketsBefore <= 1, "More than one candidate socket was opened.");
+      assert.equal(updates.filter((state) => state === "offline").length, 0, "The host peer went offline.");
+
+      petra.suspend();
+      delayed.freeze(phoneConnection);
+      const deadStarted = performance.now();
+      petra.resume(1_500);
+      let dead = await listAgents();
+      if (!dead.ok) {
+        assert.equal((await connect()).ok, true);
+        dead = await listAgents();
+      }
+      const deadMs = Math.round(performance.now() - deadStarted);
+      assert.equal(dead.ok, true, inspect(dead));
+      assert.equal(petra.connectionGeneration(), generation + 1, "The dead connection was not replaced.");
+      assert.ok(
+        lines.some((line) => line.startsWith("relay return: new connection used")),
+        lines.join("\n"),
+      );
+      await peer.dispose();
+      petra.stop();
+      measures.phoneReturnLiveMs = liveMs;
+      measures.phoneReturnDeadMs = deadMs;
+      measures.phoneReturnLines = lines.filter((line) => line.startsWith("relay ")).join(" | ");
+      assert.ok(liveMs < 2 * DELAY_MS * 2 + 150, `The live return took ${liveMs} ms.`);
     },
   );
 

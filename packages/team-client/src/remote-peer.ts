@@ -219,7 +219,6 @@ export interface RemoteTeamConnectionUpdate {
   reference?: string;
   resync?: boolean;
   hostOffline?: true;
-  lostAfterMs?: number;
 }
 
 export interface RemoteTeamDiagnostic {
@@ -274,6 +273,7 @@ export interface RemoteTeamChannel {
   readonly readyState: RemoteTeamChannelState;
   readonly bufferedAmount: number;
   readonly bufferedAmountLowThreshold: number;
+  readonly maxMessageSize?: number;
   send(data: string | ArrayBuffer): void;
   listen(handlers: RemoteTeamChannelHandlers): void;
   onBufferedAmountLow(listener: () => void): () => void;
@@ -327,10 +327,6 @@ const TYPING_REFRESH_MILLISECONDS = 2_000;
 const REQUEST_TIMEOUT_MS = 10 * 60_000 + 30_000;
 const FRESH_PEER_ANSWER_MS = 10_000;
 const KNOWN_PEER_ANSWER_MS = 4_000;
-const PEER_IDLE_CLOSE_MS = 120_000;
-const PEER_RECONNECT_GRACE_MS = 30_000;
-const SUSPEND_MARGIN_MS = 10_000;
-export const REMOTE_PEER_LOST_AFTER_MS = PEER_IDLE_CLOSE_MS + PEER_RECONNECT_GRACE_MS + SUSPEND_MARGIN_MS;
 
 class RemotePeerIO extends Context.Service<
   RemotePeerIO,
@@ -387,6 +383,7 @@ export function createRemoteTeamPeer(
   let peer: PeerState | null = null;
   let generation = 0;
   const pendingRequests = new Map<string, PendingRequest>();
+  const lastEventSequences = new Map<string, number>();
   const files = createRemoteFileSender(
     (data) =>
       Effect.suspend(() => {
@@ -483,26 +480,13 @@ export function createRemoteTeamPeer(
       if (value) inactiveSince = null;
       active = value;
       const state = peer;
-      if (!state) return;
-      if (!active) {
-        state.needsResync ||= [...pendingRequests.values()].some(
-          (request) => request.method === "GET" || request.method === "HEAD",
-        );
-        rejectRequests(new Error(sourceText("error.remote.appInBackground")), true);
-        if (!state.authenticated) failPeer(state, new Error(sourceText("error.remote.appInBackground")), actions);
-      } else {
-        const resumed = (decision: string) =>
-          diagnose(state, "resume", `away ${Math.round(away / 1000)} s, ${decision}`);
-        if (away >= REMOTE_PEER_LOST_AFTER_MS && state.authenticated) {
-          resumed("replace connection");
-          void runPeerEffect(closePeer());
-        } else if (!isPeerOnline(state)) {
-          resumed(state.authenticated ? "connect again" : "attempt not finished");
-          failPeer(state, new Error(sourceText("error.remote.desktopRestoreNeeded")), actions);
-        } else {
-          resumed("keep relay tunnels");
-        }
-      }
+      if (!state || !active) return;
+      const resumed = (decision: string) => diagnose(state, "resume", `away ${Math.round(away / 1000)} s, ${decision}`);
+      if (!state.authenticated) resumed("attempt continues");
+      else if (!isPeerOnline(state)) {
+        resumed("connect again");
+        failPeer(state, new Error(sourceText("error.remote.desktopRestoreNeeded")), actions);
+      } else resumed("connection kept");
     },
     networkRestored() {
       void runPeerEffect(peerCall(() => actions.current.onNetworkRestored?.())).catch(() => undefined);
@@ -658,7 +642,7 @@ export function createRemoteTeamPeer(
       tunnels: null,
       authenticated: false,
       closed: false,
-      lastEventSequence: 0,
+      lastEventSequence: lastEventSequences.get(`${hostId}\n${hostPublicKey}`) ?? 0,
       eventAckTimer: null,
       needsResync: false,
       connected: null,
@@ -699,9 +683,7 @@ export function createRemoteTeamPeer(
         yield* notify(diagnosticCall(state, "authenticated"));
         settleConnected(state);
         yield* sendEventAckEffect(state);
-        yield* RemotePeerIO.use((io) =>
-          io.connectionUpdate({ hostId, state: "online", message: null, lostAfterMs: REMOTE_PEER_LOST_AFTER_MS }),
-        );
+        yield* RemotePeerIO.use((io) => io.connectionUpdate({ hostId, state: "online", message: null }));
       }).pipe(Effect.tapError((error) => failPeerEffect(state, error, actions)));
     })();
   }
@@ -829,6 +811,7 @@ export function createRemoteTeamPeer(
       if (frame.type === "event-reset") {
         diagnose(state, "event-reset", `after ${state.lastEventSequence}, next ${frame.nextSequence}`);
         state.lastEventSequence = frame.nextSequence - 1;
+        lastEventSequences.set(`${state.hostId}\n${state.hostPublicKey}`, state.lastEventSequence);
         yield* RemotePeerIO.use((io) =>
           io.connectionUpdate({
             hostId: state.hostId,
@@ -857,6 +840,7 @@ export function createRemoteTeamPeer(
       if (decoded.status === "invalid")
         return yield* new RemotePeerError({ message: sourceText("error.remote.malformedEvent") });
       state.lastEventSequence = frame.sequence;
+      lastEventSequences.set(`${state.hostId}\n${state.hostPublicKey}`, frame.sequence);
       if (decoded.status === "known") {
         if (sendsBlockExtensions(state)) {
           addUiBlockAutoAnswers(decoded.event, frame.payload);
@@ -1106,7 +1090,8 @@ export function createRemoteTeamPeer(
       if (channel?.readyState !== "open")
         return yield* new RemotePeerError({ message: sourceText("error.remote.channelNotOpen") });
       const messageId = new DataView(randomBytes(4).buffer).getUint32(0);
-      for (const frame of yield* peerDecode(() => encodeTeamV2Payload(data, Number.POSITIVE_INFINITY, messageId))) {
+      const maximum = channel.maxMessageSize ?? Number.POSITIVE_INFINITY;
+      for (const frame of yield* peerDecode(() => encodeTeamV2Payload(data, maximum, messageId))) {
         yield* waitForWritable(state, channel);
         yield* Effect.try({
           try: () => channel.send(frame),

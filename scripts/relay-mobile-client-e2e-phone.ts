@@ -31,6 +31,9 @@ interface PhoneFacts {
   otherTeamPeerRefusal?: string;
   foreignStates?: string[];
   memberRoles?: string[];
+  liveReturnMs?: number;
+  deadReturnMs?: number;
+  returnLines?: string[];
 }
 
 interface PhoneCheck {
@@ -65,12 +68,19 @@ class ReactNativeLikeWebSocket extends EventTarget {
   static readonly CLOSED = 3;
   static binaryFramesSent = 0;
   static urlTypes = new Set<string>();
+  static readonly instances: ReactNativeLikeWebSocket[] = [];
+  static readonly changed = new Set<() => void>();
   readyState = ReactNativeLikeWebSocket.CONNECTING;
+  frozen = false;
+  helloSent = false;
+  pingsSent = 0;
+  serverClosed = false;
   #binaryType: "blob" | "arraybuffer" = "blob";
   readonly #socket: WsSocket;
 
   constructor(url: unknown) {
     super();
+    ReactNativeLikeWebSocket.instances.push(this);
     ReactNativeLikeWebSocket.urlTypes.add(typeof url);
     if (typeof url !== "string") throw new TypeError("This WebSocket takes a string address, as React Native does.");
     this.#socket = new WsSocket(url, { ca: config.serverRoot });
@@ -79,6 +89,7 @@ class ReactNativeLikeWebSocket extends EventTarget {
       this.dispatchEvent(new Event("open"));
     });
     this.#socket.on("message", (data, isBinary) => {
+      if (this.frozen) return;
       const bytes = Buffer.concat(
         Array.isArray(data) ? data : [Buffer.from(data instanceof ArrayBuffer ? new Uint8Array(data) : data)],
       );
@@ -94,10 +105,14 @@ class ReactNativeLikeWebSocket extends EventTarget {
       this.dispatchEvent(new MessageEvent("message", { data: payload }));
     });
     this.#socket.on("error", () => {
+      if (this.frozen) return;
       this.readyState = ReactNativeLikeWebSocket.CLOSED;
       this.dispatchEvent(new Event("error"));
     });
     this.#socket.on("close", (code, reason) => {
+      this.serverClosed = true;
+      for (const listener of [...ReactNativeLikeWebSocket.changed]) listener();
+      if (this.frozen) return;
       this.readyState = ReactNativeLikeWebSocket.CLOSED;
       this.dispatchEvent(new ShimCloseEvent(code, reason.toString("utf8")));
     });
@@ -115,7 +130,10 @@ class ReactNativeLikeWebSocket extends EventTarget {
 
   send(data: unknown): void {
     if (this.readyState === ReactNativeLikeWebSocket.CONNECTING) throw new Error("INVALID_STATE_ERR");
+    if (this.frozen) return;
     if (typeof data === "string") {
+      if (data.includes('"type":"hello"')) this.helloSent = true;
+      if (data.includes('"type":"ping"')) this.pingsSent += 1;
       this.#socket.send(data);
       return;
     }
@@ -132,7 +150,15 @@ class ReactNativeLikeWebSocket extends EventTarget {
   }
 
   close(code?: number, reason?: string): void {
+    if (this.frozen) {
+      this.#socket.terminate();
+      return;
+    }
     this.#socket.close(code ?? 1000, reason);
+  }
+
+  get open(): boolean {
+    return this.readyState === ReactNativeLikeWebSocket.OPEN && !this.serverClosed;
   }
 }
 
@@ -209,6 +235,10 @@ const held: {
   peer: ReturnType<typeof relayModule.createPhoneRelayPeer> | null;
 } = { identity: null, peer: null };
 const events: string[] = [];
+const diagnostics: string[] = [];
+const updates: string[] = [];
+const relayLines: string[] = [];
+const PHONE_LIVENESS = { liveness: { idleMs: 1_000, answerMs: 2_000 } };
 const ownerHeld: { peer: ReturnType<typeof relayModule.createPhoneRelayPeer> | null } = { peer: null };
 
 class PeerRequestError extends Error {}
@@ -228,6 +258,27 @@ function refusal(error: unknown): string {
   return error instanceof PeerRequestError ? error.message : errorCode(error);
 }
 const eventWaiters = new Set<() => void>();
+
+function waitFor(description: string, accepts: () => boolean): Promise<void> {
+  return deadline(
+    description,
+    new Promise<void>((resolveValue) => {
+      const look = () => {
+        if (!accepts()) return;
+        eventWaiters.delete(look);
+        ReactNativeLikeWebSocket.changed.delete(look);
+        resolveValue();
+      };
+      eventWaiters.add(look);
+      ReactNativeLikeWebSocket.changed.add(look);
+      look();
+    }),
+  );
+}
+
+function observe(milliseconds: number): Promise<void> {
+  return new Promise((resolveValue) => setTimeout(resolveValue, milliseconds));
+}
 let commandCount = 0;
 const commandId = () => `phone-command-${++commandCount}`;
 
@@ -298,15 +349,25 @@ try {
 
   const phoneIdentity = held.identity;
   assert(phoneIdentity !== null, "No phone identity.");
-  const runtime = new PhoneRelayRuntime({ identity: phoneIdentity, crypto }, () => undefined, {
-    baseMs: 100,
-    maxMs: 500,
-  });
+  const runtime = new PhoneRelayRuntime(
+    { identity: phoneIdentity, crypto },
+    () => undefined,
+    { baseMs: 100, maxMs: 500 },
+    {
+      ...PHONE_LIVENESS,
+      log: (_level, line) => {
+        relayLines.push(line);
+        for (const waiter of [...eventWaiters]) waiter();
+      },
+    },
+  );
   runtimes.push(runtime);
   let hostId = "";
+  let phoneSocket: ReactNativeLikeWebSocket | null = null;
 
   await check("The relay control starts and the host shows in the server list from the roster", async () => {
     runtime.start();
+    phoneSocket = ReactNativeLikeWebSocket.instances.at(-1) ?? null;
     const hosts = await untilSnapshot(runtime, "the host in the roster", () => {
       const snapshot = runtime.snapshot();
       if (snapshot.state.status !== "online") return null;
@@ -330,7 +391,13 @@ try {
   await check("A V2 peer over relay tunnels connects with the noble crypto and lists the host's agents", async () => {
     const peer = relayModule.createPhoneRelayPeer(runtime, {
       current: {
-        onConnectionUpdate: async () => undefined,
+        onConnectionUpdate: async (update) => {
+          updates.push(update.state);
+          for (const waiter of [...eventWaiters]) waiter();
+        },
+        onDiagnostic: async (diagnostic) => {
+          diagnostics.push(diagnostic.step);
+        },
         onTeamEvent: async (_hostId, event) => {
           events.push(JSON.stringify(event));
           for (const waiter of [...eventWaiters]) waiter();
@@ -445,10 +512,15 @@ try {
 
   await check("The server owner reads the member list with the roles over the relay", async () => {
     const ownerIdentity = await ownerStore.importText(config.ownerText);
-    const ownerRuntime = new PhoneRelayRuntime({ identity: ownerIdentity, crypto }, () => undefined, {
-      baseMs: 100,
-      maxMs: 500,
-    });
+    const ownerRuntime = new PhoneRelayRuntime(
+      { identity: ownerIdentity, crypto },
+      () => undefined,
+      {
+        baseMs: 100,
+        maxMs: 500,
+      },
+      PHONE_LIVENESS,
+    );
     runtimes.push(ownerRuntime);
     ownerRuntime.start();
     await untilSnapshot(ownerRuntime, "the owner relay online", () =>
@@ -474,6 +546,112 @@ try {
     assert(!membersModule.canManageServerMember(me, me), "The owner can manage itself.");
     facts.memberRoles = members.map((member) => member.role);
   });
+
+  await check(
+    "In the background the phone keeps its connection and sends no pings; on return the old connection answers and is kept",
+    async () => {
+      const activePeer = held.peer;
+      const socket = phoneSocket;
+      assert(activePeer !== null && socket !== null, "No peer or socket.");
+      const hub = await runtime.hub(new AbortController().signal);
+      const generation = hub.connectionGeneration();
+      const socketsBefore = ReactNativeLikeWebSocket.instances.length;
+      const updatesBefore = updates.length;
+      runtime.pause();
+      const pingsBefore = socket.pingsSent;
+      await observe(1_500);
+      assert(socket.pingsSent === pingsBefore, "The phone sent a ping in the background.");
+      assert(socket.open, "The connection closed in the background.");
+      const started = performance.now();
+      runtime.resume();
+      const listed = await deadline(
+        "the request after the return",
+        activePeer.execute({
+          id: commandId(),
+          type: "request",
+          method: "GET",
+          path: TEAM_API_ROUTES.agents.all,
+          body: {},
+        }),
+      );
+      facts.liveReturnMs = Math.round(performance.now() - started);
+      assert(listed.ok && listed.status === 200, inspect(listed));
+      await waitFor("the kept connection line", () =>
+        relayLines.some((line) => line.startsWith("relay return: connection kept")),
+      );
+      assert(hub.connectionGeneration() === generation, "A new connection replaced the live one.");
+      const candidates = ReactNativeLikeWebSocket.instances.slice(socketsBefore);
+      assert(candidates.length <= 1, `${candidates.length} new sockets.`);
+      assert(
+        candidates.every((candidate) => !candidate.helloSent),
+        "A second connection signed in.",
+      );
+      await waitFor("the unused candidate socket closes", () => candidates.every((candidate) => !candidate.open));
+      assert(socket.open, "The kept socket is not open.");
+      assert(!updates.slice(updatesBefore).includes("offline"), "The host peer went offline.");
+    },
+  );
+
+  await check(
+    "After the server dropped the silent phone, the return uses a new connection and the peer catches up from its last event number",
+    async () => {
+      const activePeer = held.peer;
+      const ownerPeer = ownerHeld.peer;
+      const socket = phoneSocket;
+      assert(activePeer !== null && ownerPeer !== null && socket !== null, "No peer or socket.");
+      const hub = await runtime.hub(new AbortController().signal);
+      const generation = hub.connectionGeneration();
+      const eventsBefore = events.length;
+      const diagnosticsBefore = diagnostics.length;
+      const updatesBefore = updates.length;
+      const text = "Hello from the owner while the phone is away";
+      runtime.pause();
+      socket.frozen = true;
+      const sent = await deadline(
+        "the owner's message",
+        ownerPeer.execute({
+          id: commandId(),
+          type: "request",
+          method: "POST",
+          path: TEAM_API_ROUTES.agent.messages(config.agentId),
+          body: { agentId: config.agentId, text, timezone: "UTC" },
+        }),
+      );
+      assert(sent.ok && (sent.status ?? 0) < 300, inspect(sent));
+      await waitFor("the server drops the silent phone", () => socket.serverClosed);
+      const started = performance.now();
+      runtime.resume();
+      await waitFor("the host peer sees the connection change", () => updates.slice(updatesBefore).includes("offline"));
+      const connected = await deadline(
+        "the connect after the return",
+        activePeer.execute({ id: commandId(), type: "connect", hostId, hostPublicKey: config.hostKeyId }),
+      );
+      assert(connected.ok, connected.error ?? "The connect failed.");
+      const listed = await deadline(
+        "the first answer after the return",
+        activePeer.execute({
+          id: commandId(),
+          type: "request",
+          method: "GET",
+          path: TEAM_API_ROUTES.agents.all,
+          body: {},
+        }),
+      );
+      facts.deadReturnMs = Math.round(performance.now() - started);
+      assert(listed.ok && listed.status === 200, inspect(listed));
+      await waitFor("the missed events", () => events.slice(eventsBefore).some((event) => event.includes(text)));
+      assert(
+        !diagnostics.slice(diagnosticsBefore).includes("event-reset"),
+        `The host reset the events: ${diagnostics.slice(diagnosticsBefore).join(", ")}`,
+      );
+      assert(hub.connectionGeneration() === generation + 1, "The connection was not replaced once.");
+      assert(
+        relayLines.some((line) => line.startsWith("relay return: new connection used")),
+        relayLines.join(" | "),
+      );
+      facts.returnLines = relayLines.filter((line) => line.startsWith("relay "));
+    },
+  );
 
   await check("The owner makes a member an admin, and back; the member list follows the role", async () => {
     const ownerPeer = ownerHeld.peer;
@@ -552,7 +730,7 @@ try {
             (error: unknown) => errorCode(error),
           ),
       );
-      assert(refusal === "target_unavailable" || refusal === "peer_refused", refusal);
+      assert(refusal === "host_offline", refusal);
       facts.otherTeamRelayRefusal = refusal;
     } finally {
       control.stop();
@@ -590,10 +768,15 @@ try {
     );
     const pointed = await separate.importText(pointedText);
     const states: string[] = [];
-    const foreign = new PhoneRelayRuntime({ identity: pointed, crypto }, (code) => states.push(`ended:${code}`), {
-      baseMs: 50,
-      maxMs: 100,
-    });
+    const foreign = new PhoneRelayRuntime(
+      { identity: pointed, crypto },
+      (code) => states.push(`ended:${code}`),
+      {
+        baseMs: 50,
+        maxMs: 100,
+      },
+      PHONE_LIVENESS,
+    );
     runtimes.push(foreign);
     foreign.subscribe(() => states.push(foreign.snapshot().state.status));
     foreign.start();

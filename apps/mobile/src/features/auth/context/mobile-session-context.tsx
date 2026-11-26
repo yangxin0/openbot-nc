@@ -145,9 +145,12 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
 
   const relay = sessionState?.relay ?? null;
   useEffect(() => {
-    if (!relay || !foreground) return;
-    relay.start();
+    if (!relay) return;
     return () => relay.stop();
+  }, [relay]);
+
+  useEffect(() => {
+    if (relay && foreground) relay.start();
   }, [relay, foreground]);
 
   useEffect(() => {

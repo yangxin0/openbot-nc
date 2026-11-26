@@ -165,7 +165,7 @@ function helloTranscript(text: string): RelayServerProofTranscriptInput | null {
 async function startFakeRelay(
   tls: { cert: string; key: string },
   proof: { certificate: string; privateKey: KeyObject },
-  _openPeer?: { user: string; device: string; certificate: string },
+  rosterMember?: { user: string; device: string; certificate: string },
 ): Promise<FakeRelay> {
   const server = createHttpsServer(tls);
   const sockets = new WebSocketServer({ server, path: RELAY_PATH });
@@ -218,7 +218,25 @@ async function startFakeRelay(
             lastHeardAt: 0,
           },
           team: { id: "t".repeat(43), name: TEAM },
-          roster: [],
+          roster: rosterMember
+            ? [
+                {
+                  keyId: keyIdOf(rosterMember.certificate),
+                  user: rosterMember.user,
+                  device: rosterMember.device,
+                  label: null,
+                  hosting: true,
+                  capabilities: [],
+                  suspendable: false,
+                  certificate: rosterMember.certificate,
+                  messageKey: "A".repeat(87),
+                  messageKeySignature: "A",
+                  keyTimestamp: Date.now(),
+                  connectedAt: Date.now(),
+                  lastHeardAt: Date.now(),
+                },
+              ]
+            : [],
         }),
       );
     });
@@ -373,6 +391,7 @@ const environment = {
   RELAY_PORT: String(relayPort),
   RELAY_HEALTH_PORT: String(healthPort),
   RELAY_PUBLIC_URL: `wss://localhost:${relayPort}${RELAY_PATH}`,
+  RELAY_SUSPENDED_TIMEOUT_MS: "3000",
 };
 const foreignEnvironment = {
   RELAY_DATA_DIR: foreignDirectory,

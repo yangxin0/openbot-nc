@@ -585,9 +585,11 @@ export function createWebWorkspaceRuntime(
           if (liveViewGeneration === releaseGeneration) browserView.disconnect();
         });
       }
-      events.connection(
-        update.state !== "online" && !rosterHostIds().has(update.hostId) ? { ...update, hostOffline: true } : update,
-      );
+      const hostLeftRoster =
+        update.state !== "online" &&
+        relay.source.snapshot().state.status === "online" &&
+        !rosterHostIds().has(update.hostId);
+      events.connection(hostLeftRoster ? { ...update, hostOffline: true } : update);
     },
     onTeamEvent: async (id, event) => events.event(id, event),
   };

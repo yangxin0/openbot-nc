@@ -414,7 +414,33 @@ small messages and file data, and sends the small messages first; each queue hol
 The app also sends `ping` after 10 s with nothing received, so it finds a dead socket while it only
 sends. The Mac sends a `ping` at once when it wakes (1.5 s answer time). Each app writes one log line
 for each connection (`relay connected in 289 ms (TCP+TLS+WebSocket open 145 ms, hello to welcome 144
-ms)`) and one when a connection ends; the lines hold only times and codes.
+ms)`), one when a connection ends, and the median heartbeat round trip once a minute; the lines hold
+only times and codes.
+
+#### Phone in the background and back
+
+The phone sends `suspendable: true`. When the app goes to the background, it keeps the socket, the
+roster and its connections to hosts, and stops its idle pings (`RelayHubClient.suspend`). The server
+keeps it for `RELAY_SUSPENDED_TIMEOUT_MS`. If the socket closes in the background, the app connects
+again only when it comes back.
+
+When the app comes back (`RelayHubClient.resume`), it does two things at the same moment:
+
+1. It sends `ping` on the old socket with an answer time of 1.5 s.
+2. It opens a new socket and starts the sign-in.
+
+The first to confirm wins. When the `pong` comes before the new socket sends `hello`, the app closes
+the new socket, keeps the old connection and changes nothing: the host connections stay, and the next
+request takes one round trip. When the new connection gets `welcome` first, or the old socket gives no
+`pong` in time, the new connection takes over; the server replaces the older socket of the same
+certificate, so the app has one connection again. The host connections then close, connect again
+through the new connection, and send `event-ack` with the last event number, so the host sends only
+the missed events. While the app waits, it shows the data that it has. The app writes one line for
+each return: `relay return: connection kept (answer in 154 ms, no new sign-in)` or `relay return: new
+connection used in 319 ms (the old connection did not answer)`.
+
+A host that is not in the roster gets no new attempts. The app waits for the `online` notice of that
+host, then connects at once; it does not try again on a timer.
 
 ### Application messages
 
@@ -460,6 +486,8 @@ trip). Results on this computer (2026-11-26):
 | The `online` notice after the host connects again | 300 ms |
 | Revoked app shown offline | 686 ms |
 | WebSockets for each app | 1 |
+| Phone back in front, old connection alive: the next answer from the host | 312 ms (kept, no new sign-in) |
+| Phone back in front, old connection dead: the first answer from the host | 632 ms (new connection in 319 ms) |
 
 ## End-to-end encryption
 
@@ -548,7 +576,8 @@ the central server that its identity file names. It sends no analytics and uses 
 
 The side panel connects to the central server and to the shared servers of the team while it is
 open. Browser sharing for agents keeps a connection to the selected server from an offscreen
-document of the extension while the side panel is closed. Settings in the server menu show the
+document of the extension while the side panel is closed. The two use the same certificate, so the
+side panel connects only after the background has closed the offscreen document. Settings in the server menu show the
 identity and remove it. The extension has no X posting: the X agent came from the agent
 marketplace.
 
@@ -649,5 +678,6 @@ that goes offline and comes back, a repeated request number, the catch-up of mis
 file up and down while small requests go on, that the recorded bytes hold no plaintext of requests,
 replies or files, that a changed byte, a replayed message and a substituted message key are refused,
 that a `hello` with an old time or a used nonce is refused, the server timeouts for a silent and a
-suspendable app, the closing of a revoked app, and one WebSocket for each app. It writes
+suspendable app, the closing of a revoked app, one WebSocket for each app, and the return of a phone
+to the front with a live and with a dead connection. It writes
 `.openbot-build/relay-hub-e2e/report.json` with the times.

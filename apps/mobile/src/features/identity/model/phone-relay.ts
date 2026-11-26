@@ -24,7 +24,10 @@ export interface PhoneRelayKeys {
   readonly crypto: RelayCrypto;
 }
 
-export interface PhoneRelay extends PhoneRelayKeys, RelayHubProvider {}
+export interface PhoneRelay extends PhoneRelayKeys, RelayHubProvider {
+  snapshot(): RelayControlSnapshot;
+  subscribe(listener: () => void): () => void;
+}
 
 export const PHONE_RELAY_LABEL = "OpenBot-NC phone";
 
@@ -73,6 +76,7 @@ export function startPhoneRelayControl(
   return startRelayControl(relay.identity, {
     ...options,
     label: PHONE_RELAY_LABEL,
+    suspendable: true,
     crypto: relay.crypto,
   });
 }
@@ -100,6 +104,12 @@ export function rosterHosts(snapshot: RelayControlSnapshot, identity: RelayBrows
     if (!hosts.has(hostId)) hosts.set(hostId, member);
   }
   return [...hosts.values()];
+}
+
+export function relayHostListed(snapshot: RelayControlSnapshot, hostKeyId: string): boolean {
+  return (
+    snapshot.state.status === "online" && snapshot.roster.some((member) => member.hosting && member.keyId === hostKeyId)
+  );
 }
 
 export function listedRelayHostIds(snapshot: RelayControlSnapshot, identity: RelayBrowserIdentity): Set<string> {

@@ -29,9 +29,15 @@ export type {
   RelayHubUndeliverable,
   RelaySocketErrorCode,
 } from "./relay-hub";
-export { browserRelayHubSocket, RelayHubClient, RelayHubSendError, RelaySocketError } from "./relay-hub";
+export {
+  browserRelayHubSocket,
+  RELAY_HUB_RESUME_ANSWER_MS,
+  RelayHubClient,
+  RelayHubSendError,
+  RelaySocketError,
+} from "./relay-hub";
 export type { RelayHubLinkErrorCode, RelayHubProvider } from "./relay-hub-channels";
-export { RelayHubLinkError, relayHubTunnelTransport } from "./relay-hub-channels";
+export { RelayHubLinkError, relayHubTunnelTransport, whenHubOnline } from "./relay-hub-channels";
 export type {
   IndexedDbRelayIdentityOptions,
   RelayBrowserIdentity,

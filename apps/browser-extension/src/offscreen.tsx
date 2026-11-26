@@ -1,6 +1,10 @@
 import { isDynamicRecord } from "@openbot/contracts/runtime-values";
 import { formatLocale, loadLocale, resolveLocale } from "@openbot/i18n";
-import { type RelayBrowserControl, startRelayControl } from "@openbot/team-client/relay-client";
+import {
+  type RelayBrowserControl,
+  type RelayControlSnapshot,
+  startRelayControl,
+} from "@openbot/team-client/relay-client";
 import { currentText, TextProvider } from "@openbot/ui/text";
 import { render } from "@solidjs/web";
 import { type ClientBrowserLink, createClientBrowserLink } from "./client-browser-link";
@@ -42,12 +46,14 @@ interface Target {
   connection: HostConnection;
   control: RelayBrowserControl;
   link: ClientBrowserLink;
+  stopWatch: () => void;
 }
 
 let target: Target | null = null;
 let queue: Promise<unknown> = Promise.resolve();
 
 function drop(): void {
+  target?.stopWatch();
   target?.link.dispose();
   void target?.connection.dispose();
   target?.control.stop();
@@ -65,18 +71,31 @@ async function connectSavedHost(): Promise<void> {
   drop();
   const links: { current: ClientBrowserLink | null } = { current: null };
   const control = startRelayControl(identity);
+  let offline = false;
+  const reconnectWhenListed = (snapshot: RelayControlSnapshot) => {
+    if (!offline || target?.connection !== connection || snapshot.state.status !== "online") return;
+    if (!snapshot.roster.some((member) => member.hosting && member.keyId === saved.devicePublicKey)) return;
+    offline = false;
+    void connection.connect(saved).catch(() => {
+      offline = true;
+    });
+  };
   const connection = await createHostConnection(identity, control, {
     event: (event) => links.current?.handleEvent(event),
     state: (update) => {
       if (update.state === "online") links.current?.refresh();
-      else if (update.state === "offline" && target?.connection === connection) drop();
+      else if (update.state === "offline" && target?.connection === connection) {
+        offline = true;
+        reconnectWhenListed(control.snapshot());
+      }
     },
   });
   try {
     const capabilities = await connection.connect(saved);
     const link = createClientBrowserLink({ request: connection.request, capabilities });
     links.current = link;
-    target = { identityKeyId: identity.keyId, hostId: saved.hostId, connection, control, link };
+    const stopWatch = control.subscribe(reconnectWhenListed);
+    target = { identityKeyId: identity.keyId, hostId: saved.hostId, connection, control, link, stopWatch };
   } catch (error) {
     await connection.dispose();
     control.stop();

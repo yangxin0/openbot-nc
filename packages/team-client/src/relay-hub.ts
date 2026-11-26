@@ -77,6 +77,8 @@ const BULK_LOW_WATER_BYTES = 256 * 1024;
 const BULK_WAIT_MS = 5;
 const INFO_TIMEOUT_MS = 10_000;
 const RTT_SAMPLES = 5;
+const RTT_LOG_MS = 60_000;
+export const RELAY_HUB_RESUME_ANSWER_MS = 1_500;
 const SERVER_MESSAGE_CHARACTERS_LIMIT = 4 * 1024 * 1024;
 const FINAL_CODES: ReadonlySet<RelaySocketErrorCode> = new Set([
   "replaced",
@@ -171,12 +173,20 @@ interface Connection {
   lastSentAt: number;
   lastReceivedAt: number;
   ping: { id: number; sentAt: number; answerBy: number } | null;
+  peers: Map<string, PeerKeys>;
   inbound: Promise<void>;
   bulk: Promise<void>;
   priority: Promise<void>;
   bulkWaiting: number;
   deadline: ReturnType<typeof setTimeout> | null;
   finish: (error: RelaySocketError) => void;
+}
+
+interface ResumeCheck {
+  readonly startedAt: number;
+  readonly old: Connection | null;
+  readonly pingId: number | null;
+  oldAnswerMs: number | null;
 }
 
 interface PeerKeys {
@@ -195,13 +205,18 @@ export class RelayHubClient {
   readonly #messageListeners = new Set<(message: RelayHubMessage) => void>();
   readonly #undeliverableListeners = new Set<(undeliverable: RelayHubUndeliverable) => void>();
   readonly #roster = new Map<string, RelayHubMember>();
-  readonly #peers = new Map<string, PeerKeys>();
   readonly #verified = new Map<string, Promise<Uint8Array | null>>();
   readonly #infos = new Map<number, (member: RelayHubMember | null) => void>();
   readonly #refusals = new Map<RelayMessageCryptoErrorCode | "unknown_sender", number>();
   readonly #rtts: number[] = [];
+  readonly #minuteRtts: number[] = [];
+  #rttLoggedAt = 0;
   #presence: { hosting: boolean; label: string | null };
   #connection: Connection | null = null;
+  #candidate: Connection | null = null;
+  #resume: ResumeCheck | null = null;
+  #suspended = false;
+  #generation = 0;
   #running = false;
   #failures = 0;
   #retryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -237,6 +252,8 @@ export class RelayHubClient {
     if (this.#running) return;
     this.#running = true;
     this.#failures = 0;
+    this.#suspended = false;
+    this.#rttLoggedAt = this.#now();
     this.#livenessTimer = setInterval(() => this.#checkLiveness(), LIVENESS_TICK_MS);
     this.#connect();
   }
@@ -249,14 +266,55 @@ export class RelayHubClient {
     if (this.#livenessTimer) clearInterval(this.#livenessTimer);
     this.#livenessTimer = null;
     const connection = this.#connection;
+    const candidate = this.#candidate;
     this.#connection = null;
-    if (connection) {
-      connection.closed = true;
-      if (connection.deadline) clearTimeout(connection.deadline);
-      connection.socket.close(RELAY_CLOSE_CODES.normal, "The app stops.");
-    }
+    this.#candidate = null;
+    this.#resume = null;
+    if (connection) this.#discard(connection, "The app stops.");
+    if (candidate) this.#discard(candidate, "The app stops.");
     this.#forgetTeam();
     this.#update({ state: { status: "offline", code: "stopped", message: "Stopped.", retryInMs: null } });
+  }
+
+  suspend(): void {
+    if (!this.#running) return;
+    this.#suspended = true;
+    const connection = this.#connection;
+    if (connection) connection.ping = null;
+  }
+
+  resume(answerMs: number = RELAY_HUB_RESUME_ANSWER_MS): void {
+    if (!this.#running) return;
+    this.#suspended = false;
+    if (this.#candidate) return;
+    const startedAt = this.#now();
+    const current = this.#connection;
+    if (current && !current.closed && current.welcomedAt !== null) {
+      const pingId = this.#ping(current, answerMs);
+      this.#resume = { startedAt, old: current, pingId, oldAnswerMs: null };
+      setTimeout(() => this.#checkLiveness(), answerMs + 1);
+      const candidate = this.#open();
+      if (!(candidate instanceof RelaySocketError)) this.#candidate = candidate;
+      return;
+    }
+    this.#resume = { startedAt, old: null, pingId: null, oldAnswerMs: null };
+    if (current) {
+      this.#connection = null;
+      this.#discard(current, "The app starts a new connection.");
+    }
+    if (this.#retryTimer) clearTimeout(this.#retryTimer);
+    this.#retryTimer = null;
+    this.#failures = 0;
+    this.#connect();
+  }
+
+  connectionGeneration(): number {
+    return this.#generation;
+  }
+
+  async verifyMember(keyId: string): Promise<boolean> {
+    const member = this.#roster.get(keyId);
+    return member ? (await this.#verify(member)) !== null : false;
   }
 
   snapshot(): RelayHubSnapshot {
@@ -324,6 +382,7 @@ export class RelayHubClient {
     const connection = this.#connection;
     if (!connection || connection.welcomedAt === null) return;
     this.#ping(connection, timeoutMs);
+    setTimeout(() => this.#checkLiveness(), timeoutMs + 1);
   }
 
   info(keyId: string): Promise<RelayHubMember | null> {
@@ -389,13 +448,17 @@ export class RelayHubClient {
 
   #connect(): void {
     if (!this.#running) return;
-    const { identity } = this.#options;
-    const relayUrl = identity.relayUrl;
     this.#update({ state: { status: "connecting" } });
+    const opened = this.#open();
+    if (opened instanceof RelaySocketError) this.#closed(null, opened);
+    else this.#connection = opened;
+  }
+
+  #open(): Connection | RelaySocketError {
+    const relayUrl = this.#options.identity.relayUrl;
     const refusal = relayUrlRefusal(relayUrl);
     if (refusal || relayUrl === null) {
-      this.#closed(null, refusal ?? new RelaySocketError({ code: "relay_url_missing", message: "No relay address." }));
-      return;
+      return refusal ?? new RelaySocketError({ code: "relay_url_missing", message: "No relay address." });
     }
     const startedAt = this.#now();
     const clientNonce = bytesToBase64Url(this.#crypto.randomBytes(32));
@@ -433,11 +496,7 @@ export class RelayHubClient {
     try {
       socket = (this.#options.openSocket ?? browserRelayHubSocket)(relayUrl, events);
     } catch {
-      this.#closed(
-        null,
-        new RelaySocketError({ code: "connect_failed", message: "The relay socket cannot be opened." }),
-      );
-      return;
+      return new RelaySocketError({ code: "connect_failed", message: "The relay socket cannot be opened." });
     }
     this.#socketsOpened += 1;
     const created: Connection = {
@@ -455,6 +514,7 @@ export class RelayHubClient {
       lastSentAt: startedAt,
       lastReceivedAt: startedAt,
       ping: null,
+      peers: new Map(),
       inbound: Promise.resolve(),
       bulk: Promise.resolve(),
       priority: Promise.resolve(),
@@ -469,7 +529,6 @@ export class RelayHubClient {
       },
     };
     connection = created;
-    this.#connection = created;
     created.deadline = setTimeout(
       () =>
         created.finish(
@@ -478,6 +537,15 @@ export class RelayHubClient {
       this.#options.connectDeadlineMs ?? RELAY_CONNECT_DEADLINE_MS,
     );
     void this.#prepareKey(created);
+    return created;
+  }
+
+  #discard(connection: Connection, reason: string): void {
+    if (connection.closed) return;
+    connection.closed = true;
+    if (connection.deadline) clearTimeout(connection.deadline);
+    connection.deadline = null;
+    connection.socket.close(RELAY_CLOSE_CODES.normal, reason);
   }
 
   async #prepareKey(connection: Connection): Promise<void> {
@@ -533,11 +601,14 @@ export class RelayHubClient {
 
   async #receive(connection: Connection, message: RelayHubServerMessage): Promise<void> {
     if (connection.closed) return;
-    if (connection.ping && message.type === "pong" && message.id === connection.ping.id) {
-      this.#rtts.push(this.#now() - connection.ping.sentAt);
-      if (this.#rtts.length > RTT_SAMPLES) this.#rtts.shift();
+    const pong = connection.ping && message.type === "pong" && message.id === connection.ping.id;
+    if (connection.ping && pong) this.#recordRtt(this.#now() - connection.ping.sentAt);
+    const resume = this.#resume;
+    if (resume?.old !== connection) connection.ping = null;
+    else if (message.type === "pong" && message.id === resume.pingId) {
+      connection.ping = null;
+      this.#keepOld(resume);
     }
-    connection.ping = null;
     if (message.type === "error") {
       connection.finish(new RelaySocketError({ code: message.code, message: message.message }));
       return;
@@ -578,9 +649,12 @@ export class RelayHubClient {
         connection.finish(new RelaySocketError({ code: "protocol_error", message: "The relay did not send welcome." }));
         return;
       }
+      if (connection === this.#candidate) this.#promote(connection);
+      if (connection !== this.#connection) return;
       connection.welcomedAt = this.#now();
       if (connection.deadline) clearTimeout(connection.deadline);
       connection.deadline = null;
+      this.#generation += 1;
       this.#roster.clear();
       for (const member of message.roster) this.#roster.set(member.keyId, member);
       for (const member of message.roster) void this.#verify(member);
@@ -591,6 +665,17 @@ export class RelayHubClient {
           opened - connection.startedAt
         } ms, hello to welcome ${connection.welcomedAt - opened} ms)`,
       );
+      if (this.#resume) {
+        const { startedAt, old, oldAnswerMs } = this.#resume;
+        this.#resume = null;
+        const reason =
+          old === null
+            ? "there was no connection"
+            : oldAnswerMs === null
+              ? "the old connection did not answer"
+              : `the old connection answered after ${oldAnswerMs} ms, after the new sign-in started`;
+        this.#log("info", `relay return: new connection used in ${connection.welcomedAt - startedAt} ms (${reason})`);
+      }
       this.#update({
         state: { status: "online" },
         self: message.self,
@@ -603,14 +688,14 @@ export class RelayHubClient {
       case "online": {
         const previous = this.#roster.get(message.member.keyId);
         this.#roster.set(message.member.keyId, message.member);
-        if (previous && previous.messageKey !== message.member.messageKey) this.#peers.delete(previous.keyId);
+        if (previous && previous.messageKey !== message.member.messageKey) connection.peers.delete(previous.keyId);
         void this.#verify(message.member);
         this.#update({ roster: this.#sortedRoster() });
         return;
       }
       case "offline":
         this.#roster.delete(message.keyId);
-        this.#peers.delete(message.keyId);
+        connection.peers.delete(message.keyId);
         this.#update({ roster: this.#sortedRoster() });
         return;
       case "info":
@@ -702,7 +787,7 @@ export class RelayHubClient {
   }
 
   #peerFor(member: RelayHubMember, connection: Connection): PeerKeys {
-    const existing = this.#peers.get(member.keyId);
+    const existing = connection.peers.get(member.keyId);
     if (existing && existing.member.messageKey === member.messageKey) return existing;
     const messageKey = connection.messageKey;
     const pair =
@@ -719,7 +804,7 @@ export class RelayHubClient {
                 }),
           );
     const peer: PeerKeys = { member, pair, counters: new RelayMessageCounters(), inbound: Promise.resolve() };
-    this.#peers.set(member.keyId, peer);
+    connection.peers.set(member.keyId, peer);
     return peer;
   }
 
@@ -730,12 +815,14 @@ export class RelayHubClient {
   }
 
   #checkLiveness(): void {
-    const connection = this.#connection;
-    if (!connection || connection.closed || connection.welcomedAt === null) return;
     const now = this.#now();
+    if (now - this.#rttLoggedAt >= RTT_LOG_MS) this.#logRtt(now);
+    const connection = this.#connection;
+    if (this.#suspended || !connection || connection.closed || connection.welcomedAt === null) return;
     const answerMs = this.#options.liveness?.answerMs ?? RELAY_HUB_PING_ANSWER_MS;
     if (connection.ping) {
-      if (now >= connection.ping.answerBy && connection.lastReceivedAt < connection.ping.sentAt) {
+      const resumeCheck = this.#resume?.old === connection;
+      if (now >= connection.ping.answerBy && (resumeCheck || connection.lastReceivedAt < connection.ping.sentAt)) {
         this.#log("warn", "relay heartbeat missed; closing the socket");
         connection.finish(
           new RelaySocketError({ code: "heartbeat_timeout", message: "The relay did not answer in time." }),
@@ -748,11 +835,51 @@ export class RelayHubClient {
       this.#ping(connection, answerMs);
   }
 
-  #ping(connection: Connection, timeoutMs: number): void {
+  #ping(connection: Connection, timeoutMs: number): number {
     this.#nextPingId = this.#nextPingId >= RELAY_PING_ID_MAX ? 1 : this.#nextPingId + 1;
     const sentAt = this.#now();
-    connection.ping = { id: this.#nextPingId, sentAt, answerBy: sentAt + timeoutMs };
-    this.#sendControl(connection, { type: "ping", version: RELAY_PROTOCOL_VERSION, id: this.#nextPingId });
+    const id = this.#nextPingId;
+    connection.ping = { id, sentAt, answerBy: sentAt + timeoutMs };
+    this.#sendControl(connection, { type: "ping", version: RELAY_PROTOCOL_VERSION, id });
+    return id;
+  }
+
+  #recordRtt(ms: number): void {
+    this.#rtts.push(ms);
+    if (this.#rtts.length > RTT_SAMPLES) this.#rtts.shift();
+    if (this.#minuteRtts.length < 1_000) this.#minuteRtts.push(ms);
+  }
+
+  #logRtt(now: number): void {
+    this.#rttLoggedAt = now;
+    const samples = this.#minuteRtts.splice(0).sort((first, second) => first - second);
+    const median = samples[Math.floor(samples.length / 2)];
+    if (median === undefined) return;
+    this.#log("info", `relay heartbeat round trip median ${median} ms (${samples.length} in the last minute)`);
+  }
+
+  #keepOld(resume: ResumeCheck): void {
+    const answerMs = this.#now() - resume.startedAt;
+    const candidate = this.#candidate;
+    if (candidate?.helloSent) {
+      resume.oldAnswerMs = answerMs;
+      return;
+    }
+    this.#resume = null;
+    if (candidate) {
+      this.#candidate = null;
+      this.#discard(candidate, "The older connection answered.");
+    }
+    this.#log("info", `relay return: connection kept (answer in ${answerMs} ms, no new sign-in)`);
+  }
+
+  #promote(candidate: Connection): void {
+    const old = this.#connection;
+    this.#candidate = null;
+    this.#connection = candidate;
+    if (old && old !== candidate) this.#discard(old, "A newer connection replaced this one.");
+    for (const resolve of this.#infos.values()) resolve(null);
+    this.#infos.clear();
   }
 
   #sendControl(connection: Connection, message: RelayHubClientMessage): void {
@@ -762,20 +889,38 @@ export class RelayHubClient {
   }
 
   #closed(connection: Connection | null, error: RelaySocketError): void {
-    if (connection && this.#connection !== connection) return;
-    const healthy = connection?.welcomedAt != null && this.#now() - connection.welcomedAt >= HEALTHY_AFTER_MS;
-    this.#connection = null;
-    for (const resolve of this.#infos.values()) resolve(null);
-    this.#infos.clear();
-    this.#forgetTeam();
-    if (connection?.welcomedAt != null) {
-      this.#log("info", `relay closed (${error.code}) after ${this.#now() - connection.welcomedAt} ms`);
+    if (connection !== null && connection === this.#candidate) {
+      this.#candidate = null;
+      const resume = this.#resume;
+      if (this.#connection !== null && resume?.old === this.#connection && resume.oldAnswerMs !== null) {
+        this.#resume = null;
+        this.#log("info", `relay return: connection kept (answer in ${resume.oldAnswerMs} ms, new sign-in failed)`);
+      }
+      if (this.#connection !== null) return;
+    } else if (connection !== null && this.#connection !== connection) return;
+    else if (connection !== null) {
+      this.#connection = null;
+      for (const resolve of this.#infos.values()) resolve(null);
+      this.#infos.clear();
+      this.#forgetTeam();
+      if (connection.welcomedAt !== null) {
+        this.#log("info", `relay closed (${error.code}) after ${this.#now() - connection.welcomedAt} ms`);
+      }
+      if (this.#candidate && this.#running) {
+        this.#update({ state: { status: "connecting" } });
+        return;
+      }
     }
+    const healthy = connection?.welcomedAt != null && this.#now() - connection.welcomedAt >= HEALTHY_AFTER_MS;
     if (!this.#running) return;
     if (FINAL_CODES.has(error.code)) {
       this.#running = false;
       if (this.#livenessTimer) clearInterval(this.#livenessTimer);
       this.#livenessTimer = null;
+      this.#update({ state: { status: "offline", code: error.code, message: error.message, retryInMs: null } });
+      return;
+    }
+    if (this.#suspended) {
       this.#update({ state: { status: "offline", code: error.code, message: error.message, retryInMs: null } });
       return;
     }
@@ -797,7 +942,6 @@ export class RelayHubClient {
 
   #forgetTeam(): void {
     this.#roster.clear();
-    this.#peers.clear();
     this.#update({ roster: [] });
   }
 

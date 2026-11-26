@@ -1,4 +1,5 @@
 import {
+  RELAY_HUB_RESUME_ANSWER_MS,
   type RelayBrowserControl,
   type RelayControlSnapshot,
   RelaySocketError,
@@ -32,6 +33,7 @@ export class PhoneRelayRuntime implements PhoneRelay {
   #control: RelayBrowserControl | null = null;
   #unsubscribe: (() => void) | null = null;
   #snapshot: RelayControlSnapshot = STOPPED;
+  #paused = false;
 
   constructor(
     relay: PhoneRelayKeys,
@@ -51,6 +53,7 @@ export class PhoneRelayRuntime implements PhoneRelay {
 
   start(): void {
     if (this.#control) return;
+    this.#paused = false;
     const control = startPhoneRelayControl(this, this.#options);
     this.#control = control;
     this.#unsubscribe = control.subscribe((snapshot) => {
@@ -63,10 +66,16 @@ export class PhoneRelayRuntime implements PhoneRelay {
   }
 
   resume(): void {
-    this.#control?.checkLiveness();
+    if (!this.#paused) return;
+    this.#paused = false;
+    this.#control?.resume(RELAY_HUB_RESUME_ANSWER_MS);
   }
 
-  pause(): void {}
+  pause(): void {
+    if (!this.#control) return;
+    this.#paused = true;
+    this.#control.suspend();
+  }
 
   async hub(signal: AbortSignal): Promise<RelayBrowserControl> {
     return this.#control ?? (await this.#nextControl(signal));

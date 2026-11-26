@@ -1,4 +1,4 @@
-import type { RelayControlState } from "@openbot/team-client/relay-client";
+import type { RelayControlSnapshot } from "@openbot/team-client/relay-client";
 import { router } from "expo-router";
 import { Typography } from "heroui-native";
 import { useState } from "react";
@@ -13,15 +13,17 @@ import { currentText, useText } from "@/shared/lib/text";
 const LONG_DATE = { dateStyle: "long" } as const satisfies Intl.DateTimeFormatOptions;
 
 function connectionKey(
-  state: RelayControlState,
+  snapshot: RelayControlSnapshot,
 ):
   | RelayStateKey
   | "mobile.identity.settings.online"
   | "mobile.identity.settings.connecting"
   | "mobile.identity.settings.reconnecting"
   | "mobile.identity.settings.stopped" {
+  const { state } = snapshot;
   if (state.status === "online") return "mobile.identity.settings.online";
-  if (state.status === "connecting") return "mobile.identity.settings.connecting";
+  if (state.status === "connecting")
+    return snapshot.self ? "mobile.identity.settings.reconnecting" : "mobile.identity.settings.connecting";
   if (state.code === "stopped") return "mobile.identity.settings.stopped";
   if (state.retryInMs !== null) return "mobile.identity.settings.reconnecting";
   return relayStateKey(state.code);
@@ -85,7 +87,7 @@ export function IdentitySettingsScreen() {
           description={
             snapshot.state.status === "online" && snapshot.state.rttMs !== undefined
               ? t("mobile.identity.settings.onlineRtt", { ms: snapshot.state.rttMs })
-              : t(connectionKey(snapshot.state))
+              : t(connectionKey(snapshot))
           }
         >
           <Typography.Paragraph>{t("mobile.identity.settings.connection")}</Typography.Paragraph>

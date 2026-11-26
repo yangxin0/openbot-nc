@@ -1,6 +1,7 @@
 import { RELAY_HUB_PLAINTEXT_LIMIT, type RelayHubKind } from "@openbot/contracts/relay-protocol/hub";
+import { sourceText } from "@openbot/i18n/source";
 import { Schema } from "effect";
-import { RelayHubClient, type RelayHubMessage, RelayHubSendError } from "./relay-hub";
+import { RELAY_CONNECT_DEADLINE_MS, RelayHubClient, type RelayHubMessage, RelayHubSendError } from "./relay-hub";
 import type {
   RemoteTeamChannel,
   RemoteTeamChannelHandlers,
@@ -22,7 +23,14 @@ export type RelayHubV2Direction = "to-host" | "to-client";
 const BUFFERED_LOW_THRESHOLD = 1024 * 1024;
 const textEncoder = new TextEncoder();
 
-const RELAY_HUB_LINK_ERROR_CODES = ["host_offline", "relay_offline", "busy", "closed", "protocol_error"] as const;
+const RELAY_HUB_LINK_ERROR_CODES = [
+  "host_offline",
+  "relay_offline",
+  "peer_refused",
+  "busy",
+  "closed",
+  "protocol_error",
+] as const;
 export type RelayHubLinkErrorCode = (typeof RELAY_HUB_LINK_ERROR_CODES)[number];
 
 export class RelayHubLinkError extends Schema.TaggedError<RelayHubLinkError>()("RelayHubLinkError", {
@@ -30,19 +38,33 @@ export class RelayHubLinkError extends Schema.TaggedError<RelayHubLinkError>()("
   message: Schema.String,
 }) {}
 
+const linkError = {
+  hostOffline: () => new RelayHubLinkError({ code: "host_offline", message: sourceText("error.remote.hostOffline") }),
+  relayOffline: () =>
+    new RelayHubLinkError({ code: "relay_offline", message: sourceText("error.remote.connectionDropped") }),
+  closed: () => new RelayHubLinkError({ code: "closed", message: sourceText("error.remote.serverDisconnected") }),
+};
+
 export function encodeRelayHubV2Plaintexts(
   data: string | ArrayBuffer,
   messageId: number,
   direction: RelayHubV2Direction,
 ): Uint8Array<ArrayBuffer>[] {
-  const flag = direction === "to-client" ? FROM_HOST : 0;
-  return encodeTeamV2Payload(data, RELAY_HUB_V2_FRAGMENT_BYTES, messageId).map((fragment) => {
-    const bytes = typeof fragment === "string" ? textEncoder.encode(fragment) : new Uint8Array(fragment);
-    const plaintext = new Uint8Array(1 + bytes.byteLength);
-    plaintext[0] = flag | (typeof fragment === "string" ? PAYLOAD_TEXT : PAYLOAD_BINARY);
-    plaintext.set(bytes, 1);
-    return plaintext;
-  });
+  return encodeTeamV2Payload(data, RELAY_HUB_V2_FRAGMENT_BYTES, messageId).map((fragment) =>
+    relayHubV2Plaintext(fragment, direction),
+  );
+}
+
+export function relayHubV2Plaintext(
+  fragment: string | ArrayBuffer,
+  direction: RelayHubV2Direction,
+): Uint8Array<ArrayBuffer> {
+  const bytes = typeof fragment === "string" ? textEncoder.encode(fragment) : new Uint8Array(fragment);
+  const plaintext = new Uint8Array(1 + bytes.byteLength);
+  plaintext[0] =
+    (direction === "to-client" ? FROM_HOST : 0) | (typeof fragment === "string" ? PAYLOAD_TEXT : PAYLOAD_BINARY);
+  plaintext.set(bytes, 1);
+  return plaintext;
 }
 
 export function relayHubV2DirectionOf(plaintext: Uint8Array): RelayHubV2Direction {
@@ -68,6 +90,7 @@ export function decodeRelayHubV2Plaintext(
 
 class RelayHubChannel implements RemoteTeamChannel {
   readonly bufferedAmountLowThreshold = BUFFERED_LOW_THRESHOLD;
+  readonly maxMessageSize = RELAY_HUB_V2_FRAGMENT_BYTES;
   readonly #link: RelayHubLink;
   readonly #kind: RelayHubKind;
   readonly #pending: Array<string | ArrayBuffer> = [];
@@ -87,7 +110,7 @@ class RelayHubChannel implements RemoteTeamChannel {
   }
 
   send(data: string | ArrayBuffer): void {
-    if (this.#state !== "open") throw new RelayHubLinkError({ code: "closed", message: "The connection is closed." });
+    if (this.#state !== "open") throw linkError.closed();
     this.#link.send(this, this.#kind, data);
   }
 
@@ -127,12 +150,13 @@ export class RelayHubLink {
   readonly #channels: Record<RelayHubKind, RelayHubChannel>;
   readonly #ids = new Set<number>();
   readonly #stop: Array<() => void> = [];
-  #nextFragmentId = 0;
+  readonly #generation: number;
   #closed = false;
 
   constructor(hub: RelayHubClient, hostKey: string) {
     this.#hub = hub;
     this.hostKey = hostKey;
+    this.#generation = hub.connectionGeneration();
     this.#channels = {
       rpc: new RelayHubChannel(this, "rpc"),
       events: new RelayHubChannel(this, "events"),
@@ -144,15 +168,14 @@ export class RelayHubLink {
         if (undeliverable.to !== hostKey || !this.#ids.has(undeliverable.id)) return;
         this.close(
           undeliverable.code === "busy"
-            ? new RelayHubLinkError({ code: "busy", message: "The relay is busy. Try again soon." })
-            : new RelayHubLinkError({ code: "host_offline", message: "The host is offline." }),
+            ? new RelayHubLinkError({ code: "busy", message: sourceText("error.remote.requestNotSent") })
+            : linkError.hostOffline(),
         );
       }),
       hub.subscribe((snapshot) => {
-        if (snapshot.state.status !== "online")
-          this.close(new RelayHubLinkError({ code: "relay_offline", message: "The relay connection dropped." }));
-        else if (!snapshot.roster.some((member) => member.keyId === hostKey))
-          this.close(new RelayHubLinkError({ code: "host_offline", message: "The host is offline." }));
+        if (snapshot.state.status !== "online" || hub.connectionGeneration() !== this.#generation)
+          this.close(linkError.relayOffline());
+        else if (!snapshot.roster.some((member) => member.keyId === hostKey)) this.close(linkError.hostOffline());
       }),
     );
   }
@@ -160,30 +183,36 @@ export class RelayHubLink {
   tunnels(): RemoteTeamTunnels {
     return {
       ...this.#channels,
-      close: () => this.close(new RelayHubLinkError({ code: "closed", message: "Closed." })),
+      close: () => this.close(linkError.closed()),
     };
   }
 
   send(channel: RelayHubChannel, kind: RelayHubKind, data: string | ArrayBuffer): void {
-    this.#nextFragmentId = (this.#nextFragmentId + 1) >>> 0;
-    const plaintexts = encodeRelayHubV2Plaintexts(data, this.#nextFragmentId, "to-host");
-    for (const plaintext of plaintexts) {
-      channel.bufferedAmount += plaintext.byteLength;
-      this.#hub.send(this.hostKey, kind, plaintext).then(
-        (id) => {
-          this.#remember(id);
-          channel.sent(plaintext.byteLength);
-        },
-        (error: unknown) => {
-          channel.sent(plaintext.byteLength);
-          this.close(
-            error instanceof RelayHubSendError && error.code === "offline"
-              ? new RelayHubLinkError({ code: "host_offline", message: "The host is offline." })
-              : new RelayHubLinkError({ code: "closed", message: "The message could not be sent." }),
-          );
-        },
-      );
+    const plaintext = relayHubV2Plaintext(data, "to-host");
+    if (plaintext.byteLength > RELAY_HUB_PLAINTEXT_LIMIT) {
+      this.close(new RelayHubLinkError({ code: "protocol_error", message: sourceText("error.remote.requestNotSent") }));
+      return;
     }
+    channel.bufferedAmount += plaintext.byteLength;
+    this.#hub.send(this.hostKey, kind, plaintext).then(
+      (id) => {
+        this.#remember(id);
+        channel.sent(plaintext.byteLength);
+      },
+      (error: unknown) => {
+        channel.sent(plaintext.byteLength);
+        this.close(
+          error instanceof RelayHubSendError && error.code === "offline"
+            ? linkError.hostOffline()
+            : error instanceof RelayHubSendError && error.code === "unverified"
+              ? new RelayHubLinkError({
+                  code: "peer_refused",
+                  message: sourceText("error.remote.desktopIdentityNotVerified"),
+                })
+              : linkError.closed(),
+        );
+      },
+    );
   }
 
   close(reason: Error): void {
@@ -205,7 +234,7 @@ export class RelayHubLink {
     if (message.from !== this.hostKey || this.#closed) return;
     const decoded = decodeRelayHubV2Plaintext(message.plaintext);
     if (decoded === null) {
-      this.close(new RelayHubLinkError({ code: "protocol_error", message: "The host sent an invalid message." }));
+      this.close(new RelayHubLinkError({ code: "protocol_error", message: sourceText("error.remote.malformedEvent") }));
       return;
     }
     if (decoded.direction === "to-client") this.#channels[message.kind].receive(decoded.payload);
@@ -219,20 +248,44 @@ export interface RelayHubProvider {
 export function relayHubTunnelTransport(source: RelayHubClient | RelayHubProvider): RemoteTeamTunnelTransport {
   return {
     async open(_hostId, hostKey, signal) {
-      if (signal.aborted) throw new RelayHubLinkError({ code: "closed", message: "The connection was stopped." });
+      if (signal.aborted) throw linkError.closed();
       const hub = source instanceof RelayHubClient ? source : await source.hub(signal);
-      if (hub.snapshot().state.status !== "online")
-        throw new RelayHubLinkError({ code: "relay_offline", message: "The relay is not connected." });
-      if (!hub.member(hostKey)) throw new RelayHubLinkError({ code: "host_offline", message: "The host is offline." });
+      await whenHubOnline(hub, signal, RELAY_CONNECT_DEADLINE_MS);
+      if (!hub.member(hostKey)) throw linkError.hostOffline();
+      if (!(await hub.verifyMember(hostKey)))
+        throw new RelayHubLinkError({
+          code: "peer_refused",
+          message: sourceText("error.remote.desktopIdentityNotVerified"),
+        });
+      if (signal.aborted) throw linkError.closed();
+      if (hub.snapshot().state.status !== "online") throw linkError.relayOffline();
+      if (!hub.member(hostKey)) throw linkError.hostOffline();
       const link = new RelayHubLink(hub, hostKey);
-      signal.addEventListener(
-        "abort",
-        () => link.close(new RelayHubLinkError({ code: "closed", message: "Stopped." })),
-        {
-          once: true,
-        },
-      );
+      signal.addEventListener("abort", () => link.close(linkError.closed()), { once: true });
       return link.tunnels();
     },
   };
+}
+
+export function whenHubOnline(hub: RelayHubClient, signal: AbortSignal, timeoutMs: number): Promise<void> {
+  if (hub.snapshot().state.status === "online") return Promise.resolve();
+  if (!hub.running) return Promise.reject(linkError.relayOffline());
+  return new Promise<void>((resolve, reject) => {
+    let stop: () => void = () => undefined;
+    const finish = (error: RelayHubLinkError | null) => {
+      clearTimeout(timer);
+      stop();
+      signal.removeEventListener("abort", onAbort);
+      if (error) reject(error);
+      else resolve();
+    };
+    const onAbort = () => finish(linkError.closed());
+    const timer = setTimeout(() => finish(linkError.relayOffline()), timeoutMs);
+    stop = hub.subscribe((snapshot) => {
+      if (snapshot.state.status === "online") finish(null);
+      else if (!hub.running) finish(linkError.relayOffline());
+    });
+    if (signal.aborted) onAbort();
+    else signal.addEventListener("abort", onAbort, { once: true });
+  });
 }
