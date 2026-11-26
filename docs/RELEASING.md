@@ -35,8 +35,8 @@ Create the `release` environment in your repository, then add these environment 
 - `APPLE_TEAM_ID` — the Apple Developer team ID.
 
 The macOS job stops when one of these secrets is missing. The workflow compares the team of the built
-app with `APPLE_TEAM_ID`. These files still hold the team ID `ZTRDTUL87R` of the original vendor.
-Replace it with your team ID before the first tag:
+app with `APPLE_TEAM_ID`. These files hold the team ID `HRQ4QNY8PW`. Replace it when you sign with
+another team:
 
 - `electron-builder.yml` (`mac.extendInfo.ElectronTeamID`);
 - `build/entitlements.mac.plist` (`com.apple.developer.team-identifier`);
@@ -46,6 +46,22 @@ Replace it with your team ID before the first tag:
 
 Do not use an Apple Development certificate. Direct distribution requires a Developer ID Application
 certificate. Never commit signing credentials to the repository.
+
+A build for your own Mac can use the Apple Development certificate of your Apple ID. Its signature
+stays the same from build to build, so macOS keeps the keychain access and the privacy permissions
+of the app after an update. Other Macs show a Gatekeeper warning for it, because it is not notarized:
+
+```sh
+bun run voice:prepare-runtime && bun run prepare:cua-driver && bun run build
+bunx electron-builder --mac --config.mac.notarize=false \
+  --config.mac.entitlements=build/entitlements.mac.development.plist \
+  --config.mac.identity="Apple Development: <name> (<certificate ID>)"
+```
+
+`build/entitlements.mac.development.plist` has no `com.apple.developer.team-identifier`: macOS does not
+start a development-signed app that claims it without a provisioning profile.
+
+`security find-identity -v -p codesigning` lists the names of your signing certificates.
 
 ### Windows signing
 

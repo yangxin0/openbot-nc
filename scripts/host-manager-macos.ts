@@ -11,7 +11,7 @@ const exec = promisify(execFile);
 export const SHARED_APP = "/Applications/OpenBot-NC.app";
 const STAGING = "/Applications/.openbot-host-stage";
 const SIGNING_REQUIREMENT =
-  '=anchor apple generic and identifier "app.openbotnc.desktop" and certificate leaf[subject.OU] = "ZTRDTUL87R"';
+  '=anchor apple generic and identifier "app.openbotnc.desktop" and certificate leaf[subject.OU] = "HRQ4QNY8PW"';
 
 export async function hostCommand(file: string, args: string[], timeout = 60_000): Promise<string> {
   const result = await exec(file, args, {

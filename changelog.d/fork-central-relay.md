@@ -54,6 +54,9 @@
 
 ### Changed
 
+- The macOS app and the iPhone app are signed with the Apple team of this fork (`HRQ4QNY8PW`), not
+  the team of the original vendor. `build/entitlements.mac.development.plist` lets you sign a build
+  for your own Mac with the Apple Development certificate of your Apple ID.
 - The app now shows its name as OpenBot-NC in windows, menus, notifications, the web client, the
   browser extension and the phone app, in all 15 languages.
 - OpenBot opens with no sign-in. It makes a local profile on this computer, with your name and chat

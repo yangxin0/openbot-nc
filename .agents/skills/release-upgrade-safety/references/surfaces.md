@@ -159,7 +159,7 @@ untouched — they already spell the agent `agent` on both sides.
 
 | Path | Fields that matter |
 | --- | --- |
-| `electron-builder.yml` | `appId` (`app.openbot.desktop`), `artifactName`, `electronUpdaterCompatibility`, `publish` owner/repo, `mac.extendInfo.ElectronTeamID` (`ZTRDTUL87R`), `extraResources` |
+| `electron-builder.yml` | `appId` (`app.openbotnc.desktop`), `artifactName`, `electronUpdaterCompatibility`, `publish` owner/repo, `mac.extendInfo.ElectronTeamID` (`HRQ4QNY8PW`), `extraResources` |
 | `src/main/update-service.ts` | the four `UpdateAdapter` behaviours, documented on the type |
 | `scripts/verify-update-artifacts.ts` | 700 MiB update artifact, 750 MiB DMG, manifest, blockmap, no voice model |
 | `.github/workflows/release.yml` | macOS ZIP must be under 800,000,000 bytes **and** smaller than the `v0.1.21` ZIP |

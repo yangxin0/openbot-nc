@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { HOST_MANAGER_DIRECTORY } from "../src/main/host-update-files";
 
-export const HOST_TEAM_ID = "ZTRDTUL87R";
+export const HOST_TEAM_ID = "HRQ4QNY8PW";
 export const HOST_PACKAGE_ID = "app.openbotnc.host";
 export const HOST_DAEMON_PLIST = "/Library/LaunchDaemons/app.openbotnc.host-manager.plist";
 export const HOST_AGENT_PLIST = "/Library/LaunchAgents/app.openbotnc.desktop.relaunch.plist";

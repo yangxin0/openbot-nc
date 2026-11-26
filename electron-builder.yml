@@ -107,7 +107,7 @@ mac:
   darkModeSupport: true
   extendInfo:
     CFBundleIconName: Icon
-    ElectronTeamID: ZTRDTUL87R
+    ElectronTeamID: HRQ4QNY8PW
     NSMicrophoneUsageDescription: OpenBot-NC uses the microphone to transcribe voice prompts locally on this Mac.
     NSScreenCaptureUsageDescription: OpenBot-NC captures the screen so an agent can see the app windows you ask it to control.
     NSAppleEventsUsageDescription: OpenBot-NC sends Automation events so an agent can control the apps you ask it to control.
