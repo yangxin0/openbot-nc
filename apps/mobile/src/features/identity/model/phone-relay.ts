@@ -8,7 +8,7 @@ import {
   type RelayControlOptions,
   type RelayControlSnapshot,
   type RelayCrypto,
-  type RelaySessionSource,
+  type RelayHubProvider,
   type RelaySocketErrorCode,
   type RelayTeamPeerActions,
   relayTeamHost,
@@ -24,7 +24,7 @@ export interface PhoneRelayKeys {
   readonly crypto: RelayCrypto;
 }
 
-export interface PhoneRelay extends PhoneRelayKeys, RelaySessionSource {}
+export interface PhoneRelay extends PhoneRelayKeys, RelayHubProvider {}
 
 export const PHONE_RELAY_LABEL = "OpenBot-NC phone";
 
@@ -60,16 +60,11 @@ const RELAY_STATE_KEYS = {
   deadline_exceeded: "mobile.identity.relay.unreachable",
   target_unavailable: "mobile.identity.relay.unreachable",
   peer_refused: "mobile.identity.relay.unreachable",
-  tunnel_handshake_failed: "mobile.identity.relay.unreachable",
-  tunnel_peer_unverified: "mobile.identity.relay.unreachable",
-  tunnel_integrity_failed: "mobile.identity.relay.unreachable",
-  tunnel_counter_exhausted: "mobile.identity.relay.unreachable",
-  tunnel_identity_unusable: "mobile.identity.relay.unusable",
 } as const satisfies Record<RelaySocketErrorCode, MobileTextKey>;
 
 export type RelayStateKey = (typeof RELAY_STATE_KEYS)[RelaySocketErrorCode];
 
-export type PhoneRelayControlOptions = Pick<RelayControlOptions, "reconnect" | "heartbeat" | "log">;
+export type PhoneRelayControlOptions = Pick<RelayControlOptions, "reconnect" | "liveness" | "log">;
 
 export function startPhoneRelayControl(
   relay: PhoneRelayKeys,

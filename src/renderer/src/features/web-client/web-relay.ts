@@ -195,11 +195,6 @@ const RELAY_STATE_KEYS = {
   heartbeat_timeout: "error.remote.relayUnreachable",
   target_unavailable: "error.remote.relayUnreachable",
   peer_refused: "error.remote.relayUnreachable",
-  tunnel_handshake_failed: "error.remote.relayUnreachable",
-  tunnel_peer_unverified: "error.remote.relayUnreachable",
-  tunnel_integrity_failed: "error.remote.relayUnreachable",
-  tunnel_counter_exhausted: "error.remote.relayUnreachable",
-  tunnel_identity_unusable: "error.remote.relayIdentityUnusable",
 } as const satisfies Record<RelaySocketErrorCode, keyof SourceMessages & AppTextKey>;
 
 export function relayStateKey(code: RelaySocketErrorCode): (typeof RELAY_STATE_KEYS)[RelaySocketErrorCode] {
@@ -266,15 +261,13 @@ export function startWebRelay(identity: RelayBrowserIdentity): WebRelayRun {
     createPeer: (actions, options) =>
       createRelayTeamPeer(
         {
-          openSession: (target, sessionOptions) =>
-            leading
-              ? leading.openSession(target, sessionOptions)
-              : Promise.reject(
-                  new RelaySocketError({
-                    code: "connect_failed",
-                    message: "Another tab of this browser holds the relay connection.",
-                  }),
-                ),
+          hub: async () => {
+            if (leading) return leading;
+            throw new RelaySocketError({
+              code: "connect_failed",
+              message: "Another tab of this browser holds the relay connection.",
+            });
+          },
         },
         actions,
         options,

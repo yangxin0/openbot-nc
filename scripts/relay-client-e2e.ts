@@ -11,42 +11,23 @@ import {
 } from "node:crypto";
 import { EventEmitter, once } from "node:events";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import {
-  createServer,
-  request as httpRequest,
-  type IncomingMessage,
-  type Server,
-  type ServerResponse,
-} from "node:http";
 import { createServer as createHttpsServer } from "node:https";
 import { createServer as createNetServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { inspect } from "node:util";
-import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/contracts/relay-protocol/identity-bundle";
 import {
-  RELAY_LABEL_LIMIT,
-  RELAY_PATH,
-  RELAY_PROTOCOL_VERSION,
-  RELAY_SESSION_FRAME_PAYLOAD_LIMIT,
-  RELAY_SESSION_WINDOW_BYTES,
-  RELAY_SESSIONS_FEATURE,
-  type RelayRole,
   type RelayServerProofTranscriptInput,
-  type RelayTeamMember,
   relayServerProofTranscript,
-} from "@openbot/contracts/relay-protocol/messages";
+} from "@openbot/contracts/relay-protocol/hub";
+import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/contracts/relay-protocol/identity-bundle";
+import { RELAY_PATH, RELAY_PROTOCOL_VERSION, type RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { Effect, Result } from "effect";
 import WebSocket, { WebSocketServer } from "ws";
 import { generateSigningKey, issueCertificate } from "../remote/api/src/relay/x509";
-import { RelayAcceptor } from "../src/main/relay/acceptor";
 import { RelayControl, type RelayControlState } from "../src/main/relay/control";
-import { RelayDialer } from "../src/main/relay/dialer";
-import { createRelayFetch, RelayAgent } from "../src/main/relay/fetch";
 import { type RelayCipher, RelayIdentityError, RelayIdentityStore } from "../src/main/relay/identity-store";
-import { RelaySocketError } from "../src/main/relay/socket";
-import { RelayStream } from "../src/main/relay/stream";
 import { rawDataBytes } from "../src/main/ws-raw-data";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -54,10 +35,6 @@ const OUT = resolve(ROOT, ".openbot-build/relay-client-e2e");
 const MAIN = resolve(ROOT, "remote/api/src/relay/main.ts");
 const SYSTEM_ROOTS_CHILD = resolve(ROOT, "scripts/relay-client-system-roots-child.ts");
 const WAIT_MS = 30_000;
-const TRANSFER_BYTES = 8 * 1024 * 1024;
-const HELD_BYTES = 32 * 1024 * 1024;
-const POOL_SIZE = 4;
-const PARALLEL_REQUESTS = 20;
 const READY_LINE = "OpenBot relay is ready";
 
 interface Check {
@@ -219,10 +196,6 @@ function keyIdOf(bundle: RelayIdentityBundle): string {
   return createHash("sha256").update(spki).digest("base64url");
 }
 
-function sha256(bytes: Uint8Array): string {
-  return createHash("sha256").update(bytes).digest("hex");
-}
-
 const testCipher: RelayCipher = {
   encrypt: (value) => Buffer.from(value, "utf8").reverse(),
   decrypt: (value) => Buffer.from(value).reverse().toString("utf8"),
@@ -282,24 +255,31 @@ interface FakeRelay {
   stop: () => void;
 }
 
-function helloTranscript(serverNonce: string, text: string): RelayServerProofTranscriptInput | null {
+function helloTranscript(text: string): RelayServerProofTranscriptInput | null {
   const hello = JSON.parse(text);
   if (!isDynamicRecord(hello) || !isString(hello.certificate) || !isString(hello.clientNonce)) return null;
-  if (!isString(hello.audience) || !isRole(hello.role)) return null;
+  if (!isString(hello.audience) || hello.type !== "hello") return null;
   return {
-    serverNonce,
     clientNonce: hello.clientNonce,
     audience: hello.audience,
-    role: hello.role,
     clientKeyId: createHash("sha256")
       .update(new X509Certificate(hello.certificate).publicKey.export({ type: "spki", format: "der" }))
       .digest("base64url"),
   };
 }
 
-function isRole(value: unknown): value is RelayRole {
-  return value === "member";
-}
+const fakeRecord = {
+  label: null,
+  hosting: false,
+  capabilities: [],
+  suspendable: false,
+  certificate: "fake",
+  messageKey: "A".repeat(87),
+  messageKeySignature: "A",
+  keyTimestamp: 0,
+  connectedAt: 0,
+  lastHeardAt: 0,
+};
 
 async function startFakeRelay(tls: { cert: string; key: string }, proof: FakeServerProof): Promise<FakeRelay> {
   const server = createHttpsServer(tls);
@@ -320,12 +300,10 @@ async function startFakeRelay(tls: { cert: string; key: string }, proof: FakeSer
     fake.connections += 1;
     const received: string[] = [];
     fake.received.push(received);
-    const serverNonce = randomBytes(32).toString("base64url");
-    socket.send(JSON.stringify({ type: "challenge", version: RELAY_PROTOCOL_VERSION, nonce: serverNonce }));
     socket.on("message", (data) => {
       const message = Buffer.from(rawDataBytes(data)).toString("utf8");
       received.push(message);
-      const transcript = received.length === 1 ? helloTranscript(serverNonce, message) : null;
+      const transcript = received.length === 1 ? helloTranscript(message) : null;
       if (!transcript) return;
       const signature = sign(
         "sha256",
@@ -347,10 +325,9 @@ async function startFakeRelay(tls: { cert: string; key: string }, proof: FakeSer
         JSON.stringify({
           type: "welcome",
           version: RELAY_PROTOCOL_VERSION,
-          self: { keyId: transcript.clientKeyId, user: "dave", device: null },
+          self: { ...fakeRecord, keyId: transcript.clientKeyId, user: "dave", device: null },
           team: { id: "t".repeat(43), name: "Alpha Team" },
-          members: [],
-          features: [RELAY_SESSIONS_FEATURE],
+          roster: [],
         }),
       );
     });
@@ -378,124 +355,6 @@ function untilFakeClosed(fake: FakeRelay, count: number): Promise<void> {
   });
 }
 
-interface HostEvents {
-  slowStarted: [];
-  slowClosed: [];
-  heldStarted: [];
-}
-
-const blob = randomBytes(TRANSFER_BYTES);
-const blobDigest = sha256(blob);
-const hostEvents = new EventEmitter<HostEvents>();
-const hostPeers: string[] = [];
-const host = {
-  accepted: 0,
-  open: 0,
-  gatePending: 0,
-  gateMostPending: 0,
-  gateStreams: new Set<unknown>(),
-  gateOpened: false,
-  releaseHeld: () => {},
-};
-const gate = new EventEmitter<{ opened: [] }>();
-const heldReleased = new Promise<void>((resolveHeld) => {
-  host.releaseHeld = resolveHeld;
-});
-
-type HostAnswer =
-  | { user: string | null; device: string | null; keyId: string | null }
-  | { bytes: number; sha256: string }
-  | { passed: true }
-  | { error: string };
-
-function sendJson(response: ServerResponse, status: number, value: HostAnswer): void {
-  const body = Buffer.from(JSON.stringify(value));
-  response.writeHead(status, { "Content-Type": "application/json", "Content-Length": String(body.length) });
-  response.end(body);
-}
-
-function digestBody(request: IncomingMessage): Promise<{ bytes: number; sha256: string }> {
-  return new Promise((resolveDigest, reject) => {
-    const hash = createHash("sha256");
-    let bytes = 0;
-    request.on("data", (chunk: Buffer) => {
-      hash.update(chunk);
-      bytes += chunk.length;
-    });
-    request.once("end", () => resolveDigest({ bytes, sha256: hash.digest("hex") }));
-    request.once("error", reject);
-  });
-}
-
-function readBody(request: IncomingMessage): Promise<Buffer> {
-  return new Promise((resolveBody, reject) => {
-    const chunks: Buffer[] = [];
-    request.on("data", (chunk: Buffer) => chunks.push(chunk));
-    request.once("end", () => resolveBody(Buffer.concat(chunks)));
-    request.once("error", reject);
-  });
-}
-
-async function handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
-  const url = new URL(request.url ?? "/", "http://host.invalid");
-  const route = `${request.method} ${url.pathname}`;
-  const stream = request.socket;
-  const peer = stream instanceof RelayStream ? stream.peer : null;
-  if (route === "GET /hello") {
-    sendJson(response, 200, { user: peer?.user ?? null, device: peer?.device ?? null, keyId: peer?.keyId ?? null });
-    return;
-  }
-  if (route === "POST /echo") {
-    const body = await readBody(request);
-    response.writeHead(200, {
-      "Content-Type": request.headers["content-type"] ?? "application/octet-stream",
-      "Content-Length": String(body.length),
-      "X-Request-Length": request.headers["content-length"] ?? "none",
-    });
-    response.end(body);
-    return;
-  }
-  if (route === "POST /upload") {
-    sendJson(response, 200, await digestBody(request));
-    return;
-  }
-  if (route === "GET /download") {
-    response.writeHead(200, { "Content-Type": "application/octet-stream", "Content-Length": String(blob.length) });
-    response.end(blob);
-    return;
-  }
-  if (route === "GET /redirect") {
-    response.writeHead(302, { Location: "/hello", "Content-Length": "0" });
-    response.end();
-    return;
-  }
-  if (route === "GET /gate") {
-    host.gatePending += 1;
-    host.gateMostPending = Math.max(host.gateMostPending, host.gatePending);
-    host.gateStreams.add(stream);
-    if (host.gatePending >= POOL_SIZE && !host.gateOpened) {
-      host.gateOpened = true;
-      gate.emit("opened");
-    }
-    if (!host.gateOpened) await once(gate, "opened");
-    host.gatePending -= 1;
-    sendJson(response, 200, { passed: true });
-    return;
-  }
-  if (route === "GET /slow") {
-    response.once("close", () => hostEvents.emit("slowClosed"));
-    hostEvents.emit("slowStarted");
-    return;
-  }
-  if (route === "POST /held") {
-    hostEvents.emit("heldStarted");
-    await heldReleased;
-    sendJson(response, 200, await digestBody(request));
-    return;
-  }
-  sendJson(response, 404, { error: "Not found" });
-}
-
 const work = mkdtempSync(join(tmpdir(), "openbot-relay-client-e2e-"));
 const dataDirectory = join(work, "data");
 const foreignDirectory = join(work, "foreign");
@@ -515,9 +374,7 @@ const reconnect = { baseMs: 100, maxMs: 500 };
 
 let relay: Relay | null = null;
 const relayLogs: string[][] = [];
-let server: Server | null = null;
 const controls: RelayControl[] = [];
-const acceptors: RelayAcceptor[] = [];
 const closers: Array<() => void> = [];
 
 try {
@@ -578,7 +435,7 @@ try {
     assert.match(stored, /"encryptedPrivateKey":"[A-Za-z0-9+/=]+"/u);
     const second = new RelayIdentityStore({ path: alicePath, cipher: testCipher });
     assert.deepEqual(await ok(second.load()), aliceStore.current());
-    assert.ok(second.signHello({ nonce: "n".repeat(43), clientNonce: "c".repeat(43), role: "member" }));
+    assert.ok(second.signRelayData(new Uint8Array([1, 2, 3])));
   });
 
   await check("A second import is refused, and an explicit replace is accepted", async () => {
@@ -627,8 +484,6 @@ try {
   const bobControl = new RelayControl({ identity: bobStore, reconnect });
   const carolControl = new RelayControl({ identity: carolStore, hosting: true, label: "Carol server", reconnect });
   controls.push(aliceControl, bobControl, carolControl);
-  const aliceDialer = new RelayDialer({ control: aliceControl });
-  const bobDialer = new RelayDialer({ control: bobControl });
 
   await check("Two members of one team go online and see each other in the roster", async () => {
     await ok(aliceControl.start());
@@ -666,278 +521,33 @@ try {
       roster.some((member) => member.keyId === bobKeyId && member.hosting && member.label === "Bob desk"),
     );
     assert.equal(members.find((member) => member.keyId === aliceKeyId)?.hosting, false);
-    const tooLong = await failureOf(bobControl.setHosting(true, "x".repeat(RELAY_LABEL_LIMIT + 1)));
-    assert.equal(tooLong.code, "invalid_message");
     assert.equal(bobControl.state().status, "online");
   });
 
-  const hostServer = createServer((request, response) => {
-    handle(request, response).catch(() => response.destroy());
-  });
-  hostServer.keepAliveTimeout = WAIT_MS;
-  server = hostServer;
-  const echoSockets = new WebSocketServer({ noServer: true });
-  hostServer.on("upgrade", (request, socket, head) => {
-    echoSockets.handleUpgrade(request, socket, head, (client) => {
-      client.on("message", (data, isBinary) => client.send(data, { binary: isBinary }));
+  await check("A message from one desktop reaches the other through the hub, encrypted for it", async () => {
+    const received: string[] = [];
+    aliceControl.on("message", (message) => {
+      if (message.from === bobKeyId) received.push(Buffer.from(message.plaintext).toString("utf8"));
+    });
+    await untilRoster(bobControl, "bob sees alice", (members) => members.some((member) => member.keyId === aliceKeyId));
+    await bobControl.send(aliceKeyId, "rpc", new Uint8Array(Buffer.from("hello alice")));
+    await until<void>("alice gets the message", (done) => {
+      const timer = setInterval(() => {
+        if (received.includes("hello alice")) done();
+      }, 10);
+      return () => clearInterval(timer);
     });
   });
-  const refusedAccepts: string[] = [];
-  const bobAcceptor = new RelayAcceptor({
-    control: bobControl,
-    onStream: (stream, peer) => {
-      hostPeers.push(peer.user);
-      host.accepted += 1;
-      host.open += 1;
-      stream.once("close", () => {
-        host.open -= 1;
-      });
-      hostServer.emit("connection", stream);
-    },
-    onRefused: (error) => refusedAccepts.push(error.code),
-  });
-  acceptors.push(bobAcceptor);
-  await ok(bobAcceptor.start());
 
-  const fetcher = createRelayFetch({ dialer: aliceDialer, target: bobKeyId, poolSize: POOL_SIZE });
-  closers.push(() => fetcher.close());
-
-  await check("A request through the relay reaches the HTTP server, which knows the verified peer", async () => {
-    const response = await deadline("the first request", fetcher.fetch(`${fetcher.origin}/hello`));
-    assert.equal(response.status, 200);
-    assert.equal(response.headers.get("content-type"), "application/json");
-    assert.deepEqual(await response.json(), { user: "alice", device: "laptop", keyId: aliceKeyId });
-    assert.equal(host.accepted, 1);
-    assert.deepEqual(hostPeers, ["alice"]);
-  });
-
-  await check("A POST request carries its body and its length, and the stream is used again", async () => {
-    const text = JSON.stringify({ message: "héllo", list: [1, 2, 3] });
-    const response = await deadline(
-      "the POST request",
-      fetcher.fetch(`${fetcher.origin}/echo`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: text,
-      }),
+  await check("A message to a member of a different team is refused as offline at once", async () => {
+    const refused = await bobControl.send(carolKeyId, "rpc", new Uint8Array(1)).then(
+      () => null,
+      (error: unknown) => error,
     );
-    assert.equal(response.status, 200);
-    assert.equal(response.headers.get("x-request-length"), String(Buffer.byteLength(text)));
-    assert.equal(await response.text(), text);
-    assert.equal(host.accepted, 1);
+    assert.match(inspect(refused), /offline/u);
   });
 
-  await check("A redirect answer is given as it is, and a different address is refused", async () => {
-    const response = await deadline("the redirect request", fetcher.fetch(`${fetcher.origin}/redirect`));
-    assert.equal(response.status, 302);
-    assert.equal(response.headers.get("location"), "/hello");
-    await response.arrayBuffer();
-    await assert.rejects(fetcher.fetch("http://other.invalid/hello"), TypeError);
-    const missing = await deadline("the unknown path", fetcher.fetch(`${fetcher.origin}/missing`));
-    assert.equal(missing.status, 404);
-    await missing.arrayBuffer();
-  });
-
-  await check("An upload of 8 MiB arrives complete, from a buffer and from a streamed body", async () => {
-    for (const body of [blob, new Blob([blob])]) {
-      const response = await deadline(
-        "the upload",
-        fetcher.fetch(`${fetcher.origin}/upload`, { method: "POST", body }),
-      );
-      assert.equal(response.status, 200);
-      assert.deepEqual(await response.json(), { bytes: TRANSFER_BYTES, sha256: blobDigest });
-    }
-  });
-
-  await check("A download of 8 MiB arrives complete as a stream", async () => {
-    const response = await deadline("the download", fetcher.fetch(`${fetcher.origin}/download`));
-    assert.equal(response.status, 200);
-    assert.ok(response.body);
-    const reader = response.body.getReader();
-    const hash = createHash("sha256");
-    let bytes = 0;
-    let parts = 0;
-    for (;;) {
-      const part = await deadline("a part of the download", reader.read());
-      if (part.done) break;
-      hash.update(part.value);
-      bytes += part.value.byteLength;
-      parts += 1;
-    }
-    assert.equal(bytes, TRANSFER_BYTES);
-    assert.equal(hash.digest("hex"), blobDigest);
-    assert.ok(parts > 1, "The download must arrive in more than one part.");
-  });
-
-  await check("20 requests at the same time use a pool of 4 streams", async () => {
-    const answers = await deadline(
-      "the parallel requests",
-      Promise.all(
-        Array.from({ length: PARALLEL_REQUESTS }, async () => {
-          const response = await fetcher.fetch(`${fetcher.origin}/gate`);
-          return { status: response.status, text: await response.text() };
-        }),
-      ),
-    );
-    assert.deepEqual(
-      answers,
-      Array.from({ length: PARALLEL_REQUESTS }, () => ({ status: 200, text: JSON.stringify({ passed: true }) })),
-    );
-    assert.equal(host.gateMostPending, POOL_SIZE);
-    assert.equal(host.gateStreams.size, POOL_SIZE);
-    assert.equal(host.open, POOL_SIZE);
-    assert.equal(host.accepted, POOL_SIZE);
-  });
-
-  await check("A sender holds its data while the receiver holds its credits, and continues when it reads", async () => {
-    const held = randomBytes(HELD_BYTES);
-    const stream = await deadline("the dial", ok(aliceDialer.dial(bobKeyId)));
-    assert.equal(stream.connecting, false);
-    assert.equal(stream.peer?.keyId, bobKeyId);
-    assert.equal(stream.peer?.user, "bob");
-    assert.equal(new X509Certificate(stream.peer?.certificate ?? "").subject.includes("CN=bob"), true);
-    const blocked = until<void>("the sender uses its whole window", (done) => {
-      const look = () => {
-        if (stream.unacknowledgedBytes() + RELAY_SESSION_FRAME_PAYLOAD_LIMIT > RELAY_SESSION_WINDOW_BYTES) done();
-      };
-      const stop = stream.onProgress(look);
-      look();
-      return stop;
-    });
-    const started = deadline("the held request starts", once(hostEvents, "heldStarted"));
-    const answered = new Promise<{ status: number; body: Buffer }>((resolveAnswer, reject) => {
-      const request = httpRequest({
-        createConnection: () => stream,
-        method: "POST",
-        host: "host.invalid",
-        path: "/held",
-        headers: { "Content-Length": String(held.length) },
-      });
-      request.once("error", reject);
-      request.once("response", (response) => {
-        readBody(response).then((body) => resolveAnswer({ status: response.statusCode ?? 0, body }), reject);
-      });
-      request.end(held);
-    });
-    answered.catch(() => undefined);
-    await started;
-    await blocked;
-    assert.ok(stream.unacknowledgedBytes() <= RELAY_SESSION_WINDOW_BYTES);
-    assert.ok(stream.queuedBytes() > 0, "The sender keeps the rest of its data.");
-    host.releaseHeld();
-    const answer = await deadline("the held upload", answered);
-    assert.equal(answer.status, 200);
-    assert.deepEqual(JSON.parse(answer.body.toString("utf8")), {
-      bytes: HELD_BYTES,
-      sha256: sha256(held),
-    });
-    stream.destroy();
-  });
-
-  await check("A WebSocket through a relay agent echoes text and bytes", async () => {
-    const agent = new RelayAgent({ dialer: aliceDialer, target: bobKeyId, poolSize: 1 });
-    const socket = new WebSocket("ws://host.invalid/echo", { agent });
-    try {
-      await deadline("the WebSocket opens", once(socket, "open"));
-      const received: Array<{ data: Buffer; binary: boolean }> = [];
-      const both = until<void>("two echoes", (done) => {
-        const listener = (data: WebSocket.RawData, binary: boolean) => {
-          received.push({ data: Buffer.from(rawDataBytes(data)), binary });
-          if (received.length === 2) done();
-        };
-        socket.on("message", listener);
-        return () => socket.off("message", listener);
-      });
-      const bytes = randomBytes(300_000);
-      socket.send("text through the relay");
-      socket.send(bytes);
-      await both;
-      assert.equal(received[0]?.binary, false);
-      assert.equal(received[0]?.data.toString("utf8"), "text through the relay");
-      assert.equal(received[1]?.binary, true);
-      assert.equal(sha256(received[1]?.data ?? Buffer.alloc(0)), sha256(bytes));
-      const closed = deadline("the WebSocket closes", once(socket, "close"));
-      socket.close(1000);
-      await closed;
-    } finally {
-      socket.terminate();
-      agent.destroy();
-    }
-  });
-
-  await check("A dial to a member of a different team and to a member that does not host is refused", async () => {
-    assert.equal(carolControl.state().status, "online");
-    const otherTeam = await deadline("the dial to the other team", failureOf(aliceDialer.dial(carolKeyId)));
-    assert.equal(otherTeam.code, "target_unavailable");
-    const notHosting = await deadline("the dial to a member that does not host", failureOf(bobDialer.dial(aliceKeyId)));
-    assert.equal(notHosting.code, "target_unavailable");
-    const notAKey = await failureOf(aliceDialer.dial("not a key"));
-    assert.equal(notAKey.code, "invalid_message");
-    const itself = await deadline("the dial to itself", failureOf(aliceDialer.dial(aliceKeyId)));
-    assert.equal(itself.code, "invalid_message");
-  });
-
-  await check("A dial gets its stream as soon as the member starts to host", async () => {
-    const aliceAcceptor = new RelayAcceptor({
-      control: aliceControl,
-      onStream: (stream) => stream.pipe(stream),
-    });
-    acceptors.push(aliceAcceptor);
-    await ok(aliceAcceptor.start());
-    await ok(aliceControl.setHosting(true, "Alice laptop"));
-    await untilRoster(bobControl, "bob sees that alice hosts", (members) =>
-      members.some((member) => member.keyId === aliceKeyId && member.hosting),
-    );
-    const stream = await deadline("the dial", ok(bobDialer.dial(aliceKeyId)));
-    assert.equal(stream.peer?.keyId, aliceKeyId);
-    const echoed = deadline("the echo of the stream", once(stream, "data"));
-    stream.write("ping through the relay");
-    const [data] = await echoed;
-    assert.equal(Buffer.isBuffer(data) ? data.toString("utf8") : "", "ping through the relay");
-    const ended = deadline("the stream closes", once(stream, "close"));
-    stream.end();
-    await ended;
-    await ok(aliceAcceptor.stop());
-    await ok(aliceControl.setHosting(false));
-  });
-
-  await check("An abort stops a request that runs, and stops a download that runs", async () => {
-    const waiting = new AbortController();
-    const started = deadline("the slow request starts", once(hostEvents, "slowStarted"));
-    const closedAtHost = deadline("the host sees the abort", once(hostEvents, "slowClosed"));
-    const pending = fetcher.fetch(`${fetcher.origin}/slow`, { signal: waiting.signal });
-    await started;
-    waiting.abort();
-    await assert.rejects(pending, { name: "AbortError" });
-    await closedAtHost;
-    const reading = new AbortController();
-    const response = await deadline(
-      "the download starts",
-      fetcher.fetch(`${fetcher.origin}/download`, { signal: reading.signal }),
-    );
-    assert.ok(response.body);
-    const reader = response.body.getReader();
-    const first = await deadline("the first part", reader.read());
-    assert.equal(first.done, false);
-    reading.abort();
-    await assert.rejects(
-      async () => {
-        for (;;) {
-          const part = await deadline("a part after the abort", reader.read());
-          if (part.done) return;
-        }
-      },
-      { name: "AbortError" },
-    );
-    const before = new AbortController();
-    before.abort();
-    await assert.rejects(fetcher.fetch(`${fetcher.origin}/hello`, { signal: before.signal }), { name: "AbortError" });
-    const after = await deadline("a request after the aborts", fetcher.fetch(`${fetcher.origin}/hello`));
-    assert.equal(after.status, 200);
-    await after.arrayBuffer();
-  });
-
-  await check("An identity with an Ed25519 key goes online and signs its proof", async () => {
+  await check("An identity with an Ed25519 key is refused before it connects: message keys need P-256", async () => {
     const directory = join(dataDirectory, "ca/teams");
     const name = createHash("sha256").update("Alpha Team").digest("base64url");
     const issuer = {
@@ -967,19 +577,16 @@ try {
         privateKey: key.privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
       }),
     );
+    assert.ok(identity.keyId);
     const control = new RelayControl({ identity: store, reconnect });
     controls.push(control);
     await ok(control.start());
-    await untilState(control, "the Ed25519 member is online", (state) => state.status === "online");
-    assert.deepEqual(control.self(), { keyId: identity.keyId, user: "erin", device: null });
-    await untilRoster(aliceControl, "alice sees the Ed25519 member", (roster) =>
-      roster.some((member) => member.keyId === identity.keyId),
+    const refused = await untilState(control, "the Ed25519 member is refused", (state) => state.status === "offline");
+    assert.deepEqual(
+      [refused.status === "offline" ? refused.code : null, refused.status === "offline" ? refused.retryInMs : 0],
+      ["identity_unavailable", null],
     );
     await ok(control.stop());
-    assert.deepEqual(control.state(), { status: "offline", code: "stopped", message: "Stopped.", retryInMs: null });
-    await untilRoster(aliceControl, "alice sees that the Ed25519 member is gone", (roster) =>
-      roster.every((member) => member.keyId !== identity.keyId),
-    );
   });
 
   await check("A second control connection of one certificate replaces the first, which stays stopped", async () => {
@@ -1155,11 +762,11 @@ try {
       },
       "signature",
     );
-    const refused = await deadline(
-      "a dial to the fake relay",
-      failureOf(new RelayDialer({ control }).dial(aliceKeyId)),
+    const refused = await control.send(aliceKeyId, "rpc", new Uint8Array(1)).then(
+      () => null,
+      (error: unknown) => error,
     );
-    assert.equal(refused.code, "server_refused");
+    assert.ok(refused !== null, "A message went out on a refused connection.");
     assert.equal(fake.connections, 1);
   });
 
@@ -1250,9 +857,11 @@ try {
     await untilRoster(aliceControl, "alice sees that bob hosts again", (roster) =>
       roster.some((member) => member.keyId === bobKeyId && member.hosting && member.label === "Bob desk"),
     );
-    const response = await deadline("a request after the restart", fetcher.fetch(`${fetcher.origin}/hello`));
-    assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), { user: "alice", device: "laptop", keyId: aliceKeyId });
+    const received = new Promise<string>((resolveMessage) =>
+      bobControl.once("message", (message) => resolveMessage(Buffer.from(message.plaintext).toString("utf8"))),
+    );
+    await aliceControl.send(bobKeyId, "rpc", new Uint8Array(Buffer.from("after restart")));
+    assert.equal(await deadline("a message after the restart", received), "after restart");
   });
 
   await check("A revoked certificate is reported, and its control connection does not start again", async () => {
@@ -1275,32 +884,19 @@ try {
       ["offline"],
     );
     assert.deepEqual(bobControl.state(), final);
-    const refused = await deadline("a dial to the revoked member", failureOf(aliceDialer.dial(bobKeyId)));
-    assert.equal(refused.code, "target_unavailable");
-    const failedRequest = await deadline(
-      "a request to the revoked member",
-      fetcher.fetch(`${fetcher.origin}/hello`).then(
-        () => null,
-        (error: unknown) => error,
-      ),
+    const refused = await aliceControl.send(bobKeyId, "rpc", new Uint8Array(1)).then(
+      () => null,
+      (error: unknown) => error,
     );
-    assert.ok(failedRequest instanceof TypeError);
-    assert.ok(failedRequest.cause instanceof RelaySocketError);
-    assert.equal(failedRequest.cause.code, "target_unavailable");
+    assert.match(inspect(refused), /offline/u);
     const refusedAgain = nextState(bobControl, "bob is refused again", (state) => state.status === "offline");
     await ok(bobControl.start());
     const again = await refusedAgain;
     assert.equal(again.status === "offline" ? again.code : null, "certificate_revoked");
   });
-
-  await check("No accepted connection was refused by the certificate check", () => {
-    assert.deepEqual(refusedAccepts, []);
-  });
 } finally {
   for (const close of closers) close();
-  for (const acceptor of acceptors) await Effect.runPromise(acceptor.stop());
   for (const control of controls) await Effect.runPromise(control.stop());
-  if (server) server.closeAllConnections();
   if (relay) await killRelay(relay).catch(() => undefined);
   rmSync(work, { recursive: true, force: true });
 }

@@ -2,7 +2,9 @@ import { join } from "node:path";
 import { isRelayUrl } from "@openbot/contracts/relay-protocol/identity-bundle";
 import {
   RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS,
+  RELAY_HELLO_WINDOW_MS,
   RELAY_PATH,
+  RELAY_SUSPENDED_TIMEOUT_MS,
   relayAudience,
 } from "@openbot/contracts/relay-protocol/messages";
 import { tlsPaths } from "./certificate-authority";
@@ -102,20 +104,21 @@ export function readRelayConfig(environment: Environment = process.env): RelayCo
     },
     limits: {
       socketsPerIp: positiveInteger(environment.RELAY_MAX_SOCKETS_PER_IP, 128, "RELAY_MAX_SOCKETS_PER_IP"),
-      sessionsPerSocket: positiveInteger(
-        environment.RELAY_MAX_SESSIONS_PER_SOCKET,
-        256,
-        "RELAY_MAX_SESSIONS_PER_SOCKET",
-      ),
-      sessionsPerPair: positiveInteger(environment.RELAY_MAX_SESSIONS_PER_PAIR, 32, "RELAY_MAX_SESSIONS_PER_PAIR"),
-      pendingPerTarget: positiveInteger(environment.RELAY_MAX_PENDING_PER_MEMBER, 32, "RELAY_MAX_PENDING_PER_MEMBER"),
       presenceUpdatesPerMinute: 30,
+      infoPerMinute: 600,
       highWaterBytes: positiveInteger(environment.RELAY_HIGH_WATER_BYTES, 256 * 1024, "RELAY_HIGH_WATER_BYTES"),
+      queueBytes: positiveInteger(environment.RELAY_QUEUE_BYTES, 4 * 1024 * 1024, "RELAY_QUEUE_BYTES"),
       clientHeartbeatTimeoutMs: positiveInteger(
         environment.RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS,
         RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS,
         "RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS",
       ),
+      suspendedTimeoutMs: positiveInteger(
+        environment.RELAY_SUSPENDED_TIMEOUT_MS,
+        RELAY_SUSPENDED_TIMEOUT_MS,
+        "RELAY_SUSPENDED_TIMEOUT_MS",
+      ),
+      helloWindowMs: positiveInteger(environment.RELAY_HELLO_WINDOW_MS, RELAY_HELLO_WINDOW_MS, "RELAY_HELLO_WINDOW_MS"),
     },
     sourceCommit: optional(environment.OPENBOT_SOURCE_COMMIT) ?? "unknown",
   };

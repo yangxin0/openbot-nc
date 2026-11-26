@@ -1,8 +1,9 @@
 # `packages/team-client`
 
 `@openbot/team-client` holds the Team connection code that desktop, mobile, and the public web
-client share: the relay connection, the Team protocol V2 peer over relay tunnels, recovery, file
-transfer, and V2 framing. It also holds the Dynamic Island state (`dynamic-island-coordinator.ts`), which the
+client share: the hub connection to the central server (`relay-hub.ts`: sign-in, roster, `info`,
+encrypted messages, liveness), the Team protocol V2 peer over hub messages (`relay-hub-channels.ts`),
+recovery, file transfer, and V2 framing. It also holds the Dynamic Island state (`dynamic-island-coordinator.ts`), which the
 macOS island and the iOS Live Activity both read, so the two show the same event for the same state.
 It holds the routine schedule (`routine-schedule.ts`) and calendar (`routine-calendar.ts`) too: the
 host fires runs with them, and the desktop and phone calendars place runs with the same code.
@@ -21,4 +22,5 @@ Profile tab and the phone Profile page show the same numbers.
   browser, that is bundle weight for protocol versions that the client never uses. A consumer that
   needs a protocol symbol imports it from its contracts subpath. Each module of this package has
   its own subpath in `package.json`.
-- Do not log tokens, tickets, or message bodies.
+- Do not log tokens, keys, signatures, nonces, or message bodies.
+- Take randomness and crypto from the injected `RelayCrypto`; the phone has no global `crypto`.

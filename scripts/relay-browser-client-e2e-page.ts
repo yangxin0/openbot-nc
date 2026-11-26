@@ -5,10 +5,10 @@ import {
   createRelayIdentityFromText,
   createRelayTeamPeer,
   loadRelayIdentity,
-  openRelayV2Tunnels,
   type RelayBrowserControl,
   type RelayBrowserIdentity,
   type RelayControlState,
+  relayHubTunnelTransport,
   relayRosterHosts,
   removeRelayIdentity,
   saveRelayIdentity,
@@ -231,7 +231,11 @@ window.relayBrowserTest = {
     try {
       const fakeControl = startRelayControl(fakeIdentity, { reconnect: { baseMs: 100, maxMs: 500 } });
       try {
-        const tunnels = await openRelayV2Tunnels(fakeControl, target);
+        const tunnels = await relayHubTunnelTransport(fakeControl).open(
+          "relay:check",
+          target,
+          new AbortController().signal,
+        );
         tunnels.close();
         return "accepted";
       } finally {

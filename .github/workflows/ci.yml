@@ -1177,9 +1177,9 @@ jobs:
         if: ${{ !cancelled() }}
         run: bun run test:relay-client
 
-      - name: Run the relay V2 tunnel E2E test
+      - name: Run the relay hub E2E test
         if: ${{ !cancelled() }}
-        run: bun run test:relay-v2-tunnel
+        run: bun run test:relay-hub
 
       - name: Run the relay Team API E2E test
         if: ${{ !cancelled() }}
@@ -1192,18 +1192,6 @@ jobs:
       - name: Run the relay phone client E2E test
         if: ${{ !cancelled() }}
         run: bun run test:relay-mobile-client
-
-      - name: Run the relay tunnel encryption E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:relay-tunnel-encryption
-
-      - name: Run the relay session latency E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:relay-session-latency
-
-      - name: Run the relay heartbeat E2E test
-        if: ${{ !cancelled() }}
-        run: bun run test:relay-heartbeat
 
       - name: Run the relay admin page and join code E2E test
         if: ${{ !cancelled() }}
@@ -1220,15 +1208,12 @@ jobs:
           name: relay-e2e
           path: |
             .openbot-build/relay-e2e/
-            .openbot-build/relay-session-latency-e2e/
-            .openbot-build/relay-heartbeat-e2e/
+            .openbot-build/relay-hub-e2e/
             .openbot-build/relay-client-e2e/
-            .openbot-build/relay-v2-tunnel-e2e/
             .openbot-build/relay-team-api-e2e/
             .openbot-build/relay-client-team-e2e/
             .openbot-build/relay-mobile-client-e2e/
             .openbot-build/relay-join-code-e2e/
-            .openbot-build/relay-tunnel-encryption-e2e/
             .openbot-build/relay-admin-e2e/
           if-no-files-found: ignore
 

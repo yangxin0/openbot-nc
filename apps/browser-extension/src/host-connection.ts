@@ -10,7 +10,8 @@ import { bytesToBase64 } from "@openbot/team-client/base64";
 import {
   createRelayTeamPeer,
   type RelayBrowserIdentity,
-  type RelaySessionSource,
+  type RelayHubClient,
+  type RelayHubProvider,
   type RelayTeamPeerActions,
 } from "@openbot/team-client/relay-client";
 import type { RemoteTeamHost } from "@openbot/team-client/remote-directory";
@@ -57,7 +58,7 @@ export interface HostConnection {
 
 export async function createHostConnection(
   identity: RelayBrowserIdentity,
-  sessions: RelaySessionSource,
+  sessions: RelayHubClient | RelayHubProvider,
   events: HostConnectionEvents,
 ): Promise<HostConnection> {
   const protocols = await readHostProtocols(identity.keyId);

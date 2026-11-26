@@ -5,14 +5,17 @@
 All remote connections go through the central relay server (see
 [central server](../central-server.md)). There is no WebRTC and no Signal service.
 
-- The desktop client sends HTTP and the events WebSocket over relay tunnels: each request uses a
-  relay stream to the host, and the host gives each accepted stream to its HTTP server in the
-  process (`server.emit("connection", stream)`), so each request knows the verified peer.
-  `POST /v1/auth/relay` (no body) gives a session for the certificate user of the socket.
-- The web client, the browser extension and the phone app speak Team protocol V2 over relay tunnels
-  (`createRelayTeamPeer`, `packages/team-client/src/relay-v2-tunnels.ts`). The host side is
-  `src/main/relay-v2-tunnel-host.ts` and `src/main/team-v2-host-peer.ts`. The frames keep the V2
-  framing and its limits.
+- Each app has one WebSocket to the central server and talks only to it. A request to a host is a
+  message for the key identifier of the host, encrypted for the host; the server passes it on and
+  cannot read it (see [central server](../central-server.md#protocol)).
+- The web client, the browser extension and the phone app send Team protocol V2 frames in these
+  messages (`createRelayTeamPeer`, `packages/team-client/src/relay-hub-channels.ts`). The desktop
+  client sends its HTTP requests as V2 `http.raw` requests and receives the events of the events
+  socket as V2 event frames with the unchanged V1 payload (`src/main/relay/hub-client.ts`), so the
+  remote server manager keeps the HTTP V1/V3 encodings. The host serves each sender with one
+  `TeamV2HostPeer` (`src/main/relay/host-relay.ts`), which forwards the requests to its own Team API
+  with a session of the verified certificate. The frames keep the V2 framing and its limits.
+- `POST /v1/auth/relay` (no body) gives a session for the certificate user of the sender.
 - A member is keyed on the certificate user (`CN`); the device (`OU`) and the key do not matter. The
   user of the host is the owner, and each other user of the team is a member. The owner changes roles
   in Server Settings > Members.

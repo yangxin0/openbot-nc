@@ -8,7 +8,7 @@ import { createServer as createNetServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { inspect } from "node:util";
-import { decodeRelayServerMessage } from "@openbot/contracts/relay-protocol/decode";
+import { decodeRelayHubServerMessage } from "@openbot/contracts/relay-protocol/decode";
 import {
   decodeRelayEnrollError,
   decodeRelayEnrollResponse,
@@ -21,12 +21,12 @@ import {
   relayEnrollTranscript,
 } from "@openbot/contracts/relay-protocol/enrollment";
 import {
-  RELAY_PATH,
-  RELAY_PROTOCOL_VERSION,
-  type RelayServerMessage,
-  relayAudience,
+  type RelayHubHello,
+  type RelayHubServerMessage,
   relayHelloTranscript,
-} from "@openbot/contracts/relay-protocol/messages";
+} from "@openbot/contracts/relay-protocol/hub";
+import { createRelayMessageKey } from "@openbot/contracts/relay-protocol/message-crypto";
+import { RELAY_PATH, RELAY_PROTOCOL_VERSION, relayAudience } from "@openbot/contracts/relay-protocol/messages";
 import { webRelayCrypto } from "@openbot/team-client/relay-crypto";
 import { Schema } from "effect";
 import { type Browser, chromium, type Page } from "playwright-core";
@@ -295,14 +295,14 @@ async function enroll(code: RelayJoinCode): Promise<Enrolled> {
 class RelayPeer {
   readonly socket: WebSocket;
   readonly closed: Promise<{ code: number; reason: string }>;
-  readonly #messages: RelayServerMessage[] = [];
+  readonly #messages: RelayHubServerMessage[] = [];
   readonly #listeners = new Set<() => void>();
 
   constructor() {
     this.socket = new WebSocket(running().publicUrl, { ca: rootPem, family: 4 });
     this.socket.on("message", (data, binary) => {
       if (binary) return;
-      const message = decodeRelayServerMessage(JSON.parse(String(data)));
+      const message = decodeRelayHubServerMessage(JSON.parse(String(data)));
       if (message) this.#messages.push(message);
       for (const listener of this.#listeners) listener();
     });
@@ -314,7 +314,9 @@ class RelayPeer {
     });
   }
 
-  message<Type extends RelayServerMessage["type"]>(type: Type): Promise<Extract<RelayServerMessage, { type: Type }>> {
+  message<Type extends RelayHubServerMessage["type"]>(
+    type: Type,
+  ): Promise<Extract<RelayHubServerMessage, { type: Type }>> {
     return deadline(
       `a ${type} message`,
       new Promise((resolveMessage, reject) => {
@@ -337,35 +339,44 @@ class RelayPeer {
   }
 }
 
-function isType<Type extends RelayServerMessage["type"]>(
-  message: RelayServerMessage,
+function isType<Type extends RelayHubServerMessage["type"]>(
+  message: RelayHubServerMessage,
   type: Type,
-): message is Extract<RelayServerMessage, { type: Type }> {
+): message is Extract<RelayHubServerMessage, { type: Type }> {
   return message.type === type;
 }
 
 async function connectMember(enrolled: Enrolled): Promise<RelayPeer> {
   const peer = new RelayPeer();
-  const challenge = await peer.message("challenge");
-  const clientNonce = relayBase64Url(crypto.getRandomValues(new Uint8Array(32)));
-  const audience = relayAudience(running().publicUrl);
-  const transcript = new TextEncoder().encode(
-    relayHelloTranscript({ nonce: challenge.nonce, clientNonce, audience, role: "member" }),
-  );
-  peer.socket.send(
-    JSON.stringify({
-      type: "hello",
-      version: RELAY_PROTOCOL_VERSION,
-      role: "member",
-      hosting: true,
-      label: "E2E device",
-      audience,
-      clientNonce,
-      certificate: enrolled.response.certificate,
-      chain: enrolled.response.chain,
-      signature: await sign(enrolled.device, transcript),
-    }),
-  );
+  const signBytes = async (data: Uint8Array<ArrayBuffer>) =>
+    new Uint8Array(await crypto.subtle.sign(ECDSA_SHA256, enrolled.device.keys.privateKey, data));
+  const messageKey = await createRelayMessageKey(webRelayCrypto, {
+    keyId: keyIdOf(enrolled.response.certificate),
+    timestamp: Date.now(),
+    sign: signBytes,
+  });
+  assert.ok(messageKey, "The message key cannot be made.");
+  const fields: Omit<RelayHubHello, "type" | "certificate" | "chain" | "signature"> = {
+    version: RELAY_PROTOCOL_VERSION,
+    audience: relayAudience(running().publicUrl),
+    timestamp: messageKey.timestamp,
+    clientNonce: relayBase64Url(crypto.getRandomValues(new Uint8Array(32))),
+    label: "E2E device",
+    hosting: true,
+    capabilities: [],
+    suspendable: false,
+    messageKey: messageKey.text,
+    messageKeySignature: messageKey.signature,
+  };
+  const hello = JSON.stringify({
+    type: "hello",
+    ...fields,
+    certificate: enrolled.response.certificate,
+    chain: enrolled.response.chain,
+    signature: await sign(enrolled.device, relayHelloTranscript(fields)),
+  });
+  if (peer.socket.readyState === WebSocket.OPEN) peer.socket.send(hello);
+  else peer.socket.once("open", () => peer.socket.send(hello));
   return peer;
 }
 

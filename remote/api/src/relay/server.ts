@@ -1,10 +1,7 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { RELAY_ENROLL_PATH } from "@openbot/contracts/relay-protocol/enrollment";
-import {
-  RELAY_PATH,
-  RELAY_SESSION_WINDOW_BYTES,
-  RELAY_SOCKET_MESSAGE_BYTES_LIMIT,
-} from "@openbot/contracts/relay-protocol/messages";
+import { RELAY_SOCKET_MESSAGE_BYTES_LIMIT } from "@openbot/contracts/relay-protocol/hub";
+import { RELAY_PATH } from "@openbot/contracts/relay-protocol/messages";
 import type { ServerWebSocket } from "bun";
 import type { RelayConfig } from "./config";
 import type { EnrollHandler } from "./enroll-route";
@@ -18,7 +15,7 @@ interface SocketData {
 }
 
 const IDLE_TIMEOUT_SECONDS = 120;
-const BACKPRESSURE_LIMIT_WINDOWS = 64;
+const BACKPRESSURE_LIMIT_FACTOR = 4;
 
 interface RelayServer {
   port: number;
@@ -65,7 +62,7 @@ export function startRelayServer(
     websocket: {
       idleTimeout: IDLE_TIMEOUT_SECONDS,
       maxPayloadLength: RELAY_SOCKET_MESSAGE_BYTES_LIMIT,
-      backpressureLimit: config.limits.highWaterBytes + RELAY_SESSION_WINDOW_BYTES * BACKPRESSURE_LIMIT_WINDOWS,
+      backpressureLimit: (config.limits.highWaterBytes + config.limits.queueBytes) * BACKPRESSURE_LIMIT_FACTOR,
       closeOnBackpressureLimit: true,
       perMessageDeflate: false,
       sendPings: true,
@@ -139,9 +136,9 @@ function prometheusMetrics(service: RelayService): string {
     `openbot_relay_sockets ${metrics.sockets}`,
     `openbot_relay_teams ${metrics.teams}`,
     `openbot_relay_members ${metrics.members}`,
-    `openbot_relay_data_sockets ${metrics.dataSockets}`,
-    `openbot_relay_sessions ${metrics.sessions}`,
-    `openbot_relay_pending_sessions ${metrics.pendingSessions}`,
+    `openbot_relay_queued_bytes ${metrics.queuedBytes}`,
+    `openbot_relay_delivered_total ${metrics.delivered}`,
+    `openbot_relay_undeliverable_total ${metrics.undeliverable}`,
     "",
   ].join("\n");
 }

@@ -1,7 +1,6 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import type { Duplex } from "node:stream";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import {
   AGENT_RUNTIME_SNAPSHOT_BYTES_LIMIT,
@@ -630,8 +629,8 @@ export class TeamApiServer {
   readonly #reportedUnrepresentableAgents = new Set<string>();
   readonly #representableAgents = new Map<string, Map<string, { json: string; representable: boolean }>>();
   #nextRateLimitSweepAt = 0;
-  readonly #relayPeers = new WeakMap<object, RelayPeer>();
   readonly #relaySessions = new Map<string, RelayPeer>();
+  readonly #awayRelaySessions = new Set<string>();
   #relayHosting = false;
   #relayV2Tunnels = false;
 
@@ -645,16 +644,6 @@ export class TeamApiServer {
     return this.#port;
   }
 
-  acceptConnection(stream: Duplex, peer: RelayPeerCertificate): void {
-    const server = this.#server;
-    if (!server?.listening) {
-      stream.destroy();
-      return;
-    }
-    this.#relayPeers.set(stream, { keyId: peer.keyId, user: peer.user, device: peer.device });
-    server.emit("connection", stream);
-  }
-
   setRelayHosting(enabled: boolean, v2Tunnels: boolean): void {
     this.#relayHosting = enabled;
     this.#relayV2Tunnels = enabled && v2Tunnels;
@@ -666,6 +655,14 @@ export class TeamApiServer {
 
   releaseRelaySession(sessionId: string): void {
     this.#relaySessions.delete(sessionId);
+    if (this.#awayRelaySessions.delete(sessionId)) this.#publishPresence();
+  }
+
+  setRelaySessionAway(sessionId: string, away: boolean): void {
+    const changed = away ? !this.#awayRelaySessions.has(sessionId) : this.#awayRelaySessions.has(sessionId);
+    if (away) this.#awayRelaySessions.add(sessionId);
+    else this.#awayRelaySessions.delete(sessionId);
+    if (changed) this.#publishPresence();
   }
 
   start(): Effect.Effect<number, RemoteWorkflowError> {
@@ -817,7 +814,9 @@ export class TeamApiServer {
     if (!identity) {
       return { serverId: null, members: [], updatedAt: new Date().toISOString() };
     }
-    const connections = [...this.#eventClients.values()];
+    const connections = [...this.#eventClients.values()].filter(
+      (connection) => connection.sessionId === null || !this.#awayRelaySessions.has(connection.sessionId),
+    );
     const owner = this.#options.store.listMembers().find((member) => member.role === "owner");
     return {
       serverId: identity.serverId,
@@ -1497,8 +1496,7 @@ export class TeamApiServer {
   }
 
   #relayPeer(request: IncomingMessage): RelayPeer | undefined {
-    const socketPeer = this.#relayPeers.get(request.socket);
-    if (socketPeer || this.#relaySessions.size === 0) return socketPeer;
+    if (this.#relaySessions.size === 0) return undefined;
     const token = bearerToken(request.headers.authorization);
     const sessionId = token ? this.#options.store.authenticateSession(token)?.sessionId : undefined;
     return sessionId === undefined ? undefined : this.#relaySessions.get(sessionId);

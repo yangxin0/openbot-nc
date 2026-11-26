@@ -1,8 +1,8 @@
 import {
-  type RelayPeerCertificate,
   type RelayServerProofTranscriptInput,
   relayServerProofTranscript,
-} from "@openbot/contracts/relay-protocol/messages";
+} from "@openbot/contracts/relay-protocol/hub";
+import type { RelayPeerCertificate } from "@openbot/contracts/relay-protocol/messages";
 import {
   type RelayPeerRefusal,
   type RelaySubjectNames,

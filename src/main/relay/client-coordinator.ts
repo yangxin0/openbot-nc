@@ -1,8 +1,9 @@
 import { EventEmitter } from "node:events";
-import type { RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { RelayHubMember } from "@openbot/contracts/relay-protocol/hub";
 import { createOpenBotLogger, type Logger, toLogValue } from "@openbot/logging";
 import { Effect, Exit, Scope } from "effect";
-import WebSocket from "ws";
 import {
   type RelayDirectoryHost,
   type RelayRosterSnapshot,
@@ -12,25 +13,23 @@ import {
 import type { RemoteEventSocket } from "../remote-server-event-stream";
 import type { RemoteFetch } from "../remote-server-http";
 import { RelayControl, type RelayControlState } from "./control";
-import { RelayDialer } from "./dialer";
-import { createRelayFetch, type RelayFetch, relayTargetOf } from "./fetch";
+import { relayTargetOf } from "./fetch";
+import { RelayHostClient } from "./hub-client";
 import type { RelayCredentialSource } from "./identity-store";
-import { RelaySocketError, type RelaySocketOptions } from "./socket";
-
-const RELAY_POOL_SIZE = 4;
-const RELAY_POOL_IDLE_TIMEOUT_MS = 50_000;
+import { RelaySocketError } from "./socket";
 
 interface RelayClientEvents {
   state: [state: RelayControlState];
-  roster: [members: readonly RelayTeamMember[]];
+  roster: [members: readonly RelayHubMember[]];
   hosts: [hosts: readonly RelayDirectoryHost[]];
 }
 
 interface RelayClientCoordinatorOptions {
   identity: RelayCredentialSource;
   reconnect?: { baseMs?: number; maxMs?: number };
-  socket?: RelaySocketOptions;
-  poolSize?: number;
+  connectDeadlineMs?: number;
+  liveness?: { idleMs?: number; answerMs?: number };
+  transferDirectory?: string;
   logger?: Pick<Logger, "info" | "warn">;
 }
 
@@ -43,10 +42,9 @@ interface Running {
 
 export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
   readonly control: RelayControl;
-  readonly #dialer: RelayDialer;
-  readonly #poolSize: number;
   readonly #logger: Pick<Logger, "info" | "warn">;
-  readonly #pools = new Map<string, RelayFetch>();
+  readonly #transferDirectory: string;
+  readonly #clients = new Map<string, RelayHostClient>();
   #running: Running | null = null;
 
   constructor(options: RelayClientCoordinatorOptions) {
@@ -56,10 +54,10 @@ export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
       identity: options.identity,
       logger: this.#logger,
       ...(options.reconnect ? { reconnect: options.reconnect } : {}),
-      ...(options.socket ? { socket: options.socket } : {}),
+      ...(options.connectDeadlineMs ? { connectDeadlineMs: options.connectDeadlineMs } : {}),
+      ...(options.liveness ? { liveness: options.liveness } : {}),
     });
-    this.#dialer = new RelayDialer({ control: this.control });
-    this.#poolSize = options.poolSize ?? RELAY_POOL_SIZE;
+    this.#transferDirectory = options.transferDirectory ?? join(tmpdir(), "openbot-relay-client");
   }
 
   readonly start = Effect.fn("RelayClientCoordinator.start")(function* (
@@ -95,7 +93,7 @@ export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
     yield* running.directory.stop();
     running.directory.off("changed", this.#onHosts);
     running.directory.off("failed", this.#onProbeFailed);
-    this.#closePools(() => true);
+    this.#closeClients(() => true);
   }).bind(this);
 
   readonly resetIdentity = Effect.fn("RelayClientCoordinator.resetIdentity")(function* (this: RelayClientCoordinator) {
@@ -118,7 +116,7 @@ export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
     return this.control.state();
   }
 
-  roster(): readonly RelayTeamMember[] {
+  roster(): readonly RelayHubMember[] {
     return this.control.roster();
   }
 
@@ -130,24 +128,26 @@ export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
     const target = relayTargetOf(url);
     if (target === null) return null;
     return (input, init) => {
-      const pool = this.#hostingPool(target);
-      return pool instanceof RelaySocketError
-        ? Promise.reject(new TypeError("fetch failed", { cause: pool }))
-        : pool.fetch(input, init);
+      const client = this.#hostClient(target);
+      return client instanceof RelaySocketError
+        ? Promise.reject(new TypeError("fetch failed", { cause: client }))
+        : client.fetch(input, init);
     };
   }
 
-  openEventSocket(url: URL, protocols: string[]): RemoteEventSocket | null {
+  openEventSocket(url: URL, _protocols: string[]): RemoteEventSocket | null {
     const target = relayTargetOf(url);
     if (target === null) return null;
-    const pool = this.#hostingPool(target);
-    if (pool instanceof RelaySocketError) throw new TypeError("WebSocket failed", { cause: pool });
-    const socket = new WebSocket(url, protocols, { agent: pool.agent });
-    socket.on("error", () => undefined);
-    return socket;
+    const client = this.#hostClient(target);
+    if (client instanceof RelaySocketError) throw new TypeError("WebSocket failed", { cause: client });
+    return client.openEventSocket();
   }
 
-  #hostingPool(target: string): RelayFetch | RelaySocketError {
+  hasActiveTransfers(): boolean {
+    return [...this.#clients.values()].some((client) => client.hasActiveTransfers());
+  }
+
+  #hostClient(target: string): RelayHostClient | RelaySocketError {
     const state = this.control.state();
     if (!this.#running || state.status !== "online") {
       return new RelaySocketError(
@@ -159,16 +159,11 @@ export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
     if (!this.control.roster().some((member) => member.keyId === target && member.hosting)) {
       return new RelaySocketError({ code: "target_unavailable", message: "The member is offline or does not host." });
     }
-    const existing = this.#pools.get(target);
+    const existing = this.#clients.get(target);
     if (existing) return existing;
-    const pool = createRelayFetch({
-      dialer: this.#dialer,
-      target,
-      poolSize: this.#poolSize,
-      idleTimeoutMs: RELAY_POOL_IDLE_TIMEOUT_MS,
-    });
-    this.#pools.set(target, pool);
-    return pool;
+    const client = new RelayHostClient(this.control, target, join(this.#transferDirectory, target));
+    this.#clients.set(target, client);
+    return client;
   }
 
   #apply(): void {
@@ -192,14 +187,14 @@ export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
         .flatMap((server) => (server.transport === "relay" && server.relayKeyId ? [server.relayKeyId] : [])),
     );
     for (const host of running.directory.hosts()) if (host.serverId === null) used.add(host.keyId);
-    this.#closePools((target) => !used.has(target));
+    this.#closeClients((target) => !used.has(target));
   }
 
-  #closePools(unused: (target: string) => boolean): void {
-    for (const [target, pool] of [...this.#pools]) {
+  #closeClients(unused: (target: string) => boolean): void {
+    for (const [target, client] of [...this.#clients]) {
       if (!unused(target)) continue;
-      this.#pools.delete(target);
-      pool.close();
+      this.#clients.delete(target);
+      void client.dispose();
     }
   }
 
@@ -208,7 +203,7 @@ export class RelayClientCoordinator extends EventEmitter<RelayClientEvents> {
     this.#apply();
   };
 
-  readonly #onRoster = (members: readonly RelayTeamMember[]): void => {
+  readonly #onRoster = (members: readonly RelayHubMember[]): void => {
     this.emit("roster", members);
     this.#apply();
   };

@@ -1,13 +1,17 @@
 import { createHash, verify, X509Certificate } from "node:crypto";
 import {
+  type RelayHubHello,
+  relayBase64UrlBytes,
+  relayHelloTranscript,
+  relayMessageKeyTranscript,
+} from "@openbot/contracts/relay-protocol/hub";
+import {
   RELAY_SUBJECT_FIELDS,
   RELAY_SUBJECT_NAME_PATTERN,
   type RelayErrorCode,
   type RelayPeer,
   type RelayPeerCertificate,
-  type RelayRole,
   type RelayTeam,
-  relayHelloTranscript,
   relayTeamIdStatement,
 } from "@openbot/contracts/relay-protocol/messages";
 import { CLIENT_AUTH_USAGE, publicKeyId } from "./x509";
@@ -34,17 +38,22 @@ export interface RelayTrust {
   audiences: ReadonlySet<string> | null;
 }
 
-interface RelayProof {
-  nonce: string;
-  clientNonce: string;
-  audience: string;
-  role: RelayRole;
-  target?: string | undefined;
-  connectionId?: string | undefined;
-  certificate: string;
-  chain: readonly string[];
-  signature: string;
-}
+type RelayProof = Pick<
+  RelayHubHello,
+  | "version"
+  | "audience"
+  | "timestamp"
+  | "clientNonce"
+  | "label"
+  | "hosting"
+  | "capabilities"
+  | "suspendable"
+  | "messageKey"
+  | "messageKeySignature"
+  | "certificate"
+  | "chain"
+  | "signature"
+>;
 
 type IdentityCheck = { ok: true; identity: RelayIdentity } | { ok: false; code: RelayErrorCode; message: string };
 
@@ -137,7 +146,7 @@ export function verifyRelayProof(proof: RelayProof, trust: RelayTrust, now: numb
     expiresAt,
   };
   if (isRevoked(identity, trust.revoked)) return refused("certificate_revoked", "The certificate is revoked.");
-  if (!proofIsValid(proof, leaf, keyType)) {
+  if (!proofIsValid(proof, leaf, keyType, identity.keyId)) {
     return refused("authentication_failed", "The proof of the private key is invalid.");
   }
   return { ok: true, identity };
@@ -203,23 +212,22 @@ function subjectNames(subject: string): SubjectNames {
   return { team, user, device, valid };
 }
 
-function proofIsValid(proof: RelayProof, leaf: X509Certificate, keyType: string): boolean {
-  const transcript = Buffer.from(
-    relayHelloTranscript({
-      nonce: proof.nonce,
-      clientNonce: proof.clientNonce,
-      audience: proof.audience,
-      role: proof.role,
-      target: proof.target,
-      connectionId: proof.connectionId,
-    }),
+function proofIsValid(proof: RelayProof, leaf: X509Certificate, keyType: string, keyId: string): boolean {
+  const messageKey = relayBase64UrlBytes(proof.messageKey);
+  if (!messageKey) return false;
+  const keyTranscript = relayMessageKeyTranscript({ keyId, messageKey, timestamp: proof.timestamp });
+  return (
+    signatureIsValid(relayHelloTranscript(proof), proof.signature, leaf, keyType) &&
+    signatureIsValid(keyTranscript, proof.messageKeySignature, leaf, keyType)
   );
+}
+
+function signatureIsValid(data: Uint8Array, encoded: string, leaf: X509Certificate, keyType: string): boolean {
   try {
-    const signature = Buffer.from(proof.signature, "base64url");
-    if (keyType === "ed25519") return verify(null, transcript, leaf.publicKey, signature);
-    if (keyType === "ec")
-      return verify("sha256", transcript, { key: leaf.publicKey, dsaEncoding: "ieee-p1363" }, signature);
-    return verify("sha256", transcript, leaf.publicKey, signature);
+    const signature = Buffer.from(encoded, "base64url");
+    if (keyType === "ed25519") return verify(null, data, leaf.publicKey, signature);
+    if (keyType === "ec") return verify("sha256", data, { key: leaf.publicKey, dsaEncoding: "ieee-p1363" }, signature);
+    return verify("sha256", data, leaf.publicKey, signature);
   } catch {
     return false;
   }

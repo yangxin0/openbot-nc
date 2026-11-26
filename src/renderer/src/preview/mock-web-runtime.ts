@@ -10,20 +10,38 @@ import { createMockOpenBot, type MockOpenBotControls } from "./mock-openbot";
 export const createMockWebRuntime: WebRuntimeFactory = (_accountId, events) =>
   mockWebRuntimeFor(createMockOpenBot(), events);
 
+const PREVIEW_MEMBER_RECORD = {
+  capabilities: [],
+  suspendable: false,
+  certificate: "",
+  messageKey: "",
+  messageKeySignature: "",
+  keyTimestamp: 0,
+  connectedAt: 0,
+  lastHeardAt: 0,
+};
+
 const PREVIEW_RELAY_SNAPSHOT: RelayControlSnapshot = {
   state: { status: "online" },
   roster: [
     {
+      ...PREVIEW_MEMBER_RECORD,
       keyId: "preview-key",
       user: "preview-host",
       device: "studio",
       label: "Preview computer",
       hosting: true,
-      connectedAt: 0,
     },
-    { keyId: "preview-self", user: "preview-user", device: "browser", label: null, hosting: false, connectedAt: 0 },
+    {
+      ...PREVIEW_MEMBER_RECORD,
+      keyId: "preview-self",
+      user: "preview-user",
+      device: "browser",
+      label: null,
+      hosting: false,
+    },
   ],
-  self: { keyId: "preview-self", user: "preview-user", device: "browser" },
+  self: null,
   team: null,
 };
 

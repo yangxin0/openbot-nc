@@ -1,5 +1,4 @@
 import { RELAY_ERROR_CODES } from "./relay-protocol/messages";
-import { RELAY_TUNNEL_CRYPTO_ERROR_CODES } from "./relay-protocol/tunnel-crypto";
 
 export const RELAY_CONNECTION_CODES = [
   ...RELAY_ERROR_CODES,
@@ -12,7 +11,6 @@ export const RELAY_CONNECTION_CODES = [
   "server_refused",
   "closed",
   "stopped",
-  ...RELAY_TUNNEL_CRYPTO_ERROR_CODES,
 ] as const;
 export type RelayConnectionCode = (typeof RELAY_CONNECTION_CODES)[number];
 

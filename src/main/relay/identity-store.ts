@@ -5,7 +5,6 @@ import {
   RELAY_IDENTITY_BUNDLE_VERSION,
   type RelayIdentityBundle,
 } from "@openbot/contracts/relay-protocol/identity-bundle";
-import { type RelayRole, relayAudience, relayHelloTranscript } from "@openbot/contracts/relay-protocol/messages";
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { Effect, Schema } from "effect";
 import { writeJsonFileAtomically } from "../../backend/atomic-json-file";
@@ -55,24 +54,10 @@ interface RelayTlsCredentials {
   key: string;
 }
 
-interface RelayHelloInput {
-  nonce: string;
-  clientNonce: string;
-  role: RelayRole;
-  target?: string | undefined;
-  connectionId?: string | undefined;
-}
-
-interface RelayHelloProof {
-  audience: string;
-  signature: string;
-}
-
 export interface RelayCredentialSource {
   current(): RelayIdentity | null;
   tlsCredentials(): RelayTlsCredentials | null;
-  signHello(input: RelayHelloInput): RelayHelloProof | null;
-  signTunnelTranscript(transcript: Uint8Array): Uint8Array | null;
+  signRelayData(data: Uint8Array): Uint8Array | null;
 }
 
 interface RelayIdentityStoreOptions {
@@ -187,20 +172,12 @@ export class RelayIdentityStore implements RelayCredentialSource {
     };
   }
 
-  signHello(input: RelayHelloInput): RelayHelloProof | null {
-    const loaded = this.#loaded;
-    if (!loaded || loaded.identity.relayUrl === null) return null;
-    const audience = relayAudience(loaded.identity.relayUrl);
-    const signature = signTranscript(loaded.privateKey, relayHelloTranscript({ ...input, audience }));
-    return signature === null ? null : { audience, signature };
-  }
-
-  signTunnelTranscript(transcript: Uint8Array): Uint8Array | null {
+  signRelayData(data: Uint8Array): Uint8Array | null {
     const privateKey = this.#loaded?.privateKey;
     if (privateKey?.asymmetricKeyType !== "ec" || privateKey.asymmetricKeyDetails?.namedCurve !== P256_CURVE) {
       return null;
     }
-    return sign("sha256", transcript, { key: privateKey, dsaEncoding: "ieee-p1363" });
+    return sign("sha256", data, { key: privateKey, dsaEncoding: "ieee-p1363" });
   }
 
   readonly #save = Effect.fn("RelayIdentityStore.save")(function* (
@@ -322,15 +299,6 @@ function inspectBundle(bundle: RelayIdentityBundle): Inspection {
       },
     },
   };
-}
-
-function signTranscript(privateKey: KeyObject, transcript: string): string | null {
-  const data = Buffer.from(transcript);
-  const type = privateKey.asymmetricKeyType;
-  if (type === "ed25519") return sign(null, data, privateKey).toString("base64url");
-  if (type === "ec") return sign("sha256", data, { key: privateKey, dsaEncoding: "ieee-p1363" }).toString("base64url");
-  if (type === "rsa") return sign("sha256", data, privateKey).toString("base64url");
-  return null;
 }
 
 function isMissingFile(cause: unknown): boolean {

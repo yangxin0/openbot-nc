@@ -1,5 +1,6 @@
 import { isDynamicRecord, isString } from "../runtime-values";
 import { isRelayUrl } from "./identity-bundle";
+import type { RelayMessageCrypto } from "./message-crypto";
 import {
   RELAY_CERTIFICATE_PEM_LIMIT,
   RELAY_CHAIN_LIMIT,
@@ -9,7 +10,6 @@ import {
   relayTeamIdStatement,
 } from "./messages";
 import { relaySubjectNames, relayTrustPath, relayValidityWindow } from "./peer-rules";
-import type { RelayTunnelCrypto } from "./tunnel-crypto";
 import {
   RELAY_X509_OID,
   type RelayX509Certificate,
@@ -84,7 +84,7 @@ export interface RelayEnrollError {
   message: string;
 }
 
-export type RelayEnrollCrypto = Pick<RelayTunnelCrypto, "sha256" | "verify">;
+export type RelayEnrollCrypto = Pick<RelayMessageCrypto, "sha256" | "verify">;
 
 export type RelayEnrollRefusal =
   | "server_mismatch"

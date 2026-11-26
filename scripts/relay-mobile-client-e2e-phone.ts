@@ -189,8 +189,7 @@ const memoryStore = {
 };
 
 const { createNobleRelayCrypto } = await import("@openbot/team-client/relay-crypto-noble");
-const { openRelayControlSocket } = await import("@openbot/team-client/relay-socket");
-const { createRelayIdentityFromText, openRelayV2Tunnels, relayTeamHostId, startRelayControl } = await import(
+const { createRelayIdentityFromText, relayHubTunnelTransport, relayTeamHostId, startRelayControl } = await import(
   "@openbot/team-client/relay-client"
 );
 const { TEAM_API_ROUTES } = await import("@openbot/contracts/team-api-routes");
@@ -523,9 +522,16 @@ try {
 
   await check("A host of another team is not in the roster and the relay refuses the dial", async () => {
     const otherIdentity = await createRelayIdentityFromText(config.otherHostText, { crypto });
-    const control = await deadline(
+    const control = startRelayControl(otherIdentity, { hosting: true, label: "Other team host", crypto });
+    await deadline(
       "the other team host online",
-      openRelayControlSocket(otherIdentity, { hosting: true, label: "Other team host" }, { crypto }),
+      new Promise<void>((resolveOnline) => {
+        const stop = control.subscribe((snapshot) => {
+          if (snapshot.state.status !== "online") return;
+          stop();
+          resolveOnline();
+        });
+      }),
     );
     try {
       assert(
@@ -536,18 +542,20 @@ try {
       );
       const refusal = await deadline(
         "the refused dial",
-        openRelayV2Tunnels(runtime, config.otherHostKeyId, { readyDeadlineMs: 2_000 }).then(
-          (tunnels) => {
-            tunnels.close();
-            return "opened";
-          },
-          (error: unknown) => errorCode(error),
-        ),
+        relayHubTunnelTransport(runtime)
+          .open("relay:check", config.otherHostKeyId, new AbortController().signal)
+          .then(
+            (tunnels) => {
+              tunnels.close();
+              return "opened";
+            },
+            (error: unknown) => errorCode(error),
+          ),
       );
       assert(refusal === "target_unavailable" || refusal === "peer_refused", refusal);
       facts.otherTeamRelayRefusal = refusal;
     } finally {
-      control.socket.close();
+      control.stop();
     }
   });
 
@@ -559,10 +567,12 @@ try {
     const pointedControl = startRelayControl(pointed, { crypto });
     const refusal = await deadline(
       "the dial at the fake relay",
-      openRelayV2Tunnels(pointedControl, config.otherHostKeyId, { readyDeadlineMs: 2_000 }).then(
-        () => "opened",
-        (error: unknown) => `${errorCode(error)}:${error instanceof Error ? error.message : ""}`,
-      ),
+      relayHubTunnelTransport(pointedControl)
+        .open("relay:check", config.otherHostKeyId, new AbortController().signal)
+        .then(
+          () => "opened",
+          (error: unknown) => `${errorCode(error)}:${error instanceof Error ? error.message : ""}`,
+        ),
     ).finally(() => pointedControl.stop());
     assert(refusal.startsWith("peer_refused:"), refusal);
     facts.otherTeamPeerRefusal = refusal;

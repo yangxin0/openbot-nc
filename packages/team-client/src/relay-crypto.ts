@@ -1,9 +1,9 @@
 import type {
   RelayKeyHandle,
   RelayMemoryKey,
+  RelayMessageCrypto,
   RelayPublicKey,
-  RelayTunnelCrypto,
-} from "@openbot/contracts/relay-protocol/tunnel-crypto";
+} from "@openbot/contracts/relay-protocol/message-crypto";
 
 export type { RelayMemoryKey, RelayPublicKey };
 
@@ -15,7 +15,7 @@ export interface RelaySigningKey {
   pkcs8: Uint8Array<ArrayBuffer> | null;
 }
 
-export interface RelayCrypto extends RelayTunnelCrypto {
+export interface RelayCrypto extends RelayMessageCrypto {
   importPrivateKey(pkcs8: Uint8Array<ArrayBuffer>): Promise<RelayPrivateKey>;
   generateSigningKey(): Promise<RelaySigningKey>;
   sign(privateKey: RelayPrivateKey, data: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>>;

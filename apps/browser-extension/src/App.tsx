@@ -8,7 +8,7 @@ import {
   type RelayBrowserControl,
   type RelayBrowserIdentity,
   type RelayControlSnapshot,
-  type RelaySessionSource,
+  type RelayHubProvider,
   RelaySocketError,
   relayTeamHost,
   startRelayControl,
@@ -139,11 +139,11 @@ function ServerView(props: { identity: RelayBrowserIdentity; onRemoveIdentity: (
   let connection: HostConnection | null = null;
   let stopControl: (() => void) | null = null;
   let control: RelayBrowserControl | null = null;
-  const sessions: RelaySessionSource = {
-    openSession: (target, options) =>
-      control
-        ? control.openSession(target, options)
-        : Promise.reject(new RelaySocketError({ code: "closed", message: "The relay connection is not running." })),
+  const sessions: RelayHubProvider = {
+    hub: async () => {
+      if (control) return control;
+      throw new RelaySocketError({ code: "closed", message: "The relay connection is not running." });
+    },
   };
   let savedHostId: string | null = null;
   let hosts: RemoteTeamHost[] = [];

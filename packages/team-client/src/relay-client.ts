@@ -1,7 +1,9 @@
 import type { RelayTeamMember } from "@openbot/contracts/relay-protocol/messages";
 import type { TeamProtocolSupportV1 } from "@openbot/contracts/team-protocol";
-import { RelayBrowserControl, type RelayControlOptions } from "./relay-control";
 import type { RelayCrypto } from "./relay-crypto";
+import { webRelayCrypto } from "./relay-crypto";
+import { RelayHubClient, type RelayHubOptions, type RelayHubSnapshot, type RelayHubState } from "./relay-hub";
+import { type RelayHubProvider, relayHubTunnelTransport } from "./relay-hub-channels";
 import {
   createIndexedDbRelayIdentityKeyStore,
   type RelayBrowserIdentity,
@@ -10,15 +12,26 @@ import {
   readRelayIdentityFile,
   readRelayIdentityText,
 } from "./relay-identity";
-import type { RelaySessionSource } from "./relay-sessions";
-import { relayTeamTunnelTransport } from "./relay-v2-tunnels";
 import type { RemoteTeamHost } from "./remote-directory";
 import { createRemoteTeamPeer, type RemoteHostProtocols, type RemoteTeamPeerActions } from "./remote-peer";
 
-export type { RelayControlOptions, RelayControlSnapshot, RelayControlState } from "./relay-control";
-export { RelayBrowserControl } from "./relay-control";
 export type { RelayCrypto, RelayPrivateKey } from "./relay-crypto";
 export { webRelayCrypto } from "./relay-crypto";
+export type {
+  RelayHubLog,
+  RelayHubMessage,
+  RelayHubOptions,
+  RelayHubSnapshot,
+  RelayHubSocket,
+  RelayHubSocketEvents,
+  RelayHubSocketFactory,
+  RelayHubState,
+  RelayHubUndeliverable,
+  RelaySocketErrorCode,
+} from "./relay-hub";
+export { browserRelayHubSocket, RelayHubClient, RelayHubSendError, RelaySocketError } from "./relay-hub";
+export type { RelayHubLinkErrorCode, RelayHubProvider } from "./relay-hub-channels";
+export { RelayHubLinkError, relayHubTunnelTransport } from "./relay-hub-channels";
 export type {
   IndexedDbRelayIdentityOptions,
   RelayBrowserIdentity,
@@ -27,17 +40,12 @@ export type {
   RelayIdentityReadOptions,
 } from "./relay-identity";
 export { RelayIdentityError } from "./relay-identity";
-export type {
-  RelayIncomingSession,
-  RelaySession,
-  RelaySessionOpenOptions,
-  RelaySessionSource,
-} from "./relay-sessions";
-export type { RelaySocketErrorCode } from "./relay-socket";
-export { RelaySocketError } from "./relay-socket";
-export type { RelayV2TunnelErrorCode } from "./relay-v2-tunnels";
-export { openRelayV2Tunnels, RelayV2TunnelError } from "./relay-v2-tunnels";
 export { createIndexedDbRelayIdentityKeyStore };
+
+export type RelayControlSnapshot = RelayHubSnapshot;
+export type RelayControlState = RelayHubState;
+export type RelayBrowserControl = RelayHubClient;
+export type RelayControlOptions = Omit<RelayHubOptions, "identity" | "sign">;
 
 const RELAY_HOST_ID_PREFIX = "relay:";
 
@@ -46,7 +54,6 @@ export type RelayTeamPeerActions = RemoteTeamPeerActions;
 export interface RelayTeamPeerOptions {
   hostProtocols?: RemoteHostProtocols;
   clientProtocol?: TeamProtocolSupportV1["protocol"];
-  readyDeadlineMs?: number;
   crypto?: RelayCrypto;
 }
 
@@ -76,16 +83,19 @@ export function removeRelayIdentity(store: RelayIdentityKeyStore): Promise<void>
   return store.remove();
 }
 
-export function startRelayControl(
-  identity: RelayBrowserIdentity,
-  options: RelayControlOptions = {},
-): RelayBrowserControl {
-  const control = new RelayBrowserControl(identity, options);
-  control.start();
-  return control;
+export function startRelayControl(identity: RelayBrowserIdentity, options: RelayControlOptions = {}): RelayHubClient {
+  const crypto = options.crypto ?? webRelayCrypto;
+  const hub = new RelayHubClient({
+    ...options,
+    crypto,
+    identity,
+    sign: (data) => crypto.sign(identity.privateKey, data),
+  });
+  hub.start();
+  return hub;
 }
 
-export function relayRosterHosts(control: RelayBrowserControl): RelayTeamMember[] {
+export function relayRosterHosts(control: RelayHubClient): RelayTeamMember[] {
   return control.hosts();
 }
 
@@ -106,7 +116,7 @@ export function relayTeamHost(member: RelayTeamMember, role: RemoteTeamHost["rol
 }
 
 export function createRelayTeamPeer(
-  sessions: RelaySessionSource,
+  hub: RelayHubClient | RelayHubProvider,
   actions: { current: RelayTeamPeerActions },
   options: RelayTeamPeerOptions = {},
 ) {
@@ -114,8 +124,6 @@ export function createRelayTeamPeer(
     ...(options.hostProtocols ? { hostProtocols: options.hostProtocols } : {}),
     ...(options.clientProtocol ? { clientProtocol: options.clientProtocol } : {}),
     ...(options.crypto ? { randomBytes: options.crypto.randomBytes } : {}),
-    tunnels: relayTeamTunnelTransport(sessions, {
-      ...(options.readyDeadlineMs === undefined ? {} : { readyDeadlineMs: options.readyDeadlineMs }),
-    }),
+    tunnels: relayHubTunnelTransport(hub),
   });
 }

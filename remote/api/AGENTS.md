@@ -1,22 +1,26 @@
 # `remote/api`
 
-This is the central relay server (`src/relay/`). It ends TLS, verifies each member certificate and a
-signed proof of its private key, proves its own identity with a certificate of the team root, and
-routes sessions between two members of one team. It does not store or log the bytes of a session.
-See [docs/central-server.md](../../docs/central-server.md).
+This is the central relay server (`src/relay/`). It is a hub, never a relay of connections: each app
+has one WebSocket to it and talks only to it. The server ends TLS, verifies each member certificate
+and the signed `hello`, proves its own identity with a certificate of the team root, keeps a record
+of each connected app, and passes encrypted messages between two online members of one team. It
+cannot read the messages and does not store or log them. See
+[docs/central-server.md](../../docs/central-server.md).
 
-- Each member has at most two sockets: the control socket (proof, roster, session messages) and one
-  data socket (session frames only), bound with a single-use data ticket. Keep tickets in memory only
-  as their SHA-256, single use, 60 seconds, bound to the control socket and its key identifier. Close
-  the data socket and the sessions of a member when its control socket closes or its certificate is
-  revoked. There is no other socket kind: the old `client` and `accept` sockets are removed.
-- Heartbeat: answer each `ping` on a control or data socket at once with a `pong` of the same `id`.
-  Close a control socket that announced `heartbeat` in `hello` and sent no `ping` for
-  `RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS` (30 s), with its data socket and sessions. Do not apply the
-  timeout to a socket that did not announce `heartbeat`. A `data-ticket` request closes the data
-  socket that the member still has, with the code 1000, and keeps its sessions.
-- Keep the per-session credit check (window `RELAY_SESSION_WINDOW_BYTES`), the round-robin outbox of
-  each member, and the limits of sessions per socket, per pair and pending.
+- Sign-in is one `hello` with no challenge. Keep the checks: certificate (issuer, team, validity,
+  revocation), the hello signature and the message-key signature, the time window
+  (`RELAY_HELLO_WINDOW_MS`) and the bounded memory of used (key identifier, client nonce) pairs.
+  Send `server-proof` before `welcome`.
+- Answer questions about an app (`info`) from its record only. Send `online` and `offline` to the
+  team after each change. A newer socket of a certificate replaces the older one.
+- Route a `send` frame only to an online member of the same team. Answer `undeliverable` at once
+  (`offline`, `not_member`, `busy`); never wait for a recipient. Keep the two bounded queues of each
+  app (small messages first, file data after, each at most `RELAY_QUEUE_BYTES`) and the order of
+  each kind from one sender.
+- Liveness: any received message counts. Close an app with nothing received for
+  `RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS` (30 s), or `RELAY_SUSPENDED_TIMEOUT_MS` (300 s) when it sent
+  `suspendable`, and answer each `ping` with a `pong` of the same `id` at once. Close a revoked app
+  within 5 seconds.
 
 - TLS: the server certificate is `<data>/tls/server.crt` and `server.key`, or `RELAY_TLS_CERT_PATH`
   and `RELAY_TLS_KEY_PATH`. `RELAY_TLS_CLIENT_CERTIFICATES=required` also makes TLS refuse a socket
@@ -41,11 +45,13 @@ See [docs/central-server.md](../../docs/central-server.md).
   issued by the root, or does not name the host of `RELAY_PUBLIC_URL`. Do not weaken these checks or
   the checks of a member certificate (issuer, team, validity, revocation, proof).
 - Never log, print or put in an error message a private key, a passphrase, an identity file, a
-  proof, a metrics token, a join code secret, a sign-in token, a session id, a CSRF token, a data
-  ticket or the bytes of a session. Logs name a code or a session only by a prefix of its hash. Compare secrets in
+  proof, a metrics token, a join code secret, a sign-in token, a session id, a CSRF token, a message
+  key or signature, or the bytes of a message. Logs name a code or a session only by a prefix of its
+  hash. Compare secrets in
   constant time. Only `ca code` and the admin page answer that makes a code show the code.
-- The wire messages come from `@openbot/contracts/relay-protocol`. Keep released messages compatible.
+- The wire messages come from `@openbot/contracts/relay-protocol` (`hub.ts`, `decode.ts`). All apps
+  and the server update together; a different protocol version is refused.
 - This project uses Bun types. Keep them inside `remote/api`; root `scripts/**` and Electron main use
   Node types. See [check design notes](../../docs/development-checks.md#check-coverage).
 - `bun run test:relay` starts the real server process with a new root and checks these rules over
-  real TLS and WebSocket.
+  real TLS and WebSocket. `bun run test:relay-hub` checks the hub with a host, clients and a proxy.

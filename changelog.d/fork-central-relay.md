@@ -54,6 +54,17 @@
 
 ### Changed
 
+- The central server is now a hub. Each app (desktop, Linux server, web client, extension, phone)
+  keeps one WebSocket to it and talks only to it; there are no sessions, data sockets or tunnels
+  between devices. An app signs in with one message, so it is online about one round trip after the
+  socket opens. A request to a server of the team goes to the central server encrypted for that
+  server; the central server passes it on, or answers at once that the server is offline, and the app
+  waits for the server to come back. Each message is encrypted from end to end with keys that change
+  with each connection and are signed by the certificate of the app, and the apps refuse a changed,
+  replayed or substituted message. The central server answers questions about an app from its own
+  record, a repeated request acts once, and an app that was offline gets the events that it missed.
+  Small requests stay fast while a file goes up or down. The central server must also be on this
+  version, and all apps must update together.
 - Each app sends a heartbeat to the central server on its control socket every 10 seconds and knows
   within 3 seconds when the server stops answering. It then closes the socket and connects again at
   once, then with the usual backoff. A new connection waits for a confirmed control socket, so it

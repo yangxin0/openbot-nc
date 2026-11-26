@@ -72,13 +72,8 @@ export function createNobleRelayCrypto(options: NobleRelayCryptoOptions): RelayC
     },
     async agree(privateKey, peerPublicKey) {
       const secret = agreementSecrets.get(privateKey);
-      agreementSecrets.delete(privateKey);
-      if (!secret) throw new Error("This agreement key is used or unknown.");
-      try {
-        return owned(p256.getSharedSecret(secret, peerPublicKey, true).subarray(1));
-      } finally {
-        secret.fill(0);
-      }
+      if (!secret) throw new Error("This agreement key is unknown.");
+      return owned(p256.getSharedSecret(secret, peerPublicKey, true).subarray(1));
     },
     async deriveSealKey(secret, salt, info) {
       return memoryKey(sealKeys, hkdf(sha256, secret, salt, info, SEAL_KEY_BYTES));

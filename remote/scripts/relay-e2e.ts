@@ -1,6 +1,14 @@
 import { strict as assert } from "node:assert";
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
-import { createHash, createPrivateKey, randomBytes, sign, verify, X509Certificate } from "node:crypto";
+import {
+  createHash,
+  createPrivateKey,
+  generateKeyPairSync,
+  randomBytes,
+  sign,
+  verify,
+  X509Certificate,
+} from "node:crypto";
 import {
   copyFileSync,
   mkdirSync,
@@ -15,28 +23,24 @@ import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { connect as connectTls } from "node:tls";
-import { decodeRelayServerMessage } from "@openbot/contracts/relay-protocol/decode";
+import { decodeRelayHubServerMessage } from "@openbot/contracts/relay-protocol/decode";
+import {
+  decodeRelayHubFrame,
+  encodeRelayHubFrame,
+  type RelayHubHello,
+  type RelayHubServerMessage,
+  type RelayServerProofTranscriptInput,
+  relayHelloTranscript,
+  relayMessageKeyTranscript,
+  relayServerProofTranscript,
+} from "@openbot/contracts/relay-protocol/hub";
 import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/contracts/relay-protocol/identity-bundle";
 import {
   RELAY_CLOSE_CODES,
   RELAY_PATH,
   RELAY_PROTOCOL_VERSION,
-  RELAY_SESSION_ASSIGNED_ID_MIN,
-  RELAY_SESSION_FRAME_PAYLOAD_LIMIT,
-  RELAY_SESSION_WINDOW_BYTES,
-  RELAY_SESSIONS_FEATURE,
-  type RelayRole,
-  type RelayServerMessage,
-  type RelayServerProofTranscriptInput,
   relayAudience,
-  relayHelloTranscript,
-  relayServerProofTranscript,
 } from "@openbot/contracts/relay-protocol/messages";
-import {
-  decodeRelaySessionFrame,
-  encodeRelaySessionEnd,
-  encodeRelaySessionFrame,
-} from "@openbot/contracts/relay-protocol/sessions";
 import { generateSigningKey, issueCertificate } from "../api/src/relay/x509";
 
 const ROOT = resolve(import.meta.dirname, "../..");
@@ -44,8 +48,6 @@ const OUT = resolve(ROOT, ".openbot-build/relay-e2e");
 const MAIN = resolve(ROOT, "remote/api/src/relay/main.ts");
 const BUILD = resolve(ROOT, "remote/scripts/build-relay.ts");
 const WAIT_MS = 15_000;
-const TRANSFER_BYTES = 8 * 1024 * 1024;
-const SESSIONS_PER_PAIR = 4;
 
 const checks: Array<{ name: string; passed: boolean; error?: string }> = [];
 
@@ -114,18 +116,18 @@ function openSocket(url: string, tls: Bun.TLSOptions): WebSocket {
   return Reflect.construct(WebSocket, [url, { tls }]);
 }
 
-function hasType<Type extends RelayServerMessage["type"]>(
-  message: RelayServerMessage,
+function hasType<Type extends RelayHubServerMessage["type"]>(
+  message: RelayHubServerMessage,
   type: Type,
-): message is Extract<RelayServerMessage, { type: Type }> {
+): message is Extract<RelayHubServerMessage, { type: Type }> {
   return message.type === type;
 }
 
 class Peer {
-  readonly messages: RelayServerMessage[] = [];
-  readonly order: RelayServerMessage["type"][] = [];
+  readonly messages: RelayHubServerMessage[] = [];
+  readonly order: RelayHubServerMessage["type"][] = [];
   readonly binary: Uint8Array[] = [];
-  serverProof: Extract<RelayServerMessage, { type: "server-proof" }> | null = null;
+  serverProof: Extract<RelayHubServerMessage, { type: "server-proof" }> | null = null;
   readonly closed: Promise<Closed>;
   readonly #waiters = new Set<() => void>();
   readonly #socket: WebSocket;
@@ -142,7 +144,7 @@ class Peer {
     });
     this.#socket.addEventListener("message", (event) => {
       if (typeof event.data === "string") {
-        const message = decodeRelayServerMessage(JSON.parse(event.data));
+        const message = decodeRelayHubServerMessage(JSON.parse(event.data));
         if (message) {
           this.messages.push(message);
           this.order.push(message.type);
@@ -178,10 +180,10 @@ class Peer {
     }
   }
 
-  message<Type extends RelayServerMessage["type"]>(
+  message<Type extends RelayHubServerMessage["type"]>(
     type: Type,
-    matches: (message: Extract<RelayServerMessage, { type: Type }>) => boolean = () => true,
-  ): Promise<Extract<RelayServerMessage, { type: Type }>> {
+    matches: (message: Extract<RelayHubServerMessage, { type: Type }>) => boolean = () => true,
+  ): Promise<Extract<RelayHubServerMessage, { type: Type }>> {
     return this.until(() => {
       for (const message of this.messages) {
         if (hasType(message, type) && matches(message)) return message;
@@ -190,16 +192,16 @@ class Peer {
     }, `message ${type}`);
   }
 
-  async take<Type extends RelayServerMessage["type"]>(
+  async take<Type extends RelayHubServerMessage["type"]>(
     type: Type,
-    matches: (message: Extract<RelayServerMessage, { type: Type }>) => boolean = () => true,
-  ): Promise<Extract<RelayServerMessage, { type: Type }>> {
+    matches: (message: Extract<RelayHubServerMessage, { type: Type }>) => boolean = () => true,
+  ): Promise<Extract<RelayHubServerMessage, { type: Type }>> {
     const message = await this.message(type, matches);
     this.messages.splice(this.messages.indexOf(message), 1);
     return message;
   }
 
-  forget(type: RelayServerMessage["type"]): void {
+  forget(type: RelayHubServerMessage["type"]): void {
     for (let index = this.messages.length - 1; index >= 0; index -= 1) {
       if (this.messages[index]?.type === type) this.messages.splice(index, 1);
     }
@@ -228,16 +230,17 @@ class Peer {
 }
 
 interface HelloFields {
-  role: RelayRole;
   hosting?: boolean;
   label?: string;
-  features?: string[];
+  suspendable?: boolean;
+  version?: number;
 }
 
 interface HelloChanges {
   signingKey?: string;
-  nonce?: string;
   audience?: string;
+  timestamp?: number;
+  clientNonce?: string;
 }
 
 interface ProvedSocket {
@@ -268,11 +271,38 @@ function serverProofProblem(socket: ProvedSocket, rootPem: string): string | nul
   return signed ? null : "the signature does not verify";
 }
 
-function proofSignature(privateKey: string, transcript: string): string {
-  return sign("sha256", Buffer.from(transcript), {
-    key: createPrivateKey(privateKey),
-    dsaEncoding: "ieee-p1363",
-  }).toString("base64url");
+function helloText(url: string, bundle: RelayIdentityBundle, fields: HelloFields, changes: HelloChanges = {}) {
+  const audience = changes.audience ?? relayAudience(url);
+  const clientNonce = changes.clientNonce ?? randomBytes(32).toString("base64url");
+  const timestamp = changes.timestamp ?? Date.now();
+  const signingKey = createPrivateKey(changes.signingKey ?? bundle.privateKey);
+  const agreement = generateKeyPairSync("ec", { namedCurve: "prime256v1" });
+  const point = agreement.publicKey.export({ type: "spki", format: "der" }).subarray(-65);
+  const signWith = (data: Uint8Array) =>
+    sign("sha256", data, { key: signingKey, dsaEncoding: "ieee-p1363" }).toString("base64url");
+  const body: Omit<RelayHubHello, "type" | "certificate" | "chain" | "signature"> = {
+    version: RELAY_PROTOCOL_VERSION,
+    audience,
+    timestamp,
+    clientNonce,
+    label: fields.label ?? null,
+    hosting: fields.hosting ?? false,
+    capabilities: [],
+    suspendable: fields.suspendable ?? false,
+    messageKey: Buffer.from(point).toString("base64url"),
+    messageKeySignature: signWith(relayMessageKeyTranscript({ keyId: keyId(bundle), messageKey: point, timestamp })),
+  };
+  return {
+    transcript: { clientNonce, audience, clientKeyId: keyId(bundle) },
+    message: {
+      type: "hello",
+      ...body,
+      ...(fields.version === undefined ? {} : { version: fields.version }),
+      certificate: bundle.certificate,
+      chain: bundle.chain,
+      signature: signWith(relayHelloTranscript(body)),
+    },
+  };
 }
 
 async function hello(
@@ -284,82 +314,25 @@ async function hello(
   tlsRoot: string = rootPem,
 ): Promise<Peer> {
   const peer = new Peer(url, { ca: tlsRoot });
-  const challenge = await peer.message("challenge");
-  const audience = changes.audience ?? relayAudience(url);
-  const clientNonce = randomBytes(32).toString("base64url");
-  provedSockets.push({
-    peer,
-    url,
-    transcript: {
-      serverNonce: challenge.nonce,
-      clientNonce,
-      audience,
-      role: fields.role,
-      clientKeyId: keyId(bundle),
-    },
-  });
-  const transcript = relayHelloTranscript({
-    nonce: changes.nonce ?? challenge.nonce,
-    clientNonce,
-    audience,
-    role: fields.role,
-  });
-  peer.sendJson({
-    type: "hello",
-    version: RELAY_PROTOCOL_VERSION,
-    audience,
-    clientNonce,
-    certificate: bundle.certificate,
-    chain: bundle.chain,
-    signature: proofSignature(changes.signingKey ?? bundle.privateKey, transcript),
-    features: [RELAY_SESSIONS_FEATURE],
-    ...fields,
-  });
+  const { transcript, message } = helloText(url, bundle, fields, changes);
+  provedSockets.push({ peer, url, transcript });
+  peer.sendJsonWhenOpen(message);
   return peer;
 }
 
-function frame(session: number, payload: Uint8Array): Uint8Array {
-  return encodeRelaySessionFrame(session, payload);
+function sendTo(sender: Peer, to: string, id: number, payload: Uint8Array, kind: "rpc" | "files" = "rpc"): void {
+  const frame = encodeRelayHubFrame({ type: "send", kind, id, peer: to, payload: new Uint8Array(payload) });
+  assert.ok(frame, "The frame cannot be encoded.");
+  sender.sendBytes(frame);
 }
 
-async function openData(url: string, rootPem: string, member: Peer): Promise<Peer> {
-  member.sendJson({ type: "data-ticket", version: RELAY_PROTOCOL_VERSION });
-  const { ticket } = await member.take("data-ticket");
-  const data = new Peer(url, { ca: rootPem });
-  data.sendJsonWhenOpen({ type: "data-hello", version: RELAY_PROTOCOL_VERSION, ticket });
-  await data.message("challenge");
-  return data;
-}
-
-function framesFor(peer: Peer, session: number): Uint8Array[] {
+function delivered(peer: Peer): Array<{ from: string; id: number; text: string }> {
   return peer.binary.flatMap((bytes) => {
-    const decoded = decodeRelaySessionFrame(bytes);
-    return decoded && decoded.session === session ? [decoded.payload] : [];
+    const frame = decodeRelayHubFrame(bytes);
+    return frame?.type === "deliver"
+      ? [{ from: frame.peer, id: frame.id, text: new TextDecoder().decode(frame.payload) }]
+      : [];
   });
-}
-
-function sessionOpen(session: number, target: string, first?: string) {
-  return { type: "session-open", version: RELAY_PROTOCOL_VERSION, session, target, ...(first ? { first } : {}) };
-}
-
-async function openSession(
-  opener: Peer,
-  target: Peer,
-  targetKeyId: string,
-  session: number,
-): Promise<{ assigned: number; connectionId: string }> {
-  opener.sendJson(sessionOpen(session, targetKeyId, "aGVsbG8"));
-  const incoming = await target.take("session-incoming", (message) => message.first === "aGVsbG8");
-  target.sendJson({
-    type: "session-accept",
-    version: RELAY_PROTOCOL_VERSION,
-    session: incoming.session,
-    first: "cmVwbHk",
-  });
-  const opened = await opener.take("session-opened", (message) => message.session === session);
-  assert.equal(opened.connectionId, incoming.connectionId);
-  assert.equal(opened.first, "cmVwbHk");
-  return { assigned: incoming.session, connectionId: incoming.connectionId };
 }
 
 async function refusedWith(peer: Peer, code: string): Promise<void> {
@@ -463,7 +436,7 @@ try {
   const dave = issue(environment, work, "Acme Team", "dave", "desk");
   const carol = issue(environment, work, "Other Team", "carol", "server");
 
-  const main = await startServer(environment, { RELAY_MAX_SESSIONS_PER_PAIR: String(SESSIONS_PER_PAIR) });
+  const main = await startServer(environment);
   servers.push(main.child);
   const { url } = main;
 
@@ -474,256 +447,81 @@ try {
     assert.equal(plain.status, 426);
   });
 
-  let aliceMember = await hello(url, rootPem, alice, { role: "member", hosting: true, label: "Alice laptop" });
+  let aliceMember = await hello(url, rootPem, alice, { hosting: true, label: "Alice laptop" });
   await check("A member gets its user, device, team and the roster from its certificate", async () => {
     const welcome = await aliceMember.message("welcome");
-    assert.deepEqual(welcome.self, { keyId: keyId(alice), user: "alice", device: "laptop" });
+    assert.deepEqual([welcome.self.keyId, welcome.self.user, welcome.self.device], [keyId(alice), "alice", "laptop"]);
     assert.equal(welcome.team.name, "Acme Team");
     assert.deepEqual(
-      welcome.members.map((member) => [member.user, member.hosting, member.label]),
+      welcome.roster.map((member) => [member.user, member.hosting, member.label]),
       [["alice", true, "Alice laptop"]],
     );
   });
 
-  const bobMember = await hello(url, rootPem, bob, { role: "member", hosting: false });
+  const bobMember = await hello(url, rootPem, bob, { hosting: false });
   await check("Members of one team see each other", async () => {
     const welcome = await bobMember.message("welcome");
     assert.deepEqual(
-      welcome.members.map((member) => member.user),
+      welcome.roster.map((member) => member.user),
       ["alice", "bob"],
     );
-    const update = await aliceMember.message("members", (message) => message.members.length === 2);
-    assert.deepEqual(
-      update.members.map((member) => member.user),
-      ["alice", "bob"],
-    );
+    const update = await aliceMember.message("online", (message) => message.member.user === "bob");
+    assert.equal(update.member.keyId, keyId(bob));
   });
 
-  const carolMember = await hello(url, rootPem, carol, { role: "member", hosting: true });
+  const carolMember = await hello(url, rootPem, carol, { hosting: true });
   await check("A member of a different team gets a different team and sees no member of the first team", async () => {
     const welcome = await carolMember.message("welcome");
     const aliceWelcome = await aliceMember.message("welcome");
     assert.equal(welcome.team.name, "Other Team");
     assert.notEqual(welcome.team.id, aliceWelcome.team.id);
     assert.deepEqual(
-      welcome.members.map((member) => member.user),
+      welcome.roster.map((member) => member.user),
       ["carol"],
     );
-    const seenByAlice = aliceMember.messages.flatMap((message) => (message.type === "members" ? message.members : []));
+    const seenByAlice = aliceMember.messages.flatMap((message) => (message.type === "online" ? [message.member] : []));
     assert.equal(
       seenByAlice.some((member) => member.user === "carol"),
       false,
     );
   });
 
-  const aliceData = await openData(url, rootPem, aliceMember);
-  const bobData = await openData(url, rootPem, bobMember);
-  await check("A session passes bytes in both directions and names each side from its certificate", async () => {
-    bobMember.sendJson(sessionOpen(1, keyId(alice), "aGVsbG8"));
-    const incoming = await aliceMember.take("session-incoming", (message) => message.from.user === "bob");
-    assert.equal(incoming.from.keyId, keyId(bob));
-    assert.equal(new X509Certificate(incoming.from.certificate).subject.includes("CN=bob"), true);
-    assert.ok(incoming.session >= RELAY_SESSION_ASSIGNED_ID_MIN, "The server numbers the session of the target.");
-    assert.equal(incoming.first, "aGVsbG8");
-    aliceMember.sendJson({
-      type: "session-accept",
-      version: RELAY_PROTOCOL_VERSION,
-      session: incoming.session,
-      first: "cmVwbHk",
-    });
-    const opened = await bobMember.take("session-opened", (message) => message.session === 1);
-    assert.equal(opened.peer.keyId, keyId(alice));
-    assert.equal(opened.connectionId, incoming.connectionId);
-    assert.equal(opened.first, "cmVwbHk");
-    bobData.sendBytes(frame(1, new TextEncoder().encode("ping")));
-    await aliceData.until(() => (framesFor(aliceData, incoming.session).length > 0 ? true : undefined), "the ping");
-    assert.equal(new TextDecoder().decode(framesFor(aliceData, incoming.session)[0]), "ping");
-    aliceData.sendBytes(frame(incoming.session, new TextEncoder().encode("pong")));
-    await bobData.until(() => (framesFor(bobData, 1).length > 0 ? true : undefined), "the pong");
-    assert.equal(new TextDecoder().decode(framesFor(bobData, 1)[0]), "pong");
-    bobMember.sendJson({ type: "session-close", version: RELAY_PROTOCOL_VERSION, session: 1 });
-    await aliceMember.take("session-close", (message) => message.session === incoming.session);
-  });
-
-  await check(`A session keeps ${TRANSFER_BYTES} bytes complete and in order with credits of the window`, async () => {
-    const { assigned } = await openSession(bobMember, aliceMember, keyId(alice), 2);
-    const data = randomBytes(TRANSFER_BYTES);
-    let sent = 0;
-    let credit = RELAY_SESSION_WINDOW_BYTES;
-    let received = 0;
-    let granted = 0;
-    while (received < TRANSFER_BYTES) {
-      while (sent < TRANSFER_BYTES && credit > 0) {
-        const size = Math.min(RELAY_SESSION_FRAME_PAYLOAD_LIMIT, credit, TRANSFER_BYTES - sent);
-        bobData.sendBytes(frame(2, data.subarray(sent, sent + size)));
-        sent += size;
-        credit -= size;
-      }
-      received = await aliceData.until(() => {
-        const total = framesFor(aliceData, assigned).reduce((sum, part) => sum + part.byteLength, 0);
-        return total > received ? total : undefined;
-      }, "more session bytes");
-      if (received - granted >= RELAY_SESSION_WINDOW_BYTES / 4 || received === TRANSFER_BYTES) {
-        aliceMember.sendJson({
-          type: "session-credit",
-          version: RELAY_PROTOCOL_VERSION,
-          session: assigned,
-          bytes: received - granted,
-        });
-        const forwarded = await bobMember.take("session-credit", (message) => message.session === 2);
-        assert.equal(forwarded.bytes, received - granted);
-        credit += forwarded.bytes;
-        granted = received;
-      }
-    }
-    const joined = Buffer.concat(framesFor(aliceData, assigned));
-    assert.equal(joined.byteLength, TRANSFER_BYTES);
-    assert.equal(createHash("sha256").update(joined).digest("hex"), createHash("sha256").update(data).digest("hex"));
-    bobData.sendBytes(encodeRelaySessionEnd(2));
-    await aliceData.until(
-      () =>
-        aliceData.binary.some((bytes) => {
-          const decoded = decodeRelaySessionFrame(bytes);
-          return decoded?.kind === "end" && decoded.session === assigned;
-        })
-          ? true
-          : undefined,
-      "the end of the session",
+  await check("A member sends a message to another member and the server delivers it with the sender key", async () => {
+    sendTo(bobMember, keyId(alice), 7, new TextEncoder().encode("ping"));
+    const seen = await aliceMember.until(
+      () => delivered(aliceMember).find((entry) => entry.text === "ping"),
+      "the delivered message",
     );
-    aliceData.binary.length = 0;
-    bobData.binary.length = 0;
+    assert.deepEqual([seen.from, seen.id], [keyId(bob), 7]);
   });
 
   await check(
-    "A data ticket works once, a bad ticket is refused, data on control is refused, and data closes with control",
+    "A message to an offline key, to itself or to a member of a different team gets undeliverable at once",
     async () => {
-      const daveControl = await hello(url, rootPem, dave, { role: "member", hosting: false });
-      await daveControl.message("welcome");
-      daveControl.sendJson({ type: "data-ticket", version: RELAY_PROTOCOL_VERSION });
-      const { ticket } = await daveControl.take("data-ticket");
-      const first = new Peer(url, { ca: rootPem });
-      first.sendJsonWhenOpen({ type: "data-hello", version: RELAY_PROTOCOL_VERSION, ticket });
-      await first.message("challenge");
-      const again = new Peer(url, { ca: rootPem });
-      again.sendJsonWhenOpen({ type: "data-hello", version: RELAY_PROTOCOL_VERSION, ticket });
-      await refusedWith(again, "authentication_failed");
-      const forged = new Peer(url, { ca: rootPem });
-      forged.sendJsonWhenOpen({
-        type: "data-hello",
-        version: RELAY_PROTOCOL_VERSION,
-        ticket: randomBytes(32).toString("base64url"),
-      });
-      await refusedWith(forged, "authentication_failed");
-      daveControl.sendBytes(frame(1, new Uint8Array(4)));
-      await refusedWith(daveControl, "protocol_error");
-      await first.closed;
+      const offlineKey = randomBytes(32).toString("base64url");
+      sendTo(bobMember, offlineKey, 8, new Uint8Array(4));
+      assert.equal((await bobMember.take("undeliverable", (message) => message.id === 8)).code, "offline");
+      sendTo(bobMember, keyId(bob), 9, new Uint8Array(4));
+      assert.equal((await bobMember.take("undeliverable", (message) => message.id === 9)).code, "not_member");
+      sendTo(carolMember, keyId(alice), 10, new Uint8Array(4));
+      assert.equal((await carolMember.take("undeliverable", (message) => message.id === 10)).code, "offline");
+      assert.equal(
+        delivered(aliceMember).some((entry) => entry.id === 10),
+        false,
+      );
     },
   );
 
-  await check("A session to a member of a different team, or to a member that does not host, fails", async () => {
-    carolMember.sendJson(sessionOpen(1, keyId(alice)));
-    assert.equal(
-      (await carolMember.take("session-failed", (message) => message.session === 1)).code,
-      "target_unavailable",
-    );
-    aliceMember.sendJson(sessionOpen(1, keyId(bob)));
-    assert.equal(
-      (await aliceMember.take("session-failed", (message) => message.session === 1)).code,
-      "target_unavailable",
-    );
-    bobMember.sendJson(sessionOpen(3, keyId(bob)));
-    assert.equal((await bobMember.take("session-failed", (message) => message.session === 3)).code, "invalid_message");
+  await check("The server answers info from the record, and null for a member it does not know", async () => {
+    bobMember.sendJson({ type: "info", version: RELAY_PROTOCOL_VERSION, id: 1, about: keyId(alice) });
+    const known = await bobMember.take("info", (message) => message.id === 1);
+    assert.deepEqual([known.member?.user, known.member?.hosting], ["alice", true]);
+    carolMember.sendJson({ type: "info", version: RELAY_PROTOCOL_VERSION, id: 2, about: keyId(alice) });
+    assert.equal((await carolMember.take("info", (message) => message.id === 2)).member, null);
   });
 
-  await check("A refusal of the target fails the session, and an answer on another socket is ignored", async () => {
-    bobMember.sendJson(sessionOpen(4, keyId(alice), "aGVsbG8"));
-    const incoming = await aliceMember.take("session-incoming", (message) => message.from.user === "bob");
-    carolMember.sendJson({ type: "session-accept", version: RELAY_PROTOCOL_VERSION, session: incoming.session });
-    aliceMember.sendJson({
-      type: "session-refuse",
-      version: RELAY_PROTOCOL_VERSION,
-      session: incoming.session,
-      code: "refused",
-    });
-    assert.equal((await bobMember.take("session-failed", (message) => message.session === 4)).code, "refused");
-    assert.equal(
-      bobMember.messages.some((message) => message.type === "session-opened" && message.session === 4),
-      false,
-    );
-  });
-
-  await check("The sessions of one pair are limited", async () => {
-    for (let session = 10; session < 10 + SESSIONS_PER_PAIR; session += 1)
-      bobMember.sendJson(sessionOpen(session, keyId(alice)));
-    bobMember.sendJson(sessionOpen(10 + SESSIONS_PER_PAIR, keyId(alice)));
-    const failed = await bobMember.take("session-failed", (message) => message.session === 10 + SESSIONS_PER_PAIR);
-    assert.equal(failed.code, "rate_limited");
-    for (let session = 10; session < 10 + SESSIONS_PER_PAIR; session += 1) {
-      bobMember.sendJson({ type: "session-close", version: RELAY_PROTOCOL_VERSION, session });
-    }
-    for (let count = 0; count < SESSIONS_PER_PAIR; count += 1) await aliceMember.take("session-incoming");
-    for (let count = 0; count < SESSIONS_PER_PAIR; count += 1) await aliceMember.take("session-close");
-  });
-
-  await check("Data beyond the window, an unknown session number and a reused number are refused", async () => {
-    const daveMember = await hello(url, rootPem, dave, { role: "member", hosting: false });
-    await daveMember.message("welcome");
-    const daveData = await openData(url, rootPem, daveMember);
-    daveData.sendBytes(frame(77, new Uint8Array(8)));
-    const { assigned } = await openSession(daveMember, aliceMember, keyId(alice), 5);
-    daveMember.sendJson(sessionOpen(5, keyId(alice)));
-    await refusedWith(daveMember, "invalid_message");
-    await daveData.closed;
-    await aliceMember.take("session-close", (message) => message.session === assigned);
-    const greedy = await hello(url, rootPem, dave, { role: "member", hosting: false });
-    await greedy.message("welcome");
-    const greedyData = await openData(url, rootPem, greedy);
-    await openSession(greedy, aliceMember, keyId(alice), 1);
-    for (let sent = 0; sent <= RELAY_SESSION_WINDOW_BYTES; sent += RELAY_SESSION_FRAME_PAYLOAD_LIMIT) {
-      greedyData.sendBytes(frame(1, new Uint8Array(RELAY_SESSION_FRAME_PAYLOAD_LIMIT)));
-    }
-    await refusedWith(greedy, "protocol_error");
-    await greedyData.closed;
-    await aliceMember.take("session-close");
-    aliceData.binary.length = 0;
-  });
-
-  await check("Frames for a member with no data socket wait, and the server asks for the data socket", async () => {
-    const erin = await hello(url, rootPem, dave, { role: "member", hosting: false });
-    await erin.message("welcome");
-    const erinData = await openData(url, rootPem, erin);
-    const { assigned } = await openSession(erin, aliceMember, keyId(alice), 1);
-    aliceData.close();
-    await aliceData.closed;
-    erinData.sendBytes(frame(1, new TextEncoder().encode("waits")));
-    await aliceMember.take("data-wanted");
-    const reopened = await openData(url, rootPem, aliceMember);
-    await reopened.until(() => (framesFor(reopened, assigned).length > 0 ? true : undefined), "the waiting frame");
-    assert.equal(new TextDecoder().decode(framesFor(reopened, assigned)[0]), "waits");
-    erin.close();
-    await erinData.closed;
-    await aliceMember.take("session-close", (message) => message.session === assigned);
-    reopened.close();
-  });
-
-  await check("A hello for the removed tunnel roles is refused", async () => {
-    const old = new Peer(url, { ca: rootPem });
-    const challenge = await old.message("challenge");
-    const clientNonce = randomBytes(32).toString("base64url");
-    old.sendJson({
-      type: "hello",
-      version: RELAY_PROTOCOL_VERSION,
-      audience: relayAudience(url),
-      clientNonce,
-      certificate: bob.certificate,
-      chain: bob.chain,
-      signature: proofSignature(
-        bob.privateKey,
-        relayHelloTranscript({ nonce: challenge.nonce, clientNonce, audience: relayAudience(url), role: "member" }),
-      ),
-      role: "client",
-      target: keyId(alice),
-    });
+  await check("A hello of an older protocol version is refused", async () => {
+    const old = await hello(url, rootPem, dave, { version: 1 });
     await refusedWith(old, "invalid_message");
   });
 
@@ -732,32 +530,31 @@ try {
     assert.equal(command(otherRoot, "ca", "init").status, 0);
     assert.equal(command(otherRoot, "ca", "team", "add", "Acme Team").status, 0);
     const eve = issue(otherRoot, work, "Acme Team", "eve");
-    await refusedWith(await hello(url, rootPem, eve, { role: "member", hosting: false }), "authentication_failed");
+    await refusedWith(await hello(url, rootPem, eve, { hosting: false }), "authentication_failed");
   });
 
   await check("A proof from a different private key is refused", async () => {
     await refusedWith(
-      await hello(url, rootPem, alice, { role: "member", hosting: false }, { signingKey: bob.privateKey }),
+      await hello(url, rootPem, alice, { hosting: false }, { signingKey: bob.privateKey }),
       "authentication_failed",
     );
   });
 
-  await check("A proof for a different nonce is refused", async () => {
+  await check("A hello with an old time, or with a nonce that the server saw, is refused", async () => {
     await refusedWith(
-      await hello(
-        url,
-        rootPem,
-        alice,
-        { role: "member", hosting: false },
-        { nonce: randomBytes(32).toString("base64url") },
-      ),
+      await hello(url, rootPem, dave, { hosting: false }, { timestamp: Date.now() - 120_000 }),
       "authentication_failed",
     );
+    const clientNonce = randomBytes(32).toString("base64url");
+    const first = await hello(url, rootPem, dave, { hosting: false }, { clientNonce });
+    await first.message("welcome");
+    first.close();
+    await refusedWith(await hello(url, rootPem, dave, { hosting: false }, { clientNonce }), "authentication_failed");
   });
 
   await check("A proof for a different server is refused", async () => {
     await refusedWith(
-      await hello(url, rootPem, alice, { role: "member", hosting: false }, { audience: "wss://relay.example.com" }),
+      await hello(url, rootPem, alice, { hosting: false }, { audience: "wss://relay.example.com" }),
       "authentication_failed",
     );
   });
@@ -803,40 +600,40 @@ try {
 
   await check("The authority of one team cannot make a member of a different team", async () => {
     const intruder = forged("Other Team", "Acme Team", "intruder", Date.now(), 30);
-    await refusedWith(await hello(url, rootPem, intruder, { role: "member", hosting: false }), "authentication_failed");
+    await refusedWith(await hello(url, rootPem, intruder, { hosting: false }), "authentication_failed");
   });
 
   await check("An expired certificate is refused", async () => {
     const old = forged("Acme Team", "Acme Team", "old", Date.now() - 3 * 24 * 60 * 60_000, 1);
-    await refusedWith(await hello(url, rootPem, old, { role: "member", hosting: false }), "certificate_expired");
+    await refusedWith(await hello(url, rootPem, old, { hosting: false }), "certificate_expired");
   });
 
   await check("Data before the proof, an invalid frame, and an unknown message close the socket", async () => {
     const early = new Peer(url, { ca: rootPem });
-    await early.message("challenge");
-    early.sendBytes(randomBytes(16));
+    early.sendJsonWhenOpen({ type: "ping", version: RELAY_PROTOCOL_VERSION, id: 1 });
     await refusedWith(early, "protocol_error");
-    const invalid = await hello(url, rootPem, dave, { role: "member", hosting: false });
+    const invalid = await hello(url, rootPem, dave, { hosting: false });
     await invalid.message("welcome");
-    const invalidData = await openData(url, rootPem, invalid);
-    invalidData.sendBytes(new Uint8Array([9, 9, 0, 0, 0, 1, 0]));
-    await refusedWith(invalidData, "invalid_message");
-    invalid.close();
+    invalid.sendBytes(new Uint8Array([9, 9, 0, 0, 0, 1, 0]));
+    await refusedWith(invalid, "invalid_message");
     const unknown = new Peer(url, { ca: rootPem });
-    await unknown.message("challenge");
-    unknown.sendJson({ type: "hello", version: 2 });
+    unknown.sendJsonWhenOpen({ type: "hello", version: RELAY_PROTOCOL_VERSION });
     await refusedWith(unknown, "invalid_message");
   });
 
   await check("A newer connection of one certificate replaces the older one", async () => {
-    bobMember.forget("members");
-    const newer = await hello(url, rootPem, alice, { role: "member", hosting: true, label: "Alice laptop" });
+    bobMember.forget("online");
+    const newer = await hello(url, rootPem, alice, { hosting: true, label: "Alice laptop" });
     await newer.message("welcome");
     const error = await aliceMember.message("error");
     assert.equal(error.code, "replaced");
     assert.equal((await aliceMember.closed).code, RELAY_CLOSE_CODES.replaced);
-    const roster = await bobMember.message("members");
-    assert.equal(roster.members.filter((member) => member.user === "alice").length, 1);
+    const online = await bobMember.message("online", (message) => message.member.user === "alice");
+    assert.equal(online.member.keyId, keyId(alice));
+    assert.equal(
+      bobMember.messages.some((message) => message.type === "offline" && message.keyId === keyId(alice)),
+      false,
+    );
     aliceMember = newer;
   });
 
@@ -849,23 +646,14 @@ try {
     assert.equal(separated.status, 0, separated.output);
   });
 
-  await check("A revoked certificate loses its connection and its sessions and cannot connect again", async () => {
-    const { assigned } = await openSession(bobMember, aliceMember, keyId(alice), 40);
+  await check("A revoked certificate loses its connection and cannot connect again", async () => {
     const revoked = command(environment, "ca", "revoke", keyId(bob));
     assert.equal(revoked.status, 0, revoked.output);
     const error = await bobMember.message("error");
     assert.equal(error.code, "certificate_revoked");
     await bobMember.closed;
-    await aliceMember.take("session-close", (message) => message.session === assigned);
-    await refusedWith(await hello(url, rootPem, bob, { role: "member", hosting: false }), "certificate_revoked");
-    const roster = await aliceMember.message(
-      "members",
-      (message) => !message.members.some((member) => member.user === "bob"),
-    );
-    assert.deepEqual(
-      roster.members.map((member) => member.user),
-      ["alice"],
-    );
+    await aliceMember.message("offline", (message) => message.keyId === keyId(bob));
+    await refusedWith(await hello(url, rootPem, bob, { hosting: false }), "certificate_revoked");
   });
 
   await check("The server sent no message that the client decoder refuses", () => {
@@ -874,27 +662,13 @@ try {
 
   await check("A socket that sends no proof is closed", async () => {
     const silent = new Peer(url, { ca: rootPem });
-    await silent.message("challenge");
     await refusedWith(silent, "authentication_failed");
   });
 
   await check("A hello with no client nonce is refused and gets no server proof", async () => {
     const peer = new Peer(url, { ca: rootPem });
-    const challenge = await peer.message("challenge");
-    const audience = relayAudience(url);
-    peer.sendJson({
-      type: "hello",
-      version: RELAY_PROTOCOL_VERSION,
-      audience,
-      role: "member",
-      hosting: false,
-      certificate: alice.certificate,
-      chain: alice.chain,
-      signature: proofSignature(
-        alice.privateKey,
-        relayHelloTranscript({ nonce: challenge.nonce, clientNonce: "", audience, role: "member" }),
-      ),
-    });
+    const { message } = helloText(url, alice, { hosting: false });
+    peer.sendJsonWhenOpen({ ...message, clientNonce: "" });
     await refusedWith(peer, "invalid_message");
     assert.equal(peer.serverProof, null);
   });
@@ -909,7 +683,7 @@ try {
       RELAY_TLS_KEY_PATH: join(otherRootDirectory, "tls/server.key"),
     });
     servers.push(separate.child);
-    const member = await hello(separate.url, rootPem, alice, { role: "member", hosting: false }, {}, otherRootPem);
+    const member = await hello(separate.url, rootPem, alice, { hosting: false }, {}, otherRootPem);
     await member.message("welcome");
     const socket = provedSockets.find((entry) => entry.peer === member);
     assert.ok(socket && member.serverProof);
@@ -982,28 +756,9 @@ try {
       cert: `${alice.certificate}${alice.chain.join("")}`,
       key: alice.privateKey,
     });
-    const challenge = await peer.message("challenge");
-    const audience = relayAudience(gated.url);
-    const clientNonce = randomBytes(32).toString("base64url");
-    provedSockets.push({
-      peer,
-      url: gated.url,
-      transcript: { serverNonce: challenge.nonce, clientNonce, audience, role: "member", clientKeyId: keyId(alice) },
-    });
-    peer.sendJson({
-      type: "hello",
-      version: RELAY_PROTOCOL_VERSION,
-      audience,
-      clientNonce,
-      role: "member",
-      hosting: false,
-      certificate: alice.certificate,
-      chain: alice.chain,
-      signature: proofSignature(
-        alice.privateKey,
-        relayHelloTranscript({ nonce: challenge.nonce, clientNonce, audience, role: "member" }),
-      ),
-    });
+    const { transcript, message } = helloText(gated.url, alice, { hosting: false });
+    provedSockets.push({ peer, url: gated.url, transcript });
+    peer.sendJsonWhenOpen(message);
     const welcome = await peer.message("welcome");
     assert.equal(welcome.self.user, "alice");
     peer.close();
@@ -1146,7 +901,7 @@ try {
     assert.equal(other.status, 404);
     const live = await fetch(`http://127.0.0.1:${web.healthPort}/health/live`);
     assert.equal(live.status, 200);
-    const member = await hello(web.url, rootPem, alice, { role: "member", hosting: false });
+    const member = await hello(web.url, rootPem, alice, { hosting: false });
     await member.message("welcome");
     member.close();
   });
@@ -1177,7 +932,7 @@ try {
   await check("A stop signal ends the server while a member is connected", async () => {
     const stopping = await startServer(environment);
     servers.push(stopping.child);
-    const member = await hello(stopping.url, rootPem, alice, { role: "member", hosting: true });
+    const member = await hello(stopping.url, rootPem, alice, { hosting: true });
     await member.message("welcome");
     const exited = new Promise<number | null>((resolveExit) =>
       stopping.child.once("exit", (code) => resolveExit(code)),
@@ -1196,7 +951,7 @@ try {
     const accepted = provedSockets.filter((socket) => socket.peer.order.some((type) => type === "welcome"));
     assert.ok(accepted.length >= 8, `Only ${accepted.length} sockets were accepted.`);
     for (const socket of accepted) {
-      assert.equal(serverProofProblem(socket, rootPem), null, `${socket.transcript.role} socket`);
+      assert.equal(serverProofProblem(socket, rootPem), null, `${socket.transcript.clientKeyId} socket`);
     }
   });
 } finally {

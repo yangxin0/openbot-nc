@@ -1,10 +1,10 @@
 import { createPrivateKey, createPublicKey, type KeyObject, sign, X509Certificate } from "node:crypto";
 import {
-  RELAY_PROTOCOL_VERSION,
-  type RelayServerMessage,
+  type RelayHubServerMessage,
   type RelayServerProofTranscriptInput,
   relayServerProofTranscript,
-} from "@openbot/contracts/relay-protocol/messages";
+} from "@openbot/contracts/relay-protocol/hub";
+import { RELAY_PROTOCOL_VERSION } from "@openbot/contracts/relay-protocol/messages";
 import {
   parseRelaySubjectAltName,
   type RelayServerCertificateRefusal,
@@ -73,7 +73,7 @@ export function checkServerIdentity(input: {
 export function serverProofMessage(
   identity: RelayServerIdentity,
   input: RelayServerProofTranscriptInput,
-): RelayServerMessage {
+): RelayHubServerMessage {
   const signature = sign("sha256", Buffer.from(relayServerProofTranscript(input)), {
     key: identity.privateKey,
     dsaEncoding: "ieee-p1363",

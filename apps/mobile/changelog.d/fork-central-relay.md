@@ -1,5 +1,8 @@
 ### Changed
 
+- The app uses the new central server hub: one WebSocket, a sign-in with one message, and each
+  message encrypted from end to end with a key of this connection. The central server must also be
+  on this version.
 - When the app comes back to the front, it checks its connection to the central server and opens a
   new connection at the same time, and keeps the one that answers first. A connection to a server is
   ready in about one second. Before, the app could wait 15 seconds or more on a connection that iOS

@@ -13,7 +13,7 @@ import { certificateFingerprint } from "./identity";
 import { startRelayServer } from "./server";
 import { RelayService } from "./service";
 
-const TRUST_CHECK_INTERVAL_MS = 5_000;
+const TRUST_CHECK_INTERVAL_MS = 2_000;
 const EXPIRY_CHECK_INTERVAL_MS = 60_000;
 const DEFAULT_ROOT_NAME = "OpenBot Root CA";
 

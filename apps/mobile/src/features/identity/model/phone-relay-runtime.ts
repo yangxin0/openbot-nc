@@ -1,8 +1,6 @@
 import {
   type RelayBrowserControl,
   type RelayControlSnapshot,
-  type RelaySession,
-  type RelaySessionOpenOptions,
   RelaySocketError,
   type RelaySocketErrorCode,
 } from "@openbot/team-client/relay-client";
@@ -65,16 +63,13 @@ export class PhoneRelayRuntime implements PhoneRelay {
   }
 
   resume(): void {
-    this.#control?.resume();
+    this.#control?.checkLiveness();
   }
 
-  pause(): void {
-    this.#control?.pause();
-  }
+  pause(): void {}
 
-  async openSession(target: string, options: RelaySessionOpenOptions = {}): Promise<RelaySession> {
-    const control = this.#control ?? (await this.#nextControl(options.signal));
-    return control.openSession(target, options);
+  async hub(signal: AbortSignal): Promise<RelayBrowserControl> {
+    return this.#control ?? (await this.#nextControl(signal));
   }
 
   #nextControl(signal: AbortSignal | undefined): Promise<RelayBrowserControl> {

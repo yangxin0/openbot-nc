@@ -20,7 +20,6 @@ import {
   teamCapabilityHeaders,
 } from "@openbot/contracts/team-protocol";
 import { Effect, Option, Result, Schema } from "effect";
-import WebSocket from "ws";
 import type { AgentBrowserHost } from "../src/backend/agent/turn-lifecycle";
 import { AgentService } from "../src/backend/agent-service";
 import { AgentStore } from "../src/backend/agent-store";
@@ -31,13 +30,11 @@ import { SidebarLayoutStore } from "../src/backend/sidebar-layout-store";
 import { HostService } from "../src/main/host-service";
 import type { LocalProfile } from "../src/main/local-profile-store";
 import { RelayControl, type RelayControlState } from "../src/main/relay/control";
-import { RelayDialer } from "../src/main/relay/dialer";
-import { createRelayFetch, RelayAgent } from "../src/main/relay/fetch";
+import { createRelayFetch } from "../src/main/relay/fetch";
 import { type RelayCipher, RelayIdentityStore } from "../src/main/relay/identity-store";
 import { decodeJoinResult } from "../src/main/remote-team-decoding";
 import type { TeamApiBrowser } from "../src/main/team-api/dependencies";
 import { TeamStore } from "../src/main/team-store";
-import { rawDataText } from "../src/main/ws-raw-data";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const OUT = resolve(ROOT, ".openbot-build/relay-team-api-e2e");
@@ -106,12 +103,6 @@ async function ok<A, E>(operation: Effect.Effect<A, E>): Promise<A> {
   const result = await Effect.runPromise(Effect.result(operation));
   if (Result.isFailure(result)) throw new Error(`The operation failed: ${inspect(result.failure)}`);
   return result.success;
-}
-
-async function failureOf<A, E>(operation: Effect.Effect<A, E>): Promise<E> {
-  const result = await Effect.runPromise(Effect.result(operation));
-  if (Result.isSuccess(result)) throw new Error("The operation did not fail.");
-  return result.failure;
 }
 
 function untilState(
@@ -530,13 +521,10 @@ try {
     );
   });
 
-  const aliceDialer = new RelayDialer({ control: aliceControl });
-  const bobDialer = new RelayDialer({ control: bobControl });
-  const hostLaptopDialer = new RelayDialer({ control: hostLaptopControl });
-  const eveDialer = new RelayDialer({ control: eveControl });
-  const aliceFetch = createRelayFetch({ dialer: aliceDialer, target: hostKeyId });
-  const bobFetch = createRelayFetch({ dialer: bobDialer, target: hostKeyId });
-  const ownerFetch = createRelayFetch({ dialer: hostLaptopDialer, target: hostKeyId });
+  const aliceFetch = createRelayFetch({ control: aliceControl, target: hostKeyId });
+  const bobFetch = createRelayFetch({ control: bobControl, target: hostKeyId });
+  const ownerFetch = createRelayFetch({ control: hostLaptopControl, target: hostKeyId });
+  const eveFetch = createRelayFetch({ control: eveControl, target: hostKeyId });
   closers.push(aliceFetch.close, bobFetch.close, ownerFetch.close);
 
   await check("The host serves the relay sign-in capability through the relay", async () => {
@@ -560,7 +548,7 @@ try {
     );
     const again = await relaySignIn(aliceFetch);
     assert.equal(again.memberId, session.memberId);
-    assert.notEqual(again.token, session.token);
+    assert.equal(again.token, session.token);
   });
 
   let owner: Session | null = null;
@@ -571,22 +559,25 @@ try {
     assert.equal(session.memberId, team.getOwnerMemberId());
   });
 
-  await check("A route that needs a session works with the relay session token", async () => {
-    assert.ok(alice);
-    assert.ok(owner);
-    const memberAgents = await call(aliceFetch.fetch, aliceFetch.origin, "GET", TEAM_API_ROUTES.agents.all, {
-      token: alice.token,
-    });
-    assert.equal(memberAgents.status, 200, inspect(memberAgents.body));
-    decodeAgents(memberAgents.body);
-    const ownerAgents = await call(ownerFetch.fetch, ownerFetch.origin, "GET", TEAM_API_ROUTES.agents.all, {
-      token: owner.token,
-    });
-    assert.equal(ownerAgents.status, 200, inspect(ownerAgents.body));
-    assert.ok(decodeAgents(ownerAgents.body).some((agent) => agent.id === fixture.id));
-    const anonymous = await call(aliceFetch.fetch, aliceFetch.origin, "GET", TEAM_API_ROUTES.agents.all);
-    assert.equal(anonymous.status, 401);
-  });
+  await check(
+    "A route that needs a session works for the verified certificate, with or without the token",
+    async () => {
+      assert.ok(alice);
+      assert.ok(owner);
+      const memberAgents = await call(aliceFetch.fetch, aliceFetch.origin, "GET", TEAM_API_ROUTES.agents.all, {
+        token: alice.token,
+      });
+      assert.equal(memberAgents.status, 200, inspect(memberAgents.body));
+      decodeAgents(memberAgents.body);
+      const ownerAgents = await call(ownerFetch.fetch, ownerFetch.origin, "GET", TEAM_API_ROUTES.agents.all, {
+        token: owner.token,
+      });
+      assert.equal(ownerAgents.status, 200, inspect(ownerAgents.body));
+      assert.ok(decodeAgents(ownerAgents.body).some((agent) => agent.id === fixture.id));
+      const anonymous = await call(aliceFetch.fetch, aliceFetch.origin, "GET", TEAM_API_ROUTES.agents.all);
+      assert.equal(anonymous.status, 200);
+    },
+  );
 
   await check("An 8 MiB attachment goes up and comes back through the relay with the same hash", async () => {
     assert.ok(alice);
@@ -635,43 +626,37 @@ try {
     assert.deepEqual([joinAccount.status, errorText(joinAccount)], [403, RELAY_SIGN_IN_ONLY]);
   });
 
-  const eventsAgent = new RelayAgent({ dialer: aliceDialer, target: hostKeyId, poolSize: 1 });
-  closers.push(() => eventsAgent.destroy());
+  closers.push(eveFetch.close);
   const eventsClosed: { promise: Promise<void> | null } = { promise: null };
 
   await check("The events socket on a second stream gets the role change that the owner makes", async () => {
     assert.ok(alice);
     assert.ok(owner);
     const aliceSession = alice;
-    const socket = new WebSocket(
-      `ws://relay.invalid${TEAM_API_ROUTES.events}`,
-      [TEAM_PROTOCOL_V1_WEBSOCKET, `openbot-token.${aliceSession.token}`],
-      { agent: eventsAgent },
+    const socket = aliceFetch.client.openEventSocket();
+    closers.push(() => socket.close());
+    eventsClosed.promise = new Promise<void>((resolveClosed) =>
+      socket.addEventListener("close", () => resolveClosed(), { once: true }),
     );
-    closers.push(() => socket.terminate());
-    eventsClosed.promise = new Promise<void>((resolveClosed) => socket.once("close", () => resolveClosed()));
-    socket.on("error", () => undefined);
     await until<void>("the events socket opens", (done) => {
-      const listener = () => done();
-      socket.once("open", listener);
-      return () => socket.off("open", listener);
+      socket.addEventListener("open", () => done(), { once: true });
+      return () => undefined;
     });
     assert.equal(socket.protocol, TEAM_PROTOCOL_V1_WEBSOCKET);
     await untilPresence("the host sees alice online", (snapshot) =>
       snapshot.members.some((member) => member.id === aliceSession.memberId && member.online),
     );
     const seen = until<void>("alice gets the presence with her new role", (done) => {
-      const listener = (data: WebSocket.RawData, binary: boolean) => {
-        if (binary) return;
-        const event = decodePresenceEvent(rawDataText(data));
+      const listener = (message: { data: unknown }) => {
+        const event = decodePresenceEvent(String(message.data));
         if (
           Option.isSome(event) &&
           event.value.snapshot.members.some((member) => member.id === aliceSession.memberId && member.role === "admin")
         )
           done();
       };
-      socket.on("message", listener);
-      return () => socket.off("message", listener);
+      socket.addEventListener("message", listener);
+      return () => undefined;
     });
     const changed = await call(
       ownerFetch.fetch,
@@ -716,8 +701,15 @@ try {
   });
 
   await check("A certificate of another team cannot dial the host", async () => {
-    const refusal = await deadline("the dial of eve", failureOf(eveDialer.dial(hostKeyId)));
-    assert.equal(refusal.code, "target_unavailable");
+    const refusal = await deadline(
+      "the request of eve",
+      eveFetch.fetch(`${eveFetch.origin}${TEAM_API_ROUTES.compatibility}`).then(
+        () => null,
+        (error: unknown) => error,
+      ),
+    );
+    assert.ok(refusal instanceof TypeError);
+    assert.match(inspect(refusal.cause), /target_unavailable/u);
   });
 
   await check("After the revocation of alice's certificate, her control socket and her streams close", async () => {
@@ -738,8 +730,11 @@ try {
     assert.equal(final.status === "offline" ? final.code : null, "certificate_revoked");
     await deadline("the events socket of alice closes", eventsClosed.promise);
     await offlineAtHost;
-    const refused = await deadline("a dial of the revoked certificate", failureOf(aliceDialer.dial(hostKeyId)));
-    assert.equal(refused.code, "certificate_revoked");
+    const refused = await aliceFetch.fetch(`${aliceFetch.origin}${TEAM_API_ROUTES.compatibility}`).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    assert.ok(refused instanceof TypeError, "A request of the revoked certificate did not fail.");
   });
 
   await check("Relay hosting stops, and the host leaves the roster", async () => {

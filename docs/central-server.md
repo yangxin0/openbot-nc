@@ -16,10 +16,11 @@ invitation and no WebRTC.
 - Each OpenBot that connects with a valid certificate of a team is a member of that team. There is
   no other member list.
 - The server sends each member the list of the members of its team that are connected.
-- Each OpenBot keeps at most two WebSockets to the server: a control socket while it runs with an
-  identity, and one data socket that all its connections share. A connection to a member of the same
-  team that hosts is a session on these sockets. The server passes the session data between the data
-  sockets of the two members. It cannot connect members of different teams.
+- Each app (OpenBot, web client, extension, phone) keeps one WebSocket to the server and talks only to
+  the server. There is no connection, session or tunnel between two devices. A request to a member
+  that hosts is a message to the server, encrypted for that member; the server passes it on when that
+  member is online and answers "offline" at once when it is not. It cannot pass messages between
+  members of different teams.
 - The identifier of a member is the SHA-256 of the public key in its certificate. So a member
   cannot take the address of a different member.
 - The verification goes in the two directions. The server verifies the certificate of each
@@ -28,11 +29,12 @@ invitation and no WebRTC.
 
 ## What the server can read
 
-The data of a session goes through the server. TLS protects each socket, and the two OpenBots
-encrypt the bytes of the session from end to end (see [End-to-end encryption](#end-to-end-encryption)).
-The server can see who opens a session to whom, when, the session numbers, and the number and size of
-the encrypted frames. It cannot read or change chats, files or commands. It does not store the bytes or
-write them to a log. It keeps a data ticket in memory only as its SHA-256, for at most 60 seconds.
+Each message between two apps is encrypted from end to end with keys that only the two apps have
+(see [End-to-end encryption](#end-to-end-encryption)). TLS also protects each socket. The server can
+see who sends a message to whom, when, the kind of the message (request, event or file data) and its
+size. It cannot read or change chats, files or commands. It does not store messages or write them to
+a log. It keeps a record of each connected app (certificate, team, user, device, label, hosting,
+capabilities, message key, connection time, last message time) only while the app is connected.
 
 A person who controls the server, or its root private key, controls who can connect: with the root
 key, that person can make a certificate for a new member. Keep the server and its data directory
@@ -54,9 +56,10 @@ The server refuses a member certificate when:
 - a team authority issued it for a different team;
 - it is expired, not valid yet or revoked, or its team authority is revoked;
 - it does not name one team and one user;
-- the sender does not prove that it has the private key. The server sends a random value, and the
-  member signs it together with its own random value, the server address and the purpose of the
-  socket.
+- the sender does not prove that it has the private key. The member signs its `hello` (its random
+  value, the time, the server address, its record and its message key) with the key of its
+  certificate; the time must be within 60 seconds of the server time, and the server refuses a
+  random value that it saw before.
 
 An OpenBot refuses the server, and does not try again, when the server identity certificate:
 
@@ -317,11 +320,11 @@ the connections of the member at once.
 | `RELAY_HEALTH_HOST`, `RELAY_HEALTH_PORT` | `127.0.0.1`, `8080` | `/health/live`, `/health/ready` and `/metrics`. |
 | `RELAY_METRICS_TOKEN` | none | Bearer token for `/metrics`. With no token, `/metrics` answers 404. |
 | `RELAY_MAX_SOCKETS_PER_IP` | `128` | Sockets from one address. |
-| `RELAY_MAX_SESSIONS_PER_SOCKET` | `256` | Sessions of one member, opened and accepted. |
-| `RELAY_MAX_SESSIONS_PER_PAIR` | `32` | Sessions that one member opens to one other member. |
-| `RELAY_MAX_PENDING_PER_MEMBER` | `32` | Sessions that wait for one member to accept. |
-| `RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS` | `30000` | The server closes a control socket that sent no `ping` for this time, with its data socket and sessions, and removes the member from the roster. Only for an app that sends `heartbeat` in `hello`. |
-| `RELAY_HIGH_WATER_BYTES` | `262144` | Bytes in the send buffer of a data socket before the server keeps the next frames in its own queue for that member. |
+| `RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS` | `30000` | The server closes the socket of an app that sent nothing for this time, and the others see the app offline. |
+| `RELAY_SUSPENDED_TIMEOUT_MS` | `300000` | The same time for an app that sent `suspendable` in `hello` (the phone in the background). |
+| `RELAY_HELLO_WINDOW_MS` | `60000` | The greatest difference between the time in `hello` and the server time. |
+| `RELAY_HIGH_WATER_BYTES` | `262144` | Bytes in the send buffer of a socket before the server keeps the next messages in the queue of that app. |
+| `RELAY_QUEUE_BYTES` | `4194304` | Bytes that the server keeps for one app in each queue (small messages, file data). A message over the limit gets `undeliverable` `busy`. |
 | `RELAY_ADMIN_HOST` | none | The private IP address of the admin page. With no value, there is no admin page. |
 | `RELAY_ADMIN_PORT` | `8992` | The port of the admin page. |
 | `RELAY_ADMIN_ALLOW_PUBLIC` | none | `1` permits a wildcard or public `RELAY_ADMIN_HOST`. |
@@ -339,221 +342,149 @@ is older than 30 seconds.
 
 ## Protocol
 
-The endpoint is `WSS /v1/relay`. Each OpenBot opens two WebSockets to it, never more: the control
-socket and the data socket. Control messages are JSON text. Session data is binary and goes only on
-the data socket.
+The endpoint is `WSS /v1/relay`. Each app opens one WebSocket to it and keeps it while it runs with an
+identity. Control messages are JSON text. Messages between apps are binary. The version of the
+protocol is 2; a message of a different version is refused, so all apps and the server update
+together.
 
-### Control socket
+### Sign-in
 
-1. The server sends `challenge` with a nonce (32 random bytes, base64url).
-2. The peer sends `hello` with its own nonce (`clientNonce`, 32 random bytes, base64url), the role
-   `member`, `hosting`, an optional label, `features: ["sessions-v2", "heartbeat"]`, its certificate,
-   the team authority certificate, and a signature of `relayHelloTranscript` (server nonce, client
-   nonce, server address, role).
-3. The server verifies the hello. Before any other message, it sends `server-proof` with its identity
-   certificate and a signature of `relayServerProofTranscript` (server nonce, client nonce, server
-   address, role, key identifier of the peer). The signature is ECDSA P-256 with SHA-256, in the IEEE
-   P1363 format (64 bytes), base64url. The peer checks the certificate and the signature with its own
-   values before it accepts `welcome`. When the check fails, or another message comes first, the peer
-   closes the socket and sends nothing more. The desktop reports `server_refused` and does not connect
-   again.
-4. The server answers `welcome` with the team, the members and
-   `features: ["sessions-v2", "heartbeat"]`, and sends `members` after each change. `presence` changes `hosting` and the label. The sharing switch only
-   changes `hosting`; it never opens or closes a socket. A client that gets no `sessions-v2` in
-   `welcome` stops with "The relay server needs an update."
-5. The control socket stays open while the app runs with an identity. The phone closes it when the
-   app goes to the background (iOS stops background sockets) and opens it again when the app comes
-   back.
+The app sends `hello` as soon as the socket is open; there is no challenge round:
 
-### Heartbeat
+| Field | Value |
+| --- | --- |
+| `version`, `audience` | 2, and `wss://<host>` of the server address |
+| `timestamp`, `clientNonce` | the time of the app (ms), and 32 random bytes (base64url) |
+| `label`, `hosting`, `capabilities`, `suspendable` | the record of the app: its name, whether it hosts, its capabilities (at most 16, for example `team-http-v1` for a desktop), and `true` for a phone that can be suspended |
+| `messageKey`, `messageKeySignature` | a new ECDH P-256 public key for this connection (65 bytes, uncompressed, base64url), and the signature of the certificate key over the length-prefixed items `openbot-relay-message-key-v1`, key identifier, message key, time (8 bytes) |
+| `certificate`, `chain`, `signature` | the member certificate, the team authority, and the signature of the certificate key over the JSON array of `openbot-relay-hello-v2` and all the fields above |
 
-A browser cannot send WebSocket ping frames, so the heartbeat is a JSON message on the control
-socket. The app sends it only when `welcome` lists `heartbeat`; the server applies its timeout only to
-an app that sent `heartbeat` in `hello`. So an app and a server of the previous version keep working
-with this version, without the heartbeat.
+The server checks the certificate (issuer, team, dates, revocation), the two signatures, that the
+time is within `RELAY_HELLO_WINDOW_MS`, and that it did not see the pair (key identifier,
+`clientNonce`) before (a bounded memory of 100,000 pairs). Then it sends `server-proof` (its identity
+certificate and a signature over the JSON array of `openbot-relay-server-proof-v2`, `clientNonce`,
+audience and the key identifier of the app) and `welcome` (`self`, `team`, `roster`). The app checks
+the proof before it accepts `welcome`; when the check fails it closes the socket, reports
+`server_refused` and does not connect again. So the app is online about one round trip after the
+socket opens.
 
-| Message | Direction | Fields |
-| --- | --- | --- |
-| `ping` | app to server, control or data socket | `id` (a counter, 1 to 2^31-1) |
-| `pong` | server to app, on the same socket, at once | the same `id` |
+### Records and presence
+
+The server keeps a record of each connected app: key identifier, user, device, label, hosting,
+capabilities, suspendable, certificate, message key and its signature and time, connection time and
+the time of its last message. `welcome` lists the records of the other online members of the team.
+After a change the server sends `online` (`member`: the record, also when the hosting, the label or
+the message key changes) or `offline` (`keyId`). `presence` (`hosting`, `label`) changes the record;
+the sharing switch only changes `hosting`. A newer connection of the same certificate replaces the
+older one (`replaced`), and the others get only `online` with the new record.
+
+`info` (`id`, `about`: a key identifier) gets `info` (`id`, `member`: the record or `null`) from the
+record alone; the server does not ask the app.
+
+### Messages between apps
+
+| Byte | Field |
+| --- | --- |
+| 0 | the frame type: 1 `send` (app to server), 2 `deliver` (server to app) |
+| 1 | the kind: 1 request (`rpc`), 2 event, 3 file data |
+| 2 to 5 | the message number (32 bits, big-endian), chosen by the sender |
+| 6 to 37 | the key identifier: the recipient in `send`, the sender in `deliver` (the 32 bytes of the SHA-256) |
+| 38 to the end | the encrypted payload, at most 64 KiB and 25 bytes |
+
+The server checks that the recipient is an online member of the same team, writes the key
+identifier of the sender into the frame and sends it as `deliver`. Otherwise it answers at once
+`undeliverable` (`id`, `to`, `code`): `offline` (the recipient is not online in the team of the
+sender), `not_member` (the sender itself) or `busy` (the queue of the recipient is full). The app
+then waits for the `online` notice of the recipient. The server keeps two queues for each app,
+small messages and file data, and sends the small messages first; each queue holds at most
+`RELAY_QUEUE_BYTES`. The order of the messages of one kind from one sender stays the same.
+
+### Liveness
 
 | Rule | Value |
 | --- | --- |
-| The app sends a `ping` on the control socket | right after `welcome`, then every 10 s (`RELAY_HEARTBEAT_INTERVAL_MS`) |
-| No `pong` within 3 s (`RELAY_HEARTBEAT_TIMEOUT_MS`) | the app closes the control socket at once (it does not wait for the close handshake), shows the connection as down with the code `heartbeat_timeout`, and connects again at once, then with the usual backoff |
-| A connection that was online for 30 s or more drops | the first new attempt starts at once |
-| The phone comes back to the front | the app sends a `ping` on the old control socket (1.5 s timeout, `RELAY_RESUME_CHECK_TIMEOUT_MS`) and at the same moment opens a new control socket. When the `pong` comes before the new socket sends `hello`, the app closes the new socket and keeps the old one. Otherwise the new socket wins: after its `welcome`, the app closes the old control socket (its data socket and sessions fail with `heartbeat_timeout`) and uses the new one. The server replaces the old control socket of the member when it verifies the new `hello`, so the roster shows the member once. A second control socket exists for at most one connect time |
-| The Mac wakes | the app sends a `ping` at once with a 1.5 s timeout; with no `pong`, it connects again with no backoff |
-| The phone goes to the background | it stops the heartbeat |
-| A data socket is open | the app sends the same `ping` on it every 10 s; with no `pong` within 3 s it closes the data socket, its sessions fail with `heartbeat_timeout`, and the next need opens a new data socket |
-| The server gets no `ping` on a control socket for 30 s (`RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS`) | it sends `error` `heartbeat_timeout`, closes the socket, its data socket and its sessions, and sends the new roster |
+| Any message that the server gets | proves that the app is alive; there is no separate heartbeat while the app sends |
+| The app sent or got nothing for 10 s | it sends `ping` (`id`); the server answers `pong` at once |
+| After a `ping`, no message from the server within 3 s | the app closes the socket and connects again at once |
+| Any message from the server | proves that the server is alive |
+| The server got nothing from an app for 30 s (`RELAY_CLIENT_HEARTBEAT_TIMEOUT_MS`) | it sends `error` `heartbeat_timeout`, closes the socket and sends `offline` to the team |
+| The same for an app with `suspendable` | 300 s (`RELAY_SUSPENDED_TIMEOUT_MS`) |
+| A revoked certificate | the server closes the socket within a few seconds (it reads the registry every 2 s) and sends `offline` |
 
-A `ping` on the data socket does not count for the control socket. A `ping` before `welcome` is a
-protocol error.
+The app also sends `ping` after 10 s with nothing received, so it finds a dead socket while it only
+sends. The Mac sends a `ping` at once when it wakes (1.5 s answer time). Each app writes one log line
+for each connection (`relay connected in 289 ms (TCP+TLS+WebSocket open 145 ms, hello to welcome 144
+ms)`) and one when a connection ends; the lines hold only times and codes.
 
-A new session (`session-open`) goes only on a confirmed control socket: one that answered a `ping`
-within the last 10 s, or the resume check, and never while the resume race runs. Otherwise the app
-sends a `ping` and waits for the `pong`, or for the new connection. When the control socket drops while a session opens, the app opens the
-session again once on the new connection.
+### Application messages
 
-The connection state that an app shows is the state of its control socket: "Online" (phone:
-"Connected", with the heartbeat round trip) only after `welcome` and while `pong` messages come back,
-"Reconnecting" while it waits to connect again. The state of each server of the team is separate:
-online or offline from the roster, and the session to it on that server's row or screen. On the phone,
-a server stays bright while it is in the roster and only its session reconnects.
+The decrypted payload starts with one byte: the low four bits are 1 for text and 2 for binary, and
+the bit 0x80 is set for a message from a host to a client. The rest is a Team protocol V2 frame (the
+frozen codecs of `packages/contracts/src/team-protocol`), split into V2 fragments of at most 64 KiB.
 
-Each app writes one log line for each connection with its phases, one line when a data socket binds,
-and one line each minute with the median of the last 5 heartbeat round trips (desktop: the main log,
-`relay-client`; phone: the support log). The lines hold only times and codes, for example:
-
-```text
-relay connected in 437 ms (TCP+TLS+WebSocket open 293 ms, challenge to welcome 144 ms)
-relay data socket bound in 300 ms
-relay heartbeat rtt median 138 ms (5 samples)
-relay heartbeat missed; closing the control socket
-relay control closed (heartbeat_timeout) after 7011 ms
-```
-
-### Data socket
-
-- The client asks for a ticket on the control socket (`data-ticket`). The server answers
-  `data-ticket` with a random 256-bit ticket, base64url. A ticket is good for one use, for 60 seconds,
-  only for that control socket and its key identifier. The server keeps only its SHA-256.
-- The client opens the data socket at the same time as it asks for the ticket. When the socket is
-  open and the ticket has come, it sends `data-hello` with the ticket as its first message. There is
-  no challenge round and no second certificate proof (the server still sends `challenge`; the data
-  socket does not answer it). The server binds the data socket to the control socket of the member. A
-  ticket that is unknown, used or expired gives `authentication_failed`.
-- The data socket carries only session frames. A text message on it, or a frame on the control
-  socket, is a protocol error.
-- The client asks for a ticket only when it has no data socket. So a `data-ticket` request closes the
-  data socket that the server still has for the member (for example one that stopped answering) with
-  the code 1000. The sessions stay, and frames wait for the new data socket.
-- The client opens it at the first need: an outgoing session, a `session-incoming`, or `data-wanted`.
-  The server sends `data-wanted` when frames wait for a member that has no data socket; it keeps the
-  frames until the data socket comes.
-- The client closes it after 5 minutes with no session data (`dataIdleMs`, default 300 seconds), with
-  the code 1000. The sessions stay open, and the control socket stays open. Another close code ends
-  all sessions of the member. When the control socket closes, or the certificate is revoked, the
-  server closes the data socket and all sessions of the member.
-- The desktop gives the data socket the TLS session of the control socket, so TLS can resume.
-
-### Sessions
-
-| Message | Direction | Fields |
-| --- | --- | --- |
-| `session-open` | client to server | `session` (number that the opener chooses, 1 to 2^31-1, not used again on that socket), `target` (key identifier), `first` (the end-to-end hello, base64url) |
-| `session-incoming` | server to target | `session` (number that the server chooses for the target, 2^31 to 2^32-1), `connectionId`, `from` (certificate of the opener), `first` |
-| `session-accept` | target to server | `session`, `first` (the end-to-end reply) |
-| `session-refuse` | target to server | `session`, `code` (`refused` or `rate_limited`) |
-| `session-opened` | server to opener | `session`, `connectionId`, `peer` (certificate of the target), `first` |
-| `session-failed` | server to opener | `session`, `code` (`target_unavailable`, `refused`, `rate_limited`, `invalid_message`) |
-| `session-credit` | both | `session`, `bytes` |
-| `session-close` | both | `session` (stops the session at once) |
-
-- The server routes only to a member of the same team that hosts and sent `sessions-v2`. It makes a
-  new random `connectionId` (16 bytes, base64url) for each session and gives the same value to both
-  sides. A target that does not answer in 15 seconds gives `target_unavailable`.
-- A data frame is one binary message: byte 0 the frame version (1), byte 1 the kind (1 data, 2 end),
-  bytes 2 to 5 the session number (32-bit big-endian, the number of the receiving socket), then the
-  payload (at most 64 KiB; none for an end frame). The payload is the end-to-end record stream. The
-  server rewrites the session number and passes the payload as it is.
-- An end frame closes the session after the data before it, so a graceful end keeps the order of the
-  data. `session-close` stops at once.
-- Flow control: each direction of a session starts with a window of 1 MiB. A sender sends at most its
-  credit; the receiver gives `session-credit` when the application has taken the bytes (in batches of
-  256 KiB). The server checks each frame against the credit and refuses a credit above the window.
-  The window is 1 MiB, not 256 KiB, so that one session can move about 10 MiB/s at a round trip of 100
-  ms.
-- Fairness: each client sends at most 64 KiB of one session in turn, round robin, and keeps the rest
-  in its own queue while the data socket buffer holds more than 128 KiB. The server keeps a queue for
-  each session of each member, and sends round robin while the send buffer holds less than
-  `RELAY_HIGH_WATER_BYTES`. Control messages go on their own socket, so a transfer never delays them.
-- Limits: sessions of one member (`RELAY_MAX_SESSIONS_PER_SOCKET`), sessions from one member to one
-  member (`RELAY_MAX_SESSIONS_PER_PAIR`), sessions that wait for one member
-  (`RELAY_MAX_PENDING_PER_MEMBER`). A frame over the credit, a frame on a session that is not open, or
-  a session number that is used again closes the control socket of the sender.
-
-A browser, extension or phone connection to a server is one session with three channels (`rpc`,
-`events`, `files`). After the end-to-end handshake, the client sends the marker `OPENBOT-V2:2\n`, then
-chunks: a channel tag (1 byte: 0 `rpc`, 1 `events`, 2 `files`), a length (2 bytes, big-endian, at most
-16381) and that many bytes of the V2 record stream of the channel. Both sides keep the order of each
-channel and interleave chunks of 16 KiB round robin. The files channel uses at most half of the window,
-so a file transfer does not delay `rpc` or `events`. A desktop client sends HTTP on its sessions, with
-keep-alive.
-
-An invalid message closes the socket with an `error` message.
+- The web client, the extension and the phone send V2 `http.request` requests, event frames and file
+  frames (`packages/team-client/src/relay-hub-channels.ts`).
+- The desktop client sends V2 `http.raw` requests (`method`, `path`, `headers`, `body` text or
+  `bodyTransferId` of a V2 file) and gets the answer as `status`, `headers` and `body` text or a V2
+  file. The events come as V2 event frames with the unchanged V1 event as payload. So the remote
+  server manager keeps its HTTP encodings (`src/main/relay/hub-client.ts`).
+- The host serves each sender with one `TeamV2HostPeer`, signed in to its own Team API with the
+  verified certificate (`loginWithRelayPeer`). It keeps the answer of each changing request for 10
+  minutes and answers a repeated request number with it, without acting again. It keeps the events
+  until the client acknowledges them (`event-ack`); when the roster shows the client offline it stops
+  sending and keeps the sequence, and the client that comes back sends `event-ack` with its last number
+  and gets the missed events. A client with no number (`0`) gets `event-reset`. Files use the V2 file
+  frames with their acknowledgements and resume.
 
 The rules of the server proof that need no cryptography (transcript, host name match, date and usage
-rules) are in `packages/contracts/src/relay-protocol/server-proof.ts`, so that a browser client can
-use them with WebCrypto. The desktop check is in `src/main/relay/server-proof.ts`.
+rules) are in `packages/contracts/src/relay-protocol/server-proof.ts`. The wire messages and the
+frame codec are in `packages/contracts/src/relay-protocol/hub.ts` and `decode.ts`.
 
 The desktop accepts a TLS certificate of the system roots (the default roots of Node, with
-`NODE_EXTRA_CA_CERTS`) or of the root in its identity file, with the normal host name check. It
-refuses `ws:` except on its own computer. Node `ws` turns off the Nagle delay on its sockets
-(`setNoDelay`).
+`NODE_EXTRA_CA_CERTS`) or of the root in its identity file, with the normal host name check, and keeps
+the TLS session so that the next connection can resume it. It refuses `ws:` except on its own
+computer.
 
 ### Performance
 
-`bun run test:relay-session-latency` puts a delay of 100 ms each way between each device and the
-server, so one round trip through the server costs 400 ms. Results on this computer (2026-11-26):
+`bun run test:relay-hub` puts a delay of 67 ms each way between each app and the server (134 ms round
+trip). Results on this computer (2026-11-26):
 
 | Measure | Result |
 | --- | --- |
-| Desktop session ready, data socket open | 412 ms (about 1 round trip) |
-| Desktop first request on a new session, data socket open | 829 ms (about 2 round trips) |
-| Desktop first request when both data sockets were closed | 1,100 ms |
-| First request after the idle close of the data socket | 831 ms |
-| Further requests | 409 to 417 ms (1 round trip) |
-| Browser and phone: three channels ready (one session) | 844 ms and 857 ms |
-| Browser and phone requests | 414 to 436 ms |
-| A request or a new session during a 4 MiB transfer | 413 to 450 ms |
-| WebSockets for each app | 1 control and 1 data |
+| Sign-in: hello to welcome | 144 ms (one round trip); 289 ms from the start of the socket |
+| A request through the server and the host | 281 to 299 ms (one round trip through the server) |
+| `info` about the host | 136 ms (one round trip to the server, no message to the host) |
+| A small request while a 4 MiB file goes up or down | 275 to 304 ms |
+| 4 MiB up, 4 MiB down | 920 ms, 922 ms |
+| The `online` notice after the host connects again | 300 ms |
+| Revoked app shown offline | 686 ms |
+| WebSockets for each app | 1 |
 
 ## End-to-end encryption
 
-Each session starts with a handshake between the two OpenBots, before any application byte. The
-rules are in `packages/contracts/src/relay-protocol/tunnel-crypto.ts`, and the desktop, the web
-client, the extension and the phone run them in `packages/team-client/src/relay-sessions.ts`. The
-handshake rides on the session messages, so a new session costs one round trip through the server
-before data flows: `e2e-hello` is `first` of `session-open`, `e2e-reply` is `first` of
-`session-accept` (and of `session-opened`), and `e2e-finish` is the first data frame, followed at once
-by application data.
+The rules are in `packages/contracts/src/relay-protocol/message-crypto.ts`; the apps run them in
+`packages/team-client/src/relay-hub.ts` with the crypto of the app (WebCrypto, or noble on the phone,
+which has no global `crypto`).
 
-Each handshake message and each record is a frame: a length (4 bytes, big-endian) and the body. A
-handshake body starts with the version (1) and the type.
-
-| Message | From | Body |
-| --- | --- | --- |
-| `e2e-hello` (type 1) | client | version, type, ephemeral ECDH P-256 public key (65 bytes, uncompressed), random nonce (32 bytes) |
-| `e2e-reply` (type 2) | host | version, type, ephemeral public key (65 bytes), nonce (32 bytes), signature (64 bytes) |
-| `e2e-finish` (type 3) | client | version, type, signature (64 bytes) |
-
-- The transcript is a sequence of items, each with a 4-byte big-endian length: the context
-  `openbot-relay-e2e-v1`, the label (`host` or `client`), the `connectionId` of the session (from
-  `session-incoming` and `session-opened`), the key identifier of the client, the key identifier of
-  the host, the client ephemeral key, the client nonce, the host ephemeral key and the host nonce.
-- Each end signs the SHA-256 of the transcript with its label, with the key of its member
-  certificate (ECDSA P-256, SHA-256, IEEE P1363). The other end verifies it with the public key of
-  the certificate that it checked for this session. So the server cannot replace a key, replay an
-  old reply, or join two different sessions.
-- Keys: the ECDH secret of the two ephemeral keys, salt = SHA-256 of the transcript with no label,
-  HKDF-SHA256 with the info `openbot-relay-e2e-v1 c2h` and `openbot-relay-e2e-v1 h2c` gives one
-  AES-256-GCM key for each direction. The ephemeral private keys are used once and dropped.
-- Records: a 4-byte big-endian length and the ciphertext with its 16-byte tag. The plaintext of a
-  record is at most 16 KiB. The nonce is 4 zero bytes and an 8-byte big-endian counter for each
-  direction, from 0. The additional data is the length header.
-- The client can send data right after `e2e-finish`. The host gives the connection to the
-  application only after it verified `e2e-finish`.
-- A bad frame, a wrong version, a bad signature, a record that fails authentication or a counter
-  that is used up closes the connection. The error codes are `tunnel_handshake_failed`,
-  `tunnel_peer_unverified`, `tunnel_integrity_failed`, `tunnel_counter_exhausted` and
-  `tunnel_identity_unusable` (the key of the identity is not ECDSA P-256). The handshake has a
-  deadline of 10 seconds on the host.
-- The encryption is mandatory. A peer that sends plain bytes (HTTP or the V2 marker) is refused.
-  All OpenBots, the web client, the extension and the phone must run the same version.
-- The server can still cut a session. The application then sees a closed connection, as with a
-  network fault.
+- Each app makes a new ECDH P-256 key pair for each connection and signs the public key with the key
+  of its certificate (see [Sign-in](#sign-in)). A recipient checks the certificate of the sender with
+  its own root and team authority (same team, dates), then the signature of the message key, before it
+  uses the key. A key with no valid signature, or one signed by a different member, is refused.
+- For a pair of message keys, the ECDH secret and HKDF-SHA256 give two AES-256-GCM keys, one for each
+  direction. The salt is the SHA-256 of the length-prefixed items `openbot-relay-message-v1`, the two
+  key identifiers and the two message keys (in the order of the key identifiers); the info is
+  `openbot-relay-message-v1`, sender, recipient.
+- Each payload is an 8-byte counter and the ciphertext with its 16-byte tag. Each direction has a
+  counter for each kind, from 1. The nonce is the kind, three zero bytes and the counter. The
+  additional data is the length-prefixed sender, recipient, message number, kind and counter.
+- The recipient refuses a payload that fails authentication, a counter that is not greater than the
+  last counter of that kind for that pair of keys (a replay), and a sender with an unknown or unsigned
+  key. The application gets nothing from a refused message. The counters are per kind because the
+  server sends small messages before file data; the order in one kind does not change.
+- The keys change with each connection, so a new connection has new counters.
+- The server can still drop or delay a message, as a network fault does. The client then gets no
+  answer, and a repeated request acts once.
 
 ## Web client
 
@@ -707,56 +638,16 @@ request to another server. It writes screenshots and `report.json` to
 `.openbot-build/relay-extension-e2e/`.
 
 ```sh
-bun run test:relay-tunnel-encryption
+bun run test:relay-hub
 ```
 
-This test puts a relay in the middle with a valid server proof between a desktop client and a host
-with relay hosting. It speaks the session protocol with control and data sockets and records every
-byte of each session. It checks that a chat message, its
-reply and a file go through and that the recorded bytes hold no plaintext, also for the V2 session of a
-phone process with noble crypto and no `crypto.subtle`. It checks that a changed byte closes the
-connection with `tunnel_integrity_failed` and the application gets no data, and that a replaced
-ephemeral key, a replayed reply, a session with a different identifier and plain HTTP are
-refused. It measures one 8 MiB transfer through the real server for the desktop and the noble
-crypto, and writes `.openbot-build/relay-tunnel-encryption-e2e/report.json`.
-
-```sh
-bun run test:relay-heartbeat
-```
-
-This test starts the real server with a heartbeat timeout of 5 s, a host with relay hosting, a desktop
-client, the phone runtime (noble crypto) and the browser control, with a TCP proxy that adds 67 ms each
-way (134 ms round trip, as from the developer's Mac to the server) and that can stop a connection in
-both directions without closing it, like an iOS suspension. It checks that the heartbeat round trip is
-about one round trip to the server; that a stopped control socket is found within the interval and
-3 s, and that a session opened meanwhile works on the new connection; that on phone resume a new control
-socket races a stopped one, the session is ready in about one connect time and one round trip, and
-`session-open` goes only on the new socket; that a live old socket wins the race, the extra socket
-closes and no session is lost; that the server
-closes a control socket with no `ping` and the others see the member go offline; that a data socket with
-no `pong` is replaced and a new session works; and that the app state stays online while only a host
-session reconnects. It measures the parts of one request round trip (client, server, host) from the
-times at which the proxy sees each part. It writes `.openbot-build/relay-heartbeat-e2e/report.json`.
-
-Results on this computer (2026-11-26), 67 ms each way:
-
-| Measure | Result |
-| --- | --- |
-| Heartbeat round trip (desktop, host, phone) | 139, 151, 147 ms |
-| One request through the server and the host | 280 to 284 ms: network 268 ms, server 0 to 2 ms each way, host 4 to 9 ms, client 3 to 6 ms |
-| Stopped control socket found (interval 1 s in the test) | 3,710 ms; new connection 424 ms |
-| Phone resume, old control socket stopped: new connection, session ready | 437 ms, 757 ms after resume; state stays online |
-| Phone resume, old control socket alive: extra socket lifetime, session ready | 90 ms, 402 ms after resume; the kept session still answers |
-| Server closes a control socket with no `ping` (timeout 5 s) | the member leaves the roster after 5,138 ms |
-| Stopped data socket found, next request | 2,884 ms, 587 ms |
-
-```sh
-bun run test:relay-session-latency
-```
-
-This test starts the real server, a host with relay hosting, a desktop client, the browser client
-code and the phone client code (noble crypto, no global `crypto`), with a TCP proxy that adds 100 ms
-each way. It checks the round trips in the table of [Performance](#performance), one session with
-three channels for each browser and phone connection, at most two WebSockets for each app, the idle
-close of the data socket and its new start, and that a 4 MiB transfer does not delay a request or a
-new session. It writes `.openbot-build/relay-session-latency-e2e/report.json`.
+This test starts the real server with TLS turned off behind a TCP proxy that adds 67 ms each way and
+records every byte that the server gets and sends, a host with relay hosting, fake providers, a
+desktop client, raw hub clients and the phone client code with noble crypto. It checks the sign-in
+without challenge, a request, the agent reply event, `info` without a message to the host, a host
+that goes offline and comes back, a repeated request number, the catch-up of missed events, a 4 MiB
+file up and down while small requests go on, that the recorded bytes hold no plaintext of requests,
+replies or files, that a changed byte, a replayed message and a substituted message key are refused,
+that a `hello` with an old time or a used nonce is refused, the server timeouts for a silent and a
+suspendable app, the closing of a revoked app, and one WebSocket for each app. It writes
+`.openbot-build/relay-hub-e2e/report.json` with the times.

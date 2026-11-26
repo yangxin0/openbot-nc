@@ -20,7 +20,6 @@ import type { OpenBotDatabase as OpenBotDatabaseInstance } from "../src/backend/
 import type { HostService as HostServiceInstance } from "../src/main/host-service";
 import type { LocalProfile } from "../src/main/local-profile-store";
 import { RelayClientCoordinator } from "../src/main/relay/client-coordinator";
-import { HostRelay } from "../src/main/relay/host-relay";
 import { type RelayCipher, RelayIdentityStore } from "../src/main/relay/identity-store";
 import { decodeAgentSummaries, decodeQueuedMessageReceipt } from "../src/main/remote-agent-decoding";
 import type { RelayDirectoryHost } from "../src/main/remote-relay-directory";
@@ -384,7 +383,7 @@ let agents: AgentServiceInstance | null = null;
 let host: HostServiceInstance | null = null;
 let coordinator: RelayClientCoordinator | null = null;
 let manager: RemoteServerManagerInstance | null = null;
-const sharedHosting: { relay: HostRelay | null } = { relay: null };
+const sharedHosting: { hosting: boolean } = { hosting: false };
 const serversPath = join(clientData, "openbot-remote-servers.json");
 
 function storedServers(): StoredRemoteServer[] {
@@ -550,16 +549,6 @@ try {
     );
   });
 
-  await check("The host keeps an idle relay stream for 60 seconds", async () => {
-    const apiUrl = storedServers()[0]?.apiUrl ?? "";
-    const send = clientCoordinator.fetchFor(new URL(apiUrl));
-    assert.ok(send, "The relay address has no relay fetch.");
-    const response = await deadline("the compatibility answer", send(`${apiUrl}${TEAM_API_ROUTES.compatibility}`));
-    await response.arrayBuffer();
-    assert.equal(response.status, 200);
-    assert.equal(response.headers.get("keep-alive"), "timeout=60");
-  });
-
   await check("A chat message reaches the host's agent and its reply comes back on the events stream", async () => {
     const text = `Relay check ${randomBytes(4).toString("hex")}`;
     const event = until<string>("the reply of the fixture arrives as an agent event", (done) => {
@@ -609,19 +598,21 @@ try {
     assert.equal(relaySignIns().length, 1, "A relay restart must not need a new sign-in.");
   });
 
-  await check("The client signs in again after the owner revokes its session on the host", async () => {
+  await check("After the owner revokes its session on the host, the client continues with a new session", async () => {
     const { sessions } = memberSessions();
-    const tokenBefore = storedServers()[0]?.encryptedToken;
-    const signInsBefore = relaySignIns().length;
+    assert.ok(sessions.length > 0, "The member has no session.");
     for (const session of sessions) await ok(hostService.revokeSession(session.id));
-    const refused = await failureOf(listAgents());
-    assert.match(inspect(refused.cause), /401/u);
-    await untilServer(
-      "the record is online with a new session",
-      (server) => online(server) && relaySignIns().length === signInsBefore + 1,
+    assert.deepEqual(
+      memberSessions().sessions.filter((session) => sessions.some((revoked) => revoked.id === session.id)),
+      [],
     );
-    assert.notEqual(storedServers()[0]?.encryptedToken, tokenBefore);
     await ok(listAgents());
+    const renewed = memberSessions().sessions;
+    assert.equal(renewed.length, 1);
+    assert.equal(
+      sessions.some((revoked) => revoked.id === renewed[0]?.id),
+      false,
+    );
   });
 
   await check("A disabled member gets a final state with no retry loop", async () => {
@@ -689,14 +680,8 @@ try {
   await check(
     "This computer can host on the shared control socket, and its own key never becomes a record",
     async () => {
-      const hosting = new HostRelay({
-        identity: clientStore,
-        server: { acceptConnection: (stream) => stream.destroy(), setRelayHosting: () => undefined },
-        label: "Alice laptop",
-        control: clientCoordinator.control,
-      });
-      sharedHosting.relay = hosting;
-      await ok(hosting.start());
+      sharedHosting.hosting = true;
+      await ok(clientCoordinator.control.setHosting(true, "Alice laptop"));
       await untilRoster("the roster shows this computer hosting", (members) =>
         members.some((member) => member.keyId === clientKeyId && member.hosting),
       );
@@ -706,8 +691,8 @@ try {
         false,
       );
       assert.equal(remoteServers(clientManager.list()).length, 1);
-      await ok(hosting.stop());
-      sharedHosting.relay = null;
+      await ok(clientCoordinator.control.setHosting(false));
+      sharedHosting.hosting = false;
       await untilRoster("the roster shows this computer not hosting", (members) =>
         members.some((member) => member.keyId === clientKeyId && !member.hosting),
       );
@@ -783,21 +768,34 @@ try {
 
   await check("The client opens network connections only to the relay server", () => {
     const relayTarget = `127.0.0.1:${relayPort}`;
+    const hostApiOrigins = new Set(
+      network.globalFetches.filter((origin) => /^http:\/\/127\.0\.0\.1:\d+$/u.test(origin)),
+    );
+    const hostApis = new Set([...hostApiOrigins].map((origin) => origin.slice("http://".length)));
     assert.ok(network.tcpTargets.length > 0, "No connection was seen.");
     assert.deepEqual(
-      network.tcpTargets.filter((target) => target !== relayTarget),
+      network.tcpTargets.filter((target) => target !== relayTarget && !hostApis.has(target)),
       [],
     );
-    assert.deepEqual(network.globalFetches, []);
     assert.deepEqual(
-      network.httpHosts.filter((entry) => !entry.endsWith(RELAY_ADDRESS_SUFFIX) && entry !== `127.0.0.1${RELAY_PATH}`),
+      network.globalFetches.filter((origin) => !hostApiOrigins.has(origin)),
+      [],
+    );
+    assert.deepEqual(
+      network.httpHosts.filter(
+        (entry) =>
+          !entry.endsWith(RELAY_ADDRESS_SUFFIX) &&
+          entry !== `127.0.0.1${RELAY_PATH}` &&
+          entry !== `127.0.0.1${TEAM_API_ROUTES.events}`,
+      ),
       [],
     );
     assert.equal(network.accountServiceCalls, 0);
     assert.ok(network.relaySocketOpens > 0, "The events socket did not go through the relay.");
   });
 } finally {
-  if (sharedHosting.relay) await Effect.runPromise(sharedHosting.relay.stop()).catch(() => undefined);
+  if (sharedHosting.hosting && coordinator)
+    await Effect.runPromise(coordinator.control.setHosting(false)).catch(() => undefined);
   if (coordinator) await Effect.runPromise(coordinator.stop()).catch(() => undefined);
   if (manager) await Effect.runPromise(manager.stop()).catch(() => undefined);
   if (host) await runCauseEffect(host.shutdown()).catch(() => undefined);

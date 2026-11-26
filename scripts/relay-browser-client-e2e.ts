@@ -18,15 +18,12 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { inspect } from "node:util";
 import { AGENT_PROVIDERS } from "@openbot/contracts/ipc";
-import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/contracts/relay-protocol/identity-bundle";
 import {
-  RELAY_PATH,
-  RELAY_PROTOCOL_VERSION,
-  RELAY_SESSIONS_FEATURE,
-  type RelayRole,
   type RelayServerProofTranscriptInput,
   relayServerProofTranscript,
-} from "@openbot/contracts/relay-protocol/messages";
+} from "@openbot/contracts/relay-protocol/hub";
+import { decodeRelayIdentityBundle, type RelayIdentityBundle } from "@openbot/contracts/relay-protocol/identity-bundle";
+import { RELAY_PATH, RELAY_PROTOCOL_VERSION } from "@openbot/contracts/relay-protocol/messages";
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import type { TeamProtocolV2Json } from "@openbot/contracts/team-protocol";
@@ -197,31 +194,15 @@ interface FakeRelayBehavior {
   openPeer?: { user: string; device: string | null; certificate: string };
 }
 
-function helloTranscript(serverNonce: string, text: string): RelayServerProofTranscriptInput | null {
+function helloTranscript(text: string): RelayServerProofTranscriptInput | null {
   const hello = JSON.parse(text);
   if (!isDynamicRecord(hello) || !isString(hello.certificate) || !isString(hello.clientNonce)) return null;
-  if (!isString(hello.audience) || !isRole(hello.role)) return null;
+  if (!isString(hello.audience) || hello.type !== "hello") return null;
   return {
-    serverNonce,
     clientNonce: hello.clientNonce,
     audience: hello.audience,
-    role: hello.role,
     clientKeyId: spkiDigest(hello.certificate, "base64url"),
   };
-}
-
-function sessionOpenOf(text: string): { session: number; target: string } | null {
-  const value = JSON.parse(text);
-  return isDynamicRecord(value) &&
-    value.type === "session-open" &&
-    typeof value.session === "number" &&
-    isString(value.target)
-    ? { session: value.session, target: value.target }
-    : null;
-}
-
-function isRole(value: unknown): value is RelayRole {
-  return value === "member";
 }
 
 async function startFakeRelay(tls: { cert: string; key: string }, behavior: FakeRelayBehavior): Promise<FakeRelay> {
@@ -240,26 +221,10 @@ async function startFakeRelay(tls: { cert: string; key: string }, behavior: Fake
   };
   sockets.on("connection", (socket) => {
     fake.connections += 1;
-    const serverNonce = randomBytes(32).toString("base64url");
     let answered = false;
-    socket.send(JSON.stringify({ type: "challenge", version: RELAY_PROTOCOL_VERSION, nonce: serverNonce }));
     socket.on("message", (data) => {
       const text = Buffer.from(rawDataBytes(data)).toString("utf8");
-      const later = answered ? sessionOpenOf(text) : null;
-      const peer = behavior.openPeer;
-      if (later && peer) {
-        socket.send(
-          JSON.stringify({
-            type: "session-opened",
-            version: RELAY_PROTOCOL_VERSION,
-            session: later.session,
-            connectionId: randomBytes(16).toString("base64url"),
-            peer: { keyId: later.target, ...peer },
-          }),
-        );
-        return;
-      }
-      const transcript = answered ? null : helloTranscript(serverNonce, text);
+      const transcript = answered ? null : helloTranscript(text);
       if (!transcript) return;
       answered = true;
       const signature = sign("sha256", Buffer.from(relayServerProofTranscript(transcript)), {
@@ -278,10 +243,23 @@ async function startFakeRelay(tls: { cert: string; key: string }, behavior: Fake
         JSON.stringify({
           type: "welcome",
           version: RELAY_PROTOCOL_VERSION,
-          self: { keyId: transcript.clientKeyId, user: "alice", device: "browser" },
+          self: {
+            keyId: transcript.clientKeyId,
+            user: "alice",
+            device: "browser",
+            label: null,
+            hosting: false,
+            capabilities: [],
+            suspendable: false,
+            certificate: "fake",
+            messageKey: "A".repeat(87),
+            messageKeySignature: "A",
+            keyTimestamp: 0,
+            connectedAt: 0,
+            lastHeardAt: 0,
+          },
           team: { id: "t".repeat(43), name: TEAM },
-          members: [],
-          features: [RELAY_SESSIONS_FEATURE],
+          roster: [],
         }),
       );
     });

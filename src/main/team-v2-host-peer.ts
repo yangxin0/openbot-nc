@@ -3,6 +3,7 @@ import { openAsBlob } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { BROWSER_SECRET_RESPONSE_PATH } from "@openbot/contracts/ipc";
+import type { RelayPeer } from "@openbot/contracts/relay-protocol/messages";
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import { AGENT_BACKGROUND_WORK_CAPABILITY } from "@openbot/contracts/team-protocol/agent-background-work-v1";
@@ -71,6 +72,7 @@ import {
 import { encodeTeamProtocolV1ClientEvent } from "@openbot/contracts/team-protocol/v1";
 import {
   decodeTeamProtocolV2EventFrame,
+  decodeTeamProtocolV2Json,
   decodeTeamProtocolV2RpcFrame,
   encodeTeamProtocolV2Frame,
   type TeamProtocolV2Json,
@@ -120,11 +122,11 @@ import {
   TEAM_PROTOCOL_V10_ABSENT_LIMIT,
 } from "@openbot/contracts/team-protocol/v10";
 import { sourceText } from "@openbot/i18n/source";
-import { Context, Effect, Exit, Fiber, Layer, ManagedRuntime } from "effect";
+import { Context, Effect, Exit, Fiber, Layer, ManagedRuntime, Result } from "effect";
 import type * as Ws from "ws";
 import { contentDispositionFileName } from "./content-disposition";
 import { RemoteWorkflowError, remoteCall, remoteDecode } from "./remote-service-effects";
-import type { TeamStore } from "./team-store";
+import { type TeamStore, TeamStoreError } from "./team-store";
 import type { TeamV2Channel, TeamV2ChannelTransport } from "./team-v2-channel-transport";
 import { type ReceivedV2File, TeamFileTooLargeError, TeamV2FileTransfer } from "./team-v2-file-transfer";
 
@@ -134,6 +136,18 @@ const MAXIMUM_BUFFERED_EVENTS = 2_000;
 const MAXIMUM_BUFFERED_EVENT_CHARACTERS = 32 * 1024 * 1024;
 const MAXIMUM_KEPT_RESPONSES = 1_000;
 const MAXIMUM_KEPT_RESPONSE_CHARACTERS = 4 * 1024 * 1024;
+const KEPT_RESPONSE_MILLISECONDS = 10 * 60_000;
+const RAW_HTTP_OPERATION = "http.raw";
+const RAW_TEXT_BODY_BYTES = 1024 * 1024;
+const RAW_REQUEST_HEADERS_LIMIT = 64;
+const RAW_DROPPED_REQUEST_HEADERS = new Set(["authorization", "host", "content-length", "cookie", "connection"]);
+const RAW_DROPPED_RESPONSE_HEADERS = new Set([
+  "connection",
+  "keep-alive",
+  "transfer-encoding",
+  "content-length",
+  "set-cookie",
+]);
 
 export interface TeamV2HostPeerOptions {
   store: TeamStore;
@@ -141,6 +155,7 @@ export interface TeamV2HostPeerOptions {
   transferDirectory: string;
   closeSession?: (sessionId: string) => Effect.Effect<void, RemoteWorkflowError>;
   peerMemberChanged?: (peerId: string, membershipId: string | null) => void;
+  bindSession?: (sessionId: string) => void;
 }
 
 class HostPeerTransport extends Context.Service<
@@ -164,6 +179,7 @@ export class TeamV2HostPeer {
   readonly #peerMemberChanged: (peerId: string, membershipId: string | null) => void;
   #sessionMembershipId: string | null = null;
   readonly #responses = new Map<string, string>();
+  readonly #responseTimes = new Map<string, number>();
   #responseCharacters = 0;
   readonly #responsesInFlight = new Map<string, Fiber.Fiber<string, RemoteWorkflowError>>();
   readonly #events = new Map<number, string>();
@@ -180,12 +196,27 @@ export class TeamV2HostPeer {
   #eventsSentThrough = 0;
   #eventResetPending = false;
   #eventSender: string | null = null;
+  #eventsSubscribed = false;
+  #eventsNeedRewind = false;
+  #peerOnline = true;
+  readonly #rawHttp: boolean;
+  readonly #relayPeer: RelayPeer | null;
+  readonly #bindSession: (sessionId: string) => void;
   #sessionExpirationTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     options: TeamV2HostPeerOptions,
-    input: { peerId: string; localApiPort: number; transport: TeamV2ChannelTransport },
+    input: {
+      peerId: string;
+      localApiPort: number;
+      transport: TeamV2ChannelTransport;
+      rawHttp?: boolean;
+      relayPeer?: RelayPeer;
+    },
   ) {
+    this.#rawHttp = input.rawHttp ?? false;
+    this.#relayPeer = input.relayPeer ?? null;
+    this.#bindSession = options.bindSession ?? (() => undefined);
     this.#peerId = input.peerId;
     this.#localApiPort = input.localApiPort;
     this.#transport = input.transport;
@@ -230,6 +261,16 @@ export class TeamV2HostPeer {
 
   hasActiveTransfers(): boolean {
     return this.#files.hasActiveTransfers();
+  }
+
+  get sessionId(): string | null {
+    return this.#localSessionId;
+  }
+
+  setPeerOnline(online: boolean): void {
+    if (this.#peerOnline === online) return;
+    this.#peerOnline = online;
+    if (!online) this.#eventsNeedRewind = true;
   }
 
   #dispatch(operation: Effect.Effect<void, RemoteWorkflowError, HostPeerTransport>): void {
@@ -285,6 +326,8 @@ export class TeamV2HostPeer {
     this.#nextEventSequence = 1;
     this.#eventsSentThrough = 0;
     this.#eventResetPending = false;
+    this.#eventsSubscribed = false;
+    this.#eventsNeedRewind = false;
   }
 
   #scheduleSessionExpiration(expiresAt: number): void {
@@ -302,7 +345,7 @@ export class TeamV2HostPeer {
 
   readonly #onData = (peerId: string, channel: TeamV2Channel, data: string | ArrayBuffer): void => {
     if (peerId !== this.#peerId) return;
-    if (!this.#localSessionToken) {
+    if (!this.#localSessionToken && !(this.#rawHttp && channel === "rpc")) {
       this.#dispatch(this.#failProtocol(peerId));
       return;
     }
@@ -339,7 +382,7 @@ export class TeamV2HostPeer {
         throw new Error("The client sent an invalid RPC frame.", { cause });
       }
     });
-    const cached = this.#responses.get(request.requestId);
+    const cached = this.#keptResponse(request.requestId);
     if (cached) {
       yield* HostPeerTransport.use((transport) => transport.send(peerId, "rpc", cached));
       return;
@@ -368,13 +411,23 @@ export class TeamV2HostPeer {
       });
     }
     const response = yield* Fiber.join(responseOperation);
-    if (this.#peerId !== peerId || this.#localSessionId !== sessionId) return;
+    if (this.#peerId !== peerId) return;
+    if (this.#localSessionId !== sessionId && sessionId !== null && !isRelaySignIn(request)) return;
     yield* HostPeerTransport.use((transport) => transport.send(peerId, "rpc", response));
   });
+
+  #keptResponse(requestId: string): string | undefined {
+    const keptAt = this.#responseTimes.get(requestId);
+    if (keptAt === undefined) return undefined;
+    if (Date.now() - keptAt <= KEPT_RESPONSE_MILLISECONDS) return this.#responses.get(requestId);
+    this.#forgetResponse(requestId);
+    return undefined;
+  }
 
   #keepResponse(requestId: string, response: string): void {
     this.#forgetResponse(requestId);
     this.#responses.set(requestId, response);
+    this.#responseTimes.set(requestId, Date.now());
     this.#responseCharacters += response.length;
     for (const oldest of this.#responses.keys()) {
       if (
@@ -388,6 +441,7 @@ export class TeamV2HostPeer {
 
   #forgetResponse(requestId: string): void {
     const response = this.#responses.get(requestId);
+    this.#responseTimes.delete(requestId);
     if (response === undefined) return;
     this.#responses.delete(requestId);
     this.#responseCharacters -= response.length;
@@ -395,6 +449,7 @@ export class TeamV2HostPeer {
 
   #forgetResponses(): void {
     this.#responses.clear();
+    this.#responseTimes.clear();
     this.#responseCharacters = 0;
   }
 
@@ -403,6 +458,12 @@ export class TeamV2HostPeer {
     request: Extract<TeamProtocolV2RpcFrame, { type: "request" }>,
   ): Effect.fn.Return<TeamProtocolV2RpcFrame, RemoteWorkflowError, HostPeerTransport> {
     return yield* Effect.gen({ self: this }, function* () {
+      if (request.operation === RAW_HTTP_OPERATION && this.#rawHttp && isRawHttpRequest(request.payload)) {
+        const result = yield* this.#dispatchRawHttp(request.payload);
+        return yield* remoteDecode(() =>
+          decodeTeamProtocolV2RpcFrame({ version: 2, type: "response", requestId: request.requestId, result }),
+        );
+      }
       if (request.operation !== "http.request" || !isHttpRequest(request.payload)) {
         return yield* new RemoteWorkflowError({
           cause: new GatewayError(400, "unsupported_operation", "The Team API operation is not supported."),
@@ -438,6 +499,134 @@ export class TeamV2HostPeer {
         }),
       ),
     );
+  });
+
+  readonly #dispatchRawHttp = Effect.fn("TeamHostPeer.dispatchRawHttp")(function* (
+    this: TeamV2HostPeer,
+    input: RawHttpRequestPayload,
+  ): Effect.fn.Return<TeamProtocolV2Json, RemoteWorkflowError, HostPeerTransport> {
+    const port = this.#localApiPort;
+    const peerId = this.#peerId;
+    if (!port || !peerId)
+      return yield* new RemoteWorkflowError({
+        cause: new GatewayError(401, "remote_session_missing", sourceText("error.remote.sessionNotReady")),
+      });
+    const url = yield* remoteDecode(() => new URL(input.path, `http://127.0.0.1:${port}`));
+    if (url.origin !== `http://127.0.0.1:${port}` || !url.pathname.startsWith("/v1/")) {
+      return yield* new RemoteWorkflowError({
+        cause: new GatewayError(400, "invalid_operation_path", "The Team API path is invalid."),
+      });
+    }
+    if (input.method === "POST" && url.pathname === TEAM_API_ROUTES.auth.relay) return yield* this.#relaySignIn();
+    if (input.method === "POST" && url.pathname === TEAM_API_ROUTES.auth.logout) {
+      return { status: 204, headers: {}, body: null };
+    }
+    const headers: Record<string, string> = {};
+    for (const [name, value] of Object.entries(input.headers)) {
+      if (!RAW_DROPPED_REQUEST_HEADERS.has(name.toLowerCase())) headers[name] = value;
+    }
+    const token = this.#localSessionToken;
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const forward = (body: BodyInit | undefined) =>
+      Effect.acquireUseRelease(
+        HostPeerTransport.use((transport) =>
+          transport.fetch(url, { method: input.method, headers, ...(body === undefined ? {} : { body }) }),
+        ),
+        (response) => this.#rawResponse(peerId, response),
+        (response) =>
+          remoteCall(() => (response.body ? response.body.cancel() : Promise.resolve())).pipe(
+            Effect.catch(() => Effect.void),
+          ),
+      );
+    if (input.bodyTransferId) {
+      return yield* this.#files.useReceived(peerId, input.bodyTransferId, (uploaded) =>
+        remoteCall(() => openAsBlob(uploaded.path)).pipe(Effect.flatMap((blob) => forward(blob))),
+      );
+    }
+    return yield* forward(input.body === null ? undefined : input.body);
+  });
+
+  readonly #relaySignIn = Effect.fn("TeamHostPeer.relaySignIn")(function* (
+    this: TeamV2HostPeer,
+  ): Effect.fn.Return<TeamProtocolV2Json, RemoteWorkflowError> {
+    const json = { "content-type": "application/json" };
+    const peer = this.#relayPeer;
+    if (!peer)
+      return {
+        status: 401,
+        headers: json,
+        body: JSON.stringify({ error: sourceText("error.team.authenticationRequired") }),
+      };
+    const login = yield* Effect.result(this.#store.loginWithRelayPeer(peer));
+    if (Result.isFailure(login)) {
+      const cause = login.failure.cause;
+      const message = cause instanceof TeamStoreError ? cause.message : sourceText("error.remote.hostRequestFailed");
+      return { status: 400, headers: json, body: JSON.stringify({ error: message }) };
+    }
+    const own = this.#localSessionToken;
+    const current = own ? this.#store.authenticateSession(own) : null;
+    if (own && current) {
+      yield* this.#store.logout(login.success.sessionToken).pipe(Effect.ignore);
+      return {
+        status: 200,
+        headers: json,
+        body: JSON.stringify({ ...login.success, sessionToken: own, sessionExpiresAt: current.sessionExpiresAt }),
+      };
+    }
+    const adopted = this.#store.authenticateSession(login.success.sessionToken);
+    if (adopted) {
+      const previous = this.#localSessionId;
+      this.#localSessionToken = null;
+      this.#localSessionId = null;
+      yield* this.adoptSession({
+        sessionId: adopted.sessionId,
+        sessionToken: login.success.sessionToken,
+        membershipId: adopted.member.id,
+        expiresAt: Date.parse(adopted.sessionExpiresAt),
+      });
+      this.#bindSession(adopted.sessionId);
+      if (previous) yield* this.#closeSession(previous).pipe(Effect.ignore);
+    }
+    return { status: 200, headers: json, body: JSON.stringify(login.success) };
+  });
+
+  readonly #rawResponse = Effect.fn("TeamHostPeer.rawResponse")(function* (
+    this: TeamV2HostPeer,
+    peerId: string,
+    response: Response,
+  ): Effect.fn.Return<TeamProtocolV2Json, RemoteWorkflowError, HostPeerTransport> {
+    const headers: Record<string, string> = {};
+    response.headers.forEach((value, name) => {
+      if (!RAW_DROPPED_RESPONSE_HEADERS.has(name)) headers[name] = value;
+    });
+    const contentType = response.headers.get("content-type") ?? "";
+    const disposition = response.headers.get("content-disposition") ?? "";
+    const length = Number(response.headers.get("content-length") ?? "0");
+    const textual =
+      !disposition.startsWith("attachment") &&
+      (contentType.includes("json") || contentType.startsWith("text/") || contentType === "") &&
+      length <= RAW_TEXT_BODY_BYTES;
+    if (response.status === 204 || response.status === 304 || !response.body) {
+      return { status: response.status, headers, body: null };
+    }
+    if (textual) {
+      const text = yield* remoteCall(() => response.text());
+      if (text.length <= RAW_TEXT_BODY_BYTES) return { status: response.status, headers, body: text };
+      const name = contentDispositionFileName(disposition, "remote-file");
+      const transferId = yield* this.#files.send(peerId, {
+        name,
+        mimeType: contentType || "application/octet-stream",
+        bytes: new TextEncoder().encode(text),
+      });
+      return { status: response.status, headers, body: null, file: { transferId } };
+    }
+    const name = contentDispositionFileName(disposition, "remote-file");
+    const { transferId, size } = yield* this.#files.sendStream(peerId, {
+      name,
+      mimeType: contentType || "application/octet-stream",
+      body: response.body,
+    });
+    return { status: response.status, headers, body: null, file: { transferId, size } };
   });
 
   readonly #dispatchHttpEffect = Effect.fn("TeamHostPeer.dispatchHttp")(function* (
@@ -665,6 +854,16 @@ export class TeamV2HostPeer {
       let frame: string;
       try {
         const event = JSON.parse(data.toString());
+        if (this.#rawHttp) {
+          frame = encodeTeamProtocolV2Frame({
+            version: 2,
+            type: "event",
+            sequence: this.#nextEventSequence,
+            payload: decodeTeamProtocolV2Json(event),
+          });
+          this.#bufferEvent(frame);
+          return;
+        }
         const channel = optionalTeamEvent(event, {
           agentTaskUiBlocks: this.#peerCapabilities.has(AGENT_TASK_UI_BLOCKS_CAPABILITY),
         });
@@ -716,21 +915,7 @@ export class TeamV2HostPeer {
       } catch {
         return;
       }
-      const sequence = this.#nextEventSequence++;
-      if (
-        this.#events.size >= MAXIMUM_BUFFERED_EVENTS ||
-        this.#eventCharacters + frame.length > MAXIMUM_BUFFERED_EVENT_CHARACTERS
-      ) {
-        this.#events.clear();
-        this.#eventCharacters = 0;
-      }
-      this.#events.set(sequence, frame);
-      this.#eventCharacters += frame.length;
-      const sessionId = this.#localSessionId;
-      if (sessionId && this.#eventSender !== sessionId) {
-        this.#eventSender = sessionId;
-        this.#dispatch(this.#sendEvents(sessionId));
-      }
+      this.#bufferEvent(frame);
     });
     socket.once("error", () => socket.close());
     socket.once("close", () => {
@@ -740,13 +925,83 @@ export class TeamV2HostPeer {
     });
   }
 
+  #bufferEvent(frame: string): void {
+    const sequence = this.#nextEventSequence++;
+    this.#events.set(sequence, frame);
+    this.#eventCharacters += frame.length;
+    for (const [oldest, kept] of this.#events) {
+      if (
+        oldest === sequence ||
+        (this.#events.size <= MAXIMUM_BUFFERED_EVENTS && this.#eventCharacters <= MAXIMUM_BUFFERED_EVENT_CHARACTERS)
+      )
+        break;
+      this.#events.delete(oldest);
+      this.#eventCharacters -= kept.length;
+    }
+    this.#kickEvents();
+  }
+
+  #kickEvents(): void {
+    const sessionId = this.#localSessionId;
+    if (!sessionId || !this.#eventsSubscribed || !this.#peerOnline || this.#eventsNeedRewind) return;
+    if (this.#eventSender === sessionId) return;
+    this.#eventSender = sessionId;
+    this.#dispatch(this.#sendEvents(sessionId));
+  }
+
+  #trimEvents(throughSequence: number): void {
+    for (const [sequence, frame] of this.#events) {
+      if (sequence > throughSequence) break;
+      this.#events.delete(sequence);
+      this.#eventCharacters -= frame.length;
+    }
+  }
+
+  readonly #acknowledgeEvents = Effect.fn("TeamHostPeer.acknowledgeEvents")(function* (
+    this: TeamV2HostPeer,
+    throughSequence: number,
+  ): Effect.fn.Return<void, RemoteWorkflowError, HostPeerTransport> {
+    const peerId = this.#peerId;
+    if (!peerId) return;
+    const resuming = !this.#eventsSubscribed || this.#eventsNeedRewind;
+    this.#eventsSubscribed = true;
+    this.#eventsNeedRewind = false;
+    const next = this.#nextEventSequence;
+    const firstKept = this.#events.keys().next().value ?? next;
+    if (!resuming && throughSequence > 0 && throughSequence < next) {
+      this.#trimEvents(throughSequence);
+      this.#kickEvents();
+      return;
+    }
+    const continuous = throughSequence > 0 && throughSequence < next && throughSequence + 1 >= firstKept;
+    if (continuous) {
+      this.#trimEvents(throughSequence);
+      this.#eventsSentThrough = throughSequence;
+      this.#eventResetPending = false;
+      this.#kickEvents();
+      return;
+    }
+    this.#trimEvents(next - 1);
+    this.#eventsSentThrough = next - 1;
+    this.#eventResetPending = false;
+    if (throughSequence !== next - 1) {
+      const reset = encodeTeamProtocolV2Frame({ version: 2, type: "event-reset", nextSequence: next });
+      yield* HostPeerTransport.use((transport) => transport.send(peerId, "events", reset)).pipe(
+        Effect.catch(() => Effect.sync(() => (this.#eventsNeedRewind = true))),
+      );
+    }
+    this.#kickEvents();
+  });
+
   #sendAgentEventScope(): void {
     if (this.#eventsSocket?.readyState !== webSockets.WebSocket.OPEN) return;
     this.#eventsSocket.send(
       encodeTeamProtocolV1ClientEvent({
         type: "agent-event-scope",
         includeConversations: true,
-        capabilities: TEAM_CURRENT_CAPABILITIES.filter((capability) => this.#peerCapabilities.has(capability)),
+        capabilities: this.#rawHttp
+          ? [...TEAM_CURRENT_CAPABILITIES]
+          : TEAM_CURRENT_CAPABILITIES.filter((capability) => this.#peerCapabilities.has(capability)),
       }),
     );
   }
@@ -775,6 +1030,7 @@ export class TeamV2HostPeer {
     }
     if (frame.type !== "event-ack")
       return yield* new RemoteWorkflowError({ cause: new Error("The event frame is not client control data.") });
+    yield* this.#acknowledgeEvents(frame.throughSequence);
   });
 
   readonly #sendEvents = Effect.fn("TeamHostPeer.sendEvents")(function* (
@@ -785,28 +1041,37 @@ export class TeamV2HostPeer {
       Effect.exit(HostPeerTransport.use((transport) => transport.send(peerId, "events", data))).pipe(
         Effect.map(Exit.isSuccess),
       );
-    while (this.#localSessionId === sessionId && this.#peerId) {
+    while (
+      this.#localSessionId === sessionId &&
+      this.#peerId &&
+      this.#peerOnline &&
+      this.#eventsSubscribed &&
+      !this.#eventsNeedRewind
+    ) {
       const peerId = this.#peerId;
       const sequence = this.#eventsSentThrough + 1;
       if (sequence >= this.#nextEventSequence) break;
-      this.#eventsSentThrough = sequence;
       const frame = this.#events.get(sequence);
-      this.#events.delete(sequence);
-      if (frame !== undefined) this.#eventCharacters -= frame.length;
       if (frame === undefined) {
+        this.#eventsSentThrough = sequence;
         this.#eventResetPending = true;
         continue;
       }
       if (this.#eventResetPending) {
-        if (sequence + 1 < this.#nextEventSequence) continue;
         const reset = encodeTeamProtocolV2Frame({ version: 2, type: "event-reset", nextSequence: sequence });
-        if (!(yield* send(peerId, reset))) continue;
+        if (!(yield* send(peerId, reset))) {
+          this.#eventsNeedRewind = true;
+          break;
+        }
         if (this.#localSessionId !== sessionId) break;
         this.#eventResetPending = false;
       }
-      const sent = yield* send(peerId, frame);
+      if (!(yield* send(peerId, frame))) {
+        this.#eventsNeedRewind = true;
+        break;
+      }
       if (this.#localSessionId !== sessionId) break;
-      if (!sent) this.#eventResetPending = true;
+      this.#eventsSentThrough = sequence;
     }
     if (this.#eventSender === sessionId) this.#eventSender = null;
   });
@@ -859,6 +1124,29 @@ interface HttpRequestPayload {
   absent?: string[];
 }
 
+interface RawHttpRequestPayload {
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  path: string;
+  headers: Record<string, string>;
+  body: string | null;
+  bodyTransferId?: string;
+}
+
+function isRawHttpRequest(value: TeamProtocolV2Json): value is TeamProtocolV2Json & RawHttpRequestPayload {
+  if (!isDynamicRecord(value)) return false;
+  const { method, headers } = value;
+  return (
+    (method === "GET" || method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE") &&
+    isString(value.path) &&
+    value.path.length <= 2_048 &&
+    isDynamicRecord(headers) &&
+    Object.keys(headers).length <= RAW_REQUEST_HEADERS_LIMIT &&
+    Object.values(headers).every(isString) &&
+    (value.body === null || isString(value.body)) &&
+    (value.bodyTransferId === undefined || isString(value.bodyTransferId))
+  );
+}
+
 function v2PeerProtocol(capabilities: ReadonlySet<string>): number | null {
   if (capabilities.has(TEAM_CAPABILITY_BASELINE_CAPABILITY)) return TEAM_PROTOCOL_V10;
   if (capabilities.has(TEAM_LONG_CAPABILITY_LISTS_CAPABILITY)) return 9;
@@ -877,7 +1165,18 @@ function v2ResponseEncoder(protocol: number) {
   return encodeTeamProtocolV4WebRtcHttpResponse;
 }
 
+function isRelaySignIn(request: Extract<TeamProtocolV2RpcFrame, { type: "request" }>): boolean {
+  return (
+    request.operation === RAW_HTTP_OPERATION &&
+    isRawHttpRequest(request.payload) &&
+    request.payload.method === "POST" &&
+    request.payload.path === TEAM_API_ROUTES.auth.relay
+  );
+}
+
 function isReadRequest(request: Extract<TeamProtocolV2RpcFrame, { type: "request" }>): boolean {
+  if (request.operation === RAW_HTTP_OPERATION)
+    return isRawHttpRequest(request.payload) && request.payload.method === "GET";
   return request.operation === "http.request" && isHttpRequest(request.payload) && request.payload.method === "GET";
 }
 

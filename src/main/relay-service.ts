@@ -413,13 +413,7 @@ function connectionMessage(code: RelaySocketErrorCode): string {
     case "heartbeat_timeout":
     case "target_unavailable":
     case "peer_refused":
-    case "tunnel_handshake_failed":
-    case "tunnel_peer_unverified":
-    case "tunnel_integrity_failed":
-    case "tunnel_counter_exhausted":
       return sourceText("error.remote.relayUnreachable");
-    case "tunnel_identity_unusable":
-      return sourceText("error.remote.relayIdentityUnusable");
   }
 }
 
