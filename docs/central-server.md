@@ -26,14 +26,15 @@ invitation and no WebRTC.
 
 ## What the server can read
 
-The data of a connection goes through the server. TLS protects each of the two sockets, but the
-server process sees the bytes between them. It does not store them or write them to a log.
+The data of a connection goes through the server. TLS protects each of the two sockets, and the two
+OpenBots encrypt the bytes inside the connection from end to end (see
+[End-to-end encryption](#end-to-end-encryption)). The server can see who connects to whom, when, and
+the number and size of the encrypted messages. It cannot read or change chats, files or commands. It
+does not store the bytes or write them to a log.
 
-A person who controls the server, or its root private key, controls who can connect. Keep the
-server and its data directory safe.
-
-Not done: encryption from one OpenBot to the other inside the connection. The connection carries
-opaque bytes, so this needs no server change.
+A person who controls the server, or its root private key, controls who can connect: with the root
+key, that person can make a certificate for a new member. Keep the server and its data directory
+safe.
 
 ## Certificates
 
@@ -248,6 +249,49 @@ The desktop accepts a TLS certificate of the system roots (the default roots of 
 `NODE_EXTRA_CA_CERTS`) or of the root in its identity file, with the normal host name check. It
 refuses `ws:` except on its own computer.
 
+## End-to-end encryption
+
+Each connection starts with a handshake between the two OpenBots, before any application byte. The
+server passes it as opaque binary data and needs no change. The rules are in
+`packages/contracts/src/relay-protocol/tunnel-crypto.ts`. The desktop runs them in
+`src/main/relay/tunnel-encryption.ts` and `src/main/relay/stream.ts`, and the web client, extension
+and phone in `packages/team-client/src/relay-socket.ts`.
+
+Each message is a frame: a length (4 bytes, big-endian) and the body. A handshake body starts with
+the version (1) and the type.
+
+| Message | From | Body |
+| --- | --- | --- |
+| `e2e-hello` (type 1) | client | version, type, ephemeral ECDH P-256 public key (65 bytes, uncompressed), random nonce (32 bytes) |
+| `e2e-reply` (type 2) | host | version, type, ephemeral public key (65 bytes), nonce (32 bytes), signature (64 bytes) |
+| `e2e-finish` (type 3) | client | version, type, signature (64 bytes) |
+
+- The transcript is a sequence of items, each with a 4-byte big-endian length: the context
+  `openbot-relay-e2e-v1`, the label (`host` or `client`), the connection identifier of `open` or
+  `incoming`, the key identifier of the client, the key identifier of the host, the client ephemeral
+  key, the client nonce, the host ephemeral key and the host nonce.
+- Each end signs the SHA-256 of the transcript with its label, with the key of its member
+  certificate (ECDSA P-256, SHA-256, IEEE P1363). The other end verifies it with the public key of
+  the certificate that it checked for this connection. So the server cannot replace a key, replay an
+  old reply, or join two different connections.
+- Keys: the ECDH secret of the two ephemeral keys, salt = SHA-256 of the transcript with no label,
+  HKDF-SHA256 with the info `openbot-relay-e2e-v1 c2h` and `openbot-relay-e2e-v1 h2c` gives one
+  AES-256-GCM key for each direction. The ephemeral private keys are used once and dropped.
+- Records: a 4-byte big-endian length and the ciphertext with its 16-byte tag. The plaintext of a
+  record is at most 16 KiB. The nonce is 4 zero bytes and an 8-byte big-endian counter for each
+  direction, from 0. The additional data is the length header.
+- The client can send data right after `e2e-finish`. The host gives the connection to the
+  application only after it verified `e2e-finish`.
+- A bad frame, a wrong version, a bad signature, a record that fails authentication or a counter
+  that is used up closes the connection. The error codes are `tunnel_handshake_failed`,
+  `tunnel_peer_unverified`, `tunnel_integrity_failed`, `tunnel_counter_exhausted` and
+  `tunnel_identity_unusable` (the key of the identity is not ECDSA P-256). The handshake has a
+  deadline of 10 seconds on the host.
+- The encryption is mandatory. A peer that sends plain bytes (HTTP or the V2 marker) is refused.
+  All OpenBots, the web client, the extension and the phone must run the same version.
+- The server can still cut a connection. The application then sees a closed connection, as with a
+  network fault.
+
 ## Web client
 
 The server can serve the web client at `https://<host>/app`, on the same origin as
@@ -385,3 +429,16 @@ message, runs one browser sharing command on a shared tab through the relay, reo
 removes the identity, imports one by file, and fails on a console error, a CSP violation or a
 request to another server. It writes screenshots and `report.json` to
 `.openbot-build/relay-extension-e2e/`.
+
+```sh
+bun run test:relay-tunnel-encryption
+```
+
+This test puts a relay in the middle with a valid server proof between a desktop client and a host
+with relay hosting, and records every byte of each connection. It checks that a chat message, its
+reply and a file go through and that the recorded bytes hold no plaintext, also for V2 tunnels of a
+phone process with noble crypto and no `crypto.subtle`. It checks that a changed byte closes the
+connection with `tunnel_integrity_failed` and the application gets no data, and that a replaced
+ephemeral key, a replayed reply, a connection with a different identifier and plain HTTP are
+refused. It measures one 8 MiB transfer through the real server for the desktop and the noble
+crypto, and writes `.openbot-build/relay-tunnel-encryption-e2e/report.json`.

@@ -13,6 +13,7 @@ import { issuedBy, publicKeyId, readCertificate, subjectNames, trustPath, validi
 
 const STORED_IDENTITY_VERSION = 1;
 const SIGNING_KEY_TYPES = new Set(["ec", "ed25519", "rsa"]);
+const P256_CURVE = "prime256v1";
 
 const RELAY_IDENTITY_REFUSALS = [
   "invalid_bundle",
@@ -71,6 +72,7 @@ export interface RelayCredentialSource {
   current(): RelayIdentity | null;
   tlsCredentials(): RelayTlsCredentials | null;
   signHello(input: RelayHelloInput): RelayHelloProof | null;
+  signTunnelTranscript(transcript: Uint8Array): Uint8Array | null;
 }
 
 interface RelayIdentityStoreOptions {
@@ -191,6 +193,14 @@ export class RelayIdentityStore implements RelayCredentialSource {
     const audience = relayAudience(loaded.identity.relayUrl);
     const signature = signTranscript(loaded.privateKey, relayHelloTranscript({ ...input, audience }));
     return signature === null ? null : { audience, signature };
+  }
+
+  signTunnelTranscript(transcript: Uint8Array): Uint8Array | null {
+    const privateKey = this.#loaded?.privateKey;
+    if (privateKey?.asymmetricKeyType !== "ec" || privateKey.asymmetricKeyDetails?.namedCurve !== P256_CURVE) {
+      return null;
+    }
+    return sign("sha256", transcript, { key: privateKey, dsaEncoding: "ieee-p1363" });
   }
 
   readonly #save = Effect.fn("RelayIdentityStore.save")(function* (

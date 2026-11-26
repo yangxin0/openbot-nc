@@ -172,6 +172,11 @@ const RELAY_STATE_KEYS = {
   deadline_exceeded: "error.remote.relayUnreachable",
   target_unavailable: "error.remote.relayUnreachable",
   peer_refused: "error.remote.relayUnreachable",
+  tunnel_handshake_failed: "error.remote.relayUnreachable",
+  tunnel_peer_unverified: "error.remote.relayUnreachable",
+  tunnel_integrity_failed: "error.remote.relayUnreachable",
+  tunnel_counter_exhausted: "error.remote.relayUnreachable",
+  tunnel_identity_unusable: "error.remote.relayIdentityUnusable",
 } as const satisfies Record<RelaySocketErrorCode, keyof SourceMessages & AppTextKey>;
 
 export function relayStateKey(code: RelaySocketErrorCode): (typeof RELAY_STATE_KEYS)[RelaySocketErrorCode] {

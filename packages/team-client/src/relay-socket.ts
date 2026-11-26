@@ -14,9 +14,16 @@ import {
   relayAudience,
   relayHelloTranscript,
 } from "@openbot/contracts/relay-protocol/messages";
+import {
+  RELAY_TUNNEL_CRYPTO_ERROR_CODES,
+  RELAY_TUNNEL_CRYPTO_ERROR_MESSAGES,
+  type RelayTunnelCryptoErrorCode,
+  RelayTunnelHandshake,
+  type RelayTunnelSession,
+} from "@openbot/contracts/relay-protocol/tunnel-crypto";
 import { Schema } from "effect";
 import { bytesToBase64Url } from "./base64";
-import { relayPeerCertificateRefusal, relayServerProofRefusal } from "./relay-certificates";
+import { readRelayCertificate, relayPeerCertificateRefusal, relayServerProofRefusal } from "./relay-certificates";
 import { type RelayCrypto, webRelayCrypto } from "./relay-crypto";
 import type { RelayBrowserIdentity } from "./relay-identity";
 
@@ -32,6 +39,7 @@ const RELAY_SOCKET_ERROR_CODES = [
   "peer_refused",
   "server_refused",
   "closed",
+  ...RELAY_TUNNEL_CRYPTO_ERROR_CODES,
 ] as const;
 export type RelaySocketErrorCode = (typeof RELAY_SOCKET_ERROR_CODES)[number];
 
@@ -199,38 +207,48 @@ export interface RelayTunnelHandlers {
   closed: (close: RelaySocketClose) => void;
 }
 
+interface RelayTunnelCipher {
+  session: RelayTunnelSession;
+  rest: Uint8Array;
+  heldByPeer: boolean;
+}
+
+interface RelayTunnelFlow {
+  heldByPeer: boolean;
+}
+
 export class RelayTunnel {
   readonly peer: RelayPeerCertificate;
   readonly connectionId: string;
   readonly #socket: RelayBrowserSocket;
+  readonly #session: RelayTunnelSession;
   readonly #received: Uint8Array[] = [];
   readonly #held: Uint8Array<ArrayBuffer>[] = [];
   #heldBytes = 0;
-  #pausedByPeer = false;
+  #sealingBytes = 0;
+  #pausedByPeer: boolean;
   #handlers: RelayTunnelHandlers | null = null;
   #closed: RelaySocketClose | null = null;
+  #inbound: Promise<void> = Promise.resolve();
 
-  constructor(socket: RelayBrowserSocket, open: RelayOpen) {
+  constructor(socket: RelayBrowserSocket, open: RelayOpen, cipher: RelayTunnelCipher) {
     this.#socket = socket;
+    this.#session = cipher.session;
+    this.#pausedByPeer = cipher.heldByPeer;
     this.peer = open.peer;
     this.connectionId = open.connectionId;
+    if (cipher.rest.byteLength > 0) this.#receive(cipher.rest);
     socket.attach({
       message: (message) => this.#control(message),
-      binary: (data) => {
-        if (this.#handlers) this.#handlers.data(data);
-        else this.#received.push(data);
-      },
+      binary: (data) => this.#receive(data),
       closed: (close) => {
-        this.#closed = close;
-        this.#held.length = 0;
-        this.#heldBytes = 0;
-        this.#handlers?.closed(close);
+        this.#inbound = this.#inbound.then(() => this.#finish(close));
       },
     });
   }
 
   get bufferedAmount(): number {
-    return this.#heldBytes + this.#socket.bufferedAmount;
+    return this.#sealingBytes + this.#heldBytes + this.#socket.bufferedAmount;
   }
 
   get closed(): boolean {
@@ -245,14 +263,14 @@ export class RelayTunnel {
 
   write(data: Uint8Array<ArrayBuffer>): void {
     if (this.#closed) throw this.#closed.error;
-    if (this.#pausedByPeer) {
-      this.#held.push(data);
-      this.#heldBytes += data.byteLength;
-      return;
-    }
-    if (!this.#socket.sendBinary(data)) {
-      throw new RelaySocketError({ code: "closed", message: "The relay socket is closed." });
-    }
+    if (!this.#socket.open) throw new RelaySocketError({ code: "closed", message: "The relay socket is closed." });
+    if (data.byteLength === 0) return;
+    this.#sealingBytes += data.byteLength;
+    void this.#session.seal(data).then((sealed) => {
+      this.#sealingBytes -= data.byteLength;
+      if (sealed.ok) this.#transmit(sealed.bytes);
+      else this.fail(sealed.code, RELAY_TUNNEL_CRYPTO_ERROR_MESSAGES[sealed.code]);
+    });
   }
 
   close(): void {
@@ -261,6 +279,36 @@ export class RelayTunnel {
 
   fail(code: RelaySocketErrorCode, message: string): void {
     this.#socket.fail(code, message);
+  }
+
+  #transmit(bytes: Uint8Array<ArrayBuffer>): void {
+    if (this.#closed) return;
+    if (this.#pausedByPeer) {
+      this.#held.push(bytes);
+      this.#heldBytes += bytes.byteLength;
+      return;
+    }
+    if (!this.#socket.sendBinary(bytes)) this.fail("closed", "The relay socket is closed.");
+  }
+
+  #receive(data: Uint8Array): void {
+    const opened = this.#session.open(data);
+    this.#inbound = this.#inbound.then(async () => {
+      const result = await opened;
+      if (this.#closed) return;
+      for (const message of result.messages) {
+        if (this.#handlers) this.#handlers.data(message);
+        else this.#received.push(message);
+      }
+      if (result.failure) this.fail(result.failure, RELAY_TUNNEL_CRYPTO_ERROR_MESSAGES[result.failure]);
+    });
+  }
+
+  #finish(close: RelaySocketClose): void {
+    this.#closed = close;
+    this.#held.length = 0;
+    this.#heldBytes = 0;
+    this.#handlers?.closed(close);
   }
 
   #control(message: RelayServerMessage): void {
@@ -317,7 +365,63 @@ export async function dialRelayPeer(
       socket.fail("peer_refused", message);
       throw new RelaySocketError({ code: "peer_refused", message });
     }
-    return new RelayTunnel(socket, open);
+    return new RelayTunnel(socket, open, await encryptTunnel(socket, open, identity, options.crypto ?? webRelayCrypto));
+  });
+}
+
+async function encryptTunnel(
+  socket: RelayBrowserSocket,
+  open: RelayOpen,
+  identity: RelayBrowserIdentity,
+  crypto: RelayCrypto,
+): Promise<RelayTunnelCipher> {
+  const peer = await readRelayCertificate(open.peer.certificate, crypto);
+  if (!peer) throw tunnelFailure(socket, "tunnel_peer_unverified");
+  const handshake = new RelayTunnelHandshake({
+    role: "client",
+    crypto,
+    binding: { connectionId: open.connectionId, clientKeyId: identity.keyId, hostKeyId: open.peer.keyId },
+    peerPublicKey: { format: "spki", bytes: peer.spki },
+    sign: (transcript) => crypto.sign(identity.privateKey, transcript),
+  });
+  const flow: RelayTunnelFlow = { heldByPeer: false };
+  let step = await handshake.begin();
+  for (;;) {
+    if (step.kind === "failed") throw tunnelFailure(socket, step.code);
+    if (step.send && !socket.sendBinary(step.send)) {
+      throw new RelaySocketError({ code: "closed", message: "The relay socket is closed." });
+    }
+    if (step.kind === "done") return { session: step.session, rest: step.rest, heldByPeer: flow.heldByPeer };
+    step = await handshake.receive(await expectBinary(socket, flow));
+  }
+}
+
+function tunnelFailure(socket: RelayBrowserSocket, code: RelayTunnelCryptoErrorCode): RelaySocketError {
+  const message = RELAY_TUNNEL_CRYPTO_ERROR_MESSAGES[code];
+  socket.fail(code, message);
+  return new RelaySocketError({ code, message });
+}
+
+function expectBinary(socket: RelayBrowserSocket, flow: RelayTunnelFlow): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    socket.attach({
+      message: (message) => {
+        if (message.type === "pause" || message.type === "resume") {
+          flow.heldByPeer = message.type === "pause";
+          return;
+        }
+        socket.detach();
+        reject(unexpectedMessage());
+      },
+      binary: (data) => {
+        socket.detach();
+        resolve(data);
+      },
+      closed: (close) => {
+        socket.detach();
+        reject(close.error);
+      },
+    });
   });
 }
 

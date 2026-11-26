@@ -15,6 +15,9 @@
 
 ### Added
 
+- End-to-end encryption between the phone and your OpenBots. The central server cannot read or
+  change chats or files in transit. All OpenBots, the web client, the extension and the phone must
+  run this version.
 - Server settings > Members for an owner or admin of a server: the members of the team that
   connected to the server, with their roles. Change the role of a member between member and admin,
   give roles to a member, disable or enable a member, or remove a member. The server must be online.

@@ -60,15 +60,18 @@ export class RelayDialer {
         openRelayTunnelSocket(this.#identity, { role: "client", target, waitForTarget }, this.#socketOptions),
       ).pipe(
         Effect.flatMap(({ socket, open }) =>
-          verifiedRelayStream({
-            identity: this.#identity.current(),
-            socket,
-            open,
-            peerKeyId: target,
-            connectionId: null,
-            now: this.#now(),
-            stream,
-          }),
+          restore(
+            verifiedRelayStream({
+              credentials: this.#identity,
+              role: "client",
+              socket,
+              open,
+              peerKeyId: target,
+              connectionId: null,
+              now: this.#now(),
+              stream,
+            }),
+          ),
         ),
       ),
     );

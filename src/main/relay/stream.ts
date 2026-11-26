@@ -1,9 +1,11 @@
 import { Duplex } from "node:stream";
 import type { RelayPeerCertificate, RelayServerMessage } from "@openbot/contracts/relay-protocol/messages";
-import { Effect } from "effect";
+import type { RelayTunnelRole, RelayTunnelSession } from "@openbot/contracts/relay-protocol/tunnel-crypto";
+import { Effect, Exit } from "effect";
 import { peerRefusal } from "./certificates";
-import type { RelayIdentity } from "./identity-store";
+import type { RelayCredentialSource } from "./identity-store";
 import { type RelayOpen, type RelaySocket, type RelaySocketClose, RelaySocketError } from "./socket";
+import { encryptRelayTunnel, type RelayTunnelCipher, relayTunnelError } from "./tunnel-encryption";
 
 const RELAY_STREAM_MESSAGE_BYTES = 256 * 1024;
 
@@ -14,6 +16,8 @@ export class RelayStream extends Duplex {
   timeout = 0;
   #socket: RelaySocket | null = null;
   #open: RelayOpen | null = null;
+  #session: RelayTunnelSession | null = null;
+  #inbound: Promise<void> = Promise.resolve();
   #heldByPeer = false;
   #heldWrite: (() => void) | null = null;
   #sentInTurn = 0;
@@ -39,14 +43,17 @@ export class RelayStream extends Duplex {
     return this.#heldByPeer;
   }
 
-  connect(socket: RelaySocket, open: RelayOpen): void {
+  connect(socket: RelaySocket, open: RelayOpen, cipher: RelayTunnelCipher): void {
     if (this.destroyed || this.#socket) {
       socket.terminate();
       return;
     }
     this.#socket = socket;
     this.#open = open;
+    this.#session = cipher.session;
+    this.#heldByPeer = cipher.heldByPeer;
     this.connecting = false;
+    if (cipher.rest.byteLength > 0) this.#receive(socket, cipher.rest);
     socket.attach({
       message: (message) => this.#control(message),
       binary: (data) => this.#receive(socket, data),
@@ -84,8 +91,16 @@ export class RelayStream extends Duplex {
 
   override _write(chunk: Buffer, encoding: BufferEncoding, callback: WriteCallback): void {
     const socket = this.#socket;
-    if (socket) this.#send(socket, chunk, 0, callback);
-    else this.once("connect", () => this._write(chunk, encoding, callback));
+    const session = this.#session;
+    if (!socket || !session) {
+      this.once("connect", () => this._write(chunk, encoding, callback));
+      return;
+    }
+    void session.seal(chunk).then((sealed) => {
+      if (!sealed.ok) callback(relayTunnelError(sealed.code));
+      else if (sealed.bytes.byteLength === 0) callback();
+      else this.#send(socket, sealed.bytes, 0, callback);
+    });
   }
 
   override _final(callback: WriteCallback): void {
@@ -102,11 +117,12 @@ export class RelayStream extends Duplex {
     if (this.#idleTimer) clearTimeout(this.#idleTimer);
     this.#idleTimer = null;
     this.#heldWrite = null;
+    this.#session = null;
     this.#socket?.terminate();
     callback(error);
   }
 
-  #send(socket: RelaySocket, chunk: Buffer, offset: number, callback: WriteCallback): void {
+  #send(socket: RelaySocket, chunk: Uint8Array, offset: number, callback: WriteCallback): void {
     if (this.#heldByPeer) {
       this.#heldWrite = () => this.#send(socket, chunk, offset, callback);
       return;
@@ -129,9 +145,19 @@ export class RelayStream extends Duplex {
     });
   }
 
-  #receive(socket: RelaySocket, data: Buffer): void {
+  #receive(socket: RelaySocket, data: Uint8Array): void {
     this.#restartIdleTimer();
-    if (!this.push(data)) socket.pauseReading();
+    const session = this.#session;
+    if (!session) return;
+    const opened = session.open(data);
+    this.#inbound = this.#inbound.then(async () => {
+      const result = await opened;
+      if (this.destroyed) return;
+      for (const message of result.messages) {
+        if (!this.push(Buffer.from(message.buffer, message.byteOffset, message.byteLength))) socket.pauseReading();
+      }
+      if (result.failure) this.destroy(relayTunnelError(result.failure));
+    });
   }
 
   #control(message: RelayServerMessage): void {
@@ -157,8 +183,10 @@ export class RelayStream extends Duplex {
   }
 
   #closed(close: RelaySocketClose): void {
-    if (close.clean) this.push(null);
-    else this.destroy(close.error);
+    this.#inbound = this.#inbound.then(() => {
+      if (close.clean) this.push(null);
+      else this.destroy(close.error);
+    });
   }
 
   #restartIdleTimer(): void {
@@ -171,7 +199,8 @@ export class RelayStream extends Duplex {
 }
 
 export function verifiedRelayStream(input: {
-  identity: RelayIdentity | null;
+  credentials: RelayCredentialSource;
+  role: RelayTunnelRole;
   socket: RelaySocket;
   open: RelayOpen;
   peerKeyId: string;
@@ -179,8 +208,9 @@ export function verifiedRelayStream(input: {
   now: number;
   stream?: RelayStream | undefined;
 }): Effect.Effect<RelayStream, RelaySocketError> {
-  return Effect.suspend(() => {
-    const { identity, socket, open } = input;
+  const { credentials, socket, open } = input;
+  return Effect.gen(function* () {
+    const identity = credentials.current();
     const refusal = !identity
       ? "no_identity"
       : open.peer.keyId !== input.peerKeyId
@@ -188,17 +218,21 @@ export function verifiedRelayStream(input: {
         : input.connectionId !== null && open.connectionId !== input.connectionId
           ? "different_connection"
           : peerRefusal(open.peer, identity, input.now);
-    if (refusal !== null) {
-      socket.terminate();
-      return Effect.fail(
-        new RelaySocketError({
-          code: "peer_refused",
-          message: `The certificate of the peer was refused (${refusal}).`,
-        }),
-      );
+    if (refusal !== null || !identity) {
+      return yield* new RelaySocketError({
+        code: "peer_refused",
+        message: `The certificate of the peer was refused (${refusal ?? "no_identity"}).`,
+      });
     }
+    const cipher = yield* encryptRelayTunnel({
+      socket,
+      open,
+      role: input.role,
+      credentials,
+      selfKeyId: identity.keyId,
+    });
     const stream = input.stream ?? new RelayStream();
-    stream.connect(socket, open);
-    return Effect.succeed(stream);
-  });
+    stream.connect(socket, open, cipher);
+    return stream;
+  }).pipe(Effect.onExit((exit) => (Exit.isSuccess(exit) ? Effect.void : Effect.sync(() => socket.terminate()))));
 }

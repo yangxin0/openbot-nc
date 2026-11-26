@@ -66,6 +66,7 @@
     "./relay-protocol/messages": "./src/relay-protocol/messages.ts",
     "./relay-protocol/peer-rules": "./src/relay-protocol/peer-rules.ts",
     "./relay-protocol/server-proof": "./src/relay-protocol/server-proof.ts",
+    "./relay-protocol/tunnel-crypto": "./src/relay-protocol/tunnel-crypto.ts",
     "./relay-protocol/v2-tunnel": "./src/relay-protocol/v2-tunnel.ts",
     "./relay-protocol/x509": "./src/relay-protocol/x509.ts",
     "./spreadsheet-workbook": "./src/spreadsheet-workbook.ts",

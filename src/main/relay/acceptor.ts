@@ -98,14 +98,17 @@ export class RelayAcceptor {
         ),
       ).pipe(
         Effect.flatMap(({ socket, open }) =>
-          verifiedRelayStream({
-            identity: this.#options.identity.current(),
-            socket,
-            open,
-            peerKeyId: incoming.from.keyId,
-            connectionId: incoming.connectionId,
-            now: this.#now(),
-          }).pipe(
+          restore(
+            verifiedRelayStream({
+              credentials: this.#options.identity,
+              role: "host",
+              socket,
+              open,
+              peerKeyId: incoming.from.keyId,
+              connectionId: incoming.connectionId,
+              now: this.#now(),
+            }),
+          ).pipe(
             Effect.flatMap((stream) =>
               Effect.try({
                 try: () => this.#options.onStream(stream, open.peer),

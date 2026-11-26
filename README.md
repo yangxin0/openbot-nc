@@ -39,8 +39,9 @@ Anthropic, xAI or another provider. Provider names only describe compatibility.
   a valid certificate of a team is a member of that team. There is no other member list. One central
   server can serve many teams.
 - The client and the central server verify each other. The central server passes the bytes of each
-  connection between two members of the same team. TLS protects each socket. The server does not
-  store or log the bytes. There is no end-to-end encryption inside a connection yet.
+  connection between two members of the same team. TLS protects each socket, and the two members
+  encrypt each connection from end to end, so the server cannot read or change chats, files or
+  commands. The server does not store or log the bytes.
 - An OpenBot-NC that shares its agents is a server for the team. The desktop app, a Linux server, the
   web client, the Chrome extension and the phone app connect to it through the central server.
 - Agents, conversations, files and browser data stay on the computer that runs them. See

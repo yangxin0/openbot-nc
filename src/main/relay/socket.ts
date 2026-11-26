@@ -12,6 +12,7 @@ import {
   type RelayProtocolVersion,
   type RelayServerMessage,
 } from "@openbot/contracts/relay-protocol/messages";
+import { RELAY_TUNNEL_CRYPTO_ERROR_CODES } from "@openbot/contracts/relay-protocol/tunnel-crypto";
 import { Effect, Exit, Schema } from "effect";
 import WebSocket from "ws";
 import { rawDataBytes, rawDataSize, rawDataText } from "../ws-raw-data";
@@ -30,6 +31,7 @@ const RELAY_SOCKET_ERROR_CODES = [
   "peer_refused",
   "server_refused",
   "closed",
+  ...RELAY_TUNNEL_CRYPTO_ERROR_CODES,
 ] as const;
 export type RelaySocketErrorCode = (typeof RELAY_SOCKET_ERROR_CODES)[number];
 

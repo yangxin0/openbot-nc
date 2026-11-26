@@ -99,8 +99,10 @@ export function relayRefusalForSocketCode(code: RelaySocketErrorCode): RemoteRel
     case "identity_unavailable":
     case "relay_url_missing":
     case "insecure_relay_url":
+    case "tunnel_identity_unusable":
       return "identity_unusable";
     case "peer_refused":
+    case "tunnel_peer_unverified":
       return "host_certificate_refused";
     case "server_refused":
       return "relay_server_refused";

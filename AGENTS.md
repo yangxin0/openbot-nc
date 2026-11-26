@@ -60,8 +60,9 @@ adding a module or moving ownership between workspaces.
   `src/renderer/src/features/web-client/web-agent-pictures.ts`), so the saved workspace shows the agent
   pictures while the host is offline. Server removal and the end of access delete it.
 - The central relay server (`remote/api/src/relay`) holds the CA files, the team registry and the
-  revocation list. It passes connection bytes in transit and does not store or log them. It does not
-  hold chats, files, or commands.
+  revocation list. It passes connection bytes in transit and does not store or log them. The two ends
+  encrypt each connection from end to end (`packages/contracts/src/relay-protocol/tunnel-crypto.ts`),
+  so the server cannot read or change chats, files, or commands, and does not hold them.
 - The user's SQLite database is the source of truth, not a remote cache.
 - Agents keep their workspace, thread, and identity across provider switches and restarts.
   Do not reset an agent to simplify state.

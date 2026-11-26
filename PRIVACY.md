@@ -36,13 +36,16 @@ While it runs, the server knows these data, in memory only:
 - when a socket opens and closes;
 - the sharing state and the label that each OpenBot-NC sends;
 - which member connects to which member;
-- the bytes of each connection, in transit.
+- the number and size of the encrypted messages of each connection, in transit.
 
-TLS protects each socket. The server process sees the bytes between the two sockets of a connection.
-It does not store these bytes and does not write them to a log. Its log has only start, certificate
-store and error lines. `/metrics` gives counts of sockets, teams, members and connections, with no
-names. There is no end-to-end encryption inside a connection yet. A person who controls the server
-or its root private key can read the traffic in transit and controls who can connect.
+TLS protects each socket. Inside each connection, the two OpenBot-NC ends encrypt all bytes from end
+to end (ECDH P-256, AES-256-GCM, see [docs/central-server.md](docs/central-server.md#end-to-end-encryption)).
+Each end signs the key exchange with the key of its certificate, so the server cannot read or change
+chats, files or commands in transit, and cannot put itself between the two ends. The server does not
+store the encrypted bytes and does not write them to a log. Its log has only start, certificate store
+and error lines. `/metrics` gives counts of sockets, teams, members and connections, with no names.
+A person who controls the server or its root private key controls who can connect: with the root key,
+that person can make a certificate for a new member and connect as that member.
 
 ## Web client, extension and phone app
 
@@ -59,7 +62,7 @@ the central server that their identity file names.
   that the saved workspace shows them while the host is offline. The removal of the server and the
   end of access delete it.
 - Requests, messages and files between a client and a host go through the central server in transit,
-  as [Central server](#central-server) tells.
+  encrypted from end to end, as [Central server](#central-server) tells.
 
 An owner or admin of a joined server can manage its host from their own computer, from the web
 client or from the phone. A provider API key, a custom endpoint key or header, the code that a
@@ -987,8 +990,8 @@ The provider's own data policies apply to content it receives.
 
 Archiving a channel stops its work and retains its transcript. Restore makes the channel available again.
 These actions do not remove agents, their memories, or linked conversations. Channel traffic between
-clients and a host goes through the central server in transit. The central server does not store
-channel chats or make routing decisions. This feature adds no mobile chat interface.
+clients and a host goes through the central server in transit, encrypted from end to end. The central
+server cannot read channel chats, does not store them and does not make routing decisions. This feature adds no mobile chat interface.
 
 ## Mobile queue drafts
 

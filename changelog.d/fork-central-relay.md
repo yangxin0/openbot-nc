@@ -1,5 +1,9 @@
 ### Added
 
+- End-to-end encryption between your OpenBots. Each connection through the central server is
+  encrypted from one end to the other, and each end proves its certificate, so the central server
+  cannot read or change chats or files in transit. All OpenBots, the web client, the extension and
+  the phone must run this version.
 - A central server that connects the OpenBots of a team with WebSocket and no WebRTC. It makes the
   root, team and member certificates, and lets in only an OpenBot that has a certificate of its
   team. One server can serve many teams. See `docs/central-server.md`.

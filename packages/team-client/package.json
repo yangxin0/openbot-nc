@@ -57,6 +57,7 @@
     "typecheck": "bun ../../scripts/type-checker.ts --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@noble/ciphers": "catalog:",
     "@noble/curves": "catalog:",
     "@noble/hashes": "catalog:",
     "@openbot/contracts": "workspace:*",
