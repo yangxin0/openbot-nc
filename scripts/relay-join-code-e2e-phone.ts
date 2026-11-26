@@ -14,7 +14,7 @@ interface Config {
 const config: Config = JSON.parse(readFileSync(process.argv[2] ?? "", "utf8"));
 const randomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
 Object.defineProperty(globalThis, "crypto", {
-  value: { getRandomValues: randomValues },
+  value: undefined,
   configurable: true,
   writable: true,
 });
@@ -47,7 +47,7 @@ const results: unknown[] = [];
 for (const step of config.steps) {
   memory.clear();
   const store = createPhoneIdentityStore(memoryStore, crypto);
-  const subtle = "subtle" in globalThis.crypto ? "defined" : "undefined";
+  const subtle = typeof globalThis.crypto === "undefined" ? "undefined" : "defined";
   try {
     const identity = await store.joinWithCode(step.code);
     const control = startRelayControl(identity, { crypto });

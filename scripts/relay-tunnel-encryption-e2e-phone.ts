@@ -29,9 +29,8 @@ interface PhoneResult {
 }
 
 const config: PhoneConfig = JSON.parse(readFileSync(process.argv[2] ?? "", "utf8"));
-const randomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
 Object.defineProperty(globalThis, "crypto", {
-  value: { getRandomValues: randomValues },
+  value: undefined,
   configurable: true,
   writable: true,
 });
@@ -97,7 +96,7 @@ class PhoneLikeWebSocket extends EventTarget {
 Object.defineProperty(globalThis, "WebSocket", { value: PhoneLikeWebSocket, configurable: true, writable: true });
 
 const result: PhoneResult = {
-  subtleMissing: !("subtle" in globalThis.crypto),
+  subtleMissing: typeof globalThis.crypto === "undefined",
   checks: [],
   meStatus: null,
   meRole: null,
@@ -141,7 +140,7 @@ const { isDynamicRecord, isNumber, isString } = await import("@openbot/contracts
 const crypto = createNobleRelayCrypto({ randomBytes: (size) => new Uint8Array(randomBytes(size)) });
 
 await check("The phone opens V2 tunnels through the relay with noble crypto and reads /v1/me", async () => {
-  if (!result.subtleMissing) throw new Error("crypto.subtle must be missing in this process.");
+  if (!result.subtleMissing) throw new Error("The global crypto must be missing in this process.");
   const identity = await createRelayIdentityFromText(config.mitmIdentityText, { crypto });
   const tunnels = await deadline("the V2 tunnels", openRelayV2Tunnels(identity, config.hostKeyId, { crypto }));
   try {
@@ -166,6 +165,7 @@ await check("The phone opens V2 tunnels through the relay with noble crypto and 
     for (const frame of encodeTeamV2Payload(
       encodeTeamProtocolV2Frame({ version: 2, type: "event-ack", throughSequence: 0 }),
       Number.POSITIVE_INFINITY,
+      randomBytes(4).readUInt32BE(0),
     )) {
       tunnels.events.send(frame);
     }
@@ -181,7 +181,9 @@ await check("The phone opens V2 tunnels through the relay with noble crypto and 
         ...encodeTeamCapabilitiesV10(TEAM_CURRENT_CAPABILITIES),
       },
     });
-    for (const frame of encodeTeamV2Payload(request, Number.POSITIVE_INFINITY)) tunnels.rpc.send(frame);
+    for (const frame of encodeTeamV2Payload(request, Number.POSITIVE_INFINITY, randomBytes(4).readUInt32BE(0))) {
+      tunnels.rpc.send(frame);
+    }
     const value = await deadline("the answer to /v1/me", answer);
     if (!isDynamicRecord(value) || !isNumber(value.status)) throw new Error(inspect(value));
     result.meStatus = value.status;

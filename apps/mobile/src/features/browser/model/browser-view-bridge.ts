@@ -8,6 +8,7 @@ import {
 import { runTeamEffect } from "@openbot/team-client";
 import { bytesToBase64 } from "@openbot/team-client/base64";
 import { createRemoteBrowserView, type RemoteBrowserView } from "@openbot/team-client/browser-view";
+import * as Crypto from "expo-crypto";
 import { failureText } from "@/shared/lib/failure-text";
 
 export const BROWSER_VIEW_PAGE_SIZE = { width: 1_280, height: 800 };
@@ -70,6 +71,7 @@ export function createBrowserViewBridge(
       viewport: view?.options.viewport ?? null,
       pageCopy: view?.options.pageCopy ?? false,
     }),
+    (size) => Uint8Array.from(Crypto.getRandomBytes(size)),
   );
 
   const forward = (current: OpenView, frame: BrowserViewFrame) => {

@@ -44,7 +44,7 @@ const checks: PhoneCheck[] = [];
 const facts: PhoneFacts = {};
 const randomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
 Object.defineProperty(globalThis, "crypto", {
-  value: { getRandomValues: randomValues },
+  value: undefined,
   configurable: true,
   writable: true,
 });
@@ -253,8 +253,8 @@ function untilSnapshot<T>(
 }
 
 try {
-  await check("The phone process has no crypto.subtle, so a WebCrypto fallback would fail", () => {
-    assert(!("subtle" in globalThis.crypto), "crypto.subtle is still present.");
+  await check("The phone process has no global crypto, like Hermes, so any use of it would fail", () => {
+    assert(typeof globalThis.crypto === "undefined", "A global crypto is still present.");
   });
 
   await check("The phone identity module imports pasted text with the noble crypto into the secure store", async () => {

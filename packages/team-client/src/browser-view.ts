@@ -63,6 +63,7 @@ export function createRemoteBrowserView(
   namesFrames: () => boolean,
   clipboard: () => boolean,
   features: () => RemoteBrowserViewFeatures = () => NO_FEATURES,
+  randomBytes: (size: number) => Uint8Array<ArrayBuffer> = (size) => crypto.getRandomValues(new Uint8Array(size)),
 ) {
   let view: View | null = null;
   let generation = 0;
@@ -114,7 +115,7 @@ export function createRemoteBrowserView(
     }
     const next: View = {
       sessionId: session.id,
-      streamId: createTeamRequestId((size) => crypto.getRandomValues(new Uint8Array(size))),
+      streamId: createTeamRequestId(randomBytes),
       ready: false,
       released: false,
       frame,

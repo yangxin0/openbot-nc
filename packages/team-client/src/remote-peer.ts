@@ -1105,7 +1105,8 @@ export function createRemoteTeamPeer(
       const channel = state.channels[kind];
       if (channel?.readyState !== "open")
         return yield* new RemotePeerError({ message: sourceText("error.remote.channelNotOpen") });
-      for (const frame of yield* peerDecode(() => encodeTeamV2Payload(data, Number.POSITIVE_INFINITY))) {
+      const messageId = new DataView(randomBytes(4).buffer).getUint32(0);
+      for (const frame of yield* peerDecode(() => encodeTeamV2Payload(data, Number.POSITIVE_INFINITY, messageId))) {
         yield* waitForWritable(state, channel);
         yield* Effect.try({
           try: () => channel.send(frame),
