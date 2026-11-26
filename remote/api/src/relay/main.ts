@@ -2,13 +2,13 @@ import { X509Certificate } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { Effect, Result } from "effect";
-import {
-  CERTIFICATE_DAYS,
-  CertificateAuthority,
-  type CertificateAuthorityError,
-  type CertificateRecord,
-} from "./certificate-authority";
+import { toString as qrCode } from "qrcode";
+import { startAdminServer } from "./admin";
+import { ADMIN_LOGIN_MINUTES, AdminLogins, adminListenProblem, adminLoginUrl, adminOrigin } from "./admin-logins";
+import { CERTIFICATE_DAYS, CertificateAuthority, type CertificateRecord } from "./certificate-authority";
 import { type RelayConfig, readRelayConfig } from "./config";
+import { createEnrollHandler } from "./enroll-route";
+import { Enrollment, JOIN_CODE_ID_LENGTH, JOIN_CODE_MINUTES } from "./enrollment";
 import { certificateFingerprint } from "./identity";
 import { startRelayServer } from "./server";
 import { RelayService } from "./service";
@@ -25,30 +25,40 @@ const USAGE = `Usage:
                                           Make the certificate of one device of a user.
   ca server --dns <name> [--ip <address>] [--days <n>]
                                           Make the identity and TLS certificate of this server.
+  ca code --team <team> --user <user> [--device <device>] [--minutes <n>] [--days <n>]
+                                          Make a one-time join code for one device of a user.
+  ca codes [--team <team>]                List the open join codes.
+  ca code cancel <code identifier>        Cancel an open join code.
   ca revoke <serial | fingerprint | key identifier>
   ca list [--team <team>]
-  ca root                                 Print the root certificate and its fingerprint.`;
+  ca root                                 Print the root certificate and its fingerprint.
+  admin login                             Print a one-time sign-in link of the admin page.`;
 
 class UsageError extends Error {}
 
-async function run<A>(operation: Effect.Effect<A, CertificateAuthorityError>): Promise<A> {
+async function run<A, E extends { message: string }>(operation: Effect.Effect<A, E>): Promise<A> {
   const result = await Effect.runPromise(Effect.result(operation));
   if (Result.isFailure(result)) throw new UsageError(result.failure.message);
   return result.success;
 }
 
-function days(value: string | undefined, fallback: number): number {
+function days(value: string | undefined, fallback: number, option = "--days"): number {
   if (value === undefined) return fallback;
   const parsed = Number(value);
-  if (!Number.isInteger(parsed)) throw new UsageError("--days must be an integer.");
+  if (!Number.isInteger(parsed)) throw new UsageError(`${option} must be an integer.`);
   return parsed;
+}
+
+function subjectText(parts: ReadonlyArray<string | null>): string {
+  return parts.filter((part) => part !== null).join(" / ");
 }
 
 function recordLine(record: CertificateRecord): string {
   const state = record.revokedAt !== null ? "revoked" : record.expiresAt <= Date.now() ? "expired" : "valid";
-  const subject = [record.team, record.user, record.device].filter((part) => part !== null).join(" / ");
+  const subject = subjectText([record.team, record.user, record.device]);
   const expires = new Date(record.expiresAt).toISOString().slice(0, 10);
-  return `${record.kind.padEnd(6)} ${state.padEnd(7)} ${expires} ${record.serial} ${record.keyId} ${subject}`;
+  const label = record.label ? ` (${record.label})` : "";
+  return `${record.kind.padEnd(6)} ${state.padEnd(7)} ${expires} ${record.serial} ${record.keyId} ${subject}${label}`;
 }
 
 function rootFingerprint(pem: string): string {
@@ -85,9 +95,52 @@ async function certificateCommand(config: RelayConfig, command: string[]): Promi
       out: { type: "string" },
       dns: { type: "string", multiple: true },
       ip: { type: "string", multiple: true },
+      minutes: { type: "string" },
     },
   });
   const [action, ...rest] = positionals;
+  const enrollment = new Enrollment({
+    authority,
+    dataDirectory: config.dataDirectory,
+    publicUrl: config.publicUrl,
+  });
+  if (action === "code" && rest[0] === "cancel") {
+    if (rest[1] === undefined || rest.length !== 2) throw new UsageError(USAGE);
+    const cancelled = await run(enrollment.cancelCode(rest[1]));
+    console.log(`Cancelled join code ${cancelled.hash.slice(0, JOIN_CODE_ID_LENGTH)}.`);
+    return;
+  }
+  if (action === "code") {
+    if (values.team === undefined || values.user === undefined) throw new UsageError("Give --team and --user.");
+    const minutes = days(values.minutes, JOIN_CODE_MINUTES.default, "--minutes");
+    const created = await run(
+      enrollment.createCode({
+        team: values.team,
+        user: values.user,
+        device: values.device ?? null,
+        minutes,
+        days: days(values.days, CERTIFICATE_DAYS.member.default),
+        creator: "cli",
+      }),
+    );
+    process.stdout.write(`${await qrCode(created.url, { type: "terminal", small: true })}\n`);
+    console.log(created.url);
+    console.log(
+      `Join code ${created.id} for ${subjectText([created.entry.team, created.entry.user, created.entry.device])}. It works once, until ${new Date(created.entry.expiresAt).toISOString()} (${minutes} minutes).`,
+    );
+    return;
+  }
+  if (action === "codes") {
+    const codes = await run(enrollment.listCodes());
+    for (const { hash, entry } of codes) {
+      if (values.team !== undefined && entry.team !== values.team) continue;
+      const expires = new Date(entry.expiresAt).toISOString();
+      console.log(
+        `${hash.slice(0, JOIN_CODE_ID_LENGTH)} ${expires} ${entry.creator.padEnd(5)} ${subjectText([entry.team, entry.user, entry.device])}`,
+      );
+    }
+    return;
+  }
   if (action === "init") {
     const record = await run(
       authority.initialize({
@@ -154,7 +207,19 @@ async function certificateCommand(config: RelayConfig, command: string[]): Promi
   throw new UsageError(USAGE);
 }
 
+async function adminCommand(config: RelayConfig, command: string[]): Promise<void> {
+  if (command.length !== 1 || command[0] !== "login") throw new UsageError(USAGE);
+  if (config.admin === null) throw new UsageError("Set RELAY_ADMIN_HOST to the address of the admin page first.");
+  const problem = adminListenProblem(config.admin);
+  if (problem !== null) throw new UsageError(problem);
+  const login = await run(new AdminLogins(config.dataDirectory).create());
+  console.log(`Open this link in ${ADMIN_LOGIN_MINUTES} minutes. It works once:`);
+  console.log(adminLoginUrl(config.admin, login.token));
+}
+
 async function serve(config: RelayConfig): Promise<void> {
+  const adminProblem = config.admin === null ? null : adminListenProblem(config.admin);
+  if (adminProblem !== null) throw new UsageError(`The admin page did not start. ${adminProblem}`);
   const authority = new CertificateAuthority({
     dataDirectory: config.dataDirectory,
     passphrase: config.caPassphrase,
@@ -169,7 +234,25 @@ async function serve(config: RelayConfig): Promise<void> {
     );
   }
   const service = new RelayService(trust, serverIdentity, config.limits);
-  const server = startRelayServer(config, service, [rootPem]);
+  const enrollment = new Enrollment({ authority, dataDirectory: config.dataDirectory, publicUrl: config.publicUrl });
+  await run(enrollment.cleanup());
+  const enroll = enrollment.server === null ? null : createEnrollHandler(enrollment, config.enrollLimits);
+  const server = startRelayServer(config, service, [rootPem], enroll);
+  const logins = new AdminLogins(config.dataDirectory);
+  if (config.admin !== null) await run(logins.cleanup());
+  const admin =
+    config.admin === null
+      ? null
+      : startAdminServer({
+          admin: config.admin,
+          authority,
+          enrollment,
+          logins,
+          service,
+          audiences: config.audiences,
+          publicUrl: config.publicUrl,
+          tlsCertificatePath: config.tls?.certificatePath ?? null,
+        });
   let stamp = await run(authority.changeStamp());
   let reloading = false;
   const trustTimer = setInterval(() => {
@@ -201,12 +284,18 @@ async function serve(config: RelayConfig): Promise<void> {
   console.log(`Root certificate SHA-256 fingerprint: ${rootFingerprint(rootPem)}`);
   if (config.tls?.clientCertificatesRequired) console.log("TLS refuses a connection that has no team certificate.");
   if (config.webClientDirectory !== null) console.log(`The web client is at /app, from ${config.webClientDirectory}`);
+  if (enroll !== null) console.log(`Join codes are taken at https://${enrollment.server}/v1/enroll`);
+  if (admin !== null && config.admin !== null) {
+    const origin = adminOrigin({ ...config.admin, port: admin.port });
+    console.log(`The admin page is at ${origin}/admin. Sign in with a link from "admin login".`);
+  }
 
   let stopping: Promise<void> | null = null;
   const shutdown = () => {
     stopping ??= (async () => {
       clearInterval(trustTimer);
       clearInterval(expiryTimer);
+      await admin?.stop();
       await server.stop();
       process.exit(0);
     })();
@@ -221,6 +310,7 @@ async function main(): Promise<void> {
   const config = readRelayConfig();
   if (command === undefined || command === "serve") await serve(config);
   else if (command === "ca") await certificateCommand(config, rest);
+  else if (command === "admin") await adminCommand(config, rest);
   else throw new UsageError(USAGE);
 }
 

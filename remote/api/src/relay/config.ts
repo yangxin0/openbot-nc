@@ -10,6 +10,17 @@ interface RelayTlsConfig {
   clientCertificatesRequired: boolean;
 }
 
+export interface RelayAdminConfig {
+  host: string;
+  port: number;
+  allowPublic: boolean;
+}
+
+export interface RelayEnrollLimits {
+  perAddressPerMinute: number;
+  perMinute: number;
+}
+
 export interface RelayConfig {
   host: string;
   port: number;
@@ -23,6 +34,8 @@ export interface RelayConfig {
   trustProxy: boolean;
   metricsToken: string | null;
   webClientDirectory: string | null;
+  admin: RelayAdminConfig | null;
+  enrollLimits: RelayEnrollLimits;
   limits: RelayLimits;
   sourceCommit: string;
 }
@@ -47,6 +60,7 @@ export function readRelayConfig(environment: Environment = process.env): RelayCo
   if (tlsDisabled && clientCertificates === "required") {
     throw new Error("RELAY_TLS_CLIENT_CERTIFICATES=required needs TLS in this process.");
   }
+  const adminHost = optional(environment.RELAY_ADMIN_HOST);
   return {
     host: optional(environment.RELAY_HOST) ?? "0.0.0.0",
     port: positiveInteger(environment.RELAY_PORT, tlsDisabled ? 8081 : 8443, "RELAY_PORT"),
@@ -66,6 +80,22 @@ export function readRelayConfig(environment: Environment = process.env): RelayCo
     trustProxy: environment.RELAY_TRUST_PROXY === "true",
     metricsToken: optional(environment.RELAY_METRICS_TOKEN),
     webClientDirectory: optional(environment.RELAY_WEB_CLIENT_DIR),
+    admin:
+      adminHost === null
+        ? null
+        : {
+            host: adminHost,
+            port: positiveInteger(environment.RELAY_ADMIN_PORT, 8992, "RELAY_ADMIN_PORT"),
+            allowPublic: environment.RELAY_ADMIN_ALLOW_PUBLIC === "1",
+          },
+    enrollLimits: {
+      perAddressPerMinute: positiveInteger(
+        environment.RELAY_ENROLL_LIMIT_PER_ADDRESS,
+        10,
+        "RELAY_ENROLL_LIMIT_PER_ADDRESS",
+      ),
+      perMinute: positiveInteger(environment.RELAY_ENROLL_LIMIT, 60, "RELAY_ENROLL_LIMIT"),
+    },
     limits: {
       socketsPerIp: positiveInteger(environment.RELAY_MAX_SOCKETS_PER_IP, 128, "RELAY_MAX_SOCKETS_PER_IP"),
       tunnelsPerMember: positiveInteger(environment.RELAY_MAX_TUNNELS_PER_MEMBER, 64, "RELAY_MAX_TUNNELS_PER_MEMBER"),

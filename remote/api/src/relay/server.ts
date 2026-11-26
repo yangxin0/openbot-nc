@@ -1,7 +1,9 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
+import { RELAY_ENROLL_PATH } from "@openbot/contracts/relay-protocol/enrollment";
 import { RELAY_PATH, RELAY_TUNNEL_MESSAGE_BYTES_LIMIT } from "@openbot/contracts/relay-protocol/messages";
 import type { ServerWebSocket } from "bun";
 import type { RelayConfig } from "./config";
+import type { EnrollHandler } from "./enroll-route";
 import type { RelayService, RelaySocket } from "./service";
 import { createWebClientHandler, isWebClientPath } from "./web-client";
 
@@ -19,7 +21,12 @@ interface RelayServer {
   stop(): Promise<void>;
 }
 
-export function startRelayServer(config: RelayConfig, service: RelayService, clientAuthorities: string[]): RelayServer {
+export function startRelayServer(
+  config: RelayConfig,
+  service: RelayService,
+  clientAuthorities: string[],
+  enroll: EnrollHandler | null = null,
+): RelayServer {
   const tls = config.tls;
   const webClient = config.webClientDirectory === null ? null : createWebClientHandler(config.webClientDirectory);
   const server = Bun.serve<SocketData>({
@@ -39,12 +46,15 @@ export function startRelayServer(config: RelayConfig, service: RelayService, cli
     fetch(request, bunServer) {
       const { pathname } = new URL(request.url);
       if (webClient && isWebClientPath(pathname)) return webClient(request);
-      if (pathname !== RELAY_PATH) return new Response("Not found", { status: 404 });
+      if (pathname !== RELAY_PATH && (pathname !== RELAY_ENROLL_PATH || enroll === null)) {
+        return new Response("Not found", { status: 404 });
+      }
       const ip = clientIp(
         bunServer.requestIP(request)?.address,
         request.headers.get("x-forwarded-for"),
         config.trustProxy,
       );
+      if (pathname === RELAY_ENROLL_PATH && enroll !== null) return enroll(request, ip);
       if (bunServer.upgrade(request, { data: { socket: null, id: randomUUID(), ip } })) return undefined;
       return new Response("Upgrade required", { status: 426 });
     },

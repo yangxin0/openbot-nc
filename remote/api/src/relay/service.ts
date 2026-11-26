@@ -41,6 +41,15 @@ interface RelayMetrics {
   pendingConnections: number;
 }
 
+export interface RelayLiveMember {
+  fingerprint: string;
+  keyId: string;
+  team: string;
+  hosting: boolean;
+  label: string | null;
+  connectedAt: number;
+}
+
 type Deadline = ReturnType<typeof setTimeout>;
 type Hello = Extract<DecodedRelayClientMessage, { type: "hello" }>;
 type Presence = Extract<DecodedRelayClientMessage, { type: "presence" }>;
@@ -211,6 +220,22 @@ export class RelayService {
       this.#release(state.socket.id);
       state.socket.close(RELAY_CLOSE_CODES.unavailable, "The server stops.");
     }
+  }
+
+  liveMembers(): RelayLiveMember[] {
+    const members: RelayLiveMember[] = [];
+    for (const state of this.#sockets.values()) {
+      if (state.phase.kind !== "member") continue;
+      members.push({
+        fingerprint: state.phase.identity.fingerprint,
+        keyId: state.phase.identity.keyId,
+        team: state.phase.identity.team.name,
+        hosting: state.phase.hosting,
+        label: state.phase.label,
+        connectedAt: state.phase.connectedAt,
+      });
+    }
+    return members;
   }
 
   metrics(): RelayMetrics {

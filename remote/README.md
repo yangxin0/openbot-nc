@@ -8,10 +8,12 @@ of its team, and passes the bytes of a connection between two members of the sam
 - `api/src/relay/`: the server and its certificate authority (`ca` commands).
 - `scripts/build-relay.ts`: builds one program file (`bun run relay:build`).
 - `scripts/relay-e2e.ts`: the end-to-end test (`bun run test:relay`).
+- `api/src/relay/admin-page/`: the admin page (join codes, teams, members, revoke). It listens only
+  on a private address (`RELAY_ADMIN_HOST`), never on the public listener.
 - `compose.relay.yaml` and `api/Dockerfile`: the Docker set-up.
 
-The full guide is [docs/central-server.md](../docs/central-server.md): certificates, set-up with and
-without Docker, settings, protocol and tests.
+The full guide is [docs/central-server.md](../docs/central-server.md): certificates, join codes,
+the admin page, set-up with and without Docker, settings, protocol and tests.
 
 ## Docker
 

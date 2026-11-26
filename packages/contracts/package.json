@@ -62,6 +62,7 @@
     "./ipc-decoding": "./src/ipc-decoding.ts",
     "./owner-transfer": "./src/owner-transfer.ts",
     "./relay-protocol/decode": "./src/relay-protocol/decode.ts",
+    "./relay-protocol/enrollment": "./src/relay-protocol/enrollment.ts",
     "./relay-protocol/identity-bundle": "./src/relay-protocol/identity-bundle.ts",
     "./relay-protocol/messages": "./src/relay-protocol/messages.ts",
     "./relay-protocol/peer-rules": "./src/relay-protocol/peer-rules.ts",

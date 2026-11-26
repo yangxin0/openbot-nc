@@ -379,6 +379,7 @@
     "test:voice-transcription": "bun scripts/voice-transcription-smoke.ts",
     "test:conversation-ownership": "bun scripts/conversation-ownership-e2e.ts",
     "test:relay": "bun remote/scripts/relay-e2e.ts",
+    "test:relay-admin": "tsx scripts/relay-admin-e2e.ts",
     "test:relay-client": "tsx scripts/relay-client-e2e.ts",
     "test:relay-team-api": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-team-api-e2e.ts",
     "test:relay-client-team": "tsx --import ./scripts/relay-team-api-e2e-electron.mjs scripts/relay-client-team-e2e.ts",

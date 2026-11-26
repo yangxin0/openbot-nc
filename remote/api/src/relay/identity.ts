@@ -67,7 +67,7 @@ export function trustedRoot(pem: string): TrustedRoot {
   return { certificate, keyId: publicKeyId(certificate.publicKey) };
 }
 
-function relayTeam(rootKeyId: string, teamName: string): RelayTeam {
+export function relayTeam(rootKeyId: string, teamName: string): RelayTeam {
   const id = createHash("sha256").update(relayTeamIdStatement({ rootKeyId, teamName })).digest("base64url");
   return { id, name: teamName };
 }

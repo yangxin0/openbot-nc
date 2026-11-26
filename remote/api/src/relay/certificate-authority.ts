@@ -1,14 +1,19 @@
 import { createHash, createPrivateKey, type KeyObject, X509Certificate } from "node:crypto";
-import { mkdir, open, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { isIP } from "node:net";
 import { dirname, join } from "node:path";
 import {
   RELAY_IDENTITY_BUNDLE_VERSION,
   type RelayIdentityBundle,
 } from "@openbot/contracts/relay-protocol/identity-bundle";
-import { RELAY_KEY_ID_PATTERN, RELAY_SUBJECT_NAME_PATTERN } from "@openbot/contracts/relay-protocol/messages";
+import {
+  RELAY_KEY_ID_PATTERN,
+  RELAY_LABEL_LIMIT,
+  RELAY_SUBJECT_NAME_PATTERN,
+} from "@openbot/contracts/relay-protocol/messages";
 import { Effect, Schema } from "effect";
 import { z } from "zod";
+import { withFileLock } from "./file-lock";
 import { certificateFingerprint, type RelayTrust, trustedRoot } from "./identity";
 import { checkServerIdentity } from "./server-identity";
 import { generateSigningKey, type IssuedCertificate, issueCertificate, publicKeyId } from "./x509";
@@ -37,6 +42,7 @@ const certificateRecordSchema = z.object({
   issuedAt: z.int().nonnegative(),
   expiresAt: z.int().nonnegative(),
   revokedAt: z.int().nonnegative().nullable(),
+  label: z.string().max(RELAY_LABEL_LIMIT).nullable().optional(),
 });
 const registrySchema = z.object({
   version: z.literal(REGISTRY_VERSION),
@@ -62,6 +68,20 @@ interface CertificateAuthorityOptions {
 interface SigningAuthority {
   certificate: string;
   privateKey: KeyObject;
+}
+
+interface MemberInput {
+  team: string;
+  user: string;
+  device: string | null;
+  days: number;
+}
+
+export interface IssuedMember {
+  record: CertificateRecord;
+  certificate: string;
+  chain: string[];
+  root: string;
 }
 
 const failure = (message: string) => new CertificateAuthorityError({ message });
@@ -174,52 +194,36 @@ export class CertificateAuthority {
     ),
   );
 
-  readonly issueMember = Effect.fn("CertificateAuthority.issueMember")(
-    (input: { team: string; user: string; device: string | null; days: number }) =>
-      this.#locked(
-        Effect.gen({ self: this }, function* () {
-          yield* requireName(input.team, "The team name");
-          yield* requireName(input.user, "The user name");
-          if (input.device !== null) yield* requireName(input.device, "The device name");
-          yield* requireDays(input.days, CERTIFICATE_DAYS.member.maximum);
-          const paths = this.#teamPaths(input.team);
-          const team = yield* this.#signingAuthority(paths.certificate, paths.privateKey, `the team "${input.team}"`);
-          const root = yield* this.#readRequired(this.#rootCertificatePath, "The root certificate does not exist.");
-          const key = generateSigningKey();
-          const issued = yield* decode("The member certificate could not be made.", () =>
-            issueCertificate({
-              subject: {
-                organization: input.team,
-                organizationalUnit: input.device ?? undefined,
-                commonName: input.user,
-              },
-              publicKey: key.publicKey,
-              profile: { kind: "member" },
-              days: input.days,
-              issuer: team,
-              now: this.#now(),
-            }),
-          );
-          const record = yield* this.#record(issued, key.publicKey, {
-            kind: "member",
-            team: input.team,
-            user: input.user,
-            device: input.device,
-          });
-          const bundle: RelayIdentityBundle = {
-            version: RELAY_IDENTITY_BUNDLE_VERSION,
-            relayUrl: this.#publicUrl,
-            team: input.team,
-            user: input.user,
-            device: input.device,
-            certificate: issued.certificate,
-            chain: [team.certificate],
-            root,
-            privateKey: key.privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
-          };
-          return { record, bundle };
-        }),
-      ),
+  readonly issueMember = Effect.fn("CertificateAuthority.issueMember")((input: MemberInput) =>
+    this.#locked(
+      Effect.gen({ self: this }, function* () {
+        const key = generateSigningKey();
+        const issued = yield* this.#issueMember(input, key.publicKey, null);
+        const bundle: RelayIdentityBundle = {
+          version: RELAY_IDENTITY_BUNDLE_VERSION,
+          relayUrl: this.#publicUrl,
+          team: input.team,
+          user: input.user,
+          device: input.device,
+          certificate: issued.certificate,
+          chain: issued.chain,
+          root: issued.root,
+          privateKey: key.privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
+        };
+        return { record: issued.record, bundle };
+      }),
+    ),
+  );
+
+  readonly issueForKey = Effect.fn("CertificateAuthority.issueForKey")(
+    (input: MemberInput & { publicKey: KeyObject; label: string | null }) =>
+      this.#locked(this.#issueMember(input, input.publicKey, input.label)),
+  );
+
+  readonly hasTeam = Effect.fn("CertificateAuthority.hasTeam")((team: string) =>
+    Effect.gen({ self: this }, function* () {
+      return (yield* this.#readOptional(this.#teamPaths(team).certificate)) !== null;
+    }),
   );
 
   readonly issueServer = Effect.fn("CertificateAuthority.issueServer")(
@@ -380,10 +384,44 @@ export class CertificateAuthority {
       return authority;
     });
 
+  readonly #issueMember = (input: MemberInput, publicKey: KeyObject, label: string | null) =>
+    Effect.gen({ self: this }, function* () {
+      yield* requireName(input.team, "The team name");
+      yield* requireName(input.user, "The user name");
+      if (input.device !== null) yield* requireName(input.device, "The device name");
+      yield* requireDays(input.days, CERTIFICATE_DAYS.member.maximum);
+      const paths = this.#teamPaths(input.team);
+      const team = yield* this.#signingAuthority(paths.certificate, paths.privateKey, `the team "${input.team}"`);
+      const root = yield* this.#readRequired(this.#rootCertificatePath, "The root certificate does not exist.");
+      const issued = yield* decode("The member certificate could not be made.", () =>
+        issueCertificate({
+          subject: {
+            organization: input.team,
+            organizationalUnit: input.device ?? undefined,
+            commonName: input.user,
+          },
+          publicKey,
+          profile: { kind: "member" },
+          days: input.days,
+          issuer: team,
+          now: this.#now(),
+        }),
+      );
+      const record = yield* this.#record(issued, publicKey, {
+        kind: "member",
+        team: input.team,
+        user: input.user,
+        device: input.device,
+        ...(label === null ? {} : { label }),
+      });
+      const member: IssuedMember = { record, certificate: issued.certificate, chain: [team.certificate], root };
+      return member;
+    });
+
   readonly #record = (
     issued: IssuedCertificate,
     publicKey: KeyObject,
-    subject: Pick<CertificateRecord, "kind" | "team" | "user" | "device">,
+    subject: Pick<CertificateRecord, "kind" | "team" | "user" | "device" | "label">,
   ) =>
     Effect.gen({ self: this }, function* () {
       const registry = yield* this.#readRegistry();
@@ -439,20 +477,11 @@ export class CertificateAuthority {
     });
 
   #locked<A, E>(operation: Effect.Effect<A, E>): Effect.Effect<A, E | CertificateAuthorityError> {
-    const lockPath = join(this.#directory, "ca", "lock");
-    return Effect.acquireUseRelease(
-      fileCall("Another certificate command runs now. Try again.", async () => {
-        await mkdir(dirname(lockPath), { recursive: true, mode: PRIVATE_DIRECTORY_MODE });
-        const handle = await open(lockPath, "wx", PRIVATE_FILE_MODE);
-        await handle.close();
-      }),
-      () => operation,
-      () => Effect.promise(() => rm(lockPath, { force: true })),
-    );
+    return withFileLock(join(this.#directory, "ca", "lock"), operation, failure);
   }
 }
 
-function requireName(value: string, label: string) {
+export function requireName(value: string, label: string) {
   return RELAY_SUBJECT_NAME_PATTERN.test(value)
     ? Effect.void
     : Effect.fail(
@@ -462,7 +491,7 @@ function requireName(value: string, label: string) {
       );
 }
 
-function requireDays(days: number, maximum: number) {
+export function requireDays(days: number, maximum: number) {
   return Number.isInteger(days) && days >= 1 && days <= maximum
     ? Effect.void
     : Effect.fail(failure(`The validity must be from 1 to ${maximum} days.`));

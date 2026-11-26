@@ -182,6 +182,10 @@ cannot open the working folder. Do not build the file with a plain `bun build --
 | `ca team add <team> [--days <n>]` | Makes the authority of a team. |
 | `ca issue --team <team> --user <user> [--device <device>] [--days <n>] [--out <file>]` | Makes a member certificate and prints the identity file. |
 | `ca server --dns <name> [--ip <address>] [--days <n>]` | Makes the identity certificate of the server in `<data>/tls/`. A server that runs proves its identity with it in 5 seconds or less. When TLS uses the same files, start the server again. |
+| `ca code --team <team> --user <user> [--device <device>] [--minutes <n>] [--days <n>]` | Makes a one-time join code and prints it as a link and a terminal QR code. The code works once, for 15 minutes by default (1 to 1440). The certificate is valid for 365 days by default (1 to 1095). Needs a `wss:` `RELAY_PUBLIC_URL`. |
+| `ca codes [--team <team>]` | Lists the open join codes with their identifier, expiry and maker. It does not print the secret. |
+| `ca code cancel <code identifier>` | Cancels an open join code. Give at least the first 6 characters of the identifier. |
+| `admin login` | Prints a one-time sign-in link of the admin page. The link works once, for 10 minutes. |
 | `ca revoke <serial, fingerprint or key identifier>` | Revokes certificates. A key identifier revokes each certificate of that key. The serial of a team authority revokes the team. |
 | `ca list [--team <team>]` | Lists the certificates with their state. |
 | `ca root` | Prints the root certificate and its fingerprint. |
@@ -190,6 +194,77 @@ A server that runs reads a change of the certificate store in 5 seconds or less.
 connections of a revoked certificate. A new team needs no restart.
 
 Names can have letters, digits, spaces and `. _ @ -`, from 1 to 64 characters.
+
+## Join codes
+
+A join code lets a device join a team with no identity file. The device makes its own P-256 key, and
+only its public key goes to the server. So no private key leaves the device.
+
+1. The administrator makes a code with `ca code --team "My Team" --user alice --device laptop`, or on
+   the admin page.
+2. The person gets the code as a link or a QR code, for example
+   `openbot-nc://enroll?v=1&server=relay.example.com&code=<26 characters>&root=<43 characters>`.
+   `server` is the host of `RELAY_PUBLIC_URL`, `code` is a secret of 128 bits in Crockford base32,
+   and `root` is the base64url SHA-256 of the root certificate (the client checks it).
+3. The client sends `POST https://<server>/v1/enroll` with its public key and a signature that proves
+   the private key. The server issues the member certificate with the team authority, exactly as
+   `ca issue` does, and sends it with the team chain and the root.
+
+"Join with code" in the desktop, the web client, the browser extension and the phone app comes in a
+later change. The wire format is in `packages/contracts/src/relay-protocol/enrollment.ts`.
+
+Each code works once. A used, expired, cancelled or unknown code gets the same answer
+(`code_unknown`). When the certificate cannot be made after the server took the code, the code stays
+used: make a new one. At most 100 codes can be open at the same time.
+
+The server keeps each code as `<data>/ca/codes/<SHA-256 of the secret>.json` (mode 0600): the team,
+user, device, certificate days, times and maker, never the secret. A `<hash>.used` file that only one
+request can make marks a code as taken, also across processes. The server removes expired and used
+codes when it starts and at each request.
+
+`/v1/enroll` is on the main listener, accepts requests from any origin with no credentials (CORS),
+takes at most 8 KiB, and limits the requests of each address and of all addresses together
+(`RELAY_ENROLL_LIMIT_PER_ADDRESS`, `RELAY_ENROLL_LIMIT`). The server writes a log line with the
+first 12 characters of the code identifier and the key identifier, never the code.
+
+## Admin page
+
+The admin page shows the root fingerprint, the server identity and TLS expiry, the members online,
+the teams (add a team), the members of a team with their state and connection (revoke a member),
+and the join codes (make a code with its link and QR code, list and cancel codes). Its text is in
+English only, like the commands.
+
+The page uses plain HTTP, so it listens only on a private address, such as the tailnet address of
+the server. It is never on the public listener. For example, on a server with the tailnet address
+`100.101.224.97`:
+
+```sh
+RELAY_ADMIN_HOST=100.101.224.97
+RELAY_ADMIN_PORT=8992
+```
+
+`serve` refuses to start when `RELAY_ADMIN_HOST` is not an IP address, is a wildcard address
+(`0.0.0.0`, `::`), or is a public address. Private addresses are loopback, `10/8`, `172.16/12`,
+`192.168/16`, the Tailscale range `100.64/10` and IPv6 `fc00::/7`. Only
+`RELAY_ADMIN_ALLOW_PUBLIC=1` permits a different address. Do not set it on a public address.
+
+To sign in, run the command as the user of the server, so that the server can read the files that
+it writes:
+
+```sh
+sudo openbot-relay admin login
+```
+
+Open the link on a computer of the tailnet. The token is in the part after `#`, so it does not go
+into a log. The link works once, for 10 minutes. The server keeps only its SHA-256 in
+`<data>/admin/logins/`. A session stays in the memory of the server for 12 hours at most, and ends
+after 1 hour with no request. A restart ends all sessions.
+
+The page refuses a request when the `Host` header is not the address of the page, and a request that
+changes data when its `Origin` is not the page, when it has no CSRF token of the session, or when it
+is not JSON. The cookie is `HttpOnly` and `SameSite=Strict`. Each answer has a strict Content Security
+Policy and `Cache-Control: no-store`. The server limits sign-in attempts. A revoke on the page closes
+the connections of the member at once.
 
 ## Settings
 
@@ -201,18 +276,27 @@ Names can have letters, digits, spaces and `. _ @ -`, from 1 to 64 characters.
 | `RELAY_TLS_CERT_PATH`, `RELAY_TLS_KEY_PATH` | `<data>/tls/server.crt`, `server.key` | The TLS certificate of the server. A certificate of a public authority is also possible. The identity certificate stays in `<data>/tls/`. |
 | `RELAY_TLS_DISABLED` | `false` | `true` when a proxy in front of the server does TLS. |
 | `RELAY_TLS_CLIENT_CERTIFICATES` | `off` | `required` makes TLS refuse a socket that has no certificate of the root. The proof in the first message is always necessary. |
-| `RELAY_CA_PASSPHRASE` | none | Encrypts the private keys of the authorities on the disk. The `ca` commands that sign need it. `serve` does not. |
+| `RELAY_CA_PASSPHRASE` | none | Encrypts the private keys of the authorities on the disk. The `ca` commands that sign need it. `serve` needs it for join codes and for a new team on the admin page. |
 | `RELAY_TRUST_PROXY` | `false` | `true` uses the first `X-Forwarded-For` address for the limit of each address. |
 | `RELAY_HEALTH_HOST`, `RELAY_HEALTH_PORT` | `127.0.0.1`, `8080` | `/health/live`, `/health/ready` and `/metrics`. |
 | `RELAY_METRICS_TOKEN` | none | Bearer token for `/metrics`. With no token, `/metrics` answers 404. |
 | `RELAY_MAX_SOCKETS_PER_IP` | `128` | Sockets from one address. |
 | `RELAY_MAX_TUNNELS_PER_MEMBER` | `64` | Connections that one certificate can open. |
 | `RELAY_MAX_PENDING_PER_MEMBER` | `32` | Connections that wait for one member to accept. |
+| `RELAY_ADMIN_HOST` | none | The private IP address of the admin page. With no value, there is no admin page. |
+| `RELAY_ADMIN_PORT` | `8992` | The port of the admin page. |
+| `RELAY_ADMIN_ALLOW_PUBLIC` | none | `1` permits a wildcard or public `RELAY_ADMIN_HOST`. |
+| `RELAY_ENROLL_LIMIT_PER_ADDRESS` | `10` | Join requests from one address in one minute. |
+| `RELAY_ENROLL_LIMIT` | `60` | Join requests from all addresses in one minute. |
 | `RELAY_WEB_CLIENT_DIR` | none | A folder with the web client build (`bun run web-client:build`). When it is set, the server serves the web client at `/app`. `serve` refuses to start when the folder has no `index.html`. |
 
-`serve` needs only the certificates and the registry. To keep the root private key off the server,
-move `<data>/ca/root.key` to a safe place after you make the teams and the server certificate. Put
-it back to make a new team.
+`serve` needs the certificates and the registry. For join codes it also needs the private key of
+each team authority. To keep the root private key off the server, move `<data>/ca/root.key` to a
+safe place after you make the teams and the server certificate. Put it back to make a new team.
+
+The `ca` commands and `serve` can change `<data>/ca/registry.json` at the same time. Each change takes
+the lock file `<data>/ca/lock` first. A command waits up to 10 seconds for it, and removes a lock that
+is older than 30 seconds.
 
 ## Protocol
 
@@ -409,6 +493,19 @@ bun run test:relay
 The test starts the real server process with a new root, connects real WebSocket clients, and
 writes `.openbot-build/relay-e2e/report.json`. It also checks the `/app` files, the fallback to
 `index.html`, the refusal of paths out of the folder, and the headers.
+
+```sh
+bun run test:relay-admin
+```
+
+This test starts the real server with the admin page on `127.0.0.1`. It makes join codes with
+`ca code`, enrolls clients with WebCrypto P-256 keys, and checks the client check of the contract, a
+second use, an expired code, a wrong proof, two requests with one code at the same time, CORS, the
+body limit and the rate limit. The new member connects to `/v1/relay`. It checks the admin sign-in,
+the Host, Origin, CSRF and session refusals, the security headers, teams, codes and a revoke that
+closes the live socket. It drives the page in Chrome and fails on a CSP violation or a console
+error, and checks that the server log holds no secret. It writes screenshots and `report.json` to
+`.openbot-build/relay-admin-e2e/`.
 
 ```sh
 bun run test:relay-web-client

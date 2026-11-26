@@ -1,5 +1,15 @@
 ### Added
 
+- One-time join codes on the central server. `openbot-relay ca code --team <team> --user <user>
+  [--device <device>]` prints a join code as a link and a QR code. The device makes its own key and
+  sends only its public key to `/v1/enroll`, so no identity file with a private key is copied. A code
+  works once, for 15 minutes by default. `ca codes` lists the open codes and `ca code cancel` cancels
+  one. "Join with code" in the apps comes in a later version.
+- An admin page for the central server on a private address, such as the tailnet address of the
+  server (`RELAY_ADMIN_HOST`, port 8992 by default). It shows the root and certificate expiry, the
+  teams and members with their connection state, makes and cancels join codes with a QR code, adds
+  teams and revokes members. Sign in with a one-time link from `sudo openbot-relay admin login`. The
+  server refuses to start the page on a public or wildcard address.
 - End-to-end encryption between your OpenBots. Each connection through the central server is
   encrypted from one end to the other, and each end proves its certificate, so the central server
   cannot read or change chats or files in transit. All OpenBots, the web client, the extension and
