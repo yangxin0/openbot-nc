@@ -590,6 +590,7 @@
 
 .conversation-panel.browser-panel-active {
   --side-panel-reveal: var(--browser-panel-width, 380px);
+  padding-inline-end: var(--browser-panel-width, 380px);
 }
 
 .conversation-panel.browser-panel-active > .side-panel-header {
