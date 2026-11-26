@@ -54,7 +54,7 @@ A maintainer who reopens a closed pull request starts a new 7-day period.
 ## Development setup
 
 ```bash
-git clone <repository URL of the fork> openbot
+git clone https://github.com/yangxin0/openbot-nc.git openbot-nc
 cd openbot
 bun install --frozen-lockfile
 bun run check

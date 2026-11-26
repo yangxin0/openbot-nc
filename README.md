@@ -77,6 +77,8 @@ OpenBot-NC has no public download and does not update itself. Install a build th
 or build one on a computer with the repository:
 
 ```sh
+git clone https://github.com/yangxin0/openbot-nc.git
+cd openbot-nc
 bun install --frozen-lockfile
 bun run dist:mac
 ```

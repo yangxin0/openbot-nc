@@ -9,6 +9,14 @@
     "url": "https://x.com/norbertbodziony"
   },
   "license": "PolyForm-Noncommercial-1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yangxin0/openbot-nc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yangxin0/openbot-nc/issues"
+  },
+  "homepage": "https://github.com/yangxin0/openbot-nc#readme",
   "keywords": [
     "ai-agents",
     "bun",

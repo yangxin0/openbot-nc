@@ -86,8 +86,8 @@ Use it only on a host where you trust the other programs and users. Do not use i
 ## Tags
 
 The release workflow pushes the image to the GitHub Container Registry of the repository that runs it
-(`ghcr.io/<owner>/<repository>`), with the tags `<version>`, `v<version>`, `latest` and
-`sha-<commit>`. Set `OPENBOT_IMAGE=ghcr.io/<owner>/<repository>` to use it. See
+(`ghcr.io/yangxin0/openbot-nc`), with the tags `<version>`, `v<version>`, `latest` and
+`sha-<commit>`. Set `OPENBOT_IMAGE=ghcr.io/yangxin0/openbot-nc` to use it. See
 [Docker package access](RELEASING.md#docker-package-access).
 
 ## Data
@@ -387,7 +387,7 @@ is the machine-readable source for the newest full release. For example, this re
 prints its tag:
 
 ```sh
-gh api repos/<owner>/<repository>/releases/latest --jq '.tag_name'
+gh api repos/yangxin0/openbot-nc/releases/latest --jq '.tag_name'
 ```
 
 Automation can poll that metadata and download an image. Installation needs these checks:
@@ -466,7 +466,7 @@ environment of OpenBot, so they can read these values.
   host folder that agents must not change.
 - **Check the image.** Each release image has a build provenance attestation from the release
   workflow of the repository that built it. Check it with `gh attestation verify
-  oci://ghcr.io/<owner>/<repository>:<version> --repo <owner>/<repository>`.
+  oci://ghcr.io/yangxin0/openbot-nc:<version> --repo yangxin0/openbot-nc`.
 
 ## How it works
 

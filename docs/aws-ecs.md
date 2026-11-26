@@ -40,7 +40,7 @@ chown 1000:1000 /srv/openbot-nc-data
 # The seccomp profile of that image version, and no-new-privileges, for each container.
 [ ! -e /etc/docker/daemon.json ] || { echo "Add the two keys to /etc/docker/daemon.json." >&2; exit 1; }
 curl -fsSL -o /etc/docker/openbot-seccomp.json \
-  "https://raw.githubusercontent.com/<owner>/<repository>/v$version/docker/seccomp.json"
+  "https://raw.githubusercontent.com/yangxin0/openbot-nc/v$version/docker/seccomp.json"
 cat >/etc/docker/daemon.json <<'EOF'
 { "seccomp-profile": "/etc/docker/openbot-seccomp.json", "no-new-privileges": true }
 EOF
@@ -64,7 +64,7 @@ the profile of that version again.
   "containerDefinitions": [
     {
       "name": "openbot",
-      "image": "ghcr.io/<owner>/<repository>:<version>",
+      "image": "ghcr.io/yangxin0/openbot-nc:<version>",
       "essential": true,
       "memory": 4096,
       "linuxParameters": { "sharedMemorySize": 1024 },

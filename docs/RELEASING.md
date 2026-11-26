@@ -59,7 +59,7 @@ original vendor. The `windows` job logs in with `azure/login` and runs
 
 ### Docker package access
 
-The Docker image needs no secret: the `docker-publish` job pushes to `ghcr.io/<owner>/<repository>`
+The Docker image needs no secret: the `docker-publish` job pushes to `ghcr.io/yangxin0/openbot-nc`
 with `GITHUB_TOKEN`.
 [GHCR makes new packages private](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 After the first push, a package administrator opens **Package settings** and sets
@@ -343,12 +343,12 @@ The workflow:
    app does not read them;
 9. builds a Docker image (`docker/Dockerfile`) from each Linux AppImage, starts it with
    `docker/seccomp.json`, waits for `openbot-nc status`, and stops it;
-10. after the GitHub Release is published, pushes both images to `ghcr.io/<owner>/<repository>`
+10. after the GitHub Release is published, pushes both images to `ghcr.io/yangxin0/openbot-nc`
     with the tags `<version>-amd64` and `<version>-arm64`, joins them under `<version>`,
     `v<version>`, `latest` and `sha-<commit>`, and attests the build provenance of that image.
 
 Users can verify a downloaded artifact with
-`gh attestation verify <file> --repo <owner>/<repository>`.
+`gh attestation verify <file> --repo yangxin0/openbot-nc`.
 
 Before a tag, run the release path without publishing:
 
