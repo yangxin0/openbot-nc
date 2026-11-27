@@ -233,11 +233,9 @@ async function startApp(switches: string[]): Promise<RunningApp> {
   child.stdout?.on("data", append);
   child.stderr?.on("data", append);
   const exited = new Promise<number | null>((resolveExit) => {
-    child.once("exit", (code) => {
-      logFile.end();
-      resolveExit(code);
-    });
+    child.once("exit", resolveExit);
   });
+  child.once("close", () => logFile.end());
   const marker = `--instance=${instanceId}`;
   const instance = await until<DevInstanceRecord>(
     "the dev app is in the instance registry",

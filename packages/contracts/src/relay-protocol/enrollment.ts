@@ -50,7 +50,7 @@ const SERVER_PATTERN = new RegExp(
 const PEM_CERTIFICATE_PATTERN = /^-----BEGIN CERTIFICATE-----([A-Za-z0-9+/=\s]+)-----END CERTIFICATE-----$/u;
 const RELAY_URL_HOST_PATTERN = /^wss:\/\/([^/?#@\s]+)(?:[/?#]|$)/iu;
 const CONTROL_CHARACTER = /\p{Cc}/u;
-const textEncoder = new TextEncoder();
+const encodeText = (text: string): Uint8Array<ArrayBuffer> => new TextEncoder().encode(text);
 
 export interface RelayJoinCode {
   version: typeof RELAY_ENROLL_VERSION;
@@ -191,9 +191,9 @@ export function relayEnrollTranscript(input: {
   publicKey: Uint8Array;
 }): Uint8Array<ArrayBuffer> {
   const parts = [
-    textEncoder.encode(RELAY_ENROLL_CONTEXT),
+    encodeText(RELAY_ENROLL_CONTEXT),
     input.secretHash,
-    textEncoder.encode(input.server.toLowerCase()),
+    encodeText(input.server.toLowerCase()),
     input.publicKey,
   ];
   const transcript = new Uint8Array(parts.reduce((total, part) => total + 4 + part.byteLength, 0));
@@ -278,7 +278,7 @@ export async function relayEnrollRefusal(check: RelayEnrollCheck): Promise<Relay
   if (!isP256(leaf) || !sameBytes(leaf.spki, check.publicKey)) return "key_mismatch";
   const names = relaySubjectNames(leaf.subject.attributes);
   const rootKeyId = relayBase64Url(await crypto.sha256(root.spki));
-  const teamStatement = textEncoder.encode(relayTeamIdStatement({ rootKeyId, teamName: response.team.name }));
+  const teamStatement = encodeText(relayTeamIdStatement({ rootKeyId, teamName: response.team.name }));
   const teamId = relayBase64Url(await crypto.sha256(teamStatement));
   if (
     !names ||

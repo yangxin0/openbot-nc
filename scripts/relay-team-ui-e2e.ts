@@ -236,11 +236,9 @@ function startStack(
   child.stdout?.on("data", append);
   child.stderr?.on("data", append);
   const exited = new Promise<number | null>((resolveExit) => {
-    child.once("exit", (code) => {
-      logFile.end();
-      resolveExit(code);
-    });
+    child.once("exit", resolveExit);
   });
+  child.once("close", () => logFile.end());
   return { child, exited, output: () => output };
 }
 
