@@ -16,18 +16,12 @@ const config: KnipConfig = {
   },
   ignoreBinaries: [
     "xterm",
-    "ssh-keygen",
     "openssl",
-    "ssh-keyscan",
-    "ssh-add",
-    "cmake",
     "ccache",
     "otool",
     "install_name_tool",
-    "ldd",
     "taskkill.exe",
     "tasklist",
-    "cloudflared",
     "sqlite3",
     "ditto",
     "say",
@@ -49,16 +43,11 @@ const config: KnipConfig = {
     "ffmpeg",
     "gdbus",
     "import",
+    "serve",
   ],
   workspaces: {
     ".": {
-      entry: [
-        "scripts/**/*.ts",
-        "tools/**/*.ts",
-        "src/renderer/stories/prototype-support.tsx",
-        "web-client.vite.config.ts",
-        "src/renderer/src/features/web-client/web-client-entry.tsx",
-      ],
+      entry: ["scripts/**/*.ts", "tools/**/*.ts", "src/renderer/stories/prototype-support.tsx"],
       project: ["src/**/*.{ts,tsx,css}", "scripts/**/*.ts", "tools/**/*.ts"],
       ignoreDependencies: [
         "@speed-highlight/core",
@@ -69,7 +58,6 @@ const config: KnipConfig = {
         "expo",
         "@noble/hashes",
         "@cacheable/node-cache",
-        "@hapi/boom",
         "@noble/curves",
         "async-mutex",
         "long",
@@ -84,16 +72,9 @@ const config: KnipConfig = {
     "apps/mobile": {
       entry: ["src/app/**/*.{ts,tsx}", "plugins/**/*.{js,ts}", "src/shims/*.{ts,js}", "global.css"],
       project: ["src/**/*.{ts,tsx}", "plugins/**/*.{js,ts}"],
-      ignoreDependencies: [
-        "openbot-original-react-native",
-        "@expo/config-plugins",
-        "expo-device-hub",
-        "@expo/plist",
-        "expo-symbols",
-      ],
+      ignoreDependencies: ["openbot-original-react-native", "@expo/config-plugins", "expo-device-hub", "@expo/plist"],
     },
     "remote/api": {
-      entry: ["src/relay/main.ts"],
       project: ["src/**/*.ts"],
     },
     "packages/i18n": {

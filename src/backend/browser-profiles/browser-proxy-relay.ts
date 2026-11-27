@@ -20,7 +20,7 @@ interface RelayTarget {
 
 class ProxySignInRefused extends Error {}
 
-export class RelayAddressRefused extends Error {}
+class RelayAddressRefused extends Error {}
 
 export type RelayExitFailure = BrowserProxyFailure | "address";
 

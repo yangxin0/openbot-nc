@@ -147,7 +147,7 @@ const WEB_EXTERNAL_DESTINATIONS: Partial<Record<ExternalDestination, string>> = 
   "opencode-auth": "https://opencode.ai/auth",
 };
 
-export function openWebDestination(destination: ExternalDestination): Promise<void> {
+function openWebDestination(destination: ExternalDestination): Promise<void> {
   const url = WEB_EXTERNAL_DESTINATIONS[destination];
   if (!url) return Promise.reject(new Error(currentText().t("webClient.error.linkDesktopOnly")));
   window.open(url, "_blank", "noopener");

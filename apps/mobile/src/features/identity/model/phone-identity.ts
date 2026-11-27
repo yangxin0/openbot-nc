@@ -50,7 +50,7 @@ const PHONE_IDENTITY_MAX_PARTS = 40;
 const STORED_VERSION = 1;
 const PHONE_ENROLL_LABEL = "Phone app";
 
-export function phoneIdentityPartKey(index: number): string {
+function phoneIdentityPartKey(index: number): string {
   return `${PHONE_IDENTITY_KEY}.part.${index}`;
 }
 

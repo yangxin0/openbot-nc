@@ -66,8 +66,6 @@ export interface RequestedUpdateMaximumIdleWait {
   providerOperationPending: () => boolean;
 }
 
-export const HOSTED_UPDATE_MAXIMUM_IDLE_WAIT_MS = 24 * 60 * 60 * 1000;
-
 interface Schedule {
   memberId: string | null;
   requestedBy: string | null;

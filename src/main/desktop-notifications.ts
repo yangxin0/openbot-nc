@@ -9,15 +9,6 @@ import { Effect } from "effect";
 import type { Notification } from "electron";
 import type { NotificationPreferenceStore } from "./notification-preference-store";
 
-export function desktopShowsAgentEvent(
-  event: AgentEvent,
-  server: Pick<ServerSummary, "notificationsMuted" | "notificationLevel"> | undefined,
-  enabled: boolean,
-  agentLevels: ReadonlyMap<string, ServerNotificationLevel> | null = null,
-): boolean {
-  return desktopAgentEventLevel(event, server, enabled, agentLevels) !== null;
-}
-
 export function desktopAgentEventLevel(
   event: AgentEvent,
   server: Pick<ServerSummary, "notificationsMuted" | "notificationLevel"> | undefined,

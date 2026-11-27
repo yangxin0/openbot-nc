@@ -1,7 +1,7 @@
 import { realpathSync, statSync } from "node:fs";
 import { extname, join, sep } from "node:path";
 
-export const WEB_CLIENT_PATH = "/app";
+const WEB_CLIENT_PATH = "/app";
 
 const INDEX_FILE = "index.html";
 const ASSETS_SEGMENT = "assets";
@@ -9,7 +9,7 @@ const HASHED_ASSET = /[-.][A-Za-z0-9_-]{8,}\.[a-z0-9]+$/u;
 const IMMUTABLE_CACHE = "public, max-age=31536000, immutable";
 const REVALIDATE_CACHE = "no-cache";
 
-export const WEB_CLIENT_CONTENT_SECURITY_POLICY = [
+const WEB_CLIENT_CONTENT_SECURITY_POLICY = [
   "default-src 'none'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
@@ -63,7 +63,7 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
   ".webm": "video/webm",
 };
 
-export class WebClientDirectoryError extends Error {}
+class WebClientDirectoryError extends Error {}
 
 export function isWebClientPath(pathname: string): boolean {
   return pathname === WEB_CLIENT_PATH || pathname.startsWith(`${WEB_CLIENT_PATH}/`);

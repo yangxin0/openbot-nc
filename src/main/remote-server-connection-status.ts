@@ -262,7 +262,7 @@ export function classifyTransportError(code: string, message: string): RemoteCon
   };
 }
 
-export function transportFailure(code: string, message: string): { message: string; reference: string | null } {
+function transportFailure(code: string, message: string): { message: string; reference: string | null } {
   const signal = signalIssueText(code);
   if (signal !== null) return { message: signal, reference: referenceFrom("signal", code) };
   if (code === "session_revoked") return { message, reference: "signal/session_revoked" };

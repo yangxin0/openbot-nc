@@ -1,8 +1,6 @@
 import { requireOptionalNativeModule } from "expo";
 
-export const nativeApplication: typeof import("expo-application") | null = requireOptionalNativeModule(
-  "ExpoApplication",
-)
+const nativeApplication: typeof import("expo-application") | null = requireOptionalNativeModule("ExpoApplication")
   ? require("expo-application")
   : null;
 

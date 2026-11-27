@@ -1858,7 +1858,7 @@ function routineCalendarSource(
   };
 }
 
-export async function requestAgentAvatar(
+async function requestAgentAvatar(
   request: WorkspaceRequest,
   agentId: string,
   avatarUrl: string,

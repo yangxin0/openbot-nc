@@ -8,10 +8,10 @@ import { quantize } from "./resource-summary";
 const STARTUP_FILE = "startup-history.json";
 const WORKSPACE_WAIT_MS = 2 * 60_000;
 
-export const START_KINDS = ["warm", "cold", "updated", "unknown"] as const;
+const START_KINDS = ["warm", "cold", "updated", "unknown"] as const;
 export type StartKind = (typeof START_KINDS)[number];
 
-export const SERVICE_STEPS = [
+const SERVICE_STEPS = [
   "pre-store",
   "store",
   "skills",
@@ -54,9 +54,7 @@ const SERVICE_STEP_PROPERTIES = {
   "host-update": "service_host_update_ms",
 } as const satisfies { readonly [Step in ServiceStep]: `service_${Snake<Step>}_ms` };
 
-export const SERVICE_STEP_PROPERTY_NAMES = SERVICE_STEPS.map((step) => SERVICE_STEP_PROPERTIES[step]);
-
-export interface StartupProperties extends Partial<Record<ServiceStepProperty, number>> {
+interface StartupProperties extends Partial<Record<ServiceStepProperty, number>> {
   start_kind: StartKind;
   host_kind: "desktop" | "server";
   when_ready_ms?: number;

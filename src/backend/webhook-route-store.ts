@@ -15,7 +15,7 @@ import { ROUTINE_TABLES } from "./routine-tables";
 
 const RECEIPT_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 
-export type WebhookRouteOwner = EventRoutineOwner | { kind: "workflow"; id: string };
+type WebhookRouteOwner = EventRoutineOwner | { kind: "workflow"; id: string };
 
 interface WebhookRoute {
   routeId: string;

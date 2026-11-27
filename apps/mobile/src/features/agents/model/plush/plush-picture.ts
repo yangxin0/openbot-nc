@@ -8,7 +8,7 @@ import { loadPlushArt } from "./plush-assets";
 import { drawPlush } from "./plush-draw";
 import { plushGeometry, plushRestFrame } from "./plush-frames";
 
-export const PLUSH_STYLE = "plush-2";
+const PLUSH_STYLE = "plush-2";
 const FOLDER = "plush-avatars-v1";
 const MAX_FILES = 400;
 const EVICT_EVERY = 50;
@@ -22,7 +22,7 @@ export interface PlushPictureSpec {
   saturation: number;
 }
 
-export function nameHash(value: string): string {
+function nameHash(value: string): string {
   let hash = 0x811c9dc5;
   for (let index = 0; index < value.length; index++) hash = Math.imul(hash ^ value.charCodeAt(index), 0x01000193);
   return (hash >>> 0).toString(16).padStart(8, "0");
@@ -37,7 +37,7 @@ export function plushPictureName(spec: PlushPictureSpec): string {
   return `${nameHash(`${PLUSH_STYLE}|${key}|${color}|${spec.pixels}|${spec.saturation}`)}.png`;
 }
 
-export async function renderPlushPicture(spec: PlushPictureSpec): Promise<string> {
+async function renderPlushPicture(spec: PlushPictureSpec): Promise<string> {
   const color = avatarHeadColor(spec.seed, spec.hue, spec.color);
   const surface = Skia.Surface.Make(spec.pixels, spec.pixels);
   if (!surface) throw new Error("The plush surface is unavailable.");

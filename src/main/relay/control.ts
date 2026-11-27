@@ -22,7 +22,7 @@ import WebSocket from "ws";
 import type { RelayCredentialSource } from "./identity-store";
 
 export const RELAY_DESKTOP_HTTP_CAPABILITY = "team-http-v1";
-export const RELAY_RESUME_CHECK_TIMEOUT_MS = 1_500;
+const RELAY_RESUME_CHECK_TIMEOUT_MS = 1_500;
 
 export type RelayControlState = RelayHubState;
 

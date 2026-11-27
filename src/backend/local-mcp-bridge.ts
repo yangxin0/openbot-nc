@@ -452,7 +452,7 @@ export class LocalMcpBridge {
     return null;
   }
 }
-export const readJsonBody = Effect.fn("LocalMcpBridge.readJsonBody")(function* (
+const readJsonBody = Effect.fn("LocalMcpBridge.readJsonBody")(function* (
   request: IncomingMessage,
   maxBytes = 1_000_000,
 ): Effect.fn.Return<JSONRPCMessage | JSONRPCMessage[] | undefined, McpOperationError> {

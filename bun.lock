@@ -24,7 +24,6 @@
         "effect": "catalog:",
         "electron-updater": "6.8.11",
         "fflate": "catalog:",
-        "https-proxy-agent": "7.0.6",
         "koffi": "3.3.5",
         "long": "catalog:",
         "lru-cache": "catalog:",
@@ -68,7 +67,6 @@
         "@types/node": "catalog:",
         "@types/qrcode": "^1.5.6",
         "@types/ws": "8.18.2",
-        "axe-core": "4.14.0",
         "class-variance-authority": "catalog:",
         "cuelume": "0.2.8",
         "e2e": "0.23.0",
@@ -304,7 +302,6 @@
         "qrcode": "catalog:",
         "solid-recharts": "catalog:",
         "solid-sonner": "catalog:",
-        "zod": "catalog:",
       },
       "peerDependencies": {
         "@solidjs/web": "catalog:",

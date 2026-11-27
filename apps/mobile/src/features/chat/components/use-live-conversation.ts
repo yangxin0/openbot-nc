@@ -151,11 +151,7 @@ export function useLiveConversation(input: LiveConversationInput): LiveConversat
   };
 }
 
-export function useLiveCallSession(
-  controller: { end: () => void; dispose: () => void },
-  open: boolean,
-  focused: boolean,
-) {
+function useLiveCallSession(controller: { end: () => void; dispose: () => void }, open: boolean, focused: boolean) {
   const keepAwakeTag = useId();
   useEffect(() => {
     if (!open) return;

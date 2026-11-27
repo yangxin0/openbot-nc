@@ -13,7 +13,7 @@ import { createMockOpenBot, type MockOpenBotControls, type MockOpenBotOptions } 
 
 const LANDING_PREVIEW_READY_RETRY_MS = 250;
 
-export interface OpenBotPlaygroundDependencies {
+interface OpenBotPlaygroundDependencies {
   createMock: (options?: MockOpenBotOptions) => MockOpenBotControls;
   loadLandingController?: () => Promise<typeof import("./landing-demo")>;
   renderApp: () => JSX.Element;

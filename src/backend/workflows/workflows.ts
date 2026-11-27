@@ -364,13 +364,13 @@ export interface WorkflowsDependencies {
   now?: () => Date;
 }
 
-export interface WorkflowWebhookDelivery {
+interface WorkflowWebhookDelivery {
   workflowId: string;
   nodeId: string;
   event: ReceivedWebhookEvent;
 }
 
-export type WorkflowWebhookResult =
+type WorkflowWebhookResult =
   | { kind: "started"; run: WorkflowRun }
   | { kind: "ignored"; reason: "busy" | "refused" }
   | { kind: "duplicate" }

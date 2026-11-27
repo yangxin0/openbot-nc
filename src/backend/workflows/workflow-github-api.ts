@@ -48,12 +48,12 @@ const WORKFLOW_GITHUB_API_FAILURES = [
   "unreachable",
 ] as const;
 
-export interface WorkflowGitHubApiFailure {
+interface WorkflowGitHubApiFailure {
   readonly code: (typeof WORKFLOW_GITHUB_API_FAILURES)[number];
   readonly message: string;
 }
 
-export interface WorkflowGitHubRecentEvent {
+interface WorkflowGitHubRecentEvent {
   event: string;
   body: DynamicRecord;
 }

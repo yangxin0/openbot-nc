@@ -19,7 +19,7 @@ const EXTENSION_ENROLL_LABEL = "Browser extension";
 
 export type IdentitySource = { text: string } | { file: Blob };
 
-export class IdentityImportError extends Error {
+class IdentityImportError extends Error {
   constructor(readonly key: AppTextKey) {
     super(key);
   }

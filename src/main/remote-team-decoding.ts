@@ -1,12 +1,4 @@
-import { inviteUseCount, isPermanentInvite } from "@openbot/contracts/invite-links";
-import type {
-  InvitePreview,
-  InviteSummary,
-  TeamInviteSummary,
-  TeamMemberSummary,
-  TeamPresenceSnapshot,
-  TeamRole,
-} from "@openbot/contracts/ipc";
+import type { TeamMemberSummary, TeamPresenceSnapshot, TeamRole } from "@openbot/contracts/ipc";
 import { isTeamRealtimeEvent } from "@openbot/contracts/ipc";
 import { decodeRecord, nullableString, requiredBoolean, requiredString } from "@openbot/contracts/ipc-decoding";
 import { isOneOf } from "@openbot/contracts/runtime-values";
@@ -69,45 +61,4 @@ export function decodeTeamMember(value: unknown): TeamMemberSummary {
 export function decodeTeamMembers(value: unknown): TeamMemberSummary[] {
   if (!Array.isArray(value)) throw new Error("Invalid team members response.");
   return value.map(decodeTeamMember);
-}
-
-function decodeTeamInvite(value: unknown): TeamInviteSummary {
-  const record = decodeRecord(value, "team invitation");
-  const role = requiredString(record, "role");
-  if (role !== "admin" && role !== "member") throw new Error("Invalid invitation role.");
-  const expiresAt = requiredString(record, "expiresAt");
-  return {
-    id: requiredString(record, "id"),
-    role,
-    expiresAt,
-    usedAt: nullableString(record, "usedAt"),
-    email: nullableString(record, "email"),
-    permanent: isPermanentInvite(record.permanent, expiresAt),
-    useCount: inviteUseCount(record.useCount),
-  };
-}
-
-export function decodeTeamInvites(value: unknown): TeamInviteSummary[] {
-  if (!Array.isArray(value)) throw new Error("Invalid team invitations response.");
-  return value.map(decodeTeamInvite);
-}
-
-export function decodeInviteSummary(value: unknown): InviteSummary {
-  const record = decodeRecord(value, "invitation");
-  return { ...decodeTeamInvite(value), inviteUrl: requiredString(record, "inviteUrl") };
-}
-
-export function decodeInvitePreview(
-  value: unknown,
-): Pick<InvitePreview, "role" | "expiresAt" | "emailBound" | "permanent"> {
-  const record = decodeRecord(value, "invitation preview");
-  const role = requiredString(record, "role");
-  if (role !== "admin" && role !== "member") throw new Error("Invalid invitation preview response.");
-  const expiresAt = requiredString(record, "expiresAt");
-  return {
-    role,
-    expiresAt,
-    emailBound: requiredBoolean(record, "emailBound"),
-    permanent: isPermanentInvite(record.permanent, expiresAt),
-  };
 }

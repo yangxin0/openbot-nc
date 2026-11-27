@@ -678,4 +678,4 @@ export class McpGatewayFailed extends Schema.TaggedError<McpGatewayFailed>()("Mc
   cause: Schema.Defect(),
 }) {}
 
-export const { rewrap: toMcpGatewayFailed } = causeHelpers(McpGatewayFailed);
+const { rewrap: toMcpGatewayFailed } = causeHelpers(McpGatewayFailed);

@@ -186,7 +186,7 @@ export async function routeChannels(
   );
 }
 
-export function seesChannel(members: readonly { agentId: string }[], hiddenAgentIds: ReadonlySet<string>): boolean {
+function seesChannel(members: readonly { agentId: string }[], hiddenAgentIds: ReadonlySet<string>): boolean {
   return members.length === 0 || members.some((item) => !hiddenAgentIds.has(item.agentId));
 }
 

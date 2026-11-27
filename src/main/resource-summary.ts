@@ -35,14 +35,6 @@ const CPU_CLASSES = ["le4", "le8", "le12", "le16", "gt16"] as const;
 const ARCHITECTURES = ["arm64", "x64", "other"] as const;
 const HOST_KINDS = ["desktop", "server"] as const;
 
-export const RESOURCE_ENUMS = {
-  ram_class: RAM_CLASSES,
-  cpu_class: CPU_CLASSES,
-  arch: ARCHITECTURES,
-  host_kind: HOST_KINDS,
-  main_loop_delay_max_phase: LOOP_PHASES,
-} as const;
-
 type GroupPropertyName =
   | `${ProcessGroup}_rss_mb_p95`
   | `${ProcessGroup}_private_mb_p95`
@@ -51,7 +43,7 @@ type ProviderPropertyName = `provider_${ResourceProvider}_rss_mb_p95` | `provide
 type GonePropertyName = `gone_${GoneReason}_count`;
 type ChildGonePropertyName = `child_gone_${ChildType}_count`;
 
-export const RESOURCE_PROPERTY_NAMES = [
+const RESOURCE_PROPERTY_NAMES = [
   "total_rss_mb_p95",
   "total_rss_mb_max",
   "total_cpu_pct_p95",

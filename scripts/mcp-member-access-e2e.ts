@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { APP_LINK_SCHEME } from "@openbot/contracts/app-identity";
 import {
   decodeMcpAccessSnapshot,
   type McpAccessSnapshot,
@@ -456,7 +457,7 @@ try {
     assert.deepEqual(calls, [
       `start ${MEMBER_URL}`,
       `relay ${MEMBER_URL}`,
-      `relay ${MEMBER_URL} openbot://mcp-auth`,
+      `relay ${MEMBER_URL} ${APP_LINK_SCHEME}://mcp-auth`,
       `save-app ${memberRow.id}`,
       `sign-out ${memberRow.id}`,
     ]);

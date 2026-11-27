@@ -20,7 +20,7 @@ export function decodeServerMember(value: unknown): TeamMemberSummary {
   return value;
 }
 
-export function decodeServerMembers(value: unknown): TeamMemberSummary[] {
+function decodeServerMembers(value: unknown): TeamMemberSummary[] {
   if (!Array.isArray(value)) throw invalidData();
   return value.map(decodeServerMember);
 }

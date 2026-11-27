@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import type { McpServerConfig } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
 import { isCauseCode } from "@openbot/telemetry";
@@ -546,7 +547,11 @@ try {
   const missed = await runTurn(never.listClient, never.threadId, plain);
   report.turns.toolsNotListed = missed;
   assert.equal(missed.status, "failed", "A turn without OpenBot's tools fails.");
-  assert.match(missed.error ?? "", /without OpenBot's tools/u, "The error says that the tools were missing.");
+  assert.match(
+    missed.error ?? "",
+    new RegExp(`without ${APP_NAME}'s tools`, "u"),
+    "The error says that the tools were missing.",
+  );
   assert.doesNotMatch(missed.error ?? "", /MCP|policy|admin/u, "The error has no protocol words.");
   assert.equal(missed.reply, "OK", "The answer of the turn stays.");
   const missedCause = listCauses.get(never.threadId) ?? null;

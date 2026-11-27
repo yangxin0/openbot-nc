@@ -46,7 +46,7 @@ export interface HostConnectionEvents {
   state: (update: RemoteTeamConnectionUpdate) => void;
 }
 
-export type HostTarget = Pick<RemoteTeamHost, "hostId" | "name" | "devicePublicKey">;
+type HostTarget = Pick<RemoteTeamHost, "hostId" | "name" | "devicePublicKey">;
 
 export interface HostConnection {
   connect: (host: HostTarget) => Promise<string[]>;

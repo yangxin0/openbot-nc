@@ -40,11 +40,7 @@ function workflowAgentsVisible(
   return agentIds.every((agentId) => !viewer.hiddenAgentIds.has(agentId) && (viewer.admin || known.has(agentId)));
 }
 
-export function workflowGraphVisible(
-  viewer: WorkflowViewer,
-  graph: WorkflowGraph,
-  known: ReadonlySet<string>,
-): boolean {
+function workflowGraphVisible(viewer: WorkflowViewer, graph: WorkflowGraph, known: ReadonlySet<string>): boolean {
   return (
     workflowAgentsVisible(viewer, graphAgentIds(graph), known) &&
     graph.nodes.every((node) => !isPeerHiddenProvider(node.fields.provider, viewer.protocol))

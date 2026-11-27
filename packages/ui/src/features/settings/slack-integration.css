@@ -29,13 +29,6 @@
   color: var(--openbot-success);
 }
 
-.channel-checklist-dot {
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--openbot-border-strong);
-  border-radius: var(--openbot-radius-pill);
-}
-
 .channel-waiting {
   display: flex;
   gap: var(--openbot-space-2);

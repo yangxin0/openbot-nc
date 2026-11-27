@@ -61,12 +61,6 @@ export function routineToolRunPlace(args: DynamicRecord): { runIn?: RoutineRunPl
   return { runIn };
 }
 
-export function siteToolString(value: unknown, field: string, limit: number): string {
-  if (!isString(value) || !value.trim()) throw new Error(`${field} is required.`);
-  if (value.length > limit) throw new Error(`${field} is too long.`);
-  return value.trim();
-}
-
 export function routineToolSchedule(value: unknown): RoutineSchedule {
   if (!isRoutineSchedule(value)) {
     const detail = routineScheduleProblem(value);

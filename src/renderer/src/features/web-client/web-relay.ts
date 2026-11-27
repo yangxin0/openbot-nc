@@ -27,7 +27,7 @@ export type WebPeerActions = { current: RelayTeamPeerActions };
 export type WebPeer = ReturnType<typeof createRelayTeamPeer>;
 export type WebPeerFactory = (actions: WebPeerActions, options: RelayTeamPeerOptions) => WebPeer;
 
-export interface WebRelayIdentity {
+interface WebRelayIdentity {
   keyId: string;
   team: string;
   user: string;
@@ -77,7 +77,7 @@ export function openWebIdentityStore(): RelayIdentityKeyStore {
   return createIndexedDbRelayIdentityKeyStore();
 }
 
-export function webRelayIdentity(identity: RelayBrowserIdentity): WebRelayIdentity {
+function webRelayIdentity(identity: RelayBrowserIdentity): WebRelayIdentity {
   return {
     keyId: identity.keyId,
     team: identity.team,

@@ -215,7 +215,7 @@ export class WhatsAppAnswerPartlySent extends Error {
   }
 }
 
-export interface MessagingDriverOptions {
+interface MessagingDriverOptions {
   connectionId: string;
   rateLimited(retryAt: string): void;
 }

@@ -10,7 +10,7 @@ import {
 
 let userDataSecretStorage: SecretStorage | null = null;
 
-export function secretStorage(): SecretStorage {
+function secretStorage(): SecretStorage {
   userDataSecretStorage ??= createSecretStorage({
     keyPath: join(app.getPath("userData"), SECRET_STORAGE_KEY_FILE),
   });

@@ -1,7 +1,6 @@
 import { EventEmitter } from "node:events";
 import { constants } from "node:fs";
 import { access, appendFile, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
-import { homedir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import type {
   IdleRestart,
@@ -61,16 +60,6 @@ export function createDisabledUpdateAdapter(): UpdateAdapter {
   };
 }
 
-export function electronUpdaterCacheDirectory(): string {
-  const root =
-    process.platform === "win32"
-      ? process.env.LOCALAPPDATA || join(homedir(), "AppData", "Local")
-      : process.platform === "darwin"
-        ? join(homedir(), "Library", "Caches")
-        : process.env.XDG_CACHE_HOME || join(homedir(), ".cache");
-  return join(root, "openbot-nc-updater");
-}
-
 type UpdateOperation = "check" | "download" | "install";
 
 interface UpdateServiceEvents {
@@ -120,15 +109,7 @@ const DEFAULT_PHASE_TIMEOUTS: Record<UpdateBusyPhase, number> = {
   installing: UPDATE_INSTALL_TIMEOUT_MS,
 };
 
-export function supportsInstalledUpdates(
-  platform: NodeJS.Platform,
-  environment: NodeJS.ProcessEnv = process.env,
-): boolean {
-  if (platform === "linux") return Boolean(environment.APPIMAGE?.trim());
-  return platform === "darwin" || platform === "win32";
-}
-
-export function isNixStoreInstall(executablePath: string = process.execPath): boolean {
+function isNixStoreInstall(executablePath: string = process.execPath): boolean {
   return executablePath.startsWith("/nix/store/");
 }
 

@@ -16,8 +16,6 @@ type Phase = "waiting" | "restarting" | "away" | "expired";
 const RESTART_NOTICE_MS = 10 * 60_000;
 
 const toastId = (id: string) => `host-restart:${id}`;
-
-const [heldServers, setHeldServers] = createSignal<ReadonlySet<string>>(new Set());
 const [emptyServers, setEmptyServers] = createSignal<ReadonlySet<string>>(new Set());
 
 export function noteServerAgents(serverId: string, empty: boolean): void {
@@ -30,16 +28,6 @@ export function noteServerAgents(serverId: string, empty: boolean): void {
   });
 }
 
-export function holdHostRestartNotice(serverId: string): () => void {
-  setHeldServers((current) => new Set(current).add(serverId));
-  return () =>
-    setHeldServers((current) => {
-      const next = new Set(current);
-      next.delete(serverId);
-      return next;
-    });
-}
-
 export function createHostRestartToasts(hosts: Accessor<readonly HostRestartView[]>): void {
   const phases = new Map<string, Phase>();
   const expiries = new Map<string, ReturnType<typeof setTimeout>>();
@@ -49,11 +37,10 @@ export function createHostRestartToasts(hosts: Accessor<readonly HostRestartView
   };
   createEffect(
     () => {
-      const held = heldServers();
       const empty = emptyServers();
       return hosts().map((host) => ({
         ...host,
-        firstRun: Boolean(host.firstRun) || held.has(host.id) || (host.firstRun === undefined && empty.has(host.id)),
+        firstRun: Boolean(host.firstRun) || (host.firstRun === undefined && empty.has(host.id)),
       }));
     },
     (views) => {

@@ -11,13 +11,6 @@ export function rawDataBytes(data: Ws.RawData): Uint8Array {
   return new Uint8Array(Buffer.from(data.buffer, data.byteOffset, data.byteLength));
 }
 
-export function sendableCloseCode(code: number | undefined): number {
-  if (code === undefined || code === 1005) return 1000;
-  const valid =
-    (code >= 1000 && code <= 1014 && code !== 1004 && code !== 1005 && code !== 1006) || (code >= 3000 && code <= 4999);
-  return valid ? code : 1011;
-}
-
 export function rawDataText(data: Ws.RawData): string {
   if (Array.isArray(data)) return Buffer.concat(data).toString("utf8");
   if (data instanceof ArrayBuffer) return Buffer.from(data).toString("utf8");

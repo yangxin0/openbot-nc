@@ -98,14 +98,6 @@ function saveImage(folderOf: () => Directory, url: string, dataUrl: string): str
   }
 }
 
-export async function agentAvatarDataUrl(uri: string): Promise<string> {
-  if (uri.startsWith("data:")) return uri;
-  const file = new File(uri);
-  const type = AVATAR_MIME_TYPES.find((candidate) => file.name.endsWith(`.${avatarFileExtension(candidate)}`));
-  if (!type) throw new Error("The agent avatar has an unknown type.");
-  return `data:${type};base64,${await file.base64()}`;
-}
-
 export function deleteServerAvatars(serverId: string): void {
   try {
     const folder = new Directory(Paths.cache, ROOT, segment(serverId));

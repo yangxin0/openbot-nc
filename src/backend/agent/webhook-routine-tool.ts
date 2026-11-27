@@ -7,7 +7,7 @@ export interface WebhookRoutineWriter {
   delete(input: { agentId: string; routineId: string }): Effect.Effect<void, RoutineOperationFailed>;
 }
 
-export function webhookSecretKeyName(routineId: string): string {
+function webhookSecretKeyName(routineId: string): string {
   return `WEBHOOK_SECRET_${routineId.replaceAll("-", "").toUpperCase()}`;
 }
 

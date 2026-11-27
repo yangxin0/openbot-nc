@@ -142,7 +142,7 @@ export function safeProperties(input: unknown): FailureProperties | null {
   };
 }
 
-export function isReportProfileId(value: string | null): boolean {
+function isReportProfileId(value: string | null): boolean {
   return value === null || /^[a-zA-Z0-9_-]{1,100}$/u.test(value);
 }
 

@@ -874,24 +874,6 @@ html:active-view-transition-type(open)::view-transition-new(*) {
   }
 }
 
-.first-run-consent-notice {
-  width: min(100%, 440px);
-  margin: var(--openbot-space-4) 0 0;
-  color: var(--openbot-text-muted);
-  text-align: center;
-  font-size: var(--openbot-text-sm);
-  line-height: var(--openbot-leading-sm);
-}
-
-.first-run-consent-notice .first-run-consent-link {
-  display: inline;
-  vertical-align: baseline;
-  font: inherit;
-  color: var(--openbot-text-secondary);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
 @keyframes first-run-rise {
   from {
     opacity: 0;

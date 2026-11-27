@@ -26,7 +26,6 @@ import {
   ItemTitle,
   Link2Off,
   SettingsSection,
-  Spinner,
   Text,
   Trash2,
   TriangleAlert,
@@ -311,34 +310,6 @@ export function ChannelOrchestratorSection(props: {
         </Text>
       </ItemGroup>
     </SettingsSection>
-  );
-}
-
-export function ChannelConnectChecklist(props: { text: ChannelText; waiting: boolean }) {
-  const { t } = useText();
-  return (
-    <Show
-      when={props.waiting}
-      fallback={
-        <ol class="channel-checklist">
-          <For each={[props.text.connectStepBrowser, props.text.connectStepAllow, props.text.connectStepReturn]}>
-            {(step) => (
-              <li>
-                <span class="channel-checklist-dot" aria-hidden="true" />
-                {t(step)}
-              </li>
-            )}
-          </For>
-        </ol>
-      }
-    >
-      <div class="channel-waiting" aria-live="polite">
-        <Spinner size="sm" />
-        <Text variant="caption" tone="muted">
-          {t(props.text.connectWaiting)}
-        </Text>
-      </div>
-    </Show>
   );
 }
 

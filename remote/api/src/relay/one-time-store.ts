@@ -12,7 +12,7 @@ const ORPHAN_FILE_MS = 60 * 60_000;
 const PRIVATE_FILE_MODE = 0o600;
 const PRIVATE_DIRECTORY_MODE = 0o700;
 
-export class OneTimeStoreError extends Schema.TaggedError<OneTimeStoreError>()("OneTimeStoreError", {
+class OneTimeStoreError extends Schema.TaggedError<OneTimeStoreError>()("OneTimeStoreError", {
   message: Schema.String,
 }) {}
 
@@ -21,7 +21,7 @@ export interface OneTimeEntry {
   expiresAt: number;
 }
 
-export interface StoredOneTime<Entry> {
+interface StoredOneTime<Entry> {
   hash: string;
   entry: Entry;
 }
@@ -38,7 +38,7 @@ const failure = (message: string) => new OneTimeStoreError({ message });
 const hasCode = (error: unknown, code: string) => error instanceof Error && "code" in error && error.code === code;
 const ignoreMissing = (error: unknown) => (hasCode(error, "ENOENT") ? null : Promise.reject(error));
 
-export function oneTimeHash(secret: Uint8Array): string {
+function oneTimeHash(secret: Uint8Array): string {
   return createHash("sha256").update(secret).digest("hex");
 }
 

@@ -550,11 +550,6 @@ export function decodeProviderDetectionSettings(value: unknown): ProviderDetecti
   return value;
 }
 
-export function decodeNullablePath(value: unknown): string | null {
-  if (value !== null && !isString(value)) throw new Error("Invalid directory response.");
-  return value;
-}
-
 export function decodeBitwardenConnectorStatus(value: unknown): BitwardenConnectorStatus {
   if (
     !value ||

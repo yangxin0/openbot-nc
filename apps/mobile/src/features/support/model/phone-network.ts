@@ -1,6 +1,6 @@
 export type PhoneConnection = "wifi" | "cellular" | "ethernet" | "vpn" | "none" | "unknown";
 
-export interface InterfaceAddress {
+interface InterfaceAddress {
   readonly address: string;
   readonly vpn: boolean | null;
   readonly underlying: PhoneConnection | null;

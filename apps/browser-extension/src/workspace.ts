@@ -117,7 +117,7 @@ export interface WorkspaceState {
   prompts: PendingPrompt[];
 }
 
-export const decodeAgents = guardedListDecoder(isClientAgentSummary, "agents");
+const decodeAgents = guardedListDecoder(isClientAgentSummary, "agents");
 const decodeModels = guardedListDecoder(isClientAgentModelOption, "models");
 const SIDEBAR_LAYOUT_CAPABILITY = "sidebar-layout";
 const CHANNEL_READ_INTERVAL_MS = 250;

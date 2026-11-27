@@ -105,16 +105,6 @@ function providerReady(option: ProviderPickerOption): boolean {
   return option.state === "available" || freeModelsReady(option);
 }
 
-export function savedCustomModel(
-  provider: AgentProviderId | null,
-  model: AgentModelId | null,
-  customProviders: readonly CustomProviderSummary[] | undefined,
-): AgentModelId | null {
-  if (!isCustomProviderHarness(provider) || !model) return null;
-  const endpoint = customProviderOfModel(model, customProviders ?? []);
-  return endpoint && harnessOf(endpoint) === provider ? model : null;
-}
-
 function harnessOf(endpoint: CustomProviderSummary): CustomProviderHarness {
   return endpoint.harness ?? DEFAULT_CUSTOM_PROVIDER_HARNESS;
 }

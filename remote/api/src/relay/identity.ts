@@ -10,7 +10,6 @@ import {
   RELAY_SUBJECT_NAME_PATTERN,
   type RelayErrorCode,
   type RelayPeer,
-  type RelayPeerCertificate,
   type RelayTeam,
   relayTeamIdStatement,
 } from "@openbot/contracts/relay-protocol/messages";
@@ -79,10 +78,6 @@ export function trustedRoot(pem: string): TrustedRoot {
 export function relayTeam(rootKeyId: string, teamName: string): RelayTeam {
   const id = createHash("sha256").update(relayTeamIdStatement({ rootKeyId, teamName })).digest("base64url");
   return { id, name: teamName };
-}
-
-export function peerCertificate(identity: RelayIdentity): RelayPeerCertificate {
-  return { keyId: identity.keyId, user: identity.user, device: identity.device, certificate: identity.certificate };
 }
 
 export function isRevoked(identity: RelayIdentity, revoked: ReadonlySet<string>): boolean {

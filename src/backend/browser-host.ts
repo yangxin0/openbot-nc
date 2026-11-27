@@ -220,7 +220,7 @@ interface BrowserHostEvents {
   siteVisited: [visit: BrowserSiteVisit];
 }
 
-export interface BrowserSiteVisit {
+interface BrowserSiteVisit {
   tabId: string;
   hostname: string;
   actor: "agent" | "user";

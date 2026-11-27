@@ -14,10 +14,6 @@ export interface ConnectorRow {
   status: ConnectorStatus;
 }
 
-export function useConnectorRows(serverId: string): ConnectorRow[] {
-  return useConnectorRowState(serverId).rows;
-}
-
 export function useConnectorRowState(serverId: string): { rows: ConnectorRow[]; loading: MobileConnectorId[] } {
   const {
     agents,

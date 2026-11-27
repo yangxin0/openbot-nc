@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { isReservedMcpServerName, type McpServerConfig } from "@openbot/contracts/ipc";
+import type { McpServerConfig } from "@openbot/contracts/ipc";
 import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
 import { Effect } from "effect";
 import { analyticsIO, analyticsSync } from "./analytics-effects";
@@ -61,15 +61,6 @@ function catalogServer(slug: string, app: unknown): CatalogPluginServer[] {
 function localSetupSteps(flow: unknown): string[] {
   if (!isDynamicRecord(flow) || flow.kind !== "local" || !Array.isArray(flow.steps)) return [];
   return flow.steps.filter(isString);
-}
-
-export function isReportedMcpServerName(configured: string, reported: string): boolean {
-  const form = (name: string) => name.replace(/[^A-Za-z0-9_-]/gu, "_").toLowerCase();
-  return (
-    configured === reported ||
-    form(configured) === form(reported) ||
-    (!isReservedMcpServerName(reported) && `openbot_${form(configured)}` === form(reported))
-  );
 }
 
 export function catalogPluginSlug(

@@ -1,10 +1,4 @@
-import type {
-  CreateTeamInviteInput,
-  InviteSummary,
-  OpenBotDesktopApi,
-  ServerSummary,
-  TeamInviteSummary,
-} from "@openbot/contracts/ipc";
+import type { OpenBotDesktopApi, ServerSummary } from "@openbot/contracts/ipc";
 
 export interface ServersPort {
   agent: Pick<
@@ -66,12 +60,6 @@ export type ServerMemberPort = Pick<
   "getPresence" | "listMembers" | "updateMember" | "removeMember"
 >;
 
-export type ServerAdminPort = ServerMemberPort & {
-  listInvites: () => Promise<TeamInviteSummary[]>;
-  createInvite: (input: CreateTeamInviteInput) => Promise<InviteSummary>;
-  revokeInvite: (inviteId: string) => Promise<void>;
-};
-
 export function serverMemberPort(server: Pick<ServerSummary, "id" | "kind">): ServerMemberPort {
   if (server.kind === "local") return window.openbot.host;
   const serverId = server.id;
@@ -81,9 +69,4 @@ export function serverMemberPort(server: Pick<ServerSummary, "id" | "kind">): Se
     updateMember: (input) => window.openbot.servers.updateMember(input, serverId),
     removeMember: (memberId) => window.openbot.servers.removeMember(memberId, serverId),
   };
-}
-
-export async function activeServerId(): Promise<string> {
-  if (!window.openbot) return "local";
-  return (await window.openbot.servers.list()).find((item) => item.active)?.id ?? "local";
 }

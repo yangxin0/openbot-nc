@@ -1,21 +1,12 @@
 import { createHash, type KeyObject, X509Certificate } from "node:crypto";
-import type { RelayPeerCertificate } from "@openbot/contracts/relay-protocol/messages";
 import {
   type RelayCertificateView,
-  type RelayPeerRefusal,
   type RelaySubjectNames,
   type RelayValidityWindow,
-  relayPeerRefusal,
   relaySubjectNames,
   relayTrustPath,
   relayValidityWindow,
 } from "@openbot/contracts/relay-protocol/peer-rules";
-
-interface RelayTrustAnchors {
-  team: string;
-  root: string;
-  chain: readonly string[];
-}
 
 const NODE_CERTIFICATE_VIEW: RelayCertificateView<X509Certificate> = {
   authority: (certificate) => certificate.ca,
@@ -71,20 +62,4 @@ export function trustPath(
   chain: readonly X509Certificate[],
 ): X509Certificate[] | null {
   return relayTrustPath(leaf, root, chain, issuedBy);
-}
-
-export function peerRefusal(
-  peer: RelayPeerCertificate,
-  trust: RelayTrustAnchors,
-  now: number,
-): RelayPeerRefusal | null {
-  return relayPeerRefusal({
-    peer,
-    leaf: readCertificate(peer.certificate),
-    root: readCertificate(trust.root),
-    chain: trust.chain.map(readCertificate).filter((certificate) => certificate !== null),
-    team: trust.team,
-    now,
-    view: NODE_CERTIFICATE_VIEW,
-  });
 }

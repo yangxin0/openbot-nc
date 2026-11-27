@@ -14,11 +14,11 @@ import { RELAY_SUBJECT_NAME_PATTERN } from "@openbot/contracts/relay-protocol/me
 import { Effect, Option, Schema } from "effect";
 import { CERTIFICATE_DAYS, type CertificateAuthority, type CertificateRecord } from "./certificate-authority";
 import { relayTeam } from "./identity";
-import { OneTimeStore, type StoredOneTime } from "./one-time-store";
+import { OneTimeStore } from "./one-time-store";
 import { publicKeyId } from "./x509";
 
 export const JOIN_CODE_MINUTES = { default: 15, maximum: 1440 } as const;
-export const OPEN_JOIN_CODES_LIMIT = 100;
+const OPEN_JOIN_CODES_LIMIT = 100;
 export const JOIN_CODE_ID_LENGTH = 12;
 
 const JoinCodeEntry = Schema.Struct({
@@ -33,20 +33,19 @@ const JoinCodeEntry = Schema.Struct({
 });
 export type JoinCodeEntry = typeof JoinCodeEntry.Type;
 export type JoinCodeCreator = JoinCodeEntry["creator"];
-export type StoredJoinCode = StoredOneTime<JoinCodeEntry>;
 
-export class EnrollmentError extends Schema.TaggedError<EnrollmentError>()("EnrollmentError", {
+class EnrollmentError extends Schema.TaggedError<EnrollmentError>()("EnrollmentError", {
   code: Schema.Literals(["invalid_request", "code_unknown", "proof_invalid", "rate_limited", "unavailable"]),
   message: Schema.String,
 }) {}
 
-export interface CreatedJoinCode {
+interface CreatedJoinCode {
   url: string;
   id: string;
   entry: JoinCodeEntry;
 }
 
-export interface EnrolledMember {
+interface EnrolledMember {
   response: RelayEnrollResponse;
   record: CertificateRecord;
   codeId: string;
@@ -62,7 +61,7 @@ interface EnrollmentOptions {
 const refused = (code: RelayEnrollErrorCode, message: string) => new EnrollmentError({ code, message });
 const decodeEntry = Schema.decodeUnknownOption(JoinCodeEntry);
 
-export function joinCodesDirectory(dataDirectory: string): string {
+function joinCodesDirectory(dataDirectory: string): string {
   return join(dataDirectory, "ca", "codes");
 }
 

@@ -36,12 +36,6 @@ export type BrowserViewBridgeOpen = {
   dialog: boolean;
 };
 
-export type BrowserViewBridgeCommand =
-  | ({ type: "open" } & BrowserViewBridgeOpen)
-  | { type: "close"; viewId: string }
-  | { type: "input"; viewId: string; inputs: BrowserViewInput[] }
-  | { type: "frame-done"; viewId: string; sequence: number; drawn: boolean };
-
 interface OpenView {
   options: BrowserViewBridgeOpen;
   handle: RemoteBrowserView | null;

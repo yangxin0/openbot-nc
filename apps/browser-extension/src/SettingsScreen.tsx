@@ -5,7 +5,7 @@ import type { JSX } from "@solidjs/web";
 import { createSignal, createUniqueId, For, Show } from "solid-js";
 import { removeAllowedSite, siteName, useAllowedSites } from "./BrowserSharing";
 
-export type IdentityFacts = Pick<RelayBrowserIdentity, "team" | "user" | "device" | "relayUrl" | "expiresAt">;
+type IdentityFacts = Pick<RelayBrowserIdentity, "team" | "user" | "device" | "relayUrl" | "expiresAt">;
 
 interface SettingsScreenProps {
   canShare: boolean;

@@ -229,17 +229,6 @@ export function bearerToken(value: string | undefined): string | null {
   return match?.[1] ?? null;
 }
 
-export function publicHttpBaseUrl(request: IncomingMessage): string {
-  const forwardedHost = firstHeaderValue(request.headers["x-forwarded-host"]);
-  const host = forwardedHost || request.headers.host;
-  if (!host || !/^[A-Za-z0-9.:[\]-]+$/.test(host)) {
-    throw new HttpError(400, "A valid public host is required.");
-  }
-  const forwardedProtocol = firstHeaderValue(request.headers["x-forwarded-proto"]);
-  const protocol = forwardedProtocol === "https" ? "https" : "http";
-  return `${protocol}://${host}`;
-}
-
 export function firstHeaderValue(value: string | string[] | undefined): string | undefined {
   const first = Array.isArray(value) ? value[0] : value?.split(",", 1)[0];
   return first?.trim();

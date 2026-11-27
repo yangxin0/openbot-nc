@@ -15,7 +15,7 @@ const FAILURE_KEYS = {
   unhide: "settings.team.error.unhide",
 } as const satisfies Record<TeamAction, AppTextKey>;
 
-export type RelayJoinRequest = { code: string; replaceConfirmed: boolean };
+type RelayJoinRequest = { code: string; replaceConfirmed: boolean };
 
 interface RelayView {
   joinRequest: RelayJoinRequest | null;

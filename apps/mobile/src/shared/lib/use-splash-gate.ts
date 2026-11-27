@@ -9,7 +9,7 @@ export type SplashArtwork = (typeof SPLASH_ARTWORK)[number];
 
 export const SplashContentReadyContext = createContext(() => {});
 
-export const SPLASH_HANDOFF_DEADLINE_MS = 1500;
+const SPLASH_HANDOFF_DEADLINE_MS = 1500;
 
 export function useSplashGate(busy: boolean, splash: SplashController, nativeReady = true) {
   const shown = useRef(new Set<SplashArtwork>());

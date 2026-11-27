@@ -8,7 +8,3 @@ export interface MockRuntime {
 export function clone<T>(value: T): T {
   return structuredClone(value);
 }
-
-export function matchesQuery(text: string, query: string | undefined): boolean {
-  return !query || text.toLowerCase().includes(query.toLowerCase());
-}

@@ -140,20 +140,6 @@ export function taskThreadCheck(
       ?.tasks.some((task) => task.threadId === threadId) ?? false;
 }
 
-export function taskTurnThread(
-  queryClient: QueryClient,
-  scope: QueryScope,
-  serverId: string,
-  agentId: string,
-  turnId: string,
-): string | null {
-  return (
-    queryClient
-      .getQueryData<AgentTasksSnapshot>(queryKeys.agentTasks(scope, serverId, agentId))
-      ?.tasks.find((task) => task.activeTurnId === turnId)?.threadId ?? null
-  );
-}
-
 export function withoutTaskTurns(
   queryClient: QueryClient,
   scope: QueryScope,

@@ -1,7 +1,6 @@
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import { ROUTINE_LIMIT_POLICIES, ROUTINE_MISSED_POLICIES, ROUTINE_RUN_PLACES } from "@openbot/contracts/ipc";
 import { z } from "zod";
-import { WEBHOOK_EVENT_TYPE_MAX_LENGTH, WEBHOOK_FILTERS_LIMIT } from "./webhook-trigger";
 
 const ROUTINE_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -93,27 +92,3 @@ export const routineMissedPolicyUpdateZodSchema = z
 export const routineRunPlaceZodSchema = z
   .enum(ROUTINE_RUN_PLACES)
   .describe("chat (default) or the routine's own thread. Use thread only when the user asks.");
-
-export const webhookEventTypeZodSchema = z
-  .string()
-  .min(1)
-  .max(WEBHOOK_EVENT_TYPE_MAX_LENGTH)
-  .nullable()
-  .describe(
-    'Only a request whose body "type" equals this value starts the routine. Null or omitted accepts every type.',
-  );
-
-export const webhookFiltersZodSchema = z
-  .array(
-    z
-      .object({
-        pointer: z
-          .string()
-          .max(2048)
-          .describe('A JSON Pointer into the request "data", such as /repository/name. "" selects all of "data".'),
-        value: z.union([z.string(), z.number(), z.boolean(), z.null()]),
-      })
-      .strict(),
-  )
-  .max(WEBHOOK_FILTERS_LIMIT)
-  .describe("A request starts the routine only when every filter matches. Omit for no filter.");

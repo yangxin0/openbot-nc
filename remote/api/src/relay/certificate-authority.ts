@@ -77,7 +77,7 @@ interface MemberInput {
   days: number;
 }
 
-export interface IssuedMember {
+interface IssuedMember {
   record: CertificateRecord;
   certificate: string;
   chain: string[];
@@ -481,7 +481,7 @@ export class CertificateAuthority {
   }
 }
 
-export function requireName(value: string, label: string) {
+function requireName(value: string, label: string) {
   return RELAY_SUBJECT_NAME_PATTERN.test(value)
     ? Effect.void
     : Effect.fail(
@@ -491,7 +491,7 @@ export function requireName(value: string, label: string) {
       );
 }
 
-export function requireDays(days: number, maximum: number) {
+function requireDays(days: number, maximum: number) {
   return Number.isInteger(days) && days >= 1 && days <= maximum
     ? Effect.void
     : Effect.fail(failure(`The validity must be from 1 to ${maximum} days.`));

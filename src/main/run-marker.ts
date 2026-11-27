@@ -15,7 +15,7 @@ const UPTIME_CLASSES = [
   ["lt8h", 8 * 60 * 60_000],
   ["lt24h", 24 * 60 * 60_000],
 ] as const;
-export const UNCLEAN_EXIT_ENUMS = {
+const UNCLEAN_EXIT_ENUMS = {
   phase: ["running", "quitting", "quit_timeout"],
   uptime_class: [...UPTIME_CLASSES.map(([name]) => name), "ge24h"],
   host_kind: ["desktop", "server"],

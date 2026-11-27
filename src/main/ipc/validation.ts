@@ -15,10 +15,6 @@ export function optionalPayload<Payload>(decode: (value: unknown) => Payload): (
   return (value) => (value === undefined ? undefined : decode(value));
 }
 
-export function nullishPayload<Payload>(decode: (value: unknown) => Payload): (value: unknown) => Payload | undefined {
-  return (value) => (value === null || value === undefined ? undefined : decode(value));
-}
-
 export function isObject(value: unknown): value is DynamicRecord {
   return isDynamicRecord(value);
 }

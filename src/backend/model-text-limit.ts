@@ -1,7 +1,5 @@
 export const BROWSER_VALUE_TEXT_LIMIT = 16_000;
 
-export const MCP_RESULT_TEXT_LIMIT = 40_000;
-
 const BROWSER_VALUE_PART = 12_000;
 
 const returnLess = (start: number): string =>
@@ -13,9 +11,6 @@ export const BROWSER_STRING_MORE = (end: number): string =>
   `To read more, return the same string from its character ${end}. When the string was a slice from offset N, the next slice starts at N + ${end}.`;
 
 export const BROWSER_VALUE_TOO_LARGE = `To get it, ${returnLess(0)}`;
-
-export const MCP_RESULT_MORE = (): string =>
-  "To read more, call the tool again with its pagination or filter arguments, such as a smaller page size or the next page. For a large file, clone the repository and read the file there.";
 
 export interface ModelTextCut {
   text: string;

@@ -395,7 +395,7 @@ export function parseChatColor(input: unknown): AvatarColor | null {
   return input;
 }
 
-export function requireSkillId(value: unknown): string {
+function requireSkillId(value: unknown): string {
   return requireString(value, "skillId", GITHUB_SKILL_ID_MAX_LENGTH);
 }
 

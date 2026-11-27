@@ -6,7 +6,7 @@ export interface SetupAnswer {
   values: Record<string, string | number>;
 }
 
-export const NO_ANSWER = "no_answer";
+const NO_ANSWER = "no_answer";
 
 export function setupStatus(): Promise<SetupAnswer> {
   return call("GET", SERVER_SETUP_ROUTES.status);

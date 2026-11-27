@@ -179,18 +179,6 @@ export function remoteRoutineRecovery(server: ServerSummary | undefined): boolea
   return server?.kind === "remote" && serverCanAdminister(server, "routine-recovery-v1");
 }
 
-export function serverSendsWebhookTests(server: ServerSummary | undefined): boolean {
-  return serverCanAdminister(server, "webhook-tests-v1");
-}
-
-export function serverSetsWebhookSenderSecret(server: ServerSummary | undefined): boolean {
-  return serverCanAdminister(server, "webhook-sender-secret-v1");
-}
-
-export function serverGivesWebhookSecretToAgent(server: ServerSummary | undefined): boolean {
-  return serverCanAdminister(server, "webhook-agent-secret-v1");
-}
-
 export function remoteMcpSignIn(server: ServerSummary | undefined): boolean {
   return (
     server?.kind === "remote" && serverCanManageMcp(server) && serverSupportsCapability(server, "sign-in-relay-v1")

@@ -472,7 +472,7 @@ export interface ProviderClientContext {
   readonly fitImage?: ImageFitter | null;
 }
 
-export type AgentGitConfigForm = "parameters" | "count";
+type AgentGitConfigForm = "parameters" | "count";
 
 const CODEX_ADDRESS_VARIABLE = "OPENAI_BASE_URL";
 

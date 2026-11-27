@@ -29,7 +29,7 @@ export interface PhoneRelay extends PhoneRelayKeys, RelayHubProvider {
   subscribe(listener: () => void): () => void;
 }
 
-export const PHONE_RELAY_LABEL = "OpenBot-NC phone";
+const PHONE_RELAY_LABEL = "OpenBot-NC phone";
 
 const ENDING_CODES: ReadonlySet<RelaySocketErrorCode> = new Set(["certificate_revoked", "certificate_expired"]);
 
@@ -138,8 +138,4 @@ export function createPhoneRelayPeer(relay: PhoneRelay, actions: { current: Rela
     crypto: relay.crypto,
     clientProtocol: TEAM_WEB_CLIENT_PROTOCOL,
   });
-}
-
-export function phoneRelayScope(identity: Pick<RelayBrowserIdentity, "relayUrl" | "keyId">): string {
-  return `${identity.relayUrl ?? ""}#${identity.keyId}`;
 }

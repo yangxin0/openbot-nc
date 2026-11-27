@@ -1109,7 +1109,7 @@ export const STORY_MCP_SERVERS: McpServerConfig[] = [
   },
 ];
 
-export const STORY_MARKETPLACE_AGENTS: MarketplaceAgentSummary[] = [
+const STORY_MARKETPLACE_AGENTS: MarketplaceAgentSummary[] = [
   {
     id: "listing-release-manager",
     category: "coding",

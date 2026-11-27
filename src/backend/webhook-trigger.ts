@@ -4,8 +4,8 @@ import { isDynamicRecord } from "@openbot/contracts/runtime-values";
 import { sourceText } from "@openbot/i18n/source";
 import { RoutineInputError } from "@openbot/team-client/routine-schedule";
 
-export const WEBHOOK_EVENT_TYPE_MAX_LENGTH = 256;
-export const WEBHOOK_FILTERS_LIMIT = 128;
+const WEBHOOK_EVENT_TYPE_MAX_LENGTH = 256;
+const WEBHOOK_FILTERS_LIMIT = 128;
 export const EXTERNAL_EVENT_START = "--- external event input ---";
 export const EXTERNAL_EVENT_END = "--- end of external event input ---";
 
