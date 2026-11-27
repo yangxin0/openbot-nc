@@ -21,3 +21,5 @@
   device trusts.
 - A join to a server whose certificate this device does not trust now says so. Before, it said to
   check the network.
+- The central server writes a log line for each refused sign-in, with the reason (for example a
+  revoked certificate), and when a newer connection of a certificate replaces an older one.

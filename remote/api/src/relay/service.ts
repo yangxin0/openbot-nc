@@ -271,17 +271,17 @@ export class RelayService {
     clearTimeout(phase.deadline);
     const now = this.#now();
     if (Math.abs(now - hello.timestamp) > this.#limits.helloWindowMs) {
-      this.#fail(state.socket.id, "authentication_failed", "The time of the hello is outside the permitted window.");
+      this.#refuseSignIn(state, "authentication_failed", "The time of the hello is outside the permitted window.");
       return;
     }
     const check = verifyRelayProof(hello, this.#trust, now);
     if (!check.ok) {
-      this.#fail(state.socket.id, check.code, check.message);
+      this.#refuseSignIn(state, check.code, check.message);
       return;
     }
     const nonce = `${check.identity.keyId}:${hello.clientNonce}`;
     if (this.#nonces.has(nonce)) {
-      this.#fail(state.socket.id, "authentication_failed", "The hello was used before.");
+      this.#refuseSignIn(state, "authentication_failed", "The hello was used before.");
       return;
     }
     this.#rememberNonce(nonce, hello.timestamp + this.#limits.helloWindowMs, now);
@@ -351,6 +351,7 @@ export class RelayService {
     members.set(identity.keyId, state.socket.id);
     this.#teams.set(teamId, members);
     if (replacedSocketId !== undefined) {
+      console.log(`A newer connection of the key ${identity.keyId.slice(0, 8)} replaced its older connection.`);
       this.#fail(replacedSocketId, "replaced", "A newer connection of this certificate replaced this one.");
     }
     this.#send(state.socket, {
@@ -447,6 +448,11 @@ export class RelayService {
 
   #send(socket: RelaySocket, message: RelayHubServerMessage): void {
     socket.sendText(encodeRelayServerMessage(message));
+  }
+
+  #refuseSignIn(state: SocketState, code: RelayErrorCode, message: string): void {
+    console.log(`The relay refused a sign-in from ${state.socket.ip} (${code}): ${message}`);
+    this.#fail(state.socket.id, code, message);
   }
 
   #fail(socketId: string, code: RelayErrorCode, message: string): void {
