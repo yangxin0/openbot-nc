@@ -824,6 +824,17 @@ try {
       await themeChoice("System theme").click();
       assert.equal(await pageTheme(), "system");
       assert.equal(await savedTheme(), null);
+      await signedOutPage.goto(`${adminOrigin()}/admin/login#${"A".repeat(43)}`);
+      await signedOutPage
+        .locator("#signed-out-notice")
+        .filter({ hasText: "not valid, expired or used" })
+        .waitFor({ timeout: WAIT_MS });
+      const sameTabLink = loginToken(environment);
+      await signedOutPage.evaluate((token) => {
+        location.hash = token;
+      }, sameTabLink.token);
+      await signedOutPage.waitForURL(`${adminOrigin()}/admin`, { timeout: WAIT_MS });
+      await signedOutPage.locator("#overview dt").first().waitFor({ timeout: WAIT_MS });
       await signedOutPage.close();
       const page = await context.newPage();
       const problems: string[] = [];
@@ -841,6 +852,8 @@ try {
       await page.goto(url);
       await page.waitForURL(`${adminOrigin()}/admin`, { timeout: WAIT_MS });
       await page.locator("#overview dt").first().waitFor({ timeout: WAIT_MS });
+      await page.locator("#member-team option", { hasText: TEAM }).waitFor({ state: "attached", timeout: WAIT_MS });
+      await page.locator("#member-team").selectOption(TEAM);
       await page.locator("#member-rows tr", { hasText: "dave" }).waitFor({ timeout: WAIT_MS });
       await screenshot(page, "overview.png");
 

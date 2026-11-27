@@ -82,14 +82,16 @@ that runs loads a new identity certificate in 5 seconds or less.
    RELAY_PUBLIC_URL=wss://relay.example.com/v1/relay
    ```
 
-2. Make the root, the identity certificate of the server and the first team:
+2. Make the root, the team "Default" and the identity certificate of the server:
 
    ```sh
    compose="docker compose -f remote/compose.relay.yaml --env-file remote/.env.relay"
    $compose run --rm relay ca init
    $compose run --rm relay ca server --dns relay.example.com
-   $compose run --rm relay ca team add "My Team"
    ```
+
+   For personal use, the team "Default" is enough. To add another team, run
+   `$compose run --rm relay ca team add "My Team"`.
 
 3. Start the server:
 
@@ -100,7 +102,7 @@ that runs loads a new identity certificate in 5 seconds or less.
 4. Make one identity file for each device of each user:
 
    ```sh
-   $compose run --rm relay ca issue --team "My Team" --user alice --device laptop > alice-laptop.json
+   $compose run --rm relay ca issue --team Default --user alice --device laptop > alice-laptop.json
    ```
 
    The file holds the certificate, the private key, the root certificate and the server address.
@@ -122,9 +124,10 @@ export RELAY_DATA_DIR=/var/lib/openbot-relay
 export RELAY_PUBLIC_URL=wss://relay.example.com/v1/relay
 bun remote/api/src/relay/main.ts ca init
 bun remote/api/src/relay/main.ts ca server --dns relay.example.com
-bun remote/api/src/relay/main.ts ca team add "My Team"
 bun remote/api/src/relay/main.ts serve
 ```
+
+`ca init` also makes the team "Default". Run `ca team add "My Team"` for another team.
 
 ## Use a TLS certificate of a public authority
 
@@ -183,7 +186,7 @@ cannot open the working folder. Do not build the file with a plain `bun build --
 
 | Command | Result |
 | --- | --- |
-| `ca init [--name <name>] [--days <n>]` | Makes the root. It does not replace a root that exists. |
+| `ca init [--name <name>] [--days <n>]` | Makes the root and the team "Default". It does not replace a root that exists. |
 | `ca team add <team> [--days <n>]` | Makes the authority of a team. |
 | `ca issue --team <team> --user <user> [--device <device>] [--days <n>] [--out <file>]` | Makes a member certificate and prints the identity file. |
 | `ca server --dns <name> [--ip <address>] [--days <n>]` | Makes the identity certificate of the server in `<data>/tls/`. A server that runs proves its identity with it in 5 seconds or less. When TLS uses the same files, start the server again. |
@@ -205,7 +208,7 @@ Names can have letters, digits, spaces and `. _ @ -`, from 1 to 64 characters.
 A join code lets a device join a team with no identity file. The device makes its own P-256 key, and
 only its public key goes to the server. So no private key leaves the device.
 
-1. The administrator makes a code with `ca code --team "My Team" --user alice --device laptop`, or on
+1. The administrator makes a code with `ca code --team Default --user alice --device laptop`, or on
    the admin page.
 2. The person gets the code as a link or a QR code, for example
    `openbot-nc://enroll?v=1&server=relay.example.com&code=<26 characters>&root=<43 characters>`.

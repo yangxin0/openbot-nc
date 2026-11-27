@@ -386,8 +386,10 @@ const environment = { RELAY_DATA_DIR: dataDirectory };
 const servers: ChildProcess[] = [];
 
 try {
-  await check("The certificate commands make a root, two teams and a server certificate", () => {
-    assert.equal(command(environment, "ca", "init").status, 0);
+  await check("The certificate commands make a root with the team Default, two teams and a server certificate", () => {
+    const initialized = command(environment, "ca", "init");
+    assert.equal(initialized.status, 0, initialized.output);
+    assert.match(initialized.output, /The team "Default" is ready/u);
     assert.equal(command(environment, "ca", "team", "add", "Acme Team").status, 0);
     assert.equal(command(environment, "ca", "team", "add", "Other Team").status, 0);
     assert.equal(command(environment, "ca", "server", "--dns", "localhost", "--ip", "127.0.0.1").status, 0);
@@ -395,6 +397,7 @@ try {
     assert.equal(listed.status, 0);
     assert.match(listed.output, /root +valid/u);
     assert.match(listed.output, /team +valid .* Acme Team/u);
+    assert.match(listed.output, /team +valid .* Default/u);
     assert.match(listed.output, /server +valid/u);
   });
 

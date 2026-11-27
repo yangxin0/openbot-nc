@@ -21,9 +21,11 @@ the admin page, set-up with and without Docker, settings, protocol and tests.
 compose="docker compose -f remote/compose.relay.yaml --env-file remote/.env.relay"
 $compose run --rm relay ca init
 $compose run --rm relay ca server --dns relay.example.com
-$compose run --rm relay ca team add "My Team"
 $compose up -d --build
 ```
+
+`ca init` makes the root certificate and a team named "Default", which is enough for personal use.
+`ca team add "My Team"` adds another team.
 
 `remote/.env.relay` sets at least `RELAY_PUBLIC_URL=wss://relay.example.com/v1/relay`. To serve the
 web client at `/app`, build it with `bun run web-client:build`, then set `RELAY_WEB_CLIENT_DIR` to

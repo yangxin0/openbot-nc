@@ -59,14 +59,16 @@ export RELAY_DATA_DIR=/var/lib/openbot-relay
 export RELAY_PUBLIC_URL=wss://relay.example.com/v1/relay
 bun remote/api/src/relay/main.ts ca init
 bun remote/api/src/relay/main.ts ca server --dns relay.example.com
-bun remote/api/src/relay/main.ts ca team add "My Team"
 bun remote/api/src/relay/main.ts serve
 ```
+
+`ca init` makes the root certificate and a team named "Default". For personal use, that team is
+enough. To add another team, run `ca team add "My Team"`.
 
 ### 2. Make one join code for each device
 
 ```sh
-bun remote/api/src/relay/main.ts ca code --team "My Team" --user alice --device laptop
+bun remote/api/src/relay/main.ts ca code --team Default --user alice --device laptop
 ```
 
 The command prints a one-time link (`openbot-nc://enroll?...`) and a QR code. It works once, for
@@ -78,7 +80,7 @@ extension and the phone. The admin page makes codes too (see
 The other way is an identity file that holds the private key:
 
 ```sh
-bun remote/api/src/relay/main.ts ca issue --team "My Team" --user alice --device laptop --out alice-laptop.json
+bun remote/api/src/relay/main.ts ca issue --team Default --user alice --device laptop --out alice-laptop.json
 ```
 
 Move the file to the device safely, then delete it.

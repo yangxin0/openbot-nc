@@ -11,3 +11,5 @@
   file".
 - Theme buttons next to the language button on the web client sign-in page set System, Light or Dark
   before you sign in. The choice is the same as Settings > Preferences > Theme.
+- `ca init` also makes a team named "Default", so one person can make join codes at once with
+  `ca code --team Default --user <user>`. `ca team add` still adds more teams.

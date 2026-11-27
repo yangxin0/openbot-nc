@@ -455,6 +455,7 @@ function bindForms() {
 async function signIn() {
   const token = location.hash.slice(1);
   history.replaceState(null, "", "/admin/login");
+  byId("signed-out-notice").hidden = true;
   if (token === "") {
     showSignedOut("The sign-in link has no token. Run admin login again.", "error");
     return;
@@ -468,9 +469,16 @@ async function signIn() {
   }
 }
 
+function watchSignInLinks() {
+  window.addEventListener("hashchange", () => {
+    if (location.pathname === "/admin/login" && location.hash.length > 1) void signIn();
+  });
+}
+
 async function start() {
   bindForms();
   showTheme();
+  watchSignInLinks();
   if (location.pathname === "/admin/login") {
     await signIn();
     return;

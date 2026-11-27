@@ -16,10 +16,11 @@ import { RelayService } from "./service";
 const TRUST_CHECK_INTERVAL_MS = 2_000;
 const EXPIRY_CHECK_INTERVAL_MS = 60_000;
 const DEFAULT_ROOT_NAME = "OpenBot Root CA";
+const DEFAULT_TEAM = "Default";
 
 const USAGE = `Usage:
   serve                                  Start the relay server (default).
-  ca init [--name <name>] [--days <n>]    Make the root certificate.
+  ca init [--name <name>] [--days <n>]    Make the root certificate and the team "Default".
   ca team add <team> [--days <n>]         Make the certificate authority of a team.
   ca issue --team <team> --user <user> [--device <device>] [--days <n>] [--out <file>]
                                           Make the certificate of one device of a user.
@@ -149,6 +150,8 @@ async function certificateCommand(config: RelayConfig, command: string[]): Promi
       }),
     );
     console.log(`The root certificate is ready. SHA-256 fingerprint: ${record.fingerprint}`);
+    const team = await run(authority.addTeam({ team: DEFAULT_TEAM, days: CERTIFICATE_DAYS.team.default }));
+    console.log(`The team "${DEFAULT_TEAM}" is ready. Key identifier: ${team.keyId}`);
     return;
   }
   if (action === "team" && rest[0] === "add" && rest[1] !== undefined) {
