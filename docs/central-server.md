@@ -218,11 +218,24 @@ only its public key goes to the server. So no private key leaves the device.
    the private key. The server issues the member certificate with the team authority, exactly as
    `ca issue` does, and sends it with the team chain and the root.
 
-Before the join, a device does not have the root of the team, so it checks the TLS certificate of
-`https://<server>` with the certificate authorities of its system or browser. Use a TLS certificate
-of a public authority for join codes (see
-[Use a TLS certificate of a public authority](#use-a-tls-certificate-of-a-public-authority)). A
-server that has only the certificate of `ca server` works with identity files, not with join codes.
+Before the join, a device does not have the root of the team. A server with only its own root (an
+IP address and no domain is enough) and a server with a certificate of a public authority both work:
+
+| Client | Server with only its own root | Server with a public certificate |
+| --- | --- | --- |
+| Desktop and Linux server (`openbot-nc join`) | Yes | Yes |
+| Web client at `/app` | After the browser accepts the certificate of the page | Yes |
+| Phone and browser extension | Not yet: install the root on the device, or use a public certificate | Yes |
+
+The desktop and the Linux server read `GET https://<server>/v1/root` without a TLS check. They use
+that root only when its SHA-256 is the `root` of the code. Then they send the join request with TLS
+checked against the system authorities and that root. When the root is not the root of the code,
+they stop with `root_mismatch` before the code leaves the device. A server with no `/v1/root` (an
+older version) gets the system authorities only; when they do not accept its certificate, the join
+stops with `server_untrusted` and the code is not sent. The code is in `src/main/relay/join-trust.ts`.
+
+`/v1/root` is on the main listener, answers the root certificate as PEM to any origin, and holds no
+secret. Use it also to install the root on a device that must trust the server.
 
 The wire format is in `packages/contracts/src/relay-protocol/enrollment.ts`. The client code is
 `joinRelayWithCode` and `enrollRelayKey` in `packages/team-client/src/relay-join.ts`. Each client

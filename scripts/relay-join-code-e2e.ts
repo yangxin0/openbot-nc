@@ -13,6 +13,7 @@ import {
   decodeRelayEnrollRequest,
   decodeRelayEnrollResponse,
   parseRelayJoinCode,
+  RELAY_ROOT_PATH,
   type RelayJoinCode,
 } from "@openbot/contracts/relay-protocol/enrollment";
 import { RELAY_PATH } from "@openbot/contracts/relay-protocol/messages";
@@ -60,6 +61,7 @@ const secrets: string[] = [];
 const children: ChildProcess[] = [];
 const tamperedCodes = new Set<string>();
 let enrollRequests = 0;
+const sentCodes = new Set<string>();
 
 async function check(name: string, run: () => void | Promise<void>): Promise<void> {
   try {
@@ -146,7 +148,13 @@ function startRelay(environment: Record<string, string>): Promise<{ child: Child
   );
 }
 
-function startProxy(options: { port: number; relayPort: number; dataDirectory: string; root: string }) {
+function startProxy(options: {
+  port: number;
+  relayPort: number;
+  dataDirectory: string;
+  root: string;
+  withoutRootRoute?: boolean;
+}) {
   const tls = {
     cert: readFileSync(join(options.dataDirectory, "tls", "server.crt")),
     key: readFileSync(join(options.dataDirectory, "tls", "server.key")),
@@ -185,8 +193,17 @@ function startProxy(options: { port: number; relayPort: number; dataDirectory: s
     const chunks: Buffer[] = [];
     request.on("data", (chunk: Buffer) => chunks.push(chunk));
     request.on("end", () => {
-      if (request.url === "/v1/enroll" && request.method === "POST") enrollRequests += 1;
-      forward(request, response, Buffer.concat(chunks));
+      const body = Buffer.concat(chunks);
+      if (request.url === "/v1/enroll" && request.method === "POST") {
+        enrollRequests += 1;
+        const sent = parseCode(body);
+        if (sent !== null) sentCodes.add(sent);
+      }
+      if (options.withoutRootRoute && request.url === RELAY_ROOT_PATH) {
+        response.writeHead(404).end("Not found");
+        return;
+      }
+      forward(request, response, body);
     });
   });
   server.on("upgrade", (request: IncomingMessage, client: Socket, head: Buffer) => {
@@ -227,12 +244,17 @@ function parseCode(body: Buffer): string | null {
   }
 }
 
-function runChild(script: string, config: unknown, rootPath: string, label: string): Promise<ChildResult[]> {
+function runChild(
+  script: string,
+  config: unknown,
+  extraAuthority: string | null,
+  label: string,
+): Promise<ChildResult[]> {
   const configPath = join(work, `${label}.json`);
   writeFileSync(configPath, JSON.stringify(config));
   const child = spawn(process.execPath, ["--import", "tsx", "--import", ELECTRON_STUB, script, configPath], {
     cwd: ROOT,
-    env: { ...process.env, NODE_EXTRA_CA_CERTS: rootPath },
+    env: extraAuthority === null ? withoutExtraAuthorities() : { ...process.env, NODE_EXTRA_CA_CERTS: extraAuthority },
     stdio: ["ignore", "pipe", "pipe"],
   });
   children.push(child);
@@ -255,6 +277,29 @@ function runChild(script: string, config: unknown, rootPath: string, label: stri
   );
 }
 
+function withoutExtraAuthorities(): NodeJS.ProcessEnv {
+  const environment = { ...process.env };
+  delete environment.NODE_EXTRA_CA_CERTS;
+  return environment;
+}
+
+function rootAnswer(port: number, root: string): Promise<{ status: number; text: string }> {
+  return new Promise((resolveAnswer, reject) => {
+    const outgoing = httpsRequest(
+      { host: "127.0.0.1", port, path: RELAY_ROOT_PATH, method: "GET", ca: root, servername: "localhost" },
+      (answer) => {
+        const chunks: Buffer[] = [];
+        answer.on("data", (chunk: Buffer) => chunks.push(chunk));
+        answer.on("end", () =>
+          resolveAnswer({ status: answer.statusCode ?? 0, text: Buffer.concat(chunks).toString("utf8") }),
+        );
+      },
+    );
+    outgoing.on("error", reject);
+    outgoing.end();
+  });
+}
+
 function result(results: ChildResult[], name: string): ChildResult {
   const found = results.find((entry) => entry.name === name);
   assert.ok(found, `No result for ${name}.`);
@@ -266,12 +311,18 @@ const dataDirectory = join(work, "data");
 const childOutputs: string[] = [];
 let relayLog: string[] = [];
 let proxy: Awaited<ReturnType<typeof startProxy>> | null = null;
+let oldProxy: Awaited<ReturnType<typeof startProxy>> | null = null;
 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
 try {
-  const [relayPort, healthPort, proxyPort] = await Promise.all([freePort(), freePort(), freePort()]);
+  const [relayPort, healthPort, proxyPort, oldProxyPort] = await Promise.all([
+    freePort(),
+    freePort(),
+    freePort(),
+    freePort(),
+  ]);
   const publicUrl = `wss://localhost:${proxyPort}${RELAY_PATH}`;
   const environment: Record<string, string> = { RELAY_DATA_DIR: dataDirectory, RELAY_PUBLIC_URL: publicUrl };
   for (const args of [
@@ -292,12 +343,19 @@ try {
   });
   relayLog = relay.log;
   proxy = await startProxy({ port: proxyPort, relayPort, dataDirectory, root });
+  oldProxy = await startProxy({ port: oldProxyPort, relayPort, dataDirectory, root, withoutRootRoute: true });
 
   const desktop = makeCode(environment, "alice", "laptop");
   const otherRoot = withRoot(
     makeCode(environment, "alice", "tablet").text,
     createHash("sha256").update("not the root").digest("base64url"),
   );
+  const otherRootSecret = parseRelayJoinCode(otherRoot)?.code ?? "";
+  const oldServer = makeCode(environment, "alice", "phone").text.replace(
+    /server=[^&]+/u,
+    `server=localhost:${oldProxyPort}`,
+  );
+  const oldServerSecret = parseRelayJoinCode(oldServer)?.code ?? "";
   const tampered = makeCode(environment, "alice", "desk");
   tamperedCodes.add(tampered.code.code);
   const phone = makeCode(environment, "bob", "phone");
@@ -312,21 +370,31 @@ try {
         { name: "reuse", code: desktop.text, expect: "code_unknown" },
         { name: "root", code: otherRoot, expect: "root_mismatch" },
         { name: "tampered", code: tampered.text, expect: "key_mismatch" },
+        { name: "old_server", code: oldServer, expect: "server_untrusted" },
       ] satisfies ChildStep[],
     },
-    rootPath,
+    null,
     "desktop",
   );
 
-  await check("(a) the desktop join stores an encrypted identity whose control socket gets welcome", () => {
-    const joined = result(desktopResults, "join");
-    assert.equal(joined.status, "online", JSON.stringify(joined));
-    assert.equal(joined.stored, true);
-    assert.equal(joined.plainKeyInStore, false, "The stored identity must keep the private key encrypted.");
-    assert.equal(joined.team, TEAM);
-    assert.equal(joined.user, "alice");
-    assert.match(joined.keyId ?? "", /^[A-Za-z0-9_-]{43}$/u);
+  await check("the relay serves its root certificate at /v1/root to anyone", async () => {
+    const answer = await rootAnswer(relayPort, root);
+    assert.equal(answer.status, 200);
+    assert.equal(answer.text.trim(), root.trim());
   });
+
+  await check(
+    "(a) a desktop with no extra authority joins a server that has only its own root, and gets welcome",
+    () => {
+      const joined = result(desktopResults, "join");
+      assert.equal(joined.status, "online", JSON.stringify(joined));
+      assert.equal(joined.stored, true);
+      assert.equal(joined.plainKeyInStore, false, "The stored identity must keep the private key encrypted.");
+      assert.equal(joined.team, TEAM);
+      assert.equal(joined.user, "alice");
+      assert.match(joined.keyId ?? "", /^[A-Za-z0-9_-]{43}$/u);
+    },
+  );
 
   await check("(a) a second use of the same code fails with code_unknown, and nothing is stored", () => {
     const reused = result(desktopResults, "reuse");
@@ -338,7 +406,18 @@ try {
     const refused = result(desktopResults, "root");
     assert.equal(refused.code, "root_mismatch", JSON.stringify(refused));
     assert.equal(refused.stored, false);
+    assert.ok(otherRootSecret !== "" && !sentCodes.has(otherRootSecret), "The code must not reach the server.");
   });
+
+  await check(
+    "(f) a server with only its own root and no /v1/root gives server_untrusted, and the code is not sent",
+    () => {
+      const refused = result(desktopResults, "old_server");
+      assert.equal(refused.code, "server_untrusted", JSON.stringify(refused));
+      assert.equal(refused.stored, false);
+      assert.ok(oldServerSecret !== "" && !sentCodes.has(oldServerSecret), "The code must not reach the server.");
+    },
+  );
 
   await check("(d) a response with a changed certificate (test proxy) is refused and nothing is stored", () => {
     const refused = result(desktopResults, "tampered");
@@ -353,7 +432,7 @@ try {
     "phone",
   );
 
-  await check("(b) the phone path joins and connects in a process with no crypto.subtle", () => {
+  await check("(b) the phone path joins a server with a trusted certificate in a process with no crypto.subtle", () => {
     const joined = result(phoneResults, "phone");
     assert.equal(joined.subtle, "undefined");
     assert.equal(joined.status, "online", JSON.stringify(joined));
@@ -392,6 +471,7 @@ try {
   checks.push({ name: "setup", passed: false, error: error instanceof Error ? error.message : inspect(error) });
 } finally {
   proxy?.close();
+  oldProxy?.close();
   for (const child of children) if (child.exitCode === null && child.pid !== undefined) child.kill("SIGTERM");
   rmSync(work, { recursive: true, force: true });
 }

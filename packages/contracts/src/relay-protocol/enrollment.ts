@@ -20,6 +20,8 @@ import {
 
 export const RELAY_ENROLL_VERSION = 1;
 export const RELAY_ENROLL_PATH = "/v1/enroll";
+export const RELAY_ROOT_PATH = "/v1/root";
+export const RELAY_ROOT_RESPONSE_BYTES_LIMIT = 16 * 1024;
 export const RELAY_ENROLL_CONTEXT = "openbot-relay-enroll-v1";
 export const RELAY_ENROLL_REQUEST_BYTES_LIMIT = 8 * 1024;
 export const RELAY_JOIN_CODE_PREFIX = "openbot-nc://enroll?";
@@ -185,6 +187,24 @@ export function relayEnrollUrl(code: Pick<RelayJoinCode, "server">): string {
   return `https://${code.server}${RELAY_ENROLL_PATH}`;
 }
 
+export function relayRootUrl(code: Pick<RelayJoinCode, "server">): string {
+  return `https://${code.server}${RELAY_ROOT_PATH}`;
+}
+
+export async function relayRootOfCode(
+  rootPem: string,
+  code: Pick<RelayJoinCode, "root">,
+  crypto: RelayEnrollCrypto,
+): Promise<string | null> {
+  const root = readRelayPemCertificate(rootPem);
+  if (!root?.authority) return null;
+  return (await relayRootFingerprint(root, crypto)) === code.root ? rootPem.trim() : null;
+}
+
+function relayRootFingerprint(root: RelayX509Certificate, crypto: RelayEnrollCrypto): Promise<string> {
+  return crypto.sha256(root.der).then(relayBase64Url);
+}
+
 export function relayEnrollTranscript(input: {
   secretHash: Uint8Array;
   server: string;
@@ -274,7 +294,7 @@ export async function relayEnrollRefusal(check: RelayEnrollCheck): Promise<Relay
   const offered = response.chain.map(readRelayPemCertificate);
   const chain = offered.filter((certificate) => certificate !== null);
   if (!leaf || !root || leaf.authority || chain.length !== offered.length) return "unreadable";
-  if (relayBase64Url(await crypto.sha256(root.der)) !== code.root) return "root_mismatch";
+  if ((await relayRootFingerprint(root, crypto)) !== code.root) return "root_mismatch";
   if (!isP256(leaf) || !sameBytes(leaf.spki, check.publicKey)) return "key_mismatch";
   const names = relaySubjectNames(leaf.subject.attributes);
   const rootKeyId = relayBase64Url(await crypto.sha256(root.spki));

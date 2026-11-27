@@ -1,5 +1,5 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
-import { RELAY_ENROLL_PATH } from "@openbot/contracts/relay-protocol/enrollment";
+import { RELAY_ENROLL_PATH, RELAY_ROOT_PATH } from "@openbot/contracts/relay-protocol/enrollment";
 import { RELAY_SOCKET_MESSAGE_BYTES_LIMIT } from "@openbot/contracts/relay-protocol/hub";
 import { RELAY_PATH } from "@openbot/contracts/relay-protocol/messages";
 import type { ServerWebSocket } from "bun";
@@ -22,10 +22,17 @@ interface RelayServer {
   stop(): Promise<void>;
 }
 
+const ROOT_HEADERS: Readonly<Record<string, string>> = {
+  "Content-Type": "application/x-pem-file",
+  "Access-Control-Allow-Origin": "*",
+  "Cache-Control": "no-cache",
+  "X-Content-Type-Options": "nosniff",
+};
+
 export function startRelayServer(
   config: RelayConfig,
   service: RelayService,
-  clientAuthorities: string[],
+  rootPem: string,
   enroll: EnrollHandler | null = null,
 ): RelayServer {
   const tls = config.tls;
@@ -38,15 +45,14 @@ export function startRelayServer(
           tls: {
             cert: Bun.file(tls.certificatePath),
             key: Bun.file(tls.privateKeyPath),
-            ...(tls.clientCertificatesRequired
-              ? { ca: clientAuthorities, requestCert: true, rejectUnauthorized: true }
-              : {}),
+            ...(tls.clientCertificatesRequired ? { ca: [rootPem], requestCert: true, rejectUnauthorized: true } : {}),
           },
         }
       : {}),
     fetch(request, bunServer) {
       const { pathname } = new URL(request.url);
       if (webClient && isWebClientPath(pathname)) return webClient(request);
+      if (pathname === RELAY_ROOT_PATH) return rootResponse(request, rootPem);
       if (pathname !== RELAY_PATH && (pathname !== RELAY_ENROLL_PATH || enroll === null)) {
         return new Response("Not found", { status: 404 });
       }
@@ -145,4 +151,11 @@ function prometheusMetrics(service: RelayService): string {
 
 function sameSecret(actual: string, expected: string): boolean {
   return timingSafeEqual(createHash("sha256").update(actual).digest(), createHash("sha256").update(expected).digest());
+}
+
+function rootResponse(request: Request, rootPem: string): Response {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return new Response("Method not allowed", { status: 405, headers: { ...ROOT_HEADERS, Allow: "GET, HEAD" } });
+  }
+  return new Response(request.method === "HEAD" ? null : `${rootPem.trim()}\n`, { headers: ROOT_HEADERS });
 }

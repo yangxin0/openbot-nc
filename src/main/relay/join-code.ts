@@ -13,6 +13,7 @@ import {
   relayJoinError,
 } from "@openbot/team-client/relay-join";
 import { Effect } from "effect";
+import { relayJoinFetch } from "./join-trust";
 
 const ENROLL_DEADLINE_MS = 30_000;
 const P256_CURVE = "prime256v1";
@@ -38,6 +39,12 @@ export const joinRelayWithCode = Effect.fn("RelayJoinCode.join")(function* (
     },
     catch: joinFailure("key_unavailable"),
   });
+  const send =
+    options.fetch ??
+    (yield* Effect.tryPromise({
+      try: (signal) => relayJoinFetch(code, AbortSignal.any([signal, AbortSignal.timeout(ENROLL_DEADLINE_MS)])),
+      catch: joinFailure("network"),
+    }));
   const response = yield* Effect.tryPromise({
     try: (signal) =>
       enrollRelayKey(
@@ -49,7 +56,7 @@ export const joinRelayWithCode = Effect.fn("RelayJoinCode.join")(function* (
         {
           crypto: webRelayCrypto,
           signal: AbortSignal.any([signal, AbortSignal.timeout(ENROLL_DEADLINE_MS)]),
-          ...(options.fetch ? { fetch: options.fetch } : {}),
+          fetch: send,
           ...(options.label === undefined ? {} : { label: options.label }),
           ...(options.now ? { now: options.now() } : {}),
         },

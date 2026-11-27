@@ -167,6 +167,8 @@ export const messages = defineMessages("error.remote", {
   "error.remote.relayJoinKeyUnavailable": "OpenBot-NC cannot make a key on this device.",
   "error.remote.relayJoinUnreachable":
     "OpenBot-NC cannot connect to the server of this join code. Check the network and try again.",
+  "error.remote.relayJoinServerUntrusted":
+    "This device does not trust the certificate of the server of this join code. Update the central server, or ask for an identity file.",
   "error.remote.relayJoinInvalidResponse": "The server of this join code sent an answer that OpenBot-NC cannot read.",
   "error.remote.relayJoinRefused": "The server refused the join request. Make sure that OpenBot-NC is up to date.",
   "error.remote.relayJoinCodeUnknown": "This code is not valid any more. Ask for a new one.",

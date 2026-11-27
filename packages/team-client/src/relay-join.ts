@@ -44,6 +44,7 @@ export const RELAY_JOIN_ERROR_CODES = [
   "other_server",
   "key_unavailable",
   "network",
+  "server_untrusted",
   "invalid_response",
   ...RELAY_ENROLL_ERROR_CODES,
   ...RELAY_JOIN_REFUSALS,
@@ -55,6 +56,7 @@ export const RELAY_JOIN_ERROR_TEXT = {
   other_server: "error.remote.relayJoinOtherServer",
   key_unavailable: "error.remote.relayJoinKeyUnavailable",
   network: "error.remote.relayJoinUnreachable",
+  server_untrusted: "error.remote.relayJoinServerUntrusted",
   invalid_response: "error.remote.relayJoinInvalidResponse",
   invalid_request: "error.remote.relayJoinRefused",
   code_unknown: "error.remote.relayJoinCodeUnknown",
@@ -147,8 +149,8 @@ export async function enrollRelayKey(
     });
     status = response.status;
     text = await response.text();
-  } catch {
-    throw relayJoinError("network");
+  } catch (error) {
+    throw error instanceof RelayJoinError ? error : relayJoinError("network");
   }
   if (status < 200 || status > 299) {
     const refusal = decodeJsonText(text, decodeRelayEnrollError);

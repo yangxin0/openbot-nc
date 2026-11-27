@@ -240,7 +240,7 @@ async function serve(config: RelayConfig): Promise<void> {
   const enrollment = new Enrollment({ authority, dataDirectory: config.dataDirectory, publicUrl: config.publicUrl });
   await run(enrollment.cleanup());
   const enroll = enrollment.server === null ? null : createEnrollHandler(enrollment, config.enrollLimits);
-  const server = startRelayServer(config, service, [rootPem], enroll);
+  const server = startRelayServer(config, service, rootPem, enroll);
   const logins = new AdminLogins(config.dataDirectory);
   if (config.admin !== null) await run(logins.cleanup());
   const admin =

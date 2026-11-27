@@ -943,6 +943,22 @@
     "tr",
     "zh"
   ],
+  "error.remote.relayJoinServerUntrusted": [
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "he",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "tr",
+    "zh"
+  ],
   "error.remote.relayJoinUnavailable": [
     "ar",
     "de",

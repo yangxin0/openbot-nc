@@ -13,3 +13,11 @@
   before you sign in. The choice is the same as Settings > Preferences > Theme.
 - `ca init` also makes a team named "Default", so one person can make join codes at once with
   `ca code --team Default --user <user>`. `ca team add` still adds more teams.
+- Join codes work with a central server that has only its own root certificate, for example a server
+  with an IP address and no domain. The desktop and the Linux server read the root from the new
+  `/v1/root` address of the server and trust it only when it matches the root in the code. Before,
+  the join failed with "cannot connect to the server". The central server must also be on this
+  version. The phone, the browser extension and the web client still need a certificate that the
+  device trusts.
+- A join to a server whose certificate this device does not trust now says so. Before, it said to
+  check the network.
