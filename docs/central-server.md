@@ -236,7 +236,10 @@ older version) gets the system authorities only; when they do not accept its cer
 stops with `server_untrusted` and the code is not sent. The shared steps are `relayJoinTrustedFetch` in
 `packages/team-client/src/relay-join.ts`; the desktop transport is `src/main/relay/join-trust.ts`. On
 iOS the native module `apps/mobile/modules/relay-tls` does the requests and opens the relay
-WebSocket with TLS checked against the system authorities and the team root.
+WebSocket with TLS checked against the system authorities and the team root. It uses the Network
+framework, not `URLSession`: App Transport Security applies to `URLSession` also when the app checks
+the server trust itself, so it refused the team root on the iPhone, and an IP address cannot be an ATS
+exception. ATS stays on for all other connections of the app.
 
 `/v1/root` is on the main listener, answers the root certificate as PEM to any origin, and holds no
 secret. Use it also to install the root on a device that must trust the server.
