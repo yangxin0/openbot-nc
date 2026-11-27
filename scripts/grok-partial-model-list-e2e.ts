@@ -4,6 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { AGENT_PROVIDERS } from "@openbot/contracts/ipc";
+import { teeLogLines } from "@openbot/logging";
 import { Effect } from "effect";
 import type { AgentBrowserHost } from "../src/backend/agent/turn-lifecycle";
 import { installFakeAgent, readJsonl } from "./provider-fakes/host";
@@ -20,6 +21,7 @@ const FALLBACK = "grok-4.6";
 
 process.env.HOME = home;
 process.env.OPENBOT_GROK_PATH = fakeGrok;
+process.env.OPENBOT_LOG_LEVEL = "info";
 mkdirSync(home, { recursive: true });
 
 const { AgentService } = await import("../src/backend/agent-service");
@@ -94,9 +96,22 @@ const idle = (agentId: string) =>
   !agents.listQueue(agentId).deliveries.some((delivery) => ["queued", "starting", "running"].includes(delivery.status));
 const setups = async () => (await readJsonl<SetupLine>(logPath)).filter((line) => line.event === "setup");
 
-async function restartGrok(partial: number, markLists = false): Promise<Set<number>> {
+let grokStarts = 1;
+let grokLists = 0;
+const stopListTee = teeLogLines(["provider-runtime"], (line) => {
+  if (line.includes("A provider listed its models.") && line.includes('"provider":"grok"')) grokLists += 1;
+});
+const eachStartChecked = () =>
+  waitFor("Grok to list its models again after each start", async () => grokLists >= 2 * grokStarts);
+
+async function restartGrok(
+  partial: number,
+  options: { markLists?: boolean; duringCheck?: boolean } = {},
+): Promise<Set<number>> {
+  if (!options.duringCheck) await eachStartChecked();
   const before = new Set((await setups()).map((line) => line.pid));
-  writeFileSync(controlPath, JSON.stringify({ partial, markLists }));
+  writeFileSync(controlPath, JSON.stringify({ partial, markLists: options.markLists === true }));
+  grokStarts += 1;
   await runCauseEffect(agents.restartProvider("grok"));
   await waitFor("the restart to end", async () => {
     const row = agents.getStatus().providers?.find((provider) => provider.id === "grok");
@@ -143,7 +158,7 @@ try {
 
   const first = await restartGrok(Number.MAX_SAFE_INTEGER);
   await listsAfter("two short lists", first, (fresh) => fresh.length >= 2);
-  const second = await restartGrok(3);
+  const second = await restartGrok(3, { duringCheck: true });
   const secondLists = await listsAfter(
     "a list with the model after the second restart",
     second,
@@ -152,7 +167,7 @@ try {
   report.restartDuringWait = { setups: secondLists, model: modelOf(agent.id) };
   assert.equal(report.restartDuringWait.model, MODEL, "A replaced process's activation does not move the agent.");
 
-  const once = await restartGrok(Number.MAX_SAFE_INTEGER, true);
+  const once = await restartGrok(Number.MAX_SAFE_INTEGER, { markLists: true });
   const startMark = await waitFor("the first list of the start", async () => listMark());
   await waitFor("OpenBot to read the list again", async () => {
     const mark = listMark();
@@ -170,6 +185,7 @@ try {
 } catch (error) {
   report.error = error instanceof Error ? (error.stack ?? error.message) : String(error);
 } finally {
+  stopListTee();
   await runCauseEffect(agents.stop()).catch(() => {});
   database.close();
   mkdirSync(OUT, { recursive: true });

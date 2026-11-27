@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -195,6 +196,14 @@ function snapshot(directory: string): Record<string, { size: number; mtimeMs: nu
   return files;
 }
 
+async function createClosedDatabase(userData: string): Promise<string> {
+  const database = new OpenBotDatabase(userData);
+  await runCauseEffect(database.initialize());
+  const path = database.path;
+  database.close();
+  return path;
+}
+
 function rpcResponse(requestId: string) {
   return (data: string) => {
     try {
@@ -342,10 +351,10 @@ const peers: InstanceType<typeof TeamV2HostPeer>[] = [];
 
 try {
   mkdirSync(userData, { recursive: true });
-  const database = new OpenBotDatabase(userData);
-  await runCauseEffect(database.initialize());
-  const databaseFile = relative(userData, database.path);
-  database.close();
+  const databasePath = await createClosedDatabase(userData);
+  Bun.gc(true);
+  assert.ok(!existsSync(`${databasePath}-wal`), "The setup connection of the database did not close.");
+  const databaseFile = relative(userData, databasePath);
   const setup = new TeamStore(join(userData, TEAM_STORE_FILE));
   await runCauseEffect(setup.initialize());
   const identity = await runCauseEffect(setup.configure("E2E Host", OWNER.username, OWNER.password));

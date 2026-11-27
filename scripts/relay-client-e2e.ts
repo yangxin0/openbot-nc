@@ -495,7 +495,9 @@ try {
     const seenByAlice = await untilRoster(aliceControl, "alice sees two members", (members) => members.length === 2);
     const seenByBob = await untilRoster(bobControl, "bob sees two members", (members) => members.length === 2);
     assert.deepEqual(
-      seenByAlice.map((member) => [member.user, member.device, member.hosting]),
+      [...seenByAlice]
+        .sort((first, second) => first.user.localeCompare(second.user))
+        .map((member) => [member.user, member.device, member.hosting]),
       [
         ["alice", "laptop", false],
         ["bob", "desk", false],
@@ -503,7 +505,13 @@ try {
     );
     assert.deepEqual(
       seenByBob.map((member) => member.keyId),
-      [aliceKeyId, bobKeyId],
+      seenByAlice.map((member) => member.keyId),
+      "The two members see the roster in different orders.",
+    );
+    assert.deepEqual(
+      seenByAlice.map((member) => member.connectedAt),
+      seenByAlice.map((member) => member.connectedAt).sort((first, second) => first - second),
+      "The roster is not in the order of connection.",
     );
     assert.deepEqual(aliceControl.self(), { keyId: aliceKeyId, user: "alice", device: "laptop" });
     assert.equal(aliceControl.team()?.name, "Alpha Team");
