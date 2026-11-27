@@ -168,6 +168,7 @@ interface Connection {
   openedAt: number | null;
   welcomedAt: number | null;
   helloSent: boolean;
+  announced: { hosting: boolean; label: string | null } | null;
   proven: boolean;
   closed: boolean;
   lastSentAt: number;
@@ -368,14 +369,17 @@ export class RelayHubClient {
       label: presence.label === undefined ? this.#presence.label : relayLabel(presence.label),
     };
     const connection = this.#connection;
-    if (connection?.welcomedAt !== null && connection) {
-      this.#sendControl(connection, {
-        type: "presence",
-        version: RELAY_PROTOCOL_VERSION,
-        hosting: this.#presence.hosting,
-        label: this.#presence.label,
-      });
-    }
+    if (connection?.welcomedAt !== null && connection) this.#sendPresence(connection);
+  }
+
+  #sendPresence(connection: Connection): void {
+    connection.announced = { ...this.#presence };
+    this.#sendControl(connection, {
+      type: "presence",
+      version: RELAY_PROTOCOL_VERSION,
+      hosting: this.#presence.hosting,
+      label: this.#presence.label,
+    });
   }
 
   checkLiveness(timeoutMs: number = RELAY_HUB_PING_ANSWER_MS): void {
@@ -509,6 +513,7 @@ export class RelayHubClient {
       openedAt: null,
       welcomedAt: null,
       helloSent: false,
+      announced: null,
       proven: false,
       closed: false,
       lastSentAt: startedAt,
@@ -581,6 +586,7 @@ export class RelayHubClient {
       messageKey: key.text,
       messageKeySignature: key.signature,
     };
+    connection.announced = { hosting: fields.hosting, label: fields.label };
     const signature = await this.#options.sign(relayHelloTranscript(fields)).catch(() => null);
     if (connection.closed) return;
     if (!signature) {
@@ -654,6 +660,10 @@ export class RelayHubClient {
       connection.welcomedAt = this.#now();
       if (connection.deadline) clearTimeout(connection.deadline);
       connection.deadline = null;
+      const announced = connection.announced;
+      if (announced?.hosting !== this.#presence.hosting || announced.label !== this.#presence.label) {
+        this.#sendPresence(connection);
+      }
       this.#generation += 1;
       this.#roster.clear();
       for (const member of message.roster) this.#roster.set(member.keyId, member);

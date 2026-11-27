@@ -649,6 +649,7 @@ try {
     petra: issue(environment, work, "petra", "phone"),
     rita: issue(environment, work, "rita", "laptop"),
     raw: issue(environment, work, "raw", "laptop"),
+    dana: issue(environment, work, "dana", "laptop"),
   };
   const hostKeyId = keyIdOf(bundles.host);
 
@@ -1128,6 +1129,25 @@ try {
     const hello = rawHello(bundles.raw, Date.now(), randomBytes(32).toString("base64url"));
     assert.match(await helloAnswer(relayUrl, hello), /"welcome"/u);
     assert.match(await helloAnswer(relayUrl, hello), /"error".*used before/u);
+  });
+
+  await check("A sharing change made while the app signs in reaches the server", async () => {
+    const key = createPrivateKey(bundles.dana.privateKey);
+    let signs = 0;
+    const dana: RelayHubClient = hubClient(bundles.dana, {
+      sign: async (data) => {
+        signs += 1;
+        if (signs === 2) dana.setPresence({ hosting: true });
+        return sign("sha256", data, { key, dsaEncoding: "ieee-p1363" });
+      },
+    });
+    dana.start();
+    try {
+      await until("alice sees dana sharing", () => aliceControl.member(keyIdOf(bundles.dana))?.hosting === true);
+      assert.equal(signs, 2, "The hello was not the second signature.");
+    } finally {
+      dana.stop();
+    }
   });
 
   await check(
