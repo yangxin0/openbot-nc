@@ -26,7 +26,7 @@ export interface FirstRunFlowProps extends SetupProviderProps {
   teamName?: string | null;
   teamBusy?: boolean;
   teamError?: string | null;
-  onConnectTeam?: () => void;
+  onConnectTeam?: (() => void) | undefined;
   onJoinTeamWithCode?: (() => void) | undefined;
 }
 

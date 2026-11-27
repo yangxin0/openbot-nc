@@ -533,7 +533,7 @@ async function appDiagnostics(app: RunningApp, page: Page, prefix: string): Prom
           name: server.name,
           active: server.active,
           state: server.state,
-          relayHost: server.relayHost,
+          ...(server.relayHost ? { relayHost: server.relayHost } : {}),
         })),
         readyState: document.readyState,
       }))

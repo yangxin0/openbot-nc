@@ -2,7 +2,7 @@
   "slug": "mem0",
   "name": "Mem0",
   "tagline": "Memory layer for AI agents",
-  "description": "Mem0 gives agents a long-term memory in your Mem0 account. Agents add facts and preferences, search them by meaning, and update or delete them. Other AI tools that you connect to Mem0 share the same memories. To make Mem0 the only memory of an agent, turn off OpenBot memory in the agent's settings. What agents save goes to your Mem0 account.",
+  "description": "Mem0 gives agents a long-term memory in your Mem0 account. Agents add facts and preferences, search them by meaning, and update or delete them. Other AI tools that you connect to Mem0 share the same memories. To make Mem0 the only memory of an agent, turn off OpenBot-NC memory in the agent's settings. What agents save goes to your Mem0 account.",
   "category": "productivity",
   "creatorName": "Mem0",
   "iconUrl": "https://app.mem0.ai/apple-icon.png",

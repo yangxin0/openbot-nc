@@ -66,19 +66,19 @@
       "slug": "honcho",
       "version": "1.0.0",
       "featured": false,
-      "detailSha256": "644f128f33b1196b2937804d5a44a1174667447881515b235f03a767f03c5ae3"
+      "detailSha256": "df227cef9db01b7255934979d4a2522d7178b2b827892511e5c676205fe40acf"
     },
     {
       "slug": "hindsight",
       "version": "1.0.0",
       "featured": false,
-      "detailSha256": "8ecc544dca109f960949c8ae554a61fc49246c4fa61d419b139ecbdae1f95b37"
+      "detailSha256": "e4a06dfe2362c504a2f29ff18d6f2753d73fedae1a2858c2d69168635c943c5a"
     },
     {
       "slug": "mem0",
       "version": "1.0.0",
       "featured": false,
-      "detailSha256": "1e2cdabd40b600c6853d645cba552d619ce92ab196a3c52ad6493ed6f506e0a9"
+      "detailSha256": "dc3907e58a5d5172dcf2e5237c6d9186c3bfd0847fa95486282d79152e2f4b7c"
     },
     {
       "slug": "figma",
@@ -90,7 +90,7 @@
       "slug": "paper",
       "version": "1.0.1",
       "featured": false,
-      "detailSha256": "d15a140eec6ab0a0a6e79e354ccaba88d035435112bdb7a044528b2a4c7a1548"
+      "detailSha256": "4208321d2f14681c4e5883395782a7e9b61abd44c419e08583fc85a044f3aed6"
     },
     {
       "slug": "higgsfield",
@@ -114,7 +114,7 @@
       "slug": "apple-apps",
       "version": "1.1.1",
       "featured": false,
-      "detailSha256": "f65b7f2d31d489f42dd45f2b888959bd9d90ff6cf1abd9568ecc5fb58cf81b7b"
+      "detailSha256": "8917871c8cbabc1fd1c8b8128dfef1034bdd8d3e8e53ccf031c133459f73457f"
     },
     {
       "slug": "sentry",
