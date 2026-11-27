@@ -316,34 +316,84 @@
   stroke-width: var(--openbot-icon-stroke);
 }
 
-.web-identity {
+.web-identity.account-login-screen {
+  grid-template-rows: minmax(min-content, 1fr) auto;
+}
+
+.web-identity-shell.account-login-shell {
+  width: min(100%, 380px);
+}
+
+.web-identity-panel > .ui-alert {
+  margin-top: var(--openbot-space-6);
+  text-align: start;
+}
+
+.web-identity-panel > .relay-join-form {
+  margin-top: 28px;
+}
+
+.web-identity .relay-join-form .ui-input {
+  height: 44px;
+  font-size: var(--openbot-text-lg);
+}
+
+.web-identity .relay-join-submit.ui-button {
+  height: 44px;
+  justify-self: stretch;
+  margin-top: var(--openbot-space-1);
+  font-weight: var(--openbot-weight-semibold);
+}
+
+.web-identity-file {
   display: grid;
-  height: 100%;
-  overflow-y: auto;
-  place-items: center;
-  padding: var(--openbot-space-8) var(--openbot-space-4);
+  gap: var(--openbot-space-4);
+  margin-top: var(--openbot-space-6);
+  padding-top: var(--openbot-space-4);
+  border-top: 1px solid var(--openbot-border-strong);
+}
+
+.web-identity-file-toggle.ui-button {
+  justify-self: center;
+  gap: var(--openbot-space-1-5);
+}
+
+.web-identity-file-chevron {
+  transition: rotate var(--openbot-duration-fast) var(--openbot-ease-out);
+}
+
+.web-identity-file-toggle[aria-expanded="true"] .web-identity-file-chevron {
+  rotate: 180deg;
 }
 
 .web-identity-form {
   display: flex;
   flex-direction: column;
   gap: var(--openbot-space-4);
+  text-align: start;
 }
 
-.web-identity-or {
-  padding-top: var(--openbot-space-2);
-  border-top: 1px solid var(--openbot-border-strong);
-  text-align: center;
+.web-identity-form[hidden] {
+  display: none;
 }
 
 .web-identity-text {
   font-family: var(--openbot-font-mono);
-  font-size: var(--openbot-text-xs);
+  font-size: var(--openbot-text-sm);
 }
 
 .web-identity-language.ui-button {
-  align-self: center;
+  align-self: end;
+  justify-self: center;
+  margin-top: var(--openbot-space-6);
   color: var(--openbot-text-muted);
+  -webkit-app-region: no-drag;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .web-identity-file-chevron {
+    transition: none;
+  }
 }
 
 .web-other-tab-window {

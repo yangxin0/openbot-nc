@@ -805,6 +805,11 @@ try {
     const browser = await chromium.launch({ channel: "chrome", headless: true });
     browsers.push(browser);
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const signedOutPage = await context.newPage();
+    await signedOutPage.goto(`${adminOrigin()}/admin`);
+    await signedOutPage.locator("#signed-out").waitFor({ timeout: WAIT_MS });
+    await screenshot(signedOutPage, "sign-in.png");
+    await signedOutPage.close();
     const page = await context.newPage();
     const problems: string[] = [];
     await page.exposeFunction("reportCspViolation", (text: string) => problems.push(`CSP: ${text}`));

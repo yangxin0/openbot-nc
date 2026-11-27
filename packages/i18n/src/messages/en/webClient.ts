@@ -63,13 +63,12 @@ export const messages = defineMessages("webClient", {
   "webClient.error.saveEndpointOffline": "Connect to your server to save an endpoint.",
   "webClient.error.removeEndpointOffline": "Connect to your server to remove an endpoint.",
   "webClient.identity.title": "Connect to your team",
-  "webClient.identity.description":
-    "Paste the identity file that the person who runs your central server gave you, or choose the file.",
+  "webClient.identity.description": "Join with the one-time code from the person who runs your central server.",
   "webClient.identity.pasteLabel": "Identity file text",
   "webClient.identity.privacy": "The private key stays in this browser. OpenBot-NC cannot read it back or send it.",
   "webClient.identity.import": "Import identity",
   "webClient.identity.chooseFile": "Choose file",
-  "webClient.identity.fileOption": "Or use an identity file",
+  "webClient.identity.fileOption": "Use an identity file",
   "webClient.identity.empty": "Paste the text of the identity file first.",
   "webClient.identity.error.otherServer":
     "This identity file is for a different central server. Open OpenBot-NC at the address of that server.",

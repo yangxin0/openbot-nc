@@ -30,11 +30,15 @@ async function api(path, body) {
   return data;
 }
 
-function notice(message) {
+function notice(message, tone = "info") {
   const element = byId("notice");
-  element.textContent = message;
+  byId("notice-text").textContent = message;
+  element.dataset.tone = tone;
   element.hidden = message === "";
 }
+
+const STATUS_TONES = { valid: "success", revoked: "danger", expired: "warning" };
+const STATUS_LABELS = { valid: "Valid", revoked: "Revoked", expired: "Expired" };
 
 function time(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "-";
@@ -67,8 +71,53 @@ function button(text, className, onClick) {
   const element = document.createElement("button");
   element.type = "button";
   element.textContent = text;
-  if (className) element.className = className;
+  element.className = className ? `button ${className}` : "button";
   element.addEventListener("click", onClick);
+  return element;
+}
+
+function pill(text, tone, dot) {
+  const element = document.createElement("span");
+  element.className = "pill";
+  element.dataset.tone = tone;
+  if (dot) {
+    const mark = document.createElement("span");
+    mark.className = "pill-dot";
+    mark.setAttribute("aria-hidden", "true");
+    element.append(mark);
+  }
+  element.append(text);
+  return element;
+}
+
+function pillCell(row, className, ...pills) {
+  const element = document.createElement("td");
+  if (className) element.className = className;
+  const holder = document.createElement("div");
+  holder.className = "pills";
+  holder.replaceChildren(...pills);
+  element.append(holder);
+  row.append(element);
+  return element;
+}
+
+function statusPill(status) {
+  return pill(STATUS_LABELS[status] ?? status, STATUS_TONES[status] ?? "muted", false);
+}
+
+function stackCell(row, main, sub, subClassName) {
+  const element = document.createElement("td");
+  const first = document.createElement("div");
+  first.className = "cell-main";
+  first.textContent = main === null || main === undefined || main === "" ? "-" : String(main);
+  element.append(first);
+  if (sub) {
+    const second = document.createElement("div");
+    second.className = subClassName ? `cell-sub ${subClassName}` : "cell-sub";
+    second.textContent = sub;
+    element.append(second);
+  }
+  row.append(element);
   return element;
 }
 
@@ -79,54 +128,85 @@ function emptyRow(body, columns, text) {
   body.replaceChildren(row);
 }
 
-function showSignedOut(message) {
+function showSignedOut(message, tone = "info") {
   state.csrf = "";
+  notice("");
   byId("signed-in").hidden = true;
-  byId("sign-out").hidden = true;
-  byId("refresh").hidden = true;
   byId("signed-out").hidden = false;
-  if (message) notice(message);
+  const element = byId("signed-out-notice");
+  element.textContent = message ?? "";
+  element.dataset.tone = tone;
+  element.hidden = !message;
 }
 
 function showSignedIn() {
   byId("signed-out").hidden = true;
   byId("signed-in").hidden = false;
-  byId("sign-out").hidden = false;
-  byId("refresh").hidden = false;
+}
+
+function renderStats(overview) {
+  const stats = [
+    ["Members online", overview.membersOnline, overview.membersOnline > 0],
+    ["Teams", overview.teams ?? "-", false],
+    ["Open join codes", overview.openCodes ?? "-", false],
+  ];
+  byId("stats").replaceChildren(
+    ...stats.map(([label, value, live]) => {
+      const tile = document.createElement("div");
+      tile.className = "stat";
+      const name = document.createElement("span");
+      name.className = "stat-label";
+      name.textContent = label;
+      const number = document.createElement("span");
+      number.className = "stat-value";
+      number.textContent = String(value);
+      if (live) {
+        const mark = document.createElement("span");
+        mark.className = "stat-live";
+        mark.setAttribute("aria-hidden", "true");
+        number.append(mark);
+      }
+      tile.append(name, number);
+      return tile;
+    }),
+  );
 }
 
 function renderOverview(overview) {
-  const list = byId("overview");
+  renderStats(overview);
   const identity = overview.serverIdentity;
   const facts = [
-    ["Relay address", overview.relayUrl ?? "not set"],
-    [
-      "Join codes",
-      overview.joinServer ? `enroll at https://${overview.joinServer}/v1/enroll` : "off (no wss: address)",
-    ],
-    ["Root fingerprint (SHA-256)", overview.rootFingerprint],
-    ["Root in join codes", overview.joinRootFingerprint],
-    ["Root expires", time(overview.rootExpiresAt)],
-    [
-      "Server identity",
-      identity.problem ? identity.problem : `${identity.names || "-"}, expires ${time(identity.expiresAt)}`,
-    ],
-    [
-      "TLS certificate expires",
-      overview.tlsExpiresAt === null ? "no TLS in this process" : time(overview.tlsExpiresAt),
-    ],
-    ["Members online", overview.membersOnline],
-    ["Teams", overview.teams ?? "-"],
-    ["Open join codes", overview.openCodes ?? "-"],
+    { term: "Relay address", value: overview.relayUrl ?? "Not set", mono: overview.relayUrl !== null },
+    {
+      term: "Join codes",
+      value: overview.joinServer ? `https://${overview.joinServer}/v1/enroll` : "Off (no wss: address)",
+      mono: Boolean(overview.joinServer),
+    },
+    { term: "Root fingerprint (SHA-256)", value: overview.rootFingerprint, mono: true },
+    { term: "Root in join codes", value: overview.joinRootFingerprint, mono: true },
+    { term: "Root expires", value: time(overview.rootExpiresAt) },
+    {
+      term: "Server identity",
+      value: identity.problem ? identity.problem : `${identity.names || "-"}, expires ${time(identity.expiresAt)}`,
+      warning: Boolean(identity.problem),
+    },
+    {
+      term: "TLS certificate expires",
+      value: overview.tlsExpiresAt === null ? "No TLS in this process" : time(overview.tlsExpiresAt),
+    },
   ];
-  list.replaceChildren(
-    ...facts.flatMap(([term, value]) => {
+  byId("overview").replaceChildren(
+    ...facts.map((fact) => {
+      const group = document.createElement("div");
+      group.className = "fact";
       const dt = document.createElement("dt");
-      dt.textContent = term;
+      dt.textContent = fact.term;
       const dd = document.createElement("dd");
-      dd.textContent = String(value);
-      if (term.includes("fingerprint") || term.includes("Root in")) dd.className = "mono";
-      return [dt, dd];
+      dd.textContent = String(fact.value ?? "-");
+      if (fact.mono) dd.className = "mono";
+      if (fact.warning) dd.dataset.tone = "warning";
+      group.append(dt, dd);
+      return group;
     }),
   );
 }
@@ -152,11 +232,11 @@ function renderTeams(teams) {
     body.replaceChildren(
       ...teams.map((team) => {
         const row = document.createElement("tr");
-        cell(row, team.name);
-        cell(row, team.status, `status-${team.status}`);
+        stackCell(row, team.name);
+        pillCell(row, `status-${team.status}`, statusPill(team.status));
         cell(row, time(team.expiresAt));
-        cell(row, team.members);
-        cell(row, team.membersOnline);
+        cell(row, team.members, "number");
+        cell(row, team.membersOnline, "number");
         return row;
       }),
     );
@@ -168,16 +248,14 @@ function renderTeams(teams) {
 function renderCodes(codes) {
   const body = byId("code-rows");
   if (codes.length === 0) {
-    emptyRow(body, 7, "No open join code.");
+    emptyRow(body, 5, "No open join code.");
     return;
   }
   body.replaceChildren(
     ...codes.map((code) => {
       const row = document.createElement("tr");
       cell(row, code.id, "mono");
-      cell(row, code.team);
-      cell(row, code.user);
-      cell(row, code.device);
+      stackCell(row, code.user, [code.device, code.team].filter(Boolean).join(" · "));
       cell(row, time(code.expiresAt));
       cell(row, code.creator);
       actionCell(
@@ -202,7 +280,7 @@ function revokeControls(holder, member) {
         event.currentTarget.disabled = true;
         await run(async () => {
           await api("/admin/api/revoke", { keyId: member.keyId });
-          notice(`The certificate of ${member.user} is revoked. Its connections are closed.`);
+          notice(`The certificate of ${member.user} is revoked. Its connections are closed.`, "success");
           await Promise.all([loadMembers(), loadTeams(), loadOverview()]);
         });
       }),
@@ -215,24 +293,21 @@ function revokeControls(holder, member) {
 function renderMembers(members) {
   const body = byId("member-rows");
   if (members.length === 0) {
-    emptyRow(body, 9, "No member in this team.");
+    emptyRow(body, 6, "No member in this team.");
     return;
   }
   body.replaceChildren(
     ...members.map((member) => {
       const row = document.createElement("tr");
-      cell(row, member.user);
-      cell(row, member.device);
-      cell(row, member.label);
-      cell(row, short(member.keyId), "mono").title = member.keyId;
-      cell(row, short(member.serial), "mono").title = member.serial;
+      stackCell(row, member.user, [member.device, member.label].filter(Boolean).join(" · "));
+      const key = stackCell(row, short(member.keyId), `Serial ${short(member.serial)}`, "mono");
+      key.firstChild.classList.add("mono");
+      key.title = `Key ${member.keyId}\nSerial ${member.serial}`;
       cell(row, time(member.expiresAt));
-      cell(row, member.status, `status-${member.status}`);
-      cell(
-        row,
-        member.online ? (member.hosting ? "online, hosting" : "online") : "offline",
-        member.online ? "online" : "offline",
-      );
+      pillCell(row, `status-${member.status}`, statusPill(member.status));
+      const connection = member.online ? [pill("Online", "success", true)] : [pill("Offline", "muted", false)];
+      if (member.online && member.hosting) connection.push(pill("Hosting", "accent", false));
+      pillCell(row, member.online ? "online" : "offline", ...connection);
       const actions = actionCell(row);
       if (member.status !== "revoked") revokeControls(actions, member);
       return row;
@@ -255,7 +330,7 @@ async function loadCodes() {
 async function loadMembers() {
   const team = byId("member-team").value;
   if (!team) {
-    emptyRow(byId("member-rows"), 9, "No team yet.");
+    emptyRow(byId("member-rows"), 6, "No team yet.");
     return;
   }
   renderMembers((await api(`/admin/api/members?team=${encodeURIComponent(team)}`)).members);
@@ -272,7 +347,7 @@ async function run(operation) {
     await operation();
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) showSignedOut("The session ended. Sign in again.");
-    else notice(error instanceof Error ? error.message : "The action failed.");
+    else notice(error instanceof Error ? error.message : "The action failed.", "error");
   }
 }
 
@@ -338,6 +413,7 @@ function bindForms() {
   byId("member-form").addEventListener("submit", (event) => event.preventDefault());
   byId("member-team").addEventListener("change", () => void run(loadMembers));
   byId("code-copy").addEventListener("click", () => void copyCode());
+  byId("notice-close").addEventListener("click", () => notice(""));
   byId("refresh").addEventListener("click", () => void run(refresh));
   byId("sign-out").addEventListener("click", () =>
     run(async () => {
@@ -351,7 +427,7 @@ async function signIn() {
   const token = location.hash.slice(1);
   history.replaceState(null, "", "/admin/login");
   if (token === "") {
-    showSignedOut("The sign-in link has no token. Run admin login again.");
+    showSignedOut("The sign-in link has no token. Run admin login again.", "error");
     return;
   }
   try {
@@ -359,7 +435,7 @@ async function signIn() {
     state.csrf = session.csrf;
     location.replace("/admin");
   } catch (error) {
-    showSignedOut(error instanceof Error ? error.message : "The sign-in failed.");
+    showSignedOut(error instanceof Error ? error.message : "The sign-in failed.", "error");
   }
 }
 
@@ -376,7 +452,7 @@ async function start() {
     await run(refresh);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) showSignedOut();
-    else notice(error instanceof Error ? error.message : "The page cannot load.");
+    else notice(error instanceof Error ? error.message : "The page cannot load.", "error");
   }
 }
 

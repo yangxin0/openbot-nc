@@ -460,6 +460,7 @@ try {
   const importButton = openPage.getByRole("button", { name: english("webClient.identity.import") });
 
   await check("A wrong paste shows the identity error", async () => {
+    await openPage.getByRole("button", { name: english("webClient.identity.fileOption") }).click();
     await pasteField.fill(JSON.stringify({ version: 1, certificate: "not a certificate" }));
     await importButton.click();
     await openPage

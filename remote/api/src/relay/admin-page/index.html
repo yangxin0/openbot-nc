@@ -4,113 +4,246 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="referrer" content="no-referrer" />
-    <title>Relay admin</title>
+    <meta name="color-scheme" content="dark" />
+    <title>OpenBot-NC server admin</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/admin/admin.css" />
     <script src="/admin/admin.js" defer></script>
   </head>
   <body>
-    <header class="bar">
-      <h1>OpenBot-NC relay admin</h1>
-      <div class="bar-actions">
-        <button id="refresh" type="button" class="quiet" hidden>Refresh</button>
-        <button id="sign-out" type="button" class="quiet" hidden>Sign out</button>
-      </div>
-    </header>
-    <main>
-      <p id="notice" class="notice" role="status" hidden></p>
-      <section id="signed-out" class="panel" hidden>
-        <h2>Sign in</h2>
-        <p id="signed-out-message">
-          Run <code>sudo openbot-relay admin login</code> on the server, then open the link that it prints. Each
-          link works once, for 10 minutes.
+    <div id="signed-out" class="sign-in" hidden>
+      <div class="sign-in-shell">
+        <header class="lockup">
+          <svg class="logo logo-large" viewBox="0 0 240 240" aria-hidden="true">
+            <rect class="logo-background" width="240" height="240" rx="50" ry="50" />
+            <polyline
+              class="logo-eye"
+              points="43.55 93.61 64.69 81.41 36.48 108.04 79.67 83.11 35.93 122.88 91.58 90.74 38.9 132.69 97.66 98.76 42.44 138.88 100.43 105.4 46.9 143.83 101.97 112.04 55.08 149.51 101.83 122.52 73.01 152.43 94.14 140.23"
+            />
+            <polyline
+              class="logo-eye"
+              points="145.65 93.61 166.79 81.41 140.83 101.52 175.58 81.46 138.3 109.53 183.18 83.63 137.55 117.43 189.67 87.33 139.67 129.39 197.88 95.78 142.92 136.32 201.52 102.48 149.03 143.86 204.07 112.08 159.14 150.37 203.51 124.75 169.28 152.61 199.82 134.98"
+            />
+          </svg>
+          <span class="wordmark">OpenBot-NC</span>
+        </header>
+        <h1 class="sign-in-title">Sign in to the server admin</h1>
+        <p class="sign-in-description">
+          Run this command on the server, then open the link that it prints. Each link works once, for 10 minutes.
         </p>
-      </section>
-      <div id="signed-in" hidden>
-        <section class="panel">
-          <h2>Overview</h2>
-          <dl id="overview" class="facts"></dl>
+        <div class="command">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 19h8" />
+            <path d="m4 17 6-6-6-6" />
+          </svg>
+          <code>sudo openbot-relay admin login</code>
+        </div>
+        <p id="signed-out-notice" class="sign-in-notice" role="status" hidden></p>
+      </div>
+    </div>
+
+    <div id="signed-in" class="admin" hidden>
+      <header class="bar">
+        <div class="bar-brand">
+          <svg class="logo logo-small" viewBox="0 0 240 240" aria-hidden="true">
+            <rect class="logo-background" width="240" height="240" rx="50" ry="50" />
+            <polyline
+              class="logo-eye"
+              points="43.55 93.61 64.69 81.41 36.48 108.04 79.67 83.11 35.93 122.88 91.58 90.74 38.9 132.69 97.66 98.76 42.44 138.88 100.43 105.4 46.9 143.83 101.97 112.04 55.08 149.51 101.83 122.52 73.01 152.43 94.14 140.23"
+            />
+            <polyline
+              class="logo-eye"
+              points="145.65 93.61 166.79 81.41 140.83 101.52 175.58 81.46 138.3 109.53 183.18 83.63 137.55 117.43 189.67 87.33 139.67 129.39 197.88 95.78 142.92 136.32 201.52 102.48 149.03 143.86 204.07 112.08 159.14 150.37 203.51 124.75 169.28 152.61 199.82 134.98"
+            />
+          </svg>
+          <span class="bar-wordmark">OpenBot-NC</span>
+          <span class="bar-divider" aria-hidden="true"></span>
+          <h1 class="bar-title">Server admin</h1>
+        </div>
+        <div class="bar-actions">
+          <button id="refresh" type="button" class="button ghost">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+              <path d="M8 16H3v5" />
+            </svg>
+            Refresh
+          </button>
+          <button id="sign-out" type="button" class="button ghost">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m16 17 5-5-5-5" />
+              <path d="M21 12H9" />
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            </svg>
+            Sign out
+          </button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="section" aria-labelledby="overview-title">
+          <div class="section-head">
+            <h2 id="overview-title">Overview</h2>
+            <p>The addresses, certificates and activity of this central server.</p>
+          </div>
+          <div id="stats" class="stats"></div>
+          <dl id="overview" class="card facts"></dl>
         </section>
-        <section class="panel">
-          <h2>Join codes</h2>
-          <form id="code-form" class="row-form">
-            <label>Team <select name="team" required></select></label>
-            <label>User <input name="user" required maxlength="64" autocomplete="off" /></label>
-            <label>Device <input name="device" maxlength="64" autocomplete="off" placeholder="optional" /></label>
-            <label>Minutes <input name="minutes" type="number" min="1" max="1440" value="15" required /></label>
-            <label>Days <input name="days" type="number" min="1" max="1095" value="365" required /></label>
-            <button type="submit">Create code</button>
+
+        <section class="section" aria-labelledby="codes-title">
+          <div class="section-head">
+            <h2 id="codes-title">Join codes</h2>
+            <p>A join code adds one device to a team. It works once. The device makes its own key.</p>
+          </div>
+          <form id="code-form" class="card form-card">
+            <div class="form-grid">
+              <div class="field">
+                <label for="code-team">Team</label>
+                <select id="code-team" name="team" required></select>
+              </div>
+              <div class="field">
+                <label for="code-user">User</label>
+                <input id="code-user" name="user" required maxlength="64" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label for="code-device">Device</label>
+                <input id="code-device" name="device" maxlength="64" autocomplete="off" placeholder="Optional" />
+              </div>
+              <div class="field">
+                <label for="code-minutes">Code works for (minutes)</label>
+                <input id="code-minutes" name="minutes" type="number" min="1" max="1440" value="15" required />
+              </div>
+              <div class="field">
+                <label for="code-days">Certificate lasts (days)</label>
+                <input id="code-days" name="days" type="number" min="1" max="1095" value="365" required />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="button primary">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+                  />
+                  <circle cx="16.5" cy="7.5" r=".5" />
+                </svg>
+                Create code
+              </button>
+            </div>
           </form>
-          <div id="code-result" class="code-result" hidden>
-            <img id="code-qr" alt="QR code of the join code" width="220" height="220" />
+          <div id="code-result" class="card code-result" hidden>
+            <div class="qr">
+              <img id="code-qr" alt="QR code of the join code" width="168" height="168" />
+            </div>
             <div class="code-text">
-              <p id="code-summary"></p>
+              <p class="code-title">Scan or copy this code</p>
+              <p id="code-summary" class="code-summary"></p>
               <textarea id="code-url" rows="3" readonly aria-label="Join code"></textarea>
               <div class="row">
-                <button id="code-copy" type="button">Copy</button>
-                <span id="code-copy-state" role="status"></span>
+                <button id="code-copy" type="button" class="button secondary">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                  </svg>
+                  Copy
+                </button>
+                <span id="code-copy-state" class="copy-state" role="status"></span>
               </div>
             </div>
           </div>
-          <h3>Open codes</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Team</th>
-                <th>User</th>
-                <th>Device</th>
-                <th>Expires</th>
-                <th>Made by</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="code-rows"></tbody>
-          </table>
+          <h3 class="subhead">Open codes</h3>
+          <div class="card table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Code</th>
+                  <th scope="col">For</th>
+                  <th scope="col">Expires</th>
+                  <th scope="col">Made by</th>
+                  <th scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="code-rows"></tbody>
+            </table>
+          </div>
         </section>
-        <section class="panel">
-          <h2>Members</h2>
-          <form id="member-form" class="row-form">
-            <label>Team <select id="member-team" name="team"></select></label>
-          </form>
-          <table>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Device</th>
-                <th>Label</th>
-                <th>Key</th>
-                <th>Serial</th>
-                <th>Expires</th>
-                <th>Status</th>
-                <th>Online</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="member-rows"></tbody>
-          </table>
+
+        <section class="section" aria-labelledby="members-title">
+          <div class="section-head section-head-row">
+            <div>
+              <h2 id="members-title">Members</h2>
+              <p>The certificates of a team. A revoke closes the connections of that device at once.</p>
+            </div>
+            <form id="member-form" class="inline-field">
+              <label for="member-team">Team</label>
+              <select id="member-team" name="team"></select>
+            </form>
+          </div>
+          <div class="card table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Member</th>
+                  <th scope="col">Key</th>
+                  <th scope="col">Expires</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Connection</th>
+                  <th scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="member-rows"></tbody>
+            </table>
+          </div>
         </section>
-        <section class="panel">
-          <h2>Teams</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Team</th>
-                <th>Status</th>
-                <th>Expires</th>
-                <th>Members</th>
-                <th>Online</th>
-              </tr>
-            </thead>
-            <tbody id="team-rows"></tbody>
-          </table>
-          <form id="team-form" class="row-form">
-            <label>New team <input name="team" required maxlength="64" autocomplete="off" /></label>
-            <label>Days <input name="days" type="number" min="1" max="3650" value="1825" required /></label>
-            <button type="submit">Add team</button>
-          </form>
+
+        <section class="section" aria-labelledby="teams-title">
+          <div class="section-head">
+            <h2 id="teams-title">Teams</h2>
+            <p>Each team has its own certificate authority. Members of different teams cannot see each other.</p>
+          </div>
+          <div class="card table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Team</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Expires</th>
+                  <th scope="col" class="number">Members</th>
+                  <th scope="col" class="number">Online</th>
+                </tr>
+              </thead>
+              <tbody id="team-rows"></tbody>
+            </table>
+            <form id="team-form" class="card-footer">
+              <div class="field field-wide">
+                <label for="team-name">New team</label>
+                <input id="team-name" name="team" required maxlength="64" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label for="team-days">Lasts (days)</label>
+                <input id="team-days" name="days" type="number" min="1" max="3650" value="1825" required />
+              </div>
+              <button type="submit" class="button secondary">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14" />
+                  <path d="M12 5v14" />
+                </svg>
+                Add team
+              </button>
+            </form>
+          </div>
         </section>
-      </div>
-    </main>
+      </main>
+    </div>
+
+    <div id="notice" class="notice" role="status" hidden>
+      <span id="notice-text" class="notice-text"></span>
+      <button id="notice-close" type="button" class="notice-close" aria-label="Dismiss">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </svg>
+      </button>
+    </div>
   </body>
 </html>
