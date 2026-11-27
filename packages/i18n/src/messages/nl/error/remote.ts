@@ -30,6 +30,8 @@ export const messages = {
     "Deze computer kan de verbindingsdienst van OpenBot-NC niet bereiken. Controleer de internetverbinding. OpenBot-NC verbindt automatisch opnieuw.",
   "error.remote.serverAnswerTimeout":
     "De server heeft niet op tijd geantwoord. OpenBot-NC verbindt automatisch opnieuw.",
+  "error.remote.signInConnectionClosed":
+    "De verbinding met de server is tijdens het inloggen verbroken. Gebeurt dit vaker, controleer dan de datum en tijd op de server en op dit apparaat.",
   "error.remote.connectionCancelled": "De externe verbinding is geannuleerd.",
   "error.remote.fileTransportIsStopped": "Het WebRTC-bestandstransport is gestopt.",
   "error.remote.fileTooLarge": "Het bestand is groter dan 100 MB.",

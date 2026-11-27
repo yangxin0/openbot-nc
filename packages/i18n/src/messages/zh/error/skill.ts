@@ -36,7 +36,8 @@ export const messages = {
   "error.skill.lockInvalid": "已安装技能的记录无效，已保持原样。",
   "error.skill.installPathSymlink": "技能安装路径不能包含符号链接。",
   "error.skill.tooManySkills": "一个助手最多可有 {limit} 个技能。",
-  "error.skill.unmanagedExists": "{path} 处已存在一个未受管理的技能。",
+  "error.skill.ownSkillExists":
+    "此智能体已有名为 {slug} 的自有技能。请让智能体重命名或删除该技能，然后再次添加此技能。",
   "error.skill.managedSlug": "OpenBot-NC 会为每个智能体提供自带的 {slug} 技能。请为此技能换一个名称。",
   "error.skill.localNoRevisions": "本地技能没有已发布的修订版本。",
   "error.skill.localNotFound": "此本地技能不存在。请在本地技能列表中核对其 ID。",

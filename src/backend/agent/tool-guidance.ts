@@ -160,7 +160,7 @@ function openbotGuidance(namespace: string, tool: string): string {
     case "remove_mcp_server":
       return [
         "Add, change, turn on or off, or remove an MCP server only when the user asks. When a Marketplace app covers the service, use openbot.suggest_marketplace_app instead. A new server goes to every agent; the user selects its agents in Marketplace, Apps: say so in your answer. Call openbot.list_mcp_servers first for the names in use. Do not ask the user to confirm a requested change: OpenBot asks for approval when needed, and a declined change is final for the request.",
-        "openbot.save_mcp_server tests a server that is on before the save. On ready, give the user the tool names. On needs_sign_in, follow its next field: only the user sees the Sign in card. On needs_key, save again with the key in headers when the user gave it; else tell the user to enter it in Marketplace, Apps, then test again. Never put a key in a URL or repeat it. On error, report it and what to change. The new tools reach the agents from the next turn.",
+        "openbot.save_mcp_server tests a server that is on before the save. On ready, give the user the tool names. On needs_sign_in, follow its next field: only the user sees the Sign in card. On needs_key, save again with the key in headers when the user gave it; else tell the user to enter it in Marketplace, Apps, then test again. Keep URLs as given. Never repeat keys. On error, report it and what to change. The new tools reach the agents from the next turn.",
       ].join("\n");
     case "show_setting":
       return "Before you say that OpenBot cannot do something, search the settings with words: the feature can exist. Show one setting, the best fit. Follow the next field of its result.";

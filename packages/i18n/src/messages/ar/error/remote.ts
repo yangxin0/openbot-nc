@@ -28,6 +28,8 @@ export const messages = {
   "error.remote.connectionServiceUnreachable":
     "لا يستطيع هذا الكمبيوتر الوصول إلى خدمة اتصال OpenBot-NC. تحقّق من اتصاله بالإنترنت. يعيد OpenBot-NC الاتصال تلقائيًا.",
   "error.remote.serverAnswerTimeout": "لم يستجب الخادم في الوقت المحدد. يعيد OpenBot-NC الاتصال تلقائيًا.",
+  "error.remote.signInConnectionClosed":
+    "أُغلق الاتصال بالخادم أثناء تسجيل الدخول. إذا تكرر ذلك، فتأكد من صحة التاريخ والوقت على الخادم وعلى هذا الجهاز.",
   "error.remote.connectionCancelled": "أُلغي الاتصال البعيد.",
   "error.remote.fileTransportIsStopped": "نقل الملفات عبر WebRTC متوقف.",
   "error.remote.fileTooLarge": "حجم الملف أكبر من 100 MB.",

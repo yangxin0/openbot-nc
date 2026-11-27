@@ -97,9 +97,17 @@ export function withModelSources(status: AgentStatus, sources: readonly Provider
   };
 }
 
+export const PROVIDER_ACCOUNT_POOL_STRATEGIES = ["fillFirst", "spread"] as const;
+export type ProviderAccountPoolStrategy = (typeof PROVIDER_ACCOUNT_POOL_STRATEGIES)[number];
+
+export function isProviderAccountPoolStrategy(value: unknown): value is ProviderAccountPoolStrategy {
+  return PROVIDER_ACCOUNT_POOL_STRATEGIES.some((strategy) => strategy === value);
+}
+
 export interface ProviderAccountPool {
   leftOut: string[];
   inUse: string | null;
+  strategy?: ProviderAccountPoolStrategy;
 }
 
 export const DEFAULT_PROVIDER_ACCOUNT_ID = "default";
@@ -174,7 +182,8 @@ export function isProviderAccountPool(value: unknown): value is ProviderAccountP
     Array.isArray(value.leftOut) &&
     value.leftOut.length <= MAX_PROVIDER_ACCOUNTS &&
     value.leftOut.every(isProviderAccountId) &&
-    (value.inUse === null || isProviderAccountId(value.inUse))
+    (value.inUse === null || isProviderAccountId(value.inUse)) &&
+    (value.strategy === undefined || isProviderAccountPoolStrategy(value.strategy))
   );
 }
 
@@ -373,6 +382,7 @@ export interface SetProviderAccountPoolInput {
   provider: AgentProviderId;
   enabled: boolean;
   leftOut: string[];
+  strategy?: ProviderAccountPoolStrategy;
 }
 
 export interface RemoveProviderAccountInput {

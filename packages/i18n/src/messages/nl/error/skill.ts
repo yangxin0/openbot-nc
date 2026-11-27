@@ -38,7 +38,8 @@ export const messages = {
   "error.skill.lockInvalid": "Het record van de geïnstalleerde vaardigheid is ongeldig. Het is niet gewijzigd.",
   "error.skill.installPathSymlink": "Installatiepaden van vaardigheden kunnen geen symbolische links bevatten.",
   "error.skill.tooManySkills": "Een agent kan maximaal {limit} vaardigheden hebben.",
-  "error.skill.unmanagedExists": "Er bestaat al een niet-beheerde vaardigheid op {path}.",
+  "error.skill.ownSkillExists":
+    "Deze agent heeft al een eigen vaardigheid met de naam {slug}. Vraag de agent om die vaardigheid te hernoemen of te verwijderen en voeg deze vaardigheid daarna opnieuw toe.",
   "error.skill.managedSlug":
     "OpenBot-NC geeft elke agent een eigen vaardigheid {slug}. Geef deze vaardigheid een andere naam.",
   "error.skill.localNoRevisions": "De lokale vaardigheid heeft geen gepubliceerde revisies.",

@@ -34,6 +34,7 @@ export function serverSupportsCapability(
       capability === "browser-view-clipboard" ||
       capability === "browser-user-control" ||
       capability === "browser-sign-in" ||
+      capability === "browser-http-sign-in" ||
       capability === "mcp-servers-v1" ||
       capability === "mcp-sign-in-v1" ||
       capability === "mcp-sign-in-app-v1" ||
@@ -152,6 +153,7 @@ export function serverSupportsCapability(
       capability === "workflows-media-v1" ||
       capability === "workflows-agent-files-v1" ||
       capability === "workflow-folders-v1" ||
+      capability === "workflow-presence-v1" ||
       capability === "vault-import-v1" ||
       capability === "agent-waits-v1" ||
       capability === "agent-queue-task-v1" ||
@@ -257,7 +259,7 @@ export function localCodeSignInProviders(platform: string | undefined): readonly
     return (
       codeSignIn === "device" ||
       (codeSignIn === "paste" && paste) ||
-      (platform === "win32" && descriptor.windowsCodeSignIn === "paste")
+      (platform === "win32" && descriptor.windowsCodeSignIn !== undefined)
     );
   });
 }
@@ -277,6 +279,10 @@ export function remoteAdminServer(
 export function activeServerHasProviderSettings(server: ServerSummary): boolean {
   return server.kind === "local" || remoteAdminServer(server, "providers-v1") !== undefined;
 }
+
+export const PROVIDER_SEARCH_NAMES: readonly string[] = AGENT_PROVIDERS.filter((provider) => provider !== "acp").map(
+  (provider) => agentProviderDescriptor(provider).displayName,
+);
 
 export function serverHasAgentDefaults(server: ServerSummary): boolean {
   return serverCanAdminister(server, "agent-defaults-v1") && (server.kind === "local" || server.state === "online");

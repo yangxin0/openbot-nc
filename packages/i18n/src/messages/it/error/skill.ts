@@ -38,7 +38,8 @@ export const messages = {
   "error.skill.lockInvalid": "Il record della skill installata non è valido. È stato lasciato invariato.",
   "error.skill.installPathSymlink": "I percorsi di installazione delle skill non possono contenere link simbolici.",
   "error.skill.tooManySkills": "Un agente può avere fino a {limit} skill.",
-  "error.skill.unmanagedExists": "Esiste già una skill non gestita in {path}.",
+  "error.skill.ownSkillExists":
+    "Questo agente ha già una propria skill chiamata {slug}. Chiedi all'agente di rinominare o eliminare quella skill, poi aggiungi di nuovo questa skill.",
   "error.skill.managedSlug": "OpenBot-NC dà a ogni agente la propria skill {slug}. Dai un altro nome a questa skill.",
   "error.skill.localNoRevisions": "La skill locale non ha revisioni pubblicate.",
   "error.skill.localNotFound": "Questa skill locale non esiste. Controlla il suo ID nell’elenco delle skill locali.",

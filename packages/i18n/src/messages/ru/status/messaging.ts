@@ -43,6 +43,9 @@ export const messages = {
     "К этому номеру WhatsApp привязан ещё один OpenBot-NC, поэтому вы можете получать два ответа. Чтобы это исправить, откройте «Связанные устройства» в WhatsApp на телефоне и выйдите из OpenBot-NC, которым вы не пользуетесь.",
   "status.messaging.whatsappPaused":
     "OpenBot-NC перестал отвечать здесь на 10 минут: за короткое время пришло слишком много сообщений. Если к этому номеру привязан ещё один OpenBot-NC, откройте «Связанные устройства» в WhatsApp на телефоне и выйдите из OpenBot-NC, которым вы не пользуетесь.",
+  "status.messaging.whatsappNotDelivered": "WhatsApp не принял этот ответ, поэтому человек его не получил.",
+  "status.messaging.whatsappPartlyDelivered":
+    "WhatsApp принял этот ответ не полностью, поэтому человек получил только его часть.",
   "status.messaging.whatsappOrchestratorName": "Оркестратор WhatsApp",
   "status.messaging.whatsappOrchestratorTitle": "Отвечает в WhatsApp и обращается к команде",
 } as const satisfies PartialTranslation<typeof source>;

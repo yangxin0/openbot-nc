@@ -27,6 +27,8 @@ export const messages = defineMessages("error.remote", {
   "error.remote.connectionServiceUnreachable":
     "This computer cannot reach the OpenBot-NC connection service. Check its internet connection. OpenBot-NC connects again automatically.",
   "error.remote.serverAnswerTimeout": "The server did not answer in time. OpenBot-NC connects again automatically.",
+  "error.remote.signInConnectionClosed":
+    "The connection to the server closed during sign-in. If this continues, make sure that the date and time are correct on the server and on this device.",
   "error.remote.connectionCancelled": "The remote connection was cancelled.",
   "error.remote.fileTransportIsStopped": "The WebRTC file transport is stopped.",
   "error.remote.fileTooLarge": "The file is larger than 100 MB.",

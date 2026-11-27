@@ -8,4 +8,6 @@ export const messages = {
   "error.app.notReady": "OpenBot-NC غير جاهز.",
   "error.app.macSecureStorageUnavailable": "التخزين الآمن في macOS غير متاح.",
   "error.app.secretStorageUnavailable": "تخزين الأسرار في النظام غير متاح.",
+  "error.app.windowBlockedBySecuritySoftware":
+    "من المحتمل أن برنامج الحماية على هذا الكمبيوتر أوقف نافذة OpenBot-NC. في برنامج الحماية، مثل Kaspersky، أضف OpenBot-NC.exe كتطبيق موثوق. ثم شغّل OpenBot-NC مرة أخرى.",
 } as const satisfies PartialTranslation<typeof source>;

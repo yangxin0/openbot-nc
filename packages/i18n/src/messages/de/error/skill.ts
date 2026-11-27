@@ -40,7 +40,8 @@ export const messages = {
   "error.skill.lockInvalid": "Der Eintrag der installierten Fähigkeit ist ungültig. Er wurde unverändert belassen.",
   "error.skill.installPathSymlink": "Installationspfade für Fähigkeiten dürfen keine symbolischen Links enthalten.",
   "error.skill.tooManySkills": "Ein Agent kann bis zu {limit} Fähigkeiten haben.",
-  "error.skill.unmanagedExists": "Unter {path} existiert bereits eine nicht verwaltete Fähigkeit.",
+  "error.skill.ownSkillExists":
+    "Dieser Agent hat bereits eine eigene Fähigkeit namens {slug}. Bitte den Agenten, diese Fähigkeit umzubenennen oder zu löschen, und füge diese Fähigkeit dann erneut hinzu.",
   "error.skill.managedSlug":
     "OpenBot-NC gibt jedem Agenten eine eigene Fähigkeit {slug}. Gib dieser Fähigkeit einen anderen Namen.",
   "error.skill.localNoRevisions": "Die lokale Fähigkeit hat keine veröffentlichten Überarbeitungen.",

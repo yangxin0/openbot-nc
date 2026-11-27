@@ -212,6 +212,9 @@ export function parseDevelopmentTarget(args: string[]): DevelopmentInvocation {
   if (args.includes("--shared") && args.includes("--isolated")) {
     throw new Error("Use --shared or --isolated, not both.");
   }
+  if (args.includes("--tunnel") && (args.includes("--slack") || args.includes("--hosting=test"))) {
+    throw new Error("--tunnel cannot be used with --slack or --hosting=test.");
+  }
   return {
     target,
     dryRun: args.includes("--dry-run"),

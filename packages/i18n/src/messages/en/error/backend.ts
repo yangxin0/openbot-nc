@@ -28,6 +28,11 @@ export const messages = defineMessages("error.backend", {
     "OpenBot-NC could not load the page in the sign-in window. Check the internet connection, then open the sign-in window again.",
   "error.backend.browserSignInReadFailed": "OpenBot-NC could not read the sign-in from the window.",
   "error.backend.browserStopUnsupported": "This remote host cannot stop a page load.",
+  "error.backend.browserLocationFailed": "Could not set the location for the page.",
+  "error.backend.browserPermissionsUnsupported": "This remote host cannot answer location requests.",
+  "error.backend.browserLocationRequired": "Send the location of the device to allow the request.",
+  "error.backend.browserHttpSignInInactive": "This site no longer asks for a sign-in. Reload the page to try again.",
+  "error.backend.browserHttpSignInUnsupported": "This remote host cannot take a site sign-in.",
   "error.backend.sharedDataLocalOnly": "Shared data is managed on the computer that runs these agents.",
   "error.backend.browserUrlProtocol": "Only HTTP(S) browser URLs are allowed.",
   "error.backend.channelLeadModelUnavailable": "The channel lead model is unavailable.",
@@ -35,6 +40,12 @@ export const messages = defineMessages("error.backend", {
     "Compaction does not make this chat smaller: after two compactions it still uses {percent}% of the model's context window, so OpenBot-NC stops compacting it. Tools and instructions use most of the window. Turn off the MCP servers or computer use that this agent does not need, or select a model with a larger window. Then start a new chat.",
   "error.backend.contextCompactionStopped":
     "Two compactions of this chat failed in a row, so OpenBot-NC stops compacting it automatically. Each try sends the whole chat to the model and uses your plan limit. Select Compact now to try again, or start a new chat.",
+  "error.backend.contextCompactionRetrying":
+    "The provider could not compact this chat and tries again. New messages in this chat wait until the compaction ends. If it does not end soon, OpenBot-NC stops it and sends your messages.",
+  "error.backend.contextCompactionFailed":
+    "Compacting this chat failed. The chat did not change. Messages that wait go to the agent now.",
+  "error.backend.contextCompactionTimedOut":
+    "Compacting this chat timed out, so OpenBot-NC stopped it. The chat did not change. Messages that wait go to the agent now.",
   "error.backend.providerModelAtCapacity":
     "The model is at capacity. The provider tries again in a few minutes. To continue now, stop the turn and choose a different model.",
   "error.backend.providerRetrying":
@@ -77,6 +88,13 @@ export const messages = defineMessages("error.backend", {
   "error.backend.channelRoutingFailed": "Routing failed. Choose a member or try again.",
   "error.backend.channelLeadTimedOut": "The channel lead did not answer in time. Choose a member or try again.",
   "error.backend.channelLeadFailed": "The channel lead could not route this message. Choose a member or try again.",
+  "error.backend.channelLeadBusy": "The lead's model is busy now. Try again in a few minutes, or choose a member.",
+  "error.backend.channelLeadOffline": "The lead's model lost its connection. Try again, or choose a member.",
+  "error.backend.channelLeadSignIn": "The lead's provider sign-in expired. Sign in again, or choose a member.",
+  "error.backend.channelLeadModelGone":
+    "The lead's model is not available. Choose another model for the lead, or choose a member.",
+  "error.backend.channelLeadRefused":
+    "The lead's model refused this request. Choose a member, or choose another model for the lead.",
   "error.backend.channelRequestMemberRequired": "Choose a member for this request.",
   "error.backend.channelDeliveryNotCreated": "Channel delivery was not created.",
   "error.backend.channelAssignmentStopped": "This channel assignment has been stopped or replaced.",
@@ -152,6 +170,7 @@ export const messages = defineMessages("error.backend", {
   "error.backend.videoGenerationFailed": "Video generation failed.",
   "error.backend.videoGenerationNoVideo": "Video generation did not return a video.",
   "error.backend.videoGenerationInterrupted": "Video generation was interrupted.",
+  "error.backend.grokVideoNoQuota": "Your Grok account cannot make videos. Generate the video with credits instead.",
   "error.backend.attachmentNotRegularFile": "Only regular files can be attached: {name}",
   "error.backend.attachmentCopyFailed": "OpenBot-NC could not copy {name}.",
   "error.backend.routineNameRequired": "A routine name is required.",
@@ -238,6 +257,8 @@ export const messages = defineMessages("error.backend", {
     "The sign-in server cannot register OpenBot-NC as an app. Your account is not the cause. To connect, save this server in Marketplace, Apps, then add a sign-in app to it.",
   "error.backend.mcpSignInNeedsClientDocument":
     "This sign-in server accepts only apps that publish a client ID document, and this build of OpenBot-NC does not publish one. If you have your own sign-in app for this server, save the server in Marketplace, Apps, then add the sign-in app to it.",
+  "error.backend.mcpSignInAppNeeded":
+    "The sign-in server cannot register OpenBot-NC as an app. Your account is not the cause. To connect, open this server in Marketplace, Apps, click Test connection, then add a sign-in app.",
   "error.backend.mcpSignInAbandonedGeneric": "The sign-in was abandoned.",
   "error.backend.mcpSignInForgotten": "The MCP sign-in was forgotten while it was running.",
   "error.backend.mcpSignInAbandoned": "The MCP sign-in was abandoned.",
@@ -260,7 +281,11 @@ export const messages = defineMessages("error.backend", {
   "error.backend.mcpServerExited":
     "The server stopped before it answered. Run the command in a terminal to see its error.",
   "error.backend.mcpServerExitedWithOutput": "The server stopped before it answered. It wrote: {detail}",
+  "error.backend.mcpServerDownloadFailed":
+    "The server did not start, because its download failed. Check the internet connection, then try again.",
   "error.backend.mcpServerFailedToStart": "The server did not start: {reason}",
+  "error.backend.mcpServerProgramMissing":
+    "OpenBot-NC could not start the MCP server {name}, because its program is not installed on the computer that runs OpenBot-NC. Install the app that gives {name} on that computer, or turn {name} off in Marketplace, Apps.",
   "error.backend.mcpServerStartAbandoned":
     "{provider} stopped waiting before the server started, so its agents do not get the tools of this server.",
   "error.backend.mcpServerStoppedDuringCall": "The MCP server stopped before it answered this call.",
@@ -284,6 +309,8 @@ export const messages = defineMessages("error.backend", {
     "{provider} could not get the GitHub tools, because GitHub did not answer. Open GitHub in Marketplace, Apps, and connect it again if it asks you to. Then start a new chat to try again.",
   "error.backend.mcpAppReconnect":
     "{name} on ChatGPT asks you to sign in again. Reconnect {name} on ChatGPT, then ask the agent again.",
+  "error.backend.mcpAppAutoReview":
+    "This ChatGPT app does not run when the agent has Ask first or Full access. The app needs the automatic approval review of Codex, which OpenBot-NC does not support yet. You can try Workspace only for Access in the agent settings, then ask the agent again.",
   "error.backend.mcpServerSignInPage":
     "The MCP server {name} asked you to sign in on a web page. OpenBot-NC does not open this page for a server, so it declined. Open {name} in Marketplace, Apps, and sign in, then ask the agent again.",
   "error.backend.mcpServerRequestDeclined":
@@ -298,6 +325,8 @@ export const messages = defineMessages("error.backend", {
     "OpenBot-NC could not renew the sign-in to this MCP server now. The sign-in is kept, and the next request tries again. If this error continues, the user can sign out of the server in OpenBot-NC and sign in again.",
   "error.backend.mcpOAuthRequestRefused":
     "The MCP server refused this request, but the sign-in to it is still active. Possibly the account cannot use this tool, or the sign-in did not give all the necessary access. The user can examine the plan and the access of the account at the service, or sign in to the server again in OpenBot-NC and allow all the access that it asks for.",
+  "error.backend.mcpOAuthScopeNeeded":
+    "The MCP server needs more access for this request than the sign-in gives. The sign-in is kept for the other tools. The user must sign in to the server again in OpenBot-NC and allow the access that it asks for.",
   "error.backend.mcpServerUnreachable": "OpenBot-NC could not reach the server. Check the URL and your network.",
   "error.backend.mcpLocalServerOff":
     "No server answers at {address} on this computer. Start the server, or turn it on in the app that runs it, then try again.",
@@ -305,6 +334,7 @@ export const messages = defineMessages("error.backend", {
     "This computer blocked the connection to the server. Check your firewall or security software, then try again.",
   "error.backend.mcpServerIncompatible":
     "Something answered at this address, but not as an MCP server over Streamable HTTP. Check the URL, and update the app that runs the server.",
+  "error.backend.mcpServerKeyNotAccepted": "The server did not accept the API key. Check the key, then try again.",
   "error.backend.mcpRemoteBridge":
     "{reason} This command runs the mcp-remote bridge. Choose Streamable HTTP with the URL {url} instead, and OpenBot-NC signs you in.",
   "error.backend.oauthNotHttps": "The OAuth endpoint {origin} is not https, so the credentials were not sent.",
@@ -392,6 +422,10 @@ export const messages = defineMessages("error.backend", {
   "error.backend.browserProxySignInRefused": "The proxy {name} refused the sign-in, so the page did not open.",
   "error.backend.browserSystemProxyFailed":
     "The proxy in the settings of the computer that runs OpenBot-NC does not answer or refused the connection, so the page did not open. Check the proxy settings of that computer.",
+  "error.backend.browserSystemProxyOrSiteClosed":
+    "The site or the proxy in the settings of the computer that runs OpenBot-NC closed the connection with no answer, so the page did not open. If no site opens, check the proxy settings of that computer.",
+  "error.backend.browserProfileProxyOrSiteClosed":
+    "The site or the proxy of this browser profile closed the connection with no answer, so the page did not open. If no site opens, check the proxy of the profile.",
   "error.backend.browserProxyComputerUnreachable":
     "The computer that this profile uses does not answer, so the page did not open.",
   "error.backend.browserProxyComputerLocalAddress":

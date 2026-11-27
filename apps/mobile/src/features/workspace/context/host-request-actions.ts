@@ -106,6 +106,11 @@ import { AGENT_THREAD_FILES_CAPABILITY } from "@openbot/contracts/team-protocol/
 import { AGENT_THREAD_READS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-thread-reads-v1";
 import { AGENT_THREADS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-threads-v1";
 import {
+  AGENT_USAGE_LIMIT_CAPABILITY,
+  AGENT_USAGE_LIMIT_ROUTES,
+  isAgentUsageLimits,
+} from "@openbot/contracts/team-protocol/agent-usage-limit-v1";
+import {
   BACKGROUND_PROCESSES_CAPABILITY,
   BACKGROUND_PROCESSES_ROUTES,
   decodeBackgroundProcessesResponse,
@@ -640,6 +645,7 @@ type HostRequestActions = Pick<
   | "loadAgentAvatar"
   | "duplicateAgent"
   | "loadQueue"
+  | "loadAgentUsageLimits"
   | "editQueue"
   | "changeQueue"
   | "setMessageReaction"
@@ -740,6 +746,7 @@ export function createHostRequestChecks(capabilities: ServerCapabilities): HostR
     canDeleteChatHistory: (serverId) => has(serverId, CHAT_HISTORY_CAPABILITY),
     canChooseNewAgentModel: (serverId) => has(serverId, TEAM_AGENT_CREATE_MODEL_CAPABILITY),
     canEditQueue: (serverId) => has(serverId, TEAM_QUEUE_EDIT_CAPABILITY),
+    canReadAgentUsageLimits: (serverId) => has(serverId, AGENT_USAGE_LIMIT_CAPABILITY),
     canReadModelSteering: (serverId) => has(serverId, MODEL_STEERING_CAPABILITY),
     canRetryMessage: (serverId) => has(serverId, TEAM_MESSAGE_CLIENT_ID_CAPABILITY),
     canDeleteMessages: (serverId) => has(serverId, MESSAGE_DELETE_CAPABILITY),
@@ -1694,6 +1701,17 @@ export function createHostRequestActions({
           return value;
         },
         undefined,
+        serverId,
+      ),
+    loadAgentUsageLimits: (serverId) =>
+      request(
+        "POST",
+        AGENT_USAGE_LIMIT_ROUTES.list,
+        (value) => {
+          if (!isAgentUsageLimits(value)) throw new Error("The host returned invalid usage limits.");
+          return value;
+        },
+        {},
         serverId,
       ),
     editQueue: async (agentId, serverId, input) => {

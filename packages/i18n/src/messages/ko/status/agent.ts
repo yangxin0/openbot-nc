@@ -13,6 +13,7 @@ export const messages = {
   "status.agent.modelSwitchedForSpentBalance":
     "{previous}의 크레딧이 모두 소진되었습니다. {model}(으)로 전환했습니다. 다시 사용하려면 크레딧을 추가한 후 선택하세요.",
   "status.agent.modelReturnedAfterError": "제공자 오류 후 {model}(으)로 다시 전환했어요.",
+  "status.agent.modelSwitchedForRemovedModel": "{previous}을(를) 더 이상 사용할 수 없어요. {model}(으)로 전환했어요.",
   "status.agent.marketplaceSuggested": "마켓플레이스 앱을 추천했어요: {app}.",
   "status.agent.settingShown": "설정을 표시했어요: {setting}.",
   "status.agent.channelMemberAdded": "{agent} 에이전트가 {member} 멤버를 채널에 추가했어요. {person} 님이 요청했어요.",
@@ -111,14 +112,16 @@ export const messages = {
   "status.agent.mcpSignInRequested":
     "MCP 서버 {name}에 로그인이 필요해요. 마켓플레이스, 앱, {name}에서 로그인해 주세요.",
   "status.agent.uiBlockClosedByMessage": "새 메시지로 종료되었어요",
-  "status.agent.nextStepContinues": "에이전트가 다음 단계 전에 멈췄어요. 계속해요 ({current}/{limit}).",
-  "status.agent.planContinues": "계획에 남은 단계가 있어요. 에이전트가 계속해요 ({current}/{limit}).",
-  "status.agent.planStopped": "계획에 남은 단계가 있는데 에이전트가 멈췄어요. 계속하려면 메시지를 보내세요.",
-  "status.agent.compactionContinues": "에이전트가 컨텍스트를 압축하는 동안 연결이 끊겼어요. 에이전트가 계속해요.",
-  "status.agent.providerExitContinues": "에이전트가 답변을 끝내기 전에 멈췄어요. 에이전트가 계속해요.",
-  "status.agent.branchTitle": "분기된 채팅",
   "status.agent.location.field": "내 위치",
   "status.agent.location.placeholder": "도시, 주소 또는 장소",
   "status.agent.location.submit": "공유",
   "status.agent.location.shared": "위치를 공유했어요",
+  "status.agent.nextStepContinues": "에이전트가 다음 단계 전에 멈췄어요. 계속해요 ({current}/{limit}).",
+  "status.agent.planContinues": "계획에 남은 단계가 있어요. 에이전트가 계속해요 ({current}/{limit}).",
+  "status.agent.planStopped": "계획에 남은 단계가 있는데 에이전트가 멈췄어요. 계속하려면 메시지를 보내세요.",
+  "status.agent.continuationLimitReached":
+    "요청이 끝나기 전에 에이전트가 멈췄어요. 에이전트가 더 이상 스스로 계속할 수 없어요. 계속하려면 메시지를 보내세요.",
+  "status.agent.compactionContinues": "에이전트가 컨텍스트를 압축하는 동안 연결이 끊겼어요. 에이전트가 계속해요.",
+  "status.agent.providerExitContinues": "에이전트가 답변을 끝내기 전에 멈췄어요. 에이전트가 계속해요.",
+  "status.agent.branchTitle": "분기된 채팅",
 } as const satisfies PartialTranslation<typeof source>;

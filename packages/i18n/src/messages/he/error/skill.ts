@@ -37,7 +37,8 @@ export const messages = {
   "error.skill.lockInvalid": "רשומת המיומנות המותקנת אינה תקינה. היא נשארה ללא שינוי.",
   "error.skill.installPathSymlink": "נתיבי התקנה של מיומנות אינם יכולים להכיל קישורים סמליים.",
   "error.skill.tooManySkills": "לסוכן יכולות להיות עד {limit} מיומנויות.",
-  "error.skill.unmanagedExists": "כבר קיימת מיומנות לא מנוהלת ב-{path}.",
+  "error.skill.ownSkillExists":
+    "לסוכן הזה כבר יש מיומנות משלו בשם {slug}. יש לבקש מהסוכן לשנות את שם המיומנות הזו או למחוק אותה, ואז להוסיף את המיומנות הזו שוב.",
   "error.skill.managedSlug": "OpenBot-NC נותן לכל סוכן מיומנות {slug} משלו. יש לתת למיומנות הזו שם אחר.",
   "error.skill.localNoRevisions": "למיומנות מקומית אין גרסאות שפורסמו.",
   "error.skill.localNotFound": "המיומנות המקומית הזו לא קיימת. יש לבדוק את המזהה שלה ברשימת המיומנויות המקומיות.",

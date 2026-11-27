@@ -11,6 +11,7 @@ import {
   type CustomProviderSummary,
   isManagedRuntimeProvider,
   LOCAL_SERVER_ID,
+  type ProviderAccountPoolStrategy,
   type ProviderRuntimeDownload,
   type ProviderRuntimeStatus,
 } from "@openbot/contracts/ipc";
@@ -19,6 +20,7 @@ import { CODEX_API_KEY_CAPABILITY } from "@openbot/contracts/team-protocol/codex
 import { CUSTOM_PROVIDER_EDIT_CAPABILITY } from "@openbot/contracts/team-protocol/custom-provider-edit-v1";
 import { PROVIDER_ACCOUNT_CODE_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-code-v1";
 import { PROVIDER_ACCOUNT_KEYS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-keys-v1";
+import { PROVIDER_ACCOUNT_POOL_STRATEGY_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-pool-strategy-v1";
 import { PROVIDER_ACCOUNT_POOL_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-pool-v1";
 import {
   type ProviderAccountRelay,
@@ -223,6 +225,9 @@ const Providers = createSimpleContext({
     const accountPoolServerId = createMemo(
       () => remoteAdminServer(activeServer(), PROVIDER_ACCOUNT_POOL_CAPABILITY)?.id,
     );
+    const accountPoolStrategyServerId = createMemo(
+      () => remoteAdminServer(activeServer(), PROVIDER_ACCOUNT_POOL_STRATEGY_CAPABILITY)?.id,
+    );
     const accountCodeServerId = createMemo(
       () => remoteAdminServer(activeServer(), PROVIDER_ACCOUNT_CODE_CAPABILITY)?.id,
     );
@@ -265,8 +270,19 @@ const Providers = createSimpleContext({
             : {}),
           ...(accountPoolServerId() === hostServerId
             ? {
-                setPool: (provider: AgentProviderId, enabled: boolean, leftOut: readonly string[]) =>
-                  changed(providerAdmin().setAccountPool({ provider, enabled, leftOut: [...leftOut] }, hostServerId)),
+                setPool: (
+                  provider: AgentProviderId,
+                  enabled: boolean,
+                  leftOut: readonly string[],
+                  strategy?: ProviderAccountPoolStrategy,
+                ) =>
+                  changed(
+                    providerAdmin().setAccountPool(
+                      { provider, enabled, leftOut: [...leftOut], ...(strategy ? { strategy } : {}) },
+                      hostServerId,
+                    ),
+                  ),
+                poolStrategy: accountPoolStrategyServerId() === hostServerId,
               }
             : {}),
           ...(accountCodeServerId() === hostServerId
@@ -296,6 +312,7 @@ const Providers = createSimpleContext({
         },
         connectWithCode: async (provider, accountId) => connection.connectAccountWithCode(provider, accountId),
         pasteCodeSignIn: pasteCodeSignInSupported(appInfo()?.platform ?? ""),
+        windowsCodeSignIn: appInfo()?.platform === "win32",
         connectKey: (provider, accountId, key) =>
           apply(providersPort().connectProviderAccountKey({ provider, accountId, key })),
         cancel: async (provider, accountId) => {
@@ -307,8 +324,16 @@ const Providers = createSimpleContext({
         usageResets: (provider) => providersPort().providerUsageResets(provider),
         resetUsage: (provider, accountId) => providersPort().resetProviderUsage({ provider, accountId }),
         signOut: (provider) => apply(providersPort().signOutProvider(provider)),
-        setPool: (provider, enabled, leftOut) =>
-          apply(providersPort().setProviderAccountPool({ provider, enabled, leftOut: [...leftOut] })),
+        setPool: (provider, enabled, leftOut, strategy) =>
+          apply(
+            providersPort().setProviderAccountPool({
+              provider,
+              enabled,
+              leftOut: [...leftOut],
+              ...(strategy ? { strategy } : {}),
+            }),
+          ),
+        poolStrategy: true,
         local: true,
       };
     });
@@ -445,6 +470,8 @@ const Providers = createSimpleContext({
               start: (provider) => providersPort().startProviderCodeLogin(provider),
               submit: (provider, code) => providerAdmin().submitCodeLogin({ provider, code }, LOCAL_SERVER_ID),
               cancel: (provider) => providersPort().cancelProviderCodeLogin(provider),
+              pasteAddress: (provider, address) =>
+                providerAdmin().pasteRelaySignIn({ provider, address }, LOCAL_SERVER_ID),
               accountCode: accountCode(LOCAL_SERVER_ID),
             };
       },

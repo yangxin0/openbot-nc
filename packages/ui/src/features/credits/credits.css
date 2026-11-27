@@ -4,6 +4,12 @@
   initial-value: transparent;
 }
 
+@property --credit-glow {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.55;
+}
+
 @keyframes credit-rise {
   from {
     opacity: 0;

@@ -114,7 +114,8 @@ export const messages = {
   "settings.quitGuard.always": "Altijd",
   "settings.quitGuard.never": "Nooit",
   "settings.externalLinks.title": "Open externe links in",
-  "settings.externalLinks.description": "Links in chats, inlogpagina’s en betaalpagina’s openen hier.",
+  "settings.externalLinks.description":
+    "Links in chats, inlogpagina’s en betaalpagina’s openen hier. Met OpenBot-NC openen alleen links in chats van het hoofdvenster met agents op deze computer in OpenBot-NC. Andere links openen in de standaardbrowser.",
   "settings.externalLinks.defaultBrowser": "Standaardbrowser",
   "settings.externalLinks.openbot": "OpenBot-NC",
   "settings.externalLinks.defaultBrowserNamed": "Standaard ({name})",
@@ -243,8 +244,7 @@ export const messages = {
   "settings.notch.xwayland.title": "Herstart nodig",
   "settings.notch.xwayland.description":
     "Onder Wayland moet OpenBot-NC XWayland gebruiken om het Dynamic Island boven andere apps te tonen. Tot dan is het eiland niet te zien.",
-  "settings.notch.xwayland.unsupported":
-    "Onder Wayland zonder XWayland kan het Dynamic Island niet boven andere apps staan.",
+  "settings.notch.xwayland.unsupported": "Op deze Wayland-desktop kan het Dynamic Island niet boven andere apps staan.",
   "settings.notch.xwayland.restart": "Herstarten",
   "settings.notch.idle.title": "Toon inactief eiland",
   "settings.notch.idle.description": "Toon het OpenBot-NC-logo en een begroeting wanneer er geen status actief is.",
@@ -275,8 +275,11 @@ export const messages = {
   "settings.agentDock.xwayland.description":
     "Onder Wayland moet OpenBot-NC XWayland gebruiken om het dock boven andere apps te tonen. Tot dan staat het dock in het OpenBot-NC-venster.",
   "settings.agentDock.xwayland.unsupported":
-    "Onder Wayland zonder XWayland kan het dock niet boven andere apps staan. Het staat in het OpenBot-NC-venster.",
+    "Op deze Wayland-desktop kan het dock niet boven andere apps staan. Het staat in het OpenBot-NC-venster.",
   "settings.agentDock.xwayland.restart": "Herstarten",
+  "settings.agentDock.noCompositor.title": "In het OpenBot-NC-venster",
+  "settings.agentDock.noCompositor.description":
+    "Je bureaublad kan geen doorzichtige vensters tonen, dus het dock staat in het OpenBot-NC-venster. Zet bureaubladeffecten (een compositor) aan in je systeeminstellingen en start OpenBot-NC opnieuw om het boven andere apps te tonen.",
   "settings.agentDock.display.title": "Scherm",
   "settings.agentDock.display.description":
     "Als dat scherm niet is aangesloten, gaat het dock naar het scherm van het OpenBot-NC-venster.",

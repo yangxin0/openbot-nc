@@ -42,7 +42,8 @@ export const messages = {
   "error.skill.installPathSymlink":
     "Les chemins d’installation des compétences ne peuvent pas contenir de liens symboliques.",
   "error.skill.tooManySkills": "Un agent peut avoir jusqu’à {limit} compétences.",
-  "error.skill.unmanagedExists": "Une compétence non gérée existe déjà à l’emplacement {path}.",
+  "error.skill.ownSkillExists":
+    "Cet agent a déjà sa propre compétence nommée {slug}. Demandez à l’agent de renommer ou de supprimer cette compétence, puis ajoutez de nouveau cette compétence.",
   "error.skill.managedSlug":
     "OpenBot-NC donne à chaque agent sa propre compétence {slug}. Donnez un autre nom à cette compétence.",
   "error.skill.localNoRevisions": "La compétence locale n’a aucune révision publiée.",

@@ -31,6 +31,12 @@ export const messages = {
     "OpenBot-NC nie mógł wczytać strony w oknie logowania. Sprawdź połączenie z internetem, a potem otwórz okno logowania ponownie.",
   "error.backend.browserSignInReadFailed": "OpenBot-NC nie mógł odczytać logowania z okna.",
   "error.backend.browserStopUnsupported": "Ten zdalny host nie może zatrzymać wczytywania strony.",
+  "error.backend.browserLocationFailed": "Nie można ustawić lokalizacji dla strony.",
+  "error.backend.browserPermissionsUnsupported": "Ten zdalny host nie może odpowiadać na prośby o lokalizację.",
+  "error.backend.browserLocationRequired": "Wyślij lokalizację urządzenia, aby zezwolić na prośbę.",
+  "error.backend.browserHttpSignInInactive":
+    "Ta strona nie prosi już o logowanie. Wczytaj stronę ponownie, aby spróbować jeszcze raz.",
+  "error.backend.browserHttpSignInUnsupported": "Ten zdalny host nie może przyjąć logowania do strony.",
   "error.backend.sharedDataLocalOnly": "Dane współdzielone są zarządzane na komputerze, na którym działają ci agenci.",
   "error.backend.browserUrlProtocol": "Dozwolone są tylko adresy URL HTTP(S).",
   "error.backend.channelLeadModelUnavailable": "Model lidera kanału jest niedostępny.",
@@ -38,6 +44,12 @@ export const messages = {
     "Kompaktowanie nie zmniejsza tego czatu: po dwóch kompaktowaniach nadal zajmuje {percent}% okna kontekstu modelu, więc OpenBot-NC przestaje go kompaktować. Narzędzia i instrukcje zajmują większość okna. Wyłącz serwery MCP lub sterowanie komputerem, których ten agent nie potrzebuje, albo wybierz model z większym oknem. Potem zacznij nowy czat.",
   "error.backend.contextCompactionStopped":
     "Dwa kompaktowania tego czatu z rzędu się nie udały, więc OpenBot-NC przestaje go kompaktować automatycznie. Każda próba wysyła cały czat do modelu i zużywa limit planu. Wybierz „Kompaktuj”, aby spróbować ponownie, albo zacznij nowy czat.",
+  "error.backend.contextCompactionRetrying":
+    "Dostawca nie mógł skompaktować tego czatu i próbuje ponownie. Nowe wiadomości w tym czacie czekają, aż kompaktowanie się skończy. Jeśli nie skończy się wkrótce, OpenBot-NC je zatrzyma i wyśle Twoje wiadomości.",
+  "error.backend.contextCompactionFailed":
+    "Kompaktowanie tego czatu nie powiodło się. Czat się nie zmienił. Oczekujące wiadomości trafiają teraz do agenta.",
+  "error.backend.contextCompactionTimedOut":
+    "Kompaktowanie tego czatu trwało zbyt długo, więc OpenBot-NC je zatrzymał. Czat się nie zmienił. Oczekujące wiadomości trafiają teraz do agenta.",
   "error.backend.providerModelAtCapacity":
     "Model jest przeciążony. Dostawca spróbuje ponownie za kilka minut. Aby kontynuować od razu, zatrzymaj turę i wybierz inny model.",
   "error.backend.providerRetrying":
@@ -82,6 +94,15 @@ export const messages = {
   "error.backend.channelLeadTimedOut": "Lider kanału nie odpowiedział na czas. Wybierz członka lub spróbuj ponownie.",
   "error.backend.channelLeadFailed":
     "Lider kanału nie mógł skierować tej wiadomości. Wybierz członka lub spróbuj ponownie.",
+  "error.backend.channelLeadBusy":
+    "Model lidera kanału jest teraz zajęty. Spróbuj ponownie za kilka minut lub wybierz członka.",
+  "error.backend.channelLeadOffline": "Model lidera kanału stracił połączenie. Spróbuj ponownie lub wybierz członka.",
+  "error.backend.channelLeadSignIn":
+    "Logowanie u dostawcy lidera kanału wygasło. Zaloguj się ponownie lub wybierz członka.",
+  "error.backend.channelLeadModelGone":
+    "Model lidera kanału jest niedostępny. Wybierz inny model dla lidera lub wybierz członka.",
+  "error.backend.channelLeadRefused":
+    "Model lidera kanału odrzucił tę prośbę. Wybierz członka lub inny model dla lidera.",
   "error.backend.channelRequestMemberRequired": "Wybierz członka do tego żądania.",
   "error.backend.channelDeliveryNotCreated": "Nie utworzono dostarczenia kanału.",
   "error.backend.channelAssignmentStopped": "Ten przydział kanału został zatrzymany lub zastąpiony.",
@@ -157,6 +178,7 @@ export const messages = {
   "error.backend.videoGenerationFailed": "Generowanie filmu nie powiodło się.",
   "error.backend.videoGenerationNoVideo": "Generowanie filmu nie zwróciło filmu.",
   "error.backend.videoGenerationInterrupted": "Generowanie filmu zostało przerwane.",
+  "error.backend.grokVideoNoQuota": "Twoje konto Grok nie może tworzyć filmów. Wygeneruj film za kredyty.",
   "error.backend.attachmentNotRegularFile": "Załączać można tylko zwykłe pliki: {name}",
   "error.backend.attachmentCopyFailed": "OpenBot-NC nie mógł skopiować pliku {name}.",
   "error.backend.routineNameRequired": "Nazwa rutyny jest wymagana.",
@@ -244,6 +266,8 @@ export const messages = {
     "Serwer logowania nie może zarejestrować OpenBot-NC jako aplikacji. Przyczyną nie jest twoje konto. Aby się połączyć, zapisz ten serwer w Marketplace, Aplikacje, a potem dodaj do niego aplikację logowania.",
   "error.backend.mcpSignInNeedsClientDocument":
     "Ten serwer logowania przyjmuje tylko aplikacje, które publikują dokument identyfikatora klienta, a ta wersja OpenBot-NC go nie publikuje. Jeśli masz własną aplikację logowania dla tego serwera, zapisz serwer w Marketplace, Aplikacje, a potem dodaj do niego tę aplikację logowania.",
+  "error.backend.mcpSignInAppNeeded":
+    "Serwer logowania nie może zarejestrować OpenBot-NC jako aplikacji. Przyczyną nie jest twoje konto. Aby się połączyć, otwórz ten serwer w Marketplace, Aplikacje, kliknij Testuj połączenie, a potem dodaj aplikację logowania.",
   "error.backend.mcpSignInAbandonedGeneric": "Logowanie zostało porzucone.",
   "error.backend.mcpSignInForgotten": "Logowanie MCP zostało zapomniane w trakcie działania.",
   "error.backend.mcpSignInAbandoned": "Logowanie MCP zostało porzucone.",
@@ -268,7 +292,11 @@ export const messages = {
   "error.backend.mcpServerExited":
     "Serwer zatrzymał się przed odpowiedzią. Uruchom polecenie w terminalu, aby zobaczyć błąd.",
   "error.backend.mcpServerExitedWithOutput": "Serwer zatrzymał się przed odpowiedzią. Napisał: {detail}",
+  "error.backend.mcpServerDownloadFailed":
+    "Serwer się nie uruchomił, bo jego pobieranie się nie powiodło. Sprawdź połączenie z internetem, a potem spróbuj ponownie.",
   "error.backend.mcpServerFailedToStart": "Serwer się nie uruchomił: {reason}",
+  "error.backend.mcpServerProgramMissing":
+    "OpenBot-NC nie może uruchomić serwera MCP {name}, ponieważ jego program nie jest zainstalowany na komputerze, na którym działa OpenBot-NC. Zainstaluj na tym komputerze aplikację, która dostarcza {name}, albo wyłącz {name} w Marketplace, Aplikacje.",
   "error.backend.mcpServerStartAbandoned":
     "{provider} przestał czekać, zanim serwer się uruchomił, więc jego agenci nie dostają narzędzi tego serwera.",
   "error.backend.mcpServerStoppedDuringCall": "Serwer MCP zatrzymał się, zanim odpowiedział na to wywołanie.",
@@ -303,6 +331,7 @@ export const messages = {
     "Ten komputer zablokował połączenie z serwerem. Sprawdź zaporę lub oprogramowanie zabezpieczające i spróbuj ponownie.",
   "error.backend.mcpServerIncompatible":
     "Pod tym adresem coś odpowiedziało, ale nie jako serwer MCP przez Streamable HTTP. Sprawdź URL i zaktualizuj aplikację, która uruchamia serwer.",
+  "error.backend.mcpServerKeyNotAccepted": "Serwer nie przyjął klucza API. Sprawdź klucz i spróbuj ponownie.",
   "error.backend.mcpRemoteBridge":
     "{reason} To polecenie uruchamia most mcp-remote. Zamiast tego wybierz Streamable HTTP z URL {url}, a OpenBot-NC cię zaloguje.",
   "error.backend.oauthNotHttps":
@@ -388,6 +417,10 @@ export const messages = {
   "error.backend.browserProxySignInRefused": "Proxy {name} odrzuciło logowanie, więc strona się nie otworzyła.",
   "error.backend.browserSystemProxyFailed":
     "Proxy w ustawieniach komputera, na którym działa OpenBot-NC, nie odpowiada lub odrzuciło połączenie, więc strona się nie otworzyła. Sprawdź ustawienia proxy tego komputera.",
+  "error.backend.browserSystemProxyOrSiteClosed":
+    "Witryna lub proxy w ustawieniach komputera, na którym działa OpenBot-NC, zamknęło połączenie bez odpowiedzi, więc strona się nie otworzyła. Jeśli żadna witryna się nie otwiera, sprawdź ustawienia proxy tego komputera.",
+  "error.backend.browserProfileProxyOrSiteClosed":
+    "Witryna lub proxy tego profilu przeglądarki zamknęło połączenie bez odpowiedzi, więc strona się nie otworzyła. Jeśli żadna witryna się nie otwiera, sprawdź proxy profilu.",
   "error.backend.browserProxyComputerUnreachable":
     "Komputer, którego używa ten profil, nie odpowiada, więc strona się nie otworzyła.",
   "error.backend.browserProxyComputerLocalAddress":

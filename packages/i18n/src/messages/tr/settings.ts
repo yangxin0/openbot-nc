@@ -114,7 +114,7 @@ export const messages = {
   "settings.quitGuard.never": "Asla",
   "settings.externalLinks.title": "Harici bağlantıları şurada aç",
   "settings.externalLinks.description":
-    "Sohbetlerdeki, oturum açma ve faturalandırma sayfalarındaki bağlantılar burada açılır.",
+    "Sohbetlerdeki, oturum açma ve faturalandırma sayfalarındaki bağlantılar burada açılır. OpenBot-NC seçiliyken yalnızca ana pencerede bu bilgisayardaki ajanlarla yapılan sohbetlerin bağlantıları OpenBot-NC'de açılır. Diğer bağlantılar varsayılan tarayıcıda açılır.",
   "settings.externalLinks.defaultBrowser": "Varsayılan tarayıcı",
   "settings.externalLinks.openbot": "OpenBot-NC",
   "settings.externalLinks.defaultBrowserNamed": "Varsayılan tarayıcı ({name})",
@@ -241,8 +241,7 @@ export const messages = {
   "settings.notch.xwayland.title": "Yeniden başlatma gerekli",
   "settings.notch.xwayland.description":
     "Wayland'de OpenBot-NC, Dynamic Island'ı diğer uygulamaların üstünde göstermek için XWayland kullanmalıdır. O zamana kadar ada görünmez.",
-  "settings.notch.xwayland.unsupported":
-    "XWayland olmayan Wayland'de Dynamic Island diğer uygulamaların üstünde görünemez.",
+  "settings.notch.xwayland.unsupported": "Bu Wayland masaüstünde Dynamic Island diğer uygulamaların üstünde görünemez.",
   "settings.notch.xwayland.restart": "Yeniden başlat",
   "settings.notch.idle.title": "Boştaki adayı göster",
   "settings.notch.idle.description": "Hiçbir durum etkin olmadığında OpenBot-NC logosunu ve selamlamasını gösterin.",
@@ -273,8 +272,11 @@ export const messages = {
   "settings.agentDock.xwayland.description":
     "Wayland'de OpenBot-NC, dock'u diğer uygulamaların üstünde göstermek için XWayland kullanmalıdır. O zamana kadar dock OpenBot-NC penceresinde görünür.",
   "settings.agentDock.xwayland.unsupported":
-    "XWayland olmayan Wayland'de dock diğer uygulamaların üstünde görünemez. OpenBot-NC penceresinde görünür.",
+    "Bu Wayland masaüstünde dock diğer uygulamaların üstünde görünemez. OpenBot-NC penceresinde görünür.",
   "settings.agentDock.xwayland.restart": "Yeniden başlat",
+  "settings.agentDock.noCompositor.title": "OpenBot-NC penceresinde",
+  "settings.agentDock.noCompositor.description":
+    "Masaüstünüz saydam pencereleri gösteremiyor, bu yüzden dock OpenBot-NC penceresinde görünüyor. Diğer uygulamaların üstünde göstermek için sistem ayarlarından masaüstü efektlerini (bir kompozitör) açın ve OpenBot-NC'yi yeniden başlatın.",
   "settings.agentDock.display.title": "Ekran",
   "settings.agentDock.display.description": "O ekran bağlı değilse yuva, OpenBot-NC penceresinin ekranına geçer.",
   "settings.agentDock.display.window": "OpenBot-NC penceresiyle",

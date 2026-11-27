@@ -24,7 +24,12 @@ export interface ChannelsPort {
     Partial<Pick<OpenBotDesktopApi["agent"], "deleteChannelMessage">> &
     Partial<Pick<OpenBotDesktopApi["agent"], "setChannelImage">> &
     Partial<ChannelFoldersApi & Pick<OpenBotDesktopApi["agent"], "chooseChannelFolder">> &
-    Partial<Pick<OpenBotDesktopApi["agent"], "clearChannelContext" | "compactChannelContext" | "deleteChannelHistory">>;
+    Partial<
+      Pick<
+        OpenBotDesktopApi["agent"],
+        "clearChannelContext" | "compactChannelContext" | "channelCompactAvailability" | "deleteChannelHistory"
+      >
+    >;
   eventRoutines?: EventRoutinesApi | undefined;
   browser: Pick<OpenBotDesktopApi["browser"], "capturePreview">;
   openUrl: OpenBotDesktopApi["openUrl"];

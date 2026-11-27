@@ -25,7 +25,12 @@ export interface AppPort {
   setAppLogoColorPreference: OpenBotDesktopApi["setAppLogoColorPreference"];
   agent: Pick<
     OpenBotDesktopApi["agent"],
-    "readConversationPage" | "searchConversationMessages" | "searchConversationFiles" | "listRoutines" | "listAgents"
+    | "readConversationPage"
+    | "searchConversationMessages"
+    | "searchConversationFiles"
+    | "listRoutines"
+    | "listAgents"
+    | "onScopedEvent"
   >;
   acpRegistry: OpenBotDesktopApi["acpRegistry"];
   routineFeed: OpenBotDesktopApi["routineFeed"];

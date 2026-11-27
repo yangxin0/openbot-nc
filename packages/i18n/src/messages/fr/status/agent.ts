@@ -14,6 +14,7 @@ export const messages = {
   "status.agent.modelSwitchedForSpentBalance":
     "{previous} n’a plus de crédits. Passage à {model}. Pour l’utiliser à nouveau, ajoutez des crédits, puis sélectionnez-le.",
   "status.agent.modelReturnedAfterError": "Retour à {model} après l’erreur du fournisseur.",
+  "status.agent.modelSwitchedForRemovedModel": "{previous} n'est plus disponible. Passage à {model}.",
   "status.agent.marketplaceSuggested": "Application de la Marketplace suggérée : {app}.",
   "status.agent.settingShown": "Réglage montré : {setting}.",
   "status.agent.channelMemberAdded": "{agent} a ajouté {member} au canal. {person} l’a demandé.",
@@ -106,16 +107,18 @@ export const messages = {
     "Souvenirs : {saved} enregistrés, {updated} mis à jour, {forgotten} oubliés, {notChanged} non modifiés, car un autre fil les a modifiés avant.",
   "status.agent.mcpToolCall": "Exécuter l’outil {tool} du serveur MCP {name}.",
   "status.agent.uiBlockClosedByMessage": "Fermé par un nouveau message",
-  "status.agent.nextStepContinues": "L’agent s’est arrêté avant l’étape suivante. Il continue ({current} sur {limit}).",
-  "status.agent.planContinues": "Le plan a des étapes en cours. L’agent continue ({current} sur {limit}).",
-  "status.agent.planStopped":
-    "L’agent s’est arrêté avec des étapes en cours dans son plan. Envoyez un message pour continuer.",
-  "status.agent.compactionContinues":
-    "La connexion s’est interrompue pendant que l’agent compactait son contexte. L’agent continue.",
-  "status.agent.providerExitContinues": "L’agent s’est arrêté avant de finir sa réponse. L’agent continue.",
-  "status.agent.branchTitle": "Chat dérivé",
   "status.agent.location.field": "Votre position",
   "status.agent.location.placeholder": "Ville, adresse ou lieu",
   "status.agent.location.submit": "Partager",
   "status.agent.location.shared": "Position partagée",
+  "status.agent.nextStepContinues": "L’agent s’est arrêté avant l’étape suivante. Il continue ({current} sur {limit}).",
+  "status.agent.planContinues": "Le plan a des étapes en cours. L’agent continue ({current} sur {limit}).",
+  "status.agent.planStopped":
+    "L’agent s’est arrêté avec des étapes en cours dans son plan. Envoyez un message pour continuer.",
+  "status.agent.continuationLimitReached":
+    "L’agent s’est arrêté avant la fin de la demande. Il ne peut plus continuer seul. Envoyez un message pour continuer.",
+  "status.agent.compactionContinues":
+    "La connexion s’est interrompue pendant que l’agent compactait son contexte. L’agent continue.",
+  "status.agent.providerExitContinues": "L’agent s’est arrêté avant de finir sa réponse. L’agent continue.",
+  "status.agent.branchTitle": "Chat dérivé",
 } as const satisfies PartialTranslation<typeof source>;

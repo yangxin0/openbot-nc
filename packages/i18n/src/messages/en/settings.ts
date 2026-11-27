@@ -109,7 +109,8 @@ export const messages = defineMessages("settings", {
   "settings.quitGuard.always": "Always",
   "settings.quitGuard.never": "Never",
   "settings.externalLinks.title": "Open external links in",
-  "settings.externalLinks.description": "Links in chats, sign-in pages and billing pages open here.",
+  "settings.externalLinks.description":
+    "Links in chats, sign-in pages and billing pages open here. With OpenBot-NC, only links in the main window's chats with agents on this computer open in OpenBot-NC. Other links open in the default browser.",
   "settings.externalLinks.defaultBrowser": "Default browser",
   "settings.externalLinks.openbot": "OpenBot-NC",
   "settings.externalLinks.defaultBrowserNamed": "Default browser ({name})",
@@ -236,8 +237,7 @@ export const messages = defineMessages("settings", {
   "settings.notch.xwayland.title": "Restart needed",
   "settings.notch.xwayland.description":
     "On Wayland, OpenBot-NC must use XWayland to show the Dynamic Island above other apps. Until then, the island does not show.",
-  "settings.notch.xwayland.unsupported":
-    "On Wayland without XWayland, the Dynamic Island cannot show above other apps.",
+  "settings.notch.xwayland.unsupported": "On this Wayland desktop, the Dynamic Island cannot show above other apps.",
   "settings.notch.xwayland.restart": "Restart",
   "settings.notch.idle.title": "Show idle island",
   "settings.notch.idle.description": "Show the OpenBot-NC logo and greeting when no status is active.",
@@ -267,8 +267,11 @@ export const messages = defineMessages("settings", {
   "settings.agentDock.xwayland.description":
     "On Wayland, OpenBot-NC must use XWayland to show the dock above other apps. Until then, the dock shows in the OpenBot-NC window.",
   "settings.agentDock.xwayland.unsupported":
-    "On Wayland without XWayland, the dock cannot show above other apps. It shows in the OpenBot-NC window.",
+    "On this Wayland desktop, the dock cannot show above other apps. It shows in the OpenBot-NC window.",
   "settings.agentDock.xwayland.restart": "Restart",
+  "settings.agentDock.noCompositor.title": "Shown in the OpenBot-NC window",
+  "settings.agentDock.noCompositor.description":
+    "Your desktop cannot show see-through windows, so the dock shows in the OpenBot-NC window. To show it above other apps, turn on desktop effects (a compositor) in your system settings, then restart OpenBot-NC.",
   "settings.agentDock.display.title": "Display",
   "settings.agentDock.display.description":
     "If that display is not connected, the dock goes to the display of the OpenBot-NC window.",

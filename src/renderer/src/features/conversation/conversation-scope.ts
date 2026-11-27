@@ -4,9 +4,11 @@ import {
   fileQuoteId,
   fileQuoteTarget,
   limitedQuoteText,
+  serializeChatTagReference,
 } from "@openbot/contracts/chat-tag-references";
 import { isNarrationItemId } from "@openbot/contracts/conversation-narration";
 import {
+  AUTOMATIC_VOICE_LANGUAGE,
   customProviderOfModel,
   isCustomProviderHarness,
   type McpSignInRelayPage,
@@ -75,7 +77,7 @@ import { createBrowserStore } from "./stores/browser-store";
 import { createComposerActions } from "./stores/composer-actions";
 import { conversationOwnerId, createComposerStore, currentConversationTarget } from "./stores/composer-store";
 import { createMcpServersStore } from "./stores/mcp-servers-store";
-import { createMessageActions } from "./stores/message-actions";
+import { createMessageActions, draftWithPageContext, draftWithPageText } from "./stores/message-actions";
 import { createMessagePinsStore } from "./stores/message-pins-store";
 import { createPanelsStore, isSidePanelMode } from "./stores/panels-store";
 import { PENDING_SEND_ID_PREFIX, type PendingSend, pendingSendMessage } from "./stores/pending-send-store";
@@ -90,6 +92,7 @@ import { createThreadComposerActions } from "./stores/thread-composer-actions";
 import { createThreadQueue } from "./stores/thread-queue-edit";
 import { createVoiceConversation } from "./stores/voice-conversation-store";
 import { createVoiceStore } from "./stores/voice-store";
+import { claimVoiceLanguageNotice } from "./voice-language-notice";
 
 const READER_INPUT_WINDOW_MS = 250;
 
@@ -198,6 +201,8 @@ export function createConversationViewScope(props: ConversationProps) {
     setVoiceLevels,
     voiceLimitReached,
     setVoiceLimitReached,
+    voiceLanguageChoice,
+    setVoiceLanguageChoice,
     markingRead,
     setMarkingRead,
     submitting,
@@ -341,9 +346,11 @@ export function createConversationViewScope(props: ConversationProps) {
     openBrowserWindow,
     reattachBrowserWindow,
     hideBrowserPanel,
+    openFileFromThread,
     previewAttachment,
     attachmentAction,
     attachmentDownloads,
+    imageCopies,
     openSharedFile,
     openThreadFile,
     openWorkspaceFile,
@@ -447,6 +454,7 @@ export function createConversationViewScope(props: ConversationProps) {
   const currentChatErrorRun = () => currentChatErrorEntry()?.run ?? null;
   const currentChatErrorLink = () => currentChatErrorEntry()?.link ?? null;
   const currentChatErrorDetails = () => currentChatErrorEntry()?.details ?? null;
+  const currentChatErrorNotice = () => currentChatErrorEntry()?.notice === true;
   const attachmentBusy = (target = currentTarget()) =>
     target !== undefined && importingDrafts().has(composerDraftKey(target));
   const uploadFailed = (target = currentTarget()) =>
@@ -550,6 +558,7 @@ export function createConversationViewScope(props: ConversationProps) {
     browserAddress,
     setBrowserAddress,
     setComposerError: setScopedComposerError,
+    browserWindowOpen,
     takeoverPageRequest: controller.browserTakeoverPageRequest,
     setTakeoverPageRequest: controller.setBrowserTakeoverPageRequest,
     panels: {
@@ -575,6 +584,8 @@ export function createConversationViewScope(props: ConversationProps) {
     openBrowserTakeoverTab,
     openWaitingAgent,
     canOpenBrowserTakeoverTab,
+    browserTabNotice,
+    noticeBrowserTabs,
     localSignIn,
     activeBrowserControl,
     actingBrowserControl,
@@ -588,6 +599,9 @@ export function createConversationViewScope(props: ConversationProps) {
     browserTabOwner,
     reloadBrowserTab,
     stopBrowserTab,
+    answerBrowserPermission,
+    permissionAnswerPending,
+    answerBrowserHttpSignIn,
     navigateBrowserTab,
     takeBrowserControl,
     releaseBrowserControl,
@@ -1000,6 +1014,9 @@ export function createConversationViewScope(props: ConversationProps) {
       setVoiceLimitReached((current) =>
         reached ? target : current?.agentId === target.agentId && current.serverId === target.serverId ? null : current,
       ),
+    offerVoiceLanguageChoice: (target) => {
+      if (claimVoiceLanguageNotice()) setVoiceLanguageChoice(target);
+    },
     hooks: {
       saveEdit: (...args) => actions.saveQueuedMessageEdit(...args),
       submit: (...args) => actions.submitMessage(...args),
@@ -1137,6 +1154,33 @@ export function createConversationViewScope(props: ConversationProps) {
     );
   };
   const dismissVoiceLimitNotice = () => setVoiceLimitReached(null);
+  const voiceLanguageNotice = () => {
+    const offered = voiceLanguageChoice();
+    return Boolean(
+      offered && offered.agentId === conversationOwnerId(props) && offered.serverId === (props.server?.id ?? "local"),
+    );
+  };
+  const dismissVoiceLanguageNotice = () => setVoiceLanguageChoice(null);
+  const chooseOtherVoiceLanguage = async () => {
+    const target = voiceLanguageChoice();
+    setVoiceLanguageChoice(null);
+    if (!target) return;
+    const voice = conversationRuntime(props).voice;
+    const { t, errorMessage } = currentText();
+    try {
+      await voice.setSettings({ modelId: "whisper-turbo", language: AUTOMATIC_VOICE_LANGUAGE });
+    } catch (error) {
+      setConversationError(target, errorMessage(error, t("settings.voice.saveFailed")));
+      return;
+    }
+    try {
+      const status = await voice.downloadModel({ modelId: "whisper-turbo" });
+      if (status.phase === "error")
+        setConversationError(target, errorMessage(status.message, t("settings.voice.downloadFailed")));
+    } catch (error) {
+      setConversationError(target, errorMessage(error, t("settings.voice.downloadFailed")));
+    }
+  };
   createEffect(
     () => voiceLimitNotice() && !currentDraft().text.trim(),
     (emptied) => {
@@ -1838,7 +1882,61 @@ export function createConversationViewScope(props: ConversationProps) {
 
   function quoteSelection(messageId: string, text: string) {
     const quoted = limitedQuoteText(text);
+    const thread = previewSideThread(messageId);
+    if (thread) {
+      const quote = serializeChatTagReference("quote", quoted, messageId);
+      addToSideDraft(thread, (draft) => `${draft}${draft && !/\s$/u.test(draft) ? " " : ""}${quote} `);
+      return;
+    }
     setQuoteRequest((current) => ({ id: (current?.id ?? 0) + 1, messageId, text: quoted }));
+  }
+
+  function quotesShownPreview(quoteId: string): boolean {
+    const target = fileQuoteTarget(quoteId);
+    return target !== null && fileQuoteId({ ...target, lines: undefined }) === previewQuoteId();
+  }
+
+  function previewSideThread(quoteId?: string): { id: string; draftKey: string } | undefined {
+    if (quoteId !== undefined && !quotesShownPreview(quoteId)) return undefined;
+    const id = filePreviewOpen() ? sidebarFilePreview()?.threadId : undefined;
+    const draftKey = id && sideThreadIds().includes(id) ? threadComposer.sideDraftKey(id) : undefined;
+    return id && draftKey ? { id, draftKey } : undefined;
+  }
+
+  function addToSideDraft(thread: { id: string; draftKey: string }, update: (draft: string) => string) {
+    threadComposer.setText(thread.draftKey, update(threadComposer.draft(thread.draftKey).text));
+    openPanelThread(thread.id);
+    flush();
+    requestDraftFocus(thread.draftKey);
+  }
+
+  function addPreviewPageText(text: string) {
+    const thread = previewSideThread();
+    if (thread) addToSideDraft(thread, (draft) => draftWithPageText(draft, text));
+    else addPageText(text);
+  }
+
+  function setPreviewPageContext(attachmentId: string, text: string) {
+    const hasAttachment = (message: { attachments?: readonly { id: string }[] | undefined }) =>
+      message.attachments?.some((file) => file.id === attachmentId) === true;
+    const thread = previewSideThread();
+    if (!thread) {
+      const message = props.messages.find(hasAttachment);
+      if (message) setPageContext(message, text);
+      return;
+    }
+    const message = props.threads?.side.thread(thread.id)?.conversation?.messages.find(hasAttachment);
+    const next = message && draftWithPageContext(threadComposer.draft(thread.draftKey).text, message.id, text);
+    if (next !== undefined) threadComposer.setText(thread.draftKey, next);
+  }
+
+  async function sendMessageSelection(messageId: string, body: string): Promise<boolean> {
+    const thread = previewSideThread(messageId);
+    const side = thread ? props.threads?.side.thread(thread.id) : undefined;
+    if (!thread || !side) return sendSelectionInstruction(messageId, body);
+    const sent = await side.onSend(body, [], null);
+    if (sent) openPanelThread(thread.id);
+    return sent;
   }
 
   const taggableBrowserTabs = createMemo(() =>
@@ -2644,6 +2742,8 @@ export function createConversationViewScope(props: ConversationProps) {
     openBrowserTakeoverTab,
     openWaitingAgent,
     canOpenBrowserTakeoverTab,
+    browserTabNotice,
+    noticeBrowserTabs,
     localSignIn,
     activeChatSearchIndex,
     agentActivity,
@@ -2656,6 +2756,7 @@ export function createConversationViewScope(props: ConversationProps) {
     browserTabOwner,
     attachmentAction,
     attachmentDownloads,
+    imageCopies,
     attachmentBusy,
     uploadFailed,
     currentUploads,
@@ -2691,6 +2792,7 @@ export function createConversationViewScope(props: ConversationProps) {
     currentChatErrorRun,
     currentChatErrorLink,
     currentChatErrorDetails,
+    currentChatErrorNotice,
     currentChatConversationKey,
     dismissCurrentChatErrors,
     dismissAwaitingReplies,
@@ -2793,6 +2895,7 @@ export function createConversationViewScope(props: ConversationProps) {
     editPendingSend,
     dismissPendingSend,
     presentedQueueDeliveries,
+    openFileFromThread,
     previewAttachment,
     props,
     queuePanelVisible,
@@ -2802,6 +2905,9 @@ export function createConversationViewScope(props: ConversationProps) {
     navigateBrowserTab,
     reloadBrowserTab,
     stopBrowserTab,
+    answerBrowserPermission,
+    permissionAnswerPending,
+    answerBrowserHttpSignIn,
     removeAttachment,
     renderedAgentActivity,
     activeStepActivity,
@@ -2813,7 +2919,9 @@ export function createConversationViewScope(props: ConversationProps) {
     replyTarget,
     replyToMessage,
     addPageText,
+    addPreviewPageText,
     setPageContext,
+    setPreviewPageContext,
     skillSettingsRequest,
     openSkillSettings,
     clearSkillSettingsRequest,
@@ -2829,7 +2937,7 @@ export function createConversationViewScope(props: ConversationProps) {
     screenOpen,
     selectAndConfirmModel,
     selectAndConfirmReasoning,
-    sendSelectionInstruction,
+    sendMessageSelection,
     sendCardMessage,
     sendCardFile,
     saveSkillSuggestion,
@@ -2893,6 +3001,9 @@ export function createConversationViewScope(props: ConversationProps) {
     voiceLevels,
     voiceLimitNotice,
     dismissVoiceLimitNotice,
+    voiceLanguageNotice,
+    dismissVoiceLanguageNotice,
+    chooseOtherVoiceLanguage,
     voiceLiveText,
     voicePhase,
     voiceThreadKey,

@@ -29,6 +29,7 @@ function endsQuietResume(status: RemoteRecoveryStatus): boolean {
 export interface ServerConnectionHandle {
   client: RemoteTeamTransportRef;
   refresh(): void;
+  reconnect(): void;
   quietStart(): void;
 }
 
@@ -42,6 +43,7 @@ interface Props {
   hostId: string;
   publicKey: string;
   active: boolean;
+  background: boolean;
   relay: PhoneRelay;
   register(hostId: string, handle: ServerConnectionHandle | null): void;
   load(hostId: string, publicKey: string, client: RemoteTeamTransportRef, context: ServerLoadContext): Promise<void>;
@@ -60,6 +62,7 @@ export const ServerConnection = memo(function ServerConnection({
   hostId,
   publicKey,
   active,
+  background,
   relay,
   register,
   load,
@@ -204,7 +207,15 @@ export const ServerConnection = memo(function ServerConnection({
       },
     );
     controller.current = recovery;
-    register(hostId, { client, refresh: () => recovery.refresh(), quietStart });
+    register(hostId, {
+      client,
+      refresh: () => recovery.refresh(),
+      reconnect: () => {
+        if (activeRef.current && lastStatus.current && lastStatus.current.status.phase !== "online") client.newPage();
+        recovery.refresh();
+      },
+      quietStart,
+    });
     recovery.setActive(activeRef.current && hostListedRef.current);
     return () => {
       disposed = true;
@@ -251,6 +262,13 @@ export const ServerConnection = memo(function ServerConnection({
     if (!hostListed) supportLog.add("info", "connection", `${hostId} not in the roster; waiting for its online notice`);
     controller.current?.setActive(activeRef.current && hostListed);
   }, [hostId, hostListed]);
+
+  const wasBackground = useRef(background);
+  useEffect(() => {
+    const opened = wasBackground.current && !background;
+    wasBackground.current = background;
+    if (opened) controller.current?.resetBackoff();
+  }, [background]);
 
   return (
     <RemoteTeamTransport

@@ -61,6 +61,7 @@ import { ContextUsageMeter, type ContextUsageView } from "@openbot/ui/features/c
 import { ApprovalCard } from "@openbot/ui/features/conversation/ConversationPrompts";
 import { dayMarkerLabel } from "@openbot/ui/features/conversation/chat-day-markers";
 import { CHAT_TIME_GAP_MS, continuesSenderRun } from "@openbot/ui/features/conversation/chat-grouping";
+import type { ImageCopies } from "@openbot/ui/features/conversation/ImageLightbox";
 import {
   preferredMessageScrollBehavior,
   ScrollToLatestButton,
@@ -114,6 +115,7 @@ const MARKER_ROW_KINDS: ReadonlySet<ChatActionMarkerModel["kind"]> = new Set([
   "skill-lifecycle",
   "instructions-change",
   "plan-continuation",
+  "no-answer",
   "model-switch",
   "channel-change",
   "vault-change",
@@ -192,6 +194,7 @@ export interface AgentThreadViewProps {
   pendingImages?: readonly ComposerPendingImage[] | undefined;
   onRemoveAttachment?: ((attachment: DraftAttachment) => void) | undefined;
   mediaSource?: AttachmentMediaSource | undefined;
+  imageCopies?: ImageCopies | undefined;
   downloads?: AttachmentDownloads | undefined;
   onDraftChange: (text: string) => void;
   onPasteFiles?:
@@ -938,6 +941,7 @@ export function AgentThreadView(props: AgentThreadViewProps) {
                           onOpenSharedFile={sharedFileOpener(props.agent.id)}
                           onOpenWorkspaceFile={workspaceFileOpener(props.agent.id)}
                           mediaSource={props.mediaSource}
+                          imageCopies={props.imageCopies}
                           downloads={props.downloads}
                           onDownload={(attachment) => props.onAttachmentAction(attachment, "download")}
                           macWindowControls={props.macWindowControls}

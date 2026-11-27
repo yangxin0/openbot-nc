@@ -5,6 +5,7 @@ import type {
   AgentStatus,
   ExternalDestination,
   HostDefaultProvider,
+  ProviderAccountPoolStrategy,
   ProviderAdminDesktopApi,
   ServerSummary,
   UpdateCustomProviderInput,
@@ -29,6 +30,7 @@ import {
 import { PROVIDER_ACCOUNT_CODE_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-code-v1";
 import { PROVIDER_ACCOUNT_KEYS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-keys-v1";
 import { PROVIDER_ACCOUNT_MODELS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-models-v1";
+import { PROVIDER_ACCOUNT_POOL_STRATEGY_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-pool-strategy-v1";
 import { PROVIDER_ACCOUNT_POOL_CAPABILITY } from "@openbot/contracts/team-protocol/provider-account-pool-v1";
 import {
   type ProviderAccountRelay,
@@ -167,6 +169,7 @@ function webProviderAdmin(
   accountRelay: () => ProviderAccountRelay | null,
   accountModels: () => boolean,
   accountPools: () => boolean,
+  accountPoolStrategy: () => boolean,
   providerRelay: (provider: AgentProviderId) => ReturnType<typeof providerSignInRelay>,
 ): ProviderAdminDesktopApi {
   return {
@@ -255,7 +258,7 @@ function webProviderAdmin(
       ),
     accounts: async (serverId) =>
       runTeamEffect(
-        listProviderAccountsWithModels(request(serverId), accountModels(), accountPools()).pipe(
+        listProviderAccountsWithModels(request(serverId), accountModels(), accountPools(), accountPoolStrategy()).pipe(
           Effect.mapError((error) => error.cause),
         ),
       ),
@@ -294,7 +297,11 @@ function webProviderAdmin(
     removeAccount: async (input, serverId) =>
       runTeamEffect(removeProviderAccount(request(serverId), input).pipe(Effect.mapError((error) => error.cause))),
     setAccountPool: async (input, serverId) =>
-      runTeamEffect(setProviderAccountPool(request(serverId), input).pipe(Effect.mapError((error) => error.cause))),
+      runTeamEffect(
+        setProviderAccountPool(request(serverId), input, accountPoolStrategy()).pipe(
+          Effect.mapError((error) => error.cause),
+        ),
+      ),
     hostDefaultProvider: async (serverId) =>
       knownHostDefault(
         await runTeamEffect(getHostProviderDefault(request(serverId)).pipe(Effect.mapError((error) => error.cause))),
@@ -403,6 +410,7 @@ export function createWebProviderSettings(options: WebProviderSettingsOptions) {
     accountRelayOfServer,
     () => serverSupportsCapability(options.server(), PROVIDER_ACCOUNT_MODELS_CAPABILITY),
     () => serverSupportsCapability(options.server(), PROVIDER_ACCOUNT_POOL_CAPABILITY),
+    () => serverSupportsCapability(options.server(), PROVIDER_ACCOUNT_POOL_STRATEGY_CAPABILITY),
     (provider) => providerSignInRelay(provider, (capability) => serverSupportsCapability(options.server(), capability)),
   );
   const serverId = createMemo(() => remoteAdminServer(options.server(), "providers-v1")?.id);
@@ -612,8 +620,19 @@ export function createWebProviderSettings(options: WebProviderSettingsOptions) {
         : {}),
       ...(remoteAdminServer(options.server(), PROVIDER_ACCOUNT_POOL_CAPABILITY)?.id === id
         ? {
-            setPool: (provider: AgentProviderId, enabled: boolean, leftOut: readonly string[]) =>
-              changed(admin.setAccountPool({ provider, enabled, leftOut: [...leftOut] }, id)),
+            setPool: (
+              provider: AgentProviderId,
+              enabled: boolean,
+              leftOut: readonly string[],
+              strategy?: ProviderAccountPoolStrategy,
+            ) =>
+              changed(
+                admin.setAccountPool(
+                  { provider, enabled, leftOut: [...leftOut], ...(strategy ? { strategy } : {}) },
+                  id,
+                ),
+              ),
+            poolStrategy: serverSupportsCapability(options.server(), PROVIDER_ACCOUNT_POOL_STRATEGY_CAPABILITY),
           }
         : {}),
       ...(accountCodeServerId() === id

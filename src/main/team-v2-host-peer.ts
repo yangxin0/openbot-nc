@@ -11,6 +11,7 @@ import { AGENT_PENDING_RUNTIME_CAPABILITY } from "@openbot/contracts/team-protoc
 import { AGENT_TASK_UI_BLOCKS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-task-ui-blocks-v1";
 import { TEAM_PROTOCOL_CAPABILITY_LIMITS } from "@openbot/contracts/team-protocol/capability-limits";
 import {
+  AGENT_ERROR_LINK_CAPABILITY,
   BROWSER_SIGN_IN_CAPABILITY,
   BROWSER_VAULT_SKIP_CAPABILITY,
   CHANNEL_BROWSER_CAPABILITY,
@@ -121,6 +122,7 @@ import {
   TEAM_PROTOCOL_V10,
   TEAM_PROTOCOL_V10_ABSENT_LIMIT,
 } from "@openbot/contracts/team-protocol/v10";
+import { WORKFLOW_SPOT_CONTROL } from "@openbot/contracts/team-protocol/workflow-presence-v1";
 import { sourceText } from "@openbot/i18n/source";
 import { Context, Effect, Exit, Fiber, Layer, ManagedRuntime, Result } from "effect";
 import type * as Ws from "ws";
@@ -898,6 +900,7 @@ export class TeamV2HostPeer {
                 agentPendingRuntime: this.#peerCapabilities.has(AGENT_PENDING_RUNTIME_CAPABILITY),
                 queueHold: this.#peerCapabilities.has(QUEUE_HOLD_CAPABILITY),
                 queueHoldSignIn: this.#peerCapabilities.has(QUEUE_HOLD_SIGN_IN_CAPABILITY),
+                errorLink: this.#peerCapabilities.has(AGENT_ERROR_LINK_CAPABILITY),
                 uiBlocks: this.#peerCapabilities.has(TEAM_UI_BLOCKS_CAPABILITY),
                 subagents: this.#peerCapabilities.has(TEAM_SUBAGENTS_CAPABILITY),
                 promptMultiSelect: this.#peerCapabilities.has(TEAM_PROMPT_MULTI_SELECT_CAPABILITY),
@@ -1024,7 +1027,11 @@ export class TeamV2HostPeer {
     if (!this.#eventsSocket && this.#localSessionToken) this.#connectLocalEvents(this.#localSessionToken);
     if (frame.type === "event-control") {
       if (this.#eventsSocket?.readyState === webSockets.WebSocket.OPEN) {
-        this.#eventsSocket.send(encodeTeamProtocolV1ClientEvent(frame.control));
+        this.#eventsSocket.send(
+          frame.control.type === WORKFLOW_SPOT_CONTROL
+            ? JSON.stringify(frame.control)
+            : encodeTeamProtocolV1ClientEvent(frame.control),
+        );
       }
       return;
     }

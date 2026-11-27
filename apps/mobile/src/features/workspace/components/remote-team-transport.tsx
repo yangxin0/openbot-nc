@@ -52,6 +52,7 @@ export interface RemoteTeamTransportRef {
   connect(hostId: string, hostPublicKey: string): Promise<{ kept: boolean }>;
   disconnect(): Promise<void>;
   networkChanged(): void;
+  newPage(): void;
   request<T>(
     method: string,
     path: string,
@@ -293,6 +294,7 @@ export const RemoteTeamTransport = memo(
           return { kept: result.kept === true };
         },
         networkChanged: () => peer.networkMoved(),
+        newPage: () => peer.networkMoved(),
         disconnect: async () => {
           const result = await enqueue({ type: "disconnect" });
           if (!result.ok)

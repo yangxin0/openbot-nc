@@ -8,4 +8,6 @@ export const messages = {
   "error.app.notReady": "OpenBot-NC hazır değil.",
   "error.app.macSecureStorageUnavailable": "macOS güvenli depolaması kullanılamıyor.",
   "error.app.secretStorageUnavailable": "Sistem gizli anahtar depolaması kullanılamıyor.",
+  "error.app.windowBlockedBySecuritySoftware":
+    "Bu bilgisayardaki güvenlik yazılımı muhtemelen OpenBot-NC penceresini durdurdu. Güvenlik yazılımınızda, örneğin Kaspersky'de, OpenBot-NC.exe dosyasını güvenilir uygulama olarak ekleyin. Ardından OpenBot-NC'yi yeniden başlatın.",
 } as const satisfies PartialTranslation<typeof source>;

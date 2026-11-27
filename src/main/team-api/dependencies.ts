@@ -20,6 +20,7 @@ import type {
   UpdateHostIdentityInput,
   VoiceTranscriptionResult,
 } from "@openbot/contracts/ipc";
+import type { WorkflowSpotEvent } from "@openbot/contracts/team-protocol/workflow-presence-v1";
 import type { Logger } from "@openbot/logging";
 import type { Effect } from "effect";
 import type { AgentService } from "../../backend/agent-service";
@@ -176,6 +177,7 @@ type TeamApiAgentMethods = Pick<
   | "deleteAgentHistory"
   | "clearChannelContext"
   | "compactChannelContext"
+  | "channelCompactAvailable"
   | "deleteChannelHistory"
   | "compactAgentContext"
   | "compactTaskContext"
@@ -244,6 +246,8 @@ export type TeamApiProviderAccounts = Pick<
   | "models"
   | "pools"
   | "setPool"
+  | "poolStrategies"
+  | "setPoolStrategy"
   | "usage"
   | "startSignIn"
   | "signInStatus"
@@ -518,10 +522,13 @@ export type TeamApiBrowser = Pick<
   | "startTeach"
   | "stopTeach"
   | "stop"
+  | "answerPermission"
   | "importSignIn"
+  | "answerHttpSignIn"
   | "startView"
   | "dispatchViewInput"
   | "copyViewSelection"
+  | "answerViewDialog"
 >;
 export type TeamApiBrowserView = Pick<
   BrowserViewGateway,
@@ -614,12 +621,14 @@ export interface TeamApiOptions {
   chat?: TeamChatStore | undefined;
   onDirectMessage?: ((event: DirectMessageRealtimeEvent) => void) | undefined;
   onDirectTyping?: ((event: DirectTypingRealtimeEvent) => void) | undefined;
+  onWorkflowSpot?: ((event: WorkflowSpotEvent) => void) | undefined;
   createInvite?: OmitThisParameter<HostService["createInvite"]> | undefined;
   updateMember?: OmitThisParameter<HostService["updateMember"]> | undefined;
   removeMember?: OmitThisParameter<HostService["removeMember"]> | undefined;
   onSessionRevoked?: ((sessionId: string) => Effect.Effect<void, RemoteWorkflowError>) | undefined;
   focusUse?: boolean | undefined;
   rateLimitCapacity?: number | undefined;
+  workflowSpotStaleMs?: number | undefined;
   now?: (() => number) | undefined;
   logger?: Logger | undefined;
 }

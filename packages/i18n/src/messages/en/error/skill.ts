@@ -37,7 +37,8 @@ export const messages = defineMessages("error.skill", {
   "error.skill.lockInvalid": "The installed skill record is invalid. It was left unchanged.",
   "error.skill.installPathSymlink": "Skill installation paths cannot contain symbolic links.",
   "error.skill.tooManySkills": "An agent can have up to {limit} skills.",
-  "error.skill.unmanagedExists": "An unmanaged skill already exists at {path}.",
+  "error.skill.ownSkillExists":
+    "This agent already has its own skill named {slug}. Ask the agent to rename or delete that skill, then add this skill again.",
   "error.skill.managedSlug": "OpenBot-NC gives every agent its own {slug} skill. Give this skill a different name.",
   "error.skill.localNoRevisions": "Local skill has no published revisions.",
   "error.skill.localNotFound": "This local skill does not exist. Check its ID in the list of local skills.",

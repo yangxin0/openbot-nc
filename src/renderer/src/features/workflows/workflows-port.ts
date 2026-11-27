@@ -13,6 +13,12 @@ import {
 } from "@openbot/contracts/ipc";
 import { ATTACHMENT_PREVIEW_CAPABILITY } from "@openbot/contracts/team-protocol/attachment-preview-v1";
 import { WORKFLOW_FOLDERS_CAPABILITY } from "@openbot/contracts/team-protocol/workflow-folders-v1";
+import {
+  WORKFLOW_PRESENCE_CAPABILITY,
+  WORKFLOW_SPOT_EVENT,
+  type WorkflowSpotEvent,
+  type WorkflowSpotInput,
+} from "@openbot/contracts/team-protocol/workflow-presence-v1";
 import { WORKFLOWS_AGENT_FILES_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-agent-files-v1";
 import { WORKFLOWS_ANSWERS_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-answers-v1";
 import { WORKFLOWS_MEDIA_ACCOUNT_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-media-account-v1";
@@ -52,6 +58,9 @@ export interface WorkflowHost {
   folders(): Promise<WorkflowFoldersSnapshot>;
   folderAction(action: WorkflowFolderAction): Promise<WorkflowFoldersSnapshot>;
   onFoldersChanged(changed: () => void): () => void;
+  presenceSupported(): boolean;
+  setSpot(input: WorkflowSpotInput): void;
+  onSpot(changed: (event: WorkflowSpotEvent) => void): () => void;
   pictures(): Promise<readonly StoredFileRow[]>;
   uploadPicture(file: File): Promise<StoredFileRow>;
   downloadMedia?(attachmentId: string): Promise<void>;
@@ -96,6 +105,19 @@ export function desktopMediaCredits(serverId: string) {
   return window.openbot.workflows.mediaCredits(serverId);
 }
 
+export function desktopWorkflowList(serverId: string) {
+  return window.openbot.workflows.list(serverId);
+}
+
+export function onDesktopWorkflowsChanged(
+  changed: (serverId: string, workflowId: string, agentId: string | undefined) => void,
+): () => void {
+  return window.openbot.agent.onScopedEvent((scoped) => {
+    if (scoped.event.type === "workflows-changed")
+      changed(scoped.serverId, scoped.event.workflowId, scoped.event.agentId);
+  });
+}
+
 export function desktopWorkflowHost(serverId: string, server: () => ServerSummary | undefined): WorkflowHost {
   const api = () => window.openbot.workflows;
   const local = () => server()?.kind !== "remote";
@@ -117,6 +139,7 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
     mediaSupported() && (local() || serverSupportsCapability(server(), WORKFLOWS_MEDIA_SIZE_CAPABILITY));
   const agentFilesSupported = () => local() || serverSupportsCapability(server(), WORKFLOWS_AGENT_FILES_CAPABILITY);
   const foldersSupported = () => local() || serverSupportsCapability(server(), WORKFLOW_FOLDERS_CAPABILITY);
+  const presenceSupported = () => local() || serverSupportsCapability(server(), WORKFLOW_PRESENCE_CAPABILITY);
   const mediaUrl = (attachmentId: string) =>
     local()
       ? `openbot-attachment://file/${encodeURIComponent(attachmentId)}`
@@ -154,6 +177,7 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
       mediaPrice: (input) => api().mediaPrice(input, serverId),
       folders: () => api().folders(serverId),
       folderAction: (action) => api().folderAction(action, serverId),
+      setSpot: (input) => api().setSpot(input, serverId),
     },
     onChanged(changed) {
       const unsubscribe = window.openbot.agent.onScopedEvent((scoped) => {
@@ -175,6 +199,17 @@ export function desktopWorkflowHost(serverId: string, server: () => ServerSummar
     onFoldersChanged: (changed) =>
       window.openbot.agent.onScopedEvent((scoped) => {
         if (scoped.serverId === serverId && scoped.event.type === "workflow-folders-changed") changed();
+      }),
+    presenceSupported,
+    setSpot(input) {
+      if (presenceSupported())
+        void api()
+          .setSpot(input, serverId)
+          .catch(() => undefined);
+    },
+    onSpot: (changed) =>
+      window.openbot.agent.onScopedEvent((scoped) => {
+        if (scoped.serverId === serverId && scoped.event.type === WORKFLOW_SPOT_EVENT) changed(scoped.event);
       }),
     async places() {
       if (!placesSupported()) return [];

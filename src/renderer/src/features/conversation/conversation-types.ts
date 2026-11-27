@@ -168,6 +168,8 @@ export interface ConversationProps {
   waits?: readonly AgentWait[] | undefined;
   threads?: ConversationThreads | undefined;
   browserTabs: BrowserTab[];
+  noticedBrowserTabIds?: ReadonlySet<string> | undefined;
+  onNoticeBrowserTabs?: ((tabIds: readonly string[]) => void) | undefined;
   activeBrowserTabId: string | null;
   browserVisibilitySuspended: boolean;
   workspaceCovered?: boolean | undefined;
@@ -232,6 +234,7 @@ export interface ConversationProps {
   onUpdateAgentPermissions?: ((input: UpdateAgentAdminSettingsInput) => Promise<void>) | undefined;
   onClearAgentContext?: (() => Promise<void>) | undefined;
   onDeleteAgentHistory?: (() => Promise<void>) | undefined;
+  onDeleteAgent?: ((agentId: string) => Promise<void>) | undefined;
   onCompactAgentContext?: (() => Promise<void>) | undefined;
   onRespondToBrowserTakeover: (decision: "complete" | "cancel", options?: PromptAnswerOptions) => Promise<boolean>;
   onCancelQueuedMessage: (deliveryId: string, recipientAgentId?: string) => void;
@@ -265,9 +268,16 @@ type SidebarFilePreviewSource =
   | { kind: "attachment"; attachment: AttachmentSummary };
 
 export type SidebarFilePreview =
-  | { ownerAgentId: string; source: SidebarFilePreviewSource; preview: FilePreview; directory?: undefined }
   | {
       ownerAgentId: string;
+      threadId?: string | undefined;
+      source: SidebarFilePreviewSource;
+      preview: FilePreview;
+      directory?: undefined;
+    }
+  | {
+      ownerAgentId: string;
+      threadId?: string | undefined;
       source: { kind: "workspace-folder"; agentId: string; path: string };
       preview: null;
       directory: WorkspaceDirectory;

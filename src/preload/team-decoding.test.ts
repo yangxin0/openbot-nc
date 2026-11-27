@@ -180,6 +180,7 @@ describe("team decoders", () => {
       decodeServer,
       { ...remoteServer, relayHost: { user: "alice", device: null } },
     ],
+    ["joined server with its username", decodeServer, { ...remoteServer, username: "member@example.com" }],
     [
       "server presence",
       decodeScopedTeamPresence,
@@ -238,6 +239,7 @@ describe("team decoders", () => {
     ["server with a negative key change time", decodeServer, { ...remoteServer, keyChangedAt: -1 }],
     ["server with a relay host that is not a record", decodeServer, { ...remoteServer, relayHost: "alice" }],
     ["server with a relay host without a user", decodeServer, { ...remoteServer, relayHost: { device: "laptop" } }],
+    ["server with a numeric username", decodeServer, { ...remoteServer, username: 7 }],
     [
       "server with a relay host with a numeric device",
       decodeServer,

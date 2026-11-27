@@ -100,6 +100,11 @@ import {
   type ThreadMessageSearchRequest,
 } from "@openbot/contracts/team-protocol/thread-message-search-v1";
 import { decodeTeamProtocolV1CurrentHttpResponse } from "@openbot/contracts/team-protocol/v1-adapter";
+import {
+  WORKFLOW_PRESENCE_CAPABILITY,
+  WORKFLOW_SPOT_CONTROL,
+  type WorkflowSpotInput,
+} from "@openbot/contracts/team-protocol/workflow-presence-v1";
 import { sourceText } from "@openbot/i18n/source";
 import { createFocusUsePing } from "@openbot/team-client/focus-use";
 import { retryOperationIds } from "@openbot/team-client/retry-operation-id";
@@ -1147,6 +1152,13 @@ export class RemoteServerManager extends EventEmitter<RemoteServerEvents> {
           typing: input.typing,
         }),
       ),
+  );
+
+  readonly setWorkflowSpot = Effect.fn("RemoteManager.setWorkflowSpot")((serverId: string, input: WorkflowSpotInput) =>
+    Effect.sync(() => {
+      if (!this.supportsCapability(serverId, WORKFLOW_PRESENCE_CAPABILITY)) return;
+      this.#events.sendWorkflowSpot(serverId, { type: WORKFLOW_SPOT_CONTROL, ...input });
+    }),
   );
 
   readonly openBrowserViewStream = Effect.fn("RemoteManager.openBrowserViewStream")(

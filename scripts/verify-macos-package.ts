@@ -76,6 +76,7 @@ await Promise.all([
   access(resolve(resourcesPath, "licenses/Supertone-Supertonic-3-LICENSE")),
   ...voiceRuntimeLibraries.map((name) => access(resolve(voiceRuntimePath, name))),
   access(voiceSessionSettingsPath),
+  access(resolve(voiceRuntimePath, "silero_vad_v5.onnx")),
   access(databaseHostPath),
   access(voiceHostPath),
   access(speechHostPath),
@@ -119,6 +120,13 @@ const urlSchemes: unknown[] = Array.isArray(plist.CFBundleURLTypes)
     )
   : [];
 expectEqual(urlSchemes.join(","), "openbot-nc", "URL schemes");
+for (const key of ["NSLocationUsageDescription", "NSLocationWhenInUseUsageDescription"] as const) {
+  expectEqual(
+    plist[key],
+    "OpenBot-NC shares the location of this Mac with a page in the OpenBot-NC browser only when you allow it.",
+    "location usage description",
+  );
+}
 
 const packageJson = JSON.parse(await readFile("package.json", "utf8"));
 if (!isDynamicRecord(packageJson)) throw new Error("package.json is not a JSON object.");

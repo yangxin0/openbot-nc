@@ -27,6 +27,8 @@ export const messages = {
   "error.remote.connectionServiceUnreachable":
     "此电脑无法连接 OpenBot-NC 连接服务。请检查网络连接。OpenBot-NC 会自动重新连接。",
   "error.remote.serverAnswerTimeout": "服务器未及时响应。OpenBot-NC 会自动重新连接。",
+  "error.remote.signInConnectionClosed":
+    "登录时与服务器的连接已关闭。如果反复出现，请确认服务器和此设备的日期和时间正确。",
   "error.remote.connectionCancelled": "远程连接已取消。",
   "error.remote.fileTransportIsStopped": "WebRTC 文件传输已停止。",
   "error.remote.fileTooLarge": "文件大于 100 MB。",

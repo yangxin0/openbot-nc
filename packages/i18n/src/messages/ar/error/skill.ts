@@ -36,7 +36,8 @@ export const messages = {
   "error.skill.lockInvalid": "سجل المهارة المثبّتة غير صالح. تُرك دون تغيير.",
   "error.skill.installPathSymlink": "لا يمكن أن تحتوي مسارات تثبيت المهارات على روابط رمزية.",
   "error.skill.tooManySkills": "يمكن أن يكون للوكيل {limit} مهارة كحد أقصى.",
-  "error.skill.unmanagedExists": "توجد مهارة غير مُدارة بالفعل في {path}.",
+  "error.skill.ownSkillExists":
+    "لدى هذا الوكيل بالفعل مهارة خاصة به باسم {slug}. اطلب من الوكيل إعادة تسمية تلك المهارة أو حذفها، ثم أضف هذه المهارة مرة أخرى.",
   "error.skill.managedSlug": "يمنح OpenBot-NC كل وكيل مهارة {slug} خاصة به. أعطِ هذه المهارة اسمًا مختلفًا.",
   "error.skill.localNoRevisions": "لا توجد مراجعات منشورة للمهارة المحلية.",
   "error.skill.localNotFound": "هذه المهارة المحلية غير موجودة. تحقّق من معرّفها في قائمة المهارات المحلية.",

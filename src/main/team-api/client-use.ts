@@ -29,11 +29,14 @@ import { AGENT_USAGE_LIMIT_ROUTES } from "@openbot/contracts/team-protocol/agent
 import { AGENT_WAITS_ROUTES } from "@openbot/contracts/team-protocol/agent-waits-v1";
 import { BACKGROUND_PROCESSES_ROUTES } from "@openbot/contracts/team-protocol/background-processes-v1";
 import { BITWARDEN_CONNECTOR_ROUTES } from "@openbot/contracts/team-protocol/bitwarden-connector-v1";
+import { BROWSER_HTTP_SIGN_IN_ROUTES } from "@openbot/contracts/team-protocol/browser-http-sign-in-v1";
 import { BROWSER_PAGE_STATE_ROUTES } from "@openbot/contracts/team-protocol/browser-page-state-v1";
+import { BROWSER_PERMISSIONS_ROUTES } from "@openbot/contracts/team-protocol/browser-permissions-v1";
 import { BROWSER_PROFILES_ROUTES } from "@openbot/contracts/team-protocol/browser-profiles-v1";
 import { BROWSER_USER_CONTROL_ROUTES } from "@openbot/contracts/team-protocol/browser-user-control-v1";
 import { BROWSING_MEMORY_ROUTES } from "@openbot/contracts/team-protocol/browsing-memory-v1";
 import { CACHE_EXPIRY_COMPACTION_ROUTES } from "@openbot/contracts/team-protocol/cache-expiry-compaction-v1";
+import { CHANNEL_COMPACT_AVAILABILITY_ROUTE } from "@openbot/contracts/team-protocol/channel-compact-availability-v1";
 import { CHANNEL_FOLDERS_ROUTES } from "@openbot/contracts/team-protocol/channel-folders-v1";
 import { CHANNEL_ROUTES } from "@openbot/contracts/team-protocol/channels-v1";
 import { CHAT_COLORS_ROUTES } from "@openbot/contracts/team-protocol/chat-colors-v1";
@@ -71,6 +74,7 @@ import { PENDING_APPROVAL_ROUTES } from "@openbot/contracts/team-protocol/pendin
 import { PENDING_PROMPTS_ROUTES } from "@openbot/contracts/team-protocol/pending-prompts-v1";
 import { PROMPT_CACHE_TTL_ROUTES } from "@openbot/contracts/team-protocol/prompt-cache-ttl-v1";
 import { PROVIDER_ACCOUNT_MODELS_ROUTES } from "@openbot/contracts/team-protocol/provider-account-models-v1";
+import { PROVIDER_ACCOUNT_POOL_STRATEGY_ROUTES } from "@openbot/contracts/team-protocol/provider-account-pool-strategy-v1";
 import { PROVIDER_ACCOUNT_POOL_ROUTES } from "@openbot/contracts/team-protocol/provider-account-pool-v1";
 import { PROVIDER_ACCOUNTS_ROUTES } from "@openbot/contracts/team-protocol/provider-accounts-v1";
 import { PROVIDER_DEFAULT_ROUTES } from "@openbot/contracts/team-protocol/provider-default-v1";
@@ -153,6 +157,7 @@ const PASSIVE_ROUTES: ReadonlySet<string> = new Set([
   PROVIDER_MODEL_SOURCE_ROUTES.list,
   PROVIDER_ACCOUNT_MODELS_ROUTES.list,
   PROVIDER_ACCOUNT_POOL_ROUTES.list,
+  PROVIDER_ACCOUNT_POOL_STRATEGY_ROUTES.list,
   PROVIDER_DEFAULT_ROUTES.settings,
   PROVIDER_USE_ROUTES.list,
   LOCAL_SERVERS_ROUTES.list,
@@ -192,6 +197,7 @@ const PASSIVE_ROUTES: ReadonlySet<string> = new Set([
   AGENT_NEW_CHAT_ROUTES.settings,
   AGENT_PLAN_CARD_ROUTES.settings,
   AGENT_BUILTIN_MEMORY_ROUTES.settings,
+  CHANNEL_COMPACT_AVAILABILITY_ROUTE,
   AGENT_DEFAULTS_ROUTES.settings,
   AGENT_FAST_MODE_ROUTES.settings,
   AGENT_FAST_MODE_ROUTES.models,
@@ -249,6 +255,7 @@ const PASSIVE_ROUTES: ReadonlySet<string> = new Set([
   AGENT_THREAD_QUEUE_ROUTES.list,
   BROWSER_USER_CONTROL_ROUTES.state,
   BROWSER_PAGE_STATE_ROUTES.state,
+  BROWSER_PERMISSIONS_ROUTES.state,
   CRM_ROUTES.settings,
   CRM_ROUTES.overview,
   CRM_ROUTES.customers,
@@ -279,6 +286,7 @@ const PASSIVE_ROUTES: ReadonlySet<string> = new Set([
   EVENTS_ROUTES.listActivity,
   MCP_SIGN_IN_ROUTES.list,
   MCP_SIGN_IN_ROUTES.status,
+  BROWSER_HTTP_SIGN_IN_ROUTES.state,
 ]);
 
 const PASSIVE_PATTERNS: readonly RegExp[] = [

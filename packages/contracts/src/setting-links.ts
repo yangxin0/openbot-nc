@@ -35,6 +35,7 @@ export const SETTING_LINK_SCOPES = {
   "island.show": "app",
   "dock.show": "app",
   "dock.agents": "app",
+  "computer-use.permissions": "app",
   "updates.track": "app",
   "updates.auto-install": "app",
   "agent.model": "agent",

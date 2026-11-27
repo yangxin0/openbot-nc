@@ -107,6 +107,8 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
       onProviders={openProviders()}
       onCrm={crmRailAction()}
       onCrmConnectors={crmConnectorsAction()}
+      hiddenItems={layout.railHidden()}
+      onHiddenChange={layout.setRailHidden}
       onMarketplace={() => {
         setSkillsMarketplaceOpen(true);
       }}

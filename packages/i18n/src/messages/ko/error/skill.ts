@@ -38,7 +38,8 @@ export const messages = {
   "error.skill.lockInvalid": "설치된 스킬 기록이 올바르지 않아요. 변경하지 않고 그대로 두었어요.",
   "error.skill.installPathSymlink": "스킬 설치 경로에는 심볼릭 링크를 포함할 수 없어요.",
   "error.skill.tooManySkills": "에이전트에는 스킬을 최대 {limit}개까지 둘 수 있어요.",
-  "error.skill.unmanagedExists": "{path}에 관리되지 않는 스킬이 이미 있어요.",
+  "error.skill.ownSkillExists":
+    "이 에이전트에는 이미 {slug}(이)라는 자체 스킬이 있어요. 에이전트에게 그 스킬의 이름을 바꾸거나 삭제해 달라고 요청한 다음 이 스킬을 다시 추가해 주세요.",
   "error.skill.managedSlug":
     "OpenBot-NC는 모든 에이전트에 자체 {slug} 스킬을 제공해요. 이 스킬에는 다른 이름을 지정해 주세요.",
   "error.skill.localNoRevisions": "로컬 스킬에 게시된 수정본이 없어요.",

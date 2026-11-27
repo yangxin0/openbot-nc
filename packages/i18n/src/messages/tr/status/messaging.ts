@@ -43,6 +43,9 @@ export const messages = {
     "Bu WhatsApp numarasına başka bir OpenBot-NC da bağlı, bu yüzden iki yanıt alabilirsin. Düzeltmek için telefonundaki WhatsApp'ta Bağlı cihazlar'ı aç ve kullanmadığın OpenBot-NC'den çıkış yap.",
   "status.messaging.whatsappPaused":
     "OpenBot-NC burada 10 dakika yanıt vermeyi durdurdu: kısa sürede çok fazla mesaj geldi. Bu numaraya başka bir OpenBot-NC da bağlıysa telefonundaki WhatsApp'ta Bağlı cihazlar'ı aç ve kullanmadığın OpenBot-NC'den çıkış yap.",
+  "status.messaging.whatsappNotDelivered": "WhatsApp bu yanıtı kabul etmedi, bu yüzden kişi yanıtı almadı.",
+  "status.messaging.whatsappPartlyDelivered":
+    "WhatsApp bu yanıtın tamamını kabul etmedi, bu yüzden kişi yalnızca bir kısmını aldı.",
   "status.messaging.whatsappOrchestratorName": "WhatsApp Düzenleyicisi",
   "status.messaging.whatsappOrchestratorTitle": "WhatsApp'ta yanıt verir ve ekibe sorar",
 } as const satisfies PartialTranslation<typeof source>;

@@ -76,6 +76,7 @@ export interface ServerSummary {
   logoUrl: string | null;
   appearance?: ServerAppearance | null;
   role: TeamRole | null;
+  username?: string;
   active: boolean;
   restartAvailable?: boolean;
   keyChangedAt?: number;

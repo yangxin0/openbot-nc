@@ -7,4 +7,6 @@ export const messages = defineMessages("error.app", {
   "error.app.notReady": "OpenBot-NC is not ready.",
   "error.app.macSecureStorageUnavailable": "macOS secure storage is unavailable.",
   "error.app.secretStorageUnavailable": "System secret storage is unavailable.",
+  "error.app.windowBlockedBySecuritySoftware":
+    "Security software on this computer probably stopped the OpenBot-NC window. In your security software, for example Kaspersky, add OpenBot-NC.exe as a trusted application. Then start OpenBot-NC again.",
 });

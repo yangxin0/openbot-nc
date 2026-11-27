@@ -38,7 +38,8 @@ export const messages = {
   "error.skill.lockInvalid": "El registro de la habilidad instalada no es válido. Se dejó sin cambios.",
   "error.skill.installPathSymlink": "Las rutas de instalación de habilidades no pueden contener enlaces simbólicos.",
   "error.skill.tooManySkills": "Un agente puede tener hasta {limit} habilidades.",
-  "error.skill.unmanagedExists": "Ya existe una habilidad no gestionada en {path}.",
+  "error.skill.ownSkillExists":
+    "Este agente ya tiene su propia habilidad llamada {slug}. Pide al agente que cambie el nombre de esa habilidad o la elimine y vuelve a añadir esta habilidad.",
   "error.skill.managedSlug":
     "OpenBot-NC da a cada agente su propia habilidad {slug}. Ponle otro nombre a esta habilidad.",
   "error.skill.localNoRevisions": "La habilidad local no tiene revisiones publicadas.",

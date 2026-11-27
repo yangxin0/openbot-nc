@@ -38,7 +38,8 @@ export const messages = {
   "error.skill.lockInvalid": "Kurulu beceri kaydı geçersiz. Değiştirilmeden bırakıldı.",
   "error.skill.installPathSymlink": "Beceri kurulum yolları sembolik bağlantılar içeremez.",
   "error.skill.tooManySkills": "Bir ajan en fazla {limit} beceriye sahip olabilir.",
-  "error.skill.unmanagedExists": "{path} konumunda zaten yönetilmeyen bir beceri mevcut.",
+  "error.skill.ownSkillExists":
+    "Bu ajanın zaten {slug} adlı kendi becerisi var. Ajandan o beceriyi yeniden adlandırmasını veya silmesini isteyin, ardından bu beceriyi yeniden ekleyin.",
   "error.skill.managedSlug": "OpenBot-NC her ajana kendi {slug} becerisini verir. Bu beceriye başka bir ad verin.",
   "error.skill.localNoRevisions": "Yerel becerinin yayımlanmış revizyonu yok.",
   "error.skill.localNotFound": "Bu yerel beceri yok. Kimliğini yerel beceriler listesinden kontrol edin.",

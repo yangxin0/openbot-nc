@@ -8,4 +8,6 @@ export const messages = {
   "error.app.notReady": "OpenBot-NC の準備ができていません。",
   "error.app.macSecureStorageUnavailable": "macOS のセキュアストレージを利用できません。",
   "error.app.secretStorageUnavailable": "システムのシークレットストレージを利用できません。",
+  "error.app.windowBlockedBySecuritySoftware":
+    "このコンピューターのセキュリティソフトが OpenBot-NC のウィンドウを停止した可能性があります。セキュリティソフト（Kaspersky など）で OpenBot-NC.exe を信頼するアプリケーションに追加してから、OpenBot-NC をもう一度起動してください。",
 } as const satisfies PartialTranslation<typeof source>;

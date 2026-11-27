@@ -90,7 +90,7 @@ import { type ServerTransferOptions, ServerTransferPanel } from "./ServerTransfe
 import type { ServerTurnLimitsOptions } from "./ServerTurnLimitsSetting";
 import { type ServerUpdateOptions, ServerUpdatePanel } from "./ServerUpdatePanel";
 import type { ServerVoiceModelOptions } from "./ServerVoiceModelSetting";
-import { serverCanAdminister } from "./server-capabilities";
+import { PROVIDER_SEARCH_NAMES, serverCanAdminister } from "./server-capabilities";
 import type { ServerSettingsSectionHost } from "./server-settings-section";
 
 export interface ServerSettingsModalProps {
@@ -223,6 +223,7 @@ const SECTION_ROWS: Partial<Record<Section, readonly AppTextKey[]>> = {
     "server.settings.browsingMemory",
   ],
   members: ["server.settings.publish", "server.ownerTransfer.title"],
+  providers: ["provider.settings.accounts", "provider.account.add"],
   storage: ["settings.backgroundProcesses.title"],
   experimental: ["server.settings.experimentalCrm"],
 };
@@ -407,8 +408,9 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
     const needle = props.sectionQuery?.trim().toLocaleLowerCase();
     if (!needle) return true;
     const { title, description } = sections[value];
-    return [title, description, ...(SECTION_ROWS[value] ?? [])].some((key) =>
-      t(key).toLocaleLowerCase().includes(needle),
+    const names = value === "providers" ? PROVIDER_SEARCH_NAMES : [];
+    return [...[title, description, ...(SECTION_ROWS[value] ?? [])].map((key) => t(key)), ...names].some((words) =>
+      words.toLocaleLowerCase().includes(needle),
     );
   };
   const matchingSections = createMemo(() =>

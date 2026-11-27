@@ -38,7 +38,8 @@ export const messages = {
   "error.skill.lockInvalid": "インストール済みスキルの記録が無効です。変更せずにそのままにしました。",
   "error.skill.installPathSymlink": "スキルのインストールパスにシンボリックリンクを含めることはできません。",
   "error.skill.tooManySkills": "エージェントに追加できるスキルは {limit} 個までです。",
-  "error.skill.unmanagedExists": "管理されていないスキルが {path} にすでに存在します。",
+  "error.skill.ownSkillExists":
+    "このエージェントには {slug} という名前の独自のスキルがすでにあります。エージェントにそのスキルの名前の変更か削除を頼んでから、このスキルをもう一度追加してください。",
   "error.skill.managedSlug":
     "OpenBot-NC はすべてのエージェントに独自の {slug} スキルを提供します。このスキルには別の名前を付けてください。",
   "error.skill.localNoRevisions": "ローカルスキルに公開済みのリビジョンがありません。",

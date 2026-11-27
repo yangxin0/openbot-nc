@@ -116,7 +116,7 @@ export const messages = {
   "settings.quitGuard.never": "Nunca",
   "settings.externalLinks.title": "Abrir enlaces externos en",
   "settings.externalLinks.description":
-    "Los enlaces de los chats, las páginas de inicio de sesión y las de facturación se abren aquí.",
+    "Los enlaces de los chats, las páginas de inicio de sesión y las de facturación se abren aquí. Con OpenBot-NC, solo los enlaces de los chats de la ventana principal con agentes de este ordenador se abren en OpenBot-NC. Los demás enlaces se abren en el navegador habitual.",
   "settings.externalLinks.defaultBrowser": "Navegador habitual",
   "settings.externalLinks.openbot": "OpenBot-NC",
   "settings.externalLinks.defaultBrowserNamed": "Navegador habitual ({name})",
@@ -246,7 +246,7 @@ export const messages = {
   "settings.notch.xwayland.description":
     "En Wayland, OpenBot-NC debe usar XWayland para mostrar la Dynamic Island sobre otras apps. Hasta entonces, la isla no aparece.",
   "settings.notch.xwayland.unsupported":
-    "En Wayland sin XWayland, la Dynamic Island no puede aparecer sobre otras apps.",
+    "En este escritorio Wayland, la Dynamic Island no puede aparecer sobre otras apps.",
   "settings.notch.xwayland.restart": "Reiniciar",
   "settings.notch.idle.title": "Mostrar la isla inactiva",
   "settings.notch.idle.description": "Mostrar el logotipo de OpenBot-NC y el saludo cuando no hay un estado activo.",
@@ -277,8 +277,11 @@ export const messages = {
   "settings.agentDock.xwayland.description":
     "En Wayland, OpenBot-NC debe usar XWayland para mostrar el dock sobre otras apps. Hasta entonces, el dock aparece en la ventana de OpenBot-NC.",
   "settings.agentDock.xwayland.unsupported":
-    "En Wayland sin XWayland, el dock no puede aparecer sobre otras apps. Aparece en la ventana de OpenBot-NC.",
+    "En este escritorio Wayland, el dock no puede aparecer sobre otras apps. Aparece en la ventana de OpenBot-NC.",
   "settings.agentDock.xwayland.restart": "Reiniciar",
+  "settings.agentDock.noCompositor.title": "En la ventana de OpenBot-NC",
+  "settings.agentDock.noCompositor.description":
+    "Tu escritorio no puede mostrar ventanas transparentes, así que el dock aparece en la ventana de OpenBot-NC. Para verlo sobre otras apps, activa los efectos de escritorio (un compositor) en los ajustes del sistema y reinicia OpenBot-NC.",
   "settings.agentDock.display.title": "Pantalla",
   "settings.agentDock.display.description":
     "Si esa pantalla no está conectada, el dock pasa a la pantalla de la ventana de OpenBot-NC.",

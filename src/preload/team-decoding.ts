@@ -204,6 +204,7 @@ function server(summary: DynamicRecord): ServerSummary {
     thisComputer,
     appearance,
     relayHost,
+    username,
   } = summary;
   if (!isOneOf(SERVER_NOTIFICATION_LEVELS, notificationLevel)) throw new Error("Invalid notificationLevel.");
   if (!isOneOf(SERVER_KINDS, kind)) throw new Error("Invalid kind.");
@@ -217,6 +218,7 @@ function server(summary: DynamicRecord): ServerSummary {
     throw new Error("Invalid keyChangedAt.");
   }
   if (thisComputer !== undefined && thisComputer !== true) throw new Error("Invalid thisComputer.");
+  if (username !== undefined && !isString(username)) throw new Error("Invalid username.");
   if (capabilitiesPending !== undefined && capabilitiesPending !== true) {
     throw new Error("Invalid capabilitiesPending.");
   }
@@ -232,6 +234,7 @@ function server(summary: DynamicRecord): ServerSummary {
     logoUrl: nullableString(summary, "logoUrl"),
     ...(appearance === undefined ? {} : { appearance: serverAppearance(appearance) }),
     role: role === null ? null : teamRole(role),
+    ...(username === undefined ? {} : { username }),
     active: requiredBoolean(summary, "active"),
     ...(compatibility === undefined
       ? {}

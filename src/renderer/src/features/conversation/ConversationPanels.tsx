@@ -162,8 +162,8 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
     previewFileKey,
     previewWorkspaceAgentId,
     quoteSelection,
-    addPageText,
-    setPageContext,
+    addPreviewPageText,
+    setPreviewPageContext,
     sidebarFileBack,
     openSidebarFileBack,
     props,
@@ -780,6 +780,7 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
               agents={props.agents}
               onStartNewChat={props.onClearAgentContext}
               onDeleteHistory={props.onDeleteAgentHistory}
+              onDeleteAgent={props.onDeleteAgent}
               onCreateSkill={
                 serverCanAdminister(props.server, "skills-admin-v1") &&
                 agentReady() &&
@@ -974,10 +975,9 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
                 }}
                 onPageContext={(text) => {
                   const id = attached()?.id;
-                  const message = id && props.messages.find((item) => item.attachments?.some((file) => file.id === id));
-                  if (message) setPageContext(message, text);
+                  if (id) setPreviewPageContext(id, text);
                 }}
-                onPageMessage={addPageText}
+                onPageMessage={addPreviewPageText}
                 isPageAppShortcut={isChatVisualAppShortcut}
                 quoteShortcut={deviceQuoteShortcut(props.platform)}
                 onOpenExternally={openSidebarFileExternally}

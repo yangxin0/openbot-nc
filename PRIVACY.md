@@ -101,6 +101,15 @@ provider as the result of the agent's request, so the provider gets it and can k
 history. The server does not store the location or the typed place in the SQLite database: the card
 keeps only that the location was shared or not. The agent's reply, which can name the place, is stored
 like any other message. The phone does not store the location, or follow it in the background.
+A page in the OpenBot-NC browser can ask for the location. The browser asks the person first, and a page
+gets nothing until the person selects **Allow**. On the computer that runs the browser, Allow lets the
+page read the location of that computer. On a joined server, Allow reads the location of the member's
+own device (latitude, longitude and accuracy) one time and sends it to the server, which gives it to
+that tab only. The page can then send it to its site, as in any browser. The answer holds while the
+tab stays on the same site. **Allow always** holds for that site in all agent tabs until OpenBot-NC or the
+server restarts. On a joined server, it holds only in the tabs of the same agent, and the server keeps the
+location that the member sent in memory for that time and gives it to the site again in those tabs.
+OpenBot-NC does not store the location or the answer in the SQLite database.
 Channel history keeps its existing membership and task checks. Messaging history stays within its
 current link. The full conversation stays in local SQLite storage. These tools send no history text to
 another service.
@@ -197,6 +206,12 @@ no review reads are deleted after 30 days. Turning the setting off deletes all r
   Disconnect deletes the file and asks Link to revoke the sign-in. A one-time Link card is not
   stored: OpenBot reads it from Link for each fill and types it into the page. The tokens and the
   card number are redacted from logs, exports and diagnostics.
+- The NEAR Intents wallet (Server settings › Vault › Crypto) is kept in
+  `~/Library/Application Support/OpenBot/openbot-near-wallet-v1.json`, encrypted by the operating
+  system's secret storage. It holds the payment grant token, the owner's passkey credential ID and
+  public key, the agents that can pay, the payment rules, today's spend, and the payments that wait
+  for an answer. The app window never receives the token. Disconnect deletes the
+  file. The token is redacted from logs, exports and diagnostics.
 - The ElevenLabs API key for dictation and spoken replies is kept in
   `~/Library/Application Support/OpenBot-NC/voice-api-key.json`, encrypted by the operating system's
   secret storage. The app window never receives the key back. Remove key in **Settings → Voice**
@@ -731,10 +746,12 @@ key; the data export lists it under `scope.excludes`.
 When you saved no key in OpenBot, OpenBot reads the Go quota with the key that the OpenCode CLI
 uses: an OpenCode Console connection in OpenCode's database (`opencode.db`), else the Go key. The Go
 key is the `opencode-go` key in OpenCode's `auth.json` (or `OPENCODE_AUTH_CONTENT`), or
-`OPENCODE_API_KEY` from the environment that started OpenBot when `auth.json` has none. OpenBot reads
+`OPENCODE_API_KEY` from the environment that started OpenBot when `auth.json` has none. Last, it
+uses the `opencode` key in `auth.json`, the key that older OpenCode versions keep only there, unless
+that key names a self-hosted Console. OpenBot reads
 these from OpenCode's data folder (`$XDG_DATA_HOME/opencode`, or `~/.local/share/opencode`) and sends
-the key only to `opencode.ai/zen/go/v1/usage`. When OpenCode rejects the Console key, OpenBot tries
-the Go key. OpenBot does not store, log, or show these keys. OpenBot does not copy OpenCode credentials or upload its session
+the key only to `opencode.ai/zen/go/v1/usage`. When OpenCode rejects a key, OpenBot tries
+the next one. OpenBot does not store, log, or show these keys. OpenBot does not copy OpenCode credentials or upload its session
 files. OpenCode manages its own login and resume state.
 
 ### Gemini
@@ -756,13 +773,8 @@ do not revoke the sign-in at Google; remove Antigravity's access in your Google 
 apply: <https://antigravity.google/terms>.
 Gemini agents stay on this computer: OpenBot does not show them to team members.
 
-To show the remaining Gemini quota in Usage, OpenBot reads the access token from the server's token file
-and asks Google's Code Assist service (`cloudcode-pa.googleapis.com` and
-`daily-cloudcode-pa.googleapis.com`) for the account's project and quota, as the Antigravity app does.
-The requests carry that token and a User-Agent with the Antigravity desktop app's client name, version
-and build number, your operating system and processor type. They contain no conversation, file, or model data. With an API key
-sign-in, or an expired token, OpenBot sends nothing and shows no Gemini usage. OpenBot does not send that
-usage to its maintainer.
+OpenBot does not read the Gemini quota and does not call Google's internal Code Assist service. It
+reads the server's token file only for the email of the Google account. Usage shows no Gemini plan usage.
 
 ### Cursor
 

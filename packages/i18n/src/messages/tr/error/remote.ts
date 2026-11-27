@@ -28,6 +28,8 @@ export const messages = {
   "error.remote.connectionServiceUnreachable":
     "Bu bilgisayar OpenBot-NC bağlantı hizmetine ulaşamıyor. İnternet bağlantısını kontrol edin. OpenBot-NC otomatik olarak yeniden bağlanır.",
   "error.remote.serverAnswerTimeout": "Sunucu zamanında yanıt vermedi. OpenBot-NC otomatik olarak yeniden bağlanır.",
+  "error.remote.signInConnectionClosed":
+    "Oturum açılırken sunucu bağlantısı kapandı. Bu devam ederse sunucuda ve bu cihazda tarih ve saatin doğru olduğundan emin olun.",
   "error.remote.connectionCancelled": "Uzak bağlantı iptal edildi.",
   "error.remote.fileTransportIsStopped": "WebRTC dosya iletimi durduruldu.",
   "error.remote.fileTooLarge": "Dosya 100 MB'tan daha büyük.",

@@ -142,6 +142,14 @@ const CODEX_BROWSER_PLUGINS_OFF = {
 } as const;
 
 const CODEX_MCP_STARTUP_GRACE_MS = 10_000;
+const CODEX_WAIT_FOR_MCP_STARTUP_MS = 0;
+
+function waitingForMcpStartup(params: DynamicRecord): DynamicRecord {
+  const config = params.config;
+  return isDynamicRecord(config)
+    ? { ...params, config: { ...config, mcp_optional_startup_grace_ms: CODEX_WAIT_FOR_MCP_STARTUP_MS } }
+    : params;
+}
 
 const CODEX_DIRECT_ONLY_NAMESPACES = [...visibleDynamicTools("codex").map((namespace) => namespace.name), "image_gen"];
 
@@ -173,6 +181,7 @@ export interface ThreadLifecycleOptions {
   agentCursorDrawn?: boolean;
   computerUseOnWayland?: boolean;
   computerUseInputRefused?: () => boolean;
+  computerUseForegroundInput?: boolean;
   responseStyle?: () => ResponseStyle;
   memoryReview?: () => boolean;
   skillRevision?: () => boolean;
@@ -206,6 +215,7 @@ export class ThreadLifecycle {
   readonly #agentCursorDrawn: boolean;
   readonly #computerUseOnWayland: boolean;
   readonly #computerUseInputRefused: () => boolean;
+  readonly #computerUseForegroundInput: boolean;
   readonly #responseStyle: () => ResponseStyle;
   readonly #memoryReview: () => boolean;
   readonly #skillRevision: () => boolean;
@@ -248,6 +258,7 @@ export class ThreadLifecycle {
     this.#agentCursorDrawn = options.agentCursorDrawn ?? false;
     this.#computerUseOnWayland = options.computerUseOnWayland ?? false;
     this.#computerUseInputRefused = options.computerUseInputRefused ?? (() => false);
+    this.#computerUseForegroundInput = options.computerUseForegroundInput ?? false;
     this.#responseStyle = options.responseStyle ?? (() => DEFAULT_RESPONSE_STYLE);
     this.#memoryReview = options.memoryReview ?? (() => false);
     this.#skillRevision = options.skillRevision ?? (() => false);
@@ -556,7 +567,11 @@ export class ThreadLifecycle {
     });
     const { params } = yield* this.#startParams(owner, client, publicThreadId);
     const response = yield* client
-      .request("thread/start", { ...params, ephemeral: false, persistSession: false }, decodeThreadResponse)
+      .request(
+        "thread/start",
+        { ...waitingForMcpStartup(params), ephemeral: false, persistSession: false },
+        decodeThreadResponse,
+      )
       .pipe(toThreadOperationFailed);
     const externalThreadId = response.thread.id;
     this.#conversation.bindThread(externalThreadId, owner.id, publicThreadId);
@@ -1175,6 +1190,7 @@ export class ThreadLifecycle {
       agentCursorDrawn: this.#agentCursorDrawn,
       computerUseOnWayland: this.#computerUseOnWayland,
       computerUseInputRefused: this.#computerUseInputRefused(),
+      computerUseForegroundInput: this.#computerUseForegroundInput,
       responseStyle: this.#responseStyle(),
       memoryReview: this.#memoryReview(),
       skillRevision: this.#skillRevision(),

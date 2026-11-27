@@ -370,6 +370,12 @@ and runs its safe mode: each member's app shows why the server does not start an
 runs. The safe mode opens no database. After one hour it exits, and the restart policy starts the
 container again. A newer image is the fix. See [Start loop](self-hosted-server.md#start-loop).
 
+The entrypoint also starts the [watchdog](self-hosted-server.md#watchdog) of the self-hosted server. When
+main stops updating its heartbeat file for 10 minutes, for example because its main thread is
+blocked, the watchdog stops OpenBot-NC with `SIGKILL`. The container then exits, and the restart policy
+starts it again. A blocked main thread cannot answer `docker stop`, so without the watchdog the
+container stayed running and did not answer until someone restarted it.
+
 OpenBot does not update itself in a container. A new image replaces it. An instance of
 `docker/instances` can ask the host for that from the app, see
 [Updates from the app](#updates-from-the-app). Do not go back to an older tag: an older OpenBot cannot

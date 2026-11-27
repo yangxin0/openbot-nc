@@ -35,6 +35,11 @@ export const messages = {
   "error.backend.browserSignInReadFailed": "O OpenBot-NC não conseguiu ler o login da janela.",
   "error.backend.browserStopUnsupported":
     "Este computador anfitrião remoto não consegue parar o carregamento de uma página.",
+  "error.backend.browserLocationFailed": "Não foi possível definir a localização da página.",
+  "error.backend.browserPermissionsUnsupported": "Este host remoto não pode responder a pedidos de localização.",
+  "error.backend.browserLocationRequired": "Envie a localização do dispositivo para permitir o pedido.",
+  "error.backend.browserHttpSignInInactive": "Este site não pede mais login. Recarregue a página para tentar de novo.",
+  "error.backend.browserHttpSignInUnsupported": "Este host remoto não pode receber um login de site.",
   "error.backend.sharedDataLocalOnly":
     "Os dados compartilhados são gerenciados no computador que executa estes agentes.",
   "error.backend.browserUrlProtocol": "Somente URLs HTTP(S) são permitidas no navegador.",
@@ -43,6 +48,12 @@ export const messages = {
     "A compactação não reduz este chat: após duas compactações, ele ainda usa {percent}% da janela de contexto do modelo, por isso o OpenBot-NC para de compactá-lo. Ferramentas e instruções usam a maior parte da janela. Desative os servidores MCP ou o uso do computador de que este agente não precisa, ou escolha um modelo com uma janela maior. Depois, inicie um novo chat.",
   "error.backend.contextCompactionStopped":
     'Duas compactações seguidas deste chat falharam, então o OpenBot-NC para de compactá-lo automaticamente. Cada tentativa envia o chat inteiro ao modelo e consome o limite do seu plano. Selecione "Compactar agora" para tentar de novo ou inicie um novo chat.',
+  "error.backend.contextCompactionRetrying":
+    "O provedor não conseguiu compactar este chat e está tentando de novo. As novas mensagens deste chat esperam até a compactação terminar. Se ela não terminar logo, o OpenBot-NC a interrompe e envia suas mensagens.",
+  "error.backend.contextCompactionFailed":
+    "A compactação deste chat falhou. O chat não mudou. As mensagens em espera vão agora para o agente.",
+  "error.backend.contextCompactionTimedOut":
+    "A compactação deste chat demorou demais, então o OpenBot-NC a interrompeu. O chat não mudou. As mensagens em espera vão agora para o agente.",
   "error.backend.providerModelAtCapacity":
     "O modelo está no limite da capacidade. O provedor vai tentar de novo em alguns minutos. Para continuar agora, pare o turno e escolha outro modelo.",
   "error.backend.providerRetrying":
@@ -87,6 +98,14 @@ export const messages = {
   "error.backend.channelLeadTimedOut": "O líder do canal não respondeu a tempo. Escolha um membro ou tente novamente.",
   "error.backend.channelLeadFailed":
     "O líder do canal não conseguiu encaminhar esta mensagem. Escolha um membro ou tente novamente.",
+  "error.backend.channelLeadBusy":
+    "O modelo do líder está ocupado agora. Tente novamente em alguns minutos ou escolha um membro.",
+  "error.backend.channelLeadOffline": "O modelo do líder perdeu a conexão. Tente novamente ou escolha um membro.",
+  "error.backend.channelLeadSignIn": "O login no provedor do líder expirou. Entre novamente ou escolha um membro.",
+  "error.backend.channelLeadModelGone":
+    "O modelo do líder não está disponível. Escolha outro modelo para o líder ou escolha um membro.",
+  "error.backend.channelLeadRefused":
+    "O modelo do líder recusou esta solicitação. Escolha um membro ou outro modelo para o líder.",
   "error.backend.channelRequestMemberRequired": "Escolha um membro para esta solicitação.",
   "error.backend.channelDeliveryNotCreated": "A entrega do canal não foi criada.",
   "error.backend.channelAssignmentStopped": "Esta tarefa atribuída pelo canal foi interrompida ou substituída.",
@@ -163,6 +182,7 @@ export const messages = {
   "error.backend.videoGenerationFailed": "A geração do vídeo falhou.",
   "error.backend.videoGenerationNoVideo": "A geração do vídeo não retornou nenhum vídeo.",
   "error.backend.videoGenerationInterrupted": "A geração do vídeo foi interrompida.",
+  "error.backend.grokVideoNoQuota": "Sua conta do Grok não pode criar vídeos. Gere o vídeo com créditos.",
   "error.backend.attachmentNotRegularFile": "Somente arquivos comuns podem ser anexados: {name}",
   "error.backend.attachmentCopyFailed": "O OpenBot-NC não conseguiu copiar {name}.",
   "error.backend.routineNameRequired": "É necessário informar um nome para a rotina.",
@@ -253,6 +273,8 @@ export const messages = {
     "O servidor de login não consegue registrar o OpenBot-NC como aplicativo. Sua conta não é a causa. Para conectar, salve este servidor na Loja, Apps, e depois adicione um app de login a ele.",
   "error.backend.mcpSignInNeedsClientDocument":
     "Este servidor de login aceita apenas apps que publicam um documento de ID de cliente, e esta versão do OpenBot-NC não publica um. Se você tiver seu próprio app de login para este servidor, salve o servidor na Loja, Apps, e depois adicione o app de login a ele.",
+  "error.backend.mcpSignInAppNeeded":
+    "O servidor de login não consegue registrar o OpenBot-NC como aplicativo. Sua conta não é a causa. Para conectar, abra este servidor na Loja, Apps, clique em Testar conexão e depois adicione um app de login.",
   "error.backend.mcpSignInAbandonedGeneric": "O login foi abandonado.",
   "error.backend.mcpSignInForgotten": "O login MCP foi esquecido enquanto estava em andamento.",
   "error.backend.mcpSignInAbandoned": "O login MCP foi abandonado.",
@@ -276,7 +298,11 @@ export const messages = {
   "error.backend.mcpServerExited":
     "O servidor parou antes de responder. Execute o comando em um terminal para ver o erro.",
   "error.backend.mcpServerExitedWithOutput": "O servidor parou antes de responder. Ele escreveu: {detail}",
+  "error.backend.mcpServerDownloadFailed":
+    "O servidor não iniciou, porque o download falhou. Verifique a conexão com a internet e tente novamente.",
   "error.backend.mcpServerFailedToStart": "O servidor não iniciou: {reason}",
+  "error.backend.mcpServerProgramMissing":
+    "O OpenBot-NC não conseguiu iniciar o servidor MCP {name}, porque o programa dele não está instalado no computador que executa o OpenBot-NC. Instale o app que fornece {name} nesse computador, ou desative {name} na Loja, Apps.",
   "error.backend.mcpServerStartAbandoned":
     "{provider} parou de esperar antes de o servidor iniciar, por isso os agentes dele não recebem as ferramentas deste servidor.",
   "error.backend.mcpServerStoppedDuringCall": "O servidor MCP parou antes de responder a esta chamada.",
@@ -300,6 +326,8 @@ export const messages = {
     "{provider} não conseguiu obter as ferramentas do GitHub, porque o GitHub não respondeu. Abra o GitHub na Loja, Apps, e conecte-o de novo se ele pedir. Depois inicie um novo chat para tentar de novo.",
   "error.backend.mcpAppReconnect":
     "{name} no ChatGPT pede que você entre de novo. Reconecte {name} no ChatGPT e peça de novo ao agente.",
+  "error.backend.mcpAppAutoReview":
+    "Este app do ChatGPT não funciona quando o agente tem Perguntar antes ou Acesso completo. O app precisa da revisão automática de aprovações do Codex, que o OpenBot-NC ainda não suporta. Você pode tentar Espaço de trabalho em Acesso, nas configurações do agente, e pedir de novo ao agente.",
   "error.backend.mcpServerSignInPage":
     "O servidor MCP {name} pediu que você entre em uma página da web. O OpenBot-NC não abre essa página para um servidor, então recusou o pedido. Abra {name} na Loja, Apps, entre e peça de novo ao agente.",
   "error.backend.mcpServerRequestDeclined":
@@ -319,6 +347,7 @@ export const messages = {
     "Este computador bloqueou a conexão com o servidor. Verifique seu firewall ou software de segurança e tente novamente.",
   "error.backend.mcpServerIncompatible":
     "Algo respondeu neste endereço, mas não como um servidor MCP por Streamable HTTP. Verifique a URL e atualize o app que executa o servidor.",
+  "error.backend.mcpServerKeyNotAccepted": "O servidor não aceitou a chave de API. Confira a chave e tente de novo.",
   "error.backend.mcpRemoteBridge":
     "{reason} Este comando executa a ponte mcp-remote. Escolha Streamable HTTP com a URL {url} e o OpenBot-NC faz o login para você.",
   "error.backend.oauthNotHttps": "O endpoint OAuth {origin} não usa https, por isso as credenciais não foram enviadas.",
@@ -402,6 +431,10 @@ export const messages = {
   "error.backend.browserProxySignInRefused": "O proxy {name} recusou o início de sessão, por isso a página não abriu.",
   "error.backend.browserSystemProxyFailed":
     "O proxy nas configurações do computador que executa o OpenBot-NC não responde ou recusou a conexão, por isso a página não abriu. Verifique as configurações de proxy desse computador.",
+  "error.backend.browserSystemProxyOrSiteClosed":
+    "O site ou o proxy nas configurações do computador que executa o OpenBot-NC fechou a conexão sem resposta, por isso a página não abriu. Se nenhum site abrir, verifique as configurações de proxy desse computador.",
+  "error.backend.browserProfileProxyOrSiteClosed":
+    "O site ou o proxy deste perfil do navegador fechou a conexão sem resposta, por isso a página não abriu. Se nenhum site abrir, verifique o proxy do perfil.",
   "error.backend.browserProxyComputerUnreachable":
     "O computador que este perfil usa não responde, por isso a página não abriu.",
   "error.backend.browserProxyComputerLocalAddress":

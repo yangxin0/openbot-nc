@@ -401,6 +401,9 @@ const teamBrowser: TeamApiBrowser = {
   dispatchViewInput: unused,
   copyViewSelection: unused,
   importSignIn: unused,
+  answerPermission: unused,
+  answerHttpSignIn: unused,
+  answerViewDialog: unused,
 };
 const localOwner: LocalProfile = { id: "local-profile-e2e", name: "Host Person", chatColor: null };
 

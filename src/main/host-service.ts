@@ -40,6 +40,7 @@ import {
   SIGNED_OUT_CHANNEL_MEMBER_ID,
 } from "@openbot/contracts/ipc";
 import type { HostRestartState } from "@openbot/contracts/team-protocol/host-update-v1";
+import type { WorkflowSpotEvent, WorkflowSpotInput } from "@openbot/contracts/team-protocol/workflow-presence-v1";
 import { sourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 import { Context, Deferred, Effect, Layer, ManagedRuntime, Result, Semaphore } from "effect";
@@ -71,6 +72,7 @@ interface HostEvents {
   presence: [snapshot: TeamPresenceSnapshot];
   directMessage: [event: DirectMessageRealtimeEvent];
   directTyping: [event: DirectTypingRealtimeEvent];
+  workflowSpot: [event: WorkflowSpotEvent];
 }
 
 interface MemberAuditActor {
@@ -245,6 +247,7 @@ export class HostService extends EventEmitter<HostEvents> {
       onPresence: (snapshot) => this.emit("presence", snapshot),
       onDirectMessage: (event) => this.emit("directMessage", event),
       onDirectTyping: (event) => this.emit("directTyping", event),
+      onWorkflowSpot: (event) => this.emit("workflowSpot", event),
       createInvite: (input) => this.createInvite(input),
       updateMember: (input, actor) => this.updateMember(input, actor),
       removeMember: (memberId, actor) => this.removeMember(memberId, actor),
@@ -689,6 +692,11 @@ export class HostService extends EventEmitter<HostEvents> {
 
   setDirectTyping(input: DirectTypingInput): void {
     this.#api.setLocalDirectTyping(this.#currentMemberId(), input.memberId, input.typing);
+  }
+
+  setWorkflowSpot(input: WorkflowSpotInput): void {
+    const memberId = this.#findCurrentMemberId();
+    if (memberId) this.#api.setLocalWorkflowSpot(memberId, input);
   }
 
   listSessions(): TeamSessionSummary[] {

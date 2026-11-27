@@ -28,6 +28,8 @@ export const messages = {
   "error.remote.connectionServiceUnreachable":
     "Ten komputer nie może połączyć się z usługą połączeń OpenBot-NC. Sprawdź jego połączenie z internetem. OpenBot-NC połączy się ponownie automatycznie.",
   "error.remote.serverAnswerTimeout": "Serwer nie odpowiedział na czas. OpenBot-NC połączy się ponownie automatycznie.",
+  "error.remote.signInConnectionClosed":
+    "Połączenie z serwerem zostało zamknięte podczas logowania. Jeśli to się powtarza, sprawdź datę i godzinę na serwerze i na tym urządzeniu.",
   "error.remote.connectionCancelled": "Zdalne połączenie zostało anulowane.",
   "error.remote.fileTransportIsStopped": "Transport plików WebRTC jest zatrzymany.",
   "error.remote.fileTooLarge": "Plik jest większy niż 100 MB.",

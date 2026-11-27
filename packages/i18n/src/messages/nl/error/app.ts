@@ -8,4 +8,6 @@ export const messages = {
   "error.app.notReady": "OpenBot-NC is niet klaar.",
   "error.app.macSecureStorageUnavailable": "De beveiligde opslag van macOS is niet beschikbaar.",
   "error.app.secretStorageUnavailable": "De opslag voor geheimen van het systeem is niet beschikbaar.",
+  "error.app.windowBlockedBySecuritySoftware":
+    "Beveiligingssoftware op deze computer heeft het OpenBot-NC-venster waarschijnlijk gestopt. Voeg OpenBot-NC.exe in je beveiligingssoftware, bijvoorbeeld Kaspersky, toe als vertrouwde toepassing. Start OpenBot-NC daarna opnieuw.",
 } as const satisfies PartialTranslation<typeof source>;

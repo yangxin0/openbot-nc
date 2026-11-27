@@ -200,64 +200,66 @@ export function ServerMenu(props: ServerMenuProps) {
               <div class="ui-menu-label" aria-hidden="true">
                 {t("server.rail.label")}
               </div>
-              <For each={props.servers} keyed={(server) => server.id}>
-                {(server) => (
-                  <DropdownMenu.Sub>
-                    <DropdownMenu.SubTrigger
-                      class="server-menu-row"
-                      aria-label={[
-                        server().name,
-                        ...(serverRelayHostLabel(server())
-                          ? [t("server.rail.relayHost", { host: serverRelayHostLabel(server()) ?? "" })]
-                          : []),
-                        ...serverStatusLabels(server(), t),
-                      ].join(", ")}
-                      aria-current={server().active ? "true" : undefined}
-                      data-cuelume-navigate=""
-                      onClick={() => selectServer(server())}
-                      ref={(row) => selectOnKey(row, server)}
-                    >
-                      <CheckCircle checked={server().active} />
-                      <span class="server-menu-mark" aria-hidden="true">
-                        <ServerMark server={server()} />
-                      </span>
-                      <span class="server-menu-name">{server().name}</span>
-                      <Show when={serverRelayHostLabel(server())}>
-                        {(host) => <span class="server-menu-host">{host()}</span>}
-                      </Show>
-                      <Show when={server().notificationsMuted}>
-                        <BellOff class="server-menu-muted size-3" aria-hidden="true" />
-                      </Show>
-                      <ChevronRight class="agent-context-submenu-chevron size-4" aria-hidden="true" />
-                    </DropdownMenu.SubTrigger>
-                    <DropdownMenu.Portal>
-                      <DropdownMenu.SubContent
-                        class="ui-action-menu agent-context-menu server-submenu"
-                        aria-label={t("server.rail.actions")}
+              <div class="server-menu-list">
+                <For each={props.servers} keyed={(server) => server.id}>
+                  {(server) => (
+                    <DropdownMenu.Sub>
+                      <DropdownMenu.SubTrigger
+                        class="server-menu-row"
+                        aria-label={[
+                          server().name,
+                          ...(serverRelayHostLabel(server())
+                            ? [t("server.rail.relayHost", { host: serverRelayHostLabel(server()) ?? "" })]
+                            : []),
+                          ...serverStatusLabels(server(), t),
+                        ].join(", ")}
+                        aria-current={server().active ? "true" : undefined}
+                        data-cuelume-navigate=""
+                        onClick={() => selectServer(server())}
+                        ref={(row) => selectOnKey(row, server)}
                       >
-                        <ServerActionItems
-                          menu={DropdownMenu}
-                          server={server()}
-                          trigger={() => trigger ?? null}
-                          onSetMuted={props.onSetMuted}
-                          onOpenNotificationSettings={props.onOpenNotificationSettings}
-                          onOpenSettings={props.onOpenSettings}
-                          onLeave={props.onLeave}
-                          onDelete={props.onDelete}
-                          canDelete={props.canDelete}
-                          onRestart={props.onRestart}
-                          canRestart={props.canRestart}
-                          onRemove={props.onRemove}
-                          canRemove={props.canRemove}
-                          onHide={props.onHide}
-                          canHide={props.canHide}
-                        />
-                      </DropdownMenu.SubContent>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu.Sub>
-                )}
-              </For>
-              <HiddenServerFolderItem servers={props.hiddenServers ?? []} />
+                        <CheckCircle checked={server().active} />
+                        <span class="server-menu-mark" aria-hidden="true">
+                          <ServerMark server={server()} />
+                        </span>
+                        <span class="server-menu-name">{server().name}</span>
+                        <Show when={serverRelayHostLabel(server())}>
+                          {(host) => <span class="server-menu-host">{host()}</span>}
+                        </Show>
+                        <Show when={server().notificationsMuted}>
+                          <BellOff class="server-menu-muted size-3" aria-hidden="true" />
+                        </Show>
+                        <ChevronRight class="agent-context-submenu-chevron size-4" aria-hidden="true" />
+                      </DropdownMenu.SubTrigger>
+                      <DropdownMenu.Portal>
+                        <DropdownMenu.SubContent
+                          class="ui-action-menu agent-context-menu server-submenu"
+                          aria-label={t("server.rail.actions")}
+                        >
+                          <ServerActionItems
+                            menu={DropdownMenu}
+                            server={server()}
+                            trigger={() => trigger ?? null}
+                            onSetMuted={props.onSetMuted}
+                            onOpenNotificationSettings={props.onOpenNotificationSettings}
+                            onOpenSettings={props.onOpenSettings}
+                            onLeave={props.onLeave}
+                            onDelete={props.onDelete}
+                            canDelete={props.canDelete}
+                            onRestart={props.onRestart}
+                            canRestart={props.canRestart}
+                            onRemove={props.onRemove}
+                            canRemove={props.canRemove}
+                            onHide={props.onHide}
+                            canHide={props.canHide}
+                          />
+                        </DropdownMenu.SubContent>
+                      </DropdownMenu.Portal>
+                    </DropdownMenu.Sub>
+                  )}
+                </For>
+                <HiddenServerFolderItem servers={props.hiddenServers ?? []} />
+              </div>
               <Show when={props.onAdd}>
                 <DropdownMenu.Item class="server-menu-add" onSelect={() => props.onAdd?.()}>
                   <span class="server-menu-add-circle" aria-hidden="true">

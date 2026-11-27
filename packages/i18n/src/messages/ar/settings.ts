@@ -109,7 +109,8 @@ export const messages = {
   "settings.quitGuard.always": "دائمًا",
   "settings.quitGuard.never": "أبدًا",
   "settings.externalLinks.title": "فتح الروابط الخارجية في",
-  "settings.externalLinks.description": "تُفتح هنا الروابط في الدردشات وصفحات تسجيل الدخول وصفحات الفوترة.",
+  "settings.externalLinks.description":
+    "تُفتح هنا الروابط في الدردشات وصفحات تسجيل الدخول وصفحات الفوترة. مع OpenBot-NC، تُفتح في OpenBot-NC فقط روابط دردشات النافذة الرئيسية مع الوكلاء على هذا الكمبيوتر. وتُفتح الروابط الأخرى في المتصفح الافتراضي.",
   "settings.externalLinks.defaultBrowser": "المتصفح الافتراضي",
   "settings.externalLinks.openbot": "OpenBot-NC",
   "settings.externalLinks.defaultBrowserNamed": "المتصفح الافتراضي ({name})",
@@ -243,7 +244,7 @@ export const messages = {
   "settings.notch.xwayland.description":
     "على Wayland، يجب أن يستخدم OpenBot-NC ‏XWayland ليعرض Dynamic Island فوق التطبيقات الأخرى. حتى ذلك الحين، لا تظهر الجزيرة.",
   "settings.notch.xwayland.unsupported":
-    "على Wayland بدون XWayland، لا يمكن أن تظهر Dynamic Island فوق التطبيقات الأخرى.",
+    "على سطح مكتب Wayland هذا، لا يمكن أن تظهر Dynamic Island فوق التطبيقات الأخرى.",
   "settings.notch.xwayland.restart": "إعادة التشغيل",
   "settings.notch.idle.title": "عرض الجزيرة في وضع الخمول",
   "settings.notch.idle.description": "عرض شعار OpenBot-NC والتحية عند عدم وجود حالة نشطة.",
@@ -273,8 +274,11 @@ export const messages = {
   "settings.agentDock.xwayland.description":
     "على Wayland، يجب أن يستخدم OpenBot-NC ‏XWayland ليعرض الشريط فوق التطبيقات الأخرى. حتى ذلك الحين، يظهر الشريط في نافذة OpenBot-NC.",
   "settings.agentDock.xwayland.unsupported":
-    "على Wayland بدون XWayland، لا يمكن أن يظهر الشريط فوق التطبيقات الأخرى. يظهر في نافذة OpenBot-NC.",
+    "على سطح مكتب Wayland هذا، لا يمكن أن يظهر الشريط فوق التطبيقات الأخرى. يظهر في نافذة OpenBot-NC.",
   "settings.agentDock.xwayland.restart": "إعادة التشغيل",
+  "settings.agentDock.noCompositor.title": "معروض في نافذة OpenBot-NC",
+  "settings.agentDock.noCompositor.description":
+    "لا يمكن لسطح المكتب عرض نوافذ شفافة، لذلك يظهر الشريط في نافذة OpenBot-NC. لعرضه فوق التطبيقات الأخرى، فعّل تأثيرات سطح المكتب (مُركِّب) في إعدادات النظام، ثم أعد تشغيل OpenBot-NC.",
   "settings.agentDock.display.title": "الشاشة",
   "settings.agentDock.display.description": "إذا لم تكن تلك الشاشة متصلة، فسينتقل الشريط إلى شاشة نافذة OpenBot-NC.",
   "settings.agentDock.display.window": "مع نافذة OpenBot-NC",

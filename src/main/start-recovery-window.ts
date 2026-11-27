@@ -1,7 +1,7 @@
-import type { AppTranslate, TranslatedLocale } from "@openbot/i18n";
+import type { AppTextKey, AppTranslate, TranslatedLocale } from "@openbot/i18n";
 import { localeDirection } from "@openbot/i18n";
 import { createOpenBotLogger, toLogValue } from "@openbot/logging";
-import { app, BrowserWindow, nativeTheme, session, shell } from "electron";
+import { app, BrowserWindow, dialog, nativeTheme, session, shell } from "electron";
 import { runCauseEffect } from "../backend/effect-boundary";
 import { exportStartDiagnostics } from "./maintenance-service";
 import type { StartAttemptsSummary } from "./start-attempts";
@@ -11,7 +11,15 @@ const logger = createOpenBotLogger("start-recovery");
 const ACTION_ORIGIN = "https://openbot.invalid";
 const ACTIONS = ["retry", "export-diagnostics", "open-data-folder", "quit"] as const;
 type RecoveryAction = (typeof ACTIONS)[number];
+const ACTION_LABELS: Record<RecoveryAction, AppTextKey> = {
+  retry: "startup.recoveryRetry",
+  "export-diagnostics": "startup.recoveryExportDiagnostics",
+  "open-data-folder": "startup.recoveryOpenDataFolder",
+  quit: "startup.recoveryQuit",
+};
 const PARTITION = "openbot-start-recovery";
+const WINDOW_SHOW_TIMEOUT_MS = 15_000;
+const REPLACED_LOAD_ERROR = -3;
 
 type RecoveryChoice = "retry" | "quit";
 
@@ -22,10 +30,12 @@ interface StartRecoveryOptions {
   translate: AppTranslate;
   iconPath: string;
   showWithoutFocus: boolean;
+  stopsRenderer: boolean;
 }
 
 export interface StartRecovery {
   choice: Promise<RecoveryChoice>;
+  present(): void;
   close(): void;
 }
 
@@ -59,10 +69,11 @@ export function openStartRecoveryWindow(options: StartRecoveryOptions): StartRec
     },
   });
   window.setMenuBarVisibility(false);
-  window.once("ready-to-show", () => (options.showWithoutFocus ? window.showInactive() : window.show()));
 
   let settled = false;
   let busy = false;
+  let shown = false;
+  let dialogShown = false;
   let resolveChoice: (choice: RecoveryChoice) => void = () => {};
   const choice = new Promise<RecoveryChoice>((resolve) => {
     resolveChoice = resolve;
@@ -70,15 +81,44 @@ export function openStartRecoveryWindow(options: StartRecoveryOptions): StartRec
   const settle = (next: RecoveryChoice) => {
     if (settled) return;
     settled = true;
+    clearTimeout(showDeadline);
     resolveChoice(next);
   };
+  const showDialogInstead = (reason: string) => {
+    if (settled || dialogShown) return;
+    dialogShown = true;
+    clearTimeout(showDeadline);
+    logger.warn(`The recovery window cannot show (${reason}). Showing the recovery dialog.`);
+    if (!window.isDestroyed()) window.hide();
+    runRecoveryDialog(options).then(settle, (error: unknown) => {
+      logger.error("The recovery dialog failed:", toLogValue(error));
+      settle("quit");
+    });
+  };
+  const showDeadline = setTimeout(() => {
+    if (!shown) showDialogInstead("it did not load in time");
+  }, WINDOW_SHOW_TIMEOUT_MS);
+  window.once("ready-to-show", () => {
+    if (dialogShown || settled) return;
+    shown = true;
+    clearTimeout(showDeadline);
+    if (options.showWithoutFocus) window.showInactive();
+    else window.show();
+  });
   const plush = recoveryPlushSvg();
   const render = (notice: Notice | null) => {
     const page = recoveryPage(options, plush, notice);
-    void window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(page)}`);
+    void window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(page)}`).catch(() => undefined);
   };
 
   const contents = window.webContents;
+  contents.on("render-process-gone", (_event, details) =>
+    showDialogInstead(`its renderer stopped: ${details.reason}, exit code ${details.exitCode}`),
+  );
+  contents.on("did-fail-load", (_event, code, description, _url, isMainFrame) => {
+    if (isMainFrame && code !== REPLACED_LOAD_ERROR) showDialogInstead(`${description} (${code})`);
+  });
+  if (options.stopsRenderer) contents.once("did-navigate", () => contents.forcefullyCrashRenderer());
   contents.setWindowOpenHandler(() => ({ action: "deny" }));
   contents.on("will-attach-webview", (event) => event.preventDefault());
   contents.on("will-redirect", (event) => event.preventDefault());
@@ -107,7 +147,14 @@ export function openStartRecoveryWindow(options: StartRecoveryOptions): StartRec
 
   return {
     choice,
+    present: () => {
+      if (dialogShown || !shown || window.isDestroyed()) return;
+      if (window.isMinimized()) window.restore();
+      window.show();
+      window.focus();
+    },
     close: () => {
+      clearTimeout(showDeadline);
       if (!window.isDestroyed()) window.destroy();
     },
   };
@@ -115,10 +162,50 @@ export function openStartRecoveryWindow(options: StartRecoveryOptions): StartRec
 
 type Notice = "diagnosticsSaved" | "actionFailed";
 
+async function runRecoveryDialog(options: StartRecoveryOptions): Promise<RecoveryChoice> {
+  const t = options.translate;
+  const actions: RecoveryAction[] = ["retry", "export-diagnostics", "open-data-folder", "quit"];
+  let notice: Notice | null = null;
+  for (;;) {
+    const { body, hint } = recoveryText(options);
+    const shownNotice = noticeText(t, notice);
+    const { response } = await dialog.showMessageBox({
+      type: "warning",
+      title: t("startup.recoveryWindowTitle"),
+      message: t("startup.recoveryTitle"),
+      detail: shownNotice ? `${body}\n\n${hint}\n\n${shownNotice}` : `${body}\n\n${hint}`,
+      buttons: actions.map((action) => t(ACTION_LABELS[action])),
+      defaultId: 0,
+      cancelId: actions.length - 1,
+      noLink: true,
+    });
+    const action = actions[response] ?? "quit";
+    if (action === "retry" || action === "quit") return action;
+    notice = await runAction(action, options, null);
+  }
+}
+
+function recoveryText(options: StartRecoveryOptions): { body: string; hint: string } {
+  const t = options.translate;
+  return {
+    body: t("startup.recoveryBody", {
+      version: options.summary.appVersion,
+      count: options.summary.consecutiveFailures,
+    }),
+    hint: t(options.previousRelease ? "startup.recoveryHint" : "startup.recoveryHintLatest"),
+  };
+}
+
+function noticeText(t: AppTranslate, notice: Notice | null): string | null {
+  if (notice === "diagnosticsSaved") return t("startup.recoveryDiagnosticsSaved");
+  if (notice === "actionFailed") return t("startup.recoveryActionFailed");
+  return null;
+}
+
 async function runAction(
   action: Exclude<RecoveryAction, "retry" | "quit">,
   { summary, translate }: StartRecoveryOptions,
-  window: BrowserWindow,
+  window: BrowserWindow | null,
 ): Promise<Notice | null> {
   try {
     if (action === "open-data-folder") {
@@ -158,14 +245,10 @@ function escapeHtml(value: string): string {
 function recoveryPage(options: StartRecoveryOptions, plush: string | null, notice: Notice | null): string {
   const t = options.translate;
   const text = (value: string) => escapeHtml(value).replaceAll("\n", "<br>");
-  const link = (action: RecoveryAction, label: string, primary = false) =>
-    `<a class="button${primary ? " primary" : ""}" href="${escapeHtml(actionUrl(action))}">${text(label)}</a>`;
-  const noticeText =
-    notice === "diagnosticsSaved"
-      ? t("startup.recoveryDiagnosticsSaved")
-      : notice === "actionFailed"
-        ? t("startup.recoveryActionFailed")
-        : null;
+  const link = (action: RecoveryAction, primary = false) =>
+    `<a class="button${primary ? " primary" : ""}" href="${escapeHtml(actionUrl(action))}">${text(t(ACTION_LABELS[action]))}</a>`;
+  const { body, hint } = recoveryText(options);
+  const shownNotice = noticeText(t, notice);
   return `<!doctype html>
 <html lang="${escapeHtml(options.locale)}" dir="${localeDirection(options.locale)}">
 <head>
@@ -201,14 +284,14 @@ p { margin: 0; }
 <body${notice ? "" : ' class="intro"'}>
 ${plush ?? ""}
 <h1>${text(t("startup.recoveryTitle"))}</h1>
-<p>${text(t("startup.recoveryBody", { version: options.summary.appVersion, count: options.summary.consecutiveFailures }))}</p>
-<p class="muted">${text(t(options.previousRelease ? "startup.recoveryHint" : "startup.recoveryHintLatest"))}</p>
-${noticeText ? `<p class="notice" role="status">${text(noticeText)}</p>` : ""}
+<p>${text(body)}</p>
+<p class="muted">${text(hint)}</p>
+${shownNotice ? `<p class="notice" role="status">${text(shownNotice)}</p>` : ""}
 <div class="actions">
-${link("retry", t("startup.recoveryRetry"), true)}
-${link("export-diagnostics", t("startup.recoveryExportDiagnostics"))}
-${link("open-data-folder", t("startup.recoveryOpenDataFolder"))}
-${link("quit", t("startup.recoveryQuit"))}
+${link("retry", true)}
+${link("export-diagnostics")}
+${link("open-data-folder")}
+${link("quit")}
 </div>
 </body>
 </html>`;

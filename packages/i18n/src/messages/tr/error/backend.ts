@@ -32,6 +32,12 @@ export const messages = {
     "OpenBot-NC oturum açma penceresinde sayfayı yükleyemedi. İnternet bağlantısını kontrol edin, ardından oturum açma penceresini yeniden açın.",
   "error.backend.browserSignInReadFailed": "OpenBot-NC pencereden oturumu okuyamadı.",
   "error.backend.browserStopUnsupported": "Bu uzak ana makine sayfa yüklemesini durduramaz.",
+  "error.backend.browserLocationFailed": "Sayfanın konumu ayarlanamadı.",
+  "error.backend.browserPermissionsUnsupported": "Bu uzak ana bilgisayar konum isteklerini yanıtlayamaz.",
+  "error.backend.browserLocationRequired": "İsteğe izin vermek için cihazın konumunu gönderin.",
+  "error.backend.browserHttpSignInInactive":
+    "Bu site artık oturum açmanı istemiyor. Yeniden denemek için sayfayı yenile.",
+  "error.backend.browserHttpSignInUnsupported": "Bu uzak ana makine bir siteye oturum açma alamaz.",
   "error.backend.sharedDataLocalOnly": "Paylaşılan veriler bu ajanları çalıştıran bilgisayarda yönetilir.",
   "error.backend.browserUrlProtocol": "Yalnızca HTTP(S) tarayıcı URL'lerine izin verilir.",
   "error.backend.channelLeadModelUnavailable": "Kanal lideri modeli kullanılamıyor.",
@@ -39,6 +45,12 @@ export const messages = {
     "Sıkıştırma bu sohbeti küçültmüyor: iki sıkıştırmadan sonra hâlâ modelin bağlam penceresinin %{percent} kadarını kullanıyor, bu yüzden OpenBot-NC sıkıştırmayı durduruyor. Pencerenin çoğunu araçlar ve talimatlar kullanıyor. Bu ajanın ihtiyaç duymadığı MCP sunucularını veya bilgisayar kullanımını kapatın ya da daha büyük pencereli bir model seçin. Ardından yeni bir sohbet başlatın.",
   "error.backend.contextCompactionStopped":
     'Bu sohbetin art arda iki sıkıştırması başarısız oldu, bu yüzden OpenBot-NC onu otomatik olarak sıkıştırmayı bırakıyor. Her deneme tüm sohbeti modele gönderir ve plan sınırınızı kullanır. Yeniden denemek için "Şimdi sıkıştır"ı seçin veya yeni bir sohbet başlatın.',
+  "error.backend.contextCompactionRetrying":
+    "Sağlayıcı bu sohbeti sıkıştıramadı ve yeniden deniyor. Bu sohbetteki yeni mesajlar sıkıştırma bitene kadar bekler. Yakında bitmezse OpenBot-NC onu durdurur ve mesajlarını gönderir.",
+  "error.backend.contextCompactionFailed":
+    "Bu sohbetin sıkıştırılması başarısız oldu. Sohbet değişmedi. Bekleyen mesajlar şimdi ajana gidiyor.",
+  "error.backend.contextCompactionTimedOut":
+    "Bu sohbetin sıkıştırılması çok uzun sürdü, bu yüzden OpenBot-NC onu durdurdu. Sohbet değişmedi. Bekleyen mesajlar şimdi ajana gidiyor.",
   "error.backend.providerModelAtCapacity":
     "Model kapasitesinin sınırında. Sağlayıcı birkaç dakika içinde yeniden deneyecek. Hemen devam etmek için turu durdurun ve başka bir model seçin.",
   "error.backend.providerRetrying":
@@ -80,6 +92,15 @@ export const messages = {
   "error.backend.channelRoutingFailed": "Yönlendirme başarısız oldu. Bir üye seçin veya tekrar deneyin.",
   "error.backend.channelLeadTimedOut": "Kanal lideri zamanında yanıt vermedi. Bir üye seçin veya tekrar deneyin.",
   "error.backend.channelLeadFailed": "Kanal lideri bu mesajı yönlendiremedi. Bir üye seçin veya tekrar deneyin.",
+  "error.backend.channelLeadBusy":
+    "Kanal liderinin modeli şu anda meşgul. Birkaç dakika sonra tekrar deneyin veya bir üye seçin.",
+  "error.backend.channelLeadOffline": "Kanal liderinin modelinin bağlantısı koptu. Tekrar deneyin veya bir üye seçin.",
+  "error.backend.channelLeadSignIn":
+    "Kanal liderinin sağlayıcı oturumunun süresi doldu. Tekrar oturum açın veya bir üye seçin.",
+  "error.backend.channelLeadModelGone":
+    "Kanal liderinin modeli kullanılamıyor. Lider için başka bir model seçin veya bir üye seçin.",
+  "error.backend.channelLeadRefused":
+    "Kanal liderinin modeli bu isteği reddetti. Bir üye veya lider için başka bir model seçin.",
   "error.backend.channelRequestMemberRequired": "Bu istek için bir üye seçin.",
   "error.backend.channelDeliveryNotCreated": "Kanal teslimatı oluşturulamadı.",
   "error.backend.channelAssignmentStopped": "Bu kanal ataması durduruldu veya değiştirildi.",
@@ -154,6 +175,7 @@ export const messages = {
   "error.backend.videoGenerationFailed": "Video oluşturulamadı.",
   "error.backend.videoGenerationNoVideo": "Video oluşturma bir video döndürmedi.",
   "error.backend.videoGenerationInterrupted": "Video oluşturma kesintiye uğradı.",
+  "error.backend.grokVideoNoQuota": "Grok hesabınız video oluşturamıyor. Bunun yerine videoyu kredilerle oluşturun.",
   "error.backend.attachmentNotRegularFile": "Yalnızca normal dosyalar eklenebilir: {name}",
   "error.backend.attachmentCopyFailed": "OpenBot-NC {name} öğesini kopyalayamadı.",
   "error.backend.routineNameRequired": "Bir rutin adı gereklidir.",
@@ -240,6 +262,8 @@ export const messages = {
     "Oturum açma sunucusu OpenBot-NC'yi uygulama olarak kaydedemiyor. Hesabınız bunun nedeni değildir. Bağlanmak için bu sunucuyu Pazaryeri, Uygulamalar bölümünde kaydedin, ardından ona bir oturum açma uygulaması ekleyin.",
   "error.backend.mcpSignInNeedsClientDocument":
     "Bu oturum açma sunucusu yalnızca istemci kimliği belgesi yayımlayan uygulamaları kabul ediyor ve OpenBot-NC'nin bu sürümü böyle bir belge yayımlamıyor. Bu sunucu için kendi oturum açma uygulamanız varsa sunucuyu Pazaryeri, Uygulamalar bölümünde kaydedin, ardından oturum açma uygulamasını ona ekleyin.",
+  "error.backend.mcpSignInAppNeeded":
+    "Oturum açma sunucusu OpenBot-NC'yi uygulama olarak kaydedemiyor. Hesabınız bunun nedeni değildir. Bağlanmak için bu sunucuyu Pazaryeri, Uygulamalar bölümünde açın, Bağlantıyı test et'e tıklayın, ardından bir oturum açma uygulaması ekleyin.",
   "error.backend.mcpSignInAbandonedGeneric": "Oturum açma yarıda bırakıldı.",
   "error.backend.mcpSignInForgotten": "MCP oturum açma işlemi çalışırken unutuldu.",
   "error.backend.mcpSignInAbandoned": "MCP oturum açma işlemi yarıda bırakıldı.",
@@ -263,7 +287,11 @@ export const messages = {
   "error.backend.mcpServerExited":
     "Sunucu yanıt vermeden durdu. Hatasını görmek için komutu bir terminalde çalıştırın.",
   "error.backend.mcpServerExitedWithOutput": "Sunucu yanıt vermeden durdu. Yazdığı: {detail}",
+  "error.backend.mcpServerDownloadFailed":
+    "Sunucu başlamadı, çünkü indirilmesi başarısız oldu. İnternet bağlantısını kontrol edin, sonra yeniden deneyin.",
   "error.backend.mcpServerFailedToStart": "Sunucu başlamadı: {reason}",
+  "error.backend.mcpServerProgramMissing":
+    "OpenBot-NC, {name} MCP sunucusunu başlatamadı, çünkü programı OpenBot-NC'nin çalıştığı bilgisayarda yüklü değil. {name} sağlayan uygulamayı o bilgisayara yükleyin veya Pazaryeri, Uygulamalar bölümünde {name} öğesini kapatın.",
   "error.backend.mcpServerStartAbandoned":
     "{provider}, sunucu başlamadan beklemeyi bıraktı. Bu yüzden ajanları bu sunucunun araçlarını almıyor.",
   "error.backend.mcpServerStoppedDuringCall": "MCP sunucusu bu çağrıya yanıt vermeden durdu.",
@@ -298,6 +326,7 @@ export const messages = {
     "Bu bilgisayar sunucu bağlantısını engelledi. Güvenlik duvarınızı veya güvenlik yazılımınızı kontrol edin, ardından tekrar deneyin.",
   "error.backend.mcpServerIncompatible":
     "Bu adreste bir şey yanıt verdi, ancak Streamable HTTP üzerinden bir MCP sunucusu olarak değil. URL'yi kontrol edin ve sunucuyu çalıştıran uygulamayı güncelleyin.",
+  "error.backend.mcpServerKeyNotAccepted": "Sunucu API anahtarını kabul etmedi. Anahtarı kontrol edip yeniden deneyin.",
   "error.backend.mcpRemoteBridge":
     "{reason} Bu komut mcp-remote köprüsünü çalıştırır. Bunun yerine {url} URL'siyle Streamable HTTP'yi seçin; OpenBot-NC oturumunuzu açar.",
   "error.backend.oauthNotHttps": "OAuth uç noktası {origin} https değil, bu nedenle kimlik bilgileri gönderilmedi.",
@@ -379,6 +408,10 @@ export const messages = {
   "error.backend.browserProxySignInRefused": "{name} proxy'si oturum açmayı reddetti, bu yüzden sayfa açılmadı.",
   "error.backend.browserSystemProxyFailed":
     "OpenBot-NC'yi çalıştıran bilgisayarın ayarlarındaki proxy yanıt vermiyor veya bağlantıyı reddetti, bu yüzden sayfa açılmadı. O bilgisayarın proxy ayarlarını kontrol edin.",
+  "error.backend.browserSystemProxyOrSiteClosed":
+    "Site veya OpenBot-NC'yi çalıştıran bilgisayarın ayarlarındaki proxy bağlantıyı yanıt vermeden kapattı, bu yüzden sayfa açılmadı. Hiçbir site açılmıyorsa o bilgisayarın proxy ayarlarını kontrol edin.",
+  "error.backend.browserProfileProxyOrSiteClosed":
+    "Site veya bu tarayıcı profilinin proxy'si bağlantıyı yanıt vermeden kapattı, bu yüzden sayfa açılmadı. Hiçbir site açılmıyorsa profilin proxy'sini kontrol edin.",
   "error.backend.browserProxyComputerUnreachable":
     "Bu profilin kullandığı bilgisayar yanıt vermiyor, bu yüzden sayfa açılmadı.",
   "error.backend.browserProxyComputerLocalAddress":

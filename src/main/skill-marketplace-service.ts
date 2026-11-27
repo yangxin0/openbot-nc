@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { lstat, mkdir, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import { MANAGED_SKILL_FOLDERS } from "@openbot/contracts/agent-providers";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
@@ -79,9 +79,13 @@ export class SkillMarketplaceService {
       for (const entry of Object.values(lock.skills)) {
         let availableVersion = entry.version;
         const newest = entry.skillId.startsWith("local-skill-")
-          ? yield* Effect.result(this.#localDetail(entry.skillId))
+          ? yield* Effect.result(
+              skillSync(() => this.requireLocalLibrary()).pipe(
+                Effect.flatMap((library) => library.revision(entry.skillId).pipe(toSkillMarketplaceFailure)),
+              ),
+            )
           : undefined;
-        if (newest && Result.isSuccess(newest)) availableVersion = newest.success.version;
+        if (newest && Result.isSuccess(newest)) availableVersion = newest.success;
         const state = yield* installedState(agent.workspacePath, entry);
         installed.push(
           toInstalledSkill(
@@ -274,20 +278,19 @@ export class SkillMarketplaceService {
           return yield* new SkillMarketplaceFailure({ cause: new Error(sourceText("error.skill.replaceModified")) });
       }
       const owned = new Set(Object.values(lock.skills).flatMap(entryFolders));
-      for (const folder of folders.keys()) {
+      for (const [folder, folderFiles] of folders) {
         if (owned.has(folder)) continue;
         if (MANAGED_SKILL_SLUGS.has(folder))
           return yield* new SkillMarketplaceFailure({
             cause: new Error(sourceText("error.skill.managedSlug", { slug: folder })),
           });
-        for (const target of [
-          ...targetDirectories(agent.workspacePath, folder),
-          disabledDirectory(agent.workspacePath, folder),
-        ]) {
-          if (yield* pathExists(target))
-            return yield* new SkillMarketplaceFailure({
-              cause: new Error(sourceText("error.skill.unmanagedExists", { path: target })),
-            });
+        const ownSkillExists = new SkillMarketplaceFailure({
+          cause: new Error(sourceText("error.skill.ownSkillExists", { slug: folder })),
+        });
+        if (yield* pathExists(disabledDirectory(agent.workspacePath, folder))) return yield* ownSkillExists;
+        for (const target of targetDirectories(agent.workspacePath, folder)) {
+          if ((yield* pathExists(target)) && !(yield* copyHas(target, fileHashes(folderFiles))))
+            return yield* ownSkillExists;
         }
       }
       const receiptId = existing?.receiptId ?? randomUUID();
@@ -740,7 +743,6 @@ const hasUnexpectedSkillFiles = Effect.fn("SkillMarketplace.checkFiles")(functio
   root: string,
   expected: Record<string, string>,
 ) {
-  const paths = Object.keys(expected);
   const visit = (directory: string): Effect.Effect<boolean, SkillMarketplaceFailure> =>
     Effect.gen(function* () {
       for (const entry of yield* skillIO(() => readdir(directory, { withFileTypes: true }))) {
@@ -749,7 +751,7 @@ const hasUnexpectedSkillFiles = Effect.fn("SkillMarketplace.checkFiles")(functio
         if (entry.isSymbolicLink()) return true;
         if (entry.isDirectory()) {
           if (isRuntimeCacheFolder(entry.name)) continue;
-          if (!paths.some((expectedPath) => expectedPath.startsWith(`${name}/`)) || (yield* visit(path))) return true;
+          if (yield* visit(path)) return true;
         } else if (!entry.isFile() || (!(name in expected) && entry.name !== FINDER_METADATA_FILE)) return true;
       }
       return false;
@@ -779,9 +781,7 @@ const onlyNewFiles = Effect.fn("SkillMarketplace.onlyNewFiles")(function* (
   for (const [folder, files] of skillFolders(entry.slug, entry.files, entry.folders ?? [])) {
     const acceptedHashes = accepted.flatMap((folders) => {
       const acceptedFiles = folders.get(folder);
-      return acceptedFiles
-        ? [Object.fromEntries(Object.entries(acceptedFiles).map(([name, bytes]) => [name, sha256(bytes)]))]
-        : [];
+      return acceptedFiles ? [fileHashes(acceptedFiles)] : [];
     });
     target: for (const target of enabled
       ? targetDirectories(workspace, folder)
@@ -793,6 +793,10 @@ const onlyNewFiles = Effect.fn("SkillMarketplace.onlyNewFiles")(function* (
   }
   return true;
 });
+
+function fileHashes(files: Record<string, Uint8Array>): Record<string, string> {
+  return Object.fromEntries(Object.entries(files).map(([name, bytes]) => [name, sha256(bytes)]));
+}
 
 const copyHas = Effect.fn("SkillMarketplace.copyHas")(function* (
   target: string,
@@ -920,7 +924,23 @@ function isSkillsLock(value: unknown): value is SkillsLock {
   );
 }
 
+const symlinkPathFailure = () =>
+  new SkillMarketplaceFailure({ cause: new Error(sourceText("error.skill.installPathSymlink")) });
+
+const assertWorkspaceRoot = Effect.fn("SkillMarketplace.checkWorkspaceRoot")(function* (workspace: string) {
+  const root = yield* Effect.result(skillIO(() => lstat(workspace)));
+  if (Result.isFailure(root)) {
+    const error = root.failure.cause;
+    if (isDynamicRecord(error) && error.code === "ENOENT") return;
+    return yield* root.failure;
+  }
+  if (!root.success.isSymbolicLink()) return;
+  const target = yield* Effect.result(skillIO(() => stat(workspace)));
+  if (Result.isFailure(target) || !target.success.isDirectory()) return yield* symlinkPathFailure();
+});
+
 const assertSkillPaths = Effect.fn("SkillMarketplace.checkPaths")(function* (workspace: string, slug: string) {
+  yield* assertWorkspaceRoot(resolve(workspace));
   for (const target of [
     ...targetDirectories(workspace, slug),
     disabledDirectory(workspace, slug),
@@ -928,7 +948,7 @@ const assertSkillPaths = Effect.fn("SkillMarketplace.checkPaths")(function* (wor
   ]) {
     let current = resolve(workspace);
     const parts = relative(current, target).split(/[\\/]/u);
-    for (const part of ["", ...parts]) {
+    for (const part of parts) {
       current = join(current, part);
       const entry = yield* Effect.result(skillIO(() => lstat(current)));
       if (Result.isFailure(entry)) {
@@ -936,8 +956,7 @@ const assertSkillPaths = Effect.fn("SkillMarketplace.checkPaths")(function* (wor
         if (isDynamicRecord(error) && error.code === "ENOENT") break;
         return yield* entry.failure;
       }
-      if (entry.success.isSymbolicLink())
-        return yield* new SkillMarketplaceFailure({ cause: new Error(sourceText("error.skill.installPathSymlink")) });
+      if (entry.success.isSymbolicLink()) return yield* symlinkPathFailure();
     }
   }
 });

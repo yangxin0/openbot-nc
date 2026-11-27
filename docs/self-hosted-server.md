@@ -136,8 +136,9 @@ background. Main rewrites `~/.config/OpenBot-NC/openbot-run-marker-v1.json` ever
 loop (`src/main/run-marker.ts`). The watchdog reads the file every 30 s. When the content does not
 change in 20 reads (10 minutes) after it changed once in this run, the watchdog logs "OpenBot did not
 update its heartbeat for 600 seconds" and sends `SIGKILL` to the process in
-`/run/openbot-nc/openbot.pid`. `Restart=always` starts the service again 10 s later. The watchdog does
-nothing:
+`/run/openbot-nc/openbot.pid`. `Restart=always` starts the service again 10 s later. The Docker
+entrypoint (`scripts/hosting/openbot-container`) starts the same watchdog; there the container exits
+and its restart policy starts it again. The watchdog does nothing:
 
 - before the first change of the file in this run;
 - until the start finishes: `openbot-start-attempts-v1.json` in the same folder has

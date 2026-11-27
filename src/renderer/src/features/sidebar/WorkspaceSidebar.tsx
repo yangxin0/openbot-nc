@@ -122,6 +122,8 @@ export function WorkspaceSidebar(props: { peopleEnabled: boolean }) {
     collapsedSidebarSectionIds,
     mutateSidebarLayout,
     toggleSidebarSection,
+    sidebarTabIds,
+    setSidebarTabIds,
     pinnedSidebarItems,
     sidebarPeopleOrder,
     pinSidebarItem,
@@ -236,6 +238,8 @@ export function WorkspaceSidebar(props: { peopleEnabled: boolean }) {
       layoutMutable={activeServerSupportsCapability("sidebar-layout")}
       chatOrder={layout.sidebarChatOrder()}
       onChatOrderChange={layout.setSidebarChatOrder}
+      tabIds={sidebarTabIds()}
+      onTabIdsChange={setSidebarTabIds}
       foldersSupported={activeServerSupportsCapability("sidebar-folders-v1")}
       collapsedSectionIds={collapsedSidebarSectionIds()}
       onMutateLayout={mutateSidebarLayout}

@@ -8,4 +8,6 @@ export const messages = {
   "error.app.notReady": "OpenBot-NC 尚未就绪。",
   "error.app.macSecureStorageUnavailable": "macOS 安全存储不可用。",
   "error.app.secretStorageUnavailable": "系统密钥存储不可用。",
+  "error.app.windowBlockedBySecuritySoftware":
+    "这台电脑上的安全软件可能停止了 OpenBot-NC 窗口。请在安全软件（例如 Kaspersky）中将 OpenBot-NC.exe 添加为受信任的应用程序，然后重新启动 OpenBot-NC。",
 } as const satisfies PartialTranslation<typeof source>;

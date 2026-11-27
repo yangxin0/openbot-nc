@@ -13,16 +13,19 @@ Update this section after each merge.
 | Upstream remote and branch | `openbot` → `nightly-labs/openbot`, branch `main` |
 | Fork remote and branch | `origin` → `yangxin0/openbot-nc`, branch `main` |
 | Fork base | `61645b885` (2026-11-25) |
-| Last upstream commit reviewed | `61645b885` (no upstream commit merged yet) |
-| Backlog (2026-11-27) | 191 commits up to `100c60e89`: about 144 take, 46 adapt, 1 skip (sorted by the paths they touch) |
+| Last upstream commit merged | `383a35d2f` (merged on 2026-11-27, branch `merge/upstream-2026-11-27`) |
+| Merge base for the next merge | `383a35d2f` |
 
 ## Procedure
+
+Merge upstream with `git merge`, not with cherry-picks. A merge moves the merge base, so the next merge
+only sees the upstream commits that are newer than the last merged one.
 
 1. Get the new upstream commits. Only the developer starts this step:
 
    ```sh
    git fetch openbot
-   git log --oneline --reverse <last reviewed>..openbot/main
+   git log --oneline --reverse --no-merges <last merged>..openbot/main
    ```
 
 2. Sort each commit with [Decision rules](#decision-rules). The paths it touches decide most cases:
@@ -31,28 +34,49 @@ Update this section after each merge.
    git show --stat --format='%h %s' <commit>
    ```
 
-3. Make a branch from `main` and apply the commits that you take or adapt, oldest first:
+   Make a list of the commits that only serve [removed areas](#removed) or are release steps. You need
+   it in step 5.
+
+3. Make a branch from `main` and start the merge without a commit:
 
    ```sh
    git switch -c merge/upstream-<date> main
-   git cherry-pick -x <commit>
+   git merge --no-ff --no-commit openbot/main
    ```
 
-   Resolve conflicts with [Conflict rules](#conflict-rules). For an adapted commit, change the code so
-   that it fits the fork (see [Area reference](#area-reference)) before you commit.
+4. Resolve the conflicts with [Conflict rules](#conflict-rules), by category: modify/delete conflicts
+   first, then the text catalogs, then the code by hand, then `bun.lock`.
 
-4. Check the result against [Invariants](#invariants), then run the checks:
+5. Remove what came in **without** a conflict. Upstream adds new files and new code in files that the
+   fork did not change, and some of it serves a removed area. Delete the new files of removed areas.
+   For a file where removed-area commits dominate, start again from the fork's version and replay
+   only the kept upstream commits of that file, oldest first:
 
    ```sh
+   git show main:<file> > <file>
+   git diff <commit>^ <commit> -- <file> | patch -p1 -F3
+   ```
+
+   Apply a rejected hunk by hand. Then let the type checkers find the rest (`typecheck:node`,
+   `typecheck:renderer`, the phone `tsc`), and search for the names of the removed features.
+
+6. Check the result against [Invariants](#invariants), then run the checks one at a time:
+
+   ```sh
+   bun install --frozen-lockfile
    bun run check:vendor-endpoints
    bun run typecheck:node
    bun run typecheck:renderer
+   bun run i18n:check
+   bun run check:ui
    bun run test:relay-hub
    ```
 
-   Add the typecheck and the tests of each area that the merged commits touch.
+   Add the other typecheck projects, the trust boundary and migration Vitest files that changed, and
+   the relay tests (`test:relay*`, `test:team-api-routes`).
 
-5. Merge the branch into `main`, then update [Sync state](#sync-state) and [Merge log](#merge-log).
+7. Write the fork's release note, update [Sync state](#sync-state) and [Merge log](#merge-log), and
+   let the developer commit the merge and merge the branch into `main`.
 
 ## Decision rules
 
@@ -64,6 +88,10 @@ Update this section after each merge.
 
 Upstream fixes and features in removed areas can still be useful as ideas. Rebuild such a feature on
 the fork's design only when the developer asks for it.
+
+A new upstream feature that needs a vendor service is a removed area too, even when no fork file
+names it yet: for example a wallet that goes through the account service, a watch app that reaches
+hosts through Signal, or a store page link. Add it to [Removed](#removed) when you remove it.
 
 ## Invariants
 
@@ -96,8 +124,20 @@ Every merge must keep these. Do not merge a commit that breaks one; adapt it ins
 - **Modify/delete conflict** (upstream changed a file that the fork deleted): keep it deleted
   (`git rm <path>`). If the change matters, rebuild it in the fork's own code.
 - **Release files:** keep the fork's version in `package.json` and `apps/mobile/package.json`. Do not
-  take upstream changes to `CHANGELOG.md` or upstream `changelog.d/*.md` files. Write the fork's own
-  release note in `changelog.d/<branch>.md` when the merged change is visible to users.
+  take upstream changes to `CHANGELOG.md`, `apps/mobile/CHANGELOG.md`, the What's new files
+  (`src/renderer/src/features/updates/whats-new*`) or upstream `changelog.d/*.md` files. An upstream
+  release deletes the `changelog.d` files that it moved into its `CHANGELOG.md`: restore the fork's
+  copies. Keep upstream's entries in `src/backend/released-schemas/releases.json`: they describe
+  shipped schemas. Write the fork's own release note in `changelog.d/<branch>.md` (and
+  `apps/mobile/changelog.d/<branch>.md` for the phone) when the merged change is visible to users.
+- **Texts in bulk:** merge each catalog per key, not per line: upstream's file, minus the keys that
+  the fork removed, plus the keys that the fork added; take upstream's value only for a key that
+  upstream changed since the merge base. Then apply the [Text rule](#text-rule), and remove the keys
+  that no code uses (`bun run i18n:check` names them; `--fix` sorts the translations).
+- **Lockfile:** merge `bun.lock` per package (upstream's entries, minus the packages that the fork
+  removed, plus the ones that it added), run `bun install` once, then check that
+  `bun install --frozen-lockfile` passes. Remove the dependencies of removed features from the
+  `package.json` files first.
 - **IPC and contracts:** do not bring back removed IPC groups, preload methods or contract modules
   (see [Removed](#removed)). When an upstream change adds a field to a removed endpoint, drop it.
 - **Team protocol:** keep the capability registry. The host does not serve `owner-transfer-v1`,
@@ -113,7 +153,8 @@ Every merge must keep these. Do not merge a commit that breaks one; adapt it ins
 
 In `packages/i18n/src/messages/*`, replace the product name `OpenBot` with `OpenBot-NC` in text
 values, not in keys. Keep these as they are: the vault and folder name "Shared with OpenBot", the bot
-display names in Slack and Discord texts, file names, paths, commands and identifiers. Fix grammar
+display names in Slack and Discord texts, file names, paths, commands and identifiers. A file name of
+the fork's own build follows the fork: the Windows program is `OpenBot-NC.exe`. Fix grammar
 after the name where a language needs it (Korean particles, Turkish suffixes, Polish forms).
 
 ## Area reference
@@ -160,6 +201,18 @@ Skip upstream changes here. These paths no longer exist in the fork.
   `apps/mobile/plugins/{notification-service,share-extension,shortcuts}`, `apps/mobile/certs`,
   `apps/mobile/assets/sounds`, the routes `hosted-server`, `install-agent`, `marketplace-listing`,
   `remote-desktop*` and `server-marketplace`.
+- **Vendor features added upstream after the fork:** the NEAR Intents wallet (`src/main/near-*`,
+  `src/backend/near-wallet.ts`, `packages/contracts/src/ipc-near-wallet.ts`,
+  `packages/contracts/src/team-protocol/near-payment-v1.ts`, the Crypto tab of the Vault), the Apple
+  Watch app (`apps/mobile/targets`, `apps/mobile/modules/watch`, `apps/mobile/src/features/watch`,
+  `src/main/watch-relay-*`, `packages/contracts/src/watch-protocol.ts`), OpenBot credits for agent
+  media and media approval (`src/backend/agent/credit-media-tools.ts`,
+  `packages/contracts/src/ipc-media-approval*.ts`, `team-protocol/media-approval-*-v1.ts`,
+  `team-protocol/openbot-credits-events-v1.ts`, `packages/ui/src/features/credits/Credits*`, the
+  credits hold and media approval cards), the account activity reporter, the sidebar promo cards for
+  the Chrome extension and the phone app (`SidebarPromoDeck`, `SidebarChromeExtensionCard`,
+  `packages/contracts/src/browser-extension.ts`), the phone OTA update banner, and the hosted server
+  keyring guard (`scripts/hosting/openbot-hosted-keyring`).
 - **Vendor release and hosting:** `nix`, `flake.*`, `docker/umbrel`, `docs/store-assets`, the store,
   over-the-air, Chrome Web Store, status and announcement workflows in `.github/workflows`, the
   paid hosting scripts in `scripts/hosting` (boat, Leaseweb, pool, account server), vendor scripts in
@@ -230,7 +283,7 @@ migrations (`src/backend`), and new interface texts.
 
 | Date | Upstream range | Taken | Adapted | Skipped | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| 2026-11-27 | `61645b885..383a35d2f` (298 commits) | about 212 | about 32 | about 54 | First merge with `git merge`. Removed what came in without conflicts: NEAR wallet, Apple Watch, credits media and media approval, account activity, Chrome extension promo, OTA banner, release steps. Adapted: system CLI tracker (server mode only), workflow presence over the events socket, file transfer wait for room, MCP `/callback` sign-in without the client ID document, pool Spread choice without live voice, phone Refresh connection. Not ported: hosted keyring guard, sign-in step logs of the WebRTC host peer. |
 
 ## History of the fork's own changes
 

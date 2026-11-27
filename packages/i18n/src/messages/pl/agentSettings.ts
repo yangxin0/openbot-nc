@@ -62,6 +62,7 @@ export const messages = {
     other: "Możesz dodać maksymalnie {count} folderu",
   },
   "agentSettings.folders.browse.places": "Przejdź do",
+  "agentSettings.folders.browse.path": "Ścieżka folderu",
   "agentSettings.folders.browse.home": "Folder domowy",
   "agentSettings.folders.browse.parent": "W górę: {folder}",
   "agentSettings.folders.browse.failed": "Nie można otworzyć tego folderu.",
@@ -117,6 +118,7 @@ export const messages = {
   "agentSettings.backupModels.limited": "Osiągnięto limit użycia · pominięto",
   "agentSettings.backupModels.unavailable": "Chwilowo niedostępny · pominięto",
   "agentSettings.backupModels.withAccount": "{model} · {account}",
+  "agentSettings.backupModels.withProvider": "{model} · {provider}",
   "agentSettings.backupModels.note":
     "Gdy limit użycia zatrzyma agenta {name} po rozpoczęciu pracy, {name} kontynuuje tę samą pracę na pierwszym dostępnym modelu z kolejności. Wraca do modelu {model}, gdy limit się skończy, lub 10 minut po błędzie dostawcy.",
   "agentSettings.groups.brain": "Mózg",
@@ -211,6 +213,10 @@ export const messages = {
     "Wszystkie wiadomości i pliki tego czatu znikną z OpenBot-NC, a agent o nich zapomni. Nie można tego cofnąć. Wątki poboczne, instrukcje, model, narzędzia, wspomnienia, przestrzeń robocza i przeglądarka się nie zmienią.",
   "agentSettings.deleteHistory.confirm": "Usuń historię",
   "agentSettings.deleteHistory.failed": "Nie udało się usunąć historii.",
+  "agentSettings.deleteAgent.title": "Usuń agenta",
+  "agentSettings.deleteAgent.description":
+    "Agent, jego czat, wspomnienia, rutyny i obszar roboczy znikają z OpenBot-NC.",
+  "agentSettings.deleteAgent.button": "Usuń",
   "agentSettings.fullAccess.title": "Dać temu agentowi pełny dostęp?",
   "agentSettings.fullAccess.askTitle": "Pozwolić temu agentowi pracować poza obszarem roboczym?",
   "agentSettings.fullAccess.description":

@@ -18,6 +18,7 @@ const HOSTED_SCRIPTS = [
   "openbot-hosted-server",
   "openbot-hosted-env",
   "openbot-hosted-update",
+  "openbot-hosted-keyring",
   "openbot",
   "openbot-server-setup",
 ];
@@ -73,6 +74,7 @@ await Promise.all([
   access(resolve(resourcesPath, "licenses/onnxruntime-LICENSE")),
   ...voiceRuntimeLibraries.map((name) => access(resolve(voiceRuntimePath, name))),
   access(voiceSessionSettingsPath),
+  access(resolve(voiceRuntimePath, "silero_vad_v5.onnx")),
   access(voiceHostPath),
   access(speechHostPath),
   ...["packages.txt", "optional-packages.txt", "openbot-hosted.apparmor", ...HOSTED_UNITS].map((file) =>

@@ -45,6 +45,7 @@
       "./plugins/with-rocketsim",
       "./plugins/with-workspace-bundle-inputs",
       "./plugins/with-app-icons",
+      "./plugins/with-android-main-handler-first",
       "./plugins/with-android-view-preallocation-off",
       "./plugins/with-android-optional-features",
       "expo-router",

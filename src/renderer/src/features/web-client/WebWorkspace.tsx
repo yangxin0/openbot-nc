@@ -47,6 +47,7 @@ import { AGENT_TASKS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-t
 import { AGENT_THREAD_FILES_CAPABILITY } from "@openbot/contracts/team-protocol/agent-thread-files-v1";
 import { AGENT_USAGE_LIMIT_CAPABILITY } from "@openbot/contracts/team-protocol/agent-usage-limit-v1";
 import { AGENT_WAITS_CAPABILITY } from "@openbot/contracts/team-protocol/agent-waits-v1";
+import { ATTACHMENT_PREVIEW_CAPABILITY } from "@openbot/contracts/team-protocol/attachment-preview-v1";
 import { BROWSER_PROFILES_CAPABILITY } from "@openbot/contracts/team-protocol/browser-profiles-v1";
 import { BROWSER_PROXIES_CAPABILITY } from "@openbot/contracts/team-protocol/browser-proxies-v1";
 import { TEAM_BROWSER_VIEW_CAPABILITY } from "@openbot/contracts/team-protocol/browser-view-v1";
@@ -215,6 +216,7 @@ import {
   agentErrorDetails,
   claimErrorToast,
   createTurnErrorBanners,
+  isRetryNotice,
   readableAgentError,
   remoteAgentError,
 } from "../agents/agent-error-text";
@@ -902,6 +904,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
     (capability) =>
       workspace.state.capabilities.includes(capability) && canAdministerServer(workspace.state.host?.role),
     () => storageCalls,
+    () => (workspace.state.synced ? workspace.state.capabilities.includes(ATTACHMENT_PREVIEW_CAPABILITY) : undefined),
   );
   const [searchRoutineList, setSearchRoutineList] = createSignal<GlobalSearchRoutine[]>([]);
   const [searchRoutinesLoading, setSearchRoutinesLoading] = createSignal(false);
@@ -1152,6 +1155,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
     admin: () => canAdministerServer(workspace.state.host?.role),
     hostName: () => server()?.name,
     onHostEvent: workspace.onHostEvent,
+    setSpot: (input) => workspace.runtime.setWorkflowSpot(input),
     onReconnect(listener) {
       hostOnlineListeners.add(listener);
       return () => {
@@ -1723,6 +1727,15 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
           errorBanners.noteTurnStarted(composerDraftKey({ agentId: event.agentId, serverId }));
         return;
       }
+      if (event.type === "conversation-delta") {
+        if (serverId && isMainThread(event.agentId, event.threadId))
+          errorBanners.clearAfterOutput(
+            composerDraftKey({ agentId: event.agentId, serverId }),
+            controller.setConversationErrors,
+            controller.setConversationErrorRuns,
+          );
+        return;
+      }
       if (event.type === "turn-completed") {
         if (!serverId) return;
         const key = composerDraftKey({ agentId: event.agentId, serverId });
@@ -1741,8 +1754,20 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
         errorBanners.noteError(key, event.message, message);
         controller.setConversationErrors((current) => ({ ...current, [key]: message }));
         const details = agentErrorDetails(event.message, message);
+        const link = event.link;
+        const notice = isRetryNotice(event.message);
         controller.setConversationErrorRuns((current) => {
-          if (details) return { ...current, [key]: { message, run: null, details } };
+          if (link || details || notice)
+            return {
+              ...current,
+              [key]: {
+                message,
+                run: null,
+                ...(link ? { link } : {}),
+                ...(details ? { details } : {}),
+                ...(notice ? { notice } : {}),
+              },
+            };
           if (!(key in current)) return current;
           const { [key]: _replaced, ...next } = current;
           return next;
@@ -1943,6 +1968,10 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
       workspace.state.capabilities.includes("browser-control") &&
       workspace.state.capabilities.includes("browser-view"),
   );
+  const noticedBrowserTabIds = createMemo(() => {
+    const noticed = workspace.state.noticedBrowserTabIds;
+    return browserEnabled() && noticed ? new Set(noticed) : undefined;
+  });
   const clearSelectedAgentContext = createMemo(() => {
     const agent = workspace.selected();
     if (!agent || !workspace.runtime.admin || !workspace.state.capabilities.includes(CONTEXT_RESET_CAPABILITY))
@@ -2014,6 +2043,8 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
       return undefined;
     return (taskId: string) => compactContext(agent.id, taskId);
   });
+  const agentDeleteAllowed = () =>
+    workspace.state.status === "online" && canAdministerServer(workspace.state.host?.role);
   const deleteSelectedAgentHistory = createMemo(() => {
     const agent = workspace.selected();
     const deleteHistory = workspace.runtime.deleteHistory;
@@ -2567,6 +2598,8 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
               onProviders={providersRailAction()}
               onCrm={crmRailAction()}
               onCrmConnectors={crmConnectorsAction()}
+              hiddenItems={layout.railHidden()}
+              onHiddenChange={layout.setRailHidden}
               onUsage={(button) => {
                 const id = server()?.id;
                 if (id) void openHostPage(id, "usage", button);
@@ -2760,6 +2793,8 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                                     workspace.stepLines(),
                                   )
                                 }
+                                members={workspace.state.presence?.members}
+                                selfMemberId={workspace.state.memberId}
                               />
                             </Loading>
                           )}
@@ -2899,6 +2934,8 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                     }
                     chatOrder={layout.sidebarChatOrder()}
                     onChatOrderChange={layout.setSidebarChatOrder}
+                    tabIds={workspace.preferences.sidebarTabIds()}
+                    onTabIdsChange={workspace.preferences.setSidebarTabIds}
                     collapsedSectionIds={workspace.preferences.collapsedSidebarSectionIds()}
                     onMutateLayout={workspace.mutateSidebarLayout}
                     sectionDuplicateSupported={
@@ -2934,9 +2971,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                     }
                     duplicatingAgentIds={new Set(workspace.state.duplicatingAgentIds)}
                     onDuplicateAgent={workspace.duplicateAgent}
-                    deleteSupported={
-                      workspace.state.status === "online" && canAdministerServer(workspace.state.host?.role)
-                    }
+                    deleteSupported={agentDeleteAllowed()}
                     marketplaceSupported={workspace.state.status === "online"}
                     onDeleteAgent={workspace.deleteAgent}
                     userHiddenAgents={workspace.state.userHiddenAgents}
@@ -3412,6 +3447,8 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                   queue={workspace.state.selectedId ? workspace.state.queues[workspace.state.selectedId] : undefined}
                   browserRuntime={workspace.runtime.browser}
                   browserTabs={workspace.state.browserTabs}
+                  noticedBrowserTabIds={noticedBrowserTabIds()}
+                  onNoticeBrowserTabs={workspace.noticeBrowserTabs}
                   activeBrowserTabId={workspace.state.activeBrowserTabId}
                   browserVisibilitySuspended={workspace.state.status !== "online" || pageCovered()}
                   workspaceCovered={pageCovered() || hostOffline()}
@@ -3485,6 +3522,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                   onUpdateAgentPermissions={remoteAgentAdmin.settings() ? remoteAgentAdmin.update : undefined}
                   onClearAgentContext={clearSelectedAgentContext()}
                   onDeleteAgentHistory={deleteSelectedAgentHistory()}
+                  onDeleteAgent={agentDeleteAllowed() ? workspace.deleteAgent : undefined}
                   onCompactAgentContext={compactSelectedAgentContext()}
                   contextState={
                     workspace.state.selectedId ? workspace.state.contextStates[workspace.state.selectedId] : undefined
