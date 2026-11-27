@@ -8,6 +8,7 @@ interface Step {
 
 interface Config {
   waitMs: number;
+  ownRoot?: boolean;
   steps: Step[];
 }
 
@@ -37,6 +38,31 @@ const { RelayJoinError } = await import("@openbot/team-client/relay-join");
 const { createPhoneIdentityStore, PHONE_IDENTITY_KEY } = await import(
   "../apps/mobile/src/features/identity/model/phone-identity"
 );
+const { nodeRelayJoinTls } = await import("../src/main/relay/join-trust");
+const { default: WebSocket } = await import("ws");
+
+type SocketFactory = NonNullable<Parameters<typeof startRelayControl>[1]>["openSocket"];
+
+function rootSocketFactory(root: string): SocketFactory {
+  return (url, events) => {
+    const socket = new WebSocket(url, { ca: root, perMessageDeflate: false });
+    socket.on("open", () => events.open());
+    socket.on("message", (data, binary) => {
+      const bytes = Array.isArray(data) ? Buffer.concat(data) : Buffer.isBuffer(data) ? data : Buffer.from(data);
+      if (binary) events.binary(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+      else events.text(bytes.toString("utf8"));
+    });
+    socket.on("close", (code, reason) => events.closed(code, reason.toString("utf8")));
+    socket.on("error", () => undefined);
+    return {
+      get bufferedAmount() {
+        return socket.bufferedAmount;
+      },
+      send: (data) => socket.send(data),
+      close: (code, reason) => socket.close(code, reason),
+    };
+  };
+}
 
 function partsOf(value: unknown): number {
   return isDynamicRecord(value) && typeof value.parts === "number" ? value.parts : 0;
@@ -46,11 +72,14 @@ const crypto = createNobleRelayCrypto({ randomBytes: (size) => randomValues(new 
 const results: unknown[] = [];
 for (const step of config.steps) {
   memory.clear();
-  const store = createPhoneIdentityStore(memoryStore, crypto);
+  const store = createPhoneIdentityStore(memoryStore, crypto, config.ownRoot ? nodeRelayJoinTls : undefined);
   const subtle = typeof globalThis.crypto === "undefined" ? "undefined" : "defined";
   try {
     const identity = await store.joinWithCode(step.code);
-    const control = startRelayControl(identity, { crypto });
+    const control = startRelayControl(identity, {
+      crypto,
+      ...(config.ownRoot ? { openSocket: rootSocketFactory(identity.root) } : {}),
+    });
     const state = await new Promise<string>((resolveState, reject) => {
       const timer = setTimeout(() => reject(new Error("The phone control did not connect.")), config.waitMs);
       const unsubscribe = control.subscribe((snapshot) => {

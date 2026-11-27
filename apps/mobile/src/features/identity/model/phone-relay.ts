@@ -67,7 +67,7 @@ const RELAY_STATE_KEYS = {
 
 export type RelayStateKey = (typeof RELAY_STATE_KEYS)[RelaySocketErrorCode];
 
-export type PhoneRelayControlOptions = Pick<RelayControlOptions, "reconnect" | "liveness" | "log">;
+export type PhoneRelayControlOptions = Pick<RelayControlOptions, "reconnect" | "liveness" | "log" | "openSocket">;
 
 export function startPhoneRelayControl(
   relay: PhoneRelayKeys,

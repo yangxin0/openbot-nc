@@ -9,6 +9,7 @@ import {
 import {
   joinRelayWithCode,
   type RelayJoinTextKey,
+  type RelayJoinTls,
   relayJoinError,
   relayJoinErrorKey,
 } from "@openbot/team-client/relay-join";
@@ -54,7 +55,11 @@ function phoneIdentityPartKey(index: number): string {
   return `${PHONE_IDENTITY_KEY}.part.${index}`;
 }
 
-export function createPhoneIdentityStore(store: PhoneSecureStore, crypto: RelayCrypto): PhoneIdentityStore {
+export function createPhoneIdentityStore(
+  store: PhoneSecureStore,
+  crypto: RelayCrypto,
+  tls?: RelayJoinTls,
+): PhoneIdentityStore {
   const read = async (text: string) => {
     const identity = await createRelayIdentityFromText(text, { crypto });
     if (identity.relayUrl === null) throw new PhoneIdentityError("mobile.identity.error.relayUrlMissing");
@@ -118,7 +123,7 @@ export function createPhoneIdentityStore(store: PhoneSecureStore, crypto: RelayC
     },
     importText,
     async joinWithCode(text) {
-      const joined = await joinRelayWithCode(text, { crypto, label: PHONE_ENROLL_LABEL });
+      const joined = await joinRelayWithCode(text, { crypto, label: PHONE_ENROLL_LABEL, ...(tls ? { tls } : {}) });
       if (joined.bundleText === null) throw relayJoinError("key_unavailable");
       return importText(joined.bundleText);
     },

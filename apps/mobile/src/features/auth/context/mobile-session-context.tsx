@@ -18,6 +18,7 @@ import { type PhoneIdentityErrorKey, phoneIdentityErrorKey } from "@/features/id
 import { phoneIdentityStore, phoneRelayCrypto } from "@/features/identity/model/phone-platform";
 import { type RelayStateKey, relayStateKey } from "@/features/identity/model/phone-relay";
 import { PhoneRelayRuntime } from "@/features/identity/model/phone-relay-runtime";
+import { phoneRelaySocketFactory } from "@/features/identity/model/relay-tls";
 import { deleteAgentBackdrops } from "@/features/settings/model/chat-backdrop";
 import { supportLog } from "@/features/support/model/support-log";
 import { deleteAgentAvatars } from "@/features/workspace/model/agent-avatar-cache";
@@ -97,7 +98,7 @@ export function MobileSessionProvider({ children }: PropsWithChildren) {
                 void endSession.current(relayStateKey(code));
               },
               undefined,
-              { log: (level, line) => supportLog.add(level, "connection", line) },
+              relayControlOptions(identity),
             ),
           }
         : null;
@@ -247,4 +248,12 @@ export function useRelaySnapshot(): RelayControlSnapshot {
     relay?.snapshot ?? stoppedRelay,
     relay?.snapshot ?? stoppedRelay,
   );
+}
+
+function relayControlOptions(identity: RelayBrowserIdentity) {
+  const openSocket = phoneRelaySocketFactory(identity.root);
+  return {
+    log: (level: "info" | "warn", line: string) => supportLog.add(level, "connection", line),
+    ...(openSocket ? { openSocket } : {}),
+  };
 }

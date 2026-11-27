@@ -1,14 +1,7 @@
 import type { IncomingMessage } from "node:http";
 import { request } from "node:https";
 import { getCACertificates } from "node:tls";
-import {
-  RELAY_ROOT_RESPONSE_BYTES_LIMIT,
-  type RelayJoinCode,
-  relayRootOfCode,
-  relayRootUrl,
-} from "@openbot/contracts/relay-protocol/enrollment";
-import { webRelayCrypto } from "@openbot/team-client/relay-crypto";
-import { type RelayJoinFetch, relayJoinError } from "@openbot/team-client/relay-join";
+import { type RelayJoinAnswer, type RelayJoinTls, relayJoinError } from "@openbot/team-client/relay-join";
 
 const ENROLL_RESPONSE_BYTES_LIMIT = 64 * 1024;
 const TLS_CERTIFICATE_ERRORS: ReadonlySet<string> = new Set([
@@ -23,43 +16,28 @@ const TLS_CERTIFICATE_ERRORS: ReadonlySet<string> = new Set([
   "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
 ]);
 
-interface HttpsAnswer {
-  status: number;
-  text: string;
-}
-
 class ResponseTooLarge extends Error {}
 
-export async function relayJoinFetch(code: RelayJoinCode, signal: AbortSignal): Promise<RelayJoinFetch> {
-  const root = await codeRoot(code, signal);
-  const authorities = root === null ? getCACertificates("default") : [...getCACertificates("default"), root];
-  return async (url, init) => {
-    const answer = await sendTrusted(url, init, authorities);
-    return new Response(answer.text, { status: answer.status });
-  };
-}
-
-async function codeRoot(code: RelayJoinCode, signal: AbortSignal): Promise<string | null> {
-  let answer: HttpsAnswer;
-  try {
-    answer = await https(relayRootUrl(code), {
+export const nodeRelayJoinTls: RelayJoinTls = {
+  readWithoutTrust: (url, limit, signal) =>
+    https(url, {
       method: "GET",
       headers: { accept: "application/x-pem-file" },
       body: null,
       authorities: null,
-      limit: RELAY_ROOT_RESPONSE_BYTES_LIMIT,
-      signal,
-    });
-  } catch {
-    return null;
-  }
-  if (answer.status !== 200) return null;
-  const root = await relayRootOfCode(answer.text, code, webRelayCrypto);
-  if (root === null) throw relayJoinError("root_mismatch");
-  return root;
-}
+      limit,
+      signal: signal ?? null,
+    }),
+  fetchTrusting: (root) => {
+    const authorities = root === null ? getCACertificates("default") : [...getCACertificates("default"), root];
+    return async (url, init) => {
+      const answer = await sendTrusted(url, init, authorities);
+      return new Response(answer.text, { status: answer.status });
+    };
+  },
+};
 
-async function sendTrusted(url: string, init: RequestInit, authorities: string[]): Promise<HttpsAnswer> {
+async function sendTrusted(url: string, init: RequestInit, authorities: string[]): Promise<RelayJoinAnswer> {
   try {
     return await https(url, {
       method: init.method ?? "GET",
@@ -88,7 +66,7 @@ function https(
     limit: number;
     signal: AbortSignal | null;
   },
-): Promise<HttpsAnswer> {
+): Promise<RelayJoinAnswer> {
   return new Promise((resolveAnswer, reject) => {
     const outgoing = request(url, {
       method: options.method,

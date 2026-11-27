@@ -225,14 +225,18 @@ IP address and no domain is enough) and a server with a certificate of a public 
 | --- | --- | --- |
 | Desktop and Linux server (`openbot-nc join`) | Yes | Yes |
 | Web client at `/app` | After the browser accepts the certificate of the page | Yes |
-| Phone and browser extension | Not yet: install the root on the device, or use a public certificate | Yes |
+| Phone on iOS | Yes | Yes |
+| Phone on Android and browser extension | Not yet: install the root on the device, or use a public certificate | Yes |
 
 The desktop and the Linux server read `GET https://<server>/v1/root` without a TLS check. They use
 that root only when its SHA-256 is the `root` of the code. Then they send the join request with TLS
 checked against the system authorities and that root. When the root is not the root of the code,
 they stop with `root_mismatch` before the code leaves the device. A server with no `/v1/root` (an
 older version) gets the system authorities only; when they do not accept its certificate, the join
-stops with `server_untrusted` and the code is not sent. The code is in `src/main/relay/join-trust.ts`.
+stops with `server_untrusted` and the code is not sent. The shared steps are `relayJoinTrustedFetch` in
+`packages/team-client/src/relay-join.ts`; the desktop transport is `src/main/relay/join-trust.ts`. On
+iOS the native module `apps/mobile/modules/relay-tls` does the requests and opens the relay
+WebSocket with TLS checked against the system authorities and the team root.
 
 `/v1/root` is on the main listener, answers the root certificate as PEM to any origin, and holds no
 secret. Use it also to install the root on a device that must trust the server.

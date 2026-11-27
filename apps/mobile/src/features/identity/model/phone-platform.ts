@@ -2,6 +2,7 @@ import { createNobleRelayCrypto } from "@openbot/team-client/relay-crypto-noble"
 import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { createPhoneIdentityStore, type PhoneSecureStore } from "./phone-identity";
+import { phoneRelayJoinTls } from "./relay-tls";
 
 const SECURE_OPTIONS: SecureStore.SecureStoreOptions = {
   keychainService: "openbot.relay-identity",
@@ -16,4 +17,4 @@ const phoneSecureStore: PhoneSecureStore = {
 
 export const phoneRelayCrypto = createNobleRelayCrypto({ randomBytes: (size) => Crypto.getRandomBytes(size) });
 
-export const phoneIdentityStore = createPhoneIdentityStore(phoneSecureStore, phoneRelayCrypto);
+export const phoneIdentityStore = createPhoneIdentityStore(phoneSecureStore, phoneRelayCrypto, phoneRelayJoinTls);

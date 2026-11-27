@@ -5,6 +5,7 @@ import {
   parseRelayJoinCode,
   RELAY_ENROLL_ERROR_CODES,
   RELAY_ENROLL_VERSION,
+  RELAY_ROOT_RESPONSE_BYTES_LIMIT,
   type RelayEnrollCrypto,
   type RelayEnrollRefusal,
   type RelayEnrollResponse,
@@ -13,6 +14,8 @@ import {
   relayEnrollRefusal,
   relayEnrollTranscript,
   relayEnrollUrl,
+  relayRootOfCode,
+  relayRootUrl,
 } from "@openbot/contracts/relay-protocol/enrollment";
 import {
   RELAY_IDENTITY_BUNDLE_VERSION,
@@ -96,6 +99,17 @@ export interface RelayEnrollOptions {
 export interface RelayJoinOptions extends Omit<RelayEnrollOptions, "crypto"> {
   crypto: RelayCrypto;
   server?: string;
+  tls?: RelayJoinTls;
+}
+
+export interface RelayJoinAnswer {
+  status: number;
+  text: string;
+}
+
+export interface RelayJoinTls {
+  readWithoutTrust(url: string, limit: number, signal?: AbortSignal): Promise<RelayJoinAnswer>;
+  fetchTrusting(root: string | null): RelayJoinFetch;
 }
 
 export interface RelayJoined {
@@ -169,9 +183,29 @@ export async function enrollRelayKey(
   return response;
 }
 
+export async function relayJoinTrustedFetch(
+  code: RelayJoinCode,
+  tls: RelayJoinTls,
+  crypto: RelayEnrollCrypto,
+  signal?: AbortSignal,
+): Promise<RelayJoinFetch> {
+  let answer: RelayJoinAnswer;
+  try {
+    answer = await tls.readWithoutTrust(relayRootUrl(code), RELAY_ROOT_RESPONSE_BYTES_LIMIT, signal);
+  } catch {
+    return tls.fetchTrusting(null);
+  }
+  if (answer.status !== 200) return tls.fetchTrusting(null);
+  const root = await relayRootOfCode(answer.text, code, crypto);
+  if (root === null) throw relayJoinError("root_mismatch");
+  return tls.fetchTrusting(root);
+}
+
 export async function joinRelayWithCode(text: string, options: RelayJoinOptions): Promise<RelayJoined> {
   const code = readRelayJoinCode(text, options.server);
   const { crypto } = options;
+  const fetch =
+    options.fetch ?? (options.tls ? await relayJoinTrustedFetch(code, options.tls, crypto, options.signal) : undefined);
   let key: RelaySigningKey;
   try {
     key = await crypto.generateSigningKey();
@@ -181,7 +215,7 @@ export async function joinRelayWithCode(text: string, options: RelayJoinOptions)
   const response = await enrollRelayKey(
     code,
     { publicKey: key.publicKey, sign: (data) => crypto.sign(key.privateKey, data) },
-    options,
+    { ...options, ...(fetch ? { fetch } : {}) },
   );
   const parts = relayIdentityParts(response);
   let identity: RelayBrowserIdentity;

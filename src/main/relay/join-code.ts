@@ -11,9 +11,10 @@ import {
   readRelayJoinCode,
   relayIdentityParts,
   relayJoinError,
+  relayJoinTrustedFetch,
 } from "@openbot/team-client/relay-join";
 import { Effect } from "effect";
-import { relayJoinFetch } from "./join-trust";
+import { nodeRelayJoinTls } from "./join-trust";
 
 const ENROLL_DEADLINE_MS = 30_000;
 const P256_CURVE = "prime256v1";
@@ -42,7 +43,13 @@ export const joinRelayWithCode = Effect.fn("RelayJoinCode.join")(function* (
   const send =
     options.fetch ??
     (yield* Effect.tryPromise({
-      try: (signal) => relayJoinFetch(code, AbortSignal.any([signal, AbortSignal.timeout(ENROLL_DEADLINE_MS)])),
+      try: (signal) =>
+        relayJoinTrustedFetch(
+          code,
+          nodeRelayJoinTls,
+          webRelayCrypto,
+          AbortSignal.any([signal, AbortSignal.timeout(ENROLL_DEADLINE_MS)]),
+        ),
       catch: joinFailure("network"),
     }));
   const response = yield* Effect.tryPromise({

@@ -359,6 +359,7 @@ try {
   const tampered = makeCode(environment, "alice", "desk");
   tamperedCodes.add(tampered.code.code);
   const phone = makeCode(environment, "bob", "phone");
+  const ownRootPhone = makeCode(environment, "bob", "tablet");
 
   const desktopResults = await runChild(
     DESKTOP_CHILD,
@@ -430,6 +431,27 @@ try {
     { waitMs: WAIT_MS, steps: [{ name: "phone", code: phone.text, expect: "online" }] satisfies ChildStep[] },
     rootPath,
     "phone",
+  );
+
+  const ownRootPhoneResults = await runChild(
+    PHONE_CHILD,
+    {
+      waitMs: WAIT_MS,
+      ownRoot: true,
+      steps: [{ name: "phone_own_root", code: ownRootPhone.text, expect: "online" }] satisfies ChildStep[],
+    },
+    null,
+    "phone-own-root",
+  );
+
+  await check(
+    "(g) the phone path with a join transport and a root socket joins a server with only its own root",
+    () => {
+      const joined = result(ownRootPhoneResults, "phone_own_root");
+      assert.equal(joined.status, "online", JSON.stringify(joined));
+      assert.equal(joined.user, "bob");
+      assert.equal(joined.reloadedKeyId, joined.keyId);
+    },
   );
 
   await check("(b) the phone path joins a server with a trusted certificate in a process with no crypto.subtle", () => {
