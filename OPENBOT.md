@@ -1,205 +1,239 @@
-# OpenBot-NC compared with OpenBot
+# Merging upstream OpenBot into OpenBot-NC
 
-OpenBot-NC is a non-commercial fork of OpenBot for a person or a small team. This document lists what
-changed compared with the original repository.
+OpenBot-NC is a fork of OpenBot (`nightly-labs/openbot`). Upstream keeps improving agents, providers,
+workflows and the interface. Use this guide to decide, for each upstream commit, whether to take it,
+adapt it or skip it, and to keep the fork's rules after each merge.
+
+## Sync state
+
+Update this section after each merge.
 
 | | |
 | --- | --- |
-| Original | `nightly-labs/openbot`, branch `main` (git remote `openbot`) |
-| Fork base | `61645b885` (2026-11-25), "Save the owner's WhatsApp messages to an allowed contact (#16200)" |
-| Fork | `yangxin0/openbot-nc`, branch `main` (git remote `origin`) |
-| Size of the change | 25 commits, 4,515 files, 53,955 lines added, 442,820 lines removed |
-| Not merged | 191 newer commits of the original `main` (local branch `openbot`, at `100c60e89`) |
+| Upstream remote and branch | `openbot` → `nightly-labs/openbot`, branch `main` |
+| Fork remote and branch | `origin` → `yangxin0/openbot-nc`, branch `main` |
+| Fork base | `61645b885` (2026-11-25) |
+| Last upstream commit reviewed | `61645b885` (no upstream commit merged yet) |
+| Backlog (2026-11-27) | 191 commits up to `100c60e89`: about 144 take, 46 adapt, 1 skip (sorted by the paths they touch) |
 
-To see the change yourself:
+## Procedure
 
-```sh
-git log --oneline 61645b885..main
-git diff --stat 61645b885 main
-```
+1. Get the new upstream commits. Only the developer starts this step:
 
-The release notes with every user-visible change are in `changelog.d/fork-central-relay.md` and
-`apps/mobile/changelog.d/fork-central-relay.md`. Some entries there describe intermediate steps that
-later commits replaced (relay tunnels, sessions, two sockets per app). This document describes the
-final state.
+   ```sh
+   git fetch openbot
+   git log --oneline --reverse <last reviewed>..openbot/main
+   ```
 
-## Goals
+2. Sort each commit with [Decision rules](#decision-rules). The paths it touches decide most cases:
 
-- Non-commercial only. The license stays PolyForm Noncommercial 1.0.0. `LICENSE` is unchanged.
-- One central server that you run yourself. No service of the original vendor is used.
-- No paid features.
-- No WebRTC.
+   ```sh
+   git show --stat --format='%h %s' <commit>
+   ```
 
-## How the apps connect
+3. Make a branch from `main` and apply the commits that you take or adapt, oldest first:
 
-### Original OpenBot
+   ```sh
+   git switch -c merge/upstream-<date> main
+   git cherry-pick -x <commit>
+   ```
 
-- A vendor account service (`apps/auth-api`, Cloudflare Workers) did sign-in, members, invitations,
-  billing, hosted servers, push notifications, phone updates and analytics.
-- A vendor Signal server and a TURN relay set up WebRTC between a client and a host. Requests,
-  events and files went over WebRTC data channels. Remote desktop used Sunshine and Moonlight.
+   Resolve conflicts with [Conflict rules](#conflict-rules). For an adapted commit, change the code so
+   that it fits the fork (see [Area reference](#area-reference)) before you commit.
 
-### OpenBot-NC
+4. Check the result against [Invariants](#invariants), then run the checks:
 
-- **Central server.** One program, `openbot-relay` (`remote/api/src/relay`, built with
-  `bun run relay:build`). It is a hub, not a relay:
-  - Each app (desktop, Linux server, web client, browser extension, phone) keeps its own WebSocket to
-    the central server and talks only to the central server. There is no connection, session,
-    tunnel or handshake between two devices.
-  - The server keeps a record of each signed-in app: team, user, device, label, hosting state,
-    capabilities, message key and the time it was last heard. It answers questions about an app
-    from this record. It tells the team when an app comes online or goes offline.
-  - A request for data that lives on a host (agents, chats, files) goes to the server encrypted for
-    that host. The server passes it on while the host is online. Otherwise it answers "offline" at
-    once, and the app waits for the server's "online" notice.
-  - Any message proves that an app is alive. An app sends a separate ping only after 10 seconds
-    with no traffic. The server closes a silent app after 30 seconds, or after 5 minutes for a phone
-    in the background.
-- **Certificates.** The server is its own certificate authority: root, then one authority for each
-  team, then one certificate for each device. The certificate names the team (O), the user (CN)
-  and the device (OU). All apps with a certificate of the same team are one team. One server can
-  serve many teams.
-- **Mutual verification.** The app signs its sign-in message with its certificate key, with a
-  timestamp and a fresh random value (no challenge round). The server proves with a certificate of
-  the team root that it is the team's own server, also when its TLS certificate comes from a public
-  authority.
-- **End-to-end encryption for each message.** Each app makes a new message key for each connection
-  and signs it with its certificate key. Two apps derive a key pair from their message keys (ECDH,
-  HKDF-SHA256) and encrypt each message with AES-256-GCM and a counter. The apps refuse changed,
-  replayed or substituted messages. The central server sees who sends to whom, when and how much,
-  but not the content.
-- **Hosts.** A host serves each sender with its own Team protocol V2 peer, keyed by the sender's
-  certificate. A repeated request acts only once. An app that was offline gets the events that it
-  missed.
-- **Joining a team.** A one-time join code (`openbot-relay ca code`, or the admin page). The device
-  makes its own key and sends only its public key to `/v1/enroll`. Identity files (`ca issue`) still
-  work.
-- **Admin page.** On a private address of the server only, for example its tailnet address
-  (`RELAY_ADMIN_HOST`). Sign in with a one-time link from `openbot-relay admin login`.
-- **Web client.** Served by the central server at `https://<server>/app`.
+   ```sh
+   bun run check:vendor-endpoints
+   bun run typecheck:node
+   bun run typecheck:renderer
+   bun run test:relay-hub
+   ```
 
-```
-App (iPhone)               Central server                     Host (Mac)
-  │ sign-in (signed)  ───────▶ │ record: online                   │
-  │                            │ ◀──────────────── sign-in (signed)│
-  │ question about the Mac ──▶ │ answers from its record           │
-  │ ◀───────────────────────── │                                   │
-  │ request, encrypted ──────▶ │ ──── request, encrypted ────────▶ │
-  │ ◀──── answer, encrypted ── │ ◀─── answer, encrypted ────────── │
-  │ request (host offline) ──▶ │ "offline" at once                 │
-```
+   Add the typecheck and the tests of each area that the merged commits touch.
 
-The full protocol, the settings and the set-up are in `docs/central-server.md`.
+5. Merge the branch into `main`, then update [Sync state](#sync-state) and [Merge log](#merge-log).
 
-## Added
+## Decision rules
 
-- The central server with its certificate authority, the hub protocol, join codes, the admin page
-  and the web client (`remote/api/src/relay`, `packages/contracts/src/relay-protocol`).
-- Settings > Team in the desktop app: team, user, device, central server, expiry date, connection
-  state and connected members. Join with a code, import or replace an identity file, and the switch
-  "Share this computer's agents with my team".
-- "Join with code" in the desktop app, the web client, the browser extension, the phone app (paste,
-  or scan the QR code) and the Linux server (`openbot-nc join`, the code on standard input).
-- The shared hub client for the browser, the extension and the phone (`packages/team-client`). It
-  uses WebCrypto in browsers and pure JavaScript crypto (`@noble/curves`, `@noble/hashes`,
-  `@noble/ciphers`) on the phone, because Hermes has no WebCrypto.
-- A local profile on the desktop: name and chat color, with no sign-in.
-- End-to-end tests for the central server and each client, for example `test:relay`,
-  `test:relay-hub`, `test:relay-app`, `test:relay-web-client`, `test:relay-extension`,
-  `test:relay-mobile-client`, `test:relay-join-code` and `test:relay-admin`.
+| Decision | When | What to do |
+| --- | --- | --- |
+| **Skip** | The commit only touches [removed areas](#removed), or it is an upstream release step (version bump, `CHANGELOG.md`, release notes moved into a tag section) | Do not apply it. Record it in the merge log. |
+| **Adapt** | The commit touches a [rebuilt area](#rebuilt) or a [changed area](#changed), or mixes kept and removed paths | Apply only the parts that fit the fork. Rewrite the parts that depend on WebRTC, the account service, paid features or vendor services. Drop the parts in removed paths. |
+| **Take** | The commit only touches [kept areas](#kept) | Apply it. Then apply the text rule (product name) and run the checks. |
 
-## Changed
+Upstream fixes and features in removed areas can still be useful as ideas. Rebuild such a feature on
+the fork's design only when the developer asks for it.
 
-- **Name and identity.** The app is OpenBot-NC, with app ID `app.openbotnc.desktop`, phone bundle ID
-  `app.openbotnc.mobile`, link scheme `openbot-nc://`, and its own data folders (`OpenBot-NC`,
-  `~/OpenBot-NC`). On a Linux server it installs in `/opt/OpenBot-NC`, runs as
-  `openbot-nc.service` and its command is `openbot-nc`. The product name shows as OpenBot-NC in all
-  15 languages.
-- **Signing.** The macOS and iPhone apps are signed with the Apple team of this fork (`HRQ4QNY8PW`).
-  `build/entitlements.mac.development.plist` lets you sign a build for your own Mac with an Apple
-  Development certificate.
-- **Updates.** The app does not update itself. A Linux server installs a release only from an
-  AppImage that you give. The Docker image comes from your own build.
-- **Browser extension.** It connects through the central server, has no vendor permissions, and
-  installs as an unpacked extension (`bun run extension:build`).
-- **Phone app.** It connects through the central server, keeps its identity in the keychain, and
-  keeps its connection for a short time in the background.
-- **MCP sign-in** comes back to OpenBot-NC on this computer (`http://127.0.0.1`), not through vendor
-  web pages.
-- **Documents.** README, privacy policy, contribution rules, release guide, server guides and
-  architecture notes describe OpenBot-NC. The rules for coding agents (`AGENTS.md`) are updated;
-  their Non-negotiable section changed only by a developer decision.
+## Invariants
 
-## Removed
+Every merge must keep these. Do not merge a commit that breaks one; adapt it instead.
 
-- **Paid features:** billing, credits, the commercial license and seats, referrals, invite codes,
-  paid cloud servers, plans, paywall and upgrade offers, and credit models in workflows.
-- **Vendor services:** the account service and its sign-in, sessions, invitations, owner transfer,
-  company sign-in, host key rotation and Mobile Connect; the Signal server and TURN relay; the status
-  page, site router, phone update server, and the Slack, Discord and Telegram apps.
-- **WebRTC:** all WebRTC and Signal code, remote desktop (Sunshine and Moonlight), and Codex live
-  voice.
-- **Marketplaces and sharing:** the agent and skill marketplaces, shared agent templates, hosted
-  sites, the GitHub App connection, webhook triggers, and X posting from the extension.
-- **Telemetry and vendor links:** usage analytics, failure reports, feedback to the vendor, phone push
-  notifications, Live Activities, and links to vendor web pages and app stores.
-- **Vendor release machinery:** store and over-the-air release workflows, the Chrome Web Store build,
-  vendor deploy scripts, the paid hosting scripts (boat, Leaseweb, pool), the Nix flake, the Umbrel
-  app, and vendor skills for coding agents.
+- **No vendor service.** No address of the vendor (`openbot.run`, `api.openbot.run`, `openbot.site`,
+  `updates.openbot.run`, analytics or status hosts). `bun run check:vendor-endpoints` must pass.
+- **Only the central server.** All traffic between devices goes through the central server hub
+  (`remote/api/src/relay`). No WebRTC, Signal, TURN, tunnel, session or direct connection between
+  devices. No second socket type. See `docs/central-server.md`.
+- **End-to-end encryption.** Messages between apps stay encrypted for the recipient
+  (`packages/contracts/src/relay-protocol/message-crypto.ts`). The central server must not get
+  plaintext.
+- **No paid features and no telemetry.** No billing, credits, licenses, seats, plans, paywall,
+  referrals, analytics events, failure reports or feedback sent to a vendor.
+- **No account service.** No sign-in, account session, invitation, owner transfer or member list from
+  a vendor. Members come from the certificates of the central server.
+- **Identity of the fork.** Keep `packages/contracts/src/app-identity.ts` (`OpenBot-NC`,
+  `app.openbotnc.desktop`, `OpenBot-NC` data folders, `openbot-nc://`), the phone bundle ID
+  `app.openbotnc.mobile`, and the Apple team `HRQ4QNY8PW` in the build files.
+- **No self-update from the vendor.** Do not add release feeds or update checks that point to the
+  vendor repository or servers.
+- **Product name in texts.** Text values say `OpenBot-NC` where they name the product (see
+  [Text rule](#text-rule)).
+- **Repository rules.** Follow `AGENTS.md`: no comments in code, no type assertions to pass a check,
+  English texts as i18n keys, end-to-end tests only.
 
-## Data and compatibility
+## Conflict rules
 
-- OpenBot-NC does not read or change the data of an OpenBot app on the same computer. A new
-  installation starts empty.
-- No database migration of the app changed. Only the migrations of the removed account service are
-  gone.
-- Files that are no longer used stay on disk unread, for example the old account session file and
-  saved WebRTC servers.
-- OpenBot-NC cannot connect to OpenBot hosts, clients or vendor servers.
-- All apps of a team and the central server must run the same OpenBot-NC version.
-- `NOTICE` lost only the notice block of the pictures that were removed with remote desktop.
+- **Modify/delete conflict** (upstream changed a file that the fork deleted): keep it deleted
+  (`git rm <path>`). If the change matters, rebuild it in the fork's own code.
+- **Release files:** keep the fork's version in `package.json` and `apps/mobile/package.json`. Do not
+  take upstream changes to `CHANGELOG.md` or upstream `changelog.d/*.md` files. Write the fork's own
+  release note in `changelog.d/<branch>.md` when the merged change is visible to users.
+- **IPC and contracts:** do not bring back removed IPC groups, preload methods or contract modules
+  (see [Removed](#removed)). When an upstream change adds a field to a removed endpoint, drop it.
+- **Team protocol:** keep the capability registry. The host does not serve `owner-transfer-v1`,
+  `host-key-rotation-v1`, `browser-egress-v1`, `host-signal-home-v1` or live voice. Skip upstream
+  changes that need them.
+- **Texts:** take new and changed keys, then apply the [Text rule](#text-rule). Do not take back keys
+  that the fork removed.
+- **Build and CI:** keep the fork's `electron-builder.yml`, `build/entitlements*.plist`,
+  `.github/workflows/ci.yml` and `release.yml` settings (no vendor team, no vendor feeds, relay test
+  jobs).
 
-## Known gaps
+### Text rule
 
-- The phone and the web client cannot open the live browser view of a host yet.
-- A browser profile that uses a member's computer as its proxy shows it offline.
-- Team members cannot read the safe mode reason of a server.
-- The desktop shows no upload progress for attachments sent to a team server.
-- Only one tab of the web client holds the connection at a time.
-- New interface texts are in English in the 14 other languages (`packages/i18n/untranslated.json`).
-- On a new connection, the time before the first packet reaches the central server depends on the
-  phone's network path. The return to the app with the connection still open takes about 0.2 to
-  0.6 seconds to the first answer.
+In `packages/i18n/src/messages/*`, replace the product name `OpenBot` with `OpenBot-NC` in text
+values, not in keys. Keep these as they are: the vault and folder name "Shared with OpenBot", the bot
+display names in Slack and Discord texts, file names, paths, commands and identifiers. Fix grammar
+after the name where a language needs it (Korean particles, Turkish suffixes, Polish forms).
 
-## Commits
+## Area reference
 
-| Commit | Change |
-| --- | --- |
-| `ad06cc260` | Make OpenBot-NC: one central relay server with certificates |
-| `71a8b628f` | Verify the server, and remove the account client from the desktop |
-| `a166fc353` | Carry Team protocol V2 over relay tunnels, with a browser client |
-| `c5b658044` | Run the web client on the central relay, served at /app |
-| `8b725c0eb` | Run the browser extension on the central relay |
-| `de1c04566` | Run the phone app on the central relay |
-| `09e73df12` | Remove the vendor parts of the phone app, and rename it OpenBot-NC |
-| `feb46a123` | Remove the vendor infrastructure |
-| `63f0af3c5` | Remove the last WebRTC and Signal code |
-| `998e1a060` | Show the product name as OpenBot-NC in all languages |
-| `0c6a811f0` | Write the documents for the fork, and remove vendor release sources |
-| `e419c9e7c` | Remove leftovers of the vendor marketplace and account service |
-| `fb01eddf4` | Name the fork repository yangxin0/openbot-nc |
-| `f81386093` | Encrypt relay tunnels end to end |
-| `ab69bb80f` | Give the phone native modules a homepage |
-| `cbefd6af2` | Remove the minimum app version sentence from the support window rule |
-| `3a59b1d18` | Add join codes and an admin page to the central server |
-| `d2786d49e` | Join a team with a one-time code in every client |
-| `61300f222` | Sign the Mac and iPhone apps with the fork's Apple team |
-| `63371d044` | Fix the phone peer: do not use the global crypto |
-| `8c44fe8d3` | Make the chat narrower again when the right side panel opens |
-| `cab389b88` | Use one control and one data WebSocket per app |
-| `c2ebeb76f` | Send heartbeats from every app, and reconnect fast |
-| `61272c76a` | Make the central server a hub, not a relay |
-| `3bb204451` | Run the web client, the extension and the phone on the hub |
+### Removed
 
-The relay tunnel, session and two-socket designs of the earlier commits were replaced by the hub in
-`61272c76a` and `3bb204451`.
+Skip upstream changes here. These paths no longer exist in the fork.
+
+- **Vendor apps:** `apps/auth-api` (account service and public site), `apps/site-router`,
+  `apps/mobile-updates`, `apps/status`, `apps/slack-app`, `apps/discord-app`, `apps/telegram-app`.
+- **Signal and TURN:** `remote/api/src/*` except `remote/api/src/relay`, `remote/coturn`,
+  `remote/nginx`, `remote/acme`, `remote/bin`, `packages/contracts/src/signal-protocol`.
+- **WebRTC and remote access through the vendor:** `src/main/team-webrtc-*`, `src/main/remote-desktop-*`,
+  `src/main/remote-screen-gateway.ts`, `src/main/sunshine-moonlight-runtime.ts`,
+  `src/main/browser-egress-*`, `src/main/host-signal-home.ts`, `src/main/remote-session-cache.ts`,
+  `src/preload/team-webrtc.ts`, `src/renderer/team-webrtc.html`,
+  `src/renderer/src/features/remote-desktop`, `packages/team-client/src/{ed25519,ice-diagnostics,remote-path-check,remote-account-refresh}.ts`,
+  `vendor/remote-desktop`.
+- **Account service clients:** `src/main/central-auth-*`, `src/main/account-service-*`,
+  `src/main/mobile-connect-host.ts`, `src/main/remote-server-host-directory.ts`,
+  `src/main/ipc/account-handlers.ts`, `src/renderer/src/preview/mock-auth.ts`.
+- **Paid features:** `src/main/{billing,credits,license,referral}-service.ts`,
+  `src/main/hosted-server-*`, `src/main/credit-media-gateway.ts`, their IPC handlers,
+  `src/backend/workflows/credit-media.ts`, `packages/contracts/src/{billing-details,credit-media,promotion-code,referral}.ts`,
+  `packages/ui/src/features/referral`.
+- **Marketplaces and sharing:** `src/main/agent-marketplace-service.ts`,
+  `src/main/agent-template-service.ts`, `src/main/hosted-site-*`, `src/backend/agent/hosted-site-*`,
+  `src/renderer/src/features/agent-templates`, `marketplace/production-catalog`,
+  `resources/managed-skills/openbot-site-hosting`.
+- **Chat apps through the vendor:** `src/backend/messaging/{slack,discord,telegram}`,
+  `packages/contracts/src/{slack-app,discord-app,telegram-app,slack-workspace-grant,discord-guild-grant,web-messaging-install}.ts`.
+  WhatsApp stays.
+- **GitHub App and webhooks:** `src/main/github-*`, `src/main/webhook-*`, `src/main/signal-ingress.ts`,
+  `scripts/github-app`.
+- **Telemetry and feedback:** `src/main/analytics*`, `src/main/feedback.ts`,
+  `src/renderer/src/analytics.ts`, `src/renderer/src/error-reports.ts`,
+  `packages/telemetry/src/{transport,queue,install-id,analytics-region,browser,node}.ts`,
+  `packages/ui/src/features/{github-star,social-follow}`.
+- **Live voice and push:** `src/backend/agent/live-voice.ts`, `src/main/live-voice-choice.ts`,
+  `src/main/push-notification*`, `src/main/live-activity-push.ts`,
+  `packages/contracts/src/team-protocol/live-voice*.ts`.
+- **Phone vendor parts:** `apps/mobile/src/features/{analytics,app-update,links,live-activity,marketplace,push-notifications,rating-ask,remote-desktop,shortcuts}`,
+  `apps/mobile/src/features/share/extension`, `apps/mobile/modules/{android-notifications,remote-viewer-proxy,share-extension,shortcuts}`,
+  `apps/mobile/plugins/{notification-service,share-extension,shortcuts}`, `apps/mobile/certs`,
+  `apps/mobile/assets/sounds`, the routes `hosted-server`, `install-agent`, `marketplace-listing`,
+  `remote-desktop*` and `server-marketplace`.
+- **Vendor release and hosting:** `nix`, `flake.*`, `docker/umbrel`, `docs/store-assets`, the store,
+  over-the-air, Chrome Web Store, status and announcement workflows in `.github/workflows`, the
+  paid hosting scripts in `scripts/hosting` (boat, Leaseweb, pool, account server), vendor scripts in
+  `scripts` (Stripe, OpenPanel, marketplace, catalog publishing, store releases), and the skills
+  `babysit`, `custom-server`, `custom-server-plan`, `openpanel`, `release-extension-safely`,
+  `signal-deploy`.
+
+### Rebuilt
+
+These features exist in the fork, but on a different design. Upstream code for them does not apply.
+Port the intent of an upstream fix by hand, in the fork's code.
+
+| Feature | Upstream design | Fork design and code |
+| --- | --- | --- |
+| Connection between devices | WebRTC with Signal and TURN | Central server hub: `remote/api/src/relay`, `packages/contracts/src/relay-protocol/{hub,message-crypto}.ts`, `packages/team-client/src/relay-*.ts` |
+| Client to host requests | V2 frames over WebRTC data channels (`remote-peer.ts`), HTTP over WebRTC on the desktop | V2 frames over hub messages: `packages/team-client/src/remote-peer.ts`, `src/main/relay/hub-client.ts`, `src/main/remote-server-manager.ts` |
+| Host side | `team-webrtc-host-peer.ts` per WebRTC session | `src/main/team-v2-host-peer.ts` per sender, `src/main/relay/host-relay.ts` |
+| Sign-in and members | Account service sign-in, sessions, invitations, member directory | Certificates of the central server, join codes, local profile: `src/main/relay/*`, `src/main/local-profile-store.ts`, `remote/api/src/relay/enrollment.ts` |
+| Phone connection | Account sign-in, Mobile Connect pairing, WebRTC bridge | Identity in the keychain, hub client: `apps/mobile/src/features/identity`, `apps/mobile/src/features/workspace/components/remote-team-transport.tsx` |
+| Web client | Account sign-in, WebRTC | Identity in the browser, hub client: `src/renderer/src/features/web-client` |
+| Browser extension | Account sign-in, WebRTC | Identity in the extension, hub client: `apps/browser-extension/src/{App.tsx,host-connection.ts,extension-identity.ts}` |
+| Updates | Self-update from vendor feeds, phone over-the-air updates | No self-update; releases from your own build |
+
+### Changed
+
+Upstream changes here usually apply, but these files carry fork edits. Expect conflicts, and keep the
+fork's version of the edited parts.
+
+- **Desktop main:** `src/main/application-services.ts`, `src/main/index.ts`, `src/main/host-service.ts`
+  (relay hosting, local profile, no account), `src/main/team-store.ts` (certificate sign-in),
+  `src/main/team-api-server.ts` and `src/main/team-api/*` (no account and no removed routes),
+  `src/main/local-servers/*`, `src/main/ipc/*` (removed groups, new `relay` and `profile` groups),
+  `src/main/content-security-policy.ts` (no vendor origins), `src/main/main-window.ts`.
+- **Contracts and preload:** `packages/contracts/src/ipc-endpoints.ts` and `ipc-*.ts` (removed
+  endpoints; new relay and profile endpoints), `packages/contracts/src/app-identity.ts`,
+  `packages/contracts/src/team-protocol/current.ts` (capability `relay-v2-tunnels-v1` and served
+  set), `src/preload/*` (removed decoders, relay decoders).
+- **Backend:** `src/backend/agent/openbot-tool-router.ts` (no marketplace, hosted site, feedback or
+  webhook tools), `src/backend/messaging/messaging-service.ts` (WhatsApp only), workflows (no credit
+  models, webhook or GitHub triggers), `src/main/skill-marketplace-service.ts` (local and GitHub
+  skills only).
+- **Interface:** `src/renderer/src` settings, sidebar, onboarding and `WorkspaceOverlays.tsx` (no
+  account, billing, marketplace agents, Mobile Connect or invitations), `packages/ui` (no billing,
+  credits or marketplace agents; `SettingsTeamTab.tsx`, `RelayJoinCode.tsx` added),
+  `packages/ui/src/features/conversation/styles/side-panel.css` (the side panel padding rule moved
+  here from the removed remote desktop styles).
+- **Texts:** `packages/i18n/src/messages/*` (product name, removed keys, new relay keys),
+  `packages/i18n/untranslated.json`.
+- **Phone:** `apps/mobile/app.json` (name, bundle ID, Apple team, no updates or push),
+  `apps/mobile/src/features/workspace/*`, `apps/mobile/src/features/servers/*` (members over the host
+  Team API), `apps/mobile/src/features/settings/*`.
+- **Build and CI:** `package.json` (scripts, repository fields), `electron-builder.yml`,
+  `build/entitlements.mac.plist`, `build/entitlements.mac.development.plist`,
+  `.github/workflows/ci.yml` (relay jobs), `.github/workflows/release.yml` (no vendor team or feeds),
+  `scripts/check-vendor-endpoints.ts`, `scripts/hosting/*` (self-hosted server only).
+- **Documents:** `README.md`, `PRIVACY.md`, `CONTRIBUTING.md`, `AGENTS.md` and the other
+  `AGENTS.md` files, `docs/*`.
+
+### Kept
+
+Upstream changes here apply. Most upstream work lands here: agent runtimes and providers
+(`src/backend/agent`, except the files listed above), conversations and chat views, workflows (engine
+and steps other than the removed triggers and credit models), WhatsApp, local browser automation,
+computer use, voice transcription and speech on this computer, skills, the database and its
+migrations (`src/backend`), and new interface texts.
+
+## Merge log
+
+| Date | Upstream range | Taken | Adapted | Skipped | Notes |
+| --- | --- | --- | --- | --- | --- |
+| | | | | | |
+
+## History of the fork's own changes
+
+The fork's own commits are `git log 61645b885..main`. The user-visible changes are in
+`changelog.d/fork-central-relay.md` and `apps/mobile/changelog.d/fork-central-relay.md`. The design
+of the central server is in `docs/central-server.md`.
