@@ -5,6 +5,7 @@ import { join, resolve, sep } from "node:path";
 import { sourceText } from "@openbot/i18n/source";
 import { teeLogLines } from "@openbot/logging";
 import { Effect, Result } from "effect";
+import { SIGN_IN_FOLDER_PREFIX } from "../src/backend/acp-sign-in";
 import { ConversationRuntime } from "../src/backend/agent/conversation-runtime";
 import { ProviderRuntime } from "../src/backend/agent/provider-runtime";
 import type { AgentClient, AgentProvider } from "../src/backend/agent-client";
@@ -58,7 +59,7 @@ function handle(message) {
   if (message.method === "authenticate" && process.env.FAKE_AGY_KEY_AUTH === "hang") return;
   if (message.method === "authenticate" && process.env.FAKE_AGY_SIGN_IN === "wait") {
     const opener = path.join((process.env.PATH || "").split(path.delimiter)[0] || "", process.platform === "darwin" ? "open" : "xdg-open");
-    if (path.basename(path.dirname(opener)).startsWith("openbot-sign-in-") && fs.existsSync(opener)) {
+    if (path.basename(path.dirname(opener)).startsWith("${SIGN_IN_FOLDER_PREFIX}") && fs.existsSync(opener)) {
       require("node:child_process").spawn(opener, ["https://accounts.google.com/o/oauth2/auth?state=fake"], { stdio: "ignore" });
     } else process.stderr.write("OpenBot's opener is not first on PATH." + NL);
     return;

@@ -29,6 +29,7 @@ import {
 } from "@modelcontextprotocol/sdk/shared/auth.js";
 import { checkResourceAllowed, resourceUrlFromServerUrl } from "@modelcontextprotocol/sdk/shared/auth-utils.js";
 import type { FetchLike } from "@modelcontextprotocol/sdk/shared/transport.js";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import { MCP_SIGN_IN_TIMEOUT_MS, relayCallbackQuery } from "@openbot/contracts/ipc";
 import { mcpAccountFragment } from "@openbot/contracts/mcp-accounts";
 import { sourceText } from "@openbot/i18n/source";
@@ -47,8 +48,6 @@ import {
   systemAddressLookup,
 } from "./network-address";
 import { withTimeout } from "./with-timeout";
-
-const MCP_CLIENT_NAME = "OpenBot";
 
 export const MCP_OAUTH_CALLBACK_PATH = "/callback";
 
@@ -821,7 +820,7 @@ class McpOAuthClientProvider implements OAuthClientProvider {
     const scope = app ? app.scope : this.#authorizationServerScope();
     const methods = this.#discoveryState?.authorizationServerMetadata?.token_endpoint_auth_methods_supported;
     return {
-      client_name: MCP_CLIENT_NAME,
+      client_name: APP_NAME,
       redirect_uris: [this.#retryRedirectUrl ?? this.#options.firstRedirectUrl],
       application_type: "native",
       grant_types: ["authorization_code", "refresh_token"],

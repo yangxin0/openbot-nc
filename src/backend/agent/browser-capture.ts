@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { registerSecretValue } from "@openbot/logging";
 import { Duration, Effect } from "effect";
+import { SIGN_IN_FOLDER_PREFIX } from "../acp-sign-in";
 import { CliLoginFailed } from "./cli-login-flow";
 
 const POLL = Duration.millis(250);
@@ -18,7 +19,7 @@ export function signInPageByOpenBot(
 export const captureBrowser = Effect.fn("captureBrowser")(function* (openPage: (url: string) => Promise<void>) {
   const directory = yield* Effect.acquireRelease(
     Effect.tryPromise({
-      try: () => mkdtemp(join(tmpdir(), "openbot-nc-sign-in-")),
+      try: () => mkdtemp(join(tmpdir(), SIGN_IN_FOLDER_PREFIX)),
       catch: (cause) => new CliLoginFailed({ cause }),
     }),
     (path) => Effect.promise(() => rm(path, { recursive: true, force: true })),

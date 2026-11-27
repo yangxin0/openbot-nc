@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import type { ProviderAccountStatus } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
 import { Cause, Effect, Exit } from "effect";
+import { SIGN_IN_FOLDER_PREFIX } from "../src/backend/acp-sign-in";
 import { ConversationRuntime } from "../src/backend/agent/conversation-runtime";
 import { ProviderAccountStore } from "../src/backend/agent/provider-account-store";
 import { ProviderRuntime } from "../src/backend/agent/provider-runtime";
@@ -54,7 +55,7 @@ const write = (message) => process.stdout.write(JSON.stringify({ jsonrpc: "2.0",
 function openPage(id) {
   const first = (process.env.PATH || "").split(path.delimiter)[0] || "";
   const program = path.join(first, process.platform === "darwin" ? "open" : "xdg-open");
-  if (!path.basename(first).startsWith("openbot-sign-in-") || !fs.existsSync(program)) {
+  if (!path.basename(first).startsWith("${SIGN_IN_FOLDER_PREFIX}") || !fs.existsSync(program)) {
     write({ id, error: { code: -32603, message: "OpenBot's open command is not first on PATH." } });
     return false;
   }

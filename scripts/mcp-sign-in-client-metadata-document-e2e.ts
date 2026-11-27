@@ -2,18 +2,26 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { resolve } from "node:path";
+import { APP_NAME } from "@openbot/contracts/app-identity";
 import type { McpServerConfig } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
 import { Effect } from "effect";
 import { z } from "zod";
 import { runCauseEffect } from "../src/backend/effect-boundary";
-import { McpOAuth, type McpOAuthRecord, mcpOAuthRecordSchema } from "../src/backend/mcp-oauth-provider";
+import {
+  MCP_OAUTH_CALLBACK_PATH,
+  McpOAuth,
+  type McpOAuthRecord,
+  mcpOAuthRecordSchema,
+} from "../src/backend/mcp-oauth-provider";
 import { testMcpServer } from "../src/backend/mcp-probe";
 
 const out = resolve(import.meta.dirname, "../.openbot-build/mcp-sign-in-client-metadata-document-e2e");
 const LEGACY_CLIENT_METADATA_URL = "https://openbot.run/oauth/mcp-client.json";
 const REDIRECT_URL = "http://127.0.0.1:28417/mcp-auth";
 const OTHER_REDIRECT_URL = "http://127.0.0.1:28418/mcp-auth";
+const FIRST_REDIRECT_URL = new URL(MCP_OAUTH_CALLBACK_PATH, REDIRECT_URL).href;
+const OTHER_FIRST_REDIRECT_URL = new URL(MCP_OAUTH_CALLBACK_PATH, OTHER_REDIRECT_URL).href;
 const ACCESS_TOKEN = "e2e-access-token";
 const REGISTERED_CLIENT = "e2e-registered-client";
 
@@ -312,6 +320,7 @@ async function main(): Promise<void> {
   await mkdir(out, { recursive: true });
   try {
     const needsDocument = sourceText("error.backend.mcpSignInNeedsClientDocument");
+    const registrationRefused = sourceText("error.backend.mcpRegistrationRefused");
     const document = await runCase("client-metadata-document-only", false);
     check(document, document.attempts[0]?.error === needsDocument, `the sign-in said: ${document.attempts[0]?.error}`);
     check(document, document.registrations === 0, `the sign-in registered ${document.registrations} times`);
@@ -331,13 +340,13 @@ async function main(): Promise<void> {
     );
     check(
       port,
-      port.pageRedirectUris.join() === `${REDIRECT_URL},${OTHER_REDIRECT_URL}`,
+      port.pageRedirectUris.join() === `${FIRST_REDIRECT_URL},${OTHER_FIRST_REDIRECT_URL}`,
       `the pages sent ${port.pageRedirectUris.join()}`,
     );
     check(port, port.registrations === 2, `the sign-ins registered ${port.registrations} times`);
     check(
       port,
-      port.storedRedirectUris?.join() === OTHER_REDIRECT_URL,
+      port.storedRedirectUris?.join() === OTHER_FIRST_REDIRECT_URL,
       `the stored client names ${port.storedRedirectUris?.join()}`,
     );
     report.cases.push(port);
@@ -346,12 +355,19 @@ async function main(): Promise<void> {
     check(both, both.attempts[0]?.error === null, `the sign-in failed: ${both.attempts[0]?.error}`);
     check(both, both.registrations === 1, `the sign-in registered ${both.registrations} times`);
     check(both, both.pageClientIds.join() === REGISTERED_CLIENT, `the pages named ${both.pageClientIds.join()}`);
-    check(both, both.pageRedirectUris.join() === REDIRECT_URL, `the pages sent ${both.pageRedirectUris.join()}`);
+    check(both, both.pageRedirectUris.join() === FIRST_REDIRECT_URL, `the pages sent ${both.pageRedirectUris.join()}`);
     check(
       both,
       both.registrationBodies.every((sent) => {
-        const asked = z.looseObject({ redirect_uris: z.array(z.string()) }).parse(JSON.parse(sent));
-        return asked.redirect_uris.join() === REDIRECT_URL && !("client_uri" in asked) && !("logo_uri" in asked);
+        const asked = z
+          .looseObject({ client_name: z.string(), redirect_uris: z.array(z.string()) })
+          .parse(JSON.parse(sent));
+        return (
+          asked.client_name === APP_NAME &&
+          asked.redirect_uris.join() === FIRST_REDIRECT_URL &&
+          !("client_uri" in asked) &&
+          !("logo_uri" in asked)
+        );
       }),
       `the registrations sent ${both.registrationBodies.join(" | ")}`,
     );
@@ -378,7 +394,8 @@ async function main(): Promise<void> {
     );
     check(
       legacy,
-      legacy.storedClient?.clientId === REGISTERED_CLIENT && legacy.storedClient.redirectUris.join() === REDIRECT_URL,
+      legacy.storedClient?.clientId === REGISTERED_CLIENT &&
+        legacy.storedClient.redirectUris.join() === FIRST_REDIRECT_URL,
       `the stored client is ${JSON.stringify(legacy.storedClient)}`,
     );
     check(legacy, legacy.signedIn, "no token is stored after the sign-in");
@@ -397,7 +414,7 @@ async function main(): Promise<void> {
     const noDocument = await runCase("registration-refused-no-document", true, "access", false);
     check(
       noDocument,
-      noDocument.attempts[0]?.error?.startsWith("The sign-in server does not accept OpenBot as an app yet.") ?? false,
+      noDocument.attempts[0]?.error === registrationRefused,
       `the sign-in said: ${noDocument.attempts[0]?.error}`,
     );
     check(noDocument, noDocument.pageClientIds.length === 0, `the pages named ${noDocument.pageClientIds.join()}`);
@@ -418,7 +435,7 @@ async function main(): Promise<void> {
       );
       check(
         redirect,
-        redirect.attempts[0]?.error?.startsWith("The sign-in server does not accept OpenBot as an app yet.") ?? false,
+        redirect.attempts[0]?.error === registrationRefused,
         `the sign-in said: ${redirect.attempts[0]?.error}`,
       );
       check(redirect, redirect.pageClientIds.length === 0, `the pages named ${redirect.pageClientIds.join()}`);
@@ -428,11 +445,7 @@ async function main(): Promise<void> {
     }
 
     const stored = await runCase("redirect-refused-stored-document", true, "redirect", true, true);
-    check(
-      stored,
-      stored.attempts[0]?.error?.startsWith("The sign-in server does not accept OpenBot as an app yet.") ?? false,
-      `the sign-in said: ${stored.attempts[0]?.error}`,
-    );
+    check(stored, stored.attempts[0]?.error === registrationRefused, `the sign-in said: ${stored.attempts[0]?.error}`);
     check(stored, stored.pageClientIds.length === 0, `the pages named ${stored.pageClientIds.join()}`);
     check(stored, stored.registrations > 0, "the sign-in did not register again");
     check(stored, !stored.signedIn, "a token is stored after a refused registration");

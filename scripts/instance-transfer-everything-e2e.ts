@@ -32,6 +32,7 @@ const root = await mkdtemp(join(tmpdir(), "openbot-transfer-everything-"));
 const fakeCodex = join(root, "codex");
 const fakeLog = join(root, "codex.jsonl");
 const home = join(root, "home");
+const OLD_WEBHOOK_SECRET_CIPHERTEXT = Buffer.from("sealed:old-webhook-secret").toString("base64");
 
 process.env.HOME = home;
 process.env.CODEX_HOME = join(home, ".codex");
@@ -442,7 +443,12 @@ try {
     instruction: "Check the backup.",
     active: true,
     timezone: "UTC",
-    trigger: { kind: "webhook", eventType: "backup.failed", filters: [], secretCiphertext: null },
+    trigger: {
+      kind: "webhook",
+      eventType: "backup.failed",
+      filters: [],
+      secretCiphertext: OLD_WEBHOOK_SECRET_CIPHERTEXT,
+    },
   });
   source.pins.add(writer.id);
   source.levels.set(writer.id, "needs-me");
@@ -558,7 +564,12 @@ try {
     instruction: "Write a short item.",
     active: true,
     timezone: "UTC",
-    trigger: { kind: "webhook", eventType: "news.breaking", filters: [], secretCiphertext: null },
+    trigger: {
+      kind: "webhook",
+      eventType: "news.breaking",
+      filters: [],
+      secretCiphertext: OLD_WEBHOOK_SECRET_CIPHERTEXT,
+    },
   });
   source.positions.set(writer.id, [
     { nodeKey: `routine:${routine.id}`, x: 120, y: 40 },
@@ -971,11 +982,10 @@ try {
   );
   const newRoutineId = target.agents.listRoutines(newWriter.id).find((item) => item.name === routine.name)?.id;
   pass(
-    "canvas places point to the new routines and agent",
+    "canvas places point to the new routine and agent, without the place of the skipped webhook routine",
     JSON.stringify(target.positions.get(newWriter.id)) ===
       JSON.stringify([
         { nodeKey: `routine:${newRoutineId}`, x: 120, y: 40 },
-        { nodeKey: `routine:${newHooked?.id}`, x: 320, y: 40 },
         { nodeKey: `agent:${newEditor.id}`, x: 520, y: 40 },
       ]),
     JSON.stringify(target.positions.get(newWriter.id)),

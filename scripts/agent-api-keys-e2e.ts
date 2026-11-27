@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import type { AgentEvent, ConversationSnapshot } from "@openbot/contracts/ipc";
 import { type UiBlockSpec, uiBlockAnswersFromResponse } from "@openbot/contracts/ui-blocks";
+import { sourceText } from "@openbot/i18n/source";
 import { redactText } from "@openbot/logging";
 import { Effect } from "effect";
 import { AttentionRegistry, type PromptResponder } from "../src/backend/agent/attention-registry";
@@ -865,7 +866,7 @@ try {
     );
     const respond = (answers: Record<string, string[]>, responder?: PromptResponder) =>
       runCauseEffect(unreadRegistry.respondToPrompt({ requestId: id, answers }, responder));
-    const unreadable = /OpenBot could not read the API key/;
+    const unreadable = { message: sourceText("error.backend.apiKeyAnswerUnreadable") };
     await assert.rejects(
       respond({ [API_KEY_FIELD_ID]: [KEY], [API_KEY_SCOPE_FIELD_ID]: ["Todos os agentes"] }, MEMBER),
       unreadable,
