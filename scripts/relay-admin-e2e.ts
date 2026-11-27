@@ -809,6 +809,8 @@ try {
     await signedOutPage.goto(`${adminOrigin()}/admin`);
     await signedOutPage.locator("#signed-out").waitFor({ timeout: WAIT_MS });
     await screenshot(signedOutPage, "sign-in.png");
+    await signedOutPage.emulateMedia({ colorScheme: "dark" });
+    await screenshot(signedOutPage, "sign-in-dark.png");
     await signedOutPage.close();
     const page = await context.newPage();
     const problems: string[] = [];
@@ -855,6 +857,8 @@ try {
     const closed = await deadline("the socket of dave closes", davePeer.closed);
     assert.ok(closed.code > 0);
     await screenshot(page, "revoked.png");
+    await page.emulateMedia({ colorScheme: "dark" });
+    await screenshot(page, "revoked-dark.png");
     assert.deepEqual(problems, []);
     await context.close();
   });
