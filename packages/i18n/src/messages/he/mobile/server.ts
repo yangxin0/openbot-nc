@@ -34,8 +34,6 @@ export const messages = {
   "mobile.server.drawer.add": "הוספת שרת",
   "mobile.server.drawer.settings": "הגדרות",
   "mobile.server.drawer.close": "סגירת מגירת השרתים",
-  "mobile.server.local.option": "שרת מקומי חדש במחשב",
-  "mobile.server.local.optionHint": "במחשב שמריץ את {name}, עם סוכנים, צ'אטים וקבצים משלו.",
   "mobile.server.local.title": "שרת חדש",
   "mobile.server.local.description":
     "השרת רץ במחשב שמריץ את {name}, עם סוכנים, צ'אטים וקבצים משלו. הוא זמין כל עוד OpenBot-NC רץ באותו מחשב.",
@@ -56,9 +54,6 @@ export const messages = {
   "mobile.server.local.unsupported": "יש לעדכן את OpenBot-NC במחשב הזה כדי ליצור בו שרת.",
   "mobile.server.local.deleteOffline":
     "רק המחשב של השרת הזה יכול למחוק אותו. יש לפתוח את OpenBot-NC באותו מחשב ולנסות שוב.",
-  "mobile.server.role.owner": "בעלים",
-  "mobile.server.role.admin": "מנהל",
-  "mobile.server.role.member": "חבר",
   "mobile.server.role.ownerLabel": "בעלים",
   "mobile.server.role.adminLabel": "מנהל",
   "mobile.server.role.memberLabel": "חבר",

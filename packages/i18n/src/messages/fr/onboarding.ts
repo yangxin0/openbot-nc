@@ -64,9 +64,6 @@ export const messages = {
   "onboarding.existing.startNewDetail":
     "Créez une nouvelle équipe ici. Vos serveurs gardent leurs agents et leurs conversations.",
   "onboarding.existing.openFailed": "OpenBot-NC n’a pas pu ouvrir {name}.",
-  "onboarding.consent.notice": "En continuant, vous acceptez les {terms} et prenez connaissance de la {privacy}.",
-  "onboarding.consent.termsLink": "Conditions d’utilisation",
-  "onboarding.consent.privacyLink": "Politique de confidentialité",
   "onboarding.plan.title": "Connectez votre forfait",
   "onboarding.plan.description": "Connectez-vous une fois. Vos agents utilisent votre forfait.",
   "onboarding.computer.title": "OpenBot-NC peut contrôler votre ordinateur",

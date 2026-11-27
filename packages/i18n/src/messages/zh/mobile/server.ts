@@ -33,8 +33,6 @@ export const messages = {
   "mobile.server.drawer.add": "添加服务器",
   "mobile.server.drawer.settings": "设置",
   "mobile.server.drawer.close": "关闭服务器抽屉",
-  "mobile.server.local.option": "在电脑上新建本地服务器",
-  "mobile.server.local.optionHint": "在运行 {name} 的电脑上，拥有独立的智能体、聊天和文件。",
   "mobile.server.local.title": "新建服务器",
   "mobile.server.local.description":
     "服务器在运行 {name} 的电脑上运行，拥有独立的智能体、聊天和文件。只要 OpenBot-NC 在该电脑上运行，即可使用。",
@@ -54,9 +52,6 @@ export const messages = {
   "mobile.server.local.ownerOnly": "只有所有者可以在此电脑上创建服务器。",
   "mobile.server.local.unsupported": "请更新此电脑上的 OpenBot-NC，以便在此创建服务器。",
   "mobile.server.local.deleteOffline": "只有此服务器所在的电脑可以删除它。请在该电脑上打开 OpenBot-NC，然后重试。",
-  "mobile.server.role.owner": "所有者",
-  "mobile.server.role.admin": "管理员",
-  "mobile.server.role.member": "成员",
   "mobile.server.role.ownerLabel": "所有者",
   "mobile.server.role.adminLabel": "管理员",
   "mobile.server.role.memberLabel": "成员",

@@ -64,9 +64,6 @@ export const messages = {
   "onboarding.existing.startNewDetail":
     "Burada yeni bir ekip oluşturun. Sunucularınız ajanlarını ve sohbetlerini korur.",
   "onboarding.existing.openFailed": "OpenBot-NC, {name} sunucusunu açamadı.",
-  "onboarding.consent.notice": "Devam ederek {terms}’nı kabul etmiş ve {privacy}’nı okumuş olursunuz.",
-  "onboarding.consent.termsLink": "Hizmet Şartları",
-  "onboarding.consent.privacyLink": "Gizlilik Politikası",
   "onboarding.plan.title": "Planınızı bağlayın",
   "onboarding.plan.description": "Bir kez oturum açın. Ajanlarınız planınızı kullanır.",
   "onboarding.computer.title": "OpenBot-NC bilgisayarınızı kontrol edebilir",

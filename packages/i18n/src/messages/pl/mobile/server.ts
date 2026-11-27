@@ -40,8 +40,6 @@ export const messages = {
   "mobile.server.drawer.add": "Dodaj serwer",
   "mobile.server.drawer.settings": "Ustawienia",
   "mobile.server.drawer.close": "Zamknij panel serwerów",
-  "mobile.server.local.option": "Nowy serwer lokalny na komputerze",
-  "mobile.server.local.optionHint": "Na komputerze, na którym działa {name}, z własnymi agentami, czatami i plikami.",
   "mobile.server.local.title": "Nowy serwer",
   "mobile.server.local.description":
     "Serwer działa na komputerze, na którym działa {name}, z własnymi agentami, czatami i plikami. Jest dostępny, gdy OpenBot-NC działa na tym komputerze.",
@@ -62,9 +60,6 @@ export const messages = {
   "mobile.server.local.unsupported": "Zaktualizuj OpenBot-NC na tym komputerze, aby utworzyć tu serwer.",
   "mobile.server.local.deleteOffline":
     "Tylko komputer tego serwera może go usunąć. Otwórz OpenBot-NC na tym komputerze i spróbuj ponownie.",
-  "mobile.server.role.owner": "właściciel",
-  "mobile.server.role.admin": "administrator",
-  "mobile.server.role.member": "członek",
   "mobile.server.role.ownerLabel": "Właściciel",
   "mobile.server.role.adminLabel": "Administrator",
   "mobile.server.role.memberLabel": "Członek",

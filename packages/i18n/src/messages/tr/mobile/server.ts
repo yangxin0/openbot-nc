@@ -34,9 +34,6 @@ export const messages = {
   "mobile.server.drawer.add": "Sunucu ekle",
   "mobile.server.drawer.settings": "Ayarlar",
   "mobile.server.drawer.close": "Sunucu çekmecesini kapat",
-  "mobile.server.local.option": "Bilgisayarda yeni yerel sunucu",
-  "mobile.server.local.optionHint":
-    "{name} sunucusunu çalıştıran bilgisayarda, kendi ajanları, sohbetleri ve dosyalarıyla.",
   "mobile.server.local.title": "Yeni sunucu",
   "mobile.server.local.description":
     "Sunucu, {name} sunucusunu çalıştıran bilgisayarda kendi ajanları, sohbetleri ve dosyalarıyla çalışır. OpenBot-NC o bilgisayarda çalıştığı sürece kullanılabilir.",
@@ -57,9 +54,6 @@ export const messages = {
   "mobile.server.local.unsupported": "Burada sunucu oluşturmak için bu bilgisayardaki OpenBot-NC'yi güncelleyin.",
   "mobile.server.local.deleteOffline":
     "Bu sunucuyu yalnızca kendi bilgisayarı silebilir. O bilgisayarda OpenBot-NC'yi açın ve tekrar deneyin.",
-  "mobile.server.role.owner": "sahip",
-  "mobile.server.role.admin": "yönetici",
-  "mobile.server.role.member": "üye",
   "mobile.server.role.ownerLabel": "Sahip",
   "mobile.server.role.adminLabel": "Yönetici",
   "mobile.server.role.memberLabel": "Üye",

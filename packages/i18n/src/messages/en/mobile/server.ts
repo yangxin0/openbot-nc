@@ -33,8 +33,6 @@ export const messages = defineMessages("mobile.server", {
   "mobile.server.drawer.add": "Add a server",
   "mobile.server.drawer.settings": "Settings",
   "mobile.server.drawer.close": "Close server drawer",
-  "mobile.server.local.option": "New local server on the computer",
-  "mobile.server.local.optionHint": "On the computer that runs {name}, with its own agents, chats and files.",
   "mobile.server.local.title": "New server",
   "mobile.server.local.description":
     "The server runs on the computer that runs {name}, with its own agents, chats and files. It is available while OpenBot-NC runs on that computer.",
@@ -55,9 +53,6 @@ export const messages = defineMessages("mobile.server", {
   "mobile.server.local.unsupported": "Update OpenBot-NC on this computer to create a server here.",
   "mobile.server.local.deleteOffline":
     "Only the computer of this server can delete it. Open OpenBot-NC on that computer, then try again.",
-  "mobile.server.role.owner": "owner",
-  "mobile.server.role.admin": "admin",
-  "mobile.server.role.member": "member",
   "mobile.server.role.ownerLabel": "Owner",
   "mobile.server.role.adminLabel": "Admin",
   "mobile.server.role.memberLabel": "Member",

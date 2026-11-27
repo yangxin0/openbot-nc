@@ -34,8 +34,6 @@ export const messages = {
   "mobile.server.drawer.add": "서버 추가",
   "mobile.server.drawer.settings": "설정",
   "mobile.server.drawer.close": "서버 목록 닫기",
-  "mobile.server.local.option": "컴퓨터에 새 로컬 서버",
-  "mobile.server.local.optionHint": "{name}을(를) 실행하는 컴퓨터에서 자체 에이전트, 채팅, 파일을 사용합니다.",
   "mobile.server.local.title": "새 서버",
   "mobile.server.local.description":
     "서버는 {name}을(를) 실행하는 컴퓨터에서 실행되며 자체 에이전트, 채팅, 파일을 가집니다. 해당 컴퓨터에서 OpenBot-NC가 실행되는 동안 사용할 수 있습니다.",
@@ -56,9 +54,6 @@ export const messages = {
   "mobile.server.local.unsupported": "여기에서 서버를 만들려면 이 컴퓨터의 OpenBot-NC를 업데이트하세요.",
   "mobile.server.local.deleteOffline":
     "이 서버는 해당 컴퓨터에서만 삭제할 수 있습니다. 그 컴퓨터에서 OpenBot-NC를 연 다음 다시 시도하세요.",
-  "mobile.server.role.owner": "소유자",
-  "mobile.server.role.admin": "관리자",
-  "mobile.server.role.member": "멤버",
   "mobile.server.role.ownerLabel": "소유자",
   "mobile.server.role.adminLabel": "관리자",
   "mobile.server.role.memberLabel": "멤버",

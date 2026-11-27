@@ -41,8 +41,6 @@ export const messages = {
   "mobile.server.drawer.add": "إضافة خادم",
   "mobile.server.drawer.settings": "الإعدادات",
   "mobile.server.drawer.close": "إغلاق درج الخوادم",
-  "mobile.server.local.option": "خادم محلي جديد على الحاسوب",
-  "mobile.server.local.optionHint": "على الحاسوب الذي يشغّل {name}، مع وكلائه ودردشاته وملفاته الخاصة.",
   "mobile.server.local.title": "خادم جديد",
   "mobile.server.local.description":
     "يعمل الخادم على الحاسوب الذي يشغّل {name}، مع وكلائه ودردشاته وملفاته الخاصة. ويكون متاحًا ما دام OpenBot-NC يعمل على ذلك الحاسوب.",
@@ -63,9 +61,6 @@ export const messages = {
   "mobile.server.local.unsupported": "حدّث OpenBot-NC على هذا الحاسوب لإنشاء خادم هنا.",
   "mobile.server.local.deleteOffline":
     "يمكن لحاسوب هذا الخادم فقط حذفه. افتح OpenBot-NC على ذلك الحاسوب، ثم أعد المحاولة.",
-  "mobile.server.role.owner": "مالك",
-  "mobile.server.role.admin": "مسؤول",
-  "mobile.server.role.member": "عضو",
   "mobile.server.role.ownerLabel": "المالك",
   "mobile.server.role.adminLabel": "المسؤول",
   "mobile.server.role.memberLabel": "العضو",

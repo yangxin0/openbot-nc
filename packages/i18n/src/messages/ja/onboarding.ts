@@ -68,9 +68,6 @@ export const messages = {
   "onboarding.existing.startNewDetail":
     "ここで新しいチームを作ります。サーバーのエージェントとチャットはそのまま残ります。",
   "onboarding.existing.openFailed": "OpenBot-NC は {name} を開けませんでした。",
-  "onboarding.consent.notice": "続行すると、{terms}に同意し、{privacy}を確認したものとみなされます。",
-  "onboarding.consent.termsLink": "利用規約",
-  "onboarding.consent.privacyLink": "プライバシーポリシー",
   "onboarding.plan.title": "プランを接続",
   "onboarding.plan.description": "一度サインインするだけ。エージェントがあなたのプランを使います。",
   "onboarding.computer.title": "OpenBot-NC がコンピューターを操作する場合があります",

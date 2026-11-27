@@ -34,8 +34,6 @@ export const messages = {
   "mobile.server.drawer.add": "Server toevoegen",
   "mobile.server.drawer.settings": "Instellingen",
   "mobile.server.drawer.close": "Serverpaneel sluiten",
-  "mobile.server.local.option": "Nieuwe lokale server op de computer",
-  "mobile.server.local.optionHint": "Op de computer waarop {name} draait, met eigen agents, chats en bestanden.",
   "mobile.server.local.title": "Nieuwe server",
   "mobile.server.local.description":
     "De server draait op de computer waarop {name} draait, met eigen agents, chats en bestanden. Hij is beschikbaar zolang OpenBot-NC op die computer draait.",
@@ -56,9 +54,6 @@ export const messages = {
   "mobile.server.local.unsupported": "Werk OpenBot-NC op deze computer bij om hier een server te maken.",
   "mobile.server.local.deleteOffline":
     "Alleen de computer van deze server kan hem verwijderen. Open OpenBot-NC op die computer en probeer het opnieuw.",
-  "mobile.server.role.owner": "eigenaar",
-  "mobile.server.role.admin": "beheerder",
-  "mobile.server.role.member": "lid",
   "mobile.server.role.ownerLabel": "Eigenaar",
   "mobile.server.role.adminLabel": "Beheerder",
   "mobile.server.role.memberLabel": "Lid",
