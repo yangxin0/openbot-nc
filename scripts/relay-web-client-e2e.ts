@@ -456,6 +456,22 @@ try {
     await screenshot(openPage, "identity.png");
   });
 
+  await check("The theme buttons on the identity screen show and save the theme", async () => {
+    const theme = openPage.getByRole("group", { name: english("settings.appearance.theme.title") });
+    const choice = (key: "settings.appearance.theme.light" | "settings.appearance.theme.dark") =>
+      theme.getByRole("button", { name: english(key), exact: true });
+    const scheme = (value: string) =>
+      openPage.waitForFunction((expected) => document.documentElement.dataset.openbotColorScheme === expected, value);
+    await choice("settings.appearance.theme.light").click();
+    await scheme("light");
+    assert.equal(await openPage.evaluate(() => localStorage.getItem("openbot.web.appearance")), "light");
+    assert.equal(await choice("settings.appearance.theme.light").getAttribute("aria-pressed"), "true");
+    await screenshot(openPage, "identity-light.png");
+    await choice("settings.appearance.theme.dark").click();
+    await scheme("dark");
+    assert.equal(await openPage.evaluate(() => localStorage.getItem("openbot.web.appearance")), "dark");
+  });
+
   const pasteField = openPage.getByRole("textbox", { name: english("webClient.identity.pasteLabel") });
   const importButton = openPage.getByRole("button", { name: english("webClient.identity.import") });
 

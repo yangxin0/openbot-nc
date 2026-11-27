@@ -7,6 +7,7 @@
     <meta name="color-scheme" content="dark light" />
     <title>OpenBot-NC server admin</title>
     <link rel="icon" href="data:," />
+    <script src="/admin/theme.js"></script>
     <link rel="stylesheet" href="/admin/admin.css" />
     <script src="/admin/admin.js" defer></script>
   </head>
@@ -40,6 +41,35 @@
         </div>
         <p id="signed-out-notice" class="sign-in-notice" role="status" hidden></p>
       </div>
+      <footer class="sign-in-footer">
+        <fieldset class="theme-switch" aria-label="Theme">
+          <button type="button" class="theme-choice" data-theme-choice="system" aria-pressed="true" aria-label="System theme" title="System theme">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect width="20" height="14" x="2" y="3" rx="2" />
+              <line x1="8" x2="16" y1="21" y2="21" />
+              <line x1="12" x2="12" y1="17" y2="21" />
+            </svg>
+          </button>
+          <button type="button" class="theme-choice" data-theme-choice="light" aria-pressed="false" aria-label="Light theme" title="Light theme">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" />
+            </svg>
+          </button>
+          <button type="button" class="theme-choice" data-theme-choice="dark" aria-pressed="false" aria-label="Dark theme" title="Dark theme">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />
+            </svg>
+          </button>
+        </fieldset>
+      </footer>
     </div>
 
     <div id="signed-in" class="admin" hidden>
@@ -61,6 +91,34 @@
           <h1 class="bar-title">Server admin</h1>
         </div>
         <div class="bar-actions">
+          <fieldset class="theme-switch" aria-label="Theme">
+            <button type="button" class="theme-choice" data-theme-choice="system" aria-pressed="true" aria-label="System theme" title="System theme">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <rect width="20" height="14" x="2" y="3" rx="2" />
+                <line x1="8" x2="16" y1="21" y2="21" />
+                <line x1="12" x2="12" y1="17" y2="21" />
+              </svg>
+            </button>
+            <button type="button" class="theme-choice" data-theme-choice="light" aria-pressed="false" aria-label="Light theme" title="Light theme">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="m4.93 4.93 1.41 1.41" />
+                <path d="m17.66 17.66 1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="m6.34 17.66-1.41 1.41" />
+                <path d="m19.07 4.93-1.41 1.41" />
+              </svg>
+            </button>
+            <button type="button" class="theme-choice" data-theme-choice="dark" aria-pressed="false" aria-label="Dark theme" title="Dark theme">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />
+              </svg>
+            </button>
+          </fieldset>
+          <span class="bar-actions-divider" aria-hidden="true"></span>
           <button id="refresh" type="button" class="button ghost">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />

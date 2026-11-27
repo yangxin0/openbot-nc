@@ -795,73 +795,87 @@ try {
     assert.equal(alice?.online, false);
   });
 
-  await check("The admin page works in Chromium: sign in, make a code with its QR image, revoke a member", async () => {
-    const dave = await enroll(
-      joinCodeFrom(command(environment, "ca", "code", "--team", TEAM, "--user", "dave", "--device", "desk").output),
-    );
-    const davePeer = await connectMember(dave);
-    peers.push(davePeer);
-    await davePeer.message("welcome");
-    const browser = await chromium.launch({ channel: "chrome", headless: true });
-    browsers.push(browser);
-    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
-    const signedOutPage = await context.newPage();
-    await signedOutPage.goto(`${adminOrigin()}/admin`);
-    await signedOutPage.locator("#signed-out").waitFor({ timeout: WAIT_MS });
-    await screenshot(signedOutPage, "sign-in.png");
-    await signedOutPage.emulateMedia({ colorScheme: "dark" });
-    await screenshot(signedOutPage, "sign-in-dark.png");
-    await signedOutPage.close();
-    const page = await context.newPage();
-    const problems: string[] = [];
-    await page.exposeFunction("reportCspViolation", (text: string) => problems.push(`CSP: ${text}`));
-    await page.addInitScript(() => {
-      document.addEventListener("securitypolicyviolation", (event) =>
-        window.reportCspViolation?.(`${event.violatedDirective} ${event.blockedURI}`),
+  await check(
+    "The admin page works in Chromium: theme, sign in, make a code with its QR image, revoke a member",
+    async () => {
+      const dave = await enroll(
+        joinCodeFrom(command(environment, "ca", "code", "--team", TEAM, "--user", "dave", "--device", "desk").output),
       );
-    });
-    page.on("console", (message) => {
-      if (message.type() === "error") problems.push(`console: ${message.text()}`);
-    });
-    page.on("pageerror", (error) => problems.push(`page: ${error.message}`));
-    const { url } = loginToken(environment);
-    await page.goto(url);
-    await page.waitForURL(`${adminOrigin()}/admin`, { timeout: WAIT_MS });
-    await page.locator("#overview dt").first().waitFor({ timeout: WAIT_MS });
-    await page.locator("#member-rows tr", { hasText: "dave" }).waitFor({ timeout: WAIT_MS });
-    await screenshot(page, "overview.png");
+      const davePeer = await connectMember(dave);
+      peers.push(davePeer);
+      await davePeer.message("welcome");
+      const browser = await chromium.launch({ channel: "chrome", headless: true });
+      browsers.push(browser);
+      const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+      const signedOutPage = await context.newPage();
+      await signedOutPage.goto(`${adminOrigin()}/admin`);
+      await signedOutPage.locator("#signed-out").waitFor({ timeout: WAIT_MS });
+      await screenshot(signedOutPage, "sign-in.png");
+      const themeChoice = (name: string) => signedOutPage.getByRole("button", { name, exact: true });
+      const pageTheme = () => signedOutPage.evaluate(() => document.documentElement.dataset.theme ?? "system");
+      const savedTheme = () => signedOutPage.evaluate(() => localStorage.getItem("openbot.admin.theme"));
+      await themeChoice("Dark theme").click();
+      assert.equal(await savedTheme(), "dark");
+      await signedOutPage.reload();
+      await signedOutPage.locator("#signed-out").waitFor({ timeout: WAIT_MS });
+      assert.equal(await pageTheme(), "dark");
+      assert.equal(await themeChoice("Dark theme").getAttribute("aria-pressed"), "true");
+      await screenshot(signedOutPage, "sign-in-dark.png");
+      await themeChoice("System theme").click();
+      assert.equal(await pageTheme(), "system");
+      assert.equal(await savedTheme(), null);
+      await signedOutPage.close();
+      const page = await context.newPage();
+      const problems: string[] = [];
+      await page.exposeFunction("reportCspViolation", (text: string) => problems.push(`CSP: ${text}`));
+      await page.addInitScript(() => {
+        document.addEventListener("securitypolicyviolation", (event) =>
+          window.reportCspViolation?.(`${event.violatedDirective} ${event.blockedURI}`),
+        );
+      });
+      page.on("console", (message) => {
+        if (message.type() === "error") problems.push(`console: ${message.text()}`);
+      });
+      page.on("pageerror", (error) => problems.push(`page: ${error.message}`));
+      const { url } = loginToken(environment);
+      await page.goto(url);
+      await page.waitForURL(`${adminOrigin()}/admin`, { timeout: WAIT_MS });
+      await page.locator("#overview dt").first().waitFor({ timeout: WAIT_MS });
+      await page.locator("#member-rows tr", { hasText: "dave" }).waitFor({ timeout: WAIT_MS });
+      await screenshot(page, "overview.png");
 
-    await page.locator("#code-form select[name=team]").selectOption(TEAM);
-    await page.locator("#code-form input[name=user]").fill("carol");
-    await page.locator("#code-form input[name=device]").fill("phone");
-    await page.getByRole("button", { name: "Create code" }).click();
-    await page.locator("#code-result").waitFor({ state: "visible", timeout: WAIT_MS });
-    await page.waitForFunction(() => {
-      const image = document.querySelector("#code-qr");
-      return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
-    });
-    const codeText = await page.locator("#code-url").inputValue();
-    const parsed = parseRelayJoinCode(codeText);
-    assert.ok(parsed, `The page shows a code that does not parse: ${codeText}`);
-    secrets.push(parsed.code);
-    await page.locator("#code-rows tr", { hasText: "carol" }).waitFor({ timeout: WAIT_MS });
-    await screenshot(page, "join-code.png");
+      await page.locator("#code-form select[name=team]").selectOption(TEAM);
+      await page.locator("#code-form input[name=user]").fill("carol");
+      await page.locator("#code-form input[name=device]").fill("phone");
+      await page.getByRole("button", { name: "Create code" }).click();
+      await page.locator("#code-result").waitFor({ state: "visible", timeout: WAIT_MS });
+      await page.waitForFunction(() => {
+        const image = document.querySelector("#code-qr");
+        return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
+      });
+      const codeText = await page.locator("#code-url").inputValue();
+      const parsed = parseRelayJoinCode(codeText);
+      assert.ok(parsed, `The page shows a code that does not parse: ${codeText}`);
+      secrets.push(parsed.code);
+      await page.locator("#code-rows tr", { hasText: "carol" }).waitFor({ timeout: WAIT_MS });
+      await screenshot(page, "join-code.png");
 
-    const row = page.locator("#member-rows tr", { hasText: "dave" });
-    await row.getByRole("button", { name: "Revoke" }).click();
-    await row.getByRole("button", { name: "Confirm revoke" }).click();
-    await page
-      .locator("#member-rows tr", { hasText: "dave" })
-      .locator("td.status-revoked")
-      .waitFor({ timeout: WAIT_MS });
-    const closed = await deadline("the socket of dave closes", davePeer.closed);
-    assert.ok(closed.code > 0);
-    await screenshot(page, "revoked.png");
-    await page.emulateMedia({ colorScheme: "dark" });
-    await screenshot(page, "revoked-dark.png");
-    assert.deepEqual(problems, []);
-    await context.close();
-  });
+      const row = page.locator("#member-rows tr", { hasText: "dave" });
+      await row.getByRole("button", { name: "Revoke" }).click();
+      await row.getByRole("button", { name: "Confirm revoke" }).click();
+      await page
+        .locator("#member-rows tr", { hasText: "dave" })
+        .locator("td.status-revoked")
+        .waitFor({ timeout: WAIT_MS });
+      const closed = await deadline("the socket of dave closes", davePeer.closed);
+      assert.ok(closed.code > 0);
+      await screenshot(page, "revoked.png");
+      await page.emulateMedia({ colorScheme: "dark" });
+      await screenshot(page, "revoked-dark.png");
+      assert.deepEqual(problems, []);
+      await context.close();
+    },
+  );
 
   await check("The enroll route limits the requests of one address", async () => {
     let limited: HttpAnswer | null = null;

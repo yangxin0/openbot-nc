@@ -206,10 +206,12 @@ function WebAppContent(props: { createRuntime?: WebRuntimeFactory }) {
                 <WebIdentityScreen
                   variant={variant}
                   language={resolveLocale(languagePreference.language(), navigator.language)}
+                  appearance={appearancePreference.appearance()}
                   error={state.error}
                   onImport={importIdentity}
                   onJoin={joinIdentity}
                   onChangeLanguage={() => setLanguageWheelOpen(true)}
+                  onChangeAppearance={appearancePreference.setAppearance}
                 />
               </Show>
             }

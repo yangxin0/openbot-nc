@@ -1,41 +1,43 @@
 :root {
-  color-scheme: dark;
-  --openbot-bg-canvas: #1a1a1a;
-  --openbot-bg-frame: #0d0d0d;
-  --openbot-bg-surface: #212121;
-  --openbot-bg-surface-raised: #242424;
-  --openbot-bg-control: #212121;
-  --openbot-bg-control-hover: #242424;
-  --openbot-bg-control-active: #2a2a2a;
-  --openbot-bg-sheet-inset: #101010;
-  --openbot-border: rgba(255, 255, 255, 0.035);
-  --openbot-border-strong: rgba(255, 255, 255, 0.045);
+  color-scheme: light dark;
+  --openbot-bg-canvas: light-dark(#f5f5f6, #1a1a1a);
+  --openbot-bg-frame: light-dark(#e8e8eb, #0d0d0d);
+  --openbot-bg-surface: light-dark(#ffffff, #212121);
+  --openbot-bg-surface-raised: light-dark(#fcfcfc, #242424);
+  --openbot-bg-control: light-dark(#ffffff, #212121);
+  --openbot-bg-control-hover: light-dark(#f0f0f2, #242424);
+  --openbot-bg-control-active: light-dark(#e8e8eb, #2a2a2a);
+  --openbot-bg-sheet-inset: light-dark(#f0f0f2, #101010);
+  --openbot-tabs-bar-bg: light-dark(#ececee, #212121);
+  --openbot-tabs-pill-bg: light-dark(#ffffff, #2a2a2a);
+  --openbot-border: light-dark(rgba(20, 20, 20, 0.07), rgba(255, 255, 255, 0.035));
+  --openbot-border-strong: light-dark(rgba(20, 20, 20, 0.1), rgba(255, 255, 255, 0.045));
   --openbot-border-focus: var(--openbot-text-muted);
-  --openbot-data-table-border: #303030;
-  --openbot-hover: rgba(255, 255, 255, 0.06);
-  --openbot-text-primary: #ffffff;
-  --openbot-text-secondary: #dcdcdc;
-  --openbot-text-muted: #979797;
-  --openbot-text-dim: #6a6a6a;
-  --openbot-text-placeholder: #bfbfbf;
-  --openbot-surface-light: #f0f0f0;
-  --openbot-text-on-light: #141414;
+  --openbot-data-table-border: light-dark(#e3e3e6, #303030);
+  --openbot-hover: light-dark(rgba(20, 20, 20, 0.05), rgba(255, 255, 255, 0.06));
+  --openbot-text-primary: light-dark(#141414, #ffffff);
+  --openbot-text-secondary: light-dark(#3a3a3c, #dcdcdc);
+  --openbot-text-muted: light-dark(#6b6b70, #979797);
+  --openbot-text-dim: light-dark(#8e8e93, #6a6a6a);
+  --openbot-text-placeholder: light-dark(#5c5c61, #bfbfbf);
+  --openbot-surface-light: light-dark(#1c1c1e, #f0f0f0);
+  --openbot-text-on-light: light-dark(#ffffff, #141414);
   --openbot-text-on-accent: #ffffff;
   --openbot-qr-background: #ffffff;
-  --openbot-accent-soft: rgba(0, 124, 247, 0.16);
-  --openbot-accent-text: #42a0ff;
-  --openbot-success: #31cf76;
-  --openbot-success-text: #31cf76;
-  --openbot-success-soft: rgba(49, 207, 118, 0.12);
-  --openbot-warning: #ff9412;
-  --openbot-warning-text: #ff9412;
-  --openbot-warning-soft: rgba(255, 148, 18, 0.12);
-  --openbot-danger: #fd2f3b;
-  --openbot-danger-text: #ff6069;
-  --openbot-danger-soft: rgba(253, 47, 59, 0.16);
-  --openbot-danger-soft-hover: rgba(253, 47, 59, 0.28);
-  --openbot-danger-hover: #fd5d67;
-  --openbot-shadow-dialog: rgba(0, 0, 0, 0.48);
+  --openbot-accent-soft: light-dark(rgba(0, 124, 247, 0.12), rgba(0, 124, 247, 0.16));
+  --openbot-accent-text: light-dark(#0064c8, #42a0ff);
+  --openbot-success: light-dark(#1fa85a, #31cf76);
+  --openbot-success-text: light-dark(#187a41, #31cf76);
+  --openbot-success-soft: light-dark(rgba(31, 168, 90, 0.12), rgba(49, 207, 118, 0.12));
+  --openbot-warning: light-dark(#f08a00, #ff9412);
+  --openbot-warning-text: light-dark(#9c5200, #ff9412);
+  --openbot-warning-soft: light-dark(rgba(240, 138, 0, 0.14), rgba(255, 148, 18, 0.12));
+  --openbot-danger: light-dark(#e8222d, #fd2f3b);
+  --openbot-danger-text: light-dark(#c0141d, #ff6069);
+  --openbot-danger-soft: light-dark(rgba(232, 34, 45, 0.12), rgba(253, 47, 59, 0.16));
+  --openbot-danger-soft-hover: light-dark(rgba(232, 34, 45, 0.2), rgba(253, 47, 59, 0.28));
+  --openbot-danger-hover: light-dark(#f04a53, #fd5d67);
+  --openbot-shadow-dialog: light-dark(transparent, rgba(0, 0, 0, 0.48));
   --openbot-logo-production: #d6adf2;
   --openbot-logo-eye: #040007;
   --openbot-font-sans: -apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI", "Noto Sans Arabic", sans-serif;
@@ -76,51 +78,19 @@
   --openbot-duration-fast: 120ms;
   --openbot-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --openbot-focus-ring: 0 0 0 1px var(--openbot-border-focus);
-  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23979797' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   font-family: var(--openbot-font-sans);
   font-size: var(--openbot-text-md);
   line-height: var(--openbot-leading-md);
   -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-    --openbot-bg-canvas: #f5f5f6;
-    --openbot-bg-frame: #e8e8eb;
-    --openbot-bg-surface: #ffffff;
-    --openbot-bg-surface-raised: #fcfcfc;
-    --openbot-bg-control: #ffffff;
-    --openbot-bg-control-hover: #f0f0f2;
-    --openbot-bg-control-active: #e8e8eb;
-    --openbot-bg-sheet-inset: #f0f0f2;
-    --openbot-border: rgba(20, 20, 20, 0.07);
-    --openbot-border-strong: rgba(20, 20, 20, 0.1);
-    --openbot-data-table-border: #e3e3e6;
-    --openbot-hover: rgba(20, 20, 20, 0.05);
-    --openbot-text-primary: #141414;
-    --openbot-text-secondary: #3a3a3c;
-    --openbot-text-muted: #6b6b70;
-    --openbot-text-dim: #8e8e93;
-    --openbot-text-placeholder: #5c5c61;
-    --openbot-surface-light: #1c1c1e;
-    --openbot-text-on-light: #ffffff;
-    --openbot-accent-soft: rgba(0, 124, 247, 0.12);
-    --openbot-accent-text: #0064c8;
-    --openbot-success: #1fa85a;
-    --openbot-success-text: #187a41;
-    --openbot-success-soft: rgba(31, 168, 90, 0.12);
-    --openbot-warning: #f08a00;
-    --openbot-warning-text: #9c5200;
-    --openbot-warning-soft: rgba(240, 138, 0, 0.14);
-    --openbot-danger: #e8222d;
-    --openbot-danger-text: #c0141d;
-    --openbot-danger-soft: rgba(232, 34, 45, 0.12);
-    --openbot-danger-soft-hover: rgba(232, 34, 45, 0.2);
-    --openbot-danger-hover: #f04a53;
-    --openbot-shadow-dialog: transparent;
-    --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6b70' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  }
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 *,
@@ -246,6 +216,7 @@ input[type="number"] {
 .sign-in {
   display: grid;
   min-height: 100vh;
+  grid-template-rows: minmax(min-content, 1fr) auto;
   place-items: center;
   padding: var(--openbot-space-8) var(--openbot-space-6);
 }
@@ -370,7 +341,69 @@ input[type="number"] {
 
 .bar-actions {
   display: flex;
+  align-items: center;
   gap: var(--openbot-space-1);
+}
+
+.bar-actions-divider {
+  width: 1px;
+  height: 18px;
+  margin: 0 var(--openbot-space-2);
+  background: var(--openbot-data-table-border);
+}
+
+.sign-in-footer {
+  margin-top: var(--openbot-space-6);
+}
+
+.theme-switch {
+  display: inline-flex;
+  min-inline-size: 0;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: var(--openbot-radius-md);
+  background: var(--openbot-tabs-bar-bg);
+  box-shadow: inset 0 0 0 1px var(--openbot-border);
+}
+
+.theme-choice {
+  display: grid;
+  width: var(--openbot-control-md);
+  height: var(--openbot-control-xs);
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--openbot-radius-sm);
+  outline: 0;
+  background: transparent;
+  color: var(--openbot-text-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--openbot-duration-fast) var(--openbot-ease-out),
+    color var(--openbot-duration-fast) var(--openbot-ease-out);
+}
+
+.theme-choice .icon {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+}
+
+.theme-choice[aria-pressed="true"] {
+  background: var(--openbot-tabs-pill-bg);
+  color: var(--openbot-text-primary);
+}
+
+.theme-choice:focus-visible {
+  box-shadow: var(--openbot-focus-ring);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .theme-choice:hover {
+    color: var(--openbot-text-primary);
+  }
 }
 
 .content {
@@ -934,6 +967,7 @@ td.empty {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .theme-choice,
   .button,
   input,
   select,

@@ -1,4 +1,5 @@
 import { AppLogo } from "@openbot/brand";
+import type { AppAppearance } from "@openbot/contracts/app-appearance";
 import { APP_NAME } from "@openbot/contracts/app-identity";
 import type { AppVariant } from "@openbot/contracts/ipc";
 import type { AppTextKey, TranslatedLocale } from "@openbot/i18n";
@@ -14,13 +15,18 @@ import {
   Field,
   FileText,
   Globe2,
+  IconButton,
   Input,
   KeyRound,
+  Monitor,
+  Moon,
+  Sun,
   Textarea,
   Upload,
 } from "@openbot/ui";
 import { RelayJoinCodeForm } from "@openbot/ui/features/settings/RelayJoinCode";
 import { useText } from "@openbot/ui/text";
+import type { JSX } from "@solidjs/web";
 import { createStore, Show } from "solid-js";
 import { identityErrorKey } from "./web-relay";
 
@@ -31,10 +37,12 @@ const FILE_PANEL_ID = "web-identity-file-panel";
 export function WebIdentityScreen(props: {
   variant: AppVariant;
   language: TranslatedLocale;
+  appearance: AppAppearance;
   error: AppTextKey | null;
   onImport: (source: WebIdentitySource) => Promise<void>;
   onJoin: (code: string) => Promise<void>;
   onChangeLanguage: () => void;
+  onChangeAppearance: (appearance: AppAppearance) => void;
 }) {
   const { t } = useText();
   const [state, setState] = createStore<{
@@ -200,19 +208,68 @@ export function WebIdentityScreen(props: {
           </div>
         </section>
       </div>
-      <Button
-        type="button"
-        class="web-identity-language"
-        variant="ghost"
-        size="sm"
-        lang={appLanguageOption(props.language).lang}
-        title={t("account.language.change")}
-        onClick={() => props.onChangeLanguage()}
-      >
-        <Globe2 aria-hidden="true" />
-        {appLanguageOption(props.language).label}
-      </Button>
+      <footer class="web-identity-footer">
+        <Button
+          type="button"
+          class="web-identity-language"
+          variant="ghost"
+          size="sm"
+          lang={appLanguageOption(props.language).lang}
+          title={t("account.language.change")}
+          onClick={() => props.onChangeLanguage()}
+        >
+          <Globe2 aria-hidden="true" />
+          {appLanguageOption(props.language).label}
+        </Button>
+        <fieldset class="web-identity-theme" aria-label={t("settings.appearance.theme.title")}>
+          <ThemeChoice
+            value="system"
+            label={t("settings.appearance.theme.system")}
+            current={props.appearance}
+            onChoose={props.onChangeAppearance}
+          >
+            <Monitor aria-hidden="true" />
+          </ThemeChoice>
+          <ThemeChoice
+            value="light"
+            label={t("settings.appearance.theme.light")}
+            current={props.appearance}
+            onChoose={props.onChangeAppearance}
+          >
+            <Sun aria-hidden="true" />
+          </ThemeChoice>
+          <ThemeChoice
+            value="dark"
+            label={t("settings.appearance.theme.dark")}
+            current={props.appearance}
+            onChoose={props.onChangeAppearance}
+          >
+            <Moon aria-hidden="true" />
+          </ThemeChoice>
+        </fieldset>
+      </footer>
     </main>
+  );
+}
+
+function ThemeChoice(props: {
+  value: AppAppearance;
+  label: string;
+  current: AppAppearance;
+  onChoose: (appearance: AppAppearance) => void;
+  children: JSX.Element;
+}) {
+  return (
+    <IconButton
+      class="web-identity-theme-choice"
+      label={props.label}
+      variant="ghost"
+      size="icon-xs"
+      aria-pressed={props.current === props.value ? "true" : "false"}
+      onClick={() => props.onChoose(props.value)}
+    >
+      {props.children}
+    </IconButton>
   );
 }
 

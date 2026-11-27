@@ -7,6 +7,7 @@ import { type AdminLogins, adminAuthority, adminOrigin } from "./admin-logins";
 import pageStyle from "./admin-page/admin.css" with { type: "text" };
 import pageScript from "./admin-page/admin.js" with { type: "text" };
 import pageHtml from "./admin-page/index.html" with { type: "text" };
+import themeScript from "./admin-page/theme.js" with { type: "text" };
 import { CERTIFICATE_DAYS, type CertificateAuthority, type CertificateRecord } from "./certificate-authority";
 import type { RelayAdminConfig } from "./config";
 import { type Enrollment, JOIN_CODE_ID_LENGTH, JOIN_CODE_MINUTES, rootFingerprint } from "./enrollment";
@@ -159,6 +160,7 @@ class AdminHandler {
     if (PAGE_PATHS.has(path)) return asset(pageHtml, "text/html; charset=utf-8");
     if (path === "/admin/admin.css") return asset(pageStyle, "text/css; charset=utf-8");
     if (path === "/admin/admin.js") return asset(pageScript, "text/javascript; charset=utf-8");
+    if (path === "/admin/theme.js") return asset(themeScript, "text/javascript; charset=utf-8");
     if (!path.startsWith("/admin/api/")) return problem(404, "not_found", "Not found.");
     const session = this.#session(request);
     if (session === null) return problem(401, "signed_out", "Sign in first.");

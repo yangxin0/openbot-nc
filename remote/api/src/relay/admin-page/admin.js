@@ -37,6 +37,32 @@ function notice(message, tone = "info") {
   element.hidden = message === "";
 }
 
+const THEME_KEY = "openbot.admin.theme";
+
+function currentTheme() {
+  const theme = document.documentElement.dataset.theme;
+  return theme === "light" || theme === "dark" ? theme : "system";
+}
+
+function showTheme() {
+  const theme = currentTheme();
+  for (const control of document.querySelectorAll("[data-theme-choice]")) {
+    control.setAttribute("aria-pressed", String(control.dataset.themeChoice === theme));
+  }
+}
+
+function chooseTheme(theme) {
+  if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+  else delete document.documentElement.dataset.theme;
+  showTheme();
+  try {
+    if (theme === "light" || theme === "dark") localStorage.setItem(THEME_KEY, theme);
+    else localStorage.removeItem(THEME_KEY);
+  } catch {
+    notice("This browser cannot keep the theme. It applies to this page until you close it.", "error");
+  }
+}
+
 const STATUS_TONES = { valid: "success", revoked: "danger", expired: "warning" };
 const STATUS_LABELS = { valid: "Valid", revoked: "Revoked", expired: "Expired" };
 
@@ -414,6 +440,9 @@ function bindForms() {
   byId("member-team").addEventListener("change", () => void run(loadMembers));
   byId("code-copy").addEventListener("click", () => void copyCode());
   byId("notice-close").addEventListener("click", () => notice(""));
+  for (const control of document.querySelectorAll("[data-theme-choice]")) {
+    control.addEventListener("click", () => chooseTheme(control.dataset.themeChoice));
+  }
   byId("refresh").addEventListener("click", () => void run(refresh));
   byId("sign-out").addEventListener("click", () =>
     run(async () => {
@@ -441,6 +470,7 @@ async function signIn() {
 
 async function start() {
   bindForms();
+  showTheme();
   if (location.pathname === "/admin/login") {
     await signIn();
     return;
